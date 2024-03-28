@@ -1,0 +1,42 @@
+name: harvest
+description: "Harvest Project App Client"
+
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.2 <4.0.0'
+
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  logger:
+    git:
+      url: https://github.com/Bungeefan/logger.git
+  get: ^4.6.6
+  dio: ^5.4.2+1
+  shared_preferences: ^2.2.2
+  getwidget: ^4.0.0
+  get_storage: ^2.1.1
+  qbittorrent_api: ^1.0.6
+  transmission_api: ^0.0.1
+  easy_refresh: ^3.3.4
+  url_launcher: ^6.2.5
+  intl: ^0.19.0
+  tmdb_api: ^2.2.0
+  glassmorphism_ui: ^0.3.0
+  dio_smart_retry: ^6.0.0
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
