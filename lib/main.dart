@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:harvest/theme/theme.dart';
 import 'package:harvest/utils/logger_helper.dart';
 import 'package:harvest/utils/storage.dart';
 
@@ -24,6 +25,11 @@ void main() async {
         defaultTransition: Transition.cupertino,
         debugShowCheckedModeBanner: false,
         initialRoute: AppPages.INITIAL,
+        theme:  ThemeData.light(),
+        darkTheme: ThemeData.dark(),
+        // theme:  lightTheme,
+        // darkTheme: darkTheme,
+        themeMode: ThemeMode.dark,
         // navigatorKey: Get.key,
         getPages: AppPages.routes,
         routingCallback: (routing) {
