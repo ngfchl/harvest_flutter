@@ -119,7 +119,7 @@ class LoginController extends GetxController {
     }
   }
 
-  Future<bool> saveServer(Server server) async {
+  Future<Map<String, dynamic>> saveServer(Server server) async {
     try {
       if (server.id == 0) {
         // 判断是否为新添加的服务器
@@ -129,28 +129,19 @@ class LoginController extends GetxController {
         await serverRepository.updateServer(server);
       }
       serversList.value = await serverRepository.getServers();
-      Get.snackbar(
-        server.id == 0 ? '保存结果' : '更新结果',
-        server.id == 0 ? '服务器已成功添加' : '服务器已成功更新',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.shade400,
-        duration: const Duration(seconds: 3),
-      );
+
       update(); // 更新UI，重新获取服务器列表
-      return true;
+      return {"flag": true, "message": "保存成功!"};
     } catch (e) {
       String errMsg = "";
       if (e.toString().contains('UNIQUE constraint')) {
         errMsg = "该服务器已存在！";
       }
-      Get.snackbar(
-        server.id == 0 ? '保存结果' : '更新结果',
-        server.id == 0 ? '保存服务器时出错：$errMsg' : '更新服务器时出错：$errMsg',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade400,
-        duration: const Duration(seconds: 3),
-      );
-      return false;
+
+      return {
+        "flag": false,
+        "message": errMsg,
+      };
     }
   }
 
@@ -187,14 +178,26 @@ class LoginController extends GetxController {
       if (res.data['code'] == 0) {
         box.write('userinfo', res.data["data"]);
         box.write('isLogin', true);
-        Get.snackbar('登录成功！', "欢迎 ${loginUser.username} 回来,正在跳转!");
+        Get.snackbar(
+          '登录成功！',
+          "欢迎 ${loginUser.username} 回来",
+          backgroundColor: Colors.green.shade400,
+        );
         Get.offNamed(Routes.HOME);
         return true;
       }
-      Get.snackbar('登录失败', res.data['msg']);
+      Get.snackbar(
+        '登录失败',
+        res.data['msg'],
+        backgroundColor: Colors.amber.shade400,
+      );
     } catch (e, stackTrace) {
-      print(stackTrace.toString());
-      Get.snackbar('登录失败', e.toString());
+      Logger.instance.e(stackTrace.toString());
+      Get.snackbar(
+        '登录失败',
+        e.toString(),
+        backgroundColor: Colors.red.shade400,
+      );
     }
     box.write('isLogin', false);
     return false;

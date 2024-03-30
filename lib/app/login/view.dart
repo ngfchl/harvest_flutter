@@ -407,10 +407,27 @@ class _LoginPageState extends State<LoginPage> {
                             selected: serverToEdit?.selected ?? false,
                           );
                           print(server);
-                          bool flag = await controller.saveServer(server);
-                          print(flag);
-                          if (flag) {
+                          Map result = await controller.saveServer(server);
+                          print(result);
+                          if (result["flag"]) {
+                            Get.snackbar(
+                              server.id == 0 ? '保存结果' : '更新结果',
+                              server.id == 0 ? '服务器已成功添加' : '服务器已成功更新',
+                              snackPosition: SnackPosition.BOTTOM,
+                              backgroundColor: Colors.green.shade400,
+                              duration: const Duration(seconds: 3),
+                            );
                             Navigator.pop(context);
+                          } else {
+                            Get.snackbar(
+                              server.id == 0 ? '保存结果' : '更新结果',
+                              server.id == 0
+                                  ? '保存服务器时出错：${result["message"]}'
+                                  : '更新服务器时出错：${result["message"]}',
+                              snackPosition: SnackPosition.BOTTOM,
+                              backgroundColor: Colors.red.shade400,
+                              duration: const Duration(seconds: 3),
+                            );
                           }
                         }
                       },
