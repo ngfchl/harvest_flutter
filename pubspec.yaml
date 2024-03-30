@@ -29,6 +29,9 @@ dependencies:
   tmdb_api: ^2.2.0
   glassmorphism_ui: ^0.3.0
   dio_smart_retry: ^6.0.0
+  pubspec_manager: ^1.0.0
+  sqflite: ^2.3.2
+  path: ^1.9.0
 
 
 dev_dependencies:
