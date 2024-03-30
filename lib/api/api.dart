@@ -1,6 +1,7 @@
 class Api {
   // 登录接口
-  static const String LOGIN_URL = "config/login";
+  static const String LOGIN_URL = "auth/login";
+  static const String USER_INFO = "auth/userinfo";
 
   // 站点列表
   static const String WEBSITE_LIST = "website/website";
@@ -104,5 +105,5 @@ class Api {
   static const String TASK_OPERATE_URL = "/schedule/schedule";
 
   static const String CRONTAB_LIST = "schedule/crontabs";
-  static const String SYSTEM_CONFIG = "config/config";
+  static const String SYSTEM_CONFIG = "auth/config";
 }
