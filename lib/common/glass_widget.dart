@@ -21,7 +21,7 @@ class GlassWidget extends StatelessWidget {
           height: double.infinity,
           width: double.infinity,
           blur: 1,
-          color: Colors.white24,
+          color: Colors.grey.shade300,
           // gradient: LinearGradient(
           //   begin: Alignment.topLeft,
           //   end: Alignment.bottomRight,
