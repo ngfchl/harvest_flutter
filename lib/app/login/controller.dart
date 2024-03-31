@@ -39,9 +39,9 @@ class LoginController extends GetxController {
     return serversList.any((server) => server.selected);
   }
 
-  void initDio(Server server) {
+  void initDio(Server server) async {
     String baseUrl = '${server.protocol}://${server.domain}:${server.port}';
-    dioUtil.initialize(baseUrl);
+    await dioUtil.initialize(baseUrl);
     box.write('server', baseUrl);
   }
 
