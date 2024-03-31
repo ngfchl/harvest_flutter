@@ -23,20 +23,19 @@ class DioUtil {
 
   late String token;
   late Options _defaultOptions;
-  late Dio dio;
+  late Dio? dio;
   late GetStorage box;
 
   factory DioUtil() {
     return _instance;
   }
 
-  void initialize(String server) {
-    _initDio(server);
+  Future<void> initialize(String server) async {
+    await _initDio(server);
   }
 
-  void _initDio(String server) async {
+  Future<void> _initDio(String server) async {
     String baseUrl = '$server/api/';
-    Logger.instance.i(baseUrl);
     box = GetStorage();
     _defaultOptions = await _buildRequestOptions();
     dio = Dio(BaseOptions(
@@ -46,11 +45,11 @@ class DioUtil {
       responseType: ResponseType.json,
     ));
 
-    dio.interceptors.add(LogInterceptor(
-        responseBody: true)); // Add logging interceptor for debugging purposes
-    dio.interceptors.add(CustomInterceptors());
-    dio.interceptors.add(RetryInterceptor(
-      dio: dio,
+    dio?.interceptors.add(LogInterceptor(
+        responseBody: false)); // Add logging interceptor for debugging purposes
+    dio?.interceptors.add(CustomInterceptors());
+    dio?.interceptors.add(RetryInterceptor(
+      dio: dio!,
       retries: 3,
       logPrint: (message) {
         Logger.instance.w(message);
@@ -65,9 +64,7 @@ class DioUtil {
 
   Future<Response<T>> get<T>(String url,
       {Map<String, dynamic>? queryParameters, Options? options}) async {
-    Logger.instance.w(url);
-
-    final response = await dio.get<T>(url,
+    final response = await dio!.get<T>(url,
         queryParameters: queryParameters,
         options: options ?? await _buildRequestOptions());
     return response;
@@ -80,9 +77,7 @@ class DioUtil {
     Map<String, dynamic>? formData,
     Options? options,
   }) async {
-    Logger.instance.i(url);
-    Logger.instance.i(formData);
-    final resp = await dio.post(url,
+    final resp = await dio!.post(url,
         queryParameters: queryParameters,
         data: formData,
         options: options ?? await _buildRequestOptions());
@@ -96,7 +91,7 @@ class DioUtil {
     Map<String, dynamic>? formData,
     Options? options,
   }) async {
-    return await dio.put(
+    return await dio!.put(
       url,
       queryParameters: queryParameters,
       data: formData,
@@ -110,7 +105,7 @@ class DioUtil {
     Map<String, dynamic>? formData,
     Options? options,
   }) async {
-    return await dio.delete(
+    return await dio!.delete(
       url,
       queryParameters: queryParameters,
       data: formData != null ? FormData.fromMap(formData) : null,
@@ -161,7 +156,7 @@ class DioUtil {
 
   // 增加释放资源的方法
   void dispose() {
-    dio.interceptors.clear();
-    dio.close();
+    dio!.interceptors.clear();
+    dio!.close();
   }
 }
