@@ -1,29 +1,29 @@
 class Downloader {
-  int id;
+  int? id;
   String name;
-  String? username;
-  String? password;
-  String? protocol; // 请注意：使用String来模拟'http'或'https'
-  String? host;
-  int? port;
+  String username;
+  String password;
+  String protocol; // 请注意：使用String来模拟'http'或'https'
+  String host;
+  int port;
   String category;
   String torrentPath;
-  bool? isActive;
-  bool? brush;
+  bool isActive;
+  bool brush;
   List<dynamic> status;
 
   Downloader({
-    required this.id,
+    this.id,
     required this.name,
-    this.username,
-    this.password,
-    this.protocol,
-    this.host,
-    this.port,
+    required this.username,
+    required this.password,
+    required this.protocol,
+    required this.host,
+    required this.port,
     required this.category,
     required this.torrentPath,
-    this.isActive,
-    this.brush,
+    required this.isActive,
+    required this.brush,
     required this.status,
   });
 
@@ -38,7 +38,7 @@ class Downloader {
       port: json['port'],
       category: json['category'],
       torrentPath: json['torrent_path'],
-      isActive: json['enable'],
+      isActive: json['is_active'],
       brush: json['brush'],
       status: [],
     );
@@ -55,7 +55,7 @@ class Downloader {
       'port': port,
       'category': category,
       'torrent_path': torrentPath,
-      'enable': isActive,
+      'is_active': isActive,
       'brush': brush,
     };
   }
