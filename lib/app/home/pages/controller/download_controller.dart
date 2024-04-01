@@ -17,6 +17,7 @@ import '../models/transmission.dart';
 class DownloadController extends GetxController {
   bool isLoaded = false;
   RxList<Downloader> dataList = <Downloader>[].obs;
+  RxList<String> pathList = <String>[].obs;
   RxBool isTimerActive = true.obs; // 使用 RxBool 控制定时器是否激活
   final duration = 3.14.obs;
   final timerDuration = 3.14.obs;
@@ -249,5 +250,24 @@ class DownloadController extends GetxController {
       );
       return false;
     }
+  }
+
+  getTorrentsPathList() async {
+    CommonResponse response = await getDownloaderPaths();
+    if (response.code == 0) {
+      pathList.value = [
+        for (final item in response.data)
+          if (item['path'] is String) item['path'].toString()
+      ];
+    } else {
+      Get.snackbar(
+        '获取种子文件夹出错啦！',
+        response.msg!,
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red.shade400,
+        duration: const Duration(seconds: 3),
+      );
+    }
+    update();
   }
 }

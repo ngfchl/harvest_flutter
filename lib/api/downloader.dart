@@ -24,6 +24,18 @@ Future<CommonResponse> getDownloaderList() async {
   }
 }
 
+Future<CommonResponse> getDownloaderPaths() async {
+  final response = await DioUtil().get(Api.DOWNLOADER_PATHS);
+  Logger.instance.i(response.data);
+  if (response.statusCode == 200) {
+    return CommonResponse.fromJson(response.data, (p0) => p0);
+  } else {
+    String msg = '获取数据失败: ${response.statusCode}';
+    // GFToast.showToast(msg, context);
+    return CommonResponse.fromJson(response.data, (p0) => null);
+  }
+}
+
 ///  修改下载器信息
 editDownloader(Downloader downloader) async {
   String apiUrl = '${Api.DOWNLOADER_LIST}/${downloader.id}';

@@ -234,7 +234,7 @@ class _DownloadPageState extends State<DownloadPage>
             shape: GFIconButtonShape.standard,
             type: GFButtonType.transparent,
             color: GFColors.PRIMARY,
-            onPressed: () {
+            onPressed: () async {
               _showEditBottomSheet();
             },
           ),
@@ -526,7 +526,7 @@ class _DownloadPageState extends State<DownloadPage>
           controller.cancelPeriodicTimer();
           Get.toNamed(Routes.TORRENT, arguments: downloader);
         },
-        onLongPress: () {
+        onLongPress: () async {
           _showEditBottomSheet(downloader: downloader);
         },
         icon: Obx(() {
@@ -752,7 +752,7 @@ class _DownloadPageState extends State<DownloadPage>
     }
   }
 
-  void _showEditBottomSheet({Downloader? downloader}) {
+  void _showEditBottomSheet({Downloader? downloader}) async {
     final nameController = TextEditingController(text: downloader?.name ?? '');
     final categoryController =
         TextEditingController(text: downloader?.category ?? 'Qb');
@@ -772,7 +772,7 @@ class _DownloadPageState extends State<DownloadPage>
 
     RxBool isActive = downloader != null ? downloader.isActive.obs : true.obs;
     RxBool brush = downloader != null ? downloader.brush.obs : false.obs;
-
+    await controller.getTorrentsPathList();
     Get.bottomSheet(
       Container(
         padding: const EdgeInsets.all(20),
@@ -821,9 +821,10 @@ class _DownloadPageState extends State<DownloadPage>
                         controller: portController,
                         labelText: '端口',
                       ),
-                      CustomTextField(
+                      CustomPickerField(
                         controller: torrentPathController,
-                        labelText: '种子路径',
+                        labelText: '选择路径',
+                        data: controller.pathList,
                       ),
                       const SizedBox(height: 5),
                       Row(
