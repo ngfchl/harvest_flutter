@@ -19,21 +19,19 @@ class SwitchTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: ListTile(
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Colors.white70,
-          ),
+    return ListTile(
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 14,
+          color: Colors.white70,
         ),
-        trailing: Transform.scale(
-          scale: 0.5,
-          child: Switch(
-            value: value,
-            onChanged: onChanged,
-          ),
+      ),
+      trailing: Transform.scale(
+        scale: 0.5,
+        child: Switch(
+          value: value,
+          onChanged: onChanged,
         ),
       ),
     );
@@ -111,12 +109,16 @@ class CustomPickerField extends StatelessWidget {
   final TextEditingController controller;
   final String labelText;
   final List<String> data;
+  final Function(dynamic, int)? onConfirm;
+  final Function(dynamic, int)? onChanged;
 
   const CustomPickerField({
     super.key,
     required this.controller,
     required this.labelText,
     required this.data,
+    this.onConfirm,
+    this.onChanged,
   });
 
   @override
@@ -139,8 +141,11 @@ class CustomPickerField extends StatelessWidget {
                 ),
                 onConfirm: (p, position) {
                   controller.text = p;
+                  onConfirm?.call(p, position);
                 },
-                onChanged: (p, position) {},
+                onChanged: (p, position) {
+                  onChanged?.call(p, position);
+                },
               );
             },
             child: Container(), // 空的容器占据整个触发 InkWell 的 onTap
