@@ -8,9 +8,11 @@ import 'package:getwidget/getwidget.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
+import '../../../common/form_widgets.dart';
 import '../../../common/glass_widget.dart';
 import '../../../models/download.dart';
 import '../../../utils/logger_helper.dart' as LoggerHelper;
+import '../../../utils/logger_helper.dart';
 import '../../../utils/range_input.dart';
 import '../../../utils/storage.dart';
 import '../../routes/app_pages.dart';
@@ -25,33 +27,13 @@ class DownloadPage extends StatefulWidget {
 }
 
 class _DownloadPageState extends State<DownloadPage>
-    with AutomaticKeepAliveClientMixin {
-  bool isLoaded = false;
+    with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
+  RxBool isLoaded = false.obs;
 
-  // List<Downloader> dataList = [];
   DownloadController controller = Get.put(DownloadController());
 
   @override
   bool get wantKeepAlive => true;
-
-  @override
-  void initState() {
-    // getDownloaderList().then((value) {
-    //   if (value.code == 0) {
-    //     setState(() {
-    //       dataList = value.data;
-    //       isLoaded = true;
-    //     });
-    //   } else {
-    //     GFToast.showToast(
-    //       value.msg,
-    //       context,
-    //       backgroundColor: GFColors.SECONDARY,
-    //     );
-    //   }
-    // }).catchError((e) => GFToast.showToast(e.toString(), context));
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,35 +42,28 @@ class _DownloadPageState extends State<DownloadPage>
       backgroundColor: Colors.transparent,
       body: GetBuilder<DownloadController>(builder: (controller) {
         return StreamBuilder<List<Downloader>>(
-          stream: controller.downloadStream,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              // List<Downloader> data = snapshot.data!;
-              // LoggerHelper.Logger.instance.w(data.length);
-              return GlassWidget(
-                child: EasyRefresh(
-                  controller: EasyRefreshController(),
-                  onRefresh: () async {
-                    controller.getDownloaderListFromServer();
-                    controller.startPeriodicTimer();
-                  },
-                  child: ListView.builder(
-                      itemCount: controller.dataList.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        Downloader downloader = controller.dataList[index];
-                        return buildDownloaderCard(downloader);
-                      }),
-                ),
-              );
-            } else if (snapshot.hasError) {
-              LoggerHelper.Logger.instance.w('Error 85');
-              return Text('Error: ${snapshot.error}');
-            } else {
-              LoggerHelper.Logger.instance.w('Error 88');
-              return const Center(child: GFLoader());
-            }
-          },
-        );
+            stream: controller.downloadStream,
+            builder: (context, snapshot) {
+              isLoaded.value = snapshot.hasData;
+              return isLoaded.value
+                  ? GlassWidget(
+                      child: EasyRefresh(
+                        controller: EasyRefreshController(),
+                        onRefresh: () async {
+                          controller.getDownloaderListFromServer();
+                          controller.startPeriodicTimer();
+                        },
+                        child: ListView.builder(
+                            itemCount: controller.dataList.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              Downloader downloader =
+                                  controller.dataList[index];
+                              return buildDownloaderCard(downloader);
+                            }),
+                      ),
+                    )
+                  : const Center(child: GFLoader());
+            });
       }),
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -260,12 +235,7 @@ class _DownloadPageState extends State<DownloadPage>
             type: GFButtonType.transparent,
             color: GFColors.PRIMARY,
             onPressed: () {
-              GFToast.showToast(
-                '添加下载器',
-                context,
-                backgroundColor: GFColors.SECONDARY,
-                toastBorderRadius: 5.0,
-              );
+              _showEditBottomSheet();
             },
           ),
           const SizedBox(height: 72)
@@ -277,6 +247,21 @@ class _DownloadPageState extends State<DownloadPage>
 
   Widget _buildLiveLineChart(
       Downloader downloader, ChartSeriesController? chartSeriesController) {
+    if (!downloader.isActive) {
+      return const Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.dangerous,
+            color: Colors.red,
+          ),
+          Text(
+            '下载器已禁用！',
+            style: TextStyle(color: Colors.grey),
+          ),
+        ],
+      );
+    }
     if (downloader.status.isEmpty) {
       return const GFLoader();
     }
@@ -500,10 +485,14 @@ class _DownloadPageState extends State<DownloadPage>
   }
 
   Widget buildDownloaderCard(Downloader downloader) {
-    bool connectState = true;
-    controller.testConnect(downloader).then((res) {
-      connectState = res.code == 0;
-    });
+    RxBool connectState = true.obs;
+    if (downloader.isActive) {
+      controller.testConnect(downloader).then((res) {
+        connectState.value = res.data;
+      });
+    } else {
+      connectState.value = false;
+    }
     ChartSeriesController? chartSeriesController;
     return GFCard(
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 2.5),
@@ -537,57 +526,48 @@ class _DownloadPageState extends State<DownloadPage>
           controller.cancelPeriodicTimer();
           Get.toNamed(Routes.TORRENT, arguments: downloader);
         },
-        onLongPress: () {},
-        icon: GFIconButton(
-          icon: connectState
-              ? const Icon(
-                  Icons.bolt,
-                  color: Colors.black38,
-                  size: 24,
-                )
-              : const Icon(
-                  Icons.flash_off,
-                  color: Colors.red,
-                  size: 24,
-                ),
-          type: GFButtonType.transparent,
-          onPressed: () {
-            controller.testConnect(downloader).then((res) {
-              Get.snackbar(
-                '下载器连接测试',
-                '',
-                messageText: EllipsisText(
-                  text: res.msg!,
-                  ellipsis: '...',
-                  maxLines: 1,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: res.code == 0 ? Colors.white : Colors.red,
+        onLongPress: () {
+          _showEditBottomSheet(downloader: downloader);
+        },
+        icon: Obx(() {
+          return GFIconButton(
+            icon: connectState.value
+                ? const Icon(
+                    Icons.bolt,
+                    color: Colors.green,
+                    size: 24,
+                  )
+                : const Icon(
+                    Icons.offline_bolt_outlined,
+                    color: Colors.red,
+                    size: 24,
                   ),
-                ),
-                colorText: res.code == 0 ? Colors.white : Colors.red,
-              );
-            });
-          },
-        ),
+            type: GFButtonType.transparent,
+            onPressed: () {
+              controller.testConnect(downloader).then((res) {
+                connectState.value = res.data;
+                Get.snackbar(
+                  '下载器连接测试',
+                  '',
+                  messageText: EllipsisText(
+                    text: res.msg!,
+                    ellipsis: '...',
+                    maxLines: 1,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: res.data ? Colors.white : Colors.red,
+                    ),
+                  ),
+                  colorText: res.data ? Colors.white : Colors.red,
+                );
+              });
+            },
+          );
+        }),
       ),
       content: GetBuilder<DownloadController>(builder: (controller) {
         return _buildLiveLineChart(downloader, chartSeriesController);
       }),
-      // buttonBar: GFButtonBar(
-      //   children: <Widget>[
-      //     GFButton(
-      //       onPressed: () async {
-      //         await getQbSpeed(downloader);
-      //       },
-      //       text: 'Buy',
-      //     ),
-      //     GFButton(
-      //       onPressed: () {},
-      //       text: 'Cancel',
-      //     ),
-      //   ],
-      // ),
     );
   }
 
@@ -769,6 +749,194 @@ class _DownloadPageState extends State<DownloadPage>
           ],
         ),
       );
+    }
+  }
+
+  void _showEditBottomSheet({Downloader? downloader}) {
+    final nameController = TextEditingController(text: downloader?.name ?? '');
+    final categoryController =
+        TextEditingController(text: downloader?.category ?? 'Qb');
+    final usernameController =
+        TextEditingController(text: downloader?.username ?? '');
+    final passwordController =
+        TextEditingController(text: downloader?.password ?? '');
+    final protocolController =
+        TextEditingController(text: downloader?.protocol ?? 'http');
+
+    final hostController = TextEditingController(text: downloader?.host ?? '');
+    final portController =
+        TextEditingController(text: downloader?.port.toString() ?? '');
+
+    final torrentPathController =
+        TextEditingController(text: downloader?.torrentPath ?? '/downloaders/');
+
+    RxBool isActive = downloader != null ? downloader.isActive.obs : true.obs;
+    RxBool brush = downloader != null ? downloader.brush.obs : false.obs;
+
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(20),
+        color: Colors.blueGrey.shade300,
+        width: 550,
+        child: Column(
+          children: [
+            Text(
+              downloader != null ? '编辑站点：${downloader.name}' : '添加站点',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Obx(() {
+                  return Column(
+                    children: [
+                      CustomPickerField(
+                        controller: categoryController,
+                        labelText: '选择分类',
+                        data: const ["Qb", "Tr"],
+                      ),
+                      CustomPickerField(
+                        controller: protocolController,
+                        labelText: '选择协议',
+                        data: const ["http", "https"],
+                      ),
+                      CustomTextField(
+                        controller: nameController,
+                        labelText: '名称',
+                      ),
+                      CustomTextField(
+                        controller: usernameController,
+                        labelText: '账户',
+                      ),
+                      CustomTextField(
+                        controller: passwordController,
+                        labelText: '密码',
+                      ),
+                      CustomTextField(
+                        controller: hostController,
+                        labelText: 'HOST',
+                      ),
+                      CustomTextField(
+                        controller: portController,
+                        labelText: '端口',
+                      ),
+                      CustomTextField(
+                        controller: torrentPathController,
+                        labelText: '种子路径',
+                      ),
+                      const SizedBox(height: 5),
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: SwitchTile(
+                                title: '可用',
+                                value: isActive.value,
+                                onChanged: (value) {
+                                  isActive.value = value;
+                                },
+                              ),
+                            ),
+                            Expanded(
+                              child: SwitchTile(
+                                title: '刷流',
+                                value: brush.value,
+                                onChanged: (value) {
+                                  brush.value = value;
+                                },
+                              ),
+                            ),
+                          ]),
+                      ButtonBar(
+                        alignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          ElevatedButton(
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all(
+                                  Theme.of(context).colorScheme.error),
+                            ),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text(
+                              '取消',
+                              style: TextStyle(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          ElevatedButton(
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all(
+                                  Theme.of(context).colorScheme.primary),
+                            ),
+                            child: const Text(
+                              '保存',
+                              style: TextStyle(
+                                color: Colors.white,
+                              ),
+                            ),
+                            onPressed: () async {
+                              if (downloader != null) {
+                                // 如果 downloader 不为空，表示是修改操作
+                                downloader?.name = nameController.text;
+                                downloader?.category = categoryController.text;
+                                downloader?.username = usernameController.text;
+                                downloader?.password = passwordController.text;
+                                downloader?.protocol = protocolController.text;
+                                downloader?.host = hostController.text;
+                                downloader?.port =
+                                    int.parse(portController.text);
+                                downloader?.torrentPath =
+                                    torrentPathController.text;
+                                downloader?.isActive = isActive.value;
+                                downloader?.brush = brush.value;
+                              } else {
+                                // 如果 downloader 为空，表示是添加操作
+                                downloader = Downloader(
+                                  id: 0,
+                                  name: nameController.text,
+                                  category: categoryController.text,
+                                  username: usernameController.text,
+                                  password: passwordController.text,
+                                  protocol: protocolController.text,
+                                  host: hostController.text,
+                                  port: int.parse(portController.text),
+                                  torrentPath: torrentPathController.text,
+                                  isActive: isActive.value,
+                                  brush: brush.value,
+                                  status: [],
+                                );
+                              }
+                              Logger.instance.i(downloader?.toJson());
+                              if (await controller
+                                  .saveDownloaderToServer(downloader!)) {
+                                Navigator.of(context).pop();
+                                controller.getDownloaderListFromServer();
+                                controller.update();
+                              }
+                            },
+                          ),
+                        ],
+                      )
+                    ],
+                  );
+                }),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      // 当应用程序重新打开时，重新加载数据
+      controller.getDownloaderListFromServer();
     }
   }
 }

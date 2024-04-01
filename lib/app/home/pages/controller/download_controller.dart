@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
@@ -99,29 +100,12 @@ class DownloadController extends GetxController {
   }
 
   Future<void> refreshDownloadStatus() async {
-    // 遍历下载列表，使用每个下载项的账户密码信息获取最新的下载器状态
-    // for (Downloader item in dataList) {
-    // try {
-    //   dynamic status = await getIntervalSpeed(item);
-    //   // 更新下载项的状态
-    //   item.status.add(status.data);
-    //   if (item.status.length > 30) {
-    //     item.status.removeAt(0);
-    //   }
-    //   _downloadStreamController.sink.add([item]);
-    //   update();
-    // } catch (e) {
-    //   // 处理获取状态时的错误
-    //   print('Error fetching download status: $e');
-    // }
-
-    // }
-    // 发送最新的下载列表到流中
-    // _downloadStreamController.add(dataList.toList());
     List<Future<void>> futures = [];
     for (Downloader item in dataList) {
-      Future<void> fetchStatus = fetchStatusForItem(item);
-      futures.add(fetchStatus);
+      if (item.isActive) {
+        Future<void> fetchStatus = fetchStatusForItem(item);
+        futures.add(fetchStatus);
+      }
     }
 
     await Future.wait(futures);
@@ -151,17 +135,17 @@ class DownloadController extends GetxController {
       if (downloader.category.toLowerCase() == 'qb') {
         await getQbInstance(downloader);
         return CommonResponse(
-            data: null, msg: '${downloader.name} 连接成功!', code: 0);
+            data: true, msg: '${downloader.name} 连接成功!', code: 0);
       } else {
         Transmission transmission = getTrInstance(downloader);
         await transmission.v1.session.sessionStats();
         // LoggerHelper.Logger.instance.w(res);
         return CommonResponse(
-            data: null, msg: '${downloader.name} 连接成功!', code: 0);
+            data: true, msg: '${downloader.name} 连接成功!', code: 0);
       }
     } catch (error) {
       return CommonResponse(
-          data: null, msg: '${downloader.name} 连接失败!', code: -1);
+          data: false, msg: '${downloader.name} 连接失败!', code: -1);
     }
   }
 
@@ -187,8 +171,8 @@ class DownloadController extends GetxController {
       logger: false,
     );
     await qbittorrent.auth.login(
-      username: downloader.username!,
-      password: downloader.password!,
+      username: downloader.username,
+      password: downloader.password,
     );
     return qbittorrent;
   }
@@ -211,7 +195,7 @@ class DownloadController extends GetxController {
   Transmission getTrInstance(Downloader downloader) {
     final transmission = Transmission(
         '${downloader.protocol}://${downloader.host}:${downloader.port}',
-        AuthKeys(downloader.username!, downloader.password!),
+        AuthKeys(downloader.username, downloader.password),
         logConfig: const ConfigLogger.showNone());
     return transmission;
   }
@@ -237,5 +221,33 @@ class DownloadController extends GetxController {
       isDurationValid.value = false;
     }
     update();
+  }
+
+  saveDownloaderToServer(Downloader downloader) async {
+    CommonResponse response;
+    if (downloader.id != 0) {
+      response = await editDownloader(downloader);
+    } else {
+      response = await saveDownloader(downloader);
+    }
+    if (response.code == 0) {
+      Get.snackbar(
+        '保存成功！',
+        response.msg!,
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.green.shade400,
+        duration: const Duration(seconds: 3),
+      );
+      return true;
+    } else {
+      Get.snackbar(
+        '保存出错啦！',
+        response.msg!,
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red.shade400,
+        duration: const Duration(seconds: 3),
+      );
+      return false;
+    }
   }
 }
