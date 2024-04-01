@@ -10,6 +10,7 @@ class WebSite {
   late int limitSpeed;
   late String tags;
   late int iyuu;
+  late bool alive;
   late bool signIn;
   late bool getInfo;
   late bool repeatTorrents;
@@ -44,6 +45,7 @@ class WebSite {
       name = json['name'];
       nickname = json['nickname'];
       logo = json['logo'];
+      alive = json['alive'];
       tracker = json['tracker'];
       spFull = json['sp_full'];
       limitSpeed = json['limit_speed'];
