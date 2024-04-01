@@ -4,6 +4,7 @@ import '../models/common_response.dart';
 import '../utils/dio_util.dart';
 import '../utils/logger_helper.dart';
 import 'api.dart';
+import 'hooks.dart';
 
 /// 获取
 Future<CommonResponse> getMySiteList() async {
@@ -76,32 +77,14 @@ getNewestStatus(int mySiteId) async {
 
 ///  修改站点信息
 editMySite(MySite mySite) async {
-  final response = await DioUtil().put(
-    '${Api.MYSITE_LIST}/${mySite.id}',
-    formData: mySite.toJson(),
-  );
-  if (response.statusCode == 200) {
-    return CommonResponse.fromJson(response.data, (p0) => null);
-  } else {
-    String msg = '获取主页状态失败: ${response.statusCode}';
-    // GFToast.showToast(msg, context);
-    return CommonResponse(data: null, code: -1, msg: msg);
-  }
+  String apiUrl = '${Api.MYSITE_LIST}/${mySite.id}';
+  return await editData(apiUrl, mySite.toJson());
 }
 
 /// 保存站点信息
 saveMySite(MySite mySite) async {
-  final response = await DioUtil().post(
-    Api.MYSITE_LIST,
-    formData: mySite.toJson(),
-  );
-  if (response.statusCode == 200) {
-    return CommonResponse.fromJson(response.data, (p0) => null);
-  } else {
-    String msg = '获取主页状态失败: ${response.statusCode}';
-    // GFToast.showToast(msg, context);
-    return CommonResponse(data: null, code: -1, msg: msg);
-  }
+  String apiUrl = Api.MYSITE_LIST;
+  return await saveData(apiUrl, mySite.toJson());
 }
 
 /// 获取图表接口
