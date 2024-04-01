@@ -190,4 +190,31 @@ class MySite {
       statusInfo: statusInfo,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'site': site,
+      'sort_id': sortId,
+      'nickname': nickname,
+      'passkey': passkey,
+      'user_id': userId,
+      'user_agent': userAgent,
+      'rss': rss,
+      'torrents': torrents,
+      'cookie': cookie,
+      'mirror': mirror,
+      'authkey': authKey,
+      'proxy': proxy,
+      'get_info': getInfo,
+      'sign_in': signIn,
+      'brush_rss': brushRss,
+      'brush_free': brushFree,
+      'package_file': packageFile,
+      'repeat_torrents': repeatTorrents,
+      'hr_discern': hrDiscern,
+      'search_torrents': searchTorrents,
+      'remove_torrent_rules': removeTorrentRules,
+    };
+  }
 }
