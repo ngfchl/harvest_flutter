@@ -39,14 +39,17 @@ class MySiteController extends GetxController {
 
   @override
   void onInit() async {
+    await initData();
+    super.onInit();
+  }
+
+  initData() async {
     await getWebSiteListFromServer();
     await getSiteStatusFromServer();
-    super.onInit();
   }
 
   Future<void> getWebSiteListFromServer() async {
     await getWebSiteList().then((value) {
-      Logger.instance.i(value.data);
       if (value.code == 0) {
         webSiteList = value.data;
       } else {

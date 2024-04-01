@@ -1,13 +1,12 @@
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:filesize/filesize.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_pickers/pickers.dart';
-import 'package:flutter_pickers/style/picker_style.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../api/mysite.dart';
+import '../../../../common/form_widgets.dart';
 import '../../../../utils/calc_weeks.dart';
 import '../../../../utils/format_number.dart';
 import '../../../../utils/logger_helper.dart';
@@ -22,11 +21,16 @@ class MySitePage extends StatefulWidget {
   State<MySitePage> createState() => _MySitePagePageState();
 }
 
-class _MySitePagePageState extends State<MySitePage> {
+class _MySitePagePageState extends State<MySitePage>
+    with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
   final controller = Get.put(MySiteController());
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       body: Column(
         children: [
@@ -114,8 +118,6 @@ class _MySitePagePageState extends State<MySitePage> {
   Widget showSiteDataInfo(MySite mySite) {
     StatusInfo? status;
     WebSite? website = controller.webSiteList[mySite.site];
-    Logger.instance.i(mySite.nickname);
-    Logger.instance.i(website);
     if (mySite.statusInfo.isNotEmpty) {
       String statusLatestDate =
           mySite.statusInfo.keys.reduce((a, b) => a.compareTo(b) > 0 ? a : b);
@@ -565,6 +567,14 @@ class _MySitePagePageState extends State<MySitePage> {
     );
   }
 
+  int _calculateItemCount(selectedSite) {
+    int count = 2; // 前两个元素一定显示
+    if (selectedSite.value!.searchTorrents) count++;
+    if (selectedSite.value!.signIn) count++;
+    if (selectedSite.value!.repeatTorrents) count++;
+    return count;
+  }
+
   void _showBottomSheet({MySite? mySite}) {
     List<String> siteList = controller.webSiteList.keys.toList();
     List<String> hasKeys =
@@ -593,8 +603,9 @@ class _MySitePagePageState extends State<MySitePage> {
     Rx<WebSite?> selectedSite = mySite != null
         ? controller.webSiteList[mySite.site]!.obs
         : controller.webSiteList.values.toList()[0].obs;
-    RxList? urlList =
-        mySite != null ? controller.webSiteList[mySite.site]?.url.obs : [].obs;
+    RxList<String>? urlList = mySite != null
+        ? controller.webSiteList[mySite.site]?.url.obs
+        : <String>[].obs;
     RxBool getInfo = mySite != null ? mySite.getInfo.obs : true.obs;
     RxBool available = mySite != null ? mySite.available.obs : true.obs;
     RxBool signIn = mySite != null ? mySite.signIn.obs : true.obs;
@@ -625,74 +636,30 @@ class _MySitePagePageState extends State<MySitePage> {
                 child: Obx(() {
                   return Column(
                     children: [
-                      Stack(
-                        children: [
-                          CustomTextField(
-                            controller: siteController,
-                            labelText: '选择站点',
-                          ),
-                          Positioned.fill(
-                            child: InkWell(
-                              onTap: () {
-                                Pickers.showSinglePicker(
-                                  context,
-                                  data: siteList,
-                                  selectData: siteList[0],
-                                  pickerStyle: PickerStyle(
-                                    textSize: 14,
-                                  ),
-                                  onConfirm: (p, position) {
-                                    siteController.text = p;
-                                    selectedSite.value =
-                                        controller.webSiteList[p];
-                                    urlList?.value = selectedSite.value!.url;
-                                    mirrorController.text = urlList?[0];
-                                    nicknameController.text =
-                                        selectedSite.value!.name;
-                                    signIn.value = selectedSite.value!.signIn;
-                                    getInfo.value = selectedSite.value!.getInfo;
-                                    repeatTorrents.value =
-                                        selectedSite.value!.repeatTorrents;
-                                    searchTorrents.value =
-                                        selectedSite.value!.searchTorrents;
-                                  },
-                                  onChanged: (p, position) {},
-                                );
-                              },
-                              child: Container(), // 空的容器占据整个触发 InkWell 的 onTap
-                            ),
-                          ),
-                        ],
+                      CustomPickerField(
+                        controller: siteController,
+                        labelText: '选择站点',
+                        data: siteList,
+                        onConfirm: (p, position) {
+                          siteController.text = p;
+                          selectedSite.value = controller.webSiteList[p];
+                          urlList?.value = selectedSite.value!.url;
+                          mirrorController.text = urlList![0];
+                          nicknameController.text = selectedSite.value!.name;
+                          signIn.value = selectedSite.value!.signIn;
+                          getInfo.value = selectedSite.value!.getInfo;
+                          repeatTorrents.value =
+                              selectedSite.value!.repeatTorrents;
+                          searchTorrents.value =
+                              selectedSite.value!.searchTorrents;
+                          available.value = selectedSite.value!.alive;
+                        },
                       ),
                       if (urlList!.isNotEmpty)
-                        Stack(
-                          children: [
-                            CustomTextField(
-                              controller: mirrorController,
-                              labelText: '选择网址',
-                            ),
-                            Positioned.fill(
-                              child: InkWell(
-                                onTap: () {
-                                  Pickers.showSinglePicker(
-                                    context,
-                                    data: urlList,
-                                    selectData: urlList[0],
-                                    pickerStyle: PickerStyle(
-                                      textSize: 14,
-                                    ),
-                                    onConfirm: (p, position) {
-                                      // site.value = p;
-                                      mirrorController.text = p;
-                                    },
-                                    onChanged: (p, position) {},
-                                  );
-                                },
-                                child:
-                                    Container(), // 空的容器占据整个触发 InkWell 的 onTap
-                              ),
-                            ),
-                          ],
+                        CustomPickerField(
+                          controller: mirrorController,
+                          labelText: '选择网址',
+                          data: urlList,
                         ),
                       CustomTextField(
                         controller: nicknameController,
@@ -732,110 +699,76 @@ class _MySitePagePageState extends State<MySitePage> {
                         labelText: 'HTTP代理',
                       ),
                       const SizedBox(height: 5),
-                      // ListTile(
-                      //   title: const Text(
-                      //     '站点可用',
-                      //     style: TextStyle(
-                      //       fontSize: 14,
-                      //       color: Colors.white70,
-                      //     ),
-                      //   ),
-                      //   trailing: Transform.scale(
-                      //     scale: 0.5,
-                      //     child: Switch(
-                      //       value: available.value,
-                      //       onChanged: (value) {
-                      //         available.value = value;
-                      //       },
-                      //     ),
-                      //   ),
-                      // ),
-                      Row(children: [
-                        SwitchTile(
-                          title: '站点可用',
-                          value: available.value,
-                          onChanged: (value) {
-                            available.value = value;
-                          },
+                      GridView.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 1.0, // 每行垂直方向的间距
+                          crossAxisSpacing: 0, // 每列水平方向的间距
+                          childAspectRatio: 5.0, // 子元素的宽高比例
                         ),
-                      ]),
-                      Row(
-                        children: [
-                          SwitchTile(
-                            title: '数据',
-                            value: getInfo.value,
-                            onChanged: (value) {
-                              getInfo.value = value;
-                            },
-                          ),
-                          if (selectedSite.value!.searchTorrents)
-                            SwitchTile(
-                              title: '搜索',
-                              value: searchTorrents.value,
-                              onChanged: (value) {
-                                searchTorrents.value = value;
-                              },
-                            ),
-                        ],
+                        itemCount: _calculateItemCount(selectedSite),
+                        // 子元素数量
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          switch (index) {
+                            case 0:
+                              return SwitchTile(
+                                title: '站点可用',
+                                value: available.value,
+                                onChanged: (value) {
+                                  available.value = value;
+                                },
+                              );
+                            case 1:
+                              return SwitchTile(
+                                title: '数据',
+                                value: getInfo.value,
+                                onChanged: (value) {
+                                  getInfo.value = value;
+                                },
+                              );
+                            case 2:
+                              if (selectedSite.value!.searchTorrents) {
+                                return SwitchTile(
+                                  title: '搜索',
+                                  value: searchTorrents.value,
+                                  onChanged: (value) {
+                                    searchTorrents.value = value;
+                                  },
+                                );
+                              }
+                              break;
+                            case 3:
+                              if (selectedSite.value!.signIn) {
+                                return SwitchTile(
+                                  title: '签到',
+                                  value: signIn.value,
+                                  onChanged: (value) {
+                                    signIn.value = value;
+                                  },
+                                );
+                              }
+                              break;
+                            case 4:
+                              if (selectedSite.value!.repeatTorrents) {
+                                return SwitchTile(
+                                  title: '辅种',
+                                  value: repeatTorrents.value,
+                                  onChanged: (value) {
+                                    repeatTorrents.value = value;
+                                  },
+                                );
+                              }
+                              break;
+                            default:
+                              return const SizedBox.shrink();
+                          }
+                          return null;
+                        },
                       ),
-                      Row(
-                        children: [
-                          if (selectedSite.value!.signIn)
-                            SwitchTile(
-                              title: '签到',
-                              value: signIn.value,
-                              onChanged: (value) {
-                                signIn.value = value;
-                              },
-                            ),
-                          if (selectedSite.value!.repeatTorrents)
-                            SwitchTile(
-                              title: '辅种',
-                              value: repeatTorrents.value,
-                              onChanged: (value) {
-                                repeatTorrents.value = value;
-                              },
-                            ),
-                        ],
-                      ),
-                      if (false)
-                        Row(
-                          children: [
-                            SwitchTile(
-                              title: 'RSS刷流',
-                              value: brushRss.value,
-                              onChanged: (value) {
-                                brushRss.value = value;
-                              },
-                            ),
-                            SwitchTile(
-                              title: '免费刷流',
-                              value: brushFree.value,
-                              onChanged: (value) {
-                                brushFree.value = value;
-                              },
-                            ),
-                          ],
-                        ),
-                      if (false)
-                        Row(
-                          children: [
-                            SwitchTile(
-                              title: '拆包',
-                              value: packageFile.value,
-                              onChanged: (value) {
-                                packageFile.value = value;
-                              },
-                            ),
-                            SwitchTile(
-                              title: 'HR',
-                              value: hrDiscern.value,
-                              onChanged: (value) {
-                                hrDiscern.value = value;
-                              },
-                            ),
-                          ],
-                        ),
+
                       ButtonBar(
                         alignment: MainAxisAlignment.spaceAround,
                         children: [
@@ -943,71 +876,13 @@ class _MySitePagePageState extends State<MySitePage> {
       ),
     );
   }
-}
-
-class SwitchTile extends StatelessWidget {
-  final String title;
-  final bool value;
-  final double size;
-  final void Function(bool)? onChanged;
-
-  const SwitchTile({
-    super.key,
-    required this.title,
-    required this.value,
-    required this.onChanged,
-    this.size = 32,
-  });
 
   @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: ListTile(
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Colors.white70,
-          ),
-        ),
-        trailing: Transform.scale(
-          scale: 0.5,
-          child: Switch(
-            value: value,
-            onChanged: onChanged,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class CustomTextField extends StatelessWidget {
-  final TextEditingController controller;
-  final String labelText;
-
-  const CustomTextField({
-    super.key,
-    required this.controller,
-    required this.labelText,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      style: const TextStyle(fontSize: 13, color: Colors.white),
-      decoration: InputDecoration(
-        labelText: labelText,
-        labelStyle: const TextStyle(fontSize: 12, color: Colors.white70),
-        contentPadding: const EdgeInsets.all(0),
-        enabledBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Color(0x19000000)),
-        ),
-        focusedBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Color(0x16000000)),
-        ),
-      ),
-    );
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      // 当应用程序重新打开时，重新加载数据
+      controller.initData();
+    }
   }
 }
