@@ -37,23 +37,31 @@ class _MySitePagePageState extends State<MySitePage>
     return Scaffold(
       body: Column(
         children: [
-          SizedBox(
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 5),
             height: 25,
             child: Obx(() {
               return TextField(
                 controller: controller.searchController.value,
                 style: const TextStyle(fontSize: 10),
                 textAlignVertical: TextAlignVertical.bottom,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   // labelText: '搜索',
                   hintText: '输入关键词...',
-                  labelStyle: TextStyle(fontSize: 10),
-                  hintStyle: TextStyle(fontSize: 10),
-                  prefixIcon: Icon(
+                  labelStyle: const TextStyle(fontSize: 10),
+                  hintStyle: const TextStyle(fontSize: 10),
+                  prefixIcon: const Icon(
                     Icons.search,
                     size: 10,
                   ),
-                  border: OutlineInputBorder(
+                  // suffix: ,
+                  suffixIcon: Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: Text('计数：${controller.showStatusList.length}',
+                        style: const TextStyle(
+                            fontSize: 10, color: Colors.orange)),
+                  ),
+                  border: const OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(3.0)),
                   ),
                 ),
@@ -74,17 +82,19 @@ class _MySitePagePageState extends State<MySitePage>
                 controller.update();
               },
               child: Obx(() {
-                return controller.showStatusList.isEmpty
+                return controller.mySiteList.isEmpty
                     ? const GFLoader(
                         type: GFLoaderType.circle,
                       )
-                    : ListView.builder(
-                        itemCount: controller.showStatusList.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          MySite mySite = controller.showStatusList[index];
-                          return showSiteDataInfo(mySite);
-                        },
-                      );
+                    : controller.showStatusList.isEmpty
+                        ? const Text('没有符合条件的数据！')
+                        : ListView.builder(
+                            itemCount: controller.showStatusList.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              MySite mySite = controller.showStatusList[index];
+                              return showSiteDataInfo(mySite);
+                            },
+                          );
               }),
             ),
           ),
@@ -94,15 +104,41 @@ class _MySitePagePageState extends State<MySitePage>
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          IconButton(
+          GFButton(
             onPressed: () {
-              _showBottomSheet();
+              _showFilterBottomSheet();
+            },
+            icon: const Icon(
+              Icons.filter_tilt_shift,
+              size: 32,
+              color: Colors.blue,
+            ),
+            text: '筛选',
+            type: GFButtonType.outline2x,
+          ),
+          GFButton(
+            onPressed: () {
+              _showSortBottomSheet();
+            },
+            icon: const Icon(
+              Icons.swap_vert_circle_outlined,
+              size: 32,
+              color: Colors.blue,
+            ),
+            text: '排序',
+            type: GFButtonType.outline2x,
+          ),
+          GFButton(
+            onPressed: () {
+              _showEditBottomSheet();
             },
             icon: const Icon(
               Icons.add_circle_outline,
-              size: 36,
+              size: 32,
               color: Colors.blue,
             ),
+            text: '添加',
+            type: GFButtonType.outline2x,
           ),
           const SizedBox(
             height: 48,
@@ -131,11 +167,14 @@ class _MySitePagePageState extends State<MySitePage>
     }
     return status == null
         ? Card(
+            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Column(
               children: [
                 ListTile(
                   leading: Image.network(
-                    website!.logo,
+                    website!.logo.startsWith('http')
+                        ? website.logo
+                        : '${mySite.mirror}${website.logo}',
                     errorBuilder: (BuildContext context, Object exception,
                         StackTrace? stackTrace) {
                       // Placeholder widget when loading fails
@@ -168,6 +207,7 @@ class _MySitePagePageState extends State<MySitePage>
             ),
           )
         : Card(
+            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Column(children: [
               ListTile(
                 contentPadding:
@@ -175,7 +215,9 @@ class _MySitePagePageState extends State<MySitePage>
                 leading: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   child: Image.network(
-                    '${mySite.mirror}/${website != null ? website.logo : ''}',
+                    website!.logo.startsWith('http')
+                        ? website.logo
+                        : '${mySite.mirror}/${website.logo}',
                     fit: BoxFit.fill,
                     errorBuilder: (BuildContext context, Object exception,
                         StackTrace? stackTrace) {
@@ -189,12 +231,11 @@ class _MySitePagePageState extends State<MySitePage>
                 ),
                 onTap: () async {
                   String path;
-                  if (mySite.mail > 0 &&
-                      !website!.pageMessage.contains('api')) {
+                  if (mySite.mail > 0 && !website.pageMessage.contains('api')) {
                     path = website.pageMessage
                         .replaceFirst("{}", mySite.userId.toString());
                   } else {
-                    path = website!.pageIndex;
+                    path = website.pageIndex;
                   }
                   String url = '${mySite.mirror}$path';
                   if (!Platform.isIOS && !Platform.isAndroid) {
@@ -570,7 +611,7 @@ class _MySitePagePageState extends State<MySitePage>
           height: 26,
           child: GFButton(
             onPressed: () {
-              _showBottomSheet(mySite: mySite);
+              _showEditBottomSheet(mySite: mySite);
             },
             icon: const Icon(
               Icons.edit,
@@ -594,7 +635,7 @@ class _MySitePagePageState extends State<MySitePage>
     return count;
   }
 
-  void _showBottomSheet({MySite? mySite}) {
+  void _showEditBottomSheet({MySite? mySite}) {
     List<String> siteList = controller.webSiteList.keys.toList();
     List<String> hasKeys =
         controller.mySiteList.map((element) => element.site).toList();
@@ -894,6 +935,59 @@ class _MySitePagePageState extends State<MySitePage>
         ),
       ),
     );
+  }
+
+  void _showSortBottomSheet() {
+    Get.bottomSheet(Container(
+      padding: const EdgeInsets.all(20),
+      color: Colors.blueGrey.shade300,
+      width: 550,
+      child: Column(children: [
+        Expanded(
+          child: ListView.builder(
+            itemCount: controller.siteSortOptions.length,
+            itemBuilder: (context, index) {
+              Map<String, String> item = controller.siteSortOptions[index];
+              return ListTile(
+                title: Text(item['name']!),
+                onTap: () {
+                  controller.sortKey.value = item['value']!;
+                  controller.sortStatusList();
+                  controller.update();
+                  Navigator.of(context).pop();
+                },
+              );
+            },
+          ),
+        ),
+      ]),
+    ));
+  }
+
+  void _showFilterBottomSheet() {
+    Get.bottomSheet(Container(
+        padding: const EdgeInsets.all(20),
+        color: Colors.blueGrey.shade300,
+        width: 550,
+        child: Column(children: [
+          Expanded(
+              child: ListView.builder(
+                  itemCount: controller.filterOptions.length,
+                  itemBuilder: (context, index) {
+                    Map<String, String> item = controller.filterOptions[index];
+                    return ListTile(
+                        title: Text(item['name']!),
+                        trailing: controller.filterKey.value == item['value']
+                            ? const Icon(Icons.check_box_outlined)
+                            : const Icon(Icons.check_box_outline_blank_rounded),
+                        onTap: () {
+                          controller.filterKey.value = item['value']!;
+                          controller.filterByKey();
+                          controller.update();
+                          Navigator.of(context).pop();
+                        });
+                  }))
+        ])));
   }
 
   @override
