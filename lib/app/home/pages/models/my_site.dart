@@ -217,4 +217,19 @@ class MySite {
       'remove_torrent_rules': removeTorrentRules,
     };
   }
+
+  String getStatusMaxKey() {
+    if (statusInfo.isEmpty) {
+      return '';
+    }
+
+    return statusInfo.keys.reduce((a, b) => a.compareTo(b) > 0 ? a : b);
+  }
+
+  String getSignMaxKey() {
+    if (statusInfo.isEmpty) {
+      return '';
+    }
+    return signInInfo.keys.reduce((a, b) => a.compareTo(b) > 0 ? a : b);
+  }
 }

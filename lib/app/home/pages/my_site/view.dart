@@ -948,15 +948,39 @@ class _MySitePagePageState extends State<MySitePage>
             itemCount: controller.siteSortOptions.length,
             itemBuilder: (context, index) {
               Map<String, String> item = controller.siteSortOptions[index];
-              return ListTile(
-                title: Text(item['name']!),
-                onTap: () {
-                  controller.sortKey.value = item['value']!;
-                  controller.sortStatusList();
-                  controller.update();
-                  Navigator.of(context).pop();
-                },
-              );
+              return Obx(() {
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                      side: const BorderSide(color: Colors.grey, width: 1.0),
+                    ),
+                    child: ListTile(
+                      title: Text(item['name']!),
+                      selectedColor: Colors.amber,
+                      selected: controller.sortKey.value == item['value'],
+                      leading: controller.sortReversed.value
+                          ? const Icon(Icons.trending_up)
+                          : const Icon(Icons.trending_down),
+                      trailing: controller.sortKey.value == item['value']
+                          ? const Icon(Icons.check_box_outlined)
+                          : const Icon(Icons.check_box_outline_blank_rounded),
+                      onTap: () {
+                        if (controller.sortKey.value == item['value']!) {
+                          controller.sortReversed.value = true;
+                        } else {
+                          controller.sortReversed.value = false;
+                        }
+                        controller.sortKey.value = item['value']!;
+                        controller.sortStatusList();
+                        controller.update();
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ),
+                );
+              });
             },
           ),
         ),
@@ -975,17 +999,34 @@ class _MySitePagePageState extends State<MySitePage>
                   itemCount: controller.filterOptions.length,
                   itemBuilder: (context, index) {
                     Map<String, String> item = controller.filterOptions[index];
-                    return ListTile(
-                        title: Text(item['name']!),
-                        trailing: controller.filterKey.value == item['value']
-                            ? const Icon(Icons.check_box_outlined)
-                            : const Icon(Icons.check_box_outline_blank_rounded),
-                        onTap: () {
-                          controller.filterKey.value = item['value']!;
-                          controller.filterByKey();
-                          controller.update();
-                          Navigator.of(context).pop();
-                        });
+                    return Obx(() {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                            side: const BorderSide(
+                                color: Colors.grey, width: 1.0),
+                          ),
+                          child: ListTile(
+                              title: Text(item['name']!),
+                              trailing: controller.filterKey.value ==
+                                      item['value']
+                                  ? const Icon(Icons.check_box_outlined)
+                                  : const Icon(
+                                      Icons.check_box_outline_blank_rounded),
+                              selectedColor: Colors.amber,
+                              selected:
+                                  controller.filterKey.value == item['value'],
+                              onTap: () {
+                                controller.filterKey.value = item['value']!;
+                                controller.filterByKey();
+                                controller.update();
+                                Navigator.of(context).pop();
+                              }),
+                        ),
+                      );
+                    });
                   }))
         ])));
   }

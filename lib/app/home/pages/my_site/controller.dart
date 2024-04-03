@@ -26,17 +26,17 @@ class MySiteController extends GetxController {
     {'name': '站点名称', 'value': 'siteName'},
     {'name': '站点昵称', 'value': 'mySiteNickname'},
     {'name': '注册时间', 'value': 'mySiteJoined'},
-    // {'name': '站点链接', 'value': 'siteUrl'},
+    {'name': '站点链接', 'value': 'siteUrl'},
     {'name': '做种体积', 'value': 'statusSeedVolume'},
     {'name': '站点魔力', 'value': 'statusMyBonus'},
     {'name': '站点积分', 'value': 'statusMyScore'},
     {'name': '下载量', 'value': 'statusDownloaded'},
     {'name': '上传量', 'value': 'statusUploaded'},
-    // {'name': '时魔', 'value': 'statusBonusHour'},
+    {'name': '时魔', 'value': 'statusBonusHour'},
     {'name': '邀请', 'value': 'statusInvitation'},
     {'name': '正在下载', 'value': 'statusLeech'},
     {'name': '正在做种', 'value': 'statusSeed'},
-    // {'name': '分享率', 'value': 'statusRatio'},
+    {'name': '分享率', 'value': 'statusRatio'},
   ];
 
   List<Map<String, String>> filterOptions = [
@@ -143,62 +143,101 @@ class MySiteController extends GetxController {
     });
   }
 
-  sortStatusList() {
+  void sortStatusList() {
+    // 排除空数据
+    showStatusList.value =
+        showStatusList.where((item) => item.statusInfo.isNotEmpty).toList();
+
+    // 根据不同的排序键调用不同的排序方法
     switch (sortKey.value) {
+      case 'statusMail':
+        sortByComparable((a, b) => b.mail.compareTo(a.mail));
+        break;
       case 'mySiteId':
-        showStatusList.sort((a, b) => a.id.compareTo(b.id));
+        sortByComparable((a, b) => a.id.compareTo(b.id));
         break;
       case 'mySiteSortId':
-        showStatusList.sort((a, b) => a.sortId.compareTo(b.sortId));
+        sortByComparable((a, b) => a.sortId.compareTo(b.sortId));
         break;
       case 'siteName':
-        showStatusList.sort((a, b) => a.site.compareTo(b.site));
+        sortByComparable((a, b) => a.site.compareTo(b.site));
         break;
       case 'mySiteNickname':
-        showStatusList.sort((a, b) => a.nickname.compareTo(b.nickname));
+        sortByComparable((a, b) => a.nickname.compareTo(b.nickname));
         break;
       case 'mySiteJoined':
-        showStatusList.sort((a, b) => a.timeJoin.compareTo(b.timeJoin));
+        sortByComparable((a, b) => a.timeJoin.compareTo(b.timeJoin));
         break;
       case 'siteUrl':
-        showStatusList.sort((a, b) => a.mirror!.compareTo(b.mirror!));
+        sortByComparable((a, b) => a.mirror!.compareTo(b.mirror!));
         break;
-      // case 'statusSeedVolume':
-      //   showStatusList
-      //       .sort((a, b) => a.statusSeedVolume.compareTo(b.statusSeedVolume));
-      // case 'statusMyBonus':
-      //   showStatusList
-      //       .sort((a, b) => a.statusMyBonus.compareTo(b.statusMyBonus));
-      // case 'statusMyScore':
-      //   showStatusList
-      //       .sort((a, b) => a.statusMyScore.compareTo(b.statusMyScore));
-      // case 'statusDownloaded':
-      //   showStatusList
-      //       .sort((a, b) => a.statusDownloaded.compareTo(b.statusDownloaded));
-      // case 'statusUploaded':
-      //   showStatusList
-      //       .sort((a, b) => a.statusUploaded.compareTo(b.statusUploaded));
-      // case 'statusMail':
-      //   showStatusList.sort((a, b) => b.statusMail.compareTo(a.statusMail));
-      // case 'statusBonusHour':
-      //   showStatusList
-      //       .sort((a, b) => a.statusBonusHour.compareTo(b.statusBonusHour));
-      // case 'statusInvitation':
-      //   showStatusList
-      //       .sort((a, b) => a..compareTo(b.statusInvitation));
-      // case 'statusLeech':
-      //   showStatusList.sort((a, b) => a.statusLeech.compareTo(b.statusLeech));
-      // case 'statusSeed':
-      //   showStatusList.sort((a, b) => a.statusSeed.compareTo(b.statusSeed));
-      // case 'statusRatio':
-      //   showStatusList.sort((a, b) => a.statusRatio.compareTo(b.statusRatio));
+      case 'statusSeedVolume':
+        sortByStatusInfo((a, b) => a.statusInfo[a.getStatusMaxKey()]!.seedVolume
+            .compareTo(b.statusInfo[b.getStatusMaxKey()]!.seedVolume));
+        break;
+      case 'statusMyBonus':
+        sortByStatusInfo((a, b) => a.statusInfo[a.getStatusMaxKey()]!.myBonus
+            .compareTo(b.statusInfo[b.getStatusMaxKey()]!.myBonus));
+        break;
+      case 'statusMyScore':
+        sortByStatusInfo((a, b) => a.statusInfo[a.getStatusMaxKey()]!.myScore
+            .compareTo(b.statusInfo[b.getStatusMaxKey()]!.myScore));
+        break;
+      case 'statusDownloaded':
+        sortByStatusInfo((a, b) => a.statusInfo[a.getStatusMaxKey()]!.downloaded
+            .compareTo(b.statusInfo[b.getStatusMaxKey()]!.downloaded));
+        break;
+      case 'statusUploaded':
+        sortByStatusInfo((a, b) => a.statusInfo[a.getStatusMaxKey()]!.uploaded
+            .compareTo(b.statusInfo[b.getStatusMaxKey()]!.uploaded));
+        break;
+      case 'statusBonusHour':
+        sortByStatusInfo((a, b) => a.statusInfo[a.getStatusMaxKey()]!.bonusHour
+            .compareTo(b.statusInfo[b.getStatusMaxKey()]!.bonusHour));
+        break;
+      case 'statusInvitation':
+        sortByStatusInfo((a, b) => a.statusInfo[a.getStatusMaxKey()]!.invitation
+            .compareTo(b.statusInfo[b.getStatusMaxKey()]!.invitation));
+        break;
+      case 'statusLeech':
+        sortByStatusInfo((a, b) => a.statusInfo[a.getStatusMaxKey()]!.leech
+            .compareTo(b.statusInfo[b.getStatusMaxKey()]!.leech));
+        break;
+      case 'statusSeed':
+        sortByStatusInfo((a, b) => a.statusInfo[a.getStatusMaxKey()]!.seed
+            .compareTo(b.statusInfo[b.getStatusMaxKey()]!.seed));
+        break;
+      case 'statusRatio':
+        sortByStatusInfo((a, b) => a.statusInfo[a.getStatusMaxKey()]!.ratio
+            .compareTo(b.statusInfo[b.getStatusMaxKey()]!.ratio));
+        break;
     }
+
+    // 反转序列
     if (sortReversed.value) {
       Logger.instance.w('反转序列！');
       showStatusList.value = showStatusList.reversed.toList();
     }
-    showStatusList.sort((a, b) => b.notice.compareTo(a.notice));
-    showStatusList.sort((a, b) => b.mail.compareTo(a.mail));
+
+    // 按照邮件地址排序（默认排序）
+    // showStatusList.sort((a, b) => b.mail.compareTo(a.mail));
+  }
+
+// 使用泛型以及 Comparable 接口来实现通用的比较逻辑
+  void sortByComparable(int Function(MySite a, MySite b) compare) {
+    showStatusList.sort((a, b) => compare(a, b));
+  }
+
+// 对 statusInfo 中的数据进行排序
+  void sortByStatusInfo(int Function(MySite a, MySite b) compare) {
+    showStatusList.sort((a, b) {
+      String aKey = a.getStatusMaxKey();
+      String bKey = b.getStatusMaxKey();
+      if (aKey.isNotEmpty && bKey.isNotEmpty) {
+        return compare(a, b);
+      }
+      return aKey.isNotEmpty ? 1 : -1;
+    });
   }
 
   filterSiteStatusBySearchKey() {
