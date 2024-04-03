@@ -158,9 +158,7 @@ class _MySitePagePageState extends State<MySitePage>
     StatusInfo? status;
     WebSite? website = controller.webSiteList[mySite.site];
     if (mySite.statusInfo.isNotEmpty) {
-      String statusLatestDate =
-          mySite.statusInfo.keys.reduce((a, b) => a.compareTo(b) > 0 ? a : b);
-      status = mySite.statusInfo[statusLatestDate];
+      status = mySite.statusInfo[mySite.getStatusMaxKey()];
     }
     if (status == null) {
       Logger.instance.w('${mySite.nickname} - ${mySite.statusInfo}');
@@ -221,7 +219,6 @@ class _MySitePagePageState extends State<MySitePage>
                     fit: BoxFit.fill,
                     errorBuilder: (BuildContext context, Object exception,
                         StackTrace? stackTrace) {
-                      // Placeholder widget when loading fails
                       return const Image(
                           image: AssetImage('assets/images/logo.png'));
                     },
@@ -253,10 +250,6 @@ class _MySitePagePageState extends State<MySitePage>
                       'website': website
                     });
                   }
-                  // Uri uri = Uri.parse('${mySite.mirror}$url');
-                  // if (!await launchUrl(uri)) {
-                  //   Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？');
-                  // }
                 },
                 title: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -509,7 +502,7 @@ class _MySitePagePageState extends State<MySitePage>
                   ],
                 ),
               ),
-              siteOperateButtonBar(website!, mySite)
+              siteOperateButtonBar(website, mySite)
             ]),
           );
   }
@@ -639,9 +632,7 @@ class _MySitePagePageState extends State<MySitePage>
     List<String> siteList = controller.webSiteList.keys.toList();
     List<String> hasKeys =
         controller.mySiteList.map((element) => element.site).toList();
-    if (mySite == null) {
-      siteList = siteList.where((key) => !hasKeys.contains(key)).toList();
-    }
+    siteList.removeWhere((key) => hasKeys.contains(key) && mySite == null);
     Logger.instance.i(siteList);
     final siteController = TextEditingController(text: mySite?.site ?? '');
     final apiKeyController = TextEditingController(text: mySite?.authKey ?? '');
