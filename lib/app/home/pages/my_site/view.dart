@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:filesize/filesize.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +12,7 @@ import '../../../../common/form_widgets.dart';
 import '../../../../utils/calc_weeks.dart';
 import '../../../../utils/format_number.dart';
 import '../../../../utils/logger_helper.dart';
+import '../../../routes/app_pages.dart';
 import '../models/my_site.dart';
 import '../models/website.dart';
 import 'controller.dart';
@@ -185,18 +188,34 @@ class _MySitePagePageState extends State<MySitePage>
                   ),
                 ),
                 onTap: () async {
-                  String url;
+                  String path;
                   if (mySite.mail > 0 &&
                       !website!.pageMessage.contains('api')) {
-                    url = website.pageMessage
+                    path = website.pageMessage
                         .replaceFirst("{}", mySite.userId.toString());
                   } else {
-                    url = website!.pageIndex;
+                    path = website!.pageIndex;
                   }
-                  Uri uri = Uri.parse('${mySite.mirror}$url');
-                  if (!await launchUrl(uri)) {
-                    Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？');
+                  String url = '${mySite.mirror}$path';
+                  if (!Platform.isIOS && !Platform.isAndroid) {
+                    Logger.instance.i('Explorer');
+                    Uri uri = Uri.parse(url);
+                    if (!await launchUrl(uri)) {
+                      Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？');
+                    }
+                  } else {
+                    Logger.instance.i('WebView');
+                    Get.toNamed(Routes.WEBVIEW, arguments: {
+                      'url': url,
+                      'info': null,
+                      'mySite': mySite,
+                      'website': website
+                    });
                   }
+                  // Uri uri = Uri.parse('${mySite.mirror}$url');
+                  // if (!await launchUrl(uri)) {
+                  //   Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？');
+                  // }
                 },
                 title: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
