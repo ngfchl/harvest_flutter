@@ -41,6 +41,10 @@ dependencies:
   flutter_slidable: ^3.1.0
   flutter_pickers: ^2.1.9
   permission_handler: ^11.3.1
+  flutter_client_sse: ^2.0.1
+  webview_flutter: ^4.7.0
+  webview_cookie_manager: ^2.0.6
+  flutter_inappwebview: ^6.0.0
 
 
 dev_dependencies:
