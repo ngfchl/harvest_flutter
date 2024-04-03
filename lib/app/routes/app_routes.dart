@@ -9,7 +9,7 @@ abstract class Routes {
   static const HOME = _Paths.HOME;
   static const LOGIN = _Paths.LOGIN;
   static const SETTING = _Paths.SETTING;
-  static const SEARCH = _Paths.SEARCH;
+  static const WEBVIEW = _Paths.WEBVIEW;
   static const SITE = _Paths.SITE;
   static const TASK = _Paths.TASK;
   static const DASHBOARD = _Paths.DASHBOARD;
@@ -23,10 +23,10 @@ abstract class _Paths {
   static const HOME = '/home';
   static const LOGIN = '/login';
   static const SETTING = '/home/setting';
-  static const SEARCH = '/search';
+  static const WEBVIEW = '/webview';
   static const SITE = '/home/site';
   static const TASK = '/home/task';
   static const DASHBOARD = '/home/dashboard';
-  static const DOWNLOAD = '/download'; // download page
+  static const DOWNLOAD = '/home/download'; // download page
   static const TORRENT = '/torrent';
 }

@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:harvest/app/web_view/view.dart';
 
 import '../../middleware/login_middleware.dart';
 import '../home/home_binding.dart';
@@ -9,6 +10,7 @@ import '../login/view.dart';
 // import '../search/search_view.dart';
 import '../torrent/torrent_binding.dart';
 import '../torrent/torrent_view.dart';
+import '../web_view/binding.dart';
 
 // ignore_for_file: constant_identifier_names
 
@@ -36,14 +38,14 @@ class AppPages {
         LoginMiddleware(),
       ],
     ),
-    // GetPage(
-    //   name: _Paths.SEARCH,
-    //   page: () => const SearchView(),
-    //   binding: SearchBinding(),
-    //   middlewares: [
-    //     LoginMiddleware(),
-    //   ],
-    // ),
+    GetPage(
+      name: _Paths.WEBVIEW,
+      page: () => const WebViewPage(),
+      binding: WebViewBinding(),
+      middlewares: [
+        LoginMiddleware(),
+      ],
+    ),
     GetPage(
       name: _Paths.LOGIN,
       page: () => const LoginPage(),
