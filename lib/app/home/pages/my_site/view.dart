@@ -5,6 +5,7 @@ import 'package:filesize/filesize.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
+import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../api/mysite.dart';
@@ -34,14 +35,14 @@ class _MySitePagePageState extends State<MySitePage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Scaffold(
-      body: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 5),
-            height: 25,
-            child: Obx(() {
-              return TextField(
+    return GetBuilder<MySiteController>(builder: (controller) {
+      return Scaffold(
+        body: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5),
+              height: 25,
+              child: TextField(
                 controller: controller.searchController.value,
                 style: const TextStyle(fontSize: 10),
                 textAlignVertical: TextAlignVertical.bottom,
@@ -66,23 +67,19 @@ class _MySitePagePageState extends State<MySitePage>
                   ),
                 ),
                 onChanged: (value) {
-                  // 在这里处理搜索框输入的内容变化
-
                   Logger.instance.i('搜索框内容变化：$value');
                   controller.searchKey.value = value;
                   controller.filterSiteStatusBySearchKey();
                 },
-              );
-            }),
-          ),
-          Expanded(
-            child: EasyRefresh(
-              onRefresh: () async {
-                controller.getSiteStatusFromServer();
-                controller.update();
-              },
-              child: Obx(() {
-                return controller.mySiteList.isEmpty
+              ),
+            ),
+            Expanded(
+              child: EasyRefresh(
+                onRefresh: () async {
+                  controller.getSiteStatusFromServer();
+                  controller.update();
+                },
+                child: controller.mySiteList.isEmpty
                     ? const GFLoader(
                         type: GFLoaderType.circle,
                       )
@@ -94,58 +91,58 @@ class _MySitePagePageState extends State<MySitePage>
                               MySite mySite = controller.showStatusList[index];
                               return showSiteDataInfo(mySite);
                             },
-                          );
-              }),
+                          ),
+              ),
             ),
-          ),
-        ],
-      ),
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          GFButton(
-            onPressed: () {
-              _showFilterBottomSheet();
-            },
-            icon: const Icon(
-              Icons.filter_tilt_shift,
-              size: 32,
-              color: Colors.blue,
+          ],
+        ),
+        floatingActionButton: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GFButton(
+              onPressed: () {
+                _showFilterBottomSheet();
+              },
+              icon: const Icon(
+                Icons.filter_tilt_shift,
+                size: 32,
+                color: Colors.blue,
+              ),
+              text: '筛选',
+              type: GFButtonType.outline2x,
             ),
-            text: '筛选',
-            type: GFButtonType.outline2x,
-          ),
-          GFButton(
-            onPressed: () {
-              _showSortBottomSheet();
-            },
-            icon: const Icon(
-              Icons.swap_vert_circle_outlined,
-              size: 32,
-              color: Colors.blue,
+            GFButton(
+              onPressed: () {
+                _showSortBottomSheet();
+              },
+              icon: const Icon(
+                Icons.swap_vert_circle_outlined,
+                size: 32,
+                color: Colors.blue,
+              ),
+              text: '排序',
+              type: GFButtonType.outline2x,
             ),
-            text: '排序',
-            type: GFButtonType.outline2x,
-          ),
-          GFButton(
-            onPressed: () {
-              _showEditBottomSheet();
-            },
-            icon: const Icon(
-              Icons.add_circle_outline,
-              size: 32,
-              color: Colors.blue,
+            GFButton(
+              onPressed: () {
+                _showEditBottomSheet();
+              },
+              icon: const Icon(
+                Icons.add_circle_outline,
+                size: 32,
+                color: Colors.blue,
+              ),
+              text: '添加',
+              type: GFButtonType.outline2x,
             ),
-            text: '添加',
-            type: GFButtonType.outline2x,
-          ),
-          const SizedBox(
-            height: 48,
-          )
-        ],
-      ),
-    );
+            const SizedBox(
+              height: 48,
+            )
+          ],
+        ),
+      );
+    });
   }
 
   @override
@@ -508,47 +505,52 @@ class _MySitePagePageState extends State<MySitePage>
   }
 
   ButtonBar siteOperateButtonBar(WebSite website, MySite mySite) {
+    String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    bool signed = mySite.getSignMaxKey() == today;
+    Logger.instance.i(
+        '$today - ${mySite.getSignMaxKey()} - ${mySite.getSignMaxKey() == today}');
     return ButtonBar(
       alignment: MainAxisAlignment.spaceAround,
       buttonPadding: const EdgeInsets.all(8),
       buttonAlignedDropdown: true,
       children: [
-        if (website.signIn)
+        if (website.signIn && mySite.signIn)
           SizedBox(
-            width: 68,
-            height: 26,
-            child: GFButton(
-              onPressed: () {
-                signIn(mySite.id).then((res) {
-                  Get.back();
-                  if (res.code == 0) {
-                    Get.snackbar(
-                      '签到成功',
-                      '${mySite.nickname} 签到信息：${res.msg}',
-                      colorText: Colors.white,
-                      backgroundColor: Colors.green.shade300,
-                    );
-                    controller.getSiteStatusFromServer();
-                  } else {
-                    Get.snackbar(
-                      '签到失败',
-                      '${mySite.nickname} 签到任务执行出错啦：${res.msg}',
-                      colorText: Colors.white,
-                      backgroundColor: Colors.red.shade300,
-                    );
-                  }
-                });
-              },
-              icon: const Icon(
-                Icons.pan_tool_alt,
-                size: 12,
-                color: Colors.white,
-              ),
-              text: '签到',
-              size: GFSize.SMALL,
-              color: Colors.blue,
-            ),
-          ),
+              width: 68,
+              height: 26,
+              child: GFButton(
+                onPressed: () {
+                  signed
+                      ? _showSignHistory(mySite)
+                      : signIn(mySite.id).then((res) {
+                          Get.back();
+                          if (res.code == 0) {
+                            Get.snackbar(
+                              '签到成功',
+                              '${mySite.nickname} 签到信息：${res.msg}',
+                              colorText: Colors.white,
+                              backgroundColor: Colors.green.shade300,
+                            );
+                            controller.getSiteStatusFromServer();
+                          } else {
+                            Get.snackbar(
+                              '签到失败',
+                              '${mySite.nickname} 签到任务执行出错啦：${res.msg}',
+                              colorText: Colors.white,
+                              backgroundColor: Colors.red.shade300,
+                            );
+                          }
+                        });
+                },
+                icon: Icon(
+                  signed ? Icons.check : Icons.pan_tool_alt,
+                  size: 12,
+                  color: Colors.white,
+                ),
+                text: '签到',
+                size: GFSize.SMALL,
+                color: signed ? Colors.teal : Colors.blue,
+              )),
         SizedBox(
           width: 68,
           height: 26,
@@ -588,7 +590,9 @@ class _MySitePagePageState extends State<MySitePage>
           width: 68,
           height: 26,
           child: GFButton(
-            onPressed: () {},
+            onPressed: () {
+              Logger.instance.i(mySite.statusInfo);
+            },
             icon: const Icon(
               Icons.bar_chart,
               size: 12,
@@ -930,7 +934,7 @@ class _MySitePagePageState extends State<MySitePage>
 
   void _showSortBottomSheet() {
     Get.bottomSheet(Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(8),
       color: Colors.blueGrey.shade300,
       width: 550,
       child: Column(children: [
@@ -981,7 +985,7 @@ class _MySitePagePageState extends State<MySitePage>
 
   void _showFilterBottomSheet() {
     Get.bottomSheet(Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(8),
         color: Colors.blueGrey.shade300,
         width: 550,
         child: Column(children: [
@@ -1018,6 +1022,59 @@ class _MySitePagePageState extends State<MySitePage>
                         ),
                       );
                     });
+                  }))
+        ])));
+  }
+
+  void _showSignHistory(MySite mySite) {
+    List<String> signKeys = mySite.signInInfo.keys.toList();
+    String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    signKeys.sort((a, b) => b.compareTo(a));
+    Get.bottomSheet(Container(
+        padding: const EdgeInsets.all(8),
+        color: Colors.blueGrey.shade300,
+        width: 550,
+        child: Column(children: [
+          Text(
+            "${mySite.nickname} [累计自动签到${mySite.signInInfo.length}天]",
+          ),
+          Expanded(
+              child: ListView.builder(
+                  itemCount: signKeys.length,
+                  itemBuilder: (context, index) {
+                    String signKey = signKeys[index];
+                    SignInInfo? item = mySite.signInInfo[signKey];
+                    Logger.instance.i('$today -$signKey -${today == signKey}');
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                          side:
+                              const BorderSide(color: Colors.grey, width: 1.0),
+                        ),
+                        child: ListTile(
+                            title: Text(
+                              item!.info,
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: signKey == today
+                                      ? Colors.amber
+                                      : Colors.black45),
+                            ),
+                            subtitle: Text(
+                              item.updatedAt,
+                              style: TextStyle(
+                                  fontSize: 10,
+                                  color: signKey == today
+                                      ? Colors.amber
+                                      : Colors.black26),
+                            ),
+                            selected: signKey == today,
+                            selectedColor: Colors.amber,
+                            onTap: () {}),
+                      ),
+                    );
                   }))
         ])));
   }
