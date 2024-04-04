@@ -222,13 +222,18 @@ class MySite {
     if (statusInfo.isEmpty) {
       return '';
     }
-
+    if (statusInfo.length == 1) {
+      return statusInfo.keys.first;
+    }
     return statusInfo.keys.reduce((a, b) => a.compareTo(b) > 0 ? a : b);
   }
 
   String getSignMaxKey() {
-    if (statusInfo.isEmpty) {
+    if (signInInfo.isEmpty) {
       return '';
+    }
+    if (signInInfo.length == 1) {
+      return signInInfo.keys.first;
     }
     return signInInfo.keys.reduce((a, b) => a.compareTo(b) > 0 ? a : b);
   }
