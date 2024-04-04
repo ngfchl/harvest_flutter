@@ -629,14 +629,6 @@ class _MySitePagePageState extends State<MySitePage>
     );
   }
 
-  int _calculateItemCount(selectedSite) {
-    int count = 2; // 前两个元素一定显示
-    if (selectedSite.value!.searchTorrents) count++;
-    if (selectedSite.value!.signIn) count++;
-    if (selectedSite.value!.repeatTorrents) count++;
-    return count;
-  }
-
   void _showEditBottomSheet({MySite? mySite}) {
     List<String> siteList = controller.webSiteList.keys.toList();
     List<String> hasKeys =
@@ -659,7 +651,6 @@ class _MySitePagePageState extends State<MySitePage>
         TextEditingController(text: mySite?.torrents ?? '');
     final cookieController = TextEditingController(text: mySite?.cookie ?? '');
     final mirrorController = TextEditingController(text: mySite?.mirror ?? '');
-    // RxString site = siteList[0].obs;
     Rx<WebSite?> selectedSite = mySite != null
         ? controller.webSiteList[mySite.site]!.obs
         : controller.webSiteList.values.toList()[0].obs;
@@ -759,75 +750,46 @@ class _MySitePagePageState extends State<MySitePage>
                         labelText: 'HTTP代理',
                       ),
                       const SizedBox(height: 5),
-                      GridView.builder(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 1.0, // 每行垂直方向的间距
-                          crossAxisSpacing: 0, // 每列水平方向的间距
-                          childAspectRatio: 5.0, // 子元素的宽高比例
+                      Wrap(spacing: 12, runSpacing: 8, children: [
+                        ChoiceChip(
+                          label: const Text('可用'),
+                          selected: available.value,
+                          onSelected: (value) {
+                            available.value = value;
+                          },
                         ),
-                        itemCount: _calculateItemCount(selectedSite),
-                        // 子元素数量
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          switch (index) {
-                            case 0:
-                              return SwitchTile(
-                                title: '站点可用',
-                                value: available.value,
-                                onChanged: (value) {
-                                  available.value = value;
-                                },
-                              );
-                            case 1:
-                              return SwitchTile(
-                                title: '数据',
-                                value: getInfo.value,
-                                onChanged: (value) {
-                                  getInfo.value = value;
-                                },
-                              );
-                            case 2:
-                              if (selectedSite.value!.searchTorrents) {
-                                return SwitchTile(
-                                  title: '搜索',
-                                  value: searchTorrents.value,
-                                  onChanged: (value) {
-                                    searchTorrents.value = value;
-                                  },
-                                );
-                              }
-                              break;
-                            case 3:
-                              if (selectedSite.value!.signIn) {
-                                return SwitchTile(
-                                  title: '签到',
-                                  value: signIn.value,
-                                  onChanged: (value) {
-                                    signIn.value = value;
-                                  },
-                                );
-                              }
-                              break;
-                            case 4:
-                              if (selectedSite.value!.repeatTorrents) {
-                                return SwitchTile(
-                                  title: '辅种',
-                                  value: repeatTorrents.value,
-                                  onChanged: (value) {
-                                    repeatTorrents.value = value;
-                                  },
-                                );
-                              }
-                              break;
-                            default:
-                              return const SizedBox.shrink();
-                          }
-                          return null;
-                        },
-                      ),
+                        ChoiceChip(
+                          label: const Text('数据'),
+                          selected: getInfo.value,
+                          onSelected: (value) {
+                            getInfo.value = value;
+                          },
+                        ),
+                        if (selectedSite.value!.searchTorrents)
+                          ChoiceChip(
+                            label: const Text('搜索'),
+                            selected: searchTorrents.value,
+                            onSelected: (value) {
+                              searchTorrents.value = value;
+                            },
+                          ),
+                        if (selectedSite.value!.signIn)
+                          ChoiceChip(
+                            label: const Text('签到'),
+                            selected: signIn.value,
+                            onSelected: (value) {
+                              signIn.value = value;
+                            },
+                          ),
+                        if (selectedSite.value!.repeatTorrents)
+                          ChoiceChip(
+                            label: const Text('辅种'),
+                            selected: repeatTorrents.value,
+                            onSelected: (value) {
+                              repeatTorrents.value = value;
+                            },
+                          ),
+                      ]),
 
                       ButtonBar(
                         alignment: MainAxisAlignment.spaceAround,
