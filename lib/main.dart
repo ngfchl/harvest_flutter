@@ -23,6 +23,10 @@ void main() async {
   // 注册 MySiteController 控制器
   Get.put(MySiteController());
   Get.put(DownloadController());
+  // 强制竖屏
+  SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+
   // 固定写法，处理状态栏背景颜色
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
