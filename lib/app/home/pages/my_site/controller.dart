@@ -264,7 +264,7 @@ class MySiteController extends GetxController {
   void filterByKey() {
     Logger.instance.i('开始筛选，当前筛选关键字：${filterKey.value}');
     searchKey.value = '';
-    String today = DateFormat('yyyy-mm-dd').format(DateTime.now());
+    String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
     switch (filterKey.value) {
       case 'available':
