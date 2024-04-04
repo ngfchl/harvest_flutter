@@ -91,6 +91,7 @@ class MySiteController extends GetxController {
       Logger.instance.e(stackTrace.toString());
       Get.snackbar('', e.toString());
     });
+    update();
   }
 
   Future<bool> saveMySiteToServer(MySite mySite) async {
@@ -119,6 +120,7 @@ class MySiteController extends GetxController {
       );
       return false;
     }
+    update();
   }
 
   Future<void> getSiteStatusFromServer() async {
@@ -141,12 +143,13 @@ class MySiteController extends GetxController {
       Logger.instance.e(stackTrace.toString());
       Get.snackbar('', e.toString());
     });
+    update();
   }
 
   void sortStatusList() {
     // 排除空数据
-    showStatusList.value =
-        showStatusList.where((item) => item.statusInfo.isNotEmpty).toList();
+    // showStatusList.value =
+    //     showStatusList.where((item) => item.statusInfo.isNotEmpty).toList();
 
     // 根据不同的排序键调用不同的排序方法
     switch (sortKey.value) {
@@ -221,6 +224,7 @@ class MySiteController extends GetxController {
 
     // 按照邮件地址排序（默认排序）
     // showStatusList.sort((a, b) => b.mail.compareTo(a.mail));
+    update();
   }
 
 // 使用泛型以及 Comparable 接口来实现通用的比较逻辑
@@ -259,6 +263,7 @@ class MySiteController extends GetxController {
     }
 
     sortStatusList();
+    update();
   }
 
   void filterByKey() {

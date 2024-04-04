@@ -78,7 +78,6 @@ class _MySitePagePageState extends State<MySitePage>
               child: EasyRefresh(
                 onRefresh: () async {
                   controller.getSiteStatusFromServer();
-                  controller.update();
                 },
                 child: controller.mySiteList.isEmpty
                     ? const GFLoader(
@@ -98,44 +97,50 @@ class _MySitePagePageState extends State<MySitePage>
           ],
         ),
         floatingActionButton: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            GFButton(
+            GFIconButton(
               onPressed: () {
                 _showFilterBottomSheet();
               },
               icon: const Icon(
                 Icons.filter_tilt_shift,
-                size: 32,
-                color: Colors.blue,
+                // size: 32,
+                // color: Colors.blue,
               ),
-              text: '筛选',
-              type: GFButtonType.outline2x,
+              // text: '筛选',
+              // type: GFButtonType.outline2x,
             ),
-            GFButton(
+            const SizedBox(
+              height: 10,
+            ),
+            GFIconButton(
               onPressed: () {
                 _showSortBottomSheet();
               },
               icon: const Icon(
                 Icons.swap_vert_circle_outlined,
-                size: 32,
-                color: Colors.blue,
+                // size: 32,
+                // color: Colors.blue,
               ),
-              text: '排序',
-              type: GFButtonType.outline2x,
+              // text: '排序',
+              // type: GFButtonType.outline2x,
             ),
-            GFButton(
+            const SizedBox(
+              height: 10,
+            ),
+            GFIconButton(
               onPressed: () {
                 _showEditBottomSheet();
               },
               icon: const Icon(
                 Icons.add_circle_outline,
-                size: 32,
-                color: Colors.blue,
+                // size: 32,
+                // color: Colors.blue,
               ),
-              text: '添加',
-              type: GFButtonType.outline2x,
+              // text: '添加',
+              // type: GFButtonType.outline2x,
             ),
             const SizedBox(
               height: 48,
@@ -915,7 +920,6 @@ class _MySitePagePageState extends State<MySitePage>
                                   .saveMySiteToServer(mySite!)) {
                                 Navigator.of(context).pop();
                                 controller.getSiteStatusFromServer();
-                                controller.update();
                               }
                             },
                           ),
@@ -969,7 +973,7 @@ class _MySitePagePageState extends State<MySitePage>
                         }
                         controller.sortKey.value = item['value']!;
                         controller.sortStatusList();
-                        controller.update();
+
                         Navigator.of(context).pop();
                       },
                     ),
@@ -1016,7 +1020,7 @@ class _MySitePagePageState extends State<MySitePage>
                               onTap: () {
                                 controller.filterKey.value = item['value']!;
                                 controller.filterByKey();
-                                controller.update();
+
                                 Navigator.of(context).pop();
                               }),
                         ),
@@ -1264,7 +1268,6 @@ class _MySitePagePageState extends State<MySitePage>
                   showData.value = transformedData.sublist(
                       rangeValues.value.start.toInt(),
                       rangeValues.value.end.toInt());
-                  controller.update();
                 },
                 values: rangeValues.value,
               ),
