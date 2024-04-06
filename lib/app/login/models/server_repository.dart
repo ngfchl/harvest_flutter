@@ -1,13 +1,6 @@
-import 'dart:io';
-
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:harvest/app/login/models/server.dart';
 import 'package:path/path.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:sqflite/sqflite.dart';
-
-import '../../../utils/logger_helper.dart';
 
 class ServerRepository {
   late Database _db;
@@ -19,34 +12,34 @@ class ServerRepository {
 
   Future<Database?> init() async {
     // 初始化数据库连接
-    if (Platform.isIOS || Platform.isAndroid) {
-      var status = await Permission.storage.status;
-      if (!status.isGranted) {
-        // 用户未授予存储权限
-        Map<Permission, PermissionStatus> permissions =
-            await [Permission.storage].request();
-        final storageStatus = permissions[Permission.storage]!;
-        if (storageStatus.isGranted) {
-          Logger.instance.i('权限已获取，现在可以访问存储');
-        } else if (storageStatus.isPermanentlyDenied) {
-          Logger.instance.i('用户永久拒绝了权限，可以提示用户去应用设置里手动开启');
-          Get.snackbar(
-            '无存储权限',
-            '您拒绝了权限，请到应用设置里手动开启！',
-            colorText: Colors.white,
-            backgroundColor: Colors.red.shade300,
-          );
-        }
-        Get.snackbar("Error", "无存储权限！");
-        Get.snackbar(
-          '无存储权限',
-          '请手动到设置中开启存储权限！',
-          colorText: Colors.white,
-          backgroundColor: Colors.red.shade300,
-        );
-        return null;
-      }
-    }
+    // if (Platform.isIOS || Platform.isAndroid) {
+    //   var status = await Permission.storage.status;
+    //   if (!status.isGranted) {
+    //     // 用户未授予存储权限
+    //     Map<Permission, PermissionStatus> permissions =
+    //         await [Permission.storage].request();
+    //     final storageStatus = permissions[Permission.storage]!;
+    //     if (storageStatus.isGranted) {
+    //       Logger.instance.i('权限已获取，现在可以访问存储');
+    //     } else if (storageStatus.isPermanentlyDenied) {
+    //       Logger.instance.i('用户永久拒绝了权限，可以提示用户去应用设置里手动开启');
+    //       Get.snackbar(
+    //         '无存储权限',
+    //         '您拒绝了权限，请到应用设置里手动开启！',
+    //         colorText: Colors.white,
+    //         backgroundColor: Colors.red.shade300,
+    //       );
+    //     }
+    //     Get.snackbar("Error", "无存储权限！");
+    //     Get.snackbar(
+    //       '无存储权限',
+    //       '请手动到设置中开启存储权限！',
+    //       colorText: Colors.white,
+    //       backgroundColor: Colors.red.shade300,
+    //     );
+    //     return null;
+    //   }
+    // }
     final databasePath = await getDatabasesPath();
     final path = join(databasePath, 'harvest.db');
     _db = await openDatabase(
