@@ -24,6 +24,8 @@ class LoginController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
+    // 触发 网络权限授权
+    await Dio().get('https://ptools.fun');
     await serverRepository.init();
     serversList.value = await serverRepository.getServers();
     // 寻找selected为true的服务器，并赋值给selectedServer
@@ -82,6 +84,7 @@ class LoginController extends GetxController {
     selectedServer.value = server;
     server.selected = true;
     await saveServer(server);
+    initDio(server);
     update();
   }
 
