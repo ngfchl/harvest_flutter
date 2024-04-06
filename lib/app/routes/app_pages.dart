@@ -2,7 +2,7 @@ import 'package:get/get.dart';
 import 'package:harvest/app/web_view/view.dart';
 
 import '../../middleware/login_middleware.dart';
-import '../home/home_binding.dart';
+import '../home/controller/home_binding.dart';
 import '../home/home_view.dart';
 import '../login/binding.dart';
 import '../login/view.dart';

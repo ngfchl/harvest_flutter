@@ -38,63 +38,64 @@ class _MySitePagePageState extends State<MySitePage>
     super.build(context);
     return GetBuilder<MySiteController>(builder: (controller) {
       return Scaffold(
-        body: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 5),
-              height: 25,
-              child: TextField(
-                controller: controller.searchController.value,
-                style: const TextStyle(fontSize: 10),
-                textAlignVertical: TextAlignVertical.bottom,
-                decoration: InputDecoration(
-                  // labelText: '搜索',
-                  hintText: '输入关键词...',
-                  labelStyle: const TextStyle(fontSize: 10),
-                  hintStyle: const TextStyle(fontSize: 10),
-                  prefixIcon: const Icon(
-                    Icons.search,
-                    size: 10,
+        body: EasyRefresh(
+          onRefresh: () async {
+            controller.getSiteStatusFromServer();
+          },
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5),
+                height: 25,
+                child: TextField(
+                  controller: controller.searchController,
+                  style: const TextStyle(fontSize: 10),
+                  textAlignVertical: TextAlignVertical.bottom,
+                  decoration: InputDecoration(
+                    // labelText: '搜索',
+                    hintText: '输入关键词...',
+                    labelStyle: const TextStyle(fontSize: 10),
+                    hintStyle: const TextStyle(fontSize: 10),
+                    prefixIcon: const Icon(
+                      Icons.search,
+                      size: 10,
+                    ),
+                    // suffix: ,
+                    suffixIcon: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Text('计数：${controller.showStatusList.length}',
+                          style: const TextStyle(
+                              fontSize: 10, color: Colors.orange)),
+                    ),
+                    border: const OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(3.0)),
+                    ),
                   ),
-                  // suffix: ,
-                  suffixIcon: Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: Text('计数：${controller.showStatusList.length}',
-                        style: const TextStyle(
-                            fontSize: 10, color: Colors.orange)),
-                  ),
-                  border: const OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(3.0)),
-                  ),
+                  onChanged: (value) {
+                    Logger.instance.i('搜索框内容变化：$value');
+                    controller.searchKey = value;
+                    controller.filterSiteStatusBySearchKey();
+                  },
                 ),
-                onChanged: (value) {
-                  Logger.instance.i('搜索框内容变化：$value');
-                  controller.searchKey.value = value;
-                  controller.filterSiteStatusBySearchKey();
-                },
               ),
-            ),
-            Expanded(
-              child: EasyRefresh(
-                onRefresh: () async {
-                  controller.getSiteStatusFromServer();
-                },
+              Expanded(
                 child: controller.mySiteList.isEmpty
-                    ? const GFLoader(
-                        type: GFLoaderType.circle,
-                      )
+                    ? const GFLoader()
                     : controller.showStatusList.isEmpty
                         ? const Text('没有符合条件的数据！')
-                        : ListView.builder(
-                            itemCount: controller.showStatusList.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              MySite mySite = controller.showStatusList[index];
-                              return showSiteDataInfo(mySite);
-                            },
-                          ),
+                        : GetBuilder<MySiteController>(builder: (controller) {
+                            return ListView.builder(
+                              itemCount: controller.showStatusList.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                MySite mySite =
+                                    controller.showStatusList[index];
+                                return showSiteDataInfo(mySite);
+                              },
+                            );
+                          }),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         floatingActionButton: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -630,10 +631,16 @@ class _MySitePagePageState extends State<MySitePage>
   }
 
   void _showEditBottomSheet({MySite? mySite}) {
-    List<String> siteList = controller.webSiteList.keys.toList();
+    // List<String> siteList = controller.webSiteList.keys.toList();
+    List<String> siteList = controller.webSiteList.entries
+        .where((entry) => entry.value.alive)
+        .map((entry) => entry.key)
+        .toList();
     List<String> hasKeys =
         controller.mySiteList.map((element) => element.site).toList();
-    siteList.removeWhere((key) => hasKeys.contains(key) && mySite == null);
+    if (mySite == null) {
+      siteList.removeWhere((key) => hasKeys.contains(key));
+    }
     Logger.instance.i(siteList);
     final siteController = TextEditingController(text: mySite?.site ?? '');
     final apiKeyController = TextEditingController(text: mySite?.authKey ?? '');
@@ -751,13 +758,14 @@ class _MySitePagePageState extends State<MySitePage>
                       ),
                       const SizedBox(height: 5),
                       Wrap(spacing: 12, runSpacing: 8, children: [
-                        ChoiceChip(
-                          label: const Text('可用'),
-                          selected: available.value,
-                          onSelected: (value) {
-                            available.value = value;
-                          },
-                        ),
+                        if (selectedSite.value!.alive)
+                          ChoiceChip(
+                            label: const Text('可用'),
+                            selected: available.value,
+                            onSelected: (value) {
+                              available.value = value;
+                            },
+                          ),
                         ChoiceChip(
                           label: const Text('数据'),
                           selected: getInfo.value,
@@ -905,11 +913,11 @@ class _MySitePagePageState extends State<MySitePage>
       width: 550,
       child: Column(children: [
         Expanded(
-          child: ListView.builder(
-            itemCount: controller.siteSortOptions.length,
-            itemBuilder: (context, index) {
-              Map<String, String> item = controller.siteSortOptions[index];
-              return Obx(() {
+          child: GetBuilder<MySiteController>(builder: (controller) {
+            return ListView.builder(
+              itemCount: controller.siteSortOptions.length,
+              itemBuilder: (context, index) {
+                Map<String, String> item = controller.siteSortOptions[index];
                 return Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: Card(
@@ -920,20 +928,20 @@ class _MySitePagePageState extends State<MySitePage>
                     child: ListTile(
                       title: Text(item['name']!),
                       selectedColor: Colors.amber,
-                      selected: controller.sortKey.value == item['value'],
-                      leading: controller.sortReversed.value
+                      selected: controller.sortKey == item['value'],
+                      leading: controller.sortReversed
                           ? const Icon(Icons.trending_up)
                           : const Icon(Icons.trending_down),
-                      trailing: controller.sortKey.value == item['value']
+                      trailing: controller.sortKey == item['value']
                           ? const Icon(Icons.check_box_outlined)
                           : const Icon(Icons.check_box_outline_blank_rounded),
                       onTap: () {
-                        if (controller.sortKey.value == item['value']!) {
-                          controller.sortReversed.value = true;
+                        if (controller.sortKey == item['value']!) {
+                          controller.sortReversed = true;
                         } else {
-                          controller.sortReversed.value = false;
+                          controller.sortReversed = false;
                         }
-                        controller.sortKey.value = item['value']!;
+                        controller.sortKey = item['value']!;
                         controller.sortStatusList();
 
                         Navigator.of(context).pop();
@@ -941,9 +949,9 @@ class _MySitePagePageState extends State<MySitePage>
                     ),
                   ),
                 );
-              });
-            },
-          ),
+              },
+            );
+          }),
         ),
       ]),
     ));
@@ -955,40 +963,36 @@ class _MySitePagePageState extends State<MySitePage>
         color: Colors.blueGrey.shade300,
         width: 550,
         child: Column(children: [
-          Expanded(
-              child: ListView.builder(
-                  itemCount: controller.filterOptions.length,
-                  itemBuilder: (context, index) {
-                    Map<String, String> item = controller.filterOptions[index];
-                    return Obx(() {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                            side: const BorderSide(
-                                color: Colors.grey, width: 1.0),
-                          ),
-                          child: ListTile(
-                              title: Text(item['name']!),
-                              trailing: controller.filterKey.value ==
-                                      item['value']
-                                  ? const Icon(Icons.check_box_outlined)
-                                  : const Icon(
-                                      Icons.check_box_outline_blank_rounded),
-                              selectedColor: Colors.amber,
-                              selected:
-                                  controller.filterKey.value == item['value'],
-                              onTap: () {
-                                controller.filterKey.value = item['value']!;
-                                controller.filterByKey();
+          Expanded(child: GetBuilder<MySiteController>(builder: (controller) {
+            return ListView.builder(
+                itemCount: controller.filterOptions.length,
+                itemBuilder: (context, index) {
+                  Map<String, String> item = controller.filterOptions[index];
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        side: const BorderSide(color: Colors.grey, width: 1.0),
+                      ),
+                      child: ListTile(
+                          title: Text(item['name']!),
+                          trailing: controller.filterKey == item['value']
+                              ? const Icon(Icons.check_box_outlined)
+                              : const Icon(
+                                  Icons.check_box_outline_blank_rounded),
+                          selectedColor: Colors.amber,
+                          selected: controller.filterKey == item['value'],
+                          onTap: () {
+                            controller.filterKey = item['value']!;
+                            controller.filterByKey();
 
-                                Navigator.of(context).pop();
-                              }),
-                        ),
-                      );
-                    });
-                  }))
+                            Navigator.of(context).pop();
+                          }),
+                    ),
+                  );
+                });
+          }))
         ])));
   }
 
@@ -1047,8 +1051,6 @@ class _MySitePagePageState extends State<MySitePage>
 
   void _showStatusHistory(MySite mySite) {
     List<StatusInfo> transformedData = mySite.statusInfo.values.toList();
-    // List<String> transformedKeys = mySite.statusInfo.keys.toList();
-    // transformedData.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     Rx<RangeValues> rangeValues = RangeValues(
             transformedData.length > 7 ? transformedData.length - 7 : 0,
             transformedData.length.toDouble() - 1)

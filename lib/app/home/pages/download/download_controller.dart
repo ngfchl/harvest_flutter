@@ -11,7 +11,6 @@ import '../../../../models/common_response.dart';
 import '../../../../models/download.dart';
 import '../../../../utils/logger_helper.dart' as LoggerHelper;
 import '../../../../utils/storage.dart';
-import '../../home_controller.dart';
 import '../models/transmission.dart';
 
 class DownloadController extends GetxController {
@@ -24,7 +23,6 @@ class DownloadController extends GetxController {
   late Timer periodicTimer;
   late Timer fiveMinutesTimer;
   final isDurationValid = true.obs;
-  final HomeController homeController = Get.find<HomeController>();
 
   // 使用StreamController来管理下载状态的流
   final StreamController<List<Downloader>> _downloadStreamController =
@@ -41,14 +39,12 @@ class DownloadController extends GetxController {
     duration.value = SPUtil.getDouble('duration', defaultValue: 3.14)!;
     timerDuration.value =
         SPUtil.getDouble('timerDuration', defaultValue: 3.14)!;
-    homeController.initDio();
     getDownloaderListFromServer();
     refreshDownloadStatus();
     // 设置定时器，每隔一定时间刷新下载器数据
     startPeriodicTimer();
     // 设置一个5分钟后执行的定时器
     timerToStop();
-    LoggerHelper.Logger.instance.w(periodicTimer);
 
     super.onInit();
   }
@@ -156,7 +152,7 @@ class DownloadController extends GetxController {
       TransferInfo res = await qbittorrent.transfer.getGlobalTransferInfo();
       return CommonResponse(data: res, code: 0);
     } catch (e, trace) {
-      LoggerHelper.Logger.instance.w(trace);
+      LoggerHelper.Logger.instance.e(trace);
       return CommonResponse(
         code: -1,
         data: null,
@@ -176,6 +172,43 @@ class DownloadController extends GetxController {
       password: downloader.password,
     );
     return qbittorrent;
+  }
+
+  /// 获取磁力链接的种子文件Bytes
+  /// @param downloadUrl 磁力链接
+  /// @returns 种子文件Bytes
+  // Future<FileBytes> getDownloadUrlBytes(String downloadUrl) async {
+  //   final response = await Dio().get(
+  //     downloadUrl,
+  //     options: Options(responseType: ResponseType.bytes),
+  //   );
+  //   try {
+  //     // 创建一个临时文件
+  //     File tempFile = File('temp_download_file');
+  //
+  //     // 将字节数据写入临时文件
+  //     await tempFile.writeAsBytes(Uint8List.fromList(response.data!));
+  //
+  //     // 读取临时文件的字节数据
+  //     Uint8List fileBytes = await tempFile.readAsBytes();
+  //
+  //     // 将字节数据添加到下载器中
+  //     await downloader.addBytes(fileBytes);
+  //
+  //     // 删除临时文件
+  //     await tempFile.delete();
+  //   } catch (e) {
+  //     print('Error handling data: $e');
+  //     // 处理异常情况
+  //   }
+  //   return fileBytes;
+  // }
+
+  addTorrentFilesToQb(Downloader downloader, String downloadUrl) async {
+    QBittorrentApiV2 client = await getQbInstance(downloader);
+    // final downloadFileBytes = await getDownloadUrlBytes(downloadUrl);
+    // client.torrents.addNewTorrents(
+    //     torrents: NewTorrents.bytes(bytes: [downloadFileBytes]));
   }
 
   Future getTrSpeed(Downloader downloader) async {

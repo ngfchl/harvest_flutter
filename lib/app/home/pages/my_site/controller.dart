@@ -9,14 +9,14 @@ import '../../../../api/mysite.dart';
 import '../../../../utils/logger_helper.dart';
 
 class MySiteController extends GetxController {
-  final searchController = TextEditingController().obs;
-  final searchKey = ''.obs;
-  final filterKey = ''.obs;
-  RxList<MySite> mySiteList = <MySite>[].obs;
-  RxList<MySite> showStatusList = <MySite>[].obs;
-  final isLoaded = false.obs;
-  final sortKey = 'statusMail'.obs;
-  final sortReversed = false.obs;
+  final searchController = TextEditingController();
+  String searchKey = '';
+  String filterKey = '';
+  List<MySite> mySiteList = <MySite>[];
+  List<MySite> showStatusList = <MySite>[];
+  bool isLoaded = false;
+  String sortKey = 'statusMail';
+  bool sortReversed = false;
   Map<String, WebSite> webSiteList = {};
 
   List<Map<String, String>> siteSortOptions = [
@@ -63,8 +63,8 @@ class MySiteController extends GetxController {
 
   @override
   void onInit() async {
-    searchKey.value = '';
-    filterKey.value = '';
+    searchKey = '';
+    filterKey = '';
     await initData();
     super.onInit();
   }
@@ -109,6 +109,8 @@ class MySiteController extends GetxController {
         backgroundColor: Colors.green.shade400,
         duration: const Duration(seconds: 3),
       );
+      update();
+
       return true;
     } else {
       Get.snackbar(
@@ -120,14 +122,13 @@ class MySiteController extends GetxController {
       );
       return false;
     }
-    update();
   }
 
   Future<void> getSiteStatusFromServer() async {
     await getMySiteList().then((value) {
       if (value.code == 0) {
-        mySiteList.value = value.data;
-        isLoaded.value = true;
+        mySiteList = value.data;
+        isLoaded = true;
         filterByKey();
         filterSiteStatusBySearchKey();
         update();
@@ -152,7 +153,7 @@ class MySiteController extends GetxController {
     //     showStatusList.where((item) => item.statusInfo.isNotEmpty).toList();
 
     // 根据不同的排序键调用不同的排序方法
-    switch (sortKey.value) {
+    switch (sortKey) {
       case 'statusMail':
         sortByComparable((a, b) => b.mail.compareTo(a.mail));
         break;
@@ -217,9 +218,9 @@ class MySiteController extends GetxController {
     }
 
     // 反转序列
-    if (sortReversed.value) {
+    if (sortReversed) {
       Logger.instance.w('反转序列！');
-      showStatusList.value = showStatusList.reversed.toList();
+      showStatusList = showStatusList.reversed.toList();
     }
 
     // 按照邮件地址排序（默认排序）
@@ -245,21 +246,16 @@ class MySiteController extends GetxController {
   }
 
   filterSiteStatusBySearchKey() {
-    Logger.instance.w('搜索关键字：${searchKey.value}');
-    filterKey.value = '';
-    if (searchKey.value.isNotEmpty) {
-      showStatusList.value = mySiteList
+    filterKey = '';
+    if (searchKey.isNotEmpty) {
+      showStatusList = mySiteList
           .where((site) =>
-              site.nickname
-                  .toLowerCase()
-                  .contains(searchKey.value.toLowerCase()) ||
-              site.mirror!
-                  .toLowerCase()
-                  .contains(searchKey.value.toLowerCase()) ||
-              site.site.toLowerCase().contains(searchKey.value.toLowerCase()))
+              site.nickname.toLowerCase().contains(searchKey.toLowerCase()) ||
+              site.mirror!.toLowerCase().contains(searchKey.toLowerCase()) ||
+              site.site.toLowerCase().contains(searchKey.toLowerCase()))
           .toList();
     } else {
-      showStatusList.value = mySiteList;
+      showStatusList = mySiteList;
     }
 
     sortStatusList();
@@ -267,11 +263,11 @@ class MySiteController extends GetxController {
   }
 
   void filterByKey() {
-    Logger.instance.i('开始筛选，当前筛选关键字：${filterKey.value}');
-    searchKey.value = '';
+    Logger.instance.i('开始筛选，当前筛选关键字：${filterKey}');
+    searchKey = '';
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
-    switch (filterKey.value) {
+    switch (filterKey) {
       case 'available':
         filterByCondition((item) => item.available);
         break;
@@ -361,15 +357,14 @@ class MySiteController extends GetxController {
         });
         break;
       default:
-        showStatusList.value = mySiteList;
+        showStatusList = mySiteList;
     }
 
-    Logger.instance.i('筛选结果：${showStatusList.length}');
     sortStatusList();
     update();
   }
 
   void filterByCondition(bool Function(MySite) condition) {
-    showStatusList.value = mySiteList.where(condition).toList();
+    showStatusList = mySiteList.where(condition).toList();
   }
 }

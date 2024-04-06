@@ -8,16 +8,15 @@ import 'package:getwidget/getwidget.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
-import '../../../common/form_widgets.dart';
-import '../../../common/glass_widget.dart';
-import '../../../models/download.dart';
-import '../../../utils/logger_helper.dart' as LoggerHelper;
-import '../../../utils/logger_helper.dart';
-import '../../../utils/range_input.dart';
-import '../../../utils/storage.dart';
-import '../../routes/app_pages.dart';
-import 'controller/download_controller.dart';
-import 'models/transmission.dart';
+import '../../../../common/form_widgets.dart';
+import '../../../../common/glass_widget.dart';
+import '../../../../models/download.dart';
+import '../../../../utils/logger_helper.dart' as LoggerHelper;
+import '../../../../utils/range_input.dart';
+import '../../../../utils/storage.dart';
+import '../../../routes/app_pages.dart';
+import '../models/transmission.dart';
+import 'download_controller.dart';
 
 class DownloadPage extends StatefulWidget {
   const DownloadPage({super.key});
@@ -910,7 +909,8 @@ class _DownloadPageState extends State<DownloadPage>
                                   status: [],
                                 );
                               }
-                              Logger.instance.i(downloader?.toJson());
+                              LoggerHelper.Logger.instance
+                                  .i(downloader?.toJson());
                               if (await controller
                                   .saveDownloaderToServer(downloader!)) {
                                 Navigator.of(context).pop();

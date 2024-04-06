@@ -7,7 +7,7 @@ import 'package:transmission_api/transmission_api.dart' as tr;
 
 import '../../../../utils/logger_helper.dart' as LoggerHelper;
 import '../../models/download.dart';
-import '../home/pages/controller/download_controller.dart';
+import '../home/pages/download/download_controller.dart';
 import '../home/pages/models/transmission.dart';
 import 'models/transmission_base_torrent.dart';
 

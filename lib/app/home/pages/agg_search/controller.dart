@@ -105,11 +105,11 @@ class AggSearchController extends GetxController {
         update();
       }
     }, onError: (err) {
-      print('err : ${err.toString()}');
+      LoggerHelper.Logger.instance.e('搜索出错啦： ${err.toString()}');
       isLoading.value = false;
       update();
     }, onDone: () {
-      print('Done');
+      LoggerHelper.Logger.instance.e('搜索完成啦！');
       isLoading.value = false;
       SSEClient.unsubscribeFromSSE();
       update();
