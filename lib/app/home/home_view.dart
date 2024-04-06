@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 
-import '../../utils/storage.dart';
-import '../routes/app_pages.dart';
-import 'home_controller.dart';
+import 'controller/home_controller.dart';
 
 class HomeView extends GetView<HomeController> {
-  HomeView({Key? key}) : super(key: key);
+  HomeView({super.key});
+
   final GlobalKey<ScaffoldState> _globalKey = GlobalKey();
 
   @override
@@ -37,11 +36,11 @@ class HomeView extends GetView<HomeController> {
         actions: <Widget>[
           GFIconButton(
             icon: const Icon(
-              Icons.search,
+              Icons.exit_to_app,
               color: Colors.black38,
             ),
             onPressed: () {
-              Get.toNamed(Routes.SEARCH);
+              controller.logout();
             },
             type: GFButtonType.transparent,
           ),
@@ -56,125 +55,171 @@ class HomeView extends GetView<HomeController> {
         },
         children: controller.pages,
       ),
-      drawer: GFDrawer(
-        elevation: 10,
-        color: Colors.teal.shade600,
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const SizedBox(
-              height: 60,
-            ),
-            GFDrawerHeader(
-              centerAlign: true,
-              closeButton: null,
-              decoration: const BoxDecoration(
-                color: Colors.transparent,
+      drawer: SizedBox(
+        width: 220,
+        child: GFDrawer(
+          semanticLabel: 'Harvest',
+          elevation: 10,
+          color: Colors.grey.shade500,
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              const SizedBox(
+                height: 30,
               ),
-              currentAccountPicture: const GFAvatar(
-                radius: 80.0,
-                backgroundImage: NetworkImage(
-                    "https://cdn.pixabay.com/photo/2017/12/03/18/04/christmas-balls-2995437_960_720.jpg"),
-              ),
-              // otherAccountsPictures: [
-              //   Image(
-              //     image: NetworkImage(
-              //         "https://cdn.pixabay.com/photo/2019/12/20/00/03/road-4707345_960_720.jpg"),
-              //     fit: BoxFit.cover,
-              //   ),
-              //   GFAvatar(
-              //     child: Text("ab"),
-              //   )
-              // ],
-              child: Padding(
-                padding: const EdgeInsets.only(right: 20.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Text(
-                      controller.userinfo['user'],
-                      style: const TextStyle(
-                        color: Colors.white70,
+              GFDrawerHeader(
+                centerAlign: true,
+                closeButton: null,
+                decoration: const BoxDecoration(
+                  color: Colors.transparent,
+                ),
+                currentAccountPicture: const GFAvatar(
+                  radius: 80.0,
+                  backgroundImage: AssetImage('assets/images/logo.png'),
+                ),
+                // otherAccountsPictures: [
+                //   Image(
+                //     image: NetworkImage(
+                //         "https://cdn.pixabay.com/photo/2019/12/20/00/03/road-4707345_960_720.jpg"),
+                //     fit: BoxFit.cover,
+                //   ),
+                //   GFAvatar(
+                //     child: Text("ab"),
+                //   )
+                // ],
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 20.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Text(
+                        controller.userinfo['user'],
+                        style: const TextStyle(
+                          color: Colors.white70,
+                        ),
                       ),
-                    ),
-                    // Text('admin@admin.com'),
-                    Text(
-                      '当前服务器：${SPUtil.getString('server')}',
-                      style:
-                          const TextStyle(fontSize: 12, color: Colors.white70),
-                    ),
-                  ],
+                      // Text('admin@admin.com'),
+                      Text(
+                        '${controller.box.read('server')}',
+                        style: const TextStyle(
+                            fontSize: 12, color: Colors.white70),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            ListTile(
-              title: const Text(
-                '仪表盘',
-                style: TextStyle(
-                  color: Colors.white70,
+              ListTile(
+                title: const Text(
+                  '数据图表',
+                  style: TextStyle(
+                    color: Colors.white70,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
+                onTap: () {},
               ),
-              onTap: () {},
-            ),
-            ListTile(
-              title: const Text(
-                '系统设置',
-                style: TextStyle(
-                  color: Colors.white70,
+              ListTile(
+                title: const Text(
+                  '站点数据',
+                  style: TextStyle(
+                    color: Colors.white70,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
+                onTap: () {},
               ),
-              onTap: () {},
-            ),
-            ListTile(
-              title: const Text(
-                '修改密码',
-                style: TextStyle(
-                  color: Colors.white70,
+
+              ListTile(
+                title: const Text(
+                  '计划任务',
+                  style: TextStyle(
+                    color: Colors.white70,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
+                onTap: () {
+                  controller.changePage(5);
+                },
               ),
-              onTap: () {},
-            ),
-            ListTile(
-              title: const Text(
-                '运行日志',
-                style: TextStyle(
-                  color: Colors.white70,
+              ListTile(
+                title: const Text(
+                  '下载管理',
+                  style: TextStyle(
+                    color: Colors.white70,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
+                onTap: () {},
               ),
-              onTap: () {},
-            ),
-            ListTile(
-              title: const Text(
-                '支持站点',
-                style: TextStyle(
-                  color: Colors.white70,
+              ListTile(
+                title: const Text(
+                  '修改密码',
+                  style: TextStyle(
+                    color: Colors.white70,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
+                onTap: () {},
               ),
-              onTap: () {},
-            ),
-            ListTile(
-              title: const Text(
-                '反馈帮助',
-                style: TextStyle(
-                  color: Colors.white70,
+              ListTile(
+                title: const Text(
+                  '订阅管理',
+                  style: TextStyle(
+                    color: Colors.white70,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
+                onTap: () {},
               ),
-              onTap: () {},
-            ),
-            ListTile(
-              title: const Text(
-                '关于',
-                style: TextStyle(
-                  color: Colors.white70,
+              // ListTile(
+              //   title: const Text(
+              //     '支持站点',
+              //     style: TextStyle(
+              //       color: Colors.white70,
+              //     ),
+              //     textAlign: TextAlign.center,
+              //   ),
+              //   onTap: () {},
+              // ),
+              ListTile(
+                title: const Text(
+                  '标签管理',
+                  style: TextStyle(
+                    color: Colors.white70,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
+                onTap: () {},
               ),
-              onTap: () {},
-            ),
-          ],
+
+              ListTile(
+                title: const Text(
+                  'RSS订阅',
+                  style: TextStyle(
+                    color: Colors.white70,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                onTap: () {},
+              ),
+              ListTile(
+                title: const Text(
+                  '更换账号',
+                  style: TextStyle(
+                    color: Colors.white70,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                onTap: () {
+                  controller.logout();
+                },
+              ),
+            ],
+          ),
         ),
       ),
-      drawerEdgeDragWidth: 0.0,
+      drawerEdgeDragWidth: 200,
       drawerScrimColor: Colors.white.withOpacity(0.6),
       // floatingActionButton: GFIconButton(
       //   icon: const Icon(Icons.menu_outlined),
