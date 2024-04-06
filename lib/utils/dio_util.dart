@@ -8,7 +8,7 @@ class CustomInterceptors extends Interceptor {
   @override
   Future<void> onResponse(
       Response response, ResponseInterceptorHandler handler) async {
-    if (response.statusCode == 40003) {
+    if ([403, 401].contains(response.statusCode)) {
       GetStorage box = GetStorage();
       box.write("isLogin", false);
     }
@@ -46,7 +46,10 @@ class DioUtil {
     ));
 
     dio?.interceptors.add(LogInterceptor(
-        responseBody: false)); // Add logging interceptor for debugging purposes
+      requestHeader: true,
+      responseBody: false,
+      responseHeader: true,
+    )); // Add logging interceptor for debugging purposes
     dio?.interceptors.add(CustomInterceptors());
     dio?.interceptors.add(RetryInterceptor(
       dio: dio!,
