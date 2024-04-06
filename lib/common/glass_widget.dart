@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:glassmorphism_ui/glassmorphism_ui.dart';
 
 class GlassWidget extends StatelessWidget {
-  const GlassWidget({Key? key, required Widget this.child}) : super(key: key);
+  const GlassWidget({super.key, required Widget this.child});
 
   final Widget? child;
 

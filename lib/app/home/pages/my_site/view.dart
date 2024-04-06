@@ -1111,8 +1111,8 @@ class _MySitePagePageState extends State<MySitePage>
                       name: 'PrimaryYAxis',
                       labelPosition: ChartDataLabelPosition.inside,
                       numberFormat: NumberFormat.compact(),
-                      majorTickLines: MajorTickLines(width: 0),
-                      minorTickLines: MinorTickLines(width: 0),
+                      majorTickLines: const MajorTickLines(width: 0),
+                      minorTickLines: const MinorTickLines(width: 0),
                     ),
                     const NumericAxis(
                       name: 'SecondaryYAxis',

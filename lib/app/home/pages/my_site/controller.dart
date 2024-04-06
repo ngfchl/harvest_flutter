@@ -263,7 +263,7 @@ class MySiteController extends GetxController {
   }
 
   void filterByKey() {
-    Logger.instance.i('开始筛选，当前筛选关键字：${filterKey}');
+    Logger.instance.i('开始筛选，当前筛选关键字：$filterKey');
     searchKey = '';
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
 

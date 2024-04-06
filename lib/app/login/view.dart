@@ -222,7 +222,7 @@ class _LoginPageState extends State<LoginPage> {
           padding: const EdgeInsets.all(8),
           height: 500, // 或者自定义高度
           child: SingleChildScrollView(
-            padding: EdgeInsets.all(8),
+            padding: const EdgeInsets.all(8),
             child: Form(
               key: formKey,
               child: Column(
@@ -409,9 +409,9 @@ class _LoginPageState extends State<LoginPage> {
                               password: passwordController.text,
                               selected: serverToEdit?.selected ?? false,
                             );
-                            Logger.instance.i(server);
+                            Logger.instance.d(server);
                             Map result = await controller.saveServer(server);
-                            Logger.instance.i(result);
+                            Logger.instance.d(result);
                             if (result["flag"]) {
                               Get.snackbar(
                                 server.id == 0 ? '保存结果' : '更新结果',

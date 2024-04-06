@@ -174,11 +174,6 @@ class TorrentController extends GetxController {
   }
 
   @override
-  void onReady() {
-    super.onReady();
-  }
-
-  @override
   void onClose() {
     periodicTimer.cancel();
     categories.clear();

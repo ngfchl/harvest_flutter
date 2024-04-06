@@ -31,7 +31,7 @@ Future<CommonResponse> getDownloaderPaths() async {
     return CommonResponse.fromJson(response.data, (p0) => p0);
   } else {
     String msg = '获取数据失败: ${response.statusCode}';
-    // GFToast.showToast(msg, context);
+    Logger.instance.w(msg);
     return CommonResponse.fromJson(response.data, (p0) => null);
   }
 }
