@@ -49,11 +49,10 @@ class Api {
   static const String PUSH_TORRENT_URL = "/mysite/push_torrent";
 
   // 任务列表
-  static const String TASK_DESC = "schedule/tasks";
-  static const String TASK_LIST = "schedule/schedules";
-  static const String TASK_EXEC_URL = "schedule/exec";
-  static const String TASK_OPERATE_URL = "/schedule/schedule";
+  static const String TASK_RESULTS = "option/tasks";
+  static const String TASK_OPERATE = "/option/schedule";
+  static const String CRONTAB_LIST = "option/crontabs";
+  static const String TASK_EXEC_URL = "option/exec";
 
-  static const String CRONTAB_LIST = "schedule/crontabs";
   static const String SYSTEM_CONFIG = "auth/config";
 }
