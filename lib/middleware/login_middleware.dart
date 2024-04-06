@@ -8,7 +8,9 @@ class LoginMiddleware extends GetMiddleware {
   @override
   RouteSettings? redirect(String? route) {
     GetStorage box = GetStorage();
-    if (box.read('isLogin') != true && route != Routes.LOGIN) {
+    if (box.read('server') == null ||
+        box.read('userinfo') == null ||
+        box.read('isLogin') != true && route != Routes.LOGIN) {
       return const RouteSettings(name: Routes.LOGIN);
     }
     return null;
