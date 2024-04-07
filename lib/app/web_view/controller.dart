@@ -11,6 +11,10 @@ class WebViewPageController extends GetxController {
   late MySite mySite;
   late WebSite website;
   RxString pageTitle = ''.obs;
+  bool isLoading = false;
+  bool canGoBack = false;
+  bool canGoForward = false;
+  int progress = 0;
 
   @override
   void onInit() {
