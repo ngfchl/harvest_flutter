@@ -372,7 +372,8 @@ class _AggSearchPageState extends State<AggSearchPage>
               if (!Platform.isIOS && !Platform.isAndroid) {
                 Logger.instance.i('Explorer');
                 Uri uri = Uri.parse(url);
-                if (!await launchUrl(uri)) {
+                if (!await launchUrl(uri,
+                    mode: LaunchMode.externalApplication)) {
                   Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？');
                 }
               } else {
