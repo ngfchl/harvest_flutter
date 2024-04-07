@@ -44,89 +44,252 @@ class _AggSearchPageState extends State<AggSearchPage>
         failedCount =
             controller.searchMsg.where((element) => !element['success']).length;
         // controller.update();
-        return Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: searchKeyController,
-                      decoration: const InputDecoration(
-                        hintText: '请输入搜索关键字',
-                      ),
-                      onSubmitted: (value) {
-                        controller.searchKey.value = value;
-                        controller.doSearch();
-                      },
-                    ),
-                  ),
-                  ElevatedButton.icon(
-                    onPressed: () async {
-                      // 在这里执行搜索操作
-                      if (controller.isLoading.value) {
-                        await controller.cancelSearch();
-                      } else {
-                        controller.searchKey.value = searchKeyController.text;
-                        controller.doSearch();
-                      }
-                    },
-                    autofocus: true,
-                    icon: controller.isLoading.value
-                        ? const GFLoader()
-                        : const Icon(Icons.search),
-                    label: controller.isLoading.value
-                        ? const Text('取消')
-                        : const Text('搜索'),
-                  ),
-                ],
-              ),
-            ),
-            if (controller.searchMsg.isNotEmpty)
-              GFAccordion(
-                titleChild: Text(
-                  '搜索结果：$succeedCount个站点共${controller.searchResults.length}个种子，失败$failedCount个站点',
-                ),
-                titlePadding: EdgeInsets.zero,
-                contentChild: SizedBox(
-                  height: 100,
-                  child: Column(
+        return Scaffold(
+            body: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
                     children: [
                       Expanded(
-                        child: ListView.builder(
-                          itemCount: controller.searchMsg.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            String info = controller.searchMsg[index]['msg'];
-                            return Text(info);
+                        child: TextField(
+                          controller: searchKeyController,
+                          decoration: const InputDecoration(
+                            hintText: '请输入搜索关键字',
+                          ),
+                          onSubmitted: (value) {
+                            controller.searchKey = value;
+                            controller.doSearch();
                           },
                         ),
                       ),
-                      // if (controller.errSearchResults.isNotEmpty)
-                      //   Expanded(
-                      //     child: ListView.builder(
-                      //       itemCount: controller.errSearchResults.length,
-                      //       itemBuilder: (BuildContext context, int index) {
-                      //         String info = controller.errSearchResults[index];
-                      //         return Text(info);
-                      //       },
-                      //     ),
-                      //   ),
+                      GetBuilder<AggSearchController>(builder: (controller) {
+                        return ElevatedButton.icon(
+                          onPressed: () async {
+                            // 在这里执行搜索操作
+                            if (controller.isLoading) {
+                              await controller.cancelSearch();
+                            } else {
+                              controller.searchKey = searchKeyController.text;
+                              controller.doSearch();
+                            }
+                          },
+                          autofocus: true,
+                          icon: controller.isLoading
+                              ? const GFLoader(
+                                  size: 18,
+                                )
+                              : const Icon(
+                                  Icons.search,
+                                  size: 18,
+                                ),
+                          label: controller.isLoading
+                              ? const Text('取消')
+                              : const Text('搜索'),
+                        );
+                      }),
                     ],
                   ),
                 ),
-              ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: controller.searchResults.length,
-                itemBuilder: (BuildContext context, int index) {
-                  TorrentInfo info = controller.searchResults[index];
-                  return showTorrentInfo(info);
-                },
-              ),
+                if (controller.searchMsg.isNotEmpty)
+                  GFAccordion(
+                    titleChild: Text(
+                        '搜索结果：$succeedCount个站点共${controller.searchResults.length}个种子，筛选结果：${controller.showResults.length}个'),
+                    titlePadding: EdgeInsets.zero,
+                    contentChild: SizedBox(
+                      height: 100,
+                      child: Column(
+                        children: [
+                          Text(
+                              '搜索结果：$succeedCount个站点共${controller.searchResults.length}个种子，失败$failedCount个站点'),
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: controller.searchMsg.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                String info =
+                                    controller.searchMsg[index]['msg'];
+                                return Text(info);
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                GetBuilder<AggSearchController>(builder: (controller) {
+                  return Expanded(
+                    child: ListView.builder(
+                      itemCount: controller.showResults.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        TorrentInfo info = controller.showResults[index];
+                        return showTorrentInfo(info);
+                      },
+                    ),
+                  );
+                }),
+              ],
             ),
-          ],
-        );
+            floatingActionButton: controller.searchResults.isNotEmpty
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      GFIconButton(
+                        onPressed: () {
+                          Get.bottomSheet(SizedBox(
+                            // height: 500,
+                            width: double.infinity,
+                            child: SingleChildScrollView(
+                              child: Card(
+                                child: GetBuilder<AggSearchController>(
+                                    builder: (controller) {
+                                  return Column(
+                                    children: [
+                                      Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            '种子筛选',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .titleMedium,
+                                          )),
+                                      if (controller.succeedSiteList.isNotEmpty)
+                                        FilterItem(
+                                            name: '站点',
+                                            value: controller.succeedSiteList,
+                                            selected:
+                                                controller.selectedSiteList,
+                                            onUpdate: () {
+                                              controller.filterResults();
+                                              controller.update();
+                                            }),
+                                      if (controller.saleStatusList.isNotEmpty)
+                                        FilterItem(
+                                            name: '免费',
+                                            value: controller.saleStatusList,
+                                            selected: controller
+                                                .selectedSaleStatusList,
+                                            onUpdate: () {
+                                              controller.filterResults();
+                                              controller.update();
+                                            }),
+                                      if (controller
+                                          .succeedCategories.isNotEmpty)
+                                        FilterItem(
+                                            name: '分类',
+                                            value: controller.succeedCategories,
+                                            selected:
+                                                controller.selectedCategories,
+                                            onUpdate: () {
+                                              controller.filterResults();
+                                              controller.update();
+                                            }),
+                                      if (controller.hrResultList.isNotEmpty)
+                                        Card(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                            side: const BorderSide(
+                                                color: Colors.grey, width: 1.0),
+                                          ),
+                                          child: SwitchListTile(
+                                            title: const Text('排除 HR'),
+                                            onChanged: (val) {
+                                              controller.hrKey = val;
+                                              controller.update();
+                                            },
+                                            value: controller.hrKey,
+                                            activeColor: Colors.green,
+                                          ),
+                                        ),
+                                    ],
+                                  );
+                                }),
+                              ),
+                            ),
+                          ));
+                        },
+                        icon: const Icon(
+                          Icons.filter_tilt_shift,
+                          // size: 32,
+                          // color: Colors.blue,
+                        ),
+                        // text: '筛选',
+                        // type: GFButtonType.outline2x,
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      GFIconButton(
+                        onPressed: () {
+                          Get.bottomSheet(SizedBox(
+                            width: double.infinity,
+                            child: Card(
+                                child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: ListView.builder(
+                                itemCount: controller.sortKeyList.length,
+                                itemBuilder: (context, index) {
+                                  Map<String, String> item =
+                                      controller.sortKeyList[index];
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 3.0),
+                                    child: ListTile(
+                                      title: Text(
+                                        item['name']!,
+                                        style: const TextStyle(fontSize: 13),
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                        side: const BorderSide(
+                                            color: Colors.grey, width: 1.0),
+                                      ),
+                                      selectedColor: Colors.amber,
+                                      selected:
+                                          controller.sortKey == item['value'],
+                                      leading: controller.sortReversed
+                                          ? const Icon(Icons.trending_up)
+                                          : const Icon(Icons.trending_down),
+                                      trailing: controller.sortKey ==
+                                              item['value']
+                                          ? const Icon(Icons.check_box_outlined)
+                                          : const Icon(Icons
+                                              .check_box_outline_blank_rounded),
+                                      onTap: () {
+                                        if (controller.sortKey ==
+                                            item['value']!) {
+                                          controller.sortReversed =
+                                              !controller.sortReversed;
+                                        }
+
+                                        controller.sortKey = item['value']!;
+                                        controller.sortResults();
+
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                  );
+                                },
+                              ),
+                            )),
+                          ));
+                        },
+                        icon: const Icon(
+                          Icons.swap_vert_circle_outlined,
+                          // size: 32,
+                          // color: Colors.blue,
+                        ),
+                        // text: '排序',
+                        // type: GFButtonType.outline2x,
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                    ],
+                  )
+                : null);
       },
     );
   }
@@ -464,6 +627,63 @@ class _AggSearchPageState extends State<AggSearchPage>
               ),
             ),
           ]),
+        ],
+      ),
+    );
+  }
+}
+
+class FilterItem extends StatelessWidget {
+  final String name;
+  final List<String> value;
+  final List<String> selected;
+  final Function() onUpdate;
+
+  const FilterItem({
+    super.key,
+    required this.name,
+    required this.value,
+    required this.selected,
+    required this.onUpdate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8.0),
+        side: const BorderSide(color: Colors.grey, width: 1.0),
+      ),
+      child: Column(
+        children: [
+          ListTile(
+            title: Text(name),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              children: value
+                  .map(
+                    (e) => ChoiceChip(
+                      label: e.toString().isNotEmpty
+                          ? Text(e.toString())
+                          : const Text('无'),
+                      selected: selected.contains(e.toString()),
+                      onSelected: (value) {
+                        if (value) {
+                          selected.add(e.toString());
+                        } else {
+                          selected.remove(e.toString());
+                        }
+                        onUpdate();
+                      },
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
         ],
       ),
     );

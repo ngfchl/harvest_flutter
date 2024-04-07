@@ -14,32 +14,129 @@ import 'models/torrent_info.dart';
 
 class AggSearchController extends GetxController {
   MySiteController mySiteController = Get.find();
-  RxString searchKey = ''.obs;
-  RxList<int> sites = <int>[].obs;
-  RxInt maxCount = 10.obs;
-  RxList<TorrentInfo> searchResults = <TorrentInfo>[].obs;
-  RxList<Map<String, dynamic>> searchMsg = <Map<String, dynamic>>[].obs;
-  RxList<String> succeedSearchResults = <String>[].obs;
-
-  RxBool isLoading = false.obs;
+  String searchKey = '';
+  String filterKey = '';
+  String sortKey = 'siteId';
+  List<int> sites = <int>[];
+  int maxCount = 10;
+  List<TorrentInfo> searchResults = <TorrentInfo>[];
+  List<TorrentInfo> showResults = <TorrentInfo>[];
+  List<Map<String, dynamic>> searchMsg = <Map<String, dynamic>>[];
+  List<String> succeedSearchResults = <String>[];
+  List<String> succeedCategories = <String>[];
+  List<String> succeedTags = <String>[];
+  List<String> selectedCategories = <String>[];
+  List<String> succeedSiteList = <String>[];
+  List<String> selectedSiteList = <String>[];
+  List<String> selectedTags = <String>[];
+  List<TorrentInfo> hrResultList = <TorrentInfo>[];
+  bool sortReversed = false;
+  bool isLoading = false;
   GetStorage box = GetStorage();
-  RxMap<String, MySite> mySiteMap = <String, MySite>{}.obs;
+  Map<String, MySite> mySiteMap = <String, MySite>{};
+
+  List<Map<String, String>> sortKeyList = [
+    {'name': '发布时间', 'value': 'published'},
+    {'name': '大小', 'value': 'size'},
+    {'name': '分类', 'value': 'category'},
+    {'name': '名称', 'value': 'title'},
+    {'name': '免费', 'value': 'free'},
+    {'name': '站点', 'value': 'siteId'},
+    {'name': '做种', 'value': 'seeders'},
+    {'name': '吸血', 'value': 'leechers'},
+    {'name': '完成', 'value': 'completers'},
+  ];
+  List<Map<String, dynamic>> filterKeyList = [];
+  List<String> saleStatusList = [];
+  List<String> selectedSaleStatusList = [];
+  bool hrKey = false;
 
   @override
   void onInit() async {
+    filterKeyList.insertAll(0, [
+      {'name': '站点', 'value': succeedSiteList},
+      {'name': '免费', 'value': saleStatusList},
+      {'name': '分类', 'value': succeedCategories},
+    ]);
     await initData();
     super.onInit();
   }
 
   initData() async {
     await mySiteController.initData();
-    mySiteMap.value = {
+    mySiteMap = {
       for (var mysite in mySiteController.mySiteList) mysite.site: mysite
     };
+    update();
+  }
+
+  sortResults() {
+    if (sortKey.isEmpty) {
+      return;
+    }
+    switch (sortKey) {
+      case 'siteId':
+        showResults.sort((a, b) => a.siteId.compareTo(b.siteId));
+        break;
+      case 'category':
+        showResults.sort((a, b) => a.category.compareTo(b.category));
+        break;
+      case 'title':
+        showResults.sort((a, b) => a.title.compareTo(b.title));
+        break;
+      case 'published':
+        showResults.sort((a, b) => a.published.compareTo(b.published));
+        break;
+      case 'size':
+        showResults.sort((a, b) => a.size.compareTo(b.size));
+        break;
+      case 'seeders':
+        showResults.sort((a, b) => a.seeders.compareTo(b.seeders));
+        break;
+      case 'leechers':
+        showResults.sort((a, b) => a.leechers.compareTo(b.leechers));
+        break;
+      case 'completers':
+        showResults.sort((a, b) => a.completers.compareTo(b.completers));
+        break;
+    }
+    LoggerHelper.Logger.instance.w(sortReversed);
+    if (sortReversed) {
+      showResults = showResults.reversed.toList();
+    }
+    update();
+  }
+
+  void filterResults() {
+    // 过滤结果
+    List<TorrentInfo> filteredResults = List.from(searchResults);
+
+    if (hrKey) {
+      filteredResults.removeWhere((element) => element.hr);
+    }
+
+    if (selectedSiteList.isNotEmpty) {
+      filteredResults
+          .retainWhere((element) => selectedSiteList.contains(element.siteId));
+    }
+
+    if (selectedCategories.isNotEmpty) {
+      filteredResults.retainWhere(
+          (element) => selectedCategories.contains(element.category));
+    }
+
+    if (selectedSaleStatusList.isNotEmpty) {
+      filteredResults.retainWhere(
+          (element) => selectedSaleStatusList.contains(element.saleStatus));
+    }
+
+    showResults = filteredResults;
+    sortResults();
+    update();
   }
 
   cancelSearch() async {
-    isLoading.value = false;
+    isLoading = false;
     SSEClient.unsubscribeFromSSE();
     update();
   }
@@ -48,10 +145,13 @@ class AggSearchController extends GetxController {
     // 清空搜索记录
     searchResults.clear();
     searchMsg.clear();
+    succeedCategories.clear();
+    selectedSiteList.clear();
+    succeedSiteList.clear();
+    // 打开加载状态
+    isLoading = true;
     update();
 
-    // 打开加载状态
-    isLoading.value = true;
     // 初始化站点数据
     if (mySiteMap.isEmpty) {
       LoggerHelper.Logger.instance.w('重新加载站点列表');
@@ -71,8 +171,8 @@ class AggSearchController extends GetxController {
         url: '${box.read('server')}/api/${Api.WEBSITE_SEARCH}',
         header: headers,
         body: {
-          "key": searchKey.value,
-          "max_count": maxCount.value,
+          "key": searchKey,
+          "max_count": maxCount,
           "sites": sites,
         }).listen((event) {
       Map<String, dynamic> jsonData = json.decode(event.data!);
@@ -84,16 +184,29 @@ class AggSearchController extends GetxController {
           List<TorrentInfo> torrentInfoList = jsonList
               .map((jsonItem) => TorrentInfo.fromJson(jsonItem))
               .toList();
+          // 写入种子列表
           searchResults.addAll(torrentInfoList);
+          hrResultList
+              .addAll(torrentInfoList.where((element) => element.hr).toList());
+          // 获取种子分类，并去重
+          succeedCategories
+              .addAll(torrentInfoList.map((e) => e.category).toList());
+          succeedCategories = succeedCategories.toSet().toList();
+          saleStatusList
+              .addAll(torrentInfoList.map((e) => e.saleStatus).toList());
+          saleStatusList = saleStatusList.toSet().toList();
+          // 写入有数据的站点
+          succeedSiteList.add(torrentInfoList[0].siteId);
           searchMsg.insert(0, {
             "success": true,
             "msg": jsonData['msg'],
           });
+          filterResults();
           update();
         } catch (e, trace) {
           LoggerHelper.Logger.instance.e(e.toString());
           LoggerHelper.Logger.instance.e(trace.toString());
-          isLoading.value = false;
+          isLoading = false;
           SSEClient.unsubscribeFromSSE();
           update();
         }
@@ -105,15 +218,16 @@ class AggSearchController extends GetxController {
         update();
       }
     }, onError: (err) {
+      isLoading = false;
+      SSEClient.unsubscribeFromSSE();
       LoggerHelper.Logger.instance.e('搜索出错啦： ${err.toString()}');
-      isLoading.value = false;
       update();
     }, onDone: () {
-      LoggerHelper.Logger.instance.e('搜索完成啦！');
-      isLoading.value = false;
+      isLoading = false;
       SSEClient.unsubscribeFromSSE();
-      update();
+      LoggerHelper.Logger.instance.e('搜索完成啦！');
     });
+    update();
   }
 
   @override
