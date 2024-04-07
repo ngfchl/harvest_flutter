@@ -3,7 +3,7 @@ description: "Harvest Project App Client"
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 2024.04.06+1
+version: 2024.04.07+2
 
 environment:
   sdk: '>=3.3.2 <4.0.0'

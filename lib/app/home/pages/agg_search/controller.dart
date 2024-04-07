@@ -148,6 +148,7 @@ class AggSearchController extends GetxController {
     succeedCategories.clear();
     selectedSiteList.clear();
     succeedSiteList.clear();
+    showResults.clear();
     // 打开加载状态
     isLoading = true;
     update();
