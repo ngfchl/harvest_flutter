@@ -19,4 +19,18 @@ class CommonResponse<T> {
     data['data'] = toJsonT(this.data as T);
     return data;
   }
+
+  CommonResponse.success({
+    String? msg,
+    this.data,
+  }) {
+    code = 0;
+    this.msg = msg ?? '';
+  }
+
+  CommonResponse.error({String? msg}) {
+    code = -1;
+    this.msg = msg ?? '';
+    data = null;
+  }
 }
