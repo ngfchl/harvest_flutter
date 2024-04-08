@@ -10,10 +10,11 @@ import 'package:harvest/app/home/pages/models/website.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../../utils/logger_helper.dart';
+import '../../../../utils/logger_helper.dart' as LoggerHelper;
 import '../../../routes/app_pages.dart';
 import '../models/my_site.dart';
 import 'controller.dart';
+import 'download_from.dart';
 
 class AggSearchPage extends StatefulWidget {
   const AggSearchPage({super.key});
@@ -121,7 +122,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                     child: ListView.builder(
                       itemCount: controller.showResults.length,
                       itemBuilder: (BuildContext context, int index) {
-                        TorrentInfo info = controller.showResults[index];
+                        SearchTorrentInfo info = controller.showResults[index];
                         return showTorrentInfo(info);
                       },
                     ),
@@ -300,11 +301,12 @@ class _AggSearchPageState extends State<AggSearchPage>
     super.dispose();
   }
 
-  Widget showTorrentInfo(TorrentInfo info) {
+  Widget showTorrentInfo(SearchTorrentInfo info) {
     WebSite? website = controller.mySiteController.webSiteList[info.siteId];
     MySite? mySite = controller.mySiteMap[info.siteId];
     if (website == null || mySite == null) {
-      Logger.instance.w('显示出错啦: ${info.siteId} -  $mySite - $website');
+      LoggerHelper.Logger.instance
+          .w('显示出错啦: ${info.siteId} -  $mySite - $website');
       return const SizedBox.shrink();
     }
     return Card(
@@ -370,14 +372,14 @@ class _AggSearchPageState extends State<AggSearchPage>
                   '${mySite.mirror}${website.pageDetail.replaceAll('{}', info.tid)}';
 
               if (!Platform.isIOS && !Platform.isAndroid) {
-                Logger.instance.i('Explorer');
+                LoggerHelper.Logger.instance.i('Explorer');
                 Uri uri = Uri.parse(url);
                 if (!await launchUrl(uri,
                     mode: LaunchMode.externalApplication)) {
                   Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？');
                 }
               } else {
-                Logger.instance.i('WebView');
+                LoggerHelper.Logger.instance.i('WebView');
                 Get.toNamed(Routes.WEBVIEW, arguments: {
                   'url': url,
                   'info': info,
@@ -624,7 +626,69 @@ class _AggSearchPageState extends State<AggSearchPage>
                 text: '推送种子',
                 color: GFColors.PRIMARY,
                 size: GFSize.SMALL,
-                onPressed: () {},
+                onPressed: () {
+                  Get.bottomSheet(Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                    child: Card(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('请选择下载器'),
+                          Flexible(
+                            child: ListView(
+                              children: controller.downloadController.dataList
+                                  .map((downloader) {
+                                return Card(
+                                  child: GetBuilder<AggSearchController>(
+                                      id: '${downloader.id} - ${downloader.name}',
+                                      builder: (controller) {
+                                        return ListTile(
+                                          title: Text(downloader.name),
+                                          subtitle: Text(
+                                              '${downloader.protocol}://${downloader.host}:${downloader.port}'),
+                                          leading: CircleAvatar(
+                                            backgroundImage: Image.asset(
+                                              'assets/images/${downloader.category.toLowerCase()}.png',
+                                            ).image,
+                                          ),
+                                          trailing: controller
+                                                  .isDownloaderLoading
+                                              ? const CircularProgressIndicator()
+                                              : const SizedBox.shrink(),
+                                          onTap: () async {
+                                            // 显示加载器
+                                            Get.defaultDialog(
+                                              // barrierDismissible: false,
+                                              title: '下载到：${downloader.name}',
+                                              titleStyle: const TextStyle(
+                                                  fontSize: 14,
+                                                  color: Colors.white70),
+                                              backgroundColor: Colors.blue,
+                                              content: SizedBox(
+                                                  // height: 350,
+                                                  child: SingleChildScrollView(
+                                                child: DownloadForm(
+                                                  categories: await controller
+                                                      .getDownloaderCategories(
+                                                          downloader),
+                                                  downloader: downloader,
+                                                  info: info,
+                                                ),
+                                              )),
+                                            );
+                                          },
+                                        );
+                                      }),
+                                );
+                              }).toList(),
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ));
+                },
               ),
             ),
           ]),

@@ -8,19 +8,24 @@ import 'package:harvest/api/api.dart';
 import 'package:harvest/utils/logger_helper.dart' as LoggerHelper;
 
 import '../../../../models/authinfo.dart';
+import '../../../../models/download.dart';
+import '../../../torrent/torrent_controller.dart';
+import '../download/download_controller.dart';
 import '../models/my_site.dart';
 import '../my_site/controller.dart';
 import 'models/torrent_info.dart';
 
 class AggSearchController extends GetxController {
   MySiteController mySiteController = Get.find();
+  DownloadController downloadController = Get.find();
+
   String searchKey = '';
   String filterKey = '';
   String sortKey = 'siteId';
   List<int> sites = <int>[];
   int maxCount = 10;
-  List<TorrentInfo> searchResults = <TorrentInfo>[];
-  List<TorrentInfo> showResults = <TorrentInfo>[];
+  List<SearchTorrentInfo> searchResults = <SearchTorrentInfo>[];
+  List<SearchTorrentInfo> showResults = <SearchTorrentInfo>[];
   List<Map<String, dynamic>> searchMsg = <Map<String, dynamic>>[];
   List<String> succeedSearchResults = <String>[];
   List<String> succeedCategories = <String>[];
@@ -29,9 +34,10 @@ class AggSearchController extends GetxController {
   List<String> succeedSiteList = <String>[];
   List<String> selectedSiteList = <String>[];
   List<String> selectedTags = <String>[];
-  List<TorrentInfo> hrResultList = <TorrentInfo>[];
+  List<SearchTorrentInfo> hrResultList = <SearchTorrentInfo>[];
   bool sortReversed = false;
   bool isLoading = false;
+  bool isDownloaderLoading = false;
   GetStorage box = GetStorage();
   Map<String, MySite> mySiteMap = <String, MySite>{};
 
@@ -67,6 +73,9 @@ class AggSearchController extends GetxController {
     mySiteMap = {
       for (var mysite in mySiteController.mySiteList) mysite.site: mysite
     };
+
+    await downloadController.getDownloaderListFromServer();
+    downloadController.cancelPeriodicTimer();
     update();
   }
 
@@ -109,7 +118,7 @@ class AggSearchController extends GetxController {
 
   void filterResults() {
     // 过滤结果
-    List<TorrentInfo> filteredResults = List.from(searchResults);
+    List<SearchTorrentInfo> filteredResults = List.from(searchResults);
 
     if (hrKey) {
       filteredResults.removeWhere((element) => element.hr);
@@ -182,8 +191,8 @@ class AggSearchController extends GetxController {
         try {
           List<Map<String, dynamic>> jsonList =
               jsonData['data'].cast<Map<String, dynamic>>();
-          List<TorrentInfo> torrentInfoList = jsonList
-              .map((jsonItem) => TorrentInfo.fromJson(jsonItem))
+          List<SearchTorrentInfo> torrentInfoList = jsonList
+              .map((jsonItem) => SearchTorrentInfo.fromJson(jsonItem))
               .toList();
           // 写入种子列表
           searchResults.addAll(torrentInfoList);
@@ -228,7 +237,37 @@ class AggSearchController extends GetxController {
       SSEClient.unsubscribeFromSSE();
       LoggerHelper.Logger.instance.e('搜索完成啦！');
     });
+
     update();
+  }
+
+  Future<Map<String, String>> getDownloaderCategories(
+      Downloader downloader) async {
+    isDownloaderLoading = true;
+    try {
+      Get.put(TorrentController(downloader, false),
+          tag:
+              '${downloader.protocol}://${downloader.host}:${downloader.port}');
+      TorrentController torrentController = Get.find(
+          tag:
+              '${downloader.protocol}://${downloader.host}:${downloader.port}');
+      if (downloader.category.toLowerCase() == 'tr') {
+        torrentController.getAllTorrents();
+      }
+      update(['${downloader.id} - ${downloader.name}']);
+      await torrentController.getAllCategory();
+      isDownloaderLoading = false;
+      update(['${downloader.id} - ${downloader.name}']);
+      update();
+      torrentController.update();
+
+      return torrentController.categoryList;
+    } catch (e, trace) {
+      LoggerHelper.Logger.instance.e(e);
+      LoggerHelper.Logger.instance.e(trace);
+      isDownloaderLoading = false;
+      return {};
+    }
   }
 
   @override
