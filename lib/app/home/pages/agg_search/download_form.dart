@@ -54,8 +54,8 @@ class DownloadForm extends StatelessWidget {
     urlController.text = info.magnetUrl;
     RxBool advancedConfig = false.obs;
     RxBool paused = false.obs;
-    RxBool rootFolder = false.obs;
-    RxBool autoTMM = false.obs;
+    Rx<bool> rootFolder = false.obs;
+    Rx<bool> autoTMM = false.obs;
     RxBool firstLastPiecePrio = false.obs;
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -79,7 +79,7 @@ class DownloadForm extends StatelessWidget {
                         controller: categoryController,
                         labelText: '分类',
                         data: categories.keys.toList(),
-                        onConfirm: (value, index) {
+                        onChanged: (value, index) {
                           categoryController.text = value;
                           savePathController.text = categories[value] ?? '';
                         },
@@ -233,13 +233,18 @@ class DownloadForm extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    ElevatedButton(
+                    ElevatedButton.icon(
                       onPressed: () => cancelForm(context),
                       style: ButtonStyle(
-                        backgroundColor:
-                            MaterialStateProperty.all(Colors.redAccent),
+                        backgroundColor: MaterialStateProperty.all(
+                            Colors.redAccent.withAlpha(150)),
                       ),
-                      child: const Text('取消'),
+                      icon: const Icon(Icons.cancel_outlined,
+                          color: Colors.white),
+                      label: const Text(
+                        '取消',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                     Obx(() {
                       return ElevatedButton.icon(
@@ -311,4 +316,77 @@ class DownloadForm extends StatelessWidget {
     ratioLimitController.clear();
     Navigator.of(context).pop();
   }
+}
+
+openDownloaderListSheet(BuildContext context, SearchTorrentInfo info) {
+  DownloadController downloadController = Get.find();
+  Get.bottomSheet(Card(
+    color: Colors.white38,
+    margin: const EdgeInsets.all(8),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: Text(
+            '请选择下载器',
+            style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                ),
+          ),
+        ),
+        Flexible(
+          child: ListView(
+            children: downloadController.dataList.map((downloader) {
+              return Card(
+                color: Colors.white54,
+                child: GetBuilder<AggSearchController>(
+                    id: '${downloader.id} - ${downloader.name}',
+                    builder: (controller) {
+                      return ListTile(
+                        title: Text(downloader.name),
+                        subtitle: Text(
+                            '${downloader.protocol}://${downloader.host}:${downloader.port}'),
+                        leading: CircleAvatar(
+                          backgroundImage: Image.asset(
+                            'assets/images/${downloader.category.toLowerCase()}.png',
+                          ).image,
+                        ),
+                        trailing: controller.isDownloaderLoading
+                            ? const CircularProgressIndicator()
+                            : const SizedBox.shrink(),
+                        onTap: () async {
+                          await controller
+                              .getDownloaderCategories(downloader)
+                              .then((value) {
+                            Map<String, String> categorise = value;
+                            Get.back();
+                            Get.defaultDialog(
+                              // barrierDismissible: false,
+                              title: '下载到：${downloader.name}',
+                              titleStyle: const TextStyle(
+                                  fontSize: 14, color: Colors.white70),
+                              backgroundColor: Colors.black54,
+                              content: SizedBox(
+                                  // height: 350,
+                                  child: SingleChildScrollView(
+                                child: DownloadForm(
+                                  categories: categorise,
+                                  downloader: downloader,
+                                  info: info,
+                                ),
+                              )),
+                            );
+                          });
+                        },
+                      );
+                    }),
+              );
+            }).toList(),
+          ),
+        )
+      ],
+    ),
+  ));
 }

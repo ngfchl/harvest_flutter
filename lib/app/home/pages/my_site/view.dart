@@ -699,7 +699,7 @@ class _MySitePagePageState extends State<MySitePage>
                         controller: siteController,
                         labelText: '选择站点',
                         data: siteList,
-                        onConfirm: (p, position) {
+                        onChanged: (p, position) {
                           siteController.text = p;
                           selectedSite.value = controller.webSiteList[p];
                           urlList?.value = selectedSite.value!.url;
