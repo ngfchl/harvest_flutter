@@ -1,35 +1,46 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:harvest/app/home/pages/models/my_site.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
 import 'package:transmission_api/transmission_api.dart' as tr;
 
 import '../../../../utils/logger_helper.dart' as LoggerHelper;
+import '../../models/common_response.dart';
 import '../../models/download.dart';
-import '../home/pages/download/download_controller.dart';
 import '../home/pages/models/transmission.dart';
 import 'models/transmission_base_torrent.dart';
 
 class TorrentController extends GetxController {
-  DownloadController downloadController = Get.find();
-
   late Downloader downloader;
+  dynamic client;
   final torrents = [].obs;
   final showTorrents = [].obs;
   final categories = <Map<String, String>>[].obs;
   final category = 'all_torrents'.obs;
-  late Timer periodicTimer;
+  Timer? periodicTimer;
   RxBool isTimerActive = true.obs; // 使用 RxBool 控制定时器是否激活
   final sortKey = 'name'.obs;
   final sortReversed = false.obs;
+  bool realTimeState = true;
   final searchController = TextEditingController().obs;
   final searchKey = ''.obs;
   final statusList = RxList().obs;
   final freeSpace = 1.obs;
+  final timerDuration = 3.14.obs;
+  final duration = 3.14.obs;
+  bool isLoading = false;
   Rx<TorrentState?> torrentState = Rx<TorrentState?>(null);
   Rx<int?> trTorrentState = Rx<int?>(null);
   Rx<TorrentFilter> torrentFilter = Rx<TorrentFilter>(TorrentFilter.all);
+  Map<String, String> categoryList = {};
+
+  TorrentController(this.downloader, this.realTimeState);
 
   List filters = [
     {"name": "全部", "value": TorrentFilter.all},
@@ -124,34 +135,41 @@ class TorrentController extends GetxController {
   ];
 
   @override
-  void onInit() {
-    downloader = Get.arguments;
-    if (downloader.category.toLowerCase() == 'qb') {
-      getAllCategory();
-    }
+  void onInit() async {
+    await initClient();
+    await getAllCategory();
+
     getFreeSpace();
     getAllTorrents();
-    startPeriodicTimer();
-    Timer(Duration(seconds: (downloadController.timerDuration * 60).toInt()),
-        () {
-      // 定时器触发后执行的操作，这里可以取消periodicTimer、关闭资源等
-      periodicTimer.cancel();
-      // 你可以在这里添加其他需要在定时器触发后执行的逻辑
-    });
+    if (realTimeState) {
+      startPeriodicTimer();
 
+      Timer(Duration(seconds: (timerDuration * 60).toInt()), () {
+        // 定时器触发后执行的操作，这里可以取消periodicTimer、关闭资源等
+        periodicTimer?.cancel();
+        // 你可以在这里添加其他需要在定时器触发后执行的逻辑
+      });
+    }
     super.onInit();
+  }
+
+  initClient() async {
+    if (downloader.category.toLowerCase() == 'qb') {
+      client = await getQbInstance(downloader);
+    } else {
+      client = getTrInstance(downloader);
+    }
   }
 
   void startPeriodicTimer() {
     // 设置定时器，每隔一定时间刷新下载器数据
     periodicTimer = Timer.periodic(
-        Duration(milliseconds: (downloadController.duration * 1000).toInt()),
-        (Timer t) async {
+        Duration(milliseconds: (duration * 1000).toInt()), (Timer t) async {
       // 在定时器触发时获取最新的下载器数据
       getAllTorrents();
       getFreeSpace();
 
-      dynamic status = await downloadController.getIntervalSpeed(downloader);
+      dynamic status = await getIntervalSpeed(downloader);
       LoggerHelper.Logger.instance.w('state77:${status.code}');
       if (status.code == 0) {
         LoggerHelper.Logger.instance.w(statusList.value.length);
@@ -166,8 +184,8 @@ class TorrentController extends GetxController {
   }
 
   void cancelPeriodicTimer() {
-    if (periodicTimer.isActive) {
-      periodicTimer.cancel();
+    if (periodicTimer!.isActive) {
+      periodicTimer?.cancel();
     }
     isTimerActive.value = false;
     update();
@@ -175,7 +193,7 @@ class TorrentController extends GetxController {
 
   @override
   void onClose() {
-    periodicTimer.cancel();
+    if (periodicTimer != null) periodicTimer?.cancel();
     categories.clear();
     torrents.clear();
     showTorrents.clear();
@@ -188,31 +206,56 @@ class TorrentController extends GetxController {
     if (categories.isNotEmpty) {
       return;
     }
+    if (client == null) {
+      await initClient();
+    }
     if (downloader.category.toLowerCase() == 'qb') {
       categories.value = <Map<String, String>>[
         {'name': '全部', 'value': 'all_torrents'},
         {'name': '未分类', 'value': ''},
       ];
-      QBittorrentApiV2 qbittorrent =
-          await downloadController.getQbInstance(downloader);
-      categories.addAll((await qbittorrent.torrents.getCategories())
-          .keys
-          .map<Map<String, String>>((e) => {'name': e, 'value': e})
-          .toList());
 
-      LoggerHelper.Logger.instance.w(categories.length);
+      Map<String, Category> cList = await client.torrents.getCategories();
+      if (cList.isEmpty) {
+        await getAllTorrents();
+        categoryList =
+            torrents.map((element) => element.savePath).fold({}, (map, el) {
+          map[el] = el;
+          return map;
+        });
+        ;
+      } else {
+        categoryList = cList.values.fold({}, (map, element) {
+          map[element.name!] = element.savePath ?? '';
+          return map;
+        });
+      }
+      categories.addAll(
+          categoryList.keys.map((e) => {'name': e, 'value': e}).toList());
+
+      // LoggerHelper.Logger.instance.w(categories);
     } else {
       Set<Map<String, String>> uniqueCategories = {
         {'name': '全部', 'value': 'all_torrents'}
       };
       // 取全部
-      uniqueCategories.addAll(torrents
-          .map((element) => element.downloadDir!.replaceAll(RegExp(r'\/$'), ''))
+      if (torrents.isEmpty) {
+        await getAllTorrents();
+      }
+      List<String> dirs = torrents
+          .map((element) =>
+              element.downloadDir!.replaceAll(RegExp(r'\/$'), '').toString())
           .toSet()
-          .map((e) => {'name': e, 'value': e}));
+          .toList();
+      LoggerHelper.Logger.instance.w(dirs);
+      uniqueCategories
+          .addAll(dirs.map((e) => {'name': e.split('/').last, 'value': e}));
       // 去重
-
-      LoggerHelper.Logger.instance.w('TR 路径：${uniqueCategories.length}');
+      categoryList = dirs.fold({}, (map, element) {
+        map[element.split('/').last] = element;
+        return map;
+      });
+      // LoggerHelper.Logger.instance.w('TR 路径：${uniqueCategories.length}');
 
       categories.value = uniqueCategories.toList();
     }
@@ -343,7 +386,7 @@ class TorrentController extends GetxController {
     final selectedState =
         isQbCategory ? torrentState.value : trTorrentState.value;
 
-    LoggerHelper.Logger.instance.w('状态：$selectedState');
+    // LoggerHelper.Logger.instance.w('状态：$selectedState');
     if (selectedState != null) {
       showTorrents.value = showTorrents
           .where((torrent) => isQbCategory
@@ -354,7 +397,7 @@ class TorrentController extends GetxController {
   }
 
   filterTorrentsBySearchKey() {
-    LoggerHelper.Logger.instance.w('搜索关键字：${searchKey.value}');
+    // LoggerHelper.Logger.instance.w('搜索关键字：${searchKey.value}');
 
     if (searchKey.value.isNotEmpty) {
       showTorrents.value = showTorrents
@@ -367,33 +410,26 @@ class TorrentController extends GetxController {
 
   filterTorrents() {
     showTorrents.value = torrents;
-    LoggerHelper.Logger.instance.w(showTorrents.length);
+    // LoggerHelper.Logger.instance.w(showTorrents.length);
     filterTorrentsByCategory();
-    LoggerHelper.Logger.instance.w(showTorrents.length);
+    // LoggerHelper.Logger.instance.w(showTorrents.length);
     filterTorrentsByState();
-    LoggerHelper.Logger.instance.w(showTorrents.length);
+    // LoggerHelper.Logger.instance.w(showTorrents.length);
     filterTorrentsBySearchKey();
-    LoggerHelper.Logger.instance.w(showTorrents.length);
+    // LoggerHelper.Logger.instance.w(showTorrents.length);
     update();
   }
 
   Future<void> getAllTorrents() async {
     if (downloader.category.toLowerCase() == 'qb') {
-      QBittorrentApiV2 qbittorrent =
-          await downloadController.getQbInstance(downloader);
-
-      torrents.value = await qbittorrent.torrents.getTorrentsList(
+      torrents.value = await client.torrents.getTorrentsList(
         options: TorrentListOptions(
             // category: category.value != 'all_torrents' ? category.value : null,
             // sort: TorrentSort.name,
             filter: torrentFilter.value),
       );
-
-      LoggerHelper.Logger.instance.w(torrents.length);
     } else {
-      tr.Transmission transmission =
-          downloadController.getTrInstance(downloader);
-      Map res = await transmission.v1.torrent.torrentGet(
+      Map res = await client.v1.torrent.torrentGet(
           fields: tr.TorrentFields()
               .id
               .name
@@ -422,7 +458,7 @@ class TorrentController extends GetxController {
               .queuePosition
               .activityDate);
 
-      LoggerHelper.Logger.instance.w(res['arguments']["torrents"][0]);
+      // LoggerHelper.Logger.instance.w(res['arguments']["torrents"][0]);
       if (res['result'] == "success") {
         torrents.value = res['arguments']["torrents"]
             .map<TransmissionBaseTorrent>(
@@ -454,81 +490,77 @@ class TorrentController extends GetxController {
     LoggerHelper.Logger.instance.w(command);
     LoggerHelper.Logger.instance.w(hashes);
     if (downloader.category.toLowerCase() == 'qb') {
-      QBittorrentApiV2 qbittorrent =
-          await downloadController.getQbInstance(downloader);
       switch (command) {
         case 'pause':
-          await qbittorrent.torrents
+          await client.torrents
               .pauseTorrents(torrents: Torrents(hashes: hashes));
         case 'reannounce':
-          await qbittorrent.torrents
+          await client.torrents
               .reannounceTorrents(torrents: Torrents(hashes: hashes));
         case 'recheck':
-          await qbittorrent.torrents
+          await client.torrents
               .recheckTorrents(torrents: Torrents(hashes: hashes));
         case 'resume':
-          await qbittorrent.torrents
+          await client.torrents
               .resumeTorrents(torrents: Torrents(hashes: hashes));
         case 'SuperSeeding':
-          await qbittorrent.torrents.setSuperSeeding(
+          await client.torrents.setSuperSeeding(
               torrents: Torrents(hashes: hashes), enable: enable);
         case 'AutoManagement':
-          await qbittorrent.torrents.setAutoManagement(
+          await client.torrents.setAutoManagement(
               torrents: Torrents(hashes: hashes), enable: enable);
         case 'Category':
-          await qbittorrent.torrents.setCategory(
+          await client.torrents.setCategory(
               torrents: Torrents(hashes: hashes), category: category);
         case 'DownloadLimit':
-          await qbittorrent.torrents.setDownloadLimit(
+          await client.torrents.setDownloadLimit(
               torrents: Torrents(hashes: hashes), limit: limit);
         case 'UploadLimit':
-          await qbittorrent.torrents
+          await client.torrents
               .setUploadLimit(torrents: Torrents(hashes: hashes), limit: limit);
         case 'ForceStart':
-          await qbittorrent.torrents.setForceStart(
+          await client.torrents.setForceStart(
               torrents: Torrents(hashes: hashes), enable: enable);
         case 'ShareLimit':
-          await qbittorrent.torrents.setShareLimit(
+          await client.torrents.setShareLimit(
               torrents: Torrents(hashes: hashes),
               ratioLimit: ratioLimit,
               seedingTimeLimit: seedingTimeLimit);
         case 'delete':
-          await qbittorrent.torrents
+          await client.torrents
               .deleteTorrents(torrents: Torrents(hashes: hashes));
         default:
           Get.snackbar('出错啦！', '未知操作：$command');
       }
 
-      torrents.value = await qbittorrent.torrents
+      torrents.value = await client.torrents
           .getTorrentsList(options: const TorrentListOptions());
       LoggerHelper.Logger.instance.w(torrents.length);
     } else {
-      tr.Transmission transmission =
-          downloadController.getTrInstance(downloader);
       switch (command) {
         case 'reannounce':
-          transmission.v1.torrent.torrentReannounce(ids: hashes);
+          client.v1.torrent.torrentReannounce(ids: hashes);
         case 'delete':
-          transmission.v1.torrent
+          client.v1.torrent
               .torrentRemove(ids: hashes, deleteLocalData: deleteFiles);
         case 'resume':
-          transmission.v1.torrent.torrentStart(ids: hashes);
+          client.v1.torrent.torrentStart(ids: hashes);
         case 'ForceStart':
-          transmission.v1.torrent.torrentStartNow(ids: hashes);
+          client.v1.torrent.torrentStartNow(ids: hashes);
         case 'pause':
-          transmission.v1.torrent.torrentStop(ids: hashes);
+          client.v1.torrent.torrentStop(ids: hashes);
         case 'recheck':
-          transmission.v1.torrent.torrentVerify(ids: hashes);
+          client.v1.torrent.torrentVerify(ids: hashes);
         case 'uploadLimit':
-          transmission.v1.torrent.torrentSet(
+          client.v1.torrent.torrentSet(
               tr.TorrentSetArgs().uploadLimited(true).uploadLimit(limit),
               ids: hashes);
         case 'downloadLimit':
-          transmission.v1.torrent.torrentSet(
+          client.v1.torrent.torrentSet(
               tr.TorrentSetArgs().downloadLimited(true).downloadLimit(limit),
               ids: hashes);
         case 'ShareLimit':
-          transmission.v1.torrent.torrentSet(
+          client.v1.torrent.torrentSet(
               tr.TorrentSetArgs().seedRatioLimit(limit as double),
               ids: hashes);
       }
@@ -538,14 +570,11 @@ class TorrentController extends GetxController {
   }
 
   getTrFreeSpace() async {
-    tr.Transmission transmission = downloadController.getTrInstance(downloader);
-    LoggerHelper.Logger.instance.w(transmission.v1.rpc);
-
-    var res = await transmission.v1.session
+    var res = await client.v1.session
         .sessionGet(fields: tr.SessionArgs().downloadDir());
-    LoggerHelper.Logger.instance.w(res['arguments']['download-dir']);
+    // LoggerHelper.Logger.instance.w(res['arguments']['download-dir']);
 
-    Map response = await transmission.v1.system
+    Map response = await client.v1.system
         .freeSpace(path: res['arguments']['download-dir']);
     freeSpace.value =
         TrFreeSpace.fromJson(response['arguments'] as Map<String, dynamic>)
@@ -553,8 +582,7 @@ class TorrentController extends GetxController {
   }
 
   getQbFreeSpace() async {
-    QBittorrentApiV2 qb = await downloadController.getQbInstance(downloader);
-    MainData m = await qb.sync.getMainData();
+    MainData m = await client.sync.getMainData();
     freeSpace.value = m.serverState!.freeSpaceOnDisk!;
   }
 
@@ -564,5 +592,217 @@ class TorrentController extends GetxController {
     } else {
       getTrFreeSpace();
     }
+  }
+
+  Map<String, String> cookieStringToMap(String cookieString) {
+    // 分割Cookie字符串以获得各个键值对
+    List<String> pairs = cookieString.split('; ');
+
+    Map<String, String> cookieMap = {};
+    for (String pair in pairs) {
+      // 在键值对中找到等号位置
+      int eqIndex = pair.indexOf('=');
+
+      // 如果找到了等号，则分割键和值
+      if (eqIndex != -1) {
+        String key = pair.substring(0, eqIndex).trim();
+        String value = pair.substring(eqIndex + 1).trim();
+
+        // 将键值对添加到Map中
+        cookieMap[key] = value;
+      } else if (pair.isNotEmpty) {
+        // 有时可能存在没有等号的键（例如，安全选项）
+        cookieMap[pair.trim()] = '';
+      }
+    }
+
+    return cookieMap;
+  }
+
+  /// 获取磁力链接的种子文件Bytes
+  /// @param downloadUrl 磁力链接
+  /// @returns 种子文件Bytes
+  Future<CommonResponse<FileBytes>> getDownloadFileBytes(
+      String downloadUrl, String cookie, String userAgent) async {
+    try {
+      String filePath =
+          '${(await getApplicationDocumentsDirectory()).path}/download.torrent';
+      final response = await Dio().download(
+        downloadUrl,
+        filePath,
+        options: Options(responseType: ResponseType.bytes, headers: {
+          "Cookie": cookieStringToMap(cookie),
+          "User-Agent": userAgent
+        }),
+      );
+      LoggerHelper.Logger.instance.i(response.statusCode);
+      LoggerHelper.Logger.instance.i(response.headers);
+      if (response.statusCode == 200) {
+        String? filename = response.headers.map['content-disposition']?.first
+            .split('filename=')[1];
+        if (filename != null && filename.isNotEmpty) {
+          print('Default filename: $filename');
+        } else {
+          print('No default filename found in headers');
+          filename = 'defaultFileName.torrent';
+        }
+        Uint8List fileBytes =
+            Uint8List.fromList(await File(filePath).readAsBytes());
+        FileBytes file = FileBytes(filename: filename, bytes: fileBytes);
+        LoggerHelper.Logger.instance.i(file.filename);
+        return CommonResponse.success(data: file);
+      } else {
+        String msg = '下载种子文件失败！${response.statusCode}';
+        LoggerHelper.Logger.instance.i(msg);
+        return CommonResponse.error(msg: msg);
+      }
+    } catch (e, trace) {
+      String msg = '下载种子文件失败！$e';
+      LoggerHelper.Logger.instance.i(msg);
+      LoggerHelper.Logger.instance.i(trace);
+      return CommonResponse.error(msg: msg);
+    }
+  }
+
+  Future<CommonResponse> addTorrentFilesToQb(
+    Downloader downloader,
+    Map<String, dynamic> data,
+  ) async {
+    MySite mySite = data['mySite'];
+    try {
+      final downloadResponse = await getDownloadFileBytes(
+        data['magnet'],
+        mySite.cookie!,
+        mySite.userAgent!,
+      );
+
+      String msg;
+      NewTorrents torrents;
+
+      if (downloadResponse.code != 0) {
+        msg = '种子文件下载失败，使用下载链接进行下载...';
+        torrents = NewTorrents.urls(
+          urls: [data["magnet"]],
+          savePath: data['savePath'],
+          cookie: data['cookie'],
+          category: data['category'],
+          paused: data['paused'],
+          rootFolder: data['rootFolder'],
+          rename: data['rename'],
+          upLimit: data['upLimit'],
+          dlLimit: data['dlLimit'],
+          ratioLimit: data['ratioLimit'].toDouble(),
+          autoTMM: data['autoTMM'],
+          firstLastPiecePrio: data['firstLastPiecePrio'],
+        );
+      } else {
+        msg = '种子文件下载成功，已推送到下载队列...';
+        torrents = NewTorrents.bytes(
+          bytes: [downloadResponse.data!],
+          savePath: data['savePath'],
+          category: data['category'],
+          paused: data['paused'],
+          rootFolder: data['rootFolder'],
+          rename: data['rename'],
+          upLimit: data['upLimit'],
+          dlLimit: data['dlLimit'],
+          ratioLimit: data['ratioLimit'].toDouble(),
+          autoTMM: data['autoTMM'],
+          firstLastPiecePrio: data['firstLastPiecePrio'],
+        );
+      }
+
+      LoggerHelper.Logger.instance.i(msg);
+      await client.torrents.addNewTorrents(
+        torrents: torrents,
+      );
+
+      return CommonResponse.success(msg: '添加下载任务成功！$msg');
+    } on QBittorrentException catch (e) {
+      String msg =
+          '推送种子文件失败，使用下载链接进行下载，请检查下载器！${e.statusCode} ${e.statusMessage}';
+      LoggerHelper.Logger.instance.e(e.runtimeType);
+      LoggerHelper.Logger.instance.e(e);
+      LoggerHelper.Logger.instance.e(msg);
+
+      await client.torrents.addNewTorrents(
+        torrents: NewTorrents.urls(
+          urls: [data["magnet"]],
+          savePath: data['savePath'],
+          cookie: data['cookie'],
+          category: data['category'],
+          paused: data['paused'],
+          rootFolder: data['rootFolder'],
+          rename: data['rename'],
+          upLimit: data['upLimit'],
+          dlLimit: data['dlLimit'],
+          ratioLimit: data['ratioLimit'].toDouble(),
+          autoTMM: data['autoTMM'],
+          firstLastPiecePrio: data['firstLastPiecePrio'],
+        ),
+      );
+
+      return CommonResponse.error(msg: msg);
+    } catch (e) {
+      String msg = '添加下载任务失败！$e';
+      return CommonResponse.error(msg: msg);
+    }
+  }
+
+  Future getQbSpeed(Downloader downloader) async {
+    try {
+      TransferInfo res = await client.transfer.getGlobalTransferInfo();
+      return CommonResponse(data: res, code: 0);
+    } catch (e, trace) {
+      LoggerHelper.Logger.instance.e(trace);
+      return CommonResponse(
+        code: -1,
+        data: null,
+        msg: '${downloader.name} 获取实时信息失败！',
+      );
+    }
+  }
+
+  Future<QBittorrentApiV2> getQbInstance(Downloader downloader) async {
+    final qbittorrent = QBittorrentApiV2(
+      baseUrl: '${downloader.protocol}://${downloader.host}:${downloader.port}',
+      cookiePath: (await getApplicationDocumentsDirectory()).path,
+      connectTimeout: const Duration(seconds: 10),
+      sendTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
+      logger: false,
+    );
+    await qbittorrent.auth.login(
+      username: downloader.username,
+      password: downloader.password,
+    );
+    return qbittorrent;
+  }
+
+  Future getTrSpeed(Downloader downloader) async {
+    var res = await client.v1.session.sessionStats();
+    if (res['result'] == "success") {
+      return CommonResponse(
+          data: TransmissionStats.fromJson(res["arguments"]), code: 0);
+    }
+    return CommonResponse(
+      code: -1,
+      data: res,
+      msg: '${downloader.name} 获取实时信息失败！',
+    );
+  }
+
+  tr.Transmission getTrInstance(Downloader downloader) {
+    final transmission = tr.Transmission(
+        '${downloader.protocol}://${downloader.host}:${downloader.port}',
+        tr.AuthKeys(downloader.username, downloader.password),
+        logConfig: const tr.ConfigLogger.showNone());
+    return transmission;
+  }
+
+  dynamic getIntervalSpeed(Downloader downloader) {
+    return downloader.category == 'Qb'
+        ? getQbSpeed(downloader)
+        : getTrSpeed(downloader);
   }
 }

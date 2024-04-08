@@ -6,7 +6,7 @@ class TorrentBinding extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<TorrentController>(
-      () => TorrentController(),
+      () => TorrentController(Get.arguments, true),
     );
   }
 }

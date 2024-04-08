@@ -628,7 +628,7 @@ class TorrentView extends GetView<TorrentController> {
                     ? controller.cancelPeriodicTimer()
                     : controller.startPeriodicTimer();
                 LoggerHelper.Logger.instance
-                    .w(controller.periodicTimer.isActive);
+                    .w(controller.periodicTimer?.isActive);
                 LoggerHelper.Logger.instance.w(isTimerActive);
                 controller.update();
               },

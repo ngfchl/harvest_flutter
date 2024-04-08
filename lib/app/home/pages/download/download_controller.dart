@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
-import 'package:transmission_api/transmission_api.dart';
+import 'package:transmission_api/transmission_api.dart' as tr;
 
 import '../../../../api/downloader.dart';
 import '../../../../models/common_response.dart';
@@ -23,6 +23,9 @@ class DownloadController extends GetxController {
   late Timer periodicTimer;
   late Timer fiveMinutesTimer;
   final isDurationValid = true.obs;
+  bool realTimeState = true;
+
+  DownloadController(this.realTimeState);
 
   // 使用StreamController来管理下载状态的流
   final StreamController<List<Downloader>> _downloadStreamController =
@@ -40,12 +43,13 @@ class DownloadController extends GetxController {
     timerDuration.value =
         SPUtil.getDouble('timerDuration', defaultValue: 3.14)!;
     getDownloaderListFromServer();
-    refreshDownloadStatus();
-    // 设置定时器，每隔一定时间刷新下载器数据
-    startPeriodicTimer();
-    // 设置一个5分钟后执行的定时器
-    timerToStop();
-
+    if (realTimeState) {
+      refreshDownloadStatus();
+      // 设置定时器，每隔一定时间刷新下载器数据
+      startPeriodicTimer();
+      // 设置一个5分钟后执行的定时器
+      timerToStop();
+    }
     super.onInit();
   }
 
@@ -126,41 +130,6 @@ class DownloadController extends GetxController {
     update();
   }
 
-  Future<CommonResponse> testConnect(Downloader downloader) async {
-    try {
-      // LoggerHelper.Logger.instance.i(downloader.name);
-      if (downloader.category.toLowerCase() == 'qb') {
-        await getQbInstance(downloader);
-        return CommonResponse(
-            data: true, msg: '${downloader.name} 连接成功!', code: 0);
-      } else {
-        Transmission transmission = getTrInstance(downloader);
-        await transmission.v1.session.sessionStats();
-        // LoggerHelper.Logger.instance.w(res);
-        return CommonResponse(
-            data: true, msg: '${downloader.name} 连接成功!', code: 0);
-      }
-    } catch (error) {
-      return CommonResponse(
-          data: false, msg: '${downloader.name} 连接失败!', code: -1);
-    }
-  }
-
-  Future getQbSpeed(Downloader downloader) async {
-    try {
-      QBittorrentApiV2 qbittorrent = await getQbInstance(downloader);
-      TransferInfo res = await qbittorrent.transfer.getGlobalTransferInfo();
-      return CommonResponse(data: res, code: 0);
-    } catch (e, trace) {
-      LoggerHelper.Logger.instance.e(trace);
-      return CommonResponse(
-        code: -1,
-        data: null,
-        msg: '${downloader.name} 获取实时信息失败！',
-      );
-    }
-  }
-
   Future<QBittorrentApiV2> getQbInstance(Downloader downloader) async {
     final qbittorrent = QBittorrentApiV2(
       baseUrl: '${downloader.protocol}://${downloader.host}:${downloader.port}',
@@ -174,47 +143,17 @@ class DownloadController extends GetxController {
     return qbittorrent;
   }
 
-  /// 获取磁力链接的种子文件Bytes
-  /// @param downloadUrl 磁力链接
-  /// @returns 种子文件Bytes
-  // Future<FileBytes> getDownloadUrlBytes(String downloadUrl) async {
-  //   final response = await Dio().get(
-  //     downloadUrl,
-  //     options: Options(responseType: ResponseType.bytes),
-  //   );
-  //   try {
-  //     // 创建一个临时文件
-  //     File tempFile = File('temp_download_file');
-  //
-  //     // 将字节数据写入临时文件
-  //     await tempFile.writeAsBytes(Uint8List.fromList(response.data!));
-  //
-  //     // 读取临时文件的字节数据
-  //     Uint8List fileBytes = await tempFile.readAsBytes();
-  //
-  //     // 将字节数据添加到下载器中
-  //     await downloader.addBytes(fileBytes);
-  //
-  //     // 删除临时文件
-  //     await tempFile.delete();
-  //   } catch (e) {
-  //     print('Error handling data: $e');
-  //     // 处理异常情况
-  //   }
-  //   return fileBytes;
-  // }
-
-  addTorrentFilesToQb(Downloader downloader, String downloadUrl) async {
-    QBittorrentApiV2 client = await getQbInstance(downloader);
-    // final downloadFileBytes = await getDownloadUrlBytes(downloadUrl);
-    // client.torrents.addNewTorrents(
-    //     torrents: NewTorrents.bytes(bytes: [downloadFileBytes]));
+  tr.Transmission getTrInstance(Downloader downloader) {
+    final transmission = tr.Transmission(
+        '${downloader.protocol}://${downloader.host}:${downloader.port}',
+        tr.AuthKeys(downloader.username, downloader.password),
+        logConfig: const tr.ConfigLogger.showNone());
+    return transmission;
   }
 
   Future getTrSpeed(Downloader downloader) async {
-    Transmission transmission = getTrInstance(downloader);
-    var res = await transmission.v1.session.sessionStats();
-    // LoggerHelper.Logger.instance.w(res);
+    final client = getTrInstance(downloader);
+    var res = await client.v1.session.sessionStats();
     if (res['result'] == "success") {
       return CommonResponse(
           data: TransmissionStats.fromJson(res["arguments"]), code: 0);
@@ -226,18 +165,43 @@ class DownloadController extends GetxController {
     );
   }
 
-  Transmission getTrInstance(Downloader downloader) {
-    final transmission = Transmission(
-        '${downloader.protocol}://${downloader.host}:${downloader.port}',
-        AuthKeys(downloader.username, downloader.password),
-        logConfig: const ConfigLogger.showNone());
-    return transmission;
-  }
-
   dynamic getIntervalSpeed(Downloader downloader) {
     return downloader.category == 'Qb'
         ? getQbSpeed(downloader)
         : getTrSpeed(downloader);
+  }
+
+  Future getQbSpeed(Downloader downloader) async {
+    try {
+      final client = await getQbInstance(downloader);
+      TransferInfo res = await client.transfer.getGlobalTransferInfo();
+      return CommonResponse(data: res, code: 0);
+    } catch (e, trace) {
+      LoggerHelper.Logger.instance.e(trace);
+      return CommonResponse(
+        code: -1,
+        data: null,
+        msg: '${downloader.name} 获取实时信息失败！',
+      );
+    }
+  }
+
+  Future<CommonResponse> testConnect(Downloader downloader) async {
+    try {
+      // LoggerHelper.Logger.instance.i(downloader.name);
+      if (downloader.category.toLowerCase() == 'qb') {
+        await getQbInstance(downloader);
+        return CommonResponse(
+            data: true, msg: '${downloader.name} 连接成功!', code: 0);
+      } else {
+        getTrInstance(downloader);
+        return CommonResponse(
+            data: true, msg: '${downloader.name} 连接成功!', code: 0);
+      }
+    } catch (error) {
+      return CommonResponse(
+          data: false, msg: '${downloader.name} 连接失败!', code: -1);
+    }
   }
 
   @override
