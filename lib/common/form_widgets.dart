@@ -41,13 +41,21 @@ class SwitchTile extends StatelessWidget {
 class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
   final String labelText;
+  final String? prefixText;
+  final String? suffixText;
+  final String? helperText;
   final List<TextInputFormatter> inputFormatters;
+  final TextInputType? keyboardType;
 
   const CustomTextField({
     super.key,
     required this.controller,
     required this.labelText,
     this.inputFormatters = const [],
+    this.keyboardType,
+    this.helperText,
+    this.prefixText,
+    this.suffixText,
   });
 
   @override
@@ -66,6 +74,12 @@ class CustomTextField extends StatelessWidget {
         focusedBorder: const UnderlineInputBorder(
           borderSide: BorderSide(color: Color(0x16000000)),
         ),
+        helperText: helperText,
+        prefixText: prefixText,
+        suffixText: suffixText,
+        helperStyle: const TextStyle(fontSize: 12, color: Colors.white70),
+        prefixStyle: const TextStyle(fontSize: 12, color: Colors.white70),
+        suffixStyle: const TextStyle(fontSize: 12, color: Colors.white70),
       ),
     );
   }
@@ -123,6 +137,7 @@ class CustomPickerField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (data.isNotEmpty) controller.text = data[0];
     return Stack(
       children: [
         CustomTextField(
