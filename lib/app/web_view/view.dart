@@ -8,6 +8,7 @@ import 'package:getwidget/getwidget.dart';
 import 'package:harvest/utils/logger_helper.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../home/pages/agg_search/download_form.dart';
 import 'controller.dart';
 
 class WebViewPage extends StatefulWidget {
@@ -32,8 +33,32 @@ class _WebViewPageState extends State<WebViewPage> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: Text(controller.pageTitle.value),
+          title: Text(
+            controller.pageTitle.value,
+            style: const TextStyle(fontSize: 14),
+          ),
           actions: [
+            if (controller.info != null)
+              GFIconButton(
+                icon: const Icon(
+                  Icons.link,
+                ),
+                onPressed: () async {
+                  Uri uri = Uri.parse(controller.info!.magnetUrl);
+                  if (!await launchUrl(uri)) {
+                    Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？');
+                  }
+                },
+                type: GFButtonType.transparent,
+              ),
+            if (controller.info != null)
+              GFIconButton(
+                icon: const Icon(Icons.download),
+                onPressed: () {
+                  openDownloaderListSheet(context, controller.info!);
+                },
+                type: GFButtonType.transparent,
+              ),
             GFIconButton(
               icon: const Icon(
                 Icons.travel_explore,
@@ -112,6 +137,8 @@ class _WebViewPageState extends State<WebViewPage> {
                         await inAppWebViewController.canGoBack();
                     controller.canGoForward =
                         await inAppWebViewController.canGoForward();
+                    controller.pageTitle.value =
+                        (await inAppWebViewController.getTitle()) ?? '';
                     controller.update();
                   },
                   onProgressChanged: (inAppWebViewController, progress) async {
@@ -139,18 +166,6 @@ class _WebViewPageState extends State<WebViewPage> {
                   icon: const Icon(Icons.arrow_back),
                   onPressed: () {
                     webController?.goBack();
-                  },
-                ),
-              if (controller.info != null)
-                GFIconButton(
-                  icon: const Icon(Icons.download),
-                  onPressed: () {
-                    Get.bottomSheet(Container(
-                      color: Colors.blueGrey.shade300,
-                      height: 500,
-                      width: double.infinity,
-                      child: const Text('下载器列表'),
-                    ));
                   },
                 ),
               if (controller.canGoForward)
