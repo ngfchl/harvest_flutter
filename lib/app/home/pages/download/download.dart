@@ -2,6 +2,7 @@ import 'package:easy_refresh/easy_refresh.dart';
 import 'package:filesize/filesize.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
@@ -25,42 +26,51 @@ class DownloadPage extends StatefulWidget {
 }
 
 class _DownloadPageState extends State<DownloadPage>
-    with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
-  RxBool isLoaded = false.obs;
-
-  DownloadController controller = DownloadController(true);
+    with WidgetsBindingObserver, AutomaticKeepAliveClientMixin {
+  final controller = Get.put(DownloadController(true));
 
   @override
   bool get wantKeepAlive => true;
 
   @override
+  void initState() {
+    if (!controller.realTimeState) {
+      controller.startPeriodicTimer();
+    }
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    super.build(context); // 必须调用 super.build
+    super.build(context);
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: GetBuilder<DownloadController>(builder: (controller) {
         return StreamBuilder<List<Downloader>>(
             stream: controller.downloadStream,
+            initialData: controller.dataList,
             builder: (context, snapshot) {
-              isLoaded.value = snapshot.hasData;
-              return isLoaded.value
-                  ? GlassWidget(
-                      child: EasyRefresh(
-                        controller: EasyRefreshController(),
-                        onRefresh: () async {
-                          controller.getDownloaderListFromServer();
-                          controller.startPeriodicTimer();
-                        },
-                        child: ListView.builder(
-                            itemCount: controller.dataList.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              Downloader downloader =
-                                  controller.dataList[index];
-                              return buildDownloaderCard(downloader);
-                            }),
-                      ),
-                    )
-                  : const Center(child: GFLoader());
+              controller.isLoaded = snapshot.hasData;
+              return GlassWidget(
+                child: EasyRefresh(
+                  controller: EasyRefreshController(),
+                  onRefresh: () async {
+                    controller.getDownloaderListFromServer();
+                    controller.startPeriodicTimer();
+                  },
+                  child: controller.isLoaded
+                      ? ListView.builder(
+                          itemCount: controller.dataList.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            Downloader downloader = controller.dataList[index];
+                            return buildDownloaderCard(downloader);
+                          })
+                      : Center(
+                          child: ListView(
+                          children: const [Expanded(child: GFLoader())],
+                        )),
+                ),
+              );
             });
       }),
       floatingActionButton: Column(
@@ -527,41 +537,41 @@ class _DownloadPageState extends State<DownloadPage>
         onLongPress: () async {
           _showEditBottomSheet(downloader: downloader);
         },
-        // icon: Obx(() {
-        //   return GFIconButton(
-        //     icon: connectState.value
-        //         ? const Icon(
-        //             Icons.bolt,
-        //             color: Colors.green,
-        //             size: 24,
-        //           )
-        //         : const Icon(
-        //             Icons.offline_bolt_outlined,
-        //             color: Colors.red,
-        //             size: 24,
-        //           ),
-        //     type: GFButtonType.transparent,
-        //     onPressed: () {
-        //       controller.torrentController.testConnect(downloader).then((res) {
-        //         connectState.value = res.data;
-        //         Get.snackbar(
-        //           '下载器连接测试',
-        //           '',
-        //           messageText: EllipsisText(
-        //             text: res.msg!,
-        //             ellipsis: '...',
-        //             maxLines: 1,
-        //             style: TextStyle(
-        //               fontSize: 12,
-        //               color: res.data ? Colors.white : Colors.red,
-        //             ),
-        //           ),
-        //           colorText: res.data ? Colors.white : Colors.red,
-        //         );
-        //       });
-        //     },
-        //   );
-        // }),
+        icon: Obx(() {
+          return GFIconButton(
+            icon: connectState.value
+                ? const Icon(
+                    Icons.bolt,
+                    color: Colors.green,
+                    size: 24,
+                  )
+                : const Icon(
+                    Icons.offline_bolt_outlined,
+                    color: Colors.red,
+                    size: 24,
+                  ),
+            type: GFButtonType.transparent,
+            onPressed: () {
+              controller.testConnect(downloader).then((res) {
+                connectState.value = res.data;
+                Get.snackbar(
+                  '下载器连接测试',
+                  '',
+                  messageText: EllipsisText(
+                    text: res.msg!,
+                    ellipsis: '...',
+                    maxLines: 1,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: res.data ? Colors.white : Colors.red,
+                    ),
+                  ),
+                  colorText: res.data ? Colors.white : Colors.red,
+                );
+              });
+            },
+          );
+        }),
       ),
       content: GetBuilder<DownloadController>(builder: (controller) {
         return _buildLiveLineChart(downloader, chartSeriesController);

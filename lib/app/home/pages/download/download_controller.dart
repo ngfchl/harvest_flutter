@@ -208,6 +208,7 @@ class DownloadController extends GetxController {
   void onClose() {
     // 关闭StreamController以避免内存泄漏
     _downloadStreamController.close();
+    Get.delete<DownloadController>();
     super.onClose();
   }
 
