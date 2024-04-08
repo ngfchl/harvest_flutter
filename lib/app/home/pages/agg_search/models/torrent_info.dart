@@ -1,6 +1,4 @@
-
-
-class TorrentInfo {
+class SearchTorrentInfo {
   String siteId;
   String tid;
   String poster;
@@ -18,7 +16,7 @@ class TorrentInfo {
   int leechers;
   int completers;
 
-  TorrentInfo({
+  SearchTorrentInfo({
     required this.siteId,
     required this.tid,
     required this.poster,
@@ -37,8 +35,8 @@ class TorrentInfo {
     required this.completers,
   });
 
-  factory TorrentInfo.fromJson(Map<String, dynamic> json) {
-    return TorrentInfo(
+  factory SearchTorrentInfo.fromJson(Map<String, dynamic> json) {
+    return SearchTorrentInfo(
       siteId: json['site_id'],
       tid: json['tid'],
       poster: json['poster'],

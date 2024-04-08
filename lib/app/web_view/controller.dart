@@ -7,7 +7,7 @@ import '../home/pages/models/website.dart';
 
 class WebViewPageController extends GetxController {
   late String url;
-  late TorrentInfo? info;
+  late SearchTorrentInfo? info;
   late MySite mySite;
   late WebSite website;
   RxString pageTitle = ''.obs;
