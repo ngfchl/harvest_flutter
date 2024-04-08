@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:getwidget/components/loader/gf_loader.dart';
 
 import '../../../../common/form_widgets.dart';
 import '../../../../models/download.dart';
@@ -14,7 +15,7 @@ import 'models/torrent_info.dart';
 
 class DownloadForm extends StatelessWidget {
   final AggSearchController searchController = Get.put(AggSearchController());
-  late TorrentController torrentController;
+  final TorrentController torrentController;
 
   final Map<String, String> categories;
   final Downloader downloader;
@@ -30,18 +31,18 @@ class DownloadForm extends StatelessWidget {
       TextEditingController(text: '150');
   final TextEditingController ratioLimitController =
       TextEditingController(text: '0');
+  final isLoading = false.obs;
 
   DownloadForm({
     super.key,
     required this.categories,
     required this.downloader,
     required this.info,
-  });
+  }) : torrentController = Get.put(TorrentController(downloader, false));
 
   @override
   Widget build(BuildContext context) {
     Logger.instance.i(categories);
-    torrentController = Get.put(TorrentController(downloader, false));
     MySite? mysite = searchController.mySiteMap[info.siteId];
 
     WebSite? webSite =
@@ -235,30 +236,40 @@ class DownloadForm extends StatelessWidget {
                     ElevatedButton(
                       onPressed: () => cancelForm(context),
                       style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(Colors.red),
+                        backgroundColor:
+                            MaterialStateProperty.all(Colors.redAccent),
                       ),
                       child: const Text('取消'),
                     ),
-                    ElevatedButton(
-                      onPressed: () {
-                        submitForm({
-                          'mySite': mysite,
-                          'magnet': urlController.text,
-                          'savePath': savePathController.text,
-                          'category': categoryController.text,
-                          'paused': paused.value,
-                          'rootFolder': rootFolder.value,
-                          'autoTMM': autoTMM.value,
-                          'firstLastPiecePrio': firstLastPiecePrio.value,
-                          'rename': renameController.text,
-                          'upLimit': int.tryParse(upLimitController.text) ?? 0,
-                          'dlLimit': int.tryParse(dlLimitController.text) ?? 0,
-                          'ratioLimit':
-                              int.tryParse(ratioLimitController.text) ?? 0,
-                        });
-                      },
-                      child: const Text('下载'),
-                    ),
+                    Obx(() {
+                      return ElevatedButton.icon(
+                        onPressed: () {
+                          isLoading.value = true;
+                          submitForm({
+                            'mySite': mysite,
+                            'magnet': urlController.text,
+                            'savePath': savePathController.text,
+                            'category': categoryController.text,
+                            'paused': paused.value,
+                            'rootFolder': rootFolder.value,
+                            'autoTMM': autoTMM.value,
+                            'firstLastPiecePrio': firstLastPiecePrio.value,
+                            'rename': renameController.text,
+                            'upLimit':
+                                int.tryParse(upLimitController.text) ?? 0,
+                            'dlLimit':
+                                int.tryParse(dlLimitController.text) ?? 0,
+                            'ratioLimit':
+                                int.tryParse(ratioLimitController.text) ?? 0,
+                          });
+                          isLoading.value = false;
+                        },
+                        icon: isLoading.value
+                            ? const GFLoader(size: 18)
+                            : const Icon(Icons.download),
+                        label: const Text('下载'),
+                      );
+                    }),
                   ],
                 ),
               ],
@@ -277,7 +288,6 @@ class DownloadForm extends StatelessWidget {
       final res =
           await torrentController.addTorrentFilesToQb(downloader, formData);
       Logger.instance.i(res.msg);
-      Get.back();
       Get.back();
       if (res.code == 0) {
         Get.snackbar('种子推送成功！', res.msg!,

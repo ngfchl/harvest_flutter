@@ -657,26 +657,32 @@ class _AggSearchPageState extends State<AggSearchPage>
                                               ? const CircularProgressIndicator()
                                               : const SizedBox.shrink(),
                                           onTap: () async {
-                                            // 显示加载器
-                                            Get.defaultDialog(
-                                              // barrierDismissible: false,
-                                              title: '下载到：${downloader.name}',
-                                              titleStyle: const TextStyle(
-                                                  fontSize: 14,
-                                                  color: Colors.white70),
-                                              backgroundColor: Colors.blue,
-                                              content: SizedBox(
-                                                  // height: 350,
-                                                  child: SingleChildScrollView(
-                                                child: DownloadForm(
-                                                  categories: await controller
-                                                      .getDownloaderCategories(
-                                                          downloader),
-                                                  downloader: downloader,
-                                                  info: info,
-                                                ),
-                                              )),
-                                            );
+                                            await controller
+                                                .getDownloaderCategories(
+                                                    downloader)
+                                                .then((value) {
+                                              Map<String, String> categorise =
+                                                  value;
+                                              Get.back();
+                                              Get.defaultDialog(
+                                                // barrierDismissible: false,
+                                                title: '下载到：${downloader.name}',
+                                                titleStyle: const TextStyle(
+                                                    fontSize: 14,
+                                                    color: Colors.white70),
+                                                backgroundColor: Colors.blue,
+                                                content: SizedBox(
+                                                    // height: 350,
+                                                    child:
+                                                        SingleChildScrollView(
+                                                  child: DownloadForm(
+                                                    categories: categorise,
+                                                    downloader: downloader,
+                                                    info: info,
+                                                  ),
+                                                )),
+                                              );
+                                            });
                                           },
                                         );
                                       }),
