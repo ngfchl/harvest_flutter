@@ -62,19 +62,30 @@ class TaskController extends GetxController {
     return await saveTask(task);
   }
 
+  Future<CommonResponse> execTask(Schedule task) async {
+    return await execRemoteTask(task);
+  }
+
+  Future<CommonResponse> removeTask(Schedule task) async {
+    CommonResponse res = await removeRemoteTask(task);
+    getTaskInfo();
+    update();
+    return res;
+  }
+
   Future<CommonResponse> saveTask(Schedule? task) async {
+    CommonResponse res;
     if (task?.id == 0) {
-      Logger.instance.i('新增任务！');
-      return CommonResponse();
+      res = await addRemoteTask(task!);
     } else {
       Logger.instance.i('修改任务！');
-      CommonResponse res = await editRemoteTask(task!);
-      if (res.code == 0) {
-        Logger.instance.i('更新任务列表！');
-        getTaskInfo();
-      }
-      update();
-      return res;
+      res = await editRemoteTask(task!);
     }
+    if (res.code == 0) {
+      Logger.instance.i('更新任务列表！');
+      getTaskInfo();
+    }
+    update();
+    return res;
   }
 }

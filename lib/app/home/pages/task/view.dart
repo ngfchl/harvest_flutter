@@ -1,9 +1,9 @@
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 
-import '../../../../api/task.dart';
 import '../../../../common/card_view.dart';
 import '../../../../common/form_widgets.dart';
 import '../../../../common/glass_widget.dart';
@@ -62,48 +62,162 @@ class TaskPage extends StatelessWidget {
 
   Widget _buildTaskView(Schedule item) {
     return GetBuilder<TaskController>(builder: (controller) {
+      RxBool isRunning = false.obs;
       return CustomCard(
         margin: const EdgeInsets.only(top: 8, left: 5, right: 5),
-        child: ListTile(
-          onTap: () async {
-            CommonResponse res = await editTask(item);
-            if (res.code == 0) {
-              Logger.instance.i('更新任务列表！');
-              controller.getTaskInfo();
-              controller.update();
-              Get.back();
-            }
-          },
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Slidable(
+          key: ValueKey('${item.id}_${item.name}'),
+          endActionPane: ActionPane(
+            motion: const ScrollMotion(),
             children: [
-              Text(
-                item.name!,
-                style: const TextStyle(fontSize: 12),
+              SlidableAction(
+                borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(8),
+                    bottomLeft: Radius.circular(8)),
+                onPressed: (context) async {
+                  Get.defaultDialog(
+                    title: '确认',
+                    backgroundColor: Colors.white,
+                    radius: 5,
+                    titleStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.deepPurple),
+                    middleText: '确定要删除任务吗？',
+                    actions: [
+                      ElevatedButton(
+                        onPressed: () {
+                          Get.back(result: false);
+                        },
+                        child: const Text('取消'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () async {
+                          Get.back(result: true);
+                          CommonResponse res =
+                              await controller.removeTask(item);
+                          if (res.code == 0) {
+                            Get.snackbar('任务删除通知', res.msg.toString(),
+                                backgroundColor: Colors.green.shade500,
+                                colorText: Colors.white70);
+                          } else {
+                            Get.snackbar('任务删除通知', res.msg.toString(),
+                                backgroundColor: Colors.red.shade500,
+                                colorText: Colors.white70);
+                          }
+                        },
+                        child: const Text('确认'),
+                      ),
+                    ],
+                  );
+                },
+                flex: 2,
+                backgroundColor: const Color(0xFFFE4A49),
+                foregroundColor: Colors.white,
+                icon: Icons.delete,
+                label: '删除',
               ),
-              if (item.crontab is int)
-                Text(
-                  controller.crontabList[item.crontab!]!.express!,
-                  style: const TextStyle(fontSize: 10, color: Colors.amber),
-                )
+              SlidableAction(
+                borderRadius: const BorderRadius.only(
+                    topRight: Radius.circular(8),
+                    bottomRight: Radius.circular(8)),
+                onPressed: (context) async {
+                  CommonResponse res = await editTask(item);
+                  if (res.code == 0) {
+                    Logger.instance.i('更新任务列表！');
+                    controller.getTaskInfo();
+                    controller.update();
+                    Get.back();
+                  }
+                },
+                flex: 2,
+                backgroundColor:
+                    true ? const Color(0xFF0392CF) : Colors.deepOrangeAccent,
+                foregroundColor: Colors.white,
+                icon: Icons.edit,
+                label: '编辑',
+              ),
             ],
           ),
-          subtitle: Text(
-            item.task!,
-            style: const TextStyle(fontSize: 10, color: Colors.black38),
-          ),
-          trailing: IconButton(
-            onPressed: () async {
-              CommonResponse res = await controller.changeScheduleState(item);
-              if (res.code == 0) {
-                Logger.instance.i('更新任务列表！');
-              }
 
-              controller.update();
-            },
-            icon: item.enabled == true
-                ? const Icon(Icons.check_circle_outline, color: Colors.green)
-                : const Icon(Icons.info_outline, color: Colors.red),
+          // The end action pane is the one at the right or the bottom side.
+          child: ListTile(
+            onTap: () async {},
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  item.name!,
+                  style: const TextStyle(fontSize: 12),
+                ),
+                if (item.crontab is int)
+                  Text(
+                    controller.crontabList[item.crontab!]!.express!,
+                    style: const TextStyle(fontSize: 10, color: Colors.amber),
+                  )
+              ],
+            ),
+            subtitle: Text(
+              item.task!,
+              style: const TextStyle(fontSize: 10, color: Colors.black38),
+            ),
+            trailing: SizedBox(
+              width: 80,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (item.enabled == true)
+                    Obx(() {
+                      return IconButton(
+                        onPressed: () async {
+                          isRunning.value = true;
+                          // await Future.delayed(Duration(seconds: 2));
+                          CommonResponse res = await controller.execTask(item);
+                          if (res.code == 0) {
+                            Get.snackbar('任务执行通知', res.msg.toString(),
+                                backgroundColor: Colors.green.shade500,
+                                colorText: Colors.white70);
+                          } else {
+                            Get.snackbar('任务执行通知', res.msg.toString(),
+                                backgroundColor: Colors.red.shade500,
+                                colorText: Colors.white70);
+                          }
+                          isRunning.value = false;
+                          controller.update();
+                        },
+                        icon: isRunning.value == false
+                            ? const Icon(Icons.play_circle_outline,
+                                color: Colors.green)
+                            : const GFLoader(size: 20),
+                      );
+                    }),
+                  IconButton(
+                    onPressed: () async {
+                      CommonResponse res =
+                          await controller.changeScheduleState(item);
+                      String title = item.enabled == true ? '任务启用通知' : '任务禁用通知';
+                      if (res.code == 0) {
+                        Get.snackbar(title, res.msg.toString(),
+                            snackStyle: SnackStyle.FLOATING,
+                            backgroundColor: Colors.green.shade500,
+                            colorText: Colors.white70);
+                      } else {
+                        Get.snackbar(title, res.msg.toString(),
+                            snackStyle: SnackStyle.FLOATING,
+                            backgroundColor: Colors.red.shade500,
+                            colorText: Colors.white70);
+                      }
+                      controller.update();
+                    },
+                    icon: item.enabled == true
+                        ? const Icon(Icons.check_circle_outline,
+                            color: Colors.green)
+                        : const Icon(Icons.pause_circle_outline,
+                            color: Colors.red),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       );
@@ -132,7 +246,7 @@ class TaskPage extends StatelessWidget {
         TextEditingController(text: task != null ? task.args : '[]');
     final kwargsController =
         TextEditingController(text: task != null ? task.kwargs : '{}');
-    Rx<bool?> enabled = (task != null ? task.enabled : false).obs;
+    Rx<bool?> enabled = (task != null ? task.enabled : true).obs;
     RxBool advance = false.obs;
     Get.bottomSheet(
       // backgroundColor: Colors.blueGrey.shade100,
@@ -148,36 +262,22 @@ class TaskPage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('编辑任务'),
-                    Expanded(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const Text(
-                            '高级',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.black54,
-                            ),
+                    SizedBox(
+                      width: 100,
+                      child: SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text(
+                          '高级',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.black54,
                           ),
-                          advance.value
-                              ? IconButton(
-                                  onPressed: () {
-                                    advance.value = false;
-                                  },
-                                  icon: const Icon(
-                                    Icons.expand_more,
-                                    color: Colors.black54,
-                                  ))
-                              : IconButton(
-                                  onPressed: () {
-                                    advance.value = true;
-                                  },
-                                  icon: const Icon(
-                                    Icons.navigate_next,
-                                    color: Colors.black54,
-                                  )),
-                        ],
+                        ),
+                        onChanged: (val) {
+                          advance.value = val;
+                        },
+                        value: advance.value,
+                        activeColor: Colors.green,
                       ),
                     ),
                   ],
@@ -231,29 +331,6 @@ class TaskPage extends StatelessWidget {
                       ),
                     ],
                   ),
-                // Container(
-                //   padding: const EdgeInsets.all(10),
-                //   child: TransferList(
-                //     leftList: const [
-                //       'Dog',
-                //       'Cat',
-                //       'Mouse',
-                //       'Rabbit',
-                //       'Lion',
-                //       'Tiger',
-                //       'Fox',
-                //       'Wolf'
-                //     ],
-                //     rightList: json.decode(task.args!),
-                //     onChange: (leftList, rightList) {
-                //       // your logic
-                //     },
-                //     listBackgroundColor: Colors.grey.withOpacity(0.6),
-                //     textStyle: const TextStyle(color: Colors.black38),
-                //     tileSplashColor: Colors.white,
-                //     checkboxFillColor: Colors.transparent,
-                //   ),
-                // ),
                 Container(
                   padding: const EdgeInsets.all(10),
                   child: Row(
@@ -319,155 +396,5 @@ class TaskPage extends StatelessWidget {
         }),
       ),
     );
-  }
-
-  List<Widget> _buildTaskList() {
-    return controller.dataList
-        .map((item) => GFCard(
-              color: Colors.white54,
-              margin: const EdgeInsets.all(5),
-              padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-              border: Border.all(
-                color: Colors.teal.shade300,
-              ),
-              borderRadius: const BorderRadius.all(Radius.circular(20.0)),
-              title: GFListTile(
-                icon: Card(
-                  color: Colors.orange,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      controller.crontabList[item.crontab!]!.express!,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.white70,
-                      ),
-                    ),
-                  ),
-                ),
-                onLongPress: () {
-                  Get.snackbar('title', '删除任务？');
-                },
-                onTap: () {
-                  Get.defaultDialog(
-                    title: '运行任务',
-                    middleText: '确定要运行？',
-                    textCancel: '取消',
-                    textConfirm: '确定',
-                    backgroundColor: Colors.teal.withOpacity(0.7),
-                    titleStyle: const TextStyle(color: Colors.white),
-                    middleTextStyle: const TextStyle(color: Colors.white),
-                    onCancel: () {
-                      Get.back();
-                    },
-                    onConfirm: () {
-                      execRemoteTask(item.id!).then((res) {
-                        Get.back();
-                        if (res.code == 0) {
-                          Get.snackbar(
-                            '执行任务',
-                            '${item.name!} 任务ID：${res.msg}',
-                            colorText: Colors.black38,
-                            backgroundColor: Colors.teal.withOpacity(0.7),
-                          );
-                        } else {
-                          Get.snackbar(
-                            '执行任务',
-                            '${item.name!} 任务执行出错啦：${res.msg}',
-                            colorText: Colors.red,
-                            backgroundColor: Colors.teal.withOpacity(0.7),
-                          );
-                        }
-                      });
-                    },
-                  );
-                },
-                padding: const EdgeInsets.all(0),
-                title: Text(
-                  item.name!,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.black38,
-                  ),
-                ),
-                // subTitle: Text(
-                //   controller.taskList[item.task!]!.desc!,
-                //   style: const TextStyle(
-                //     fontSize: 12,
-                //     color: Colors.black38,
-                //   ),
-                // ),
-
-                // description: Text(
-                //   controller.taskList[item.task!]!.desc!,
-                //   style: TextStyle(
-                //     fontSize: 12,
-                //     color: Colors.lightBlue,
-                //   ),
-                // ),
-              ),
-              buttonBar: GFButtonBar(
-                children: <Widget>[
-                  SizedBox(
-                    width: 58,
-                    height: 26,
-                    child: GFButton(
-                      onPressed: () {
-                        Get.defaultDialog(
-                          title: item.enabled! ? '关闭任务' : '开启任务',
-                          middleText: item.enabled! ? '确定要？' : '确定要开启？',
-                          onCancel: () {
-                            Get.back();
-                          },
-                          onConfirm: () {
-                            item.enabled!
-                                ? item.enabled = false
-                                : item.enabled = true;
-                            editRemoteTask(item).then((res) {
-                              Get.back();
-                              if (res.code == 0) {
-                                controller.getTaskInfo();
-                                Get.snackbar(
-                                  item.enabled! ? '关闭任务' : '开启任务',
-                                  '${res.msg}',
-                                  colorText: Colors.black38,
-                                  backgroundColor: Colors.teal.withOpacity(0.7),
-                                );
-                              } else {
-                                Get.snackbar(
-                                  item.enabled! ? '关闭任务' : '开启任务',
-                                  '${res.msg}',
-                                  colorText: Colors.red,
-                                  backgroundColor: Colors.teal.withOpacity(0.7),
-                                );
-                              }
-                            });
-                          },
-                          textCancel: '取消',
-                          textConfirm: '确定',
-                        );
-                      },
-                      color:
-                          item.enabled! ? GFColors.WARNING : GFColors.SUCCESS,
-                      text: item.enabled! ? '禁用' : '启用',
-                      size: GFSize.SMALL,
-                    ),
-                  ),
-                  SizedBox(
-                    width: 58,
-                    height: 26,
-                    child: GFButton(
-                      onPressed: () {
-                        editTask(item);
-                      },
-                      text: '编辑',
-                      size: GFSize.SMALL,
-                      color: GFColors.SECONDARY,
-                    ),
-                  ),
-                ],
-              ),
-            ))
-        .toList();
   }
 }
