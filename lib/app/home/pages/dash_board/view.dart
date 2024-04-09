@@ -51,21 +51,23 @@ class _DashBoardPageState extends State<DashBoardPage>
               Expanded(
                 child: EasyRefresh(
                   onRefresh: controller.initChartData,
-                  child: ListView(
-                    children: [
-                      // _buildSiteInfoBar(),
-                      _buildSiteInfoCard(),
-                      if (controller.stackChartDataList.isNotEmpty)
-                        CustomCard(child: _buildStackedBar()),
-                      if (controller.statusList.isNotEmpty)
-                        CustomCard(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            child: _buildSiteInfo()),
-                      if (controller.statusList.isNotEmpty)
-                        CustomCard(child: _buildSmartLabelPieChart()),
-                      const SizedBox(height: 40),
-                    ],
-                  ),
+                  child: controller.statusList.isNotEmpty
+                      ? ListView(
+                          children: [
+                            _buildSiteInfoCard(),
+                            if (controller.stackChartDataList.isNotEmpty)
+                              CustomCard(child: _buildStackedBar()),
+                            if (controller.statusList.isNotEmpty)
+                              CustomCard(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                  child: _buildSiteInfo()),
+                            if (controller.statusList.isNotEmpty)
+                              CustomCard(child: _buildSmartLabelPieChart()),
+                            const SizedBox(height: 40),
+                          ],
+                        )
+                      : const Center(child: CircularProgressIndicator()),
                 ),
               ),
             ],
