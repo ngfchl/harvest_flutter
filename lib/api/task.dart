@@ -66,9 +66,9 @@ Future<CommonResponse> getCrontabList() async {
   }
 }
 
-Future<CommonResponse> execRemoteTask(int taskId) async {
+Future<CommonResponse> execRemoteTask(Schedule schedule) async {
   final response = await DioUtil()
-      .get(Api.TASK_EXEC_URL, queryParameters: {"task_id": taskId});
+      .get(Api.TASK_EXEC_URL, queryParameters: {"task_id": schedule.id});
   if (response.statusCode == 200) {
     Logger.instance.w(response.data);
     return CommonResponse.fromJson(response.data, (p0) => null);
@@ -86,6 +86,31 @@ Future<CommonResponse> editRemoteTask(Schedule schedule) async {
     return CommonResponse.fromJson(response.data, (p0) => null);
   } else {
     String msg = '计划任务修改失败: ${response.statusCode}';
+    // GFToast.showToast(msg, context);
+    return CommonResponse(data: null, code: -1, msg: msg);
+  }
+}
+
+Future<CommonResponse> addRemoteTask(Schedule schedule) async {
+  Map<String, dynamic> data = schedule.toJson();
+  final response = await DioUtil().post(Api.TASK_OPERATE, formData: data);
+  if (response.statusCode == 200) {
+    return CommonResponse.fromJson(response.data, (p0) => null);
+  } else {
+    String msg = '计划任务添加失败: ${response.statusCode}';
+    // GFToast.showToast(msg, context);
+    return CommonResponse(data: null, code: -1, msg: msg);
+  }
+}
+
+Future<CommonResponse> removeRemoteTask(Schedule schedule) async {
+  Map<String, dynamic> data = schedule.toJson();
+  final response = await DioUtil()
+      .delete('${Api.TASK_OPERATE}/${schedule.id}', formData: data);
+  if (response.statusCode == 200) {
+    return CommonResponse.fromJson(response.data, (p0) => null);
+  } else {
+    String msg = '计划任务删除失败: ${response.statusCode}';
     // GFToast.showToast(msg, context);
     return CommonResponse(data: null, code: -1, msg: msg);
   }
