@@ -1,10 +1,10 @@
 import 'package:easy_refresh/easy_refresh.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 
 import '../../../../api/task.dart';
+import '../../../../common/card_view.dart';
 import '../../../../common/form_widgets.dart';
 import '../../../../common/glass_widget.dart';
 import '../../../../models/common_response.dart';
@@ -62,7 +62,7 @@ class TaskPage extends StatelessWidget {
 
   Widget _buildTaskView(Schedule item) {
     return GetBuilder<TaskController>(builder: (controller) {
-      return Card(
+      return CustomCard(
         margin: const EdgeInsets.only(top: 8, left: 5, right: 5),
         child: ListTile(
           onTap: () async {
@@ -135,24 +135,18 @@ class TaskPage extends StatelessWidget {
     Rx<bool?> enabled = (task != null ? task.enabled : false).obs;
     RxBool advance = false.obs;
     Get.bottomSheet(
-      backgroundColor: Colors.blueGrey.shade100,
+      // backgroundColor: Colors.blueGrey.shade100,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(3))),
       SingleChildScrollView(
         child: Obx(() {
-          return Padding(
+          return CustomCard(
             padding: const EdgeInsets.all(8.0),
             child: Column(
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // const GFTypography(
-                    //   text: '编辑任务',
-                    //   type: GFTypographyType.typo4,
-                    //   textColor: Colors.white38,
-                    //   dividerColor: Colors.white38,
-                    // ),
                     const Text('编辑任务'),
                     Expanded(
                       child: Row(
@@ -163,7 +157,7 @@ class TaskPage extends StatelessWidget {
                             '高级',
                             style: TextStyle(
                               fontSize: 14,
-                              color: Colors.white,
+                              color: Colors.black54,
                             ),
                           ),
                           advance.value
@@ -173,7 +167,7 @@ class TaskPage extends StatelessWidget {
                                   },
                                   icon: const Icon(
                                     Icons.expand_more,
-                                    color: Colors.white70,
+                                    color: Colors.black54,
                                   ))
                               : IconButton(
                                   onPressed: () {
@@ -181,7 +175,7 @@ class TaskPage extends StatelessWidget {
                                   },
                                   icon: const Icon(
                                     Icons.navigate_next,
-                                    color: Colors.white70,
+                                    color: Colors.black54,
                                   )),
                         ],
                       ),
@@ -193,27 +187,21 @@ class TaskPage extends StatelessWidget {
                     labelText: '选择任务',
                     data: controller.taskList,
                     onConfirm: (p, position) {}),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const Text(
-                      '开启任务',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white,
-                      ),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text(
+                    '开启任务',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.black54,
                     ),
-                    CupertinoSwitch(
-                      onChanged: (val) {
-                        enabled.value = val;
-                      },
-                      value: enabled.value!,
-                      activeColor: Colors.green,
-                    ),
-                  ],
+                  ),
+                  onChanged: (val) {
+                    enabled.value = val;
+                  },
+                  value: enabled.value!,
+                  activeColor: Colors.green,
                 ),
-
                 CustomTextField(
                   controller: nameController,
                   labelText: '任务名称',

@@ -10,6 +10,7 @@ import 'package:harvest/app/home/pages/models/website.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../common/card_view.dart';
 import '../../../../utils/logger_helper.dart' as LoggerHelper;
 import '../../../routes/app_pages.dart';
 import '../models/my_site.dart';
@@ -309,7 +310,7 @@ class _AggSearchPageState extends State<AggSearchPage>
           .w('显示出错啦: ${info.siteId} -  $mySite - $website');
       return const SizedBox.shrink();
     }
-    return Card(
+    return CustomCard(
       child: Column(
         children: [
           GFListTile(

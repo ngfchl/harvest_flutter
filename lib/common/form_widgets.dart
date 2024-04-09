@@ -24,7 +24,7 @@ class SwitchTile extends StatelessWidget {
         title,
         style: const TextStyle(
           fontSize: 14,
-          color: Colors.white70,
+          color: Colors.black54,
         ),
       ),
       trailing: Transform.scale(
@@ -63,10 +63,10 @@ class CustomTextField extends StatelessWidget {
     return TextField(
       controller: controller,
       inputFormatters: inputFormatters,
-      style: const TextStyle(fontSize: 13, color: Colors.white),
+      style: const TextStyle(fontSize: 13, color: Colors.black54),
       decoration: InputDecoration(
         labelText: labelText,
-        labelStyle: const TextStyle(fontSize: 12, color: Colors.white70),
+        labelStyle: const TextStyle(fontSize: 12, color: Colors.black54),
         contentPadding: const EdgeInsets.all(0),
         enabledBorder: const UnderlineInputBorder(
           borderSide: BorderSide(color: Color(0x19000000)),
@@ -77,9 +77,9 @@ class CustomTextField extends StatelessWidget {
         helperText: helperText,
         prefixText: prefixText,
         suffixText: suffixText,
-        helperStyle: const TextStyle(fontSize: 12, color: Colors.white70),
-        prefixStyle: const TextStyle(fontSize: 12, color: Colors.white70),
-        suffixStyle: const TextStyle(fontSize: 12, color: Colors.white70),
+        helperStyle: const TextStyle(fontSize: 12, color: Colors.black54),
+        prefixStyle: const TextStyle(fontSize: 12, color: Colors.black54),
+        suffixStyle: const TextStyle(fontSize: 12, color: Colors.black54),
       ),
     );
   }
@@ -137,7 +137,7 @@ class CustomPickerField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (data.isNotEmpty) controller.text = data[0];
+    if (data.isNotEmpty && controller.text.isEmpty) controller.text = data[0];
     return Stack(
       children: [
         CustomTextField(
@@ -152,10 +152,9 @@ class CustomPickerField extends StatelessWidget {
                 data: data,
                 selectData: controller.text,
                 pickerStyle: PickerStyle(
-                    showTitleBar: false,
                     textSize: 18,
-                    backgroundColor: Colors.white38,
-                    textColor: Colors.white),
+                    backgroundColor: Colors.white,
+                    textColor: Colors.black54),
                 onConfirm: (p, position) {
                   controller.text = p;
                   onConfirm?.call(p, position);

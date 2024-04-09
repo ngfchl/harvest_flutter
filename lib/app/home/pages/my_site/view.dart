@@ -10,7 +10,9 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../api/mysite.dart';
+import '../../../../common/card_view.dart';
 import '../../../../common/form_widgets.dart';
+import '../../../../common/utils.dart';
 import '../../../../utils/calc_weeks.dart';
 import '../../../../utils/format_number.dart';
 import '../../../../utils/logger_helper.dart';
@@ -168,7 +170,7 @@ class _MySitePagePageState extends State<MySitePage>
       Logger.instance.w('${mySite.nickname} - ${mySite.statusInfo}');
     }
     return status == null
-        ? Card(
+        ? CustomCard(
             margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Column(
               children: [
@@ -208,7 +210,7 @@ class _MySitePagePageState extends State<MySitePage>
               ],
             ),
           )
-        : Card(
+        : CustomCard(
             margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Column(children: [
               ListTile(
@@ -678,10 +680,8 @@ class _MySitePagePageState extends State<MySitePage>
         mySite != null ? mySite.searchTorrents.obs : true.obs;
 
     Get.bottomSheet(
-      Container(
+      CustomCard(
         padding: const EdgeInsets.all(20),
-        color: Colors.blueGrey.shade300,
-        width: 550,
         child: Column(
           children: [
             Text(
@@ -700,6 +700,20 @@ class _MySitePagePageState extends State<MySitePage>
                         labelText: '选择站点',
                         data: siteList,
                         onChanged: (p, position) {
+                          siteController.text = p;
+                          selectedSite.value = controller.webSiteList[p];
+                          urlList?.value = selectedSite.value!.url;
+                          mirrorController.text = urlList![0];
+                          nicknameController.text = selectedSite.value!.name;
+                          signIn.value = selectedSite.value!.signIn;
+                          getInfo.value = selectedSite.value!.getInfo;
+                          repeatTorrents.value =
+                              selectedSite.value!.repeatTorrents;
+                          searchTorrents.value =
+                              selectedSite.value!.searchTorrents;
+                          available.value = selectedSite.value!.alive;
+                        },
+                        onConfirm: (p, position) {
                           siteController.text = p;
                           selectedSite.value = controller.webSiteList[p];
                           urlList?.value = selectedSite.value!.url;
@@ -1136,21 +1150,21 @@ class _MySitePagePageState extends State<MySitePage>
                         yAxisName: 'PrimaryYAxis',
                         dataSource: showData,
                         xValueMapper: (StatusInfo item, _) =>
-                            formatDateTimeToDateString(item),
+                            formatCreatedTimeToDateString(item),
                         yValueMapper: (StatusInfo item, _) => item.seedVolume),
                     LineSeries<StatusInfo, String>(
                         name: '上传量',
                         yAxisName: 'SecondaryYAxis',
                         dataSource: showData,
                         xValueMapper: (StatusInfo item, _) =>
-                            formatDateTimeToDateString(item),
+                            formatCreatedTimeToDateString(item),
                         yValueMapper: (StatusInfo item, _) => item.uploaded),
                     ColumnSeries<StatusInfo, String>(
                       name: '上传增量',
                       dataSource: showData,
                       yAxisName: 'ThirdYAxis',
                       xValueMapper: (StatusInfo item, _) =>
-                          formatDateTimeToDateString(item),
+                          formatCreatedTimeToDateString(item),
                       yValueMapper: (StatusInfo item, index) => index > 0 &&
                               item.uploaded > showData[index - 1].uploaded
                           ? item.uploaded - showData[index - 1].uploaded
@@ -1170,49 +1184,49 @@ class _MySitePagePageState extends State<MySitePage>
                         yAxisName: 'SecondaryYAxis',
                         dataSource: showData,
                         xValueMapper: (StatusInfo item, _) =>
-                            formatDateTimeToDateString(item),
+                            formatCreatedTimeToDateString(item),
                         yValueMapper: (StatusInfo item, _) => item.downloaded),
                     LineSeries<StatusInfo, String>(
                         name: '时魔',
                         yAxisName: 'SecondaryYAxis',
                         dataSource: showData,
                         xValueMapper: (StatusInfo item, _) =>
-                            formatDateTimeToDateString(item),
+                            formatCreatedTimeToDateString(item),
                         yValueMapper: (StatusInfo item, _) => item.bonusHour),
                     LineSeries<StatusInfo, String>(
                         name: '做种积分',
                         yAxisName: 'PrimaryYAxis',
                         dataSource: showData,
                         xValueMapper: (StatusInfo item, _) =>
-                            formatDateTimeToDateString(item),
+                            formatCreatedTimeToDateString(item),
                         yValueMapper: (StatusInfo item, _) => item.myScore),
                     LineSeries<StatusInfo, String>(
                         name: '魔力值',
                         yAxisName: 'PrimaryYAxis',
                         dataSource: showData,
                         xValueMapper: (StatusInfo item, _) =>
-                            formatDateTimeToDateString(item),
+                            formatCreatedTimeToDateString(item),
                         yValueMapper: (StatusInfo item, _) => item.myBonus),
                     LineSeries<StatusInfo, String>(
                         name: '做种数量',
                         yAxisName: 'SecondaryYAxis',
                         dataSource: showData,
                         xValueMapper: (StatusInfo item, _) =>
-                            formatDateTimeToDateString(item),
+                            formatCreatedTimeToDateString(item),
                         yValueMapper: (StatusInfo item, _) => item.seed),
                     LineSeries<StatusInfo, String>(
                         name: '吸血数量',
                         yAxisName: 'SecondaryYAxis',
                         dataSource: showData,
                         xValueMapper: (StatusInfo item, _) =>
-                            formatDateTimeToDateString(item),
+                            formatCreatedTimeToDateString(item),
                         yValueMapper: (StatusInfo item, _) => item.leech),
                     LineSeries<StatusInfo, String>(
                         name: '邀请',
                         yAxisName: 'SecondaryYAxis',
                         dataSource: showData,
                         xValueMapper: (StatusInfo item, _) =>
-                            formatDateTimeToDateString(item),
+                            formatCreatedTimeToDateString(item),
                         yValueMapper: (StatusInfo item, _) => item.invitation),
                   ]),
               Text(
@@ -1223,9 +1237,9 @@ class _MySitePagePageState extends State<MySitePage>
                 max: transformedData.length * 1.0 - 1,
                 divisions: transformedData.length - 1,
                 labels: RangeLabels(
-                  formatDateTimeToDateString(
+                  formatCreatedTimeToDateString(
                       transformedData[rangeValues.value.start.toInt()]),
-                  formatDateTimeToDateString(
+                  formatCreatedTimeToDateString(
                       transformedData[rangeValues.value.end.toInt()]),
                 ),
                 onChanged: (value) {
@@ -1241,10 +1255,6 @@ class _MySitePagePageState extends State<MySitePage>
         );
       }),
     );
-  }
-
-  String formatDateTimeToDateString(StatusInfo item) {
-    return DateFormat("yyyy-MM-dd").format(DateTime.parse(item.createdAt));
   }
 
   @override

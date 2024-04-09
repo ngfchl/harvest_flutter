@@ -11,28 +11,11 @@ class GlassWidget extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Lottie.asset(
-        //   StringUtils.getLottieByName('rJoSLquA8J'),
-        //   repeat: true,
-        //   fit: BoxFit.fill,
-        // ),
-
         GlassContainer(
           height: double.infinity,
           width: double.infinity,
           blur: 1,
-          color: Colors.grey.shade300,
-          // gradient: LinearGradient(
-          //   begin: Alignment.topLeft,
-          //   end: Alignment.bottomRight,
-          //   colors: [
-          //     Colors.green.withOpacity(0.5),
-          //     Colors.blueGrey.withOpacity(0.6),
-          //     Colors.grey.withOpacity(0.4),
-          //     Colors.blue.withOpacity(0.6),
-          //   ],
-          // ),
-          //--code to remove border
+          color: const Color(0xFFF2F3F8),
           border: const Border.fromBorderSide(BorderSide.none),
           shadowStrength: 5,
           shape: BoxShape.rectangle,
