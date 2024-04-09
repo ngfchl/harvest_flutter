@@ -218,6 +218,17 @@ class MySite {
     };
   }
 
+  StatusInfo? getLatestStatusInfo() {
+    if (statusInfo.isEmpty) {
+      return null;
+    }
+    return statusInfo[getStatusMaxKey()];
+  }
+
+  StatusInfo? get latestStatusInfo {
+    return getLatestStatusInfo();
+  }
+
   String getStatusMaxKey() {
     if (statusInfo.isEmpty) {
       return '';
