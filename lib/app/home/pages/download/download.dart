@@ -8,6 +8,7 @@ import 'package:getwidget/getwidget.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
+import '../../../../common/card_view.dart';
 import '../../../../common/form_widgets.dart';
 import '../../../../common/glass_widget.dart';
 import '../../../../models/download.dart';
@@ -502,80 +503,81 @@ class _DownloadPageState extends State<DownloadPage>
       connectState.value = false;
     }
     ChartSeriesController? chartSeriesController;
-    return GFCard(
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 2.5),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2.5),
-      boxFit: BoxFit.cover,
-      color: Colors.white54,
-      title: GFListTile(
-        padding: const EdgeInsets.all(0),
-        avatar: GFAvatar(
-          // shape: GFAvatarShape.square,
-          backgroundImage: AssetImage(
-              'assets/images/${downloader.category.toLowerCase()}.png'),
-          size: 18,
-        ),
-        title: Text(
-          downloader.name,
-          style: const TextStyle(
-            color: Colors.black38,
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-          ),
-        ),
-        subTitle: Text(
-          '${downloader.protocol}://${downloader.host}:${downloader.port}',
-          style: const TextStyle(
-            color: Colors.black38,
-            fontSize: 11,
-          ),
-        ),
-        onTap: () {
-          controller.cancelPeriodicTimer();
-          Get.toNamed(Routes.TORRENT, arguments: downloader);
-        },
-        onLongPress: () async {
-          _showEditBottomSheet(downloader: downloader);
-        },
-        icon: Obx(() {
-          return GFIconButton(
-            icon: connectState.value
-                ? const Icon(
-                    Icons.bolt,
-                    color: Colors.green,
-                    size: 24,
-                  )
-                : const Icon(
-                    Icons.offline_bolt_outlined,
-                    color: Colors.red,
-                    size: 24,
-                  ),
-            type: GFButtonType.transparent,
-            onPressed: () {
-              controller.testConnect(downloader).then((res) {
-                connectState.value = res.data;
-                Get.snackbar(
-                  '下载器连接测试',
-                  '',
-                  messageText: EllipsisText(
-                    text: res.msg!,
-                    ellipsis: '...',
-                    maxLines: 1,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: res.data ? Colors.white : Colors.red,
-                    ),
-                  ),
-                  colorText: res.data ? Colors.white : Colors.red,
-                );
-              });
+    return CustomCard(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        children: [
+          GFListTile(
+            padding: const EdgeInsets.all(0),
+            avatar: GFAvatar(
+              // shape: GFAvatarShape.square,
+              backgroundImage: AssetImage(
+                  'assets/images/${downloader.category.toLowerCase()}.png'),
+              size: 18,
+            ),
+            title: Text(
+              downloader.name,
+              style: const TextStyle(
+                color: Colors.black38,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+            subTitle: Text(
+              '${downloader.protocol}://${downloader.host}:${downloader.port}',
+              style: const TextStyle(
+                color: Colors.black38,
+                fontSize: 11,
+              ),
+            ),
+            onTap: () {
+              controller.cancelPeriodicTimer();
+              Get.toNamed(Routes.TORRENT, arguments: downloader);
             },
-          );
-        }),
+            onLongPress: () async {
+              _showEditBottomSheet(downloader: downloader);
+            },
+            icon: Obx(() {
+              return GFIconButton(
+                icon: connectState.value
+                    ? const Icon(
+                        Icons.bolt,
+                        color: Colors.green,
+                        size: 24,
+                      )
+                    : const Icon(
+                        Icons.offline_bolt_outlined,
+                        color: Colors.red,
+                        size: 24,
+                      ),
+                type: GFButtonType.transparent,
+                onPressed: () {
+                  controller.testConnect(downloader).then((res) {
+                    connectState.value = res.data;
+                    Get.snackbar(
+                      '下载器连接测试',
+                      '',
+                      messageText: EllipsisText(
+                        text: res.msg!,
+                        ellipsis: '...',
+                        maxLines: 1,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: res.data ? Colors.white : Colors.red,
+                        ),
+                      ),
+                      colorText: res.data ? Colors.white : Colors.red,
+                    );
+                  });
+                },
+              );
+            }),
+          ),
+          GetBuilder<DownloadController>(builder: (controller) {
+            return _buildLiveLineChart(downloader, chartSeriesController);
+          })
+        ],
       ),
-      content: GetBuilder<DownloadController>(builder: (controller) {
-        return _buildLiveLineChart(downloader, chartSeriesController);
-      }),
     );
   }
 
@@ -776,16 +778,14 @@ class _DownloadPageState extends State<DownloadPage>
         TextEditingController(text: downloader?.port.toString() ?? '');
 
     final torrentPathController =
-        TextEditingController(text: downloader?.torrentPath ?? '/downloaders/');
+        TextEditingController(text: downloader?.torrentPath ?? '');
 
     RxBool isActive = downloader != null ? downloader.isActive.obs : true.obs;
     RxBool brush = downloader != null ? downloader.brush.obs : false.obs;
     await controller.getTorrentsPathList();
     Get.bottomSheet(
-      Container(
+      CustomCard(
         padding: const EdgeInsets.all(20),
-        color: Colors.blueGrey.shade300,
-        width: 550,
         child: Column(
           children: [
             Text(

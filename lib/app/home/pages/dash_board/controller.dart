@@ -1,15 +1,79 @@
 import 'package:get/get.dart';
 
+import '../models/my_site.dart';
+import '../my_site/controller.dart';
+
 class DashBoardController extends GetxController {
-  @override
-  void onReady() {
-    // TODO: implement onReady
-    super.onReady();
-  }
+  MySiteController mySiteController = Get.find();
+
+  List<MySite> statusList = [];
+  List<Map<String, dynamic>> pieDataList = [
+    // {
+    //   'genre': '站点',
+    //   'sold': 10240000,
+    // }
+  ];
+  List<Map> stackChartDataList = [];
+  int totalUploaded = 0;
+  int totalDownloaded = 0;
+  int totalSeedVol = 0;
+  int totalSeeding = 0;
+  int totalLeeching = 0;
 
   @override
-  void onClose() {
-    // TODO: implement onClose
-    super.onClose();
+  void onInit() {
+    initChartData();
+    super.onInit();
+  }
+
+  void initChartData() async {
+    totalUploaded = 0;
+    totalDownloaded = 0;
+    totalSeedVol = 0;
+    totalSeeding = 0;
+    totalLeeching = 0;
+    if (statusList.isEmpty) {
+      await mySiteController.initData();
+      statusList = mySiteController.mySiteList;
+    }
+    statusList.sort((MySite a, MySite b) {
+      final StatusInfo? statusA = a.latestStatusInfo;
+      final StatusInfo? statusB = b.latestStatusInfo;
+
+      // 使用 null-aware 操作符和三元表达式进行比较和排序
+      return (statusB?.uploaded ?? 0).compareTo(statusA?.uploaded ?? 0);
+    });
+    stackChartDataList.clear();
+    pieDataList.clear();
+
+    for (final MySite mySite in statusList) {
+      final StatusInfo? currentStatus = mySite.latestStatusInfo;
+      // 添加堆叠图表数据
+      if (mySite.statusInfo.isNotEmpty) {
+        List<StatusInfo> statusInfoList = mySite.statusInfo.values.toList();
+        statusInfoList.sort(
+            (StatusInfo a, StatusInfo b) => a.createdAt.compareTo(b.createdAt));
+        stackChartDataList
+            .add({'site': mySite.nickname, 'data': statusInfoList});
+      }
+      // 处理存在状态信息的情况
+      if (currentStatus != null) {
+        // 添加饼图数据
+        pieDataList
+            .add({'genre': mySite.nickname, 'sold': currentStatus.uploaded});
+
+        // 累加统计值
+        totalUploaded += currentStatus.uploaded;
+        totalDownloaded += currentStatus.downloaded;
+        totalSeedVol += currentStatus.seedVolume;
+        totalSeeding += currentStatus.seed;
+        totalLeeching += currentStatus.leech;
+      }
+      // 若当前站点无状态信息，添加默认的饼图数据
+      else {
+        pieDataList.add({'genre': mySite.nickname, 'sold': 0});
+      }
+    }
+    update();
   }
 }
