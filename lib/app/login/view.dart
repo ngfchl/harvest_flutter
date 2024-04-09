@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../common/card_view.dart';
+import '../../common/form_widgets.dart';
 import '../../common/glass_widget.dart';
 import '../../utils/logger_helper.dart';
 import 'controller.dart';
@@ -55,19 +57,17 @@ class _LoginPageState extends State<LoginPage> {
         },
         child: Container(
           decoration: decoration,
-          child: Column(
-            children: [
-              Card(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
-                child: const Padding(
+          height: 120,
+          width: 120,
+          child: CustomCard(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Padding(
                   padding: EdgeInsets.all(8),
                   child: Icon(Icons.computer, size: 32),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Column(
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Padding(
@@ -89,8 +89,8 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       );
@@ -102,45 +102,45 @@ class _LoginPageState extends State<LoginPage> {
       onTap: () {
         showEditOrCreateServerSheet(null);
       },
-      child: Column(
-        children: [
-          Card(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            child: const Padding(
-              padding: EdgeInsets.all(8),
-              child: Icon(Icons.add_circle_outline, size: 32),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Column(
-                    children: [
-                      Text(
-                        '添加服务器',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ),
-                    ],
+      child: SizedBox(
+        height: 120,
+        width: 120,
+        child: CustomCard(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(8),
+                child: Icon(Icons.add_circle_outline, size: 32),
+              ),
+              Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Column(
+                      children: [
+                        Text(
+                          '添加服务器',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  child: Text(
-                    '',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.labelSmall,
-                    overflow: TextOverflow.ellipsis,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    child: Text(
+                      '',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.labelSmall,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -154,22 +154,15 @@ class _LoginPageState extends State<LoginPage> {
       ),
       body: GlassWidget(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            Obx(
-              () => GridView.count(
-                crossAxisCount: 3,
-                shrinkWrap: true,
-                padding: const EdgeInsets.all(16),
-                mainAxisSpacing: 8,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  for (var server in serverController.serversList)
-                    _buildGridTile(server),
-                  _buildAddServerTile(),
-                ],
-              ),
-            ),
+            Obx(() {
+              return Wrap(spacing: 12, runSpacing: 8, children: [
+                ...serverController.serversList
+                    .map((server) => _buildGridTile(server)),
+                _buildAddServerTile(),
+              ]);
+            }),
             Obx(() {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 24.0),
@@ -206,6 +199,8 @@ class _LoginPageState extends State<LoginPage> {
     final formKey = GlobalKey<FormState>();
     TextEditingController nameController =
         TextEditingController(text: serverToEdit?.name ?? 'Server');
+    TextEditingController protocolController =
+        TextEditingController(text: serverToEdit?.protocol ?? 'http');
     TextEditingController domainController =
         TextEditingController(text: serverToEdit?.domain ?? '192.168.123.5');
     TextEditingController usernameController =
@@ -215,12 +210,10 @@ class _LoginPageState extends State<LoginPage> {
     TextEditingController portController =
         TextEditingController(text: serverToEdit?.port.toString() ?? '28000');
     await Get.bottomSheet(
-      backgroundColor: Colors.grey.shade300,
       enableDrag: true,
       GetBuilder<LoginController>(builder: (controller) {
-        return Container(
+        return CustomCard(
           padding: const EdgeInsets.all(8),
-          height: 500, // 或者自定义高度
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(8),
             child: Form(
@@ -229,74 +222,26 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisSize: MainAxisSize.max,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  TextFormField(
+                  CustomTextField(
                     controller: nameController,
-                    maxLines: 1,
-                    decoration: const InputDecoration(labelText: '名称'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return '名称不能为空';
-                      }
-                      return null;
-                    },
+                    labelText: '名称',
                   ),
-                  DropdownButtonFormField<String>(
-                    value: selectedProtocol,
-                    decoration: const InputDecoration(labelText: '协议'),
-                    items: ['http', 'https'].map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        selectedProtocol =
-                            newValue ?? 'http'; // 若newValue为空，则保持'http'为默认值
-                      });
-                    },
-                    validator: (value) {
-                      if (value == null) {
-                        return '请选择协议';
-                      }
-                      return null;
-                    },
+                  CustomPickerField(
+                    controller: protocolController,
+                    labelText: '选择协议',
+                    data: const ["http", "https"],
                   ),
-                  TextFormField(
+                  CustomTextField(
                     controller: domainController,
-                    maxLines: 1,
-                    decoration: const InputDecoration(labelText: '主机'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return '主机不能为空';
-                      }
-                      return null;
-                    },
+                    labelText: '主机',
                   ),
-                  TextFormField(
-                    keyboardType: TextInputType.number,
+                  CustomPortField(
                     controller: portController,
-                    maxLines: 1,
-                    maxLength: 5,
-                    decoration: const InputDecoration(labelText: '端口'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return '端口不能为空';
-                      }
-                      // 这里还可以添加端口的有效性验证
-                      return null;
-                    },
+                    labelText: '端口',
                   ),
-                  TextFormField(
+                  CustomTextField(
                     controller: usernameController,
-                    maxLines: 1,
-                    decoration: const InputDecoration(labelText: '账号'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return '账号不能为空';
-                      }
-                      return null;
-                    },
+                    labelText: '账号',
                   ),
                   Obx(() {
                     return TextFormField(
@@ -304,6 +249,15 @@ class _LoginPageState extends State<LoginPage> {
                       maxLines: 1,
                       decoration: InputDecoration(
                         labelText: '密码',
+                        labelStyle: const TextStyle(
+                            fontSize: 12, color: Colors.black54),
+                        contentPadding: const EdgeInsets.all(0),
+                        enabledBorder: const UnderlineInputBorder(
+                          borderSide: BorderSide(color: Color(0x19000000)),
+                        ),
+                        focusedBorder: const UnderlineInputBorder(
+                          borderSide: BorderSide(color: Color(0x16000000)),
+                        ),
                         suffixIcon: IconButton(
                           icon: Icon(serverController.showPassword.value
                               ? Icons.visibility
