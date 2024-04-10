@@ -537,8 +537,7 @@ class _DownloadPageState extends State<DownloadPage>
               onPressed: (context) async {
                 _showEditBottomSheet(downloader: downloader);
               },
-              backgroundColor:
-                  true ? const Color(0xFF0392CF) : Colors.deepOrangeAccent,
+              backgroundColor: const Color(0xFF0392CF),
               foregroundColor: Colors.white,
               // icon: Icons.edit,
               label: '编辑',
