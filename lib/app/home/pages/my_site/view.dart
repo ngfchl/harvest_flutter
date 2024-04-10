@@ -644,7 +644,6 @@ class _MySitePagePageState extends State<MySitePage>
     if (mySite == null) {
       siteList.removeWhere((key) => hasKeys.contains(key));
     }
-    Logger.instance.i(siteList);
     final siteController = TextEditingController(text: mySite?.site ?? '');
     final apiKeyController = TextEditingController(text: mySite?.authKey ?? '');
     final nicknameController =

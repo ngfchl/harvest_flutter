@@ -36,7 +36,6 @@ class _AggSearchPageState extends State<AggSearchPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final OverlayPortalController overlayController = OverlayPortalController();
     return GetBuilder<AggSearchController>(
       assignId: true,
       builder: (controller) {
