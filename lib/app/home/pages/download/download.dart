@@ -3,6 +3,7 @@ import 'package:filesize/filesize.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
@@ -11,6 +12,7 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import '../../../../common/card_view.dart';
 import '../../../../common/form_widgets.dart';
 import '../../../../common/glass_widget.dart';
+import '../../../../models/common_response.dart';
 import '../../../../models/download.dart';
 import '../../../../utils/logger_helper.dart' as LoggerHelper;
 import '../../../../utils/range_input.dart';
@@ -373,7 +375,7 @@ class _DownloadPageState extends State<DownloadPage>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        '上传限速：${filesize(res.upRateLimit)}/S',
+                        '上传限速：${filesize(res.upRateLimit)}/s',
                         style: const TextStyle(
                           fontSize: 10,
                           color: Colors.black38,
@@ -381,7 +383,7 @@ class _DownloadPageState extends State<DownloadPage>
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        '下载限速：${filesize(res.dlRateLimit)}/S',
+                        '下载限速：${filesize(res.dlRateLimit)}/s',
                         style: const TextStyle(
                           fontSize: 10,
                           color: Colors.black38,
@@ -481,6 +483,24 @@ class _DownloadPageState extends State<DownloadPage>
                           color: Colors.black38,
                         ),
                       ),
+                      const SizedBox(width: 8),
+                      if (res.speedLimitSettings?.speedLimitUpEnabled == true)
+                        Text(
+                          '上传限速：${filesize(res.speedLimitSettings!.speedLimitUp * 1024)}/s',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: Colors.black38,
+                          ),
+                        ),
+                      const SizedBox(width: 8),
+                      if (res.speedLimitSettings?.speedLimitDownEnabled == true)
+                        Text(
+                          '下载限速：${filesize(res.speedLimitSettings!.speedLimitDown * 1024)}/s',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: Colors.black38,
+                          ),
+                        ),
                     ],
                   ),
                 ],
@@ -504,79 +524,156 @@ class _DownloadPageState extends State<DownloadPage>
     }
     ChartSeriesController? chartSeriesController;
     return CustomCard(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        children: [
-          GFListTile(
-            padding: const EdgeInsets.all(0),
-            avatar: GFAvatar(
-              // shape: GFAvatarShape.square,
-              backgroundImage: AssetImage(
-                  'assets/images/${downloader.category.toLowerCase()}.png'),
-              size: 18,
+      child: Slidable(
+        key: ValueKey('${downloader.id}_${downloader.name}'),
+        startActionPane: ActionPane(
+          openThreshold: 0.5,
+          closeThreshold: 0.5,
+          motion: const ScrollMotion(),
+          children: [
+            SlidableAction(
+              flex: 1,
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              onPressed: (context) async {
+                _showEditBottomSheet(downloader: downloader);
+              },
+              backgroundColor:
+                  true ? const Color(0xFF0392CF) : Colors.deepOrangeAccent,
+              foregroundColor: Colors.white,
+              // icon: Icons.edit,
+              label: '编辑',
             ),
-            title: Text(
-              downloader.name,
-              style: const TextStyle(
-                color: Colors.black38,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
+          ],
+        ),
+        endActionPane: ActionPane(
+          motion: const ScrollMotion(),
+          children: [
+            SlidableAction(
+              flex: 1,
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+
+              onPressed: (context) async {
+                Get.defaultDialog(
+                  title: '确认',
+                  backgroundColor: Colors.white,
+                  radius: 5,
+                  titleStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.deepPurple),
+                  middleText: '确定要删除任务吗？',
+                  actions: [
+                    ElevatedButton(
+                      onPressed: () {
+                        Get.back(result: false);
+                      },
+                      child: const Text('取消'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        Get.back(result: true);
+                        CommonResponse res =
+                            await controller.removeDownloader(downloader);
+                        if (res.code == 0) {
+                          Get.snackbar('删除通知', res.msg.toString(),
+                              backgroundColor: Colors.green.shade500,
+                              colorText: Colors.white70);
+                        } else {
+                          Get.snackbar('删除通知', res.msg.toString(),
+                              backgroundColor: Colors.red.shade500,
+                              colorText: Colors.white70);
+                        }
+                      },
+                      child: const Text('确认'),
+                    ),
+                  ],
+                );
+              },
+              backgroundColor: const Color(0xFFFE4A49),
+              foregroundColor: Colors.white,
+              // icon: Icons.delete,
+              label: '删除',
             ),
-            subTitle: Text(
-              '${downloader.protocol}://${downloader.host}:${downloader.port}',
-              style: const TextStyle(
-                color: Colors.black38,
-                fontSize: 11,
-              ),
-            ),
-            onTap: () {
-              controller.cancelPeriodicTimer();
-              Get.toNamed(Routes.TORRENT, arguments: downloader);
-            },
-            onLongPress: () async {
-              _showEditBottomSheet(downloader: downloader);
-            },
-            icon: Obx(() {
-              return GFIconButton(
-                icon: connectState.value
-                    ? const Icon(
-                        Icons.bolt,
-                        color: Colors.green,
-                        size: 24,
-                      )
-                    : const Icon(
-                        Icons.offline_bolt_outlined,
-                        color: Colors.red,
-                        size: 24,
-                      ),
-                type: GFButtonType.transparent,
-                onPressed: () {
-                  controller.testConnect(downloader).then((res) {
-                    connectState.value = res.data;
-                    Get.snackbar(
-                      '下载器连接测试',
-                      '',
-                      messageText: EllipsisText(
-                        text: res.msg!,
-                        ellipsis: '...',
-                        maxLines: 1,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: res.data ? Colors.white : Colors.red,
-                        ),
-                      ),
-                      colorText: res.data ? Colors.white : Colors.red,
-                    );
-                  });
+          ],
+        ),
+
+        // The end action pane is the one at the right or the bottom side.
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Column(
+            children: [
+              GFListTile(
+                padding: const EdgeInsets.all(0),
+                avatar: GFAvatar(
+                  // shape: GFAvatarShape.square,
+                  backgroundImage: AssetImage(
+                      'assets/images/${downloader.category.toLowerCase()}.png'),
+                  size: 18,
+                ),
+                title: Text(
+                  downloader.name,
+                  style: const TextStyle(
+                    color: Colors.black38,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                subTitle: Text(
+                  '${downloader.protocol}://${downloader.host}:${downloader.port}',
+                  style: const TextStyle(
+                    color: Colors.black38,
+                    fontSize: 11,
+                  ),
+                ),
+                onTap: () {
+                  controller.cancelPeriodicTimer();
+                  Get.toNamed(Routes.TORRENT, arguments: downloader);
                 },
-              );
-            }),
+                onLongPress: () async {
+                  _showEditBottomSheet(downloader: downloader);
+                },
+                icon: Obx(() {
+                  return GFIconButton(
+                    icon: connectState.value
+                        ? const Icon(
+                            Icons.bolt,
+                            color: Colors.green,
+                            size: 24,
+                          )
+                        : const Icon(
+                            Icons.offline_bolt_outlined,
+                            color: Colors.red,
+                            size: 24,
+                          ),
+                    type: GFButtonType.transparent,
+                    onPressed: () {
+                      controller.testConnect(downloader).then((res) {
+                        connectState.value = res.data;
+                        Get.snackbar(
+                          '下载器连接测试',
+                          '',
+                          messageText: EllipsisText(
+                            text: res.msg!,
+                            ellipsis: '...',
+                            maxLines: 1,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: res.data ? Colors.white : Colors.red,
+                            ),
+                          ),
+                          colorText: res.data ? Colors.white : Colors.red,
+                        );
+                      });
+                    },
+                  );
+                }),
+              ),
+              GetBuilder<DownloadController>(builder: (controller) {
+                return _buildLiveLineChart(downloader, chartSeriesController);
+              })
+            ],
           ),
-          GetBuilder<DownloadController>(builder: (controller) {
-            return _buildLiveLineChart(downloader, chartSeriesController);
-          })
-        ],
+        ),
       ),
     );
   }

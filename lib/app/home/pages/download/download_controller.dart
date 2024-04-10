@@ -113,7 +113,7 @@ class DownloadController extends GetxController {
   }
 
   getDownloaderListFromServer() {
-    getDownloaderList().then((value) {
+    getDownloaderListApi().then((value) {
       if (value.code == 0) {
         dataList.value = value.data;
         isLoaded = true;
@@ -130,10 +130,18 @@ class DownloadController extends GetxController {
     update();
   }
 
+  Future<CommonResponse> removeDownloader(Downloader downloader) async {
+    CommonResponse res = await removeDownloaderApi(downloader);
+    getDownloaderListFromServer();
+    update();
+    return res;
+  }
+
   Future<QBittorrentApiV2> getQbInstance(Downloader downloader) async {
     final qbittorrent = QBittorrentApiV2(
       baseUrl: '${downloader.protocol}://${downloader.host}:${downloader.port}',
-      cookiePath: (await getApplicationDocumentsDirectory()).path,
+      cookiePath:
+          '${(await getApplicationDocumentsDirectory()).path}/${downloader.host}/${downloader.port}',
       logger: false,
     );
     await qbittorrent.auth.login(
@@ -143,7 +151,7 @@ class DownloadController extends GetxController {
     return qbittorrent;
   }
 
-  tr.Transmission getTrInstance(Downloader downloader) {
+  Future<tr.Transmission> getTrInstance(Downloader downloader) async {
     final transmission = tr.Transmission(
         '${downloader.protocol}://${downloader.host}:${downloader.port}',
         tr.AuthKeys(downloader.username, downloader.password),
@@ -152,11 +160,19 @@ class DownloadController extends GetxController {
   }
 
   Future getTrSpeed(Downloader downloader) async {
-    final client = getTrInstance(downloader);
+    final client = await getTrInstance(downloader);
     var res = await client.v1.session.sessionStats();
+    var res1 = await client.v1.session.sessionGet(
+        fields: tr.SessionArgs()
+            .speedLimitDown()
+            .speedLimitDownEnabled()
+            .speedLimitUp()
+            .speedLimitUpEnabled());
+
+    TransmissionStats stats = TransmissionStats.fromJson(res["arguments"]);
+    stats.speedLimitSettings = SpeedLimitSettings.fromJson(res1["arguments"]);
     if (res['result'] == "success") {
-      return CommonResponse(
-          data: TransmissionStats.fromJson(res["arguments"]), code: 0);
+      return CommonResponse(data: stats, code: 0);
     }
     return CommonResponse(
       code: -1,
@@ -165,10 +181,10 @@ class DownloadController extends GetxController {
     );
   }
 
-  dynamic getIntervalSpeed(Downloader downloader) {
+  dynamic getIntervalSpeed(Downloader downloader) async {
     return downloader.category == 'Qb'
-        ? getQbSpeed(downloader)
-        : getTrSpeed(downloader);
+        ? await getQbSpeed(downloader)
+        : await getTrSpeed(downloader);
   }
 
   Future getQbSpeed(Downloader downloader) async {
@@ -194,7 +210,7 @@ class DownloadController extends GetxController {
         return CommonResponse(
             data: true, msg: '${downloader.name} 连接成功!', code: 0);
       } else {
-        getTrInstance(downloader);
+        await getTrInstance(downloader);
         return CommonResponse(
             data: true, msg: '${downloader.name} 连接成功!', code: 0);
       }
@@ -225,9 +241,9 @@ class DownloadController extends GetxController {
   saveDownloaderToServer(Downloader downloader) async {
     CommonResponse response;
     if (downloader.id != 0) {
-      response = await editDownloader(downloader);
+      response = await editDownloaderApi(downloader);
     } else {
-      response = await saveDownloader(downloader);
+      response = await saveDownloaderApi(downloader);
     }
     if (response.code == 0) {
       Get.snackbar(

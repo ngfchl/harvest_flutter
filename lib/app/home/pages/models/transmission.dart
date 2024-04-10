@@ -50,10 +50,43 @@ class CurrentStats {
   }
 }
 
+class SpeedLimitSettings {
+  int speedLimitDown;
+  bool speedLimitDownEnabled;
+  int speedLimitUp;
+  bool speedLimitUpEnabled;
+
+  SpeedLimitSettings({
+    required this.speedLimitDown,
+    required this.speedLimitDownEnabled,
+    required this.speedLimitUp,
+    required this.speedLimitUpEnabled,
+  });
+
+  factory SpeedLimitSettings.fromJson(Map<String, dynamic> json) {
+    return SpeedLimitSettings(
+      speedLimitDown: json['speed-limit-down'],
+      speedLimitDownEnabled: json['speed-limit-down-enabled'],
+      speedLimitUp: json['speed-limit-up'],
+      speedLimitUpEnabled: json['speed-limit-up-enabled'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'speed-limit-down': speedLimitDown,
+      'speed-limit-down-enabled': speedLimitDownEnabled,
+      'speed-limit-up': speedLimitUp,
+      'speed-limit-up-enabled': speedLimitUpEnabled,
+    };
+  }
+}
+
 class TransmissionStats {
   int activeTorrentCount;
   CumulativeStats cumulativeStats;
   CurrentStats currentStats;
+  SpeedLimitSettings? speedLimitSettings;
   int downloadSpeed;
   int pausedTorrentCount;
   int torrentCount;
