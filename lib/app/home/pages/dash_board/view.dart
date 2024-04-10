@@ -54,7 +54,8 @@ class _DashBoardPageState extends State<DashBoardPage>
                   child: controller.statusList.isNotEmpty
                       ? ListView(
                           children: [
-                            _buildSiteInfoCard(),
+                            if (controller.statusList.isNotEmpty)
+                              _buildSiteInfoCard(),
                             if (controller.stackChartDataList.isNotEmpty)
                               CustomCard(child: _buildStackedBar()),
                             if (controller.statusList.isNotEmpty)
