@@ -1,14 +1,9 @@
 name: harvest
-description: "Harvest Project App Client"
-
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-
-version: 2024.04.07+2
-
+description: Harvest Project App Client
+publish_to: none
+version: 2024.04.10+2
 environment:
   sdk: '>=3.3.2 <4.0.0'
-
-
 dependencies:
   flutter:
     sdk: flutter
@@ -42,16 +37,14 @@ dependencies:
   flutter_pickers: ^2.1.9
   permission_handler: ^11.3.1
   flutter_client_sse: ^2.0.1
-  webview_flutter: ^4.7.0
-  webview_cookie_manager: ^2.0.6
   flutter_inappwebview: ^6.0.0
-
-
+  random_color: ^1.0.6-nullsafety
+  syncfusion_flutter_sliders: ^25.1.38
+  syncfusion_flutter_core: ^25.1.39
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
-
 flutter:
   uses-material-design: true
   assets:
