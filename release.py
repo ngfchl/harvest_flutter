@@ -15,6 +15,7 @@ class VersionManager:
         self.output_folder = os.path.expanduser(output_folder)
         self.version_regex = r'^(\d{4}\.\d{2}\.\d{2})\+(\d+)$'
         self.version_date_format = '%Y.%m.%d'
+        self.ios_path = 'build/ios/iphoneos/'
         self.current_version = self.read_version()
         self.calc_version()
         self.tasks = ['apk', 'ios']
@@ -63,17 +64,38 @@ class VersionManager:
                             f"{self.output_folder}/harvest_{self.new_version}.apk")
                 print(f'APK 打包完成')
             elif flag == 'ios':
-                subprocess.run(["flutter", "build", "ios"])
+                # subprocess.run(["rm", "-rf", f"{self.ios_path}Payload/*"])
+                res = subprocess.run(["rm -rf build/ios/*"], shell=True,
+                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                print(res)
+                res = subprocess.run("flutter build ios", shell=True,
+                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                print(res)
                 print(f'IOS 编译完成，打包为 ipa 文件')
-                shutil.rmtree("build/ios/iphoneos/Payload", ignore_errors=True)
-                os.makedirs("build/ios/iphoneos/Payload", exist_ok=True)
-                shutil.move("build/ios/iphoneos/Runner.app", "build/ios/iphoneos/Payload/")
-                shutil.make_archive("build/ios/iphoneos/Payload", 'zip',
-                                    "build/ios/iphoneos/Payload")
-                print(f'ipa 打包完成，正在移动到指定文件夹 {self.output_folder}')
+                res = subprocess.run(
+                    "mkdir -p Payload/",
+                    cwd=self.ios_path,
+                    shell=True,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE
+                )
+                print(res)
+                res = subprocess.run(
+                    "mv Runner.app Payload/",
+                    cwd=self.ios_path,
+                    shell=True,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE
+                )
+                print(res)
+                res = subprocess.run(
+                    "zip -r Payload.zip Payload", cwd=self.ios_path,
+                    shell=True,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                print(f"命令执行成功！{res}")
+                print(
+                    f'ipa 打包完成，正在移动到指定文件夹 {self.output_folder}/harvest_{self.new_version}.ipa')
                 shutil.move("build/ios/iphoneos/Payload.zip",
                             f"{self.output_folder}/harvest_{self.new_version}.ipa")
-                shutil.rmtree("build/ios/iphoneos/Payload")
+
                 print(f'IOS 打包完成')
         except Exception as e:
             print(f"{flag} 打包失败: {e}")
@@ -86,7 +108,10 @@ class VersionManager:
     def compile_and_install(self):
         with concurrent.futures.ThreadPoolExecutor() as executor:
             # 使用 executor.map 并行执行 compile 方法
-            results = executor.map(self.compile, ['ios', 'apk'])
+            results = executor.map(self.compile, [
+                'apk',
+                'ios',
+            ])
             # 处理结果或捕获异常
             for result in results:
                 try:
@@ -94,6 +119,10 @@ class VersionManager:
                 except Exception as e:
                     print(f"Compilation failed: {e}")
                     raise e
+            subprocess.run(
+                f"open {self.output_folder}", cwd=self.ios_path,
+                shell=True,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
 if __name__ == '__main__':
