@@ -21,7 +21,7 @@ class AggSearchController extends GetxController {
 
   String searchKey = '';
   String filterKey = '';
-  String sortKey = 'siteId';
+  String sortKey = '';
   List<int> sites = <int>[];
   int maxCount = 10;
   List<SearchTorrentInfo> searchResults = <SearchTorrentInfo>[];
@@ -107,7 +107,6 @@ class AggSearchController extends GetxController {
         showResults.sort((a, b) => a.completers.compareTo(b.completers));
         break;
     }
-    LoggerHelper.Logger.instance.w(sortReversed);
     if (sortReversed) {
       showResults = showResults.reversed.toList();
     }

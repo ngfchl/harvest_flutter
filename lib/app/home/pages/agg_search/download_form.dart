@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/components/loader/gf_loader.dart';
+import 'package:harvest/common/card_view.dart';
 
 import '../../../../common/form_widgets.dart';
 import '../../../../models/download.dart';
@@ -67,7 +68,7 @@ class DownloadForm extends StatelessWidget {
               children: [
                 Text(
                   '种子名称: ${info.subtitle.isNotEmpty ? info.subtitle : info.title}',
-                  style: const TextStyle(fontSize: 12, color: Colors.white70),
+                  style: const TextStyle(fontSize: 12, color: Colors.black54),
                 ),
                 CustomTextField(
                   controller: urlController,
@@ -95,9 +96,10 @@ class DownloadForm extends StatelessWidget {
                   ),
                 Obx(() {
                   return SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
                       title: const Text(
                         '高级选项',
-                        style: TextStyle(fontSize: 12, color: Colors.white70),
+                        style: TextStyle(fontSize: 12, color: Colors.black54),
                       ),
                       value: advancedConfig.value,
                       onChanged: (bool val) {
@@ -106,9 +108,10 @@ class DownloadForm extends StatelessWidget {
                 }),
                 Obx(() {
                   return SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
                       title: const Text(
                         '暂停下载',
-                        style: TextStyle(fontSize: 12, color: Colors.white70),
+                        style: TextStyle(fontSize: 12, color: Colors.black54),
                       ),
                       value: paused.value,
                       onChanged: (bool val) {
@@ -118,9 +121,10 @@ class DownloadForm extends StatelessWidget {
                 if (downloader.category.toLowerCase() == 'qb')
                   Obx(() {
                     return SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
                         title: const Text(
                           '内容布局',
-                          style: TextStyle(fontSize: 12, color: Colors.white70),
+                          style: TextStyle(fontSize: 12, color: Colors.black54),
                         ),
                         value: rootFolder.value,
                         onChanged: (bool val) {
@@ -130,9 +134,10 @@ class DownloadForm extends StatelessWidget {
                 if (downloader.category.toLowerCase() == 'qb')
                   Obx(() {
                     return SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
                         title: const Text(
                           '自动管理',
-                          style: TextStyle(fontSize: 12, color: Colors.white70),
+                          style: TextStyle(fontSize: 12, color: Colors.black54),
                         ),
                         value: autoTMM.value,
                         onChanged: (bool val) {
@@ -143,6 +148,18 @@ class DownloadForm extends StatelessWidget {
                   return advancedConfig.value
                       ? Column(
                           children: [
+                            if (downloader.category.toLowerCase() == 'qb')
+                              SwitchListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: const Text(
+                                    '优先下载首尾数据块',
+                                    style: TextStyle(
+                                        fontSize: 12, color: Colors.black54),
+                                  ),
+                                  value: firstLastPiecePrio.value,
+                                  onChanged: (bool val) {
+                                    firstLastPiecePrio.value = val;
+                                  }),
                             CustomTextField(
                               controller: cookieController,
                               labelText: ' Cookie',
@@ -214,17 +231,6 @@ class DownloadForm extends StatelessWidget {
                                 }),
                               ],
                             ),
-                            if (downloader.category.toLowerCase() == 'qb')
-                              SwitchListTile(
-                                  title: const Text(
-                                    '优先下载首尾数据块',
-                                    style: TextStyle(
-                                        fontSize: 12, color: Colors.white70),
-                                  ),
-                                  value: firstLastPiecePrio.value,
-                                  onChanged: (bool val) {
-                                    firstLastPiecePrio.value = val;
-                                  }),
                           ],
                         )
                       : const SizedBox.shrink();
@@ -320,8 +326,7 @@ class DownloadForm extends StatelessWidget {
 
 openDownloaderListSheet(BuildContext context, SearchTorrentInfo info) {
   DownloadController downloadController = Get.find();
-  Get.bottomSheet(Card(
-    color: Colors.white38,
+  Get.bottomSheet(CustomCard(
     margin: const EdgeInsets.all(8),
     child: Column(
       mainAxisSize: MainAxisSize.min,
@@ -339,15 +344,19 @@ openDownloaderListSheet(BuildContext context, SearchTorrentInfo info) {
         Flexible(
           child: ListView(
             children: downloadController.dataList.map((downloader) {
-              return Card(
-                color: Colors.white54,
+              return CustomCard(
                 child: GetBuilder<AggSearchController>(
                     id: '${downloader.id} - ${downloader.name}',
                     builder: (controller) {
                       return ListTile(
-                        title: Text(downloader.name),
+                        title: Text(
+                          downloader.name,
+                          style: const TextStyle(color: Colors.black87),
+                        ),
                         subtitle: Text(
-                            '${downloader.protocol}://${downloader.host}:${downloader.port}'),
+                          '${downloader.protocol}://${downloader.host}:${downloader.port}',
+                          style: const TextStyle(color: Colors.black54),
+                        ),
                         leading: CircleAvatar(
                           backgroundImage: Image.asset(
                             'assets/images/${downloader.category.toLowerCase()}.png',
@@ -357,6 +366,13 @@ openDownloaderListSheet(BuildContext context, SearchTorrentInfo info) {
                             ? const CircularProgressIndicator()
                             : const SizedBox.shrink(),
                         onTap: () async {
+                          if (downloader.category.toLowerCase() != 'qb') {
+                            Get.snackbar('警告', '目前仅支持 QB，Tr 相关功能正在开发中！',
+                                backgroundColor: Colors.amber.shade300,
+                                colorText: Colors.white54);
+                            return;
+                          }
+
                           await controller
                               .getDownloaderCategories(downloader)
                               .then((value) {
@@ -366,17 +382,15 @@ openDownloaderListSheet(BuildContext context, SearchTorrentInfo info) {
                               // barrierDismissible: false,
                               title: '下载到：${downloader.name}',
                               titleStyle: const TextStyle(
-                                  fontSize: 14, color: Colors.white70),
-                              backgroundColor: Colors.black54,
-                              content: SizedBox(
-                                  // height: 350,
-                                  child: SingleChildScrollView(
+                                  fontSize: 14, color: Colors.black54),
+                              backgroundColor: Colors.white,
+                              content: SingleChildScrollView(
                                 child: DownloadForm(
                                   categories: categorise,
                                   downloader: downloader,
                                   info: info,
                                 ),
-                              )),
+                              ),
                             );
                           });
                         },
