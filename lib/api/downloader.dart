@@ -8,20 +8,10 @@ import 'api.dart';
 
 ///获取下载器列表
 ///
-Future<CommonResponse> getDownloaderList() async {
+Future<CommonResponse> getDownloaderListApi() async {
   final response = await DioUtil().get(Api.DOWNLOADER_LIST);
-  if (response.statusCode == 200) {
-    final dataList = (response.data['data'] as List)
-        .map<Downloader>((item) => Downloader.fromJson(item))
-        .toList();
-    String msg = '共有${dataList.length}个下载器';
-    Logger.instance.i(msg);
-    return CommonResponse(data: dataList, code: 0, msg: msg);
-  } else {
-    String msg = '获取主页状态失败: ${response.statusCode}';
-    // GFToast.showToast(msg, context);
-    return CommonResponse(data: null, code: -1, msg: msg);
-  }
+  return await fetchDataList(
+      Api.DOWNLOADER_LIST, (p0) => Downloader.fromJson(p0));
 }
 
 Future<CommonResponse> getDownloaderPaths() async {
@@ -37,15 +27,21 @@ Future<CommonResponse> getDownloaderPaths() async {
 }
 
 ///  修改下载器信息
-editDownloader(Downloader downloader) async {
+editDownloaderApi(Downloader downloader) async {
   String apiUrl = '${Api.DOWNLOADER_LIST}/${downloader.id}';
   return await editData(apiUrl, downloader.toJson());
 }
 
 /// 保存下载器信息
-saveDownloader(Downloader downloader) async {
+saveDownloaderApi(Downloader downloader) async {
   String apiUrl = Api.DOWNLOADER_LIST;
-  return await saveData(apiUrl, downloader.toJson());
+  return await addData(apiUrl, downloader.toJson());
+}
+
+///  修改下载器信息
+removeDownloaderApi(Downloader downloader) async {
+  String apiUrl = '${Api.DOWNLOADER_LIST}/${downloader.id}';
+  return await removeData(apiUrl);
 }
 
 Future<CommonResponse> getDownloaderCategories(int downloaderId) async {

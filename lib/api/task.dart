@@ -1,3 +1,5 @@
+import 'package:harvest/api/hooks.dart';
+
 import '../app/home/pages/models/task.dart';
 import '../models/common_response.dart';
 import '../utils/dio_util.dart';
@@ -5,23 +7,7 @@ import '../utils/logger_helper.dart';
 import 'api.dart';
 
 Future<CommonResponse> getScheduleList() async {
-  final response = await DioUtil().get(Api.TASK_OPERATE);
-  if (response.statusCode == 200) {
-    try {
-      final dataList = (response.data['data'] as List)
-          .map<Schedule>((item) => Schedule.fromJson(item))
-          .toList();
-      String msg = '共有${dataList.length}个任务';
-      return CommonResponse(data: dataList, code: 0, msg: msg);
-    } catch (e, trace) {
-      Logger.instance.w(trace);
-      String msg = 'Model解析出错啦！';
-      return CommonResponse(data: null, code: -1, msg: msg);
-    }
-  } else {
-    String msg = '获取主页状态失败: ${response.statusCode}';
-    return CommonResponse(data: null, code: -1, msg: msg);
-  }
+  return await fetchDataList(Api.TASK_OPERATE, (p0) => Schedule.fromJson(p0));
 }
 
 Future<CommonResponse> getTaskList() async {
@@ -80,38 +66,32 @@ Future<CommonResponse> execRemoteTask(Schedule schedule) async {
 }
 
 Future<CommonResponse> editRemoteTask(Schedule schedule) async {
-  Map<String, dynamic> data = schedule.toJson();
-  final response = await DioUtil().put(Api.TASK_OPERATE, formData: data);
-  if (response.statusCode == 200) {
-    return CommonResponse.fromJson(response.data, (p0) => null);
-  } else {
-    String msg = '计划任务修改失败: ${response.statusCode}';
-    // GFToast.showToast(msg, context);
-    return CommonResponse(data: null, code: -1, msg: msg);
-  }
+  // Map<String, dynamic> data = schedule.toJson();
+  // final response = await DioUtil().put(Api.TASK_OPERATE, formData: data);
+  // if (response.statusCode == 200) {
+  //   return CommonResponse.fromJson(response.data, (p0) => null);
+  // } else {
+  //   String msg = '计划任务修改失败: ${response.statusCode}';
+  //   // GFToast.showToast(msg, context);
+  //   return CommonResponse(data: null, code: -1, msg: msg);
+  // }
+  return await editData(Api.TASK_OPERATE, schedule.toJson());
 }
 
 Future<CommonResponse> addRemoteTask(Schedule schedule) async {
-  Map<String, dynamic> data = schedule.toJson();
-  final response = await DioUtil().post(Api.TASK_OPERATE, formData: data);
-  if (response.statusCode == 200) {
-    return CommonResponse.fromJson(response.data, (p0) => null);
-  } else {
-    String msg = '计划任务添加失败: ${response.statusCode}';
-    // GFToast.showToast(msg, context);
-    return CommonResponse(data: null, code: -1, msg: msg);
-  }
+  // Map<String, dynamic> data = schedule.toJson();
+  // final response = await DioUtil().post(Api.TASK_OPERATE, formData: data);
+  // if (response.statusCode == 200) {
+  //   return CommonResponse.fromJson(response.data, (p0) => null);
+  // } else {
+  //   String msg = '计划任务添加失败: ${response.statusCode}';
+  //   // GFToast.showToast(msg, context);
+  //   return CommonResponse(data: null, code: -1, msg: msg);
+  // }
+  return await addData(Api.TASK_OPERATE, schedule.toJson());
 }
 
 Future<CommonResponse> removeRemoteTask(Schedule schedule) async {
-  Map<String, dynamic> data = schedule.toJson();
-  final response = await DioUtil()
-      .delete('${Api.TASK_OPERATE}/${schedule.id}', formData: data);
-  if (response.statusCode == 200) {
-    return CommonResponse.fromJson(response.data, (p0) => null);
-  } else {
-    String msg = '计划任务删除失败: ${response.statusCode}';
-    // GFToast.showToast(msg, context);
-    return CommonResponse(data: null, code: -1, msg: msg);
-  }
+  String apiUrl = '${Api.TASK_OPERATE}/${schedule.id}';
+  return await removeData(apiUrl);
 }
