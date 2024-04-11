@@ -67,13 +67,33 @@ class TaskPage extends StatelessWidget {
         margin: const EdgeInsets.only(top: 8, left: 5, right: 5),
         child: Slidable(
           key: ValueKey('${item.id}_${item.name}'),
+          startActionPane: ActionPane(
+            motion: const ScrollMotion(),
+            children: [
+              SlidableAction(
+                borderRadius: const BorderRadius.all(Radius.circular(8)),
+                onPressed: (context) async {
+                  CommonResponse res = await editTask(item);
+                  if (res.code == 0) {
+                    Logger.instance.i('更新任务列表！');
+                    controller.getTaskInfo();
+                    controller.update();
+                    Get.back();
+                  }
+                },
+                flex: 1,
+                backgroundColor: const Color(0xFF0392CF),
+                foregroundColor: Colors.white,
+                icon: Icons.edit,
+                label: '编辑',
+              ),
+            ],
+          ),
           endActionPane: ActionPane(
             motion: const ScrollMotion(),
             children: [
               SlidableAction(
-                borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(8),
-                    bottomLeft: Radius.circular(8)),
+                borderRadius: const BorderRadius.all(Radius.circular(8)),
                 onPressed: (context) async {
                   Get.defaultDialog(
                     title: '确认',
@@ -111,30 +131,11 @@ class TaskPage extends StatelessWidget {
                     ],
                   );
                 },
-                flex: 2,
+                flex: 1,
                 backgroundColor: const Color(0xFFFE4A49),
                 foregroundColor: Colors.white,
                 icon: Icons.delete,
                 label: '删除',
-              ),
-              SlidableAction(
-                borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(8),
-                    bottomRight: Radius.circular(8)),
-                onPressed: (context) async {
-                  CommonResponse res = await editTask(item);
-                  if (res.code == 0) {
-                    Logger.instance.i('更新任务列表！');
-                    controller.getTaskInfo();
-                    controller.update();
-                    Get.back();
-                  }
-                },
-                flex: 2,
-                backgroundColor: const Color(0xFF0392CF),
-                foregroundColor: Colors.white,
-                icon: Icons.edit,
-                label: '编辑',
               ),
             ],
           ),
@@ -161,14 +162,14 @@ class TaskPage extends StatelessWidget {
               style: const TextStyle(fontSize: 10, color: Colors.black38),
             ),
             trailing: SizedBox(
-              width: 80,
+              width: 60,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (item.enabled == true)
                     Obx(() {
-                      return IconButton(
-                        onPressed: () async {
+                      return InkWell(
+                        onTap: () async {
                           isRunning.value = true;
                           // await Future.delayed(Duration(seconds: 2));
                           CommonResponse res = await controller.execTask(item);
@@ -184,14 +185,14 @@ class TaskPage extends StatelessWidget {
                           isRunning.value = false;
                           controller.update();
                         },
-                        icon: isRunning.value == false
+                        child: isRunning.value == false
                             ? const Icon(Icons.play_circle_outline,
                                 color: Colors.green)
                             : const GFLoader(size: 20),
                       );
                     }),
-                  IconButton(
-                    onPressed: () async {
+                  InkWell(
+                    onTap: () async {
                       CommonResponse res =
                           await controller.changeScheduleState(item);
                       String title = item.enabled == true ? '任务启用通知' : '任务禁用通知';
@@ -208,7 +209,7 @@ class TaskPage extends StatelessWidget {
                       }
                       controller.update();
                     },
-                    icon: item.enabled == true
+                    child: item.enabled == true
                         ? const Icon(Icons.check_circle_outline,
                             color: Colors.green)
                         : const Icon(Icons.pause_circle_outline,
