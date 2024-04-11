@@ -1,5 +1,26 @@
 import '../models/common_response.dart';
 import '../utils/dio_util.dart';
+import '../utils/logger_helper.dart';
+
+Future<CommonResponse<List<T>>> fetchDataList<T>(
+  String apiEndpoint,
+  T Function(Map<String, dynamic>) fromJson,
+) async {
+  final response = await DioUtil().get(apiEndpoint);
+  if (response.statusCode == 200) {
+    // Logger.instance.d(response.data['data']);
+    final dataList = (response.data['data'] as List)
+        .map<T>((item) => fromJson(item))
+        .toList();
+    String msg = '成功获取到${dataList.length}条数据';
+    // Logger.instance.i(msg);
+    return CommonResponse<List<T>>(data: dataList, code: 0, msg: msg);
+  } else {
+    String msg = '获取数据列表失败: ${response.statusCode}';
+    // GFToast.showToast(msg, context);
+    return CommonResponse<List<T>>(data: null, code: -1, msg: msg);
+  }
+}
 
 Future<CommonResponse> editData<T>(
     String apiUrl, Map<String, dynamic> formData) async {
@@ -17,10 +38,9 @@ Future<CommonResponse> editData<T>(
   }
 }
 
-Future<CommonResponse> saveData(
-    String apiUrl, Map<String, dynamic> data) async {
+Future<CommonResponse> addData(String apiUrl, Map<String, dynamic> data) async {
   try {
-    final response = await DioUtil().post(apiUrl, formData: data);
+    final response = await DioUtil().post(apiUrl, formData: data..remove('id'));
     if (response.statusCode == 200) {
       return CommonResponse.fromJson(response.data, (p0) => null);
     } else {
@@ -29,6 +49,18 @@ Future<CommonResponse> saveData(
     }
   } catch (e) {
     String msg = '请求失败: $e';
+    Logger.instance.e(msg);
+    return CommonResponse(data: null, code: -1, msg: msg);
+  }
+}
+
+Future<CommonResponse> removeData(String apiUrl) async {
+  final response = await DioUtil().delete(apiUrl);
+  if (response.statusCode == 200) {
+    return CommonResponse.fromJson(response.data, (p0) => null);
+  } else {
+    String msg = '数据删除失败: ${response.statusCode}';
+    // GFToast.showToast(msg, context);
     return CommonResponse(data: null, code: -1, msg: msg);
   }
 }
