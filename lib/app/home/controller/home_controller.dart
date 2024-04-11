@@ -17,9 +17,10 @@ import '../../../utils/dio_util.dart';
 import '../../../utils/logger_helper.dart';
 import '../../../utils/storage.dart';
 import '../../routes/app_pages.dart';
+import '../pages/download/download_controller.dart';
 
 class HomeController extends GetxController {
-  var initPage = 4.obs;
+  var initPage = 2.obs;
   final userinfo = RxMap();
   GetStorage box = GetStorage();
   TextEditingController searchController = TextEditingController();
@@ -27,7 +28,7 @@ class HomeController extends GetxController {
 
   // final mySiteController = Get.put(MySiteController());
 
-  final PageController pageController = PageController(initialPage: 4);
+  final PageController pageController = PageController(initialPage: 2);
   final List<BottomNavigationBarItem> menuItems = [
     const BottomNavigationBarItem(
       icon: Icon(Icons.search),
@@ -100,6 +101,8 @@ class HomeController extends GetxController {
     SPUtil.remove("isLogin");
     box.remove("userinfo");
     box.remove("isLogin");
+    Get.delete<DownloadController>();
+    Get.delete<HomeController>();
     Get.offAllNamed(Routes.LOGIN);
   }
 
