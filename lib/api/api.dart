@@ -49,6 +49,8 @@ class Api {
   static const String PUSH_TORRENT_URL = "/mysite/push_torrent";
 
   // 任务列表
+  static const String OPTION_OPERATE = "option/options";
+  static const String NOTICE_TEST = "option/test";
   static const String TASK_RESULTS = "option/tasks";
   static const String TASK_OPERATE = "/option/schedule";
   static const String CRONTAB_LIST = "option/crontabs";
