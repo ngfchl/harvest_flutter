@@ -46,12 +46,14 @@ class CustomTextField extends StatelessWidget {
   final String? helperText;
   final List<TextInputFormatter> inputFormatters;
   final TextInputType? keyboardType;
+  final int? maxLines;
 
   const CustomTextField({
     super.key,
     required this.controller,
     required this.labelText,
     this.inputFormatters = const [],
+    this.maxLines = 1,
     this.keyboardType,
     this.helperText,
     this.prefixText,
@@ -60,26 +62,30 @@ class CustomTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      inputFormatters: inputFormatters,
-      style: const TextStyle(fontSize: 13, color: Colors.black54),
-      decoration: InputDecoration(
-        labelText: labelText,
-        labelStyle: const TextStyle(fontSize: 12, color: Colors.black54),
-        contentPadding: const EdgeInsets.all(0),
-        enabledBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Color(0x19000000)),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: TextField(
+        controller: controller,
+        maxLines: maxLines,
+        inputFormatters: inputFormatters,
+        style: const TextStyle(fontSize: 13, color: Colors.black54),
+        decoration: InputDecoration(
+          labelText: labelText,
+          labelStyle: const TextStyle(fontSize: 12, color: Colors.black54),
+          contentPadding: const EdgeInsets.all(0),
+          enabledBorder: const UnderlineInputBorder(
+            borderSide: BorderSide(color: Color(0x19000000)),
+          ),
+          focusedBorder: const UnderlineInputBorder(
+            borderSide: BorderSide(color: Color(0x16000000)),
+          ),
+          helperText: helperText,
+          prefixText: prefixText,
+          suffixText: suffixText,
+          helperStyle: const TextStyle(fontSize: 12, color: Colors.black54),
+          prefixStyle: const TextStyle(fontSize: 12, color: Colors.black54),
+          suffixStyle: const TextStyle(fontSize: 12, color: Colors.black54),
         ),
-        focusedBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Color(0x16000000)),
-        ),
-        helperText: helperText,
-        prefixText: prefixText,
-        suffixText: suffixText,
-        helperStyle: const TextStyle(fontSize: 12, color: Colors.black54),
-        prefixStyle: const TextStyle(fontSize: 12, color: Colors.black54),
-        suffixStyle: const TextStyle(fontSize: 12, color: Colors.black54),
       ),
     );
   }
