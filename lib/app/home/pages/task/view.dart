@@ -73,13 +73,7 @@ class TaskPage extends StatelessWidget {
               SlidableAction(
                 borderRadius: const BorderRadius.all(Radius.circular(8)),
                 onPressed: (context) async {
-                  CommonResponse res = await editTask(item);
-                  if (res.code == 0) {
-                    Logger.instance.i('更新任务列表！');
-                    controller.getTaskInfo();
-                    controller.update();
-                    Get.back();
-                  }
+                  await editTask(item);
                 },
                 flex: 1,
                 backgroundColor: const Color(0xFF0392CF),
@@ -376,6 +370,7 @@ class TaskPage extends StatelessWidget {
                             cron?.monthOfYear = monthOfYearController.text;
                             task?.crontab = cron;
                           }
+                          Logger.instance.i(task?.toJson());
                           CommonResponse res = await controller.saveTask(task);
                           if (res.code == 0) {
                             Logger.instance.i('更新任务列表！');

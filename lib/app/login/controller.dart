@@ -35,6 +35,7 @@ class LoginController extends GetxController {
       Server? server = selectedServer.value;
       initDio(server!);
     }
+    super.onInit();
   }
 
   bool get hasSelectedServer {

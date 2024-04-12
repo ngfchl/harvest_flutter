@@ -79,15 +79,6 @@ Future<CommonResponse> editRemoteTask(Schedule schedule) async {
 }
 
 Future<CommonResponse> addRemoteTask(Schedule schedule) async {
-  // Map<String, dynamic> data = schedule.toJson();
-  // final response = await DioUtil().post(Api.TASK_OPERATE, formData: data);
-  // if (response.statusCode == 200) {
-  //   return CommonResponse.fromJson(response.data, (p0) => null);
-  // } else {
-  //   String msg = '计划任务添加失败: ${response.statusCode}';
-  //   // GFToast.showToast(msg, context);
-  //   return CommonResponse(data: null, code: -1, msg: msg);
-  // }
   return await addData(Api.TASK_OPERATE, schedule.toJson());
 }
 
