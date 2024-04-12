@@ -1,6 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +19,8 @@ import 'models/transmission_base_torrent.dart';
 class TorrentController extends GetxController {
   late Downloader downloader;
   dynamic client;
+  Preferences? configuration;
+
   final torrents = [].obs;
   final showTorrents = [].obs;
   final categories = <Map<String, String>>[].obs;
@@ -137,6 +139,9 @@ class TorrentController extends GetxController {
   @override
   void onInit() async {
     await initClient();
+    if (downloader.category.toLowerCase() == 'qb' && configuration == null) {
+      configuration = await client.application.getApplicationPreferences();
+    }
     await getAllCategory();
 
     getFreeSpace();
@@ -223,7 +228,6 @@ class TorrentController extends GetxController {
           map[el] = el;
           return map;
         });
-        ;
       } else {
         categoryList = cList.values.fold({}, (map, element) {
           map[element.name!] = element.savePath ?? '';
@@ -622,7 +626,7 @@ class TorrentController extends GetxController {
   /// 获取磁力链接的种子文件Bytes
   /// @param downloadUrl 磁力链接
   /// @returns 种子文件Bytes
-  Future<CommonResponse<FileBytes>> getDownloadFileBytes(
+  Future<CommonResponse<String>> getDownloadFileBytes(
       String downloadUrl, String cookie, String userAgent) async {
     try {
       String filePath =
@@ -638,19 +642,21 @@ class TorrentController extends GetxController {
       LoggerHelper.Logger.instance.i(response.statusCode);
       LoggerHelper.Logger.instance.i(response.headers);
       if (response.statusCode == 200) {
-        String? filename = response.headers.map['content-disposition']?.first
-            .split('filename=')[1];
-        if (filename != null && filename.isNotEmpty) {
-          print('Default filename: $filename');
-        } else {
-          print('No default filename found in headers');
-          filename = 'defaultFileName.torrent';
-        }
-        Uint8List fileBytes =
-            Uint8List.fromList(await File(filePath).readAsBytes());
-        FileBytes file = FileBytes(filename: filename, bytes: fileBytes);
-        LoggerHelper.Logger.instance.i(file.filename);
-        return CommonResponse.success(data: file);
+        // String? filename = response.headers.map['content-disposition']?.first
+        //     .split('filename=')[1];
+        // if (filename != null && filename.isNotEmpty) {
+        //   LoggerHelper.Logger.instance.d('Default filename: $filename');
+        // } else {
+        //   LoggerHelper.Logger.instance
+        //       .d('No default filename found in headers');
+        //   filename = 'defaultFileName.torrent';
+        // }
+        // Uint8List fileBytes =
+        //     Uint8List.fromList(await File(filePath).readAsBytes());
+        // FileBytes file = FileBytes(filename: filePath, bytes: fileBytes);
+        // LoggerHelper.Logger.instance.i(filePath);
+        // LoggerHelper.Logger.instance.i(file.filename);
+        return CommonResponse.success(data: filePath);
       } else {
         String msg = '下载种子文件失败！${response.statusCode}';
         LoggerHelper.Logger.instance.i(msg);
@@ -697,8 +703,8 @@ class TorrentController extends GetxController {
         );
       } else {
         msg = '种子文件下载成功，已推送到下载队列...';
-        torrents = NewTorrents.bytes(
-          bytes: [downloadResponse.data!],
+        torrents = NewTorrents.files(
+          files: [File(downloadResponse.data!)],
           savePath: data['savePath'],
           category: data['category'],
           paused: data['paused'],
@@ -713,9 +719,9 @@ class TorrentController extends GetxController {
       }
 
       LoggerHelper.Logger.instance.i(msg);
-      await client.torrents.addNewTorrents(
-        torrents: torrents,
-      );
+      await (client as QBittorrentApiV2).torrents.addNewTorrents(
+            torrents: torrents,
+          );
 
       return CommonResponse.success(msg: '添加下载任务成功！$msg');
     } on QBittorrentException catch (e) {
@@ -734,8 +740,8 @@ class TorrentController extends GetxController {
           paused: data['paused'],
           rootFolder: data['rootFolder'],
           rename: data['rename'],
-          upLimit: data['upLimit'],
-          dlLimit: data['dlLimit'],
+          upLimit: data['upLimit'] * 1024,
+          dlLimit: data['dlLimit'] * 1024,
           ratioLimit: data['ratioLimit'].toDouble(),
           autoTMM: data['autoTMM'],
           firstLastPiecePrio: data['firstLastPiecePrio'],
@@ -745,6 +751,85 @@ class TorrentController extends GetxController {
       return CommonResponse.error(msg: msg);
     } catch (e) {
       String msg = '添加下载任务失败！$e';
+      return CommonResponse.error(msg: msg);
+    }
+  }
+
+  Future<CommonResponse> addTorrentFilesToTr(
+    Downloader downloader,
+    Map<String, dynamic> data,
+  ) async {
+    MySite mySite = data['mySite'];
+    try {
+      TorrentAddResponse torrent;
+      Map res = {};
+      tr.TorrentAddArgs? args = tr.TorrentAddArgs()
+          .paused(data['paused'])
+          .cookies(mySite.cookie!)
+          .downloadDir(data['savePath'])
+          .labels([mySite.nickname]);
+
+      final downloadResponse = await getDownloadFileBytes(
+        data['magnet'],
+        mySite.cookie!,
+        mySite.userAgent!,
+      );
+      if (downloadResponse.code == 0) {
+        LoggerHelper.Logger.instance.i(downloadResponse.data);
+        res = await (client as tr.Transmission).v1.torrent.torrentAdd(
+              metainfo: base64Encode(
+                  await File(downloadResponse.data!).readAsBytes()),
+              args: args,
+            );
+      }
+
+      LoggerHelper.Logger.instance.i(res);
+      if (res['result'] != 'success') {
+        res = await (client as tr.Transmission).v1.torrent.torrentAdd(
+              filename: data['magnet'],
+              args: args,
+            );
+        LoggerHelper.Logger.instance.i(res['arguments']);
+      }
+      if (res['result'] != 'success') {
+        return CommonResponse.error(msg: '添加种子文件失败！${res['result']}');
+      }
+      if (res['arguments']['torrent-added'] != null) {
+        torrent =
+            TorrentAddResponse.fromJson(res['arguments']['torrent-added']);
+      } else {
+        torrent =
+            TorrentAddResponse.fromJson(res['arguments']['torrent-duplicate']);
+      }
+      String msg = '${torrent.name} 添加成功！';
+      try {
+        tr.TorrentSetArgs setArgs =
+            tr.TorrentSetArgs().seedRatioLimit(data['ratioLimit'].toDouble());
+
+        if (data['upLimit'] > 0) {
+          setArgs.uploadLimited(true).uploadLimit(data['upLimit'] * 1024);
+        }
+        if (data['dlLimit'] > 0) {
+          setArgs.downloadLimited(true).downloadLimit(data['dlLimit'] * 1024);
+        }
+        LoggerHelper.Logger.instance.i(client.v1.torrent);
+        final setRes = await (client as tr.Transmission).v1.torrent.torrentSet(
+          setArgs,
+          ids: [torrent.id],
+        );
+        LoggerHelper.Logger.instance.i(setRes['arguments']);
+      } catch (e, trace) {
+        msg = '$msg 🥀设置限速失败！$e';
+        String traceMsg = '🥀设置限速失败！$trace';
+        LoggerHelper.Logger.instance.e(msg);
+        LoggerHelper.Logger.instance.e(traceMsg);
+      }
+      return CommonResponse.success(msg: msg);
+    } catch (e, trace) {
+      String msg = '添加下载任务失败！$e';
+      String traceMsg = '添加下载任务失败！$trace';
+      LoggerHelper.Logger.instance.e(msg);
+      LoggerHelper.Logger.instance.e(traceMsg);
       return CommonResponse.error(msg: msg);
     }
   }
@@ -764,9 +849,10 @@ class TorrentController extends GetxController {
   }
 
   Future<QBittorrentApiV2> getQbInstance(Downloader downloader) async {
-    final qbittorrent = QBittorrentApiV2(
+    QBittorrentApiV2 qbittorrent = QBittorrentApiV2(
       baseUrl: '${downloader.protocol}://${downloader.host}:${downloader.port}',
-      cookiePath: (await getApplicationDocumentsDirectory()).path,
+      cookiePath:
+          '${(await getApplicationDocumentsDirectory()).path}/${downloader.host}/${downloader.port}',
       connectTimeout: const Duration(seconds: 10),
       sendTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
@@ -793,7 +879,7 @@ class TorrentController extends GetxController {
   }
 
   tr.Transmission getTrInstance(Downloader downloader) {
-    final transmission = tr.Transmission(
+    tr.Transmission transmission = tr.Transmission(
         '${downloader.protocol}://${downloader.host}:${downloader.port}',
         tr.AuthKeys(downloader.username, downloader.password),
         logConfig: const tr.ConfigLogger.showNone());
