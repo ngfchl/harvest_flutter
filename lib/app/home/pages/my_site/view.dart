@@ -46,39 +46,62 @@ class _MySitePagePageState extends State<MySitePage>
           },
           child: Column(
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5),
-                height: 25,
-                child: TextField(
-                  controller: controller.searchController,
-                  style: const TextStyle(fontSize: 10),
-                  textAlignVertical: TextAlignVertical.bottom,
-                  decoration: InputDecoration(
-                    // labelText: '搜索',
-                    hintText: '输入关键词...',
-                    labelStyle: const TextStyle(fontSize: 10),
-                    hintStyle: const TextStyle(fontSize: 10),
-                    prefixIcon: const Icon(
-                      Icons.search,
-                      size: 10,
-                    ),
-                    // suffix: ,
-                    suffixIcon: Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: Text('计数：${controller.showStatusList.length}',
-                          style: const TextStyle(
-                              fontSize: 10, color: Colors.orange)),
-                    ),
-                    border: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(3.0)),
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                      height: 25,
+                      child: TextField(
+                        controller: controller.searchController,
+                        style: const TextStyle(fontSize: 10),
+                        textAlignVertical: TextAlignVertical.bottom,
+                        decoration: InputDecoration(
+                          // labelText: '搜索',
+                          hintText: '输入关键词...',
+                          labelStyle: const TextStyle(fontSize: 10),
+                          hintStyle: const TextStyle(fontSize: 10),
+                          prefixIcon: const Icon(
+                            Icons.search,
+                            size: 10,
+                          ),
+                          // suffix: ,
+                          suffixIcon: Padding(
+                            padding: const EdgeInsets.all(5.0),
+                            child: Text(
+                                '计数：${controller.showStatusList.length}',
+                                style: const TextStyle(
+                                    fontSize: 10, color: Colors.orange)),
+                          ),
+                          border: const OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(3.0)),
+                          ),
+                        ),
+                        onChanged: (value) {
+                          Logger.instance.i('搜索框内容变化：$value');
+                          controller.searchKey = value;
+                          controller.filterByKey();
+                        },
+                      ),
                     ),
                   ),
-                  onChanged: (value) {
-                    Logger.instance.i('搜索框内容变化：$value');
-                    controller.searchKey = value;
-                    controller.filterSiteStatusBySearchKey();
-                  },
-                ),
+                  if (controller.searchKey.isNotEmpty)
+                    IconButton(
+                        onPressed: () {
+                          controller.searchController.text =
+                              controller.searchController.text.substring(0,
+                                  controller.searchController.text.length - 1);
+                          controller.searchKey =
+                              controller.searchController.text;
+                          controller.filterByKey();
+                          controller.update();
+                        },
+                        icon: const Icon(
+                          Icons.backspace_outlined,
+                          size: 18,
+                        ))
+                ],
               ),
               Expanded(
                 child: controller.mySiteList.isEmpty

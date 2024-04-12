@@ -91,6 +91,7 @@ class MySiteController extends GetxController {
       Logger.instance.e(stackTrace.toString());
       Get.snackbar('', e.toString());
     });
+    filterByKey();
     update();
   }
 
@@ -130,7 +131,6 @@ class MySiteController extends GetxController {
         mySiteList = value.data;
         isLoaded = true;
         filterByKey();
-        filterSiteStatusBySearchKey();
         update();
       } else {
         Logger.instance.w(value.msg);
@@ -245,26 +245,21 @@ class MySiteController extends GetxController {
     });
   }
 
-  filterSiteStatusBySearchKey() {
-    filterKey = '';
+  filterSiteStatusBySearchKey(List<MySite> toSearchList) {
     if (searchKey.isNotEmpty) {
-      showStatusList = mySiteList
+      return toSearchList
           .where((site) =>
               site.nickname.toLowerCase().contains(searchKey.toLowerCase()) ||
               site.mirror!.toLowerCase().contains(searchKey.toLowerCase()) ||
               site.site.toLowerCase().contains(searchKey.toLowerCase()))
           .toList();
     } else {
-      showStatusList = mySiteList;
+      return toSearchList;
     }
-
-    sortStatusList();
-    update();
   }
 
   void filterByKey() {
     Logger.instance.i('开始筛选，当前筛选关键字：$filterKey');
-    searchKey = '';
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
     switch (filterKey) {
@@ -359,7 +354,7 @@ class MySiteController extends GetxController {
       default:
         showStatusList = mySiteList;
     }
-
+    showStatusList = filterSiteStatusBySearchKey(showStatusList);
     sortStatusList();
     update();
   }
