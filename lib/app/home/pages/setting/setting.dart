@@ -25,13 +25,19 @@ class SettingPage extends StatelessWidget {
           child: GetBuilder<SettingController>(builder: (controller) {
             return EasyRefresh(
               onRefresh: controller.getOptionList,
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    ..._optionListView(),
-                    _versionCard(),
-                  ],
-                ),
+              child: Column(
+                children: [
+                  _versionCard(),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          ..._optionListView(),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             );
           }),
@@ -47,7 +53,9 @@ class SettingPage extends StatelessWidget {
 
   _versionCard() {
     return CustomCard(
+      padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
       child: ListTile(
+        dense: true,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -87,36 +95,38 @@ class SettingPage extends StatelessWidget {
 
   void _openAddOptionForm() {
     Map<String, OptionFormBuilder> optionForms = _optionFormMap();
-    String selectedOption = '';
     Get.defaultDialog(
+        title: '选择配置项',
         content: SingleChildScrollView(
-      child: Column(
-        // title: const Text('选择配置项'),
-        children: controller.optionChoice
-            .where((e) => !controller.optionList
-                .any((element) => element.name == e.value))
-            .map((choice) => RadioListTile(
-                value: choice.value,
-                title: Text(choice.name),
-                subtitle: Text(choice.value),
-                groupValue: selectedOption,
-                onChanged: (value) {
-                  Logger.instance.i(value);
-                  if (optionForms[value] != null) {
-                    Get.back();
-                    Get.bottomSheet(
-                      SingleChildScrollView(
-                          child: CustomCard(
-                              padding: EdgeInsets.zero,
-                              margin: EdgeInsets.zero,
-                              child: optionForms[value]!(null))),
-                      backgroundColor: Colors.transparent,
-                    );
-                  }
-                }))
-            .toList(),
-      ),
-    ));
+          child: Column(
+            children: controller.optionChoice
+                .where((e) => !controller.optionList
+                    .any((element) => element.name == e.value))
+                .map((choice) => CustomCard(
+                      child: ListTile(
+                          title: Center(child: Text(choice.name)),
+                          hoverColor: Colors.teal,
+                          focusColor: Colors.teal,
+                          splashColor: Colors.teal,
+                          onTap: () {
+                            Logger.instance.i(choice.value);
+                            if (optionForms[choice.value] != null) {
+                              Get.back();
+                              Get.bottomSheet(
+                                SingleChildScrollView(
+                                    child: CustomCard(
+                                        padding: EdgeInsets.zero,
+                                        margin: EdgeInsets.zero,
+                                        child:
+                                            optionForms[choice.value]!(null))),
+                                backgroundColor: Colors.transparent,
+                              );
+                            }
+                          }),
+                    ))
+                .toList(),
+          ),
+        ));
   }
 
   List<Widget> _optionListView() {
@@ -157,11 +167,12 @@ class SettingPage extends StatelessWidget {
     final isEdit = (option == null).obs;
     return Obx(() {
       return CustomCard(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
           children: [
             ListTile(
                 title: const Text('油猴 Token'),
+                dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
                     ? IconButton(
@@ -181,62 +192,67 @@ class SettingPage extends StatelessWidget {
                   expandedColor: Colors.teal,
                 )),
             if (isEdit.value)
-              Column(
-                children: [
-                  CustomTextField(controller: tokenController, labelText: '令牌'),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FullWidthButton(
-                            text: '随机Token',
-                            backgroundColor: Colors.green,
-                            onPressed: () async {
-                              tokenController.text = generateRandomString(8);
-                            }),
-                      ),
-                      const SizedBox(
-                        width: 20,
-                      ),
-                      Expanded(
-                        child: FullWidthButton(
-                            text: '保存',
-                            onPressed: () async {
-                              if (option == null) {
-                                option = Option(
-                                  id: 0,
-                                  name: 'monkey_token',
-                                  isActive: isActive.value,
-                                  value:
-                                      OptionValue(token: tokenController.text),
-                                );
-                              } else {
-                                option?.isActive = isActive.value;
-                                option?.value =
-                                    OptionValue(token: tokenController.text);
-                              }
-                              final res = await controller.saveOption(option!);
-                              if (res.code == 0) {
-                                Get.back();
-                                Get.snackbar(
-                                  '配置保存成功',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.green.shade300,
-                                );
-                                isEdit.value = false;
-                              } else {
-                                Get.snackbar(
-                                  '配置保存失败',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.red.shade300,
-                                );
-                              }
-                            }),
-                      ),
-                    ],
-                  ),
-                ],
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    CustomTextField(
+                        controller: tokenController, labelText: '令牌'),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FullWidthButton(
+                              text: '随机Token',
+                              backgroundColor: Colors.green,
+                              onPressed: () async {
+                                tokenController.text = generateRandomString(8);
+                              }),
+                        ),
+                        const SizedBox(
+                          width: 20,
+                        ),
+                        Expanded(
+                          child: FullWidthButton(
+                              text: '保存',
+                              onPressed: () async {
+                                if (option == null) {
+                                  option = Option(
+                                    id: 0,
+                                    name: 'monkey_token',
+                                    isActive: isActive.value,
+                                    value: OptionValue(
+                                        token: tokenController.text),
+                                  );
+                                } else {
+                                  option?.isActive = isActive.value;
+                                  option?.value =
+                                      OptionValue(token: tokenController.text);
+                                }
+                                final res =
+                                    await controller.saveOption(option!);
+                                if (res.code == 0) {
+                                  Get.back();
+                                  Get.snackbar(
+                                    '配置保存成功',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.green.shade300,
+                                  );
+                                  isEdit.value = false;
+                                } else {
+                                  Get.snackbar(
+                                    '配置保存失败',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.red.shade300,
+                                  );
+                                }
+                              }),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
           ],
         ),
@@ -259,11 +275,12 @@ class SettingPage extends StatelessWidget {
     final isEdit = (option == null).obs;
     return Obx(() {
       return CustomCard(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
           children: [
             ListTile(
                 title: const Text('企业微信'),
+                dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
                     ? IconButton(
@@ -283,68 +300,72 @@ class SettingPage extends StatelessWidget {
                   expandedColor: Colors.teal,
                 )),
             if (isEdit.value)
-              Column(
-                children: [
-                  CustomTextField(
-                      controller: corpIdController, labelText: '企业 ID'),
-                  CustomTextField(
-                      controller: corpSecretController, labelText: '企业密钥'),
-                  CustomTextField(
-                      controller: agentIdController, labelText: '应用 ID'),
-                  CustomTextField(
-                      controller: toUidController, labelText: '接收 ID'),
-                  CustomTextField(
-                      controller: proxyController, labelText: '固定代理'),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FullWidthButton(
-                            text: '保存',
-                            onPressed: () async {
-                              if (option == null) {
-                                option = Option(
-                                  id: 0,
-                                  name: 'wechat_work_push',
-                                  isActive: isActive.value,
-                                  value: OptionValue(
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    CustomTextField(
+                        controller: corpIdController, labelText: '企业 ID'),
+                    CustomTextField(
+                        controller: corpSecretController, labelText: '企业密钥'),
+                    CustomTextField(
+                        controller: agentIdController, labelText: '应用 ID'),
+                    CustomTextField(
+                        controller: toUidController, labelText: '接收 ID'),
+                    CustomTextField(
+                        controller: proxyController, labelText: '固定代理'),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FullWidthButton(
+                              text: '保存',
+                              onPressed: () async {
+                                if (option == null) {
+                                  option = Option(
+                                    id: 0,
+                                    name: 'wechat_work_push',
+                                    isActive: isActive.value,
+                                    value: OptionValue(
+                                        corpSecret: corpSecretController.text,
+                                        agentId: agentIdController.text,
+                                        corpId: corpIdController.text,
+                                        toUid: toUidController.text,
+                                        proxy: proxyController.text),
+                                  );
+                                } else {
+                                  option?.isActive = isActive.value;
+                                  option?.value = OptionValue(
                                       corpSecret: corpSecretController.text,
                                       agentId: agentIdController.text,
                                       corpId: corpIdController.text,
                                       toUid: toUidController.text,
-                                      proxy: proxyController.text),
-                                );
-                              } else {
-                                option?.isActive = isActive.value;
-                                option?.value = OptionValue(
-                                    corpSecret: corpSecretController.text,
-                                    agentId: agentIdController.text,
-                                    corpId: corpIdController.text,
-                                    toUid: toUidController.text,
-                                    proxy: proxyController.text);
-                              }
-                              final res = await controller.saveOption(option!);
-                              if (res.code == 0) {
-                                Get.back();
-                                Get.snackbar(
-                                  '配置保存成功',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.green.shade300,
-                                );
-                                isEdit.value = false;
-                              } else {
-                                Get.snackbar(
-                                  '配置保存失败',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.red.shade300,
-                                );
-                              }
-                            }),
-                      ),
-                    ],
-                  ),
-                ],
+                                      proxy: proxyController.text);
+                                }
+                                final res =
+                                    await controller.saveOption(option!);
+                                if (res.code == 0) {
+                                  Get.back();
+                                  Get.snackbar(
+                                    '配置保存成功',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.green.shade300,
+                                  );
+                                  isEdit.value = false;
+                                } else {
+                                  Get.snackbar(
+                                    '配置保存失败',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.red.shade300,
+                                  );
+                                }
+                              }),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
           ],
         ),
@@ -361,11 +382,12 @@ class SettingPage extends StatelessWidget {
     final isEdit = (option == null).obs;
     return Obx(() {
       return CustomCard(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
           children: [
             ListTile(
                 title: const Text('FileList'),
+                dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
                     ? IconButton(
@@ -385,57 +407,61 @@ class SettingPage extends StatelessWidget {
                   expandedColor: Colors.teal,
                 )),
             if (isEdit.value)
-              Column(
-                children: [
-                  CustomTextField(
-                      controller: usernameController, labelText: '账号'),
-                  CustomTextField(
-                      controller: passwordController, labelText: '密码'),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FullWidthButton(
-                            text: '保存',
-                            onPressed: () async {
-                              if (option == null) {
-                                option = Option(
-                                    id: 0,
-                                    name: 'FileList',
-                                    isActive: isActive.value,
-                                    value: OptionValue(
-                                      username: usernameController.text,
-                                      password: passwordController.text,
-                                    ));
-                              } else {
-                                option?.isActive = isActive.value;
-                                option?.value = OptionValue(
-                                  username: usernameController.text,
-                                  password: passwordController.text,
-                                );
-                              }
-                              final res = await controller.saveOption(option!);
-                              if (res.code == 0) {
-                                Get.back();
-                                Get.snackbar(
-                                  '配置保存成功',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.green.shade300,
-                                );
-                                isEdit.value = false;
-                              } else {
-                                Get.snackbar(
-                                  '配置保存失败',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.red.shade300,
-                                );
-                              }
-                            }),
-                      ),
-                    ],
-                  ),
-                ],
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    CustomTextField(
+                        controller: usernameController, labelText: '账号'),
+                    CustomTextField(
+                        controller: passwordController, labelText: '密码'),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FullWidthButton(
+                              text: '保存',
+                              onPressed: () async {
+                                if (option == null) {
+                                  option = Option(
+                                      id: 0,
+                                      name: 'FileList',
+                                      isActive: isActive.value,
+                                      value: OptionValue(
+                                        username: usernameController.text,
+                                        password: passwordController.text,
+                                      ));
+                                } else {
+                                  option?.isActive = isActive.value;
+                                  option?.value = OptionValue(
+                                    username: usernameController.text,
+                                    password: passwordController.text,
+                                  );
+                                }
+                                final res =
+                                    await controller.saveOption(option!);
+                                if (res.code == 0) {
+                                  Get.back();
+                                  Get.snackbar(
+                                    '配置保存成功',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.green.shade300,
+                                  );
+                                  isEdit.value = false;
+                                } else {
+                                  Get.snackbar(
+                                    '配置保存失败',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.red.shade300,
+                                  );
+                                }
+                              }),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
           ],
         ),
@@ -453,11 +479,12 @@ class SettingPage extends StatelessWidget {
     final isEdit = (option == null).obs;
     return Obx(() {
       return CustomCard(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
           children: [
             ListTile(
                 title: const Text('爱语飞飞'),
+                dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
                     ? IconButton(
@@ -477,66 +504,72 @@ class SettingPage extends StatelessWidget {
                   expandedColor: Colors.teal,
                 )),
             if (isEdit.value)
-              Column(
-                children: [
-                  CustomTextField(controller: tokenController, labelText: '令牌'),
-                  SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text('辅种开关'),
-                      value: repeat.value,
-                      onChanged: (value) {
-                        repeat.value = value;
-                      }),
-                  CustomTextField(
-                      controller: proxyController, labelText: '服务器'),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FullWidthButton(
-                            text: '保存',
-                            onPressed: () async {
-                              if (option == null) {
-                                option = Option(
-                                  id: 0,
-                                  name: 'iyuu_push',
-                                  isActive: isActive.value,
-                                  value: OptionValue(
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    CustomTextField(
+                        controller: tokenController, labelText: '令牌'),
+                    SwitchListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('辅种开关'),
+                        value: repeat.value,
+                        onChanged: (value) {
+                          repeat.value = value;
+                        }),
+                    CustomTextField(
+                        controller: proxyController, labelText: '服务器'),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FullWidthButton(
+                              text: '保存',
+                              onPressed: () async {
+                                if (option == null) {
+                                  option = Option(
+                                    id: 0,
+                                    name: 'iyuu_push',
+                                    isActive: isActive.value,
+                                    value: OptionValue(
+                                      token: tokenController.text,
+                                      proxy: proxyController.text,
+                                      repeat: repeat.value,
+                                    ),
+                                  );
+                                } else {
+                                  option?.isActive = isActive.value;
+                                  option?.value = OptionValue(
                                     token: tokenController.text,
                                     proxy: proxyController.text,
                                     repeat: repeat.value,
-                                  ),
-                                );
-                              } else {
-                                option?.isActive = isActive.value;
-                                option?.value = OptionValue(
-                                  token: tokenController.text,
-                                  proxy: proxyController.text,
-                                  repeat: repeat.value,
-                                );
-                              }
-                              final res = await controller.saveOption(option!);
-                              if (res.code == 0) {
-                                Get.back();
-                                Get.snackbar(
-                                  '配置保存成功',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.green.shade300,
-                                );
-                                isEdit.value = false;
-                              } else {
-                                Get.snackbar(
-                                  '配置保存失败',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.red.shade300,
-                                );
-                              }
-                            }),
-                      ),
-                    ],
-                  ),
-                ],
+                                  );
+                                }
+                                final res =
+                                    await controller.saveOption(option!);
+                                if (res.code == 0) {
+                                  Get.back();
+                                  Get.snackbar(
+                                    '配置保存成功',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.green.shade300,
+                                  );
+                                  isEdit.value = false;
+                                } else {
+                                  Get.snackbar(
+                                    '配置保存失败',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.red.shade300,
+                                  );
+                                }
+                              }),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
           ],
         ),
@@ -553,11 +586,12 @@ class SettingPage extends StatelessWidget {
     final isEdit = (option == null).obs;
     return Obx(() {
       return CustomCard(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
           children: [
             ListTile(
                 title: const Text('PushDeer'),
+                dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
                     ? IconButton(
@@ -577,57 +611,62 @@ class SettingPage extends StatelessWidget {
                   expandedColor: Colors.teal,
                 )),
             if (isEdit.value)
-              Column(
-                children: [
-                  CustomTextField(controller: keyController, labelText: 'Key'),
-                  CustomTextField(
-                      controller: proxyController, labelText: '服务器'),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FullWidthButton(
-                            text: '保存',
-                            onPressed: () async {
-                              if (option == null) {
-                                option = Option(
-                                  id: 0,
-                                  name: 'iyuu_push',
-                                  isActive: isActive.value,
-                                  value: OptionValue(
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    CustomTextField(
+                        controller: keyController, labelText: 'Key'),
+                    CustomTextField(
+                        controller: proxyController, labelText: '服务器'),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FullWidthButton(
+                              text: '保存',
+                              onPressed: () async {
+                                if (option == null) {
+                                  option = Option(
+                                    id: 0,
+                                    name: 'iyuu_push',
+                                    isActive: isActive.value,
+                                    value: OptionValue(
+                                      token: keyController.text,
+                                      proxy: proxyController.text,
+                                    ),
+                                  );
+                                } else {
+                                  option?.isActive = isActive.value;
+                                  option?.value = OptionValue(
                                     token: keyController.text,
                                     proxy: proxyController.text,
-                                  ),
-                                );
-                              } else {
-                                option?.isActive = isActive.value;
-                                option?.value = OptionValue(
-                                  token: keyController.text,
-                                  proxy: proxyController.text,
-                                );
-                              }
-                              final res = await controller.saveOption(option!);
-                              if (res.code == 0) {
-                                Get.back();
-                                Get.snackbar(
-                                  '配置保存成功',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.green.shade300,
-                                );
-                                isEdit.value = false;
-                              } else {
-                                Get.snackbar(
-                                  '配置保存失败',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.red.shade300,
-                                );
-                              }
-                            }),
-                      ),
-                    ],
-                  ),
-                ],
+                                  );
+                                }
+                                final res =
+                                    await controller.saveOption(option!);
+                                if (res.code == 0) {
+                                  Get.back();
+                                  Get.snackbar(
+                                    '配置保存成功',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.green.shade300,
+                                  );
+                                  isEdit.value = false;
+                                } else {
+                                  Get.snackbar(
+                                    '配置保存失败',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.red.shade300,
+                                  );
+                                }
+                              }),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
           ],
         ),
@@ -643,11 +682,12 @@ class SettingPage extends StatelessWidget {
     final isEdit = (option == null).obs;
     return Obx(() {
       return CustomCard(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
           children: [
             ListTile(
                 title: const Text('阿里云盘'),
+                dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
                     ? IconButton(
@@ -667,65 +707,70 @@ class SettingPage extends StatelessWidget {
                   expandedColor: Colors.teal,
                 )),
             if (isEdit.value)
-              Column(
-                children: [
-                  CustomTextField(
-                      maxLines: 3,
-                      controller: tokenController,
-                      labelText: '保存令牌'),
-                  SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text('领取福利'),
-                      value: welfare.value,
-                      onChanged: (value) {
-                        welfare.value = value;
-                      }),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FullWidthButton(
-                            text: '保存',
-                            onPressed: () async {
-                              if (option == null) {
-                                option = Option(
-                                  id: 0,
-                                  name: 'iyuu_push',
-                                  isActive: isActive.value,
-                                  value: OptionValue(
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    CustomTextField(
+                        maxLines: 3,
+                        controller: tokenController,
+                        labelText: '保存令牌'),
+                    SwitchListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('领取福利'),
+                        value: welfare.value,
+                        onChanged: (value) {
+                          welfare.value = value;
+                        }),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FullWidthButton(
+                              text: '保存',
+                              onPressed: () async {
+                                if (option == null) {
+                                  option = Option(
+                                    id: 0,
+                                    name: 'iyuu_push',
+                                    isActive: isActive.value,
+                                    value: OptionValue(
+                                      refreshToken: tokenController.text,
+                                      welfare: welfare.value,
+                                    ),
+                                  );
+                                } else {
+                                  option?.isActive = isActive.value;
+                                  option?.value = OptionValue(
                                     refreshToken: tokenController.text,
                                     welfare: welfare.value,
-                                  ),
-                                );
-                              } else {
-                                option?.isActive = isActive.value;
-                                option?.value = OptionValue(
-                                  refreshToken: tokenController.text,
-                                  welfare: welfare.value,
-                                );
-                              }
-                              final res = await controller.saveOption(option!);
-                              if (res.code == 0) {
-                                Get.back();
-                                Get.snackbar(
-                                  '配置保存成功',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.green.shade300,
-                                );
-                                isEdit.value = false;
-                              } else {
-                                Get.snackbar(
-                                  '配置保存失败',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.red.shade300,
-                                );
-                              }
-                            }),
-                      ),
-                    ],
-                  ),
-                ],
+                                  );
+                                }
+                                final res =
+                                    await controller.saveOption(option!);
+                                if (res.code == 0) {
+                                  Get.back();
+                                  Get.snackbar(
+                                    '配置保存成功',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.green.shade300,
+                                  );
+                                  isEdit.value = false;
+                                } else {
+                                  Get.snackbar(
+                                    '配置保存失败',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.red.shade300,
+                                  );
+                                }
+                              }),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
           ],
         ),
@@ -744,11 +789,12 @@ class SettingPage extends StatelessWidget {
     final isEdit = (option == null).obs;
     return Obx(() {
       return CustomCard(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
           children: [
             ListTile(
                 title: const Text('SSDForum'),
+                dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
                     ? IconButton(
@@ -768,69 +814,73 @@ class SettingPage extends StatelessWidget {
                   expandedColor: Colors.teal,
                 )),
             if (isEdit.value)
-              Column(
-                children: [
-                  CustomTextField(
-                      maxLines: 10,
-                      controller: cookieController,
-                      labelText: 'Cookie'),
-                  const SizedBox(height: 5),
-                  CustomTextField(
-                      maxLines: 3,
-                      controller: userAgentController,
-                      labelText: 'UserAgent'),
-                  CustomTextField(
-                      maxLines: 10,
-                      controller: todaySayController,
-                      labelText: '今天想说'),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FullWidthButton(
-                            text: '保存',
-                            onPressed: () async {
-                              if (option == null) {
-                                option = Option(
-                                  id: 0,
-                                  name: 'iyuu_push',
-                                  isActive: isActive.value,
-                                  value: OptionValue(
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    CustomTextField(
+                        maxLines: 10,
+                        controller: cookieController,
+                        labelText: 'Cookie'),
+                    const SizedBox(height: 5),
+                    CustomTextField(
+                        maxLines: 3,
+                        controller: userAgentController,
+                        labelText: 'UserAgent'),
+                    CustomTextField(
+                        maxLines: 10,
+                        controller: todaySayController,
+                        labelText: '今天想说'),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FullWidthButton(
+                              text: '保存',
+                              onPressed: () async {
+                                if (option == null) {
+                                  option = Option(
+                                    id: 0,
+                                    name: 'iyuu_push',
+                                    isActive: isActive.value,
+                                    value: OptionValue(
+                                      cookie: cookieController.text,
+                                      userAgent: userAgentController.text,
+                                      todaySay: todaySayController.text,
+                                    ),
+                                  );
+                                } else {
+                                  option?.isActive = isActive.value;
+                                  option?.value = OptionValue(
                                     cookie: cookieController.text,
                                     userAgent: userAgentController.text,
                                     todaySay: todaySayController.text,
-                                  ),
-                                );
-                              } else {
-                                option?.isActive = isActive.value;
-                                option?.value = OptionValue(
-                                  cookie: cookieController.text,
-                                  userAgent: userAgentController.text,
-                                  todaySay: todaySayController.text,
-                                );
-                              }
-                              final res = await controller.saveOption(option!);
-                              if (res.code == 0) {
-                                Get.back();
-                                Get.snackbar(
-                                  '配置保存成功',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.green.shade300,
-                                );
-                                isEdit.value = false;
-                              } else {
-                                Get.snackbar(
-                                  '配置保存失败',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.red.shade300,
-                                );
-                              }
-                            }),
-                      ),
-                    ],
-                  ),
-                ],
+                                  );
+                                }
+                                final res =
+                                    await controller.saveOption(option!);
+                                if (res.code == 0) {
+                                  Get.back();
+                                  Get.snackbar(
+                                    '配置保存成功',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.green.shade300,
+                                  );
+                                  isEdit.value = false;
+                                } else {
+                                  Get.snackbar(
+                                    '配置保存失败',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.red.shade300,
+                                  );
+                                }
+                              }),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
           ],
         ),
@@ -849,11 +899,12 @@ class SettingPage extends StatelessWidget {
     final isEdit = (option == null).obs;
     return Obx(() {
       return CustomCard(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
           children: [
             ListTile(
                 title: const Text('百度 OCR'),
+                dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
                     ? IconButton(
@@ -873,62 +924,66 @@ class SettingPage extends StatelessWidget {
                   expandedColor: Colors.teal,
                 )),
             if (isEdit.value)
-              Column(
-                children: [
-                  CustomTextField(
-                      controller: appIdController, labelText: '应用 ID'),
-                  CustomTextField(
-                      controller: apiKeyController, labelText: 'APIKey'),
-                  CustomTextField(
-                      controller: secretController, labelText: 'Secret'),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FullWidthButton(
-                            text: '保存',
-                            onPressed: () async {
-                              if (option == null) {
-                                option = Option(
-                                  id: 0,
-                                  name: 'baidu_ocr',
-                                  isActive: isActive.value,
-                                  value: OptionValue(
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    CustomTextField(
+                        controller: appIdController, labelText: '应用 ID'),
+                    CustomTextField(
+                        controller: apiKeyController, labelText: 'APIKey'),
+                    CustomTextField(
+                        controller: secretController, labelText: 'Secret'),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FullWidthButton(
+                              text: '保存',
+                              onPressed: () async {
+                                if (option == null) {
+                                  option = Option(
+                                    id: 0,
+                                    name: 'baidu_ocr',
+                                    isActive: isActive.value,
+                                    value: OptionValue(
+                                      appId: appIdController.text,
+                                      apiKey: apiKeyController.text,
+                                      secretKey: secretController.text,
+                                    ),
+                                  );
+                                } else {
+                                  option?.isActive = isActive.value;
+                                  option?.value = OptionValue(
                                     appId: appIdController.text,
                                     apiKey: apiKeyController.text,
                                     secretKey: secretController.text,
-                                  ),
-                                );
-                              } else {
-                                option?.isActive = isActive.value;
-                                option?.value = OptionValue(
-                                  appId: appIdController.text,
-                                  apiKey: apiKeyController.text,
-                                  secretKey: secretController.text,
-                                );
-                              }
-                              final res = await controller.saveOption(option!);
-                              if (res.code == 0) {
-                                Get.back();
-                                Get.snackbar(
-                                  '配置保存成功',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.green.shade300,
-                                );
-                                isEdit.value = false;
-                              } else {
-                                Get.snackbar(
-                                  '配置保存失败',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.red.shade300,
-                                );
-                              }
-                            }),
-                      ),
-                    ],
-                  ),
-                ],
+                                  );
+                                }
+                                final res =
+                                    await controller.saveOption(option!);
+                                if (res.code == 0) {
+                                  Get.back();
+                                  Get.snackbar(
+                                    '配置保存成功',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.green.shade300,
+                                  );
+                                  isEdit.value = false;
+                                } else {
+                                  Get.snackbar(
+                                    '配置保存失败',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.red.shade300,
+                                  );
+                                }
+                              }),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
           ],
         ),
@@ -945,11 +1000,12 @@ class SettingPage extends StatelessWidget {
     final isEdit = (option == null).obs;
     return Obx(() {
       return CustomCard(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
           children: [
             ListTile(
                 title: const Text('Bark'),
+                dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
                     ? IconButton(
@@ -969,58 +1025,62 @@ class SettingPage extends StatelessWidget {
                   expandedColor: Colors.teal,
                 )),
             if (isEdit.value)
-              Column(
-                children: [
-                  CustomTextField(
-                      controller: deviceIdController, labelText: '设备ID'),
-                  CustomTextField(
-                      controller: serverController, labelText: '服务器'),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FullWidthButton(
-                            text: '保存',
-                            onPressed: () async {
-                              if (option == null) {
-                                option = Option(
-                                  id: 0,
-                                  name: 'bark_push',
-                                  isActive: isActive.value,
-                                  value: OptionValue(
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    CustomTextField(
+                        controller: deviceIdController, labelText: '设备ID'),
+                    CustomTextField(
+                        controller: serverController, labelText: '服务器'),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FullWidthButton(
+                              text: '保存',
+                              onPressed: () async {
+                                if (option == null) {
+                                  option = Option(
+                                    id: 0,
+                                    name: 'bark_push',
+                                    isActive: isActive.value,
+                                    value: OptionValue(
+                                      deviceKey: deviceIdController.text,
+                                      server: serverController.text,
+                                    ),
+                                  );
+                                } else {
+                                  option?.isActive = isActive.value;
+                                  option?.value = OptionValue(
                                     deviceKey: deviceIdController.text,
                                     server: serverController.text,
-                                  ),
-                                );
-                              } else {
-                                option?.isActive = isActive.value;
-                                option?.value = OptionValue(
-                                  deviceKey: deviceIdController.text,
-                                  server: serverController.text,
-                                );
-                              }
-                              final res = await controller.saveOption(option!);
-                              if (res.code == 0) {
-                                Get.back();
-                                Get.snackbar(
-                                  '配置保存成功',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.green.shade300,
-                                );
-                                isEdit.value = false;
-                              } else {
-                                Get.snackbar(
-                                  '配置保存失败',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.red.shade300,
-                                );
-                              }
-                            }),
-                      ),
-                    ],
-                  ),
-                ],
+                                  );
+                                }
+                                final res =
+                                    await controller.saveOption(option!);
+                                if (res.code == 0) {
+                                  Get.back();
+                                  Get.snackbar(
+                                    '配置保存成功',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.green.shade300,
+                                  );
+                                  isEdit.value = false;
+                                } else {
+                                  Get.snackbar(
+                                    '配置保存失败',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.red.shade300,
+                                  );
+                                }
+                              }),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
           ],
         ),
@@ -1035,11 +1095,12 @@ class SettingPage extends StatelessWidget {
     final isEdit = (option == null).obs;
     return Obx(() {
       return CustomCard(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
           children: [
             ListTile(
                 title: const Text('PushPlus'),
+                dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
                     ? IconButton(
@@ -1059,55 +1120,60 @@ class SettingPage extends StatelessWidget {
                   expandedColor: Colors.teal,
                 )),
             if (isEdit.value)
-              Column(
-                children: [
-                  CustomTextField(controller: tokenController, labelText: '令牌'),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FullWidthButton(
-                            text: '保存',
-                            onPressed: () async {
-                              if (option == null) {
-                                option = Option(
-                                  id: 0,
-                                  name: 'pushplus_push',
-                                  isActive: isActive.value,
-                                  value: OptionValue(
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    CustomTextField(
+                        controller: tokenController, labelText: '令牌'),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FullWidthButton(
+                              text: '保存',
+                              onPressed: () async {
+                                if (option == null) {
+                                  option = Option(
+                                    id: 0,
+                                    name: 'pushplus_push',
+                                    isActive: isActive.value,
+                                    value: OptionValue(
+                                      deviceKey: tokenController.text,
+                                      template: 'markdown',
+                                    ),
+                                  );
+                                } else {
+                                  option?.isActive = isActive.value;
+                                  option?.value = OptionValue(
                                     deviceKey: tokenController.text,
                                     template: 'markdown',
-                                  ),
-                                );
-                              } else {
-                                option?.isActive = isActive.value;
-                                option?.value = OptionValue(
-                                  deviceKey: tokenController.text,
-                                  template: 'markdown',
-                                );
-                              }
-                              final res = await controller.saveOption(option!);
-                              if (res.code == 0) {
-                                Get.back();
-                                Get.snackbar(
-                                  '配置保存成功',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 保存成功：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.green.shade300,
-                                );
-                                isEdit.value = false;
-                              } else {
-                                Get.snackbar(
-                                  '配置保存失败',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 保存出错啦：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.red.shade300,
-                                );
-                              }
-                            }),
-                      ),
-                    ],
-                  ),
-                ],
+                                  );
+                                }
+                                final res =
+                                    await controller.saveOption(option!);
+                                if (res.code == 0) {
+                                  Get.back();
+                                  Get.snackbar(
+                                    '配置保存成功',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 保存成功：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.green.shade300,
+                                  );
+                                  isEdit.value = false;
+                                } else {
+                                  Get.snackbar(
+                                    '配置保存失败',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 保存出错啦：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.red.shade300,
+                                  );
+                                }
+                              }),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
           ],
         ),
@@ -1126,11 +1192,12 @@ class SettingPage extends StatelessWidget {
     final isEdit = (option == null).obs;
     return Obx(() {
       return CustomCard(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
           children: [
             ListTile(
                 title: const Text('WxPusher'),
+                dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
                     ? IconButton(
@@ -1150,60 +1217,66 @@ class SettingPage extends StatelessWidget {
                   expandedColor: Colors.teal,
                 )),
             if (isEdit.value)
-              Column(
-                children: [
-                  CustomTextField(
-                      controller: appIdController, labelText: '应用 ID'),
-                  CustomTextField(controller: tokenController, labelText: '令牌'),
-                  CustomTextField(controller: uidController, labelText: '接收人'),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FullWidthButton(
-                            text: '保存',
-                            onPressed: () async {
-                              if (option == null) {
-                                option = Option(
-                                  id: 0,
-                                  name: 'wxpusher_push',
-                                  isActive: isActive.value,
-                                  value: OptionValue(
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    CustomTextField(
+                        controller: appIdController, labelText: '应用 ID'),
+                    CustomTextField(
+                        controller: tokenController, labelText: '令牌'),
+                    CustomTextField(
+                        controller: uidController, labelText: '接收人'),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FullWidthButton(
+                              text: '保存',
+                              onPressed: () async {
+                                if (option == null) {
+                                  option = Option(
+                                    id: 0,
+                                    name: 'wxpusher_push',
+                                    isActive: isActive.value,
+                                    value: OptionValue(
+                                      appId: tokenController.text,
+                                      token: tokenController.text,
+                                      uids: uidController.text,
+                                    ),
+                                  );
+                                } else {
+                                  option?.isActive = isActive.value;
+                                  option?.value = OptionValue(
                                     appId: tokenController.text,
                                     token: tokenController.text,
                                     uids: uidController.text,
-                                  ),
-                                );
-                              } else {
-                                option?.isActive = isActive.value;
-                                option?.value = OptionValue(
-                                  appId: tokenController.text,
-                                  token: tokenController.text,
-                                  uids: uidController.text,
-                                );
-                              }
-                              final res = await controller.saveOption(option!);
-                              if (res.code == 0) {
-                                Get.back();
-                                Get.snackbar(
-                                  '配置保存成功',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.green.shade300,
-                                );
-                                isEdit.value = false;
-                              } else {
-                                Get.snackbar(
-                                  '配置保存失败',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.red.shade300,
-                                );
-                              }
-                            }),
-                      ),
-                    ],
-                  ),
-                ],
+                                  );
+                                }
+                                final res =
+                                    await controller.saveOption(option!);
+                                if (res.code == 0) {
+                                  Get.back();
+                                  Get.snackbar(
+                                    '配置保存成功',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.green.shade300,
+                                  );
+                                  isEdit.value = false;
+                                } else {
+                                  Get.snackbar(
+                                    '配置保存失败',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.red.shade300,
+                                  );
+                                }
+                              }),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
           ],
         ),
@@ -1222,11 +1295,12 @@ class SettingPage extends StatelessWidget {
     final isEdit = (option == null).obs;
     return Obx(() {
       return CustomCard(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
           children: [
             ListTile(
                 title: const Text('Telegram'),
+                dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
                     ? IconButton(
@@ -1246,61 +1320,67 @@ class SettingPage extends StatelessWidget {
                   expandedColor: Colors.teal,
                 )),
             if (isEdit.value)
-              Column(
-                children: [
-                  CustomTextField(
-                      controller: chatIdController, labelText: 'ID'),
-                  CustomTextField(controller: tokenController, labelText: '令牌'),
-                  CustomTextField(controller: proxyController, labelText: '代理'),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FullWidthButton(
-                            text: '保存',
-                            onPressed: () async {
-                              if (option == null) {
-                                option = Option(
-                                  id: 0,
-                                  name: 'telegram_push',
-                                  isActive: isActive.value,
-                                  value: OptionValue(
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    CustomTextField(
+                        controller: chatIdController, labelText: 'ID'),
+                    CustomTextField(
+                        controller: tokenController, labelText: '令牌'),
+                    CustomTextField(
+                        controller: proxyController, labelText: '代理'),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FullWidthButton(
+                              text: '保存',
+                              onPressed: () async {
+                                if (option == null) {
+                                  option = Option(
+                                    id: 0,
+                                    name: 'telegram_push',
+                                    isActive: isActive.value,
+                                    value: OptionValue(
+                                      telegramToken: tokenController.text,
+                                      telegramChatId: chatIdController.text,
+                                      proxy: proxyController.text,
+                                    ),
+                                  );
+                                } else {
+                                  option?.isActive = isActive.value;
+                                  option?.value = OptionValue(
                                     telegramToken: tokenController.text,
                                     telegramChatId: chatIdController.text,
                                     proxy: proxyController.text,
-                                  ),
-                                );
-                              } else {
-                                option?.isActive = isActive.value;
-                                option?.value = OptionValue(
-                                  telegramToken: tokenController.text,
-                                  telegramChatId: chatIdController.text,
-                                  proxy: proxyController.text,
-                                );
-                              }
-                              Logger.instance.i(option?.toJson());
-                              final res = await controller.saveOption(option!);
-                              if (res.code == 0) {
-                                Get.back();
-                                Get.snackbar(
-                                  '配置保存成功',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.green.shade300,
-                                );
-                                isEdit.value = false;
-                              } else {
-                                Get.snackbar(
-                                  '配置保存失败',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.red.shade300,
-                                );
-                              }
-                            }),
-                      ),
-                    ],
-                  ),
-                ],
+                                  );
+                                }
+                                Logger.instance.i(option?.toJson());
+                                final res =
+                                    await controller.saveOption(option!);
+                                if (res.code == 0) {
+                                  Get.back();
+                                  Get.snackbar(
+                                    '配置保存成功',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.green.shade300,
+                                  );
+                                  isEdit.value = false;
+                                } else {
+                                  Get.snackbar(
+                                    '配置保存失败',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.red.shade300,
+                                  );
+                                }
+                              }),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
           ],
         ),
@@ -1319,11 +1399,12 @@ class SettingPage extends StatelessWidget {
     final isEdit = (option == null).obs;
     return Obx(() {
       return CustomCard(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
           children: [
             ListTile(
                 title: const Text('CookieCloud'),
+                dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
                     ? IconButton(
@@ -1343,61 +1424,66 @@ class SettingPage extends StatelessWidget {
                   expandedColor: Colors.teal,
                 )),
             if (isEdit.value)
-              Column(
-                children: [
-                  CustomTextField(
-                      controller: serverController, labelText: '服务器'),
-                  CustomTextField(controller: keyController, labelText: 'Key'),
-                  CustomTextField(
-                      controller: passwordController, labelText: '密码'),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FullWidthButton(
-                            text: '保存',
-                            onPressed: () async {
-                              if (option == null) {
-                                option = Option(
-                                  id: 0,
-                                  name: 'cookie_cloud',
-                                  isActive: isActive.value,
-                                  value: OptionValue(
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    CustomTextField(
+                        controller: serverController, labelText: '服务器'),
+                    CustomTextField(
+                        controller: keyController, labelText: 'Key'),
+                    CustomTextField(
+                        controller: passwordController, labelText: '密码'),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FullWidthButton(
+                              text: '保存',
+                              onPressed: () async {
+                                if (option == null) {
+                                  option = Option(
+                                    id: 0,
+                                    name: 'cookie_cloud',
+                                    isActive: isActive.value,
+                                    value: OptionValue(
+                                      server: serverController.text,
+                                      key: keyController.text,
+                                      password: passwordController.text,
+                                    ),
+                                  );
+                                } else {
+                                  option?.isActive = isActive.value;
+                                  option?.value = OptionValue(
                                     server: serverController.text,
                                     key: keyController.text,
                                     password: passwordController.text,
-                                  ),
-                                );
-                              } else {
-                                option?.isActive = isActive.value;
-                                option?.value = OptionValue(
-                                  server: serverController.text,
-                                  key: keyController.text,
-                                  password: passwordController.text,
-                                );
-                              }
-                              final res = await controller.saveOption(option!);
-                              if (res.code == 0) {
-                                Get.back();
-                                Get.snackbar(
-                                  '配置保存成功',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.green.shade300,
-                                );
-                                isEdit.value = false;
-                              } else {
-                                Get.snackbar(
-                                  '配置保存失败',
-                                  '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                  colorText: Colors.white,
-                                  backgroundColor: Colors.red.shade300,
-                                );
-                              }
-                            }),
-                      ),
-                    ],
-                  ),
-                ],
+                                  );
+                                }
+                                final res =
+                                    await controller.saveOption(option!);
+                                if (res.code == 0) {
+                                  Get.back();
+                                  Get.snackbar(
+                                    '配置保存成功',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.green.shade300,
+                                  );
+                                  isEdit.value = false;
+                                } else {
+                                  Get.snackbar(
+                                    '配置保存失败',
+                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.red.shade300,
+                                  );
+                                }
+                              }),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
           ],
         ),
