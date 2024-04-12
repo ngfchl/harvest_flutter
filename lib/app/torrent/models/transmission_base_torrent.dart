@@ -240,3 +240,31 @@ class TrackerStats {
     return data;
   }
 }
+
+class TorrentAddResponse {
+  final String hashString;
+  final int id;
+  final String name;
+
+  TorrentAddResponse({
+    required this.hashString,
+    required this.id,
+    required this.name,
+  });
+
+  factory TorrentAddResponse.fromJson(Map<String, dynamic> json) {
+    return TorrentAddResponse(
+      hashString: json['hashString'],
+      id: json['id'],
+      name: json['name'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'hashString': hashString,
+      'id': id,
+      'name': name,
+    };
+  }
+}
