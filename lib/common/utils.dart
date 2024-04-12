@@ -16,3 +16,18 @@ String generateRandomString(int length) {
         length, (_) => charset.codeUnitAt(random.nextInt(charset.length))),
   );
 }
+
+///
+/// 生成随机索引列表
+///
+List<int> getRandomIndices(int listLength, int count) {
+  Random random = Random();
+  List<int> indices = [];
+  while (indices.length < count) {
+    int randomIndex = random.nextInt(listLength);
+    if (!indices.contains(randomIndex)) {
+      indices.add(randomIndex);
+    }
+  }
+  return indices;
+}
