@@ -30,155 +30,152 @@ class _WebViewPageState extends State<WebViewPage> {
       return "document.cookie='$item;domain=$domain;'";
     }).toList();
 
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            controller.pageTitle.value,
-            style: const TextStyle(fontSize: 14),
-          ),
-          actions: [
-            if (controller.info != null)
-              GFIconButton(
-                icon: const Icon(
-                  Icons.link,
-                ),
-                onPressed: () async {
-                  Uri uri = Uri.parse(controller.info!.magnetUrl);
-                  if (!await launchUrl(uri)) {
-                    Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？');
-                  }
-                },
-                type: GFButtonType.transparent,
-              ),
-            if (controller.info != null)
-              GFIconButton(
-                icon: const Icon(Icons.download),
-                onPressed: () {
-                  openDownloaderListSheet(context, controller.info!);
-                },
-                type: GFButtonType.transparent,
-              ),
+    return Scaffold(
+      extendBody: true,
+      appBar: AppBar(
+        title: Text(
+          controller.pageTitle.value,
+          style: const TextStyle(fontSize: 14),
+        ),
+        actions: [
+          if (controller.info != null)
             GFIconButton(
               icon: const Icon(
-                Icons.travel_explore,
+                Icons.link,
               ),
               onPressed: () async {
-                Uri uri = Uri.parse(controller.url);
-                if (!await launchUrl(uri,
-                    mode: LaunchMode.externalApplication)) {
+                Uri uri = Uri.parse(controller.info!.magnetUrl);
+                if (!await launchUrl(uri)) {
                   Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？');
                 }
               },
               type: GFButtonType.transparent,
             ),
+          if (controller.info != null)
             GFIconButton(
-              icon: const Icon(
-                Icons.refresh,
-              ),
+              icon: const Icon(Icons.download),
               onPressed: () {
-                webController?.reload();
+                openDownloaderListSheet(context, controller.info!);
               },
               type: GFButtonType.transparent,
             ),
-            GetBuilder<WebViewPageController>(builder: (controller) {
-              return controller.isLoading
-                  ? const GFLoader(
-                      size: GFSize.SMALL,
-                    )
-                  : const SizedBox.shrink();
-            }),
-            const SizedBox(width: 10)
-          ],
-        ),
-        body: GetBuilder<WebViewPageController>(builder: (controller) {
-          return Column(
-            children: [
-              if (controller.progress < 100)
-                LinearProgressIndicator(
-                  value: controller.progress / 100,
-                  backgroundColor: Colors.grey.withAlpha(33),
-                  valueColor: const AlwaysStoppedAnimation(Colors.blue),
-                ),
-              Expanded(
-                child: InAppWebView(
-                  key: webViewKey,
-                  initialUrlRequest: URLRequest(
-                      url: WebUri(controller.url),
-                      headers: {"Cookie": controller.mySite.cookie!}),
-                  initialSettings: InAppWebViewSettings(
-                    isInspectable: kDebugMode,
-                    mediaPlaybackRequiresUserGesture: false,
-                    allowsInlineMediaPlayback: true,
-                    iframeAllow: "camera; microphone",
-                    userAgent: controller.mySite.userAgent,
-                    iframeAllowFullscreen: true,
-                  ),
-                  initialUserScripts: UnmodifiableListView<UserScript>([
-                    UserScript(
-                      source: cookieList.join("\n"),
-                      injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
-                    )
-                  ]),
-                  onWebViewCreated: (inAppWebViewController) async {
-                    webController = inAppWebViewController;
-                    controller.isLoading = true;
-                    controller.update();
-                  },
-                  onLoadStart: (inAppWebViewController, _) async {
-                    controller.isLoading = true;
-                    controller.update();
-                  },
-                  onLoadStop: (inAppWebViewController, webUri) async {
-                    Logger.instance
-                        .w((await inAppWebViewController.getTitle())!);
-                    controller.isLoading = false;
-                    controller.canGoBack =
-                        await inAppWebViewController.canGoBack();
-                    controller.canGoForward =
-                        await inAppWebViewController.canGoForward();
-                    controller.pageTitle.value =
-                        (await inAppWebViewController.getTitle()) ?? '';
-                    controller.update();
-                  },
-                  onProgressChanged: (inAppWebViewController, progress) async {
-                    Logger.instance.i('当前进度: $progress');
-                    controller.progress = progress;
-                    controller.update();
-                  },
-                  onReceivedError: (inAppWebViewController, _, err) {
-                    // inAppWebViewController.reload();
-                  },
-                ),
-              ),
-            ],
-          );
-        }),
-        floatingActionButtonLocation:
-            FloatingActionButtonLocation.miniCenterFloat,
-        floatingActionButton:
-            GetBuilder<WebViewPageController>(builder: (controller) {
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              if (controller.canGoBack)
-                GFIconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () {
-                    webController?.goBack();
-                  },
-                ),
-              if (controller.canGoForward)
-                GFIconButton(
-                  icon: const Icon(Icons.arrow_forward),
-                  onPressed: () {
-                    webController?.goForward();
-                  },
-                ),
-            ],
-          );
-        }),
+          GFIconButton(
+            icon: const Icon(
+              Icons.travel_explore,
+            ),
+            onPressed: () async {
+              Uri uri = Uri.parse(controller.url);
+              if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？');
+              }
+            },
+            type: GFButtonType.transparent,
+          ),
+          GFIconButton(
+            icon: const Icon(
+              Icons.refresh,
+            ),
+            onPressed: () {
+              webController?.reload();
+            },
+            type: GFButtonType.transparent,
+          ),
+          GetBuilder<WebViewPageController>(builder: (controller) {
+            return controller.isLoading
+                ? const GFLoader(
+                    size: GFSize.SMALL,
+                  )
+                : const SizedBox.shrink();
+          }),
+          const SizedBox(width: 10)
+        ],
       ),
+      body: GetBuilder<WebViewPageController>(builder: (controller) {
+        return Column(
+          children: [
+            if (controller.progress < 100)
+              LinearProgressIndicator(
+                value: controller.progress / 100,
+                backgroundColor: Colors.grey.withAlpha(33),
+                valueColor: const AlwaysStoppedAnimation(Colors.blue),
+              ),
+            Expanded(
+              child: InAppWebView(
+                key: webViewKey,
+                initialUrlRequest: URLRequest(
+                    url: WebUri(controller.url),
+                    headers: {"Cookie": controller.mySite.cookie!}),
+                initialSettings: InAppWebViewSettings(
+                  isInspectable: kDebugMode,
+                  mediaPlaybackRequiresUserGesture: false,
+                  allowsInlineMediaPlayback: true,
+                  iframeAllow: "camera; microphone",
+                  userAgent: controller.mySite.userAgent,
+                  iframeAllowFullscreen: true,
+                ),
+                initialUserScripts: UnmodifiableListView<UserScript>([
+                  UserScript(
+                    source: cookieList.join("\n"),
+                    injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+                  )
+                ]),
+                onWebViewCreated: (inAppWebViewController) async {
+                  webController = inAppWebViewController;
+                  controller.isLoading = true;
+                  controller.update();
+                },
+                onLoadStart: (inAppWebViewController, _) async {
+                  controller.isLoading = true;
+                  controller.update();
+                },
+                onLoadStop: (inAppWebViewController, webUri) async {
+                  Logger.instance.w((await inAppWebViewController.getTitle())!);
+                  controller.isLoading = false;
+                  controller.canGoBack =
+                      await inAppWebViewController.canGoBack();
+                  controller.canGoForward =
+                      await inAppWebViewController.canGoForward();
+                  controller.pageTitle.value =
+                      (await inAppWebViewController.getTitle()) ?? '';
+                  controller.update();
+                },
+                onProgressChanged: (inAppWebViewController, progress) async {
+                  Logger.instance.i('当前进度: $progress');
+                  controller.progress = progress;
+                  controller.update();
+                },
+                onReceivedError: (inAppWebViewController, _, err) {
+                  // inAppWebViewController.reload();
+                },
+              ),
+            ),
+          ],
+        );
+      }),
+      floatingActionButtonLocation:
+          FloatingActionButtonLocation.miniCenterFloat,
+      floatingActionButton:
+          GetBuilder<WebViewPageController>(builder: (controller) {
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            if (controller.canGoBack)
+              GFIconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  webController?.goBack();
+                },
+              ),
+            if (controller.canGoForward)
+              GFIconButton(
+                icon: const Icon(Icons.arrow_forward),
+                onPressed: () {
+                  webController?.goForward();
+                },
+              ),
+          ],
+        );
+      }),
     );
   }
 }
