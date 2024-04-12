@@ -23,7 +23,7 @@ class AggSearchController extends GetxController {
   String filterKey = '';
   String sortKey = '';
   List<int> sites = <int>[];
-  int maxCount = 10;
+  int maxCount = 0;
   List<SearchTorrentInfo> searchResults = <SearchTorrentInfo>[];
   List<SearchTorrentInfo> showResults = <SearchTorrentInfo>[];
   List<Map<String, dynamic>> searchMsg = <Map<String, dynamic>>[];
@@ -148,16 +148,10 @@ class AggSearchController extends GetxController {
   }
 
   doSearch() async {
-    // 清空搜索记录
-    searchResults.clear();
-    searchMsg.clear();
-    succeedCategories.clear();
-    selectedSiteList.clear();
-    succeedSiteList.clear();
-    showResults.clear();
     // 打开加载状态
     isLoading = true;
-    update();
+    // 清空搜索记录
+    initSearchResult();
 
     // 初始化站点数据
     if (mySiteMap.isEmpty) {
@@ -238,6 +232,16 @@ class AggSearchController extends GetxController {
     update();
   }
 
+  void initSearchResult() {
+    searchResults.clear();
+    searchMsg.clear();
+    succeedCategories.clear();
+    selectedSiteList.clear();
+    succeedSiteList.clear();
+    showResults.clear();
+    update();
+  }
+
   Future<Map<String, String>> getDownloaderCategories(
       Downloader downloader) async {
     isDownloaderLoading = true;
@@ -265,15 +269,5 @@ class AggSearchController extends GetxController {
       isDownloaderLoading = false;
       return {};
     }
-  }
-
-  @override
-  void onReady() {
-    super.onReady();
-  }
-
-  @override
-  void onClose() {
-    super.onClose();
   }
 }

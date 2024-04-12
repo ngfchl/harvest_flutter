@@ -295,11 +295,17 @@ class DownloadForm extends StatelessWidget {
     try {
       final TorrentController torrentController =
           Get.put(TorrentController(downloader, false));
-      final res =
-          await torrentController.addTorrentFilesToQb(downloader, formData);
+      dynamic res;
+      if (downloader.category.toLowerCase() == 'qb') {
+        res = await torrentController.addTorrentFilesToQb(downloader, formData);
+      } else {
+        res = await torrentController.addTorrentFilesToTr(downloader, formData);
+      }
+
       Logger.instance.i(res.msg);
-      Get.back();
       if (res.code == 0) {
+        Get.back();
+
         Get.snackbar('种子推送成功！', res.msg!,
             backgroundColor: Colors.green.shade300, colorText: Colors.white);
       } else {
@@ -365,12 +371,12 @@ openDownloaderListSheet(BuildContext context, SearchTorrentInfo info) {
                             ? const CircularProgressIndicator()
                             : const SizedBox.shrink(),
                         onTap: () async {
-                          if (downloader.category.toLowerCase() != 'qb') {
-                            Get.snackbar('警告', '目前仅支持 QB，Tr 相关功能正在开发中！',
-                                backgroundColor: Colors.amber.shade300,
-                                colorText: Colors.white54);
-                            return;
-                          }
+                          // if (downloader.category.toLowerCase() != 'qb') {
+                          //   Get.snackbar('警告', '目前仅支持 QB，Tr 相关功能正在开发中！',
+                          //       backgroundColor: Colors.amber.shade300,
+                          //       colorText: Colors.white54);
+                          //   return;
+                          // }
 
                           await controller
                               .getDownloaderCategories(downloader)
