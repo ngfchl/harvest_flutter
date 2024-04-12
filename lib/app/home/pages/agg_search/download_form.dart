@@ -295,7 +295,6 @@ class DownloadForm extends StatelessWidget {
     try {
       final TorrentController torrentController =
           Get.put(TorrentController(downloader, false));
-      print(formData);
       final res =
           await torrentController.addTorrentFilesToQb(downloader, formData);
       Logger.instance.i(res.msg);

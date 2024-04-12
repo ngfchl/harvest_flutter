@@ -189,8 +189,8 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 width: 2,
                                 decoration: BoxDecoration(
                                   color: HexColor('#F56E98').withOpacity(0.5),
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(4.0)),
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(4.0)),
                                 ),
                               ),
                               Padding(

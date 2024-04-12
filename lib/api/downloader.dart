@@ -9,7 +9,6 @@ import 'api.dart';
 ///获取下载器列表
 ///
 Future<CommonResponse> getDownloaderListApi() async {
-  final response = await DioUtil().get(Api.DOWNLOADER_LIST);
   return await fetchDataList(
       Api.DOWNLOADER_LIST, (p0) => Downloader.fromJson(p0));
 }
