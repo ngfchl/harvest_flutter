@@ -6,6 +6,7 @@ class Api {
   // 我的站点列表增删改查
   static const String WEBSITE_LIST = "mysite/website";
   static const String MYSITE_LIST = "mysite/mysite";
+  static const String CLEAR_CACHE = "mysite/cache/clear";
 
   // 站点信息
   static const String MYSITE_STATUS_OPERATE = "mysite/info";
@@ -57,4 +58,11 @@ class Api {
   static const String TASK_EXEC_URL = "option/exec";
 
   static const String SYSTEM_CONFIG = "auth/config";
+
+  /// 豆瓣 API
+  static const String DOUBAN_TOP250 = "option/douban/top250";
+  static const String DOUBAN_CELEBRITY = "option/douban/celebrity/";
+  static const String DOUBAN_SUBJECT = "option/douban/subject/";
+  static const String DOUBAN_TAGS = "option/douban/tags";
+  static const String DOUBAN_HOT = "option/douban/hot";
 }
