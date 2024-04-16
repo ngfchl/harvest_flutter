@@ -178,3 +178,41 @@ class CustomPickerField extends StatelessWidget {
     );
   }
 }
+
+class FullWidthButton extends StatelessWidget {
+  final String text;
+  final VoidCallback onPressed;
+  final Color backgroundColor;
+  final Color labelColor;
+
+  const FullWidthButton({
+    required this.text,
+    required this.onPressed,
+    this.backgroundColor = Colors.blue, // 默认颜色为蓝色
+    this.labelColor = Colors.white, // 默认颜色为蓝色
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton(
+            onPressed: onPressed,
+            style: OutlinedButton.styleFrom(
+              backgroundColor: backgroundColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0), // 圆角半径
+              ),
+            ),
+            child: Text(
+              text,
+              style: TextStyle(color: labelColor),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
