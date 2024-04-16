@@ -8,8 +8,8 @@ import '../home/pages/models/website.dart';
 class WebViewPageController extends GetxController {
   late String url;
   late SearchTorrentInfo? info;
-  late MySite mySite;
-  late WebSite website;
+  late MySite? mySite;
+  late WebSite? website;
   RxString pageTitle = ''.obs;
   bool isLoading = false;
   bool canGoBack = false;

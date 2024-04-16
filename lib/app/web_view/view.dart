@@ -25,10 +25,12 @@ class _WebViewPageState extends State<WebViewPage> {
   Widget build(BuildContext context) {
     final GlobalKey webViewKey = GlobalKey();
     InAppWebViewController? webController;
-    String domain = Uri.parse(controller.mySite.mirror!).host;
-    List<String> cookieList = controller.mySite.cookie!.split(';').map((item) {
-      return "document.cookie='$item;domain=$domain;'";
-    }).toList();
+    String domain = Uri.parse(controller.url).host;
+    List<String> cookieList = controller.mySite != null
+        ? controller.mySite!.cookie!.split(';').map((item) {
+            return "document.cookie='$item;domain=$domain;'";
+          }).toList()
+        : [];
 
     return Scaffold(
       extendBody: true,
@@ -104,13 +106,19 @@ class _WebViewPageState extends State<WebViewPage> {
                 key: webViewKey,
                 initialUrlRequest: URLRequest(
                     url: WebUri(controller.url),
-                    headers: {"Cookie": controller.mySite.cookie!}),
+                    headers: {
+                      "Cookie": controller.mySite != null
+                          ? controller.mySite!.cookie!
+                          : ''
+                    }),
                 initialSettings: InAppWebViewSettings(
                   isInspectable: kDebugMode,
                   mediaPlaybackRequiresUserGesture: false,
                   allowsInlineMediaPlayback: true,
                   iframeAllow: "camera; microphone",
-                  userAgent: controller.mySite.userAgent,
+                  userAgent: controller.mySite != null
+                      ? controller.mySite?.userAgent
+                      : '',
                   iframeAllowFullscreen: true,
                 ),
                 initialUserScripts: UnmodifiableListView<UserScript>([
