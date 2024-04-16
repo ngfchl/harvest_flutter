@@ -20,7 +20,7 @@ class DownloadForm extends StatelessWidget {
 
   final Map<String, String> categories;
   final Downloader downloader;
-  SearchTorrentInfo? info;
+  final SearchTorrentInfo? info;
 
   final TextEditingController urlController = TextEditingController();
   final TextEditingController savePathController = TextEditingController();
@@ -60,238 +60,237 @@ class DownloadForm extends StatelessWidget {
     Rx<bool> rootFolder = false.obs;
     Rx<bool> autoTMM = false.obs;
     RxBool firstLastPiecePrio = false.obs;
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: GetBuilder<DownloadController>(
-        builder: (controller) {
-          return Form(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+    return GetBuilder<DownloadController>(
+      builder: (controller) {
+        return Form(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (info != null)
                 Text(
-                  info != null
-                      ? '种子名称: ${info!.subtitle.isNotEmpty ? info!.subtitle : info!.title}'
-                      : '',
+                  '种子名称: ${info!.subtitle.isNotEmpty ? info!.subtitle : info!.title}',
                   style: const TextStyle(fontSize: 12, color: Colors.black54),
                 ),
-                CustomTextField(
-                  controller: urlController,
-                  labelText: '链接',
-                ),
-                // if (downloader.category.toLowerCase() == 'qb')
-                categories.isNotEmpty
-                    ? CustomPickerField(
-                        controller: categoryController,
-                        labelText: '分类',
-                        data: categories.keys.toList(),
-                        onChanged: (value, index) {
-                          categoryController.text = value;
-                          savePathController.text = categories[value] ?? '';
-                        },
-                      )
-                    : CustomTextField(
-                        controller: categoryController,
-                        labelText: '分类',
-                      ),
-                if (categories.isNotEmpty || advancedConfig.value)
-                  CustomTextField(
-                    controller: savePathController,
-                    labelText: '路径',
-                  ),
-                Obx(() {
-                  return SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text(
-                        '高级选项',
-                        style: TextStyle(fontSize: 12, color: Colors.black54),
-                      ),
-                      value: advancedConfig.value,
-                      onChanged: (bool val) {
-                        advancedConfig.value = val;
-                      });
-                }),
-                Obx(() {
-                  return SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text(
-                        '暂停下载',
-                        style: TextStyle(fontSize: 12, color: Colors.black54),
-                      ),
-                      value: paused.value,
-                      onChanged: (bool val) {
-                        paused.value = val;
-                      });
-                }),
-                if (downloader.category.toLowerCase() == 'qb')
-                  Obx(() {
-                    return SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text(
-                          '内容布局',
-                          style: TextStyle(fontSize: 12, color: Colors.black54),
-                        ),
-                        value: rootFolder.value,
-                        onChanged: (bool val) {
-                          rootFolder.value = val;
-                        });
-                  }),
-                if (downloader.category.toLowerCase() == 'qb')
-                  Obx(() {
-                    return SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text(
-                          '自动管理',
-                          style: TextStyle(fontSize: 12, color: Colors.black54),
-                        ),
-                        value: autoTMM.value,
-                        onChanged: (bool val) {
-                          autoTMM.value = val;
-                        });
-                  }),
-                Obx(() {
-                  return advancedConfig.value
-                      ? Column(
-                          children: [
-                            if (downloader.category.toLowerCase() == 'qb')
-                              SwitchListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  title: const Text(
-                                    '优先下载首尾数据块',
-                                    style: TextStyle(
-                                        fontSize: 12, color: Colors.black54),
-                                  ),
-                                  value: firstLastPiecePrio.value,
-                                  onChanged: (bool val) {
-                                    firstLastPiecePrio.value = val;
-                                  }),
-                            CustomTextField(
-                              controller: cookieController,
-                              labelText: ' Cookie',
-                            ),
-                            if (downloader.category.toLowerCase() == 'qb')
-                              CustomTextField(
-                                controller: renameController,
-                                labelText: '重命名',
-                              ),
-                            CustomTextField(
-                              controller: upLimitController,
-                              labelText: ' 上传限速',
-                              keyboardType: TextInputType.number,
-                              suffixText: 'MB/s',
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                                TextInputFormatter.withFunction(
-                                    (oldValue, newValue) {
-                                  try {
-                                    final int value = int.parse(newValue.text);
-                                    if (value < 0) {
-                                      return oldValue;
-                                    }
-                                    return newValue;
-                                  } catch (e) {
-                                    return oldValue;
-                                  }
-                                }),
-                              ],
-                            ),
-                            CustomTextField(
-                              controller: dlLimitController,
-                              labelText: '下载限速',
-                              keyboardType: TextInputType.number,
-                              suffixText: 'MB/s',
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                                TextInputFormatter.withFunction(
-                                    (oldValue, newValue) {
-                                  try {
-                                    final int value = int.parse(newValue.text);
-                                    if (value < 0) {
-                                      return oldValue;
-                                    }
-                                    return newValue;
-                                  } catch (e) {
-                                    return oldValue;
-                                  }
-                                }),
-                              ],
-                            ),
-                            CustomTextField(
-                              controller: ratioLimitController,
-                              labelText: '分享率限制',
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                                TextInputFormatter.withFunction(
-                                    (oldValue, newValue) {
-                                  try {
-                                    final int value = int.parse(newValue.text);
-                                    if (value < 0) {
-                                      return oldValue;
-                                    }
-                                    return newValue;
-                                  } catch (e) {
-                                    return oldValue;
-                                  }
-                                }),
-                              ],
-                            ),
-                          ],
-                        )
-                      : const SizedBox.shrink();
-                }),
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton.icon(
-                      onPressed: () => cancelForm(context),
-                      style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(
-                            Colors.redAccent.withAlpha(150)),
-                      ),
-                      icon: const Icon(Icons.cancel_outlined,
-                          color: Colors.white),
-                      label: const Text(
-                        '取消',
-                        style: TextStyle(color: Colors.white),
-                      ),
+              CustomTextField(
+                controller: urlController,
+                labelText: '链接',
+              ),
+              // if (downloader.category.toLowerCase() == 'qb')
+              categories.isNotEmpty
+                  ? CustomPickerField(
+                      controller: categoryController,
+                      labelText: '分类',
+                      data: categories.keys.toList(),
+                      onChanged: (value, index) {
+                        categoryController.text = value;
+                        savePathController.text = categories[value] ?? '';
+                      },
+                    )
+                  : CustomTextField(
+                      controller: categoryController,
+                      labelText: '分类',
                     ),
-                    Obx(() {
-                      return ElevatedButton.icon(
-                        onPressed: () {
-                          isLoading.value = true;
-                          submitForm({
-                            'mySite': mysite,
-                            'magnet': urlController.text,
-                            'savePath': savePathController.text,
-                            'category': categoryController.text,
-                            'paused': paused.value,
-                            'rootFolder': rootFolder.value,
-                            'autoTMM': autoTMM.value,
-                            'firstLastPiecePrio': firstLastPiecePrio.value,
-                            'rename': renameController.text,
-                            'upLimit':
-                                int.tryParse(upLimitController.text) ?? 0,
-                            'dlLimit':
-                                int.tryParse(dlLimitController.text) ?? 0,
-                            'ratioLimit':
-                                int.tryParse(ratioLimitController.text) ?? 0,
-                          });
-                          isLoading.value = false;
-                        },
-                        icon: isLoading.value
-                            ? const GFLoader(size: 18)
-                            : const Icon(Icons.download),
-                        label: const Text('下载'),
-                      );
-                    }),
-                  ],
+              if (categories.isNotEmpty || advancedConfig.value)
+                CustomTextField(
+                  controller: savePathController,
+                  labelText: '路径',
                 ),
-              ],
-            ),
-          );
-        },
-      ),
+              Obx(() {
+                return SwitchListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text(
+                      '高级选项',
+                      style: TextStyle(fontSize: 12, color: Colors.black54),
+                    ),
+                    value: advancedConfig.value,
+                    onChanged: (bool val) {
+                      advancedConfig.value = val;
+                    });
+              }),
+              Obx(() {
+                return SwitchListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text(
+                      '暂停下载',
+                      style: TextStyle(fontSize: 12, color: Colors.black54),
+                    ),
+                    value: paused.value,
+                    onChanged: (bool val) {
+                      paused.value = val;
+                    });
+              }),
+              if (downloader.category.toLowerCase() == 'qb')
+                Obx(() {
+                  return SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                      title: const Text(
+                        '内容布局',
+                        style: TextStyle(fontSize: 12, color: Colors.black54),
+                      ),
+                      value: rootFolder.value,
+                      onChanged: (bool val) {
+                        rootFolder.value = val;
+                      });
+                }),
+              if (downloader.category.toLowerCase() == 'qb')
+                Obx(() {
+                  return SwitchListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text(
+                        '自动管理',
+                        style: TextStyle(fontSize: 12, color: Colors.black54),
+                      ),
+                      value: autoTMM.value,
+                      onChanged: (bool val) {
+                        autoTMM.value = val;
+                      });
+                }),
+              Obx(() {
+                return advancedConfig.value
+                    ? Column(
+                        children: [
+                          if (downloader.category.toLowerCase() == 'qb')
+                            SwitchListTile(
+                                dense: true,
+                                contentPadding: EdgeInsets.zero,
+                                title: const Text(
+                                  '优先下载首尾数据块',
+                                  style: TextStyle(
+                                      fontSize: 12, color: Colors.black54),
+                                ),
+                                value: firstLastPiecePrio.value,
+                                onChanged: (bool val) {
+                                  firstLastPiecePrio.value = val;
+                                }),
+                          CustomTextField(
+                            controller: cookieController,
+                            labelText: ' Cookie',
+                          ),
+                          if (downloader.category.toLowerCase() == 'qb')
+                            CustomTextField(
+                              controller: renameController,
+                              labelText: '重命名',
+                            ),
+                          CustomTextField(
+                            controller: upLimitController,
+                            labelText: ' 上传限速',
+                            keyboardType: TextInputType.number,
+                            suffixText: 'MB/s',
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              TextInputFormatter.withFunction(
+                                  (oldValue, newValue) {
+                                try {
+                                  final int value = int.parse(newValue.text);
+                                  if (value < 0) {
+                                    return oldValue;
+                                  }
+                                  return newValue;
+                                } catch (e) {
+                                  return oldValue;
+                                }
+                              }),
+                            ],
+                          ),
+                          CustomTextField(
+                            controller: dlLimitController,
+                            labelText: '下载限速',
+                            keyboardType: TextInputType.number,
+                            suffixText: 'MB/s',
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              TextInputFormatter.withFunction(
+                                  (oldValue, newValue) {
+                                try {
+                                  final int value = int.parse(newValue.text);
+                                  if (value < 0) {
+                                    return oldValue;
+                                  }
+                                  return newValue;
+                                } catch (e) {
+                                  return oldValue;
+                                }
+                              }),
+                            ],
+                          ),
+                          CustomTextField(
+                            controller: ratioLimitController,
+                            labelText: '分享率限制',
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              TextInputFormatter.withFunction(
+                                  (oldValue, newValue) {
+                                try {
+                                  final int value = int.parse(newValue.text);
+                                  if (value < 0) {
+                                    return oldValue;
+                                  }
+                                  return newValue;
+                                } catch (e) {
+                                  return oldValue;
+                                }
+                              }),
+                            ],
+                          ),
+                        ],
+                      )
+                    : const SizedBox.shrink();
+              }),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () => cancelForm(context),
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(
+                          Colors.redAccent.withAlpha(150)),
+                    ),
+                    icon:
+                        const Icon(Icons.cancel_outlined, color: Colors.white),
+                    label: const Text(
+                      '取消',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                  Obx(() {
+                    return ElevatedButton.icon(
+                      onPressed: () {
+                        isLoading.value = true;
+                        submitForm({
+                          'mySite': mysite,
+                          'magnet': urlController.text,
+                          'savePath': savePathController.text,
+                          'category': categoryController.text,
+                          'paused': paused.value,
+                          'rootFolder': rootFolder.value,
+                          'autoTMM': autoTMM.value,
+                          'firstLastPiecePrio': firstLastPiecePrio.value,
+                          'rename': renameController.text,
+                          'upLimit': int.tryParse(upLimitController.text) ?? 0,
+                          'dlLimit': int.tryParse(dlLimitController.text) ?? 0,
+                          'ratioLimit':
+                              int.tryParse(ratioLimitController.text) ?? 0,
+                        });
+                        isLoading.value = false;
+                      },
+                      icon: isLoading.value
+                          ? const GFLoader(size: 18)
+                          : const Icon(Icons.download),
+                      label: const Text('下载'),
+                    );
+                  }),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -309,7 +308,6 @@ class DownloadForm extends StatelessWidget {
       Logger.instance.i(res.msg);
       if (res.code == 0) {
         Get.back();
-
         Get.snackbar('种子推送成功！', res.msg!,
             backgroundColor: Colors.green.shade300, colorText: Colors.white);
       } else {

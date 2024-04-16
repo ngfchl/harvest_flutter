@@ -67,23 +67,30 @@ class _AggSearchPageState extends State<AggSearchPage>
                       },
                     ),
                   ),
-                  ElevatedButton(
+                  ElevatedButton.icon(
                     onPressed: () {
-                      _getRandomSites();
+                      _openSiteSheet();
                     },
                     style: OutlinedButton.styleFrom(
-                      backgroundColor: Colors.purple,
+                      backgroundColor: Colors.lightGreen,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0), // 圆角半径
                       ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                     ),
-                    child: Text(
-                      '随机 ${controller.maxCount}',
-                      style: const TextStyle(color: Colors.white),
+                    icon: const Icon(
+                      Icons.language,
+                      size: 14,
+                      color: Colors.white,
+                    ),
+                    label: Text(
+                      '站点 ${controller.maxCount}',
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
                     ),
                   ),
                   const SizedBox(
-                    width: 10,
+                    width: 5,
                   ),
                   GetBuilder<AggSearchController>(builder: (controller) {
                     return ElevatedButton.icon(
@@ -101,19 +108,22 @@ class _AggSearchPageState extends State<AggSearchPage>
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0), // 圆角半径
                           ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 6),
                         ),
                         autofocus: true,
                         icon: controller.isLoading
                             ? const GFLoader(
-                                size: 18,
+                                size: 14,
                               )
                             : const Icon(
                                 Icons.search,
-                                size: 18,
+                                size: 14,
                                 color: Colors.white,
                               ),
                         label: Text(controller.isLoading ? '取消' : '搜索',
-                            style: const TextStyle(color: Colors.white)));
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 12)));
                   }),
                 ],
               ),
@@ -144,86 +154,60 @@ class _AggSearchPageState extends State<AggSearchPage>
                   ),
                 ),
               ),
-            SizedBox(
-              height: 36,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Expanded(
-                    child: ListTile(
-                      focusColor: Colors.red,
-                      dense: true,
-                      onTap: () {
-                        _openSiteSheet();
-                      },
-                      trailing: const Icon(
-                        Icons.language,
-                        size: 18,
-                      ),
-                      title: const Text('站点'),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 36,
-                    child: VerticalDivider(),
-                  ),
-                  Expanded(
-                    child: ListTile(
-                      focusColor: Colors.red,
-                      dense: true,
-                      onTap: () {
+            if (controller.searchResults.isNotEmpty)
+              Container(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ActionChip(
+                      padding: EdgeInsets.zero,
+                      labelPadding: const EdgeInsets.only(left: 0, right: 12),
+                      onPressed: () {
                         controller.initSearchResult();
                       },
-                      trailing: const Icon(
+                      avatar: const Icon(
                         Icons.remove_circle_outline,
+                        size: 12,
+                      ),
+                      label: const Text(
+                        '清除',
+                        style: TextStyle(fontSize: 10),
+                      ),
+                    ),
+                    ActionChip(
+                      padding: EdgeInsets.zero,
+                      labelPadding: const EdgeInsets.only(left: 0, right: 12),
+                      onPressed: () {
+                        _openSortSheet();
+                      },
+                      avatar: const Icon(
+                        Icons.sort_by_alpha_sharp,
                         size: 18,
                       ),
-                      title: const Text('清除'),
-                    ),
-                  ),
-                  if (controller.searchResults.isNotEmpty)
-                    const SizedBox(
-                      height: 36,
-                      child: VerticalDivider(),
-                    ),
-                  if (controller.searchResults.isNotEmpty)
-                    Expanded(
-                      child: ListTile(
-                        focusColor: Colors.red,
-                        dense: true,
-                        onTap: () {
-                          _openSortSheet();
-                        },
-                        trailing: const Icon(
-                          Icons.sort_by_alpha_sharp,
-                          size: 18,
-                        ),
-                        title: const Text('排序'),
+                      label: const Text(
+                        '排序',
+                        style: TextStyle(fontSize: 10),
                       ),
                     ),
-                  if (controller.searchResults.isNotEmpty)
-                    const SizedBox(
-                      height: 36,
-                      child: VerticalDivider(),
-                    ),
-                  if (controller.searchResults.isNotEmpty)
-                    Expanded(
-                      child: ListTile(
-                        dense: true,
-                        onTap: () {
-                          _openFilterSheet();
-                        },
-                        trailing: const Icon(
-                          Icons.filter_tilt_shift,
-                          size: 18,
-                        ),
-                        title: const Text('筛选'),
+                    ActionChip(
+                      padding: EdgeInsets.zero,
+                      labelPadding: const EdgeInsets.only(left: 0, right: 12),
+                      onPressed: () {
+                        _openFilterSheet();
+                      },
+                      avatar: const Icon(
+                        Icons.filter_tilt_shift,
+                        size: 18,
+                      ),
+                      label: const Text(
+                        '筛选',
+                        style: TextStyle(fontSize: 10),
                       ),
                     ),
-                ],
+                  ],
+                ),
               ),
-            ),
             GetBuilder<AggSearchController>(builder: (controller) {
               return Expanded(
                 child: ListView.builder(
