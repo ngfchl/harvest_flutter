@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:harvest/app/home/pages/agg_search/view.dart';
 import 'package:harvest/app/home/pages/dash_board/view.dart';
+import 'package:harvest/app/home/pages/dou_ban/view.dart';
 import 'package:harvest/app/home/pages/download/download.dart';
 import 'package:harvest/app/home/pages/my_rss/view.dart';
 import 'package:harvest/app/home/pages/my_site/view.dart';
@@ -70,6 +71,7 @@ class HomeController extends GetxController {
     const SubscribeTagPage(),
     const SubscribeHistoryPage(),
     const OptionPage(),
+    const DouBanPage()
   ];
 
   @override
@@ -83,6 +85,7 @@ class HomeController extends GetxController {
       Get.offAllNamed(Routes.LOGIN);
     }
     // await mySiteController.initData();
+    pageController.jumpToPage(pages.length - 1);
     super.onInit();
   }
 
