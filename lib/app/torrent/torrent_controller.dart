@@ -674,12 +674,12 @@ class TorrentController extends GetxController {
     Downloader downloader,
     Map<String, dynamic> data,
   ) async {
-    MySite mySite = data['mySite'];
+    MySite? mySite = data['mySite'];
     try {
       final downloadResponse = await getDownloadFileBytes(
         data['magnet'],
-        mySite.cookie!,
-        mySite.userAgent!,
+        mySite != null ? mySite.cookie! : "",
+        mySite != null ? mySite.userAgent! : '',
       );
 
       String msg;
@@ -759,20 +759,21 @@ class TorrentController extends GetxController {
     Downloader downloader,
     Map<String, dynamic> data,
   ) async {
-    MySite mySite = data['mySite'];
+    MySite? mySite = data['mySite'];
     try {
       TorrentAddResponse torrent;
       Map res = {};
       tr.TorrentAddArgs? args = tr.TorrentAddArgs()
           .paused(data['paused'])
-          .cookies(mySite.cookie!)
-          .downloadDir(data['savePath'])
-          .labels([mySite.nickname]);
+          .downloadDir(data['savePath']);
+      if (mySite != null) {
+        args.cookies(mySite.cookie!).labels([mySite.nickname]);
+      }
 
       final downloadResponse = await getDownloadFileBytes(
         data['magnet'],
-        mySite.cookie!,
-        mySite.userAgent!,
+        mySite != null ? mySite.cookie! : '',
+        mySite != null ? mySite.userAgent! : '',
       );
       if (downloadResponse.code == 0) {
         LoggerHelper.Logger.instance.i(downloadResponse.data);

@@ -17,6 +17,7 @@ import '../../../utils/logger_helper.dart' as LoggerHelper;
 import '../../common/glass_widget.dart';
 import '../../utils/date_time_utils.dart';
 import '../../utils/logger_helper.dart';
+import '../home/pages/agg_search/download_form.dart';
 import '../home/pages/models/transmission.dart';
 import 'models/transmission_base_torrent.dart';
 import 'torrent_controller.dart';
@@ -639,12 +640,20 @@ class TorrentView extends GetView<TorrentController> {
             shape: GFIconButtonShape.standard,
             type: GFButtonType.transparent,
             color: GFColors.PRIMARY,
-            onPressed: () {
-              GFToast.showToast(
-                '添加种子',
-                context,
-                backgroundColor: GFColors.SECONDARY,
-                toastBorderRadius: 5.0,
+            onPressed: () async {
+              Get.defaultDialog(
+                // barrierDismissible: false,
+                title: '下载到：${controller.downloader.name}',
+                titleStyle:
+                    const TextStyle(fontSize: 14, color: Colors.black54),
+                backgroundColor: Colors.white,
+                content: SingleChildScrollView(
+                  child: DownloadForm(
+                    categories: controller.categoryList,
+                    downloader: controller.downloader,
+                    info: null,
+                  ),
+                ),
               );
             },
           ),

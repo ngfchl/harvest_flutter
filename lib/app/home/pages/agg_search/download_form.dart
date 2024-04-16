@@ -20,7 +20,7 @@ class DownloadForm extends StatelessWidget {
 
   final Map<String, String> categories;
   final Downloader downloader;
-  final SearchTorrentInfo info;
+  SearchTorrentInfo? info;
 
   final TextEditingController urlController = TextEditingController();
   final TextEditingController savePathController = TextEditingController();
@@ -38,21 +38,23 @@ class DownloadForm extends StatelessWidget {
     super.key,
     required this.categories,
     required this.downloader,
-    required this.info,
+    this.info,
   }) : torrentController = Get.put(TorrentController(downloader, false));
 
   @override
   Widget build(BuildContext context) {
     Logger.instance.i(categories);
-    MySite? mysite = searchController.mySiteMap[info.siteId];
-
-    WebSite? webSite =
-        searchController.mySiteController.webSiteList[mysite?.site];
+    MySite? mysite;
+    if (info != null) {
+      mysite = searchController.mySiteMap[info!.siteId];
+      WebSite? webSite =
+          searchController.mySiteController.webSiteList[mysite?.site];
+      cookieController.text = mysite?.cookie ?? '';
+      upLimitController.text =
+          webSite != null ? webSite.limitSpeed.toString() : '0';
+      urlController.text = info!.magnetUrl;
+    } else {}
     savePathController.text = categories[categories.keys.first]!;
-    cookieController.text = mysite?.cookie ?? '';
-    upLimitController.text =
-        webSite != null ? webSite.limitSpeed.toString() : '0';
-    urlController.text = info.magnetUrl;
     RxBool advancedConfig = false.obs;
     RxBool paused = false.obs;
     Rx<bool> rootFolder = false.obs;
@@ -67,7 +69,9 @@ class DownloadForm extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  '种子名称: ${info.subtitle.isNotEmpty ? info.subtitle : info.title}',
+                  info != null
+                      ? '种子名称: ${info!.subtitle.isNotEmpty ? info!.subtitle : info!.title}'
+                      : '',
                   style: const TextStyle(fontSize: 12, color: Colors.black54),
                 ),
                 CustomTextField(
