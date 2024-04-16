@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -59,10 +60,13 @@ class _DouBanPageState extends State<DouBanPage>
                                   },
                                   child: Stack(
                                     children: [
-                                      Image(
-                                        image: NetworkImage(
-                                          '$cacheServer${e.poster}',
-                                        ),
+                                      CachedNetworkImage(
+                                        imageUrl: '$cacheServer${e.poster}',
+                                        placeholder: (context, url) =>
+                                            const CircularProgressIndicator(),
+                                        errorWidget: (context, url, error) =>
+                                            Image.asset(
+                                                'assets/images/logo.png'),
                                         width: 100,
                                         height: 150,
                                         fit: BoxFit.fitWidth,
@@ -72,7 +76,7 @@ class _DouBanPageState extends State<DouBanPage>
                                         right: 2,
                                         child: Container(
                                           color: Colors.black38,
-                                          width: 80,
+                                          width: 100,
                                           child: Text(
                                             e.rank,
                                             overflow: TextOverflow.ellipsis,
@@ -87,7 +91,7 @@ class _DouBanPageState extends State<DouBanPage>
                                         bottom: 2,
                                         child: Container(
                                           color: Colors.black38,
-                                          width: 80,
+                                          width: 100,
                                           child: Text(
                                             e.title,
                                             overflow: TextOverflow.ellipsis,
@@ -168,10 +172,13 @@ class _DouBanPageState extends State<DouBanPage>
                                     width: 80,
                                     child: Stack(
                                       children: [
-                                        Image(
-                                          image: NetworkImage(
-                                            '$cacheServer${e.cover}',
-                                          ),
+                                        CachedNetworkImage(
+                                          imageUrl: '$cacheServer${e.cover}',
+                                          placeholder: (context, url) =>
+                                              const CircularProgressIndicator(),
+                                          errorWidget: (context, url, error) =>
+                                              Image.asset(
+                                                  'assets/images/logo.png'),
                                           width: 100,
                                           height: 150,
                                           fit: BoxFit.fitWidth,
@@ -180,9 +187,9 @@ class _DouBanPageState extends State<DouBanPage>
                                           bottom: 2,
                                           child: Container(
                                             color: Colors.black38,
-                                            width: 80,
+                                            width: 100,
                                             child: Text(
-                                              e.title,
+                                              e.title.trim(),
                                               overflow: TextOverflow.ellipsis,
                                               textAlign: TextAlign.center,
                                               style: const TextStyle(
@@ -259,10 +266,13 @@ class _DouBanPageState extends State<DouBanPage>
                                     width: 80,
                                     child: Stack(
                                       children: [
-                                        Image(
-                                          image: NetworkImage(
-                                            '$cacheServer${e.cover}',
-                                          ),
+                                        CachedNetworkImage(
+                                          imageUrl: '$cacheServer${e.cover}',
+                                          placeholder: (context, url) =>
+                                              const CircularProgressIndicator(),
+                                          errorWidget: (context, url, error) =>
+                                              Image.asset(
+                                                  'assets/images/logo.png'),
                                           width: 100,
                                           height: 150,
                                           fit: BoxFit.fitWidth,
@@ -271,9 +281,9 @@ class _DouBanPageState extends State<DouBanPage>
                                           bottom: 2,
                                           child: Container(
                                             color: Colors.black38,
-                                            width: 80,
+                                            width: 100,
                                             child: Text(
-                                              e.title,
+                                              e.title.trim(),
                                               overflow: TextOverflow.ellipsis,
                                               textAlign: TextAlign.center,
                                               style: const TextStyle(
@@ -291,7 +301,7 @@ class _DouBanPageState extends State<DouBanPage>
                     ),
                   ),
                 ),
-              const SizedBox(height: 60),
+              const SizedBox(height: 80),
             ],
           ),
         ),
