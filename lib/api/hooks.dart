@@ -3,10 +3,10 @@ import '../utils/dio_util.dart';
 import '../utils/logger_helper.dart';
 
 Future<CommonResponse<List<T>>> fetchDataList<T>(
-  String apiEndpoint,
-  T Function(Map<String, dynamic>) fromJson,
-) async {
-  final response = await DioUtil().get(apiEndpoint);
+    String apiEndpoint, T Function(Map<String, dynamic>) fromJson,
+    {Map<String, dynamic>? queryParameters}) async {
+  final response =
+      await DioUtil().get(apiEndpoint, queryParameters: queryParameters);
   if (response.statusCode == 200) {
     // Logger.instance.d(response.data['data']);
     final dataList = (response.data['data'] as List)
@@ -15,6 +15,21 @@ Future<CommonResponse<List<T>>> fetchDataList<T>(
     String msg = '成功获取到${dataList.length}条数据';
     // Logger.instance.i(msg);
     return CommonResponse<List<T>>(data: dataList, code: 0, msg: msg);
+  } else {
+    String msg = '获取数据列表失败: ${response.statusCode}';
+    // GFToast.showToast(msg, context);
+    return CommonResponse<List<T>>(data: null, code: -1, msg: msg);
+  }
+}
+
+Future<CommonResponse<List>> fetchBasicList<T>(String apiEndpoint,
+    {Map<String, dynamic>? queryParameters}) async {
+  final response =
+      await DioUtil().get(apiEndpoint, queryParameters: queryParameters);
+  if (response.statusCode == 200) {
+    final dataList = response.data['data'] as List;
+    String msg = '成功获取到${dataList.length}条数据';
+    return CommonResponse<List>(data: dataList, code: 0, msg: msg);
   } else {
     String msg = '获取数据列表失败: ${response.statusCode}';
     // GFToast.showToast(msg, context);
