@@ -59,6 +59,12 @@ class Api {
 
   static const String SYSTEM_CONFIG = "auth/config";
 
+  /// 订阅相关
+  static const String SUB_RSS = "option/rss";
+  static const String SUB_SUB = "option/sub";
+  static const String SUB_TAG = "option/tags";
+  static const String SUB_HISTORY = "option/sub_history";
+
   /// 豆瓣 API
   static const String DOUBAN_TOP250 = "option/douban/top250";
   static const String DOUBAN_CELEBRITY = "option/douban/celebrity/";
