@@ -63,7 +63,9 @@ class _DouBanPageState extends State<DouBanPage>
                                       CachedNetworkImage(
                                         imageUrl: '$cacheServer${e.poster}',
                                         placeholder: (context, url) =>
-                                            const CircularProgressIndicator(),
+                                            const Center(
+                                                child:
+                                                    CircularProgressIndicator()),
                                         errorWidget: (context, url, error) =>
                                             Image.asset(
                                                 'assets/images/logo.png'),
@@ -175,7 +177,9 @@ class _DouBanPageState extends State<DouBanPage>
                                         CachedNetworkImage(
                                           imageUrl: '$cacheServer${e.cover}',
                                           placeholder: (context, url) =>
-                                              const CircularProgressIndicator(),
+                                              const Center(
+                                                  child:
+                                                      CircularProgressIndicator()),
                                           errorWidget: (context, url, error) =>
                                               Image.asset(
                                                   'assets/images/logo.png'),
@@ -269,7 +273,9 @@ class _DouBanPageState extends State<DouBanPage>
                                         CachedNetworkImage(
                                           imageUrl: '$cacheServer${e.cover}',
                                           placeholder: (context, url) =>
-                                              const CircularProgressIndicator(),
+                                              const Center(
+                                                  child:
+                                                      CircularProgressIndicator()),
                                           errorWidget: (context, url, error) =>
                                               Image.asset(
                                                   'assets/images/logo.png'),
