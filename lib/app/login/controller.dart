@@ -35,6 +35,7 @@ class LoginController extends GetxController {
       Server? server = selectedServer.value;
       initDio(server!);
     }
+    update();
     super.onInit();
   }
 
@@ -46,6 +47,7 @@ class LoginController extends GetxController {
     String baseUrl = '${server.protocol}://${server.domain}:${server.port}';
     await dioUtil.initialize(baseUrl);
     box.write('server', baseUrl);
+    update();
   }
 
   Future<bool> testServerConnection(Server server) async {
