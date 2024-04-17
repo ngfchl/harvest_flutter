@@ -147,24 +147,22 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('服务器列表'),
-        backgroundColor: Colors.grey.shade300,
-      ),
-      body: GlassWidget(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Obx(() {
-              return Wrap(spacing: 12, runSpacing: 8, children: [
+    return GetBuilder<LoginController>(builder: (serverController) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('服务器列表'),
+          backgroundColor: Colors.grey.shade300,
+        ),
+        body: GlassWidget(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Wrap(spacing: 12, runSpacing: 8, children: [
                 ...serverController.serversList
                     .map((server) => _buildGridTile(server)),
                 _buildAddServerTile(),
-              ]);
-            }),
-            Obx(() {
-              return Padding(
+              ]),
+              Padding(
                 padding: const EdgeInsets.only(bottom: 24.0),
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -185,17 +183,18 @@ class _LoginPageState extends State<LoginPage> {
                   child: const Text('连接服务器',
                       style: TextStyle(color: Colors.white)),
                 ),
-              );
-            }),
-          ],
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   void showEditOrCreateServerSheet(Server? serverToEdit) async {
     String selectedProtocol =
         serverToEdit?.protocol ?? 'http'; // 对于编辑模式，默认使用现有协议，否则使用'http'
+    Logger.instance.i(serverToEdit?.protocol);
     final formKey = GlobalKey<FormState>();
     TextEditingController nameController =
         TextEditingController(text: serverToEdit?.name ?? 'Server');
@@ -230,6 +229,12 @@ class _LoginPageState extends State<LoginPage> {
                     controller: protocolController,
                     labelText: '选择协议',
                     data: const ["http", "https"],
+                    onConfirm: (p, position) {
+                      protocolController.text = p;
+                    },
+                    onChanged: (p, position) {
+                      protocolController.text = p;
+                    },
                   ),
                   CustomTextField(
                     controller: domainController,
@@ -288,9 +293,6 @@ class _LoginPageState extends State<LoginPage> {
                           nameController.clear();
                           domainController.clear();
                           portController.clear();
-                          setState(() {
-                            selectedProtocol = 'http';
-                          });
                           // 关闭底部表单
                           Navigator.pop(context);
                         },
@@ -302,7 +304,7 @@ class _LoginPageState extends State<LoginPage> {
                             final server = Server(
                               id: 0,
                               name: nameController.text,
-                              protocol: selectedProtocol,
+                              protocol: protocolController.text,
                               domain: domainController.text,
                               port: int.parse(portController.text),
                               username: usernameController.text,
@@ -338,11 +340,8 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                               // 如果正在加载，显示加载动画
                               if (controller.isLoading.value)
-                                const Positioned.fill(
-                                  child: Align(
-                                    alignment: Alignment.center,
-                                    child: CircularProgressIndicator(),
-                                  ),
+                                const Center(
+                                  child: CircularProgressIndicator(),
                                 ),
                             ],
                           ),
@@ -356,7 +355,7 @@ class _LoginPageState extends State<LoginPage> {
                             final server = Server(
                               id: id,
                               name: nameController.text,
-                              protocol: selectedProtocol,
+                              protocol: protocolController.text,
                               domain: domainController.text,
                               port: int.parse(portController.text),
                               username: usernameController.text,
