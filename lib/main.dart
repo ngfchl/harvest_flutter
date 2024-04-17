@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:harvest/utils/dio_util.dart';
@@ -12,8 +13,8 @@ void main() async {
   // 初始化 持久化数据信息
   await SPUtil.getInstance();
   // 初始化插件前需要在runApp之前调用初始化代码
-  WidgetsFlutterBinding.ensureInitialized();
-
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  initialization(null);
   // 注册 HomeController 控制器
   String? server = GetStorage().read('server');
   if (server == null || server.length <= 10) {
@@ -29,6 +30,7 @@ void main() async {
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
   ));
+  FlutterNativeSplash.remove();
   runApp(
     GetMaterialApp(
       title: "Harvest",
@@ -44,4 +46,11 @@ void main() async {
       getPages: AppPages.routes,
     ),
   );
+}
+
+//启动图延时移除方法
+void initialization(BuildContext? context) async {
+  //延迟3秒
+  await Future.delayed(const Duration(seconds: 3));
+  FlutterNativeSplash.remove();
 }
