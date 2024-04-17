@@ -65,7 +65,7 @@ class VersionManager:
                 print(f'APK 打包完成')
             elif flag == 'ios':
                 # subprocess.run(["rm", "-rf", f"{self.ios_path}Payload/*"])
-                res = subprocess.run(["rm -rf build/ios/*"], shell=True,
+                res = subprocess.run(["rm -rf build/ios/iphoneos/*"], shell=True,
                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 print(res)
                 res = subprocess.run("flutter build ios", shell=True,
