@@ -1,8 +1,11 @@
+import 'Subscribe.dart';
+import 'my_site.dart';
+
 class SubHistory {
   SubHistory({
     num? id,
-    num? subscribeId,
-    String? siteId,
+    Subscribe? subscribe,
+    MySite? site,
     String? magnet,
     String? message,
     bool? pushed,
@@ -10,8 +13,8 @@ class SubHistory {
     String? updatedAt,
   }) {
     _id = id;
-    _subscribeId = subscribeId;
-    _siteId = siteId;
+    _subscribe = subscribe;
+    _site = site;
     _magnet = magnet;
     _message = message;
     _pushed = pushed;
@@ -21,8 +24,10 @@ class SubHistory {
 
   SubHistory.fromJson(dynamic json) {
     _id = json['id'];
-    _subscribeId = json['subscribe_id'];
-    _siteId = json['site_id'];
+    _subscribe = json['subscribe'] != null
+        ? Subscribe.fromJson(json['subscribe'])
+        : null;
+    _site = json['site'] != null ? MySite.fromJson(json['site']) : null;
     _magnet = json['magnet'];
     _message = json['message'];
     _pushed = json['pushed'];
@@ -31,8 +36,8 @@ class SubHistory {
   }
 
   num? _id;
-  num? _subscribeId;
-  String? _siteId;
+  Subscribe? _subscribe;
+  MySite? _site;
   String? _magnet;
   String? _message;
   bool? _pushed;
@@ -41,8 +46,8 @@ class SubHistory {
 
   SubHistory copyWith({
     num? id,
-    num? subscribeId,
-    String? siteId,
+    Subscribe? subscribe,
+    MySite? site,
     String? magnet,
     String? message,
     bool? pushed,
@@ -51,8 +56,8 @@ class SubHistory {
   }) =>
       SubHistory(
         id: id ?? _id,
-        subscribeId: subscribeId ?? _subscribeId,
-        siteId: siteId ?? _siteId,
+        subscribe: subscribe ?? _subscribe,
+        site: site ?? _site,
         magnet: magnet ?? _magnet,
         message: message ?? _message,
         pushed: pushed ?? _pushed,
@@ -62,9 +67,9 @@ class SubHistory {
 
   num? get id => _id;
 
-  num? get subscribeId => _subscribeId;
+  Subscribe? get subscribe => _subscribe;
 
-  String? get siteId => _siteId;
+  MySite? get site => _site;
 
   String? get magnet => _magnet;
 
@@ -79,8 +84,12 @@ class SubHistory {
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
     map['id'] = _id;
-    map['subscribe_id'] = _subscribeId;
-    map['site_id'] = _siteId;
+    if (_subscribe != null) {
+      map['subscribe'] = _subscribe?.toJson();
+    }
+    if (_site != null) {
+      map['site'] = _site?.toJson();
+    }
     map['magnet'] = _magnet;
     map['message'] = _message;
     map['pushed'] = _pushed;
