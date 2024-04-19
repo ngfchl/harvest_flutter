@@ -63,7 +63,7 @@ class CustomTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8),
       child: TextField(
         controller: controller,
         maxLines: maxLines,
@@ -72,7 +72,7 @@ class CustomTextField extends StatelessWidget {
         decoration: InputDecoration(
           labelText: labelText,
           labelStyle: const TextStyle(fontSize: 12, color: Colors.black54),
-          contentPadding: const EdgeInsets.all(0),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 8),
           enabledBorder: const UnderlineInputBorder(
             borderSide: BorderSide(color: Color(0x19000000)),
           ),
