@@ -80,7 +80,7 @@ class _SubscribeHistoryPageState extends State<SubscribeHistoryPage> {
                     fontSize: 16,
                     fontWeight: FontWeight.w900,
                     color: Colors.deepPurple),
-                middleText: '确定要删除标签吗？',
+                middleText: '确定要删除吗？',
                 actions: [
                   ElevatedButton(
                     onPressed: () {

@@ -1051,7 +1051,6 @@ class _MySitePagePageState extends State<MySitePage>
                   itemBuilder: (context, index) {
                     String signKey = signKeys[index];
                     SignInInfo? item = mySite.signInInfo[signKey];
-                    Logger.instance.i('$today -$signKey -${today == signKey}');
                     return Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Card(
