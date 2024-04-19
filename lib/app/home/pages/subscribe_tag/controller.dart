@@ -9,6 +9,7 @@ class SubscribeTagController extends GetxController {
   List<SubTag> tags = [];
 
   List<MetaDataItem> tagCategoryList = [
+    {'name': '排除选项', 'value': 'exclude'},
     {'name': '剧集', 'value': 'season'},
     {'name': '发布年份', 'value': 'publish_year'},
     {'name': '优惠折扣', 'value': 'discount'},
