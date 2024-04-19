@@ -126,7 +126,9 @@ class DownloadController extends GetxController {
       Get.snackbar('', e.toString());
     });
     // 发送最新的下载列表到流中
-    refreshDownloadStatus();
+    if (realTimeState) {
+      refreshDownloadStatus();
+    }
 
     update();
   }
