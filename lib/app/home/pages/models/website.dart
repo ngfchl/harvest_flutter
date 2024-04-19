@@ -84,7 +84,7 @@ class WebSite {
               .map((key, value) => MapEntry(key, LevelInfo.fromJson(value)))
           : null;
     } catch (e, trace) {
-      Logger.instance.i(json['name']);
+      Logger.instance.i(json);
       Logger.instance.w(e.toString());
       Logger.instance.e(trace.toString());
     }
