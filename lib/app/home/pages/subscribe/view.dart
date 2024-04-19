@@ -155,12 +155,22 @@ class _SubscribePageState extends State<SubscribePage> {
                     _openEditDialogX(sub);
                   },
                   trailing: IconButton(
-                    icon: const Icon(
-                      Icons.delete,
-                      size: 18,
-                      color: Colors.red,
-                    ),
-                    onPressed: () {},
+                    icon: sub.available == true
+                        ? const Icon(
+                            Icons.check_box,
+                            size: 18,
+                            color: Colors.green,
+                          )
+                        : const Icon(
+                            Icons.disabled_by_default,
+                            size: 18,
+                            color: Colors.red,
+                          ),
+                    onPressed: () {
+                      Subscribe newSub =
+                          sub.copyWith(available: !sub.available);
+                      submitForm(newSub);
+                    },
                   ),
                 ),
                 Padding(
@@ -176,6 +186,10 @@ class _SubscribePageState extends State<SubscribePage> {
 
   _buildSubTags(Subscribe sub) {
     List<Widget> tags = [];
+    tags.add(CustomTextTag(
+      labelText: '${sub.size} GB',
+      backgroundColor: Colors.brown,
+    ));
     tags.addAll(sub.publishYear.map((e) => CustomTextTag(
           labelText: e,
           backgroundColor: Colors.black54,
@@ -476,6 +490,22 @@ class _SubscribePageState extends State<SubscribePage> {
       isScrollControlled: true,
     );
   }
+
+  void submitForm(Subscribe sub) async {
+    try {
+      CommonResponse res = await controller.saveSubscribe(sub);
+
+      Logger.instance.i(res.msg);
+      if (res.code == 0) {
+        Get.back();
+        Get.snackbar('保存成功！', res.msg!,
+            backgroundColor: Colors.green.shade300, colorText: Colors.white);
+      } else {
+        Get.snackbar('保存失败！', res.msg!,
+            backgroundColor: Colors.red.shade300, colorText: Colors.white);
+      }
+    } finally {}
+  }
 }
 
 class EditDialogController extends GetxController {
@@ -598,10 +628,10 @@ class EditDialogController extends GetxController {
       Logger.instance.i(res.msg);
       if (res.code == 0) {
         Get.back();
-        Get.snackbar('标签保存成功！', res.msg!,
+        Get.snackbar('保存成功！', res.msg!,
             backgroundColor: Colors.green.shade300, colorText: Colors.white);
       } else {
-        Get.snackbar('标签保存失败！', res.msg!,
+        Get.snackbar('保存失败！', res.msg!,
             backgroundColor: Colors.red.shade300, colorText: Colors.white);
       }
     } finally {}
