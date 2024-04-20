@@ -15,6 +15,8 @@ abstract class Routes {
   static const DASHBOARD = _Paths.DASHBOARD;
   static const DOWNLOAD = _Paths.DOWNLOAD;
   static const TORRENT = _Paths.TORRENT;
+  static const QB = _Paths.QB;
+  static const TR = _Paths.TR;
 }
 
 abstract class _Paths {
@@ -29,4 +31,6 @@ abstract class _Paths {
   static const DASHBOARD = '/home/dashboard';
   static const DOWNLOAD = '/home/download'; // download page
   static const TORRENT = '/torrent';
+  static const QB = '/qb';
+  static const TR = '/tr';
 }

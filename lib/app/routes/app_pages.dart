@@ -5,9 +5,10 @@ import '../../middleware/login_middleware.dart';
 import '../home/controller/home_binding.dart';
 import '../home/home_view.dart';
 import '../login/binding.dart';
-import '../login/view.dart';
-// import '../search/search_binding.dart';
+import '../login/view.dart'; // import '../search/search_binding.dart';
 // import '../search/search_view.dart';
+import '../q_bittorrent/binding.dart';
+import '../q_bittorrent/view.dart';
 import '../torrent/torrent_binding.dart';
 import '../torrent/torrent_view.dart';
 import '../web_view/binding.dart';
@@ -34,6 +35,14 @@ class AppPages {
       name: _Paths.TORRENT,
       page: () => const TorrentView(),
       binding: TorrentBinding(),
+      middlewares: [
+        LoginMiddleware(),
+      ],
+    ),
+    GetPage(
+      name: _Paths.QB,
+      page: () => const QBittorrentPage(),
+      binding: QBittorrentBinding(),
       middlewares: [
         LoginMiddleware(),
       ],

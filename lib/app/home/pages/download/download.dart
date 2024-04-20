@@ -626,7 +626,12 @@ class _DownloadPageState extends State<DownloadPage>
                 ),
                 onTap: () {
                   controller.cancelPeriodicTimer();
-                  Get.toNamed(Routes.TORRENT, arguments: downloader);
+                  if (downloader.category == 'Qb') {
+                    Get.toNamed(Routes.QB, arguments: downloader);
+                  }
+                  if (downloader.category == 'Tr') {
+                    Get.toNamed(Routes.TR, arguments: downloader);
+                  }
                 },
                 onLongPress: () async {
                   _showEditBottomSheet(downloader: downloader);
