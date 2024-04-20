@@ -6,6 +6,7 @@ import 'package:harvest/models/common_response.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../api/mysite.dart';
+import '../../../../utils/date_time_utils.dart';
 import '../../../../utils/logger_helper.dart';
 
 class MySiteController extends GetxController {
@@ -261,7 +262,6 @@ class MySiteController extends GetxController {
   void filterByKey() {
     Logger.instance.i('开始筛选，当前筛选关键字：$filterKey');
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-
     switch (filterKey) {
       case 'available':
         filterByCondition((item) => item.available);
@@ -308,8 +308,13 @@ class MySiteController extends GetxController {
             item.available && item.signIn && item.signInInfo[today] == null);
         break;
       case 'status':
-        filterByCondition(
-            (item) => item.available && item.statusInfo[today] == null);
+        filterByCondition((item) {
+          Logger.instance.i(item.statusInfo[today]?.updatedAt);
+          // Logger.instance.i(isToday(item.statusInfo[today]!.updatedAt));
+          return item.available &&
+              (item.statusInfo[today] == null ||
+                  !isToday(item.statusInfo[today]!.updatedAt));
+        });
         break;
       case 'userId':
         filterByCondition(
