@@ -133,8 +133,6 @@ class TaskPage extends StatelessWidget {
               ),
             ],
           ),
-
-          // The end action pane is the one at the right or the bottom side.
           child: ListTile(
             onTap: () async {},
             title: Row(
@@ -155,63 +153,53 @@ class TaskPage extends StatelessWidget {
               item.task!,
               style: const TextStyle(fontSize: 10, color: Colors.black38),
             ),
-            trailing: SizedBox(
-              width: 60,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (item.enabled == true)
-                    Obx(() {
-                      return InkWell(
-                        onTap: () async {
-                          isRunning.value = true;
-                          // await Future.delayed(Duration(seconds: 2));
-                          CommonResponse res = await controller.execTask(item);
-                          if (res.code == 0) {
-                            Get.snackbar('任务执行通知', res.msg.toString(),
-                                backgroundColor: Colors.green.shade500,
-                                colorText: Colors.white70);
-                          } else {
-                            Get.snackbar('任务执行通知', res.msg.toString(),
-                                backgroundColor: Colors.red.shade500,
-                                colorText: Colors.white70);
-                          }
-                          isRunning.value = false;
-                          controller.update();
-                        },
-                        child: isRunning.value == false
-                            ? const Icon(Icons.play_circle_outline,
-                                color: Colors.green)
-                            : const GFLoader(size: 20),
-                      );
-                    }),
-                  InkWell(
-                    onTap: () async {
-                      CommonResponse res =
-                          await controller.changeScheduleState(item);
-                      String title = item.enabled == true ? '任务启用通知' : '任务禁用通知';
-                      if (res.code == 0) {
-                        Get.snackbar(title, res.msg.toString(),
-                            snackStyle: SnackStyle.FLOATING,
-                            backgroundColor: Colors.green.shade500,
-                            colorText: Colors.white70);
-                      } else {
-                        Get.snackbar(title, res.msg.toString(),
-                            snackStyle: SnackStyle.FLOATING,
-                            backgroundColor: Colors.red.shade500,
-                            colorText: Colors.white70);
-                      }
-                      controller.update();
-                    },
-                    child: item.enabled == true
-                        ? const Icon(Icons.check_circle_outline,
-                            color: Colors.green)
-                        : const Icon(Icons.pause_circle_outline,
-                            color: Colors.red),
-                  ),
-                ],
-              ),
+            leading: InkWell(
+              onTap: () async {
+                CommonResponse res = await controller.changeScheduleState(item);
+                String title = item.enabled == true ? '任务启用通知' : '任务禁用通知';
+                if (res.code == 0) {
+                  Get.snackbar(title, res.msg.toString(),
+                      snackStyle: SnackStyle.FLOATING,
+                      backgroundColor: Colors.green.shade500,
+                      colorText: Colors.white70);
+                } else {
+                  Get.snackbar(title, res.msg.toString(),
+                      snackStyle: SnackStyle.FLOATING,
+                      backgroundColor: Colors.red.shade500,
+                      colorText: Colors.white70);
+                }
+                controller.update();
+              },
+              child: item.enabled == true
+                  ? const Icon(Icons.check_circle_outline, color: Colors.green)
+                  : const Icon(Icons.pause_circle_outline, color: Colors.red),
             ),
+            trailing: item.enabled == true
+                ? Obx(() {
+                    return InkWell(
+                      onTap: () async {
+                        isRunning.value = true;
+                        // await Future.delayed(Duration(seconds: 2));
+                        CommonResponse res = await controller.execTask(item);
+                        if (res.code == 0) {
+                          Get.snackbar('任务执行通知', res.msg.toString(),
+                              backgroundColor: Colors.green.shade500,
+                              colorText: Colors.white70);
+                        } else {
+                          Get.snackbar('任务执行通知', res.msg.toString(),
+                              backgroundColor: Colors.red.shade500,
+                              colorText: Colors.white70);
+                        }
+                        isRunning.value = false;
+                        controller.update();
+                      },
+                      child: isRunning.value == false
+                          ? const Icon(Icons.play_circle_outline,
+                              color: Colors.green)
+                          : const GFLoader(size: 20),
+                    );
+                  })
+                : const SizedBox.shrink(),
           ),
         ),
       );
