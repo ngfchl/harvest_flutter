@@ -1,3 +1,4 @@
+import 'package:app_service/app_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
@@ -52,7 +53,7 @@ class HomeView extends GetView<HomeController> {
         child: GFDrawer(
           semanticLabel: 'Harvest',
           elevation: 10,
-          color: Colors.grey.shade500,
+          color: Colors.black87,
           child: ListView(
             padding: EdgeInsets.zero,
             children: [
@@ -87,9 +88,7 @@ class HomeView extends GetView<HomeController> {
                     children: <Widget>[
                       Text(
                         controller.userinfo['user'],
-                        style: const TextStyle(
-                          color: Colors.white70,
-                        ),
+                        style: const TextStyle(color: Colors.white70),
                       ),
                       // Text('admin@admin.com'),
                       Text(
@@ -103,13 +102,14 @@ class HomeView extends GetView<HomeController> {
               ),
               ListTile(
                 title: const Text(
-                  '数据图表',
-                  style: TextStyle(
-                    color: Colors.white70,
-                  ),
+                  '豆瓣影视',
+                  style: TextStyle(color: Colors.white70),
                   textAlign: TextAlign.center,
                 ),
-                onTap: () {},
+                onTap: () {
+                  Get.back();
+                  controller.pageController.jumpToPage(11);
+                },
               ),
               ListTile(
                 title: const Text(
@@ -119,9 +119,11 @@ class HomeView extends GetView<HomeController> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                onTap: () {},
+                onTap: () {
+                  Get.back();
+                  controller.changePage(1);
+                },
               ),
-
               ListTile(
                 title: const Text(
                   '计划任务',
@@ -131,7 +133,8 @@ class HomeView extends GetView<HomeController> {
                   textAlign: TextAlign.center,
                 ),
                 onTap: () {
-                  controller.changePage(5);
+                  Get.back();
+                  controller.changePage(4);
                 },
               ),
               ListTile(
@@ -142,7 +145,10 @@ class HomeView extends GetView<HomeController> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                onTap: () {},
+                onTap: () {
+                  Get.back();
+                  controller.changePage(3);
+                },
               ),
               ListTile(
                 title: const Text(
@@ -162,18 +168,24 @@ class HomeView extends GetView<HomeController> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                onTap: () {},
+                onTap: () {
+                  Get.back();
+                  controller.pageController.jumpToPage(7);
+                },
               ),
-              // ListTile(
-              //   title: const Text(
-              //     '支持站点',
-              //     style: TextStyle(
-              //       color: Colors.white70,
-              //     ),
-              //     textAlign: TextAlign.center,
-              //   ),
-              //   onTap: () {},
-              // ),
+              ListTile(
+                title: const Text(
+                  '订阅历史',
+                  style: TextStyle(
+                    color: Colors.white70,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                onTap: () {
+                  Get.back();
+                  controller.pageController.jumpToPage(9);
+                },
+              ),
               ListTile(
                 title: const Text(
                   '标签管理',
@@ -182,9 +194,11 @@ class HomeView extends GetView<HomeController> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                onTap: () {},
+                onTap: () {
+                  Get.back();
+                  controller.pageController.jumpToPage(8);
+                },
               ),
-
               ListTile(
                 title: const Text(
                   'RSS订阅',
@@ -193,7 +207,10 @@ class HomeView extends GetView<HomeController> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                onTap: () {},
+                onTap: () {
+                  Get.back();
+                  controller.pageController.jumpToPage(6);
+                },
               ),
               ListTile(
                 title: const Text(
@@ -224,7 +241,7 @@ class HomeView extends GetView<HomeController> {
           ),
         ),
       ),
-      drawerEdgeDragWidth: 200,
+      drawerEdgeDragWidth: 280,
       drawerEnableOpenDragGesture: false,
       drawerScrimColor: Colors.white.withOpacity(0.6),
       // floatingActionButton: GFIconButton(
@@ -259,6 +276,10 @@ class HomeView extends GetView<HomeController> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
+        // const Wen(),
+        const ThemeModal(
+          itemSize: 28,
+        ),
         GFIconButton(
           icon: Icon(
             Icons.exit_to_app,
