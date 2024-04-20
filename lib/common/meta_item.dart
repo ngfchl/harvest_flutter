@@ -1,6 +1,6 @@
 class MetaDataItem {
   final String name;
-  final String value;
+  final dynamic value;
 
   MetaDataItem({
     required this.name,
