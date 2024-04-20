@@ -693,12 +693,16 @@ class TorrentController extends GetxController {
           cookie: data['cookie'],
           category: data['category'],
           paused: data['paused'],
-          rootFolder: data['rootFolder'],
+          rootFolder: data['rootFolder'] == true
+              ? data['rootFolder']
+              : configuration?.createSubfolderEnabled,
           rename: data['rename'],
           upLimit: data['upLimit'],
           dlLimit: data['dlLimit'],
           ratioLimit: data['ratioLimit'].toDouble(),
-          autoTMM: data['autoTMM'],
+          autoTMM: data['autoTMM'] == true
+              ? data['autoTMM']
+              : configuration?.autoTmmEnabled,
           firstLastPiecePrio: data['firstLastPiecePrio'],
         );
       } else {
