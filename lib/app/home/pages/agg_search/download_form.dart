@@ -98,20 +98,7 @@ class DownloadForm extends StatelessWidget {
               Obx(() {
                 return SwitchListTile(
                     dense: true,
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text(
-                      '高级选项',
-                      style: TextStyle(fontSize: 12, color: Colors.black54),
-                    ),
-                    value: advancedConfig.value,
-                    onChanged: (bool val) {
-                      advancedConfig.value = val;
-                    });
-              }),
-              Obx(() {
-                return SwitchListTile(
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                     title: const Text(
                       '暂停下载',
                       style: TextStyle(fontSize: 12, color: Colors.black54),
@@ -121,51 +108,76 @@ class DownloadForm extends StatelessWidget {
                       paused.value = val;
                     });
               }),
-              if (downloader.category.toLowerCase() == 'qb')
-                Obx(() {
-                  return SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                      title: const Text(
-                        '内容布局',
-                        style: TextStyle(fontSize: 12, color: Colors.black54),
-                      ),
-                      value: rootFolder.value,
-                      onChanged: (bool val) {
-                        rootFolder.value = val;
-                      });
-                }),
-              if (downloader.category.toLowerCase() == 'qb')
-                Obx(() {
-                  return SwitchListTile(
-                      dense: true,
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text(
-                        '自动管理',
-                        style: TextStyle(fontSize: 12, color: Colors.black54),
-                      ),
-                      value: autoTMM.value,
-                      onChanged: (bool val) {
-                        autoTMM.value = val;
-                      });
-                }),
+              Obx(() {
+                return SwitchListTile(
+                    dense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                    title: const Text(
+                      '高级选项',
+                      style: TextStyle(fontSize: 12, color: Colors.black54),
+                    ),
+                    value: advancedConfig.value,
+                    onChanged: (bool val) {
+                      advancedConfig.value = val;
+                    });
+              }),
+
               Obx(() {
                 return advancedConfig.value
                     ? Column(
                         children: [
                           if (downloader.category.toLowerCase() == 'qb')
-                            SwitchListTile(
-                                dense: true,
-                                contentPadding: EdgeInsets.zero,
-                                title: const Text(
-                                  '优先下载首尾数据块',
-                                  style: TextStyle(
-                                      fontSize: 12, color: Colors.black54),
-                                ),
-                                value: firstLastPiecePrio.value,
-                                onChanged: (bool val) {
-                                  firstLastPiecePrio.value = val;
+                            Column(
+                              children: [
+                                Obx(() {
+                                  return SwitchListTile(
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 8),
+                                      dense: true,
+                                      title: const Text(
+                                        '内容布局',
+                                        style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.black54),
+                                      ),
+                                      value: rootFolder.value,
+                                      onChanged: (bool val) {
+                                        rootFolder.value = val;
+                                      });
                                 }),
+                                Obx(() {
+                                  return SwitchListTile(
+                                      dense: true,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 8),
+                                      title: const Text(
+                                        '自动管理',
+                                        style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.black54),
+                                      ),
+                                      value: autoTMM.value,
+                                      onChanged: (bool val) {
+                                        autoTMM.value = val;
+                                      });
+                                }),
+                                SwitchListTile(
+                                    dense: true,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 8),
+                                    title: const Text(
+                                      '优先下载首尾数据块',
+                                      style: TextStyle(
+                                          fontSize: 12, color: Colors.black54),
+                                    ),
+                                    value: firstLastPiecePrio.value,
+                                    onChanged: (bool val) {
+                                      firstLastPiecePrio.value = val;
+                                    }),
+                              ],
+                            ),
                           CustomTextField(
                             controller: cookieController,
                             labelText: ' Cookie',
