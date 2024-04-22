@@ -63,7 +63,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                       ),
                       onSubmitted: (value) {
                         controller.searchKey = value;
-                        controller.doSearch();
+                        controller.doWebsocketSearch();
                       },
                     ),
                   ),
@@ -100,7 +100,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                             await controller.cancelSearch();
                           } else {
                             controller.searchKey = searchKeyController.text;
-                            controller.doSearch();
+                            controller.doWebsocketSearch();
                           }
                         },
                         style: OutlinedButton.styleFrom(
@@ -607,8 +607,8 @@ class _AggSearchPageState extends State<AggSearchPage>
         .toList();
     List<int> selectedNumbers =
         getRandomIndices(whereToSearch.length, controller.maxCount);
-    LoggerHelper.Logger.instance.i(selectedNumbers);
     controller.sites.addAll(selectedNumbers.map((e) => whereToSearch[e].id));
+    LoggerHelper.Logger.instance.i(controller.sites);
     controller.update();
   }
 

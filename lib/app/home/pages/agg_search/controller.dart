@@ -5,7 +5,10 @@ import 'package:flutter_client_sse/flutter_client_sse.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:harvest/api/api.dart';
+import 'package:harvest/models/common_response.dart';
 import 'package:harvest/utils/logger_helper.dart' as LoggerHelper;
+import 'package:web_socket_channel/status.dart' as status;
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../../../models/authinfo.dart';
 import '../../../../models/download.dart';
@@ -18,7 +21,7 @@ import 'models/torrent_info.dart';
 class AggSearchController extends GetxController {
   MySiteController mySiteController = Get.find();
   DownloadController downloadController = Get.find();
-
+  late WebSocketChannel channel;
   String searchKey = '';
   String filterKey = '';
   String sortKey = '';
@@ -141,10 +144,72 @@ class AggSearchController extends GetxController {
     update();
   }
 
-  cancelSearch() async {
+  cancelSearch() {
     isLoading = false;
     SSEClient.unsubscribeFromSSE();
+    channel.sink.close(status.goingAway);
     update();
+  }
+
+  doWebsocketSearch() async {
+    // 打开加载状态
+    isLoading = true;
+    // 清空搜索记录
+    initSearchResult();
+
+    // 初始化站点数据
+    if (mySiteMap.isEmpty) {
+      LoggerHelper.Logger.instance.w('重新加载站点列表');
+      await initData();
+    }
+
+    String baseUrl = box.read('server');
+    final wsUrl =
+        Uri.parse('${baseUrl.replaceFirst('http', 'ws')}/api/ws/search');
+    channel = WebSocketChannel.connect(wsUrl);
+
+    await channel.ready;
+    channel.sink.add(json.encode({
+      "key": searchKey,
+      "max_count": maxCount,
+      "sites": sites,
+    }));
+    channel.stream.listen((message) {
+      CommonResponse response =
+          CommonResponse.fromJson(json.decode(message), (p0) => p0);
+      LoggerHelper.Logger.instance.i(response.msg);
+      if (response.code == 0) {
+        List<SearchTorrentInfo> torrentInfoList =
+            List<Map<String, dynamic>>.from(response.data)
+                .map((jsonItem) => SearchTorrentInfo.fromJson(jsonItem))
+                .toList();
+        // 写入种子列表
+        searchResults.addAll(torrentInfoList);
+        hrResultList
+            .addAll(torrentInfoList.where((element) => element.hr).toList());
+        // 获取种子分类，并去重
+        succeedCategories
+            .addAll(torrentInfoList.map((e) => e.category).toList());
+        succeedCategories = succeedCategories.toSet().toList();
+        saleStatusList
+            .addAll(torrentInfoList.map((e) => e.saleStatus).toList());
+        saleStatusList = saleStatusList.toSet().toList();
+        // 写入有数据的站点
+        succeedSiteList.add(torrentInfoList[0].siteId);
+        searchMsg.insert(0, {"success": true, "msg": response.msg});
+        filterResults();
+        update();
+      } else {
+        searchMsg.add({"success": false, "msg": response.msg});
+        update();
+      }
+    }, onError: (err) {
+      LoggerHelper.Logger.instance.e('搜索出错啦： ${err.toString()}');
+      cancelSearch();
+    }, onDone: () {
+      LoggerHelper.Logger.instance.e('搜索完成啦！');
+      cancelSearch();
+    });
   }
 
   doSearch() async {
@@ -176,15 +241,15 @@ class AggSearchController extends GetxController {
           "max_count": maxCount,
           "sites": sites,
         }).listen((event) {
-      Map<String, dynamic> jsonData = json.decode(event.data!);
-      LoggerHelper.Logger.instance.w(event.data!);
-      if (jsonData['code'] == 0) {
-        try {
-          List<Map<String, dynamic>> jsonList =
-              jsonData['data'].cast<Map<String, dynamic>>();
-          List<SearchTorrentInfo> torrentInfoList = jsonList
-              .map((jsonItem) => SearchTorrentInfo.fromJson(jsonItem))
-              .toList();
+      try {
+        Map<String, dynamic> jsonData = json.decode(event.data!);
+        CommonResponse response = CommonResponse.fromJson(jsonData, (p0) => p0);
+        LoggerHelper.Logger.instance.i(response.msg);
+        if (response.code == 0) {
+          List<SearchTorrentInfo> torrentInfoList =
+              List<Map<String, dynamic>>.from(response.data)
+                  .map((jsonItem) => SearchTorrentInfo.fromJson(jsonItem))
+                  .toList();
           // 写入种子列表
           searchResults.addAll(torrentInfoList);
           hrResultList
@@ -198,38 +263,24 @@ class AggSearchController extends GetxController {
           saleStatusList = saleStatusList.toSet().toList();
           // 写入有数据的站点
           succeedSiteList.add(torrentInfoList[0].siteId);
-          searchMsg.insert(0, {
-            "success": true,
-            "msg": jsonData['msg'],
-          });
+          searchMsg.insert(0, {"success": true, "msg": response.msg});
           filterResults();
-          update();
-        } catch (e, trace) {
-          LoggerHelper.Logger.instance.e(e.toString());
-          LoggerHelper.Logger.instance.e(trace.toString());
-          isLoading = false;
-          SSEClient.unsubscribeFromSSE();
-          update();
+        } else {
+          searchMsg.add({"success": false, "msg": response.msg});
         }
-      } else {
-        searchMsg.add({
-          "success": false,
-          "msg": jsonData['msg'],
-        });
         update();
+      } catch (e, trace) {
+        LoggerHelper.Logger.instance.e(e.toString());
+        LoggerHelper.Logger.instance.e(trace.toString());
+        cancelSearch();
       }
     }, onError: (err) {
-      isLoading = false;
-      SSEClient.unsubscribeFromSSE();
       LoggerHelper.Logger.instance.e('搜索出错啦： ${err.toString()}');
-      update();
+      cancelSearch();
     }, onDone: () {
-      isLoading = false;
-      SSEClient.unsubscribeFromSSE();
       LoggerHelper.Logger.instance.e('搜索完成啦！');
+      cancelSearch();
     });
-
-    update();
   }
 
   void initSearchResult() {
