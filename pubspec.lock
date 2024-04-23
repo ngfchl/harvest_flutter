@@ -366,6 +366,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.9"
+  flutter_popup:
+    dependency: "direct main"
+    description:
+      name: flutter_popup
+      sha256: "8d653ebb04f0e334797aeb5b49eaf7653c57012e1a7cdeac09297dacf79a6524"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.3.0"
   flutter_settings_ui:
     dependency: transitive
     description:
@@ -589,10 +597,10 @@ packages:
     dependency: "direct main"
     description:
       name: package_info_plus
-      sha256: "2c582551839386fa7ddbc7770658be7c0f87f388a4bff72066478f597c34d17f"
+      sha256: b93d8b4d624b4ea19b0a5a208b2d6eff06004bc3ce74c06040b120eeadd00ce0
       url: "https://pub.dev"
     source: hosted
-    version: "7.0.0"
+    version: "8.0.0"
   package_info_plus_platform_interface:
     dependency: transitive
     description:
@@ -781,10 +789,10 @@ packages:
     dependency: "direct main"
     description:
       name: qbittorrent_api
-      sha256: "36113bfcee6da24d05762d010e5b52bf1844a701ee492649b8be37ded0ef8fb9"
+      sha256: abbd565285d3249a5c92908edd5ec59790aa9937b2363c434202fee5f9cbf884
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.6"
+    version: "1.0.7"
   random_color:
     dependency: "direct main"
     description:
