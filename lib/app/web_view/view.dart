@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
+import 'package:harvest/api/mysite.dart';
 import 'package:harvest/utils/logger_helper.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -25,6 +26,7 @@ class _WebViewPageState extends State<WebViewPage> {
   Widget build(BuildContext context) {
     final GlobalKey webViewKey = GlobalKey();
     InAppWebViewController? webController;
+    final cookieManager = CookieManager.instance();
     String domain = Uri.parse(controller.url).host;
     List<String> cookieList = controller.mySite != null
         ? controller.mySite!.cookie!.split(';').map((item) {
@@ -43,7 +45,8 @@ class _WebViewPageState extends State<WebViewPage> {
           if (controller.info != null)
             GFIconButton(
               icon: const Icon(
-                Icons.link,
+                Icons.link_outlined,
+                size: 24,
               ),
               onPressed: () async {
                 Uri uri = Uri.parse(controller.info!.magnetUrl);
@@ -55,7 +58,10 @@ class _WebViewPageState extends State<WebViewPage> {
             ),
           if (controller.info != null)
             GFIconButton(
-              icon: const Icon(Icons.download),
+              icon: const Icon(
+                Icons.download_outlined,
+                size: 24,
+              ),
               onPressed: () {
                 openDownloaderListSheet(context, controller.info!);
               },
@@ -63,7 +69,8 @@ class _WebViewPageState extends State<WebViewPage> {
             ),
           GFIconButton(
             icon: const Icon(
-              Icons.travel_explore,
+              Icons.travel_explore_outlined,
+              size: 24,
             ),
             onPressed: () async {
               Uri uri = Uri.parse(controller.url);
@@ -73,9 +80,44 @@ class _WebViewPageState extends State<WebViewPage> {
             },
             type: GFButtonType.transparent,
           ),
+          if (controller.mySite != null)
+            GFIconButton(
+              icon: const Icon(
+                Icons.cookie_outlined,
+                size: 24,
+              ),
+              onPressed: () async {
+                List<Cookie> cookies =
+                    await cookieManager.getCookies(url: WebUri(controller.url));
+                String cookieStr =
+                    cookies.map((e) => '${e.name}=${e.value}').join('; ');
+                Logger.instance.w(cookieStr);
+                controller.mySite?.cookie = cookieStr;
+                final response = await editMySite(controller.mySite!);
+                if (response.code == 0) {
+                  Get.snackbar(
+                    '保存成功！',
+                    response.msg!,
+                    snackPosition: SnackPosition.TOP,
+                    backgroundColor: Colors.green.shade400,
+                    duration: const Duration(seconds: 3),
+                  );
+                } else {
+                  Get.snackbar(
+                    '保存出错啦！',
+                    response.msg!,
+                    snackPosition: SnackPosition.TOP,
+                    backgroundColor: Colors.red.shade400,
+                    duration: const Duration(seconds: 3),
+                  );
+                }
+              },
+              type: GFButtonType.transparent,
+            ),
           GFIconButton(
             icon: const Icon(
               Icons.refresh,
+              size: 24,
             ),
             onPressed: () {
               webController?.reload();
