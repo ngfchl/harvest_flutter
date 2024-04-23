@@ -43,6 +43,34 @@ signIn(int? mySiteId) async {
   }
 }
 
+/// PTPP 导入
+importFromPTPPApi() async {
+  final response = await DioUtil().get(
+    Api.IMPORT_COOKIE_PTPP,
+  );
+  if (response.statusCode == 200) {
+    Logger.instance.w(response.data);
+    return CommonResponse.fromJson(response.data, (p0) => null);
+  } else {
+    String msg = 'PTPP 导入失败！: ${response.statusCode}';
+    return CommonResponse(data: null, code: -1, msg: msg);
+  }
+}
+
+/// CookieCloud 同步
+importFromCookieCloudApi() async {
+  final response = await DioUtil().get(
+    Api.IMPORT_COOKIE_CLOUD,
+  );
+  if (response.statusCode == 200) {
+    Logger.instance.w(response.data);
+    return CommonResponse.fromJson(response.data, (p0) => null);
+  } else {
+    String msg = 'CookieCloud 同步失败！: ${response.statusCode}';
+    return CommonResponse(data: null, code: -1, msg: msg);
+  }
+}
+
 /// 更新当前站点数据
 getNewestStatus(int? mySiteId) async {
   final response = await DioUtil().get(

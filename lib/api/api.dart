@@ -17,6 +17,12 @@ class Api {
   // 搜索
   static const String WEBSITE_SEARCH = "mysite/search";
 
+  // PTPP
+  static const String IMPORT_COOKIE_PTPP = "mysite/cookie/ptpp";
+
+  // CookieCloud
+  static const String IMPORT_COOKIE_CLOUD = "mysite/search";
+
   // 通知测试
   static const String NOTIFY_TEST = "option/test";
 
