@@ -1,5 +1,6 @@
 import 'package:app_service/app_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:harvest/api/mysite.dart';
@@ -36,7 +37,7 @@ class HomeView extends GetView<HomeController> {
         // ),
 
         actions: <Widget>[
-          _actionButtonList(),
+          _actionButtonList(context),
         ],
       ),
       body: PageView(
@@ -272,7 +273,7 @@ class HomeView extends GetView<HomeController> {
     );
   }
 
-  Widget _actionButtonList() {
+  Widget _actionButtonList(context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -291,65 +292,132 @@ class HomeView extends GetView<HomeController> {
           },
           type: GFButtonType.transparent,
         ),
-
-        IconButton(
-          icon: const Icon(
-            Icons.grading,
-            size: 22,
+        CustomPopup(
+          showArrow: false,
+          // contentPadding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+          barrierColor: Colors.transparent,
+          content: SizedBox(
+            width: 100,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                PopupMenuItem<String>(
+                  child: const Text('全员签到'),
+                  onTap: () async {
+                    await signAllSiteButton();
+                  },
+                ),
+                PopupMenuItem<String>(
+                  child: const Text('站点数据'),
+                  onTap: () async {
+                    await getAllStatusButton();
+                  },
+                ),
+                PopupMenuItem<String>(
+                  child: const Text('PTPP'),
+                  onTap: () async {
+                    await importFromPTPP();
+                  },
+                ),
+                PopupMenuItem<String>(
+                  child: const Text('CC 同步'),
+                  onTap: () async {
+                    await importFromCookieCloud();
+                  },
+                ),
+              ],
+            ),
           ),
-          color: Colors.teal.withOpacity(0.7),
-          // type: GFButtonType.transparent,
-          onPressed: () async {
-            final res = await signIn(null);
-            Get.back();
-            if (res.code == 0) {
-              Get.snackbar(
-                '签到任务',
-                '签到任务信息：${res.msg}',
-                colorText: Colors.white,
-                backgroundColor: Colors.green.withOpacity(0.7),
-              );
-            } else {
-              Get.snackbar(
-                '签到失败',
-                '签到任务执行出错啦：${res.msg}',
-                colorText: Colors.white,
-                backgroundColor: Colors.red.withOpacity(0.7),
-              );
-            }
-          },
+          child: Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: Icon(
+              Icons.add_box_outlined,
+              size: 24,
+              color: Colors.blue.shade800,
+            ),
+          ),
         ),
-        IconButton(
-          icon: Icon(Icons.insert_chart_outlined,
-              size: 22, color: Colors.indigo.shade400),
-          onPressed: () async {
-            final res = await getNewestStatus(null);
-            Get.back();
-            if (res.code == 0) {
-              Get.snackbar(
-                '更新数据',
-                '更新数据任务信息：${res.msg}',
-                colorText: Colors.white,
-                backgroundColor: Colors.green.withOpacity(0.7),
-              );
-            } else {
-              Get.snackbar(
-                '更新数据',
-                '更新数据执行出错啦：${res.msg}',
-                colorText: Colors.white,
-                backgroundColor: Colors.red.withOpacity(0.7),
-              );
-            }
-          },
-        ),
-        // GFButton(
-        //   color: GFColors.WARNING,
-        //   onPressed: () {
-        //     Get.snackbar("提示", '开发中');
-        //   },
-        //   text: '一键辅种',
-        // ),
       ],
     );
+  }
+
+  Future<void> signAllSiteButton() async {
+    final res = await signIn(null);
+    Get.back();
+    if (res.code == 0) {
+      Get.snackbar(
+        '签到任务',
+        '签到任务信息：${res.msg}',
+        colorText: Colors.white,
+        backgroundColor: Colors.green.withOpacity(0.7),
+      );
+    } else {
+      Get.snackbar(
+        '签到失败',
+        '签到任务执行出错啦：${res.msg}',
+        colorText: Colors.white,
+        backgroundColor: Colors.red.withOpacity(0.7),
+      );
+    }
+  }
+
+  Future<void> importFromPTPP() async {
+    final res = await importFromPTPPApi();
+    Get.back();
+    if (res.code == 0) {
+      Get.snackbar(
+        'PTPP导入任务',
+        'PTPP导入任务信息：${res.msg}',
+        colorText: Colors.white,
+        backgroundColor: Colors.green.withOpacity(0.7),
+      );
+    } else {
+      Get.snackbar(
+        'PTPP导入任务失败',
+        'PTPP导入任务执行出错啦：${res.msg}',
+        colorText: Colors.white,
+        backgroundColor: Colors.red.withOpacity(0.7),
+      );
+    }
+  }
+
+  Future<void> importFromCookieCloud() async {
+    final res = await importFromCookieCloudApi();
+    Get.back();
+    if (res.code == 0) {
+      Get.snackbar(
+        'CookieCloud任务',
+        'CookieCloud任务信息：${res.msg}',
+        colorText: Colors.white,
+        backgroundColor: Colors.green.withOpacity(0.7),
+      );
+    } else {
+      Get.snackbar(
+        'CookieCloud失败',
+        'CookieCloud任务执行出错啦：${res.msg}',
+        colorText: Colors.white,
+        backgroundColor: Colors.red.withOpacity(0.7),
+      );
+    }
+  }
+
+  Future<void> getAllStatusButton() async {
+    final res = await getNewestStatus(null);
+    Get.back();
+    if (res.code == 0) {
+      Get.snackbar(
+        '更新数据',
+        '更新数据任务信息：${res.msg}',
+        colorText: Colors.white,
+        backgroundColor: Colors.green.withOpacity(0.7),
+      );
+    } else {
+      Get.snackbar(
+        '更新数据',
+        '更新数据执行出错啦：${res.msg}',
+        colorText: Colors.white,
+        backgroundColor: Colors.red.withOpacity(0.7),
+      );
+    }
   }
 }
