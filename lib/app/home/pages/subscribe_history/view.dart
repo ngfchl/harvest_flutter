@@ -122,7 +122,7 @@ class _SubscribeHistoryPageState extends State<SubscribeHistoryPage> {
         children: [
           ListTile(
             dense: true,
-            title: Text('${history.subscribe?.name!}'),
+            title: Text('${history.subscribe?.name}'),
             subtitle: Text(
               history.site!.site.toString(),
               style: const TextStyle(fontSize: 10, color: Colors.black54),
