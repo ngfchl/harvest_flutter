@@ -10,7 +10,7 @@ class SearchTorrentInfo {
   String saleStatus;
   DateTime? saleExpire;
   bool hr;
-  DateTime published;
+  dynamic published;
   int size;
   int seeders;
   int leechers;
@@ -36,21 +36,28 @@ class SearchTorrentInfo {
   });
 
   factory SearchTorrentInfo.fromJson(Map<String, dynamic> json) {
+    dynamic published;
+    try {
+      published = DateTime.parse(json['published']);
+    } catch (e) {
+      published = json['published'];
+    }
+
     return SearchTorrentInfo(
       siteId: json['site_id'],
       tid: json['tid'],
       poster: json['poster'],
-      category: json['category'],
+      category: json['category'] ?? '无分类',
       magnetUrl: json['magnet_url'],
       detailUrl: json['detail_url'],
       title: json['title'],
       subtitle: json['subtitle'],
-      saleStatus: json['sale_status'],
+      saleStatus: json['sale_status'] ?? '无优惠',
       saleExpire: json['sale_expire'] != null
           ? DateTime.parse(json['sale_expire'])
           : null,
-      hr: json['hr'],
-      published: DateTime.parse(json['published']),
+      hr: json['hr'] ?? false,
+      published: published,
       size: json['size'],
       seeders: json['seeders'],
       leechers: json['leechers'],

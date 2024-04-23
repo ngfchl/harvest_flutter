@@ -53,19 +53,39 @@ class _AggSearchPageState extends State<AggSearchPage>
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
                     child: TextField(
                       controller: searchKeyController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         isDense: true,
                         hintText: '请输入搜索关键字',
+                        hintStyle: const TextStyle(fontSize: 14),
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 5),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide.none,
+                          // 不绘制边框
+                          borderRadius: BorderRadius.circular(0.0),
+                          // 确保角落没有圆角
+                          gapPadding: 0.0, // 移除边框与hintText之间的间距
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide:
+                              const BorderSide(width: 1.0, color: Colors.black),
+                          // 仅在聚焦时绘制底部边框
+                          borderRadius: BorderRadius.circular(0.0),
+                        ),
                       ),
                       onSubmitted: (value) {
                         controller.searchKey = value;
                         controller.doWebsocketSearch();
                       },
                     ),
+                  ),
+                  const SizedBox(
+                    width: 5,
                   ),
                   ElevatedButton.icon(
                     onPressed: () {
@@ -354,8 +374,10 @@ class _AggSearchPageState extends State<AggSearchPage>
                         width: 2,
                       ),
                       Text(
-                        DateFormat('yyyy-MM-dd HH:mm:ss')
-                            .format(info.published),
+                        info.published is DateTime
+                            ? DateFormat('yyyy-MM-dd HH:mm:ss')
+                                .format(info.published)
+                            : info.published.toString(),
                         style: const TextStyle(
                           color: Colors.black38,
                           fontSize: 10,
@@ -463,7 +485,11 @@ class _AggSearchPageState extends State<AggSearchPage>
   }
 
   _openSiteSheet() {
-    controller.mySiteController.mySiteList.shuffle();
+    controller.mySiteController.mySiteList
+        .sort((a, b) => a.nickname.compareTo(b.nickname));
+    List<MySite> canSearchList = controller.mySiteController.mySiteList
+        .where((element) => element.available && element.searchTorrents)
+        .toList();
     Get.bottomSheet(SizedBox(
       width: double.infinity,
       child: CustomCard(
@@ -476,13 +502,12 @@ class _AggSearchPageState extends State<AggSearchPage>
                   children: [
                     ElevatedButton(
                         onPressed: () {
-                          controller.sites.clear();
-                          controller.sites.addAll(controller
-                              .mySiteController.mySiteList
-                              .where((element) => element.searchTorrents)
-                              .map((e) => e.id)
-                              .toList());
-
+                          if (controller.sites.isEmpty) {
+                            controller.sites.addAll(
+                                canSearchList.map((e) => e.id).toList());
+                          } else {
+                            controller.sites.clear();
+                          }
                           controller.update();
                         },
                         style: OutlinedButton.styleFrom(
@@ -491,19 +516,34 @@ class _AggSearchPageState extends State<AggSearchPage>
                             borderRadius: BorderRadius.circular(8.0), // 圆角半径
                           ),
                         ),
-                        child: const Text(
-                          '全选',
-                          style: TextStyle(color: Colors.white),
+                        child: Text(
+                          '${controller.sites.isEmpty ? '全选' : '清除'} ${canSearchList.length}',
+                          style: const TextStyle(color: Colors.white),
                         )),
+                    GetBuilder<AggSearchController>(builder: (controller) {
+                      return ElevatedButton(
+                          onPressed: () {
+                            _getRandomSites();
+                          },
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: Colors.purple,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0), // 圆角半径
+                            ),
+                          ),
+                          child: const Text(
+                            '随机',
+                            style: TextStyle(color: Colors.white),
+                          ));
+                    }),
                     GetBuilder<AggSearchController>(builder: (controller) {
                       return Row(
                         children: [
                           InkWell(
                             child: const Icon(Icons.remove),
                             onTap: () {
-                              if (controller.maxCount > 1) {
+                              if (controller.maxCount > 0) {
                                 controller.maxCount--;
-                                _getRandomSites();
                               }
                               controller.update();
                             },
@@ -513,47 +553,37 @@ class _AggSearchPageState extends State<AggSearchPage>
                               controller.update();
                             },
                           ),
-                          GetBuilder<AggSearchController>(
-                              builder: (controller) {
-                            return ElevatedButton(
-                                onPressed: () {
-                                  _getRandomSites();
-                                },
-                                style: OutlinedButton.styleFrom(
-                                  backgroundColor: Colors.purple,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(8.0), // 圆角半径
-                                  ),
+                          ElevatedButton(
+                              onPressed: () {
+                                controller.sites.clear();
+                                controller.update();
+                              },
+                              style: OutlinedButton.styleFrom(
+                                backgroundColor: Colors.amber,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(8.0), // 圆角半径
                                 ),
-                                child: Text(
-                                  '随机 ${controller.maxCount}',
-                                  style: const TextStyle(color: Colors.white),
-                                ));
-                          }),
-                          IconButton(
-                            icon: const Icon(Icons.add),
-                            onPressed: () {
-                              controller.maxCount++;
-                              _getRandomSites();
+                              ),
+                              child: Text('搜索站点数${controller.maxCount}')),
+                          InkWell(
+                            child: const Icon(Icons.add),
+                            onTap: () {
+                              if (controller.maxCount < canSearchList.length) {
+                                controller.maxCount++;
+                                controller.update();
+                              }
+                            },
+                            onLongPress: () {
+                              controller.maxCount = canSearchList.length;
+                              controller.sites
+                                  .addAll(canSearchList.map((e) => e.id));
                               controller.update();
                             },
                           ),
                         ],
                       );
                     }),
-                    ElevatedButton(
-                        onPressed: () {
-                          controller.sites.clear();
-                          controller.update();
-                        },
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor: Colors.amber,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0), // 圆角半径
-                          ),
-                        ),
-                        child: const Text('清除')),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -561,9 +591,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                   return Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: controller.mySiteController.mySiteList
-                        .where((element) => element.searchTorrents)
-                        .map((MySite mySite) {
+                    children: canSearchList.map((MySite mySite) {
                       WebSite? webSite =
                           controller.mySiteController.webSiteList[mySite.site];
                       if (webSite == null || !webSite.searchTorrents) {
@@ -603,7 +631,7 @@ class _AggSearchPageState extends State<AggSearchPage>
     controller.sites.clear();
     // 创建一个随机数生成器
     var whereToSearch = controller.mySiteController.mySiteList
-        .where((element) => element.searchTorrents)
+        .where((element) => element.available && element.searchTorrents)
         .toList();
     List<int> selectedNumbers =
         getRandomIndices(whereToSearch.length, controller.maxCount);
