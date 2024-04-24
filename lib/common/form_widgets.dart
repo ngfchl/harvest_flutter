@@ -47,6 +47,7 @@ class CustomTextField extends StatelessWidget {
   final List<TextInputFormatter> inputFormatters;
   final TextInputType? keyboardType;
   final int? maxLines;
+  final Function(String)? onChanged;
 
   const CustomTextField({
     super.key,
@@ -58,6 +59,7 @@ class CustomTextField extends StatelessWidget {
     this.helperText,
     this.prefixText,
     this.suffixText,
+    this.onChanged,
   });
 
   @override
@@ -66,6 +68,7 @@ class CustomTextField extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8),
       child: TextField(
         controller: controller,
+        onChanged: onChanged,
         maxLines: maxLines,
         inputFormatters: inputFormatters,
         style: const TextStyle(fontSize: 13, color: Colors.black54),
