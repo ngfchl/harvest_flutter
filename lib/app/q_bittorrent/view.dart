@@ -7,6 +7,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:harvest/common/card_view.dart';
+import 'package:harvest/common/form_widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -405,6 +406,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
               ),
             ),
             onPressed: () {
+              TextEditingController searchKey = TextEditingController();
               Get.bottomSheet(
                 SizedBox(
                   width: double.infinity,
@@ -417,12 +419,23 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                           icon: Icon(Icons.language),
                           dividerWidth: 108,
                         ),
+                        CustomTextField(
+                          controller: searchKey,
+                          labelText: '筛选',
+                          onChanged: (String value) {
+                            searchKey.text = value;
+                            controller.update();
+                          },
+                        ),
                         SizedBox(
                           height: 400,
                           child: GetBuilder<QBittorrentController>(
                               builder: (controller) {
-                            List<String> keys =
-                                controller.trackers.keys.toList();
+                            List<String> keys = controller.trackers.keys
+                                .where((element) => element
+                                    .toLowerCase()
+                                    .contains(searchKey.text.toLowerCase()))
+                                .toList();
                             keys.sort((a, b) => a.compareTo(b));
                             return ListView.builder(
                                 shrinkWrap: true,
