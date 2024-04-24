@@ -191,6 +191,7 @@ class CustomTextTag extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           icon ?? const SizedBox.shrink(),
+          if (icon != null) const SizedBox(width: 2),
           Text(
             labelText,
             style: TextStyle(fontSize: 10, color: labelColor),
