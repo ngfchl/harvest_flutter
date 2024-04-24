@@ -24,6 +24,13 @@ bool isToday(String dateString) {
       parsedDate.day == today.day;
 }
 
+/// 给一个时间戳计算时长
+calcDurationFromTimeStamp(int timestamp) {
+  return formatDuration(DateTime.now()
+      .difference(DateTime.fromMillisecondsSinceEpoch(timestamp * 1000))
+      .inSeconds);
+}
+
 /// 时长处理
 String formatDuration(int seconds) {
   Duration duration = Duration(seconds: seconds);
