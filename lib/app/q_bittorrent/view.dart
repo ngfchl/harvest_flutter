@@ -421,17 +421,19 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                           height: 400,
                           child: GetBuilder<QBittorrentController>(
                               builder: (controller) {
+                            List<String> keys =
+                                controller.trackers.keys.toList();
+                            keys.sort((a, b) => a.compareTo(b));
                             return ListView.builder(
                                 shrinkWrap: true,
-                                itemCount: controller.trackers.keys.length,
+                                itemCount: keys.length,
                                 itemBuilder: (context, index) {
-                                  String? key =
-                                      controller.trackers.keys.toList()[index];
+                                  String? key = keys[index];
                                   List<String>? hashList =
                                       controller.trackers[key];
                                   return ListTile(
                                     title: Text(
-                                      '$key(${key == 'all' ? controller.allTorrents.length : hashList?.length})',
+                                      '$key(${key == '0All' ? controller.allTorrents.length : hashList?.length})',
                                     ),
                                     style: ListTileStyle.list,
                                     selected: controller.selectedTracker == key,
@@ -665,23 +667,27 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                 children: [
                   Row(
                     children: [
-                      if (torrentInfo.tracker!.isNotEmpty)
-                        Row(children: [
-                          const Icon(
-                            Icons.link,
-                            size: 10,
-                          ),
-                          Text(
-                            Uri.parse(torrentInfo.tracker!).host,
-                            style: const TextStyle(
-                                fontSize: 10,
-                                color: Colors.black38,
-                                fontWeight: FontWeight.bold),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                          const SizedBox(width: 10),
-                        ]),
+                      Row(children: [
+                        torrentInfo.tracker!.isNotEmpty
+                            ? CustomTextTag(
+                                labelText: controller.trackers.entries
+                                    .firstWhere((entry) =>
+                                        entry.value.contains(torrentInfo.hash))
+                                    .key,
+                                icon: const Icon(Icons.file_upload_outlined,
+                                    size: 10, color: Colors.white),
+                              )
+                            : CustomTextTag(
+                                labelText: controller.trackers.entries
+                                    .firstWhere((entry) =>
+                                        entry.value.contains(torrentInfo.hash))
+                                    .key,
+                                icon: const Icon(Icons.link_off,
+                                    size: 10, color: Colors.white),
+                                backgroundColor: Colors.red,
+                              ),
+                        const SizedBox(width: 10),
+                      ]),
                       Expanded(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -713,11 +719,6 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                           ],
                         ),
                       ),
-                      torrentInfo.tracker!.isNotEmpty
-                          ? const Icon(Icons.upload,
-                              size: 14, color: Colors.green)
-                          : const Icon(Icons.link_off,
-                              size: 14, color: Colors.red),
                     ],
                   ),
                   Row(
@@ -859,12 +860,35 @@ class QBittorrentPage extends GetView<QBittorrentController> {
   }
 
   void _openTorrentInfoDetail(TorrentInfo torrentInfo) async {
+    // List<TorrentContents> contents =
+    //     await controller.client.torrents.getContents(hash: torrentInfo.hash!);
+    // for (var element in contents) {
+    //   Logger.instance.i(element.toJson());
+    // }
+    Logger.instance.i(torrentInfo.contentPath);
+    final sameTorrents = controller.allTorrents
+        .where((element) => element.contentPath == torrentInfo.contentPath)
+        .map((e) => e.hash)
+        .toList();
+    List<MetaDataItem> seedTrackers = sameTorrents
+        .map((e) => MetaDataItem.fromJson({
+              "name": controller.trackers.entries
+                  .firstWhere((entry) => entry.value.contains(e))
+                  .key,
+              "value": e,
+            }))
+        .toList();
+
     TorrentProperties prop =
         await controller.client.torrents.getProperties(hash: torrentInfo.hash!);
-    // List<Tracker> trackers =
-    //     await controller.client.torrents.getTrackers(hash: torrentInfo.hash!);
+    List<Tracker> trackers =
+        await controller.client.torrents.getTrackers(hash: torrentInfo.hash!);
+    trackers =
+        trackers.where((element) => element.url!.startsWith('http')).toList();
     Logger.instance.i(prop.toJson());
-    // Logger.instance.i(trackers.toString());
+    for (Tracker tracker in trackers) {
+      Logger.instance.i(tracker.toJson());
+    }
     Get.bottomSheet(
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
@@ -874,419 +898,441 @@ class QBittorrentPage extends GetView<QBittorrentController> {
         ),
         isScrollControlled: true,
         enableDrag: true,
-        SizedBox(
-          height: double.infinity,
-          child: CustomCard(
-            padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
-            child: GetBuilder<QBittorrentController>(builder: (controller) {
-              return ListView(
-                children: [
-                  Tooltip(
-                    message: torrentInfo.name!,
-                    child: Text(
-                      torrentInfo.name!,
+        SafeArea(
+          child: SizedBox(
+            height: 800,
+            child: CustomCard(
+              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+              child: GetBuilder<QBittorrentController>(builder: (controller) {
+                return ListView(
+                  children: [
+                    Tooltip(
+                      message: torrentInfo.name!,
+                      child: Text(
+                        torrentInfo.name!,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    Text(
+                      'HASH: ${torrentInfo.hash!}',
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontSize: 12, fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontSize: 10),
                     ),
-                  ),
-                  Text(
-                    'HASH: ${torrentInfo.hash!}',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 10),
-                  ),
 
-                  Tooltip(
-                    message: torrentInfo.contentPath!,
-                    child: Text(
-                      '路径：${torrentInfo.contentPath!}',
-                      maxLines: 1,
+                    Tooltip(
+                      message: torrentInfo.contentPath!,
+                      child: Text(
+                        '路径：${torrentInfo.contentPath!}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 10),
+                      ),
+                    ),
+                    Text(torrentInfo.state
+                        .toString()
+                        .contains('pause')
+                        .toString()),
+                    Text(
+                      '最后完整可见：${formatTimestampToDateTime(torrentInfo.seenComplete!)}',
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(fontSize: 10),
                     ),
-                  ),
-                  Text(torrentInfo.state
-                      .toString()
-                      .contains('pause')
-                      .toString()),
-                  Text(
-                    '最后完整可见：${formatTimestampToDateTime(torrentInfo.seenComplete!)}',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                  Text(
-                    '添加时间: ${formatTimestampToDateTime(torrentInfo.addedOn!)}',
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                  Text(
-                    '耗时: ${formatDuration(torrentInfo.eta!)}',
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                  Text(
-                    '最后活动时间: ${formatTimestampToDateTime(torrentInfo.lastActivity!)}',
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                  Text(
-                    '已完成: ${filesize(torrentInfo.completed)}',
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                  Text(
-                    '完成时间: ${formatTimestampToDateTime(torrentInfo.completionOn!)}',
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                  if (torrentInfo.amountLeft! > 0)
                     Text(
-                      '剩余大小: ${filesize(torrentInfo.amountLeft)}',
+                      '添加时间: ${formatTimestampToDateTime(torrentInfo.addedOn!)}',
                       style: const TextStyle(fontSize: 10),
                     ),
-                  GFProgressBar(
-                    margin: EdgeInsets.zero,
-                    percentage: torrentInfo.progress!,
-                    lineHeight: GFSize.SMALL,
-                    progressHeadType: GFProgressHeadType.square,
-                    backgroundColor: Colors.black26,
-                    progressBarColor: GFColors.SUCCESS,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Text(
-                          '${torrentInfo.progress! * 100}%',
-                          textAlign: TextAlign.end,
-                          style: const TextStyle(
-                              color: Colors.white70, fontSize: 12),
-                        ),
-                      ],
+                    Text(
+                      '耗时: ${formatDuration(torrentInfo.eta!)}',
+                      style: const TextStyle(fontSize: 10),
                     ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      GFButton(
-                        text: '重新校验',
-                        color: GFColors.DANGER,
-                        onPressed: () async {
-                          Get.defaultDialog(
-                              title: '',
-                              middleText: '重新校验种子？',
-                              onConfirm: () async {
-                                await controller.controlTorrents(
-                                    command: 'recheck',
-                                    hashes: [torrentInfo.hash!]);
-                              },
-                              cancel: const Text('取消'),
-                              confirm: const Text('确定'));
-                        },
-                        icon: const Icon(Icons.auto_mode, size: 10),
+                    Text(
+                      '最后活动时间: ${formatTimestampToDateTime(torrentInfo.lastActivity!)}',
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                    Text(
+                      '已完成: ${filesize(torrentInfo.completed)}',
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                    Text(
+                      '完成时间: ${formatTimestampToDateTime(torrentInfo.completionOn!)}',
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                    if (torrentInfo.amountLeft! > 0)
+                      Text(
+                        '剩余大小: ${filesize(torrentInfo.amountLeft)}',
+                        style: const TextStyle(fontSize: 10),
                       ),
-                      GFButton(
-                        text: '强制汇报',
-                        color: GFColors.SUCCESS,
-                        onPressed: () async {
-                          await controller.controlTorrents(
-                              command: 'reannounce',
-                              hashes: [torrentInfo.hash!]);
-                        },
-                        icon: const Icon(Icons.campaign, size: 10),
+                    GFProgressBar(
+                      margin: EdgeInsets.zero,
+                      percentage: torrentInfo.progress!,
+                      lineHeight: GFSize.SMALL,
+                      progressHeadType: GFProgressHeadType.square,
+                      backgroundColor: Colors.black26,
+                      progressBarColor: GFColors.SUCCESS,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          Text(
+                            '${torrentInfo.progress! * 100}%',
+                            textAlign: TextAlign.end,
+                            style: const TextStyle(
+                                color: Colors.white70, fontSize: 12),
+                          ),
+                        ],
                       ),
-                      GFButton(
-                        text: '复制哈希',
-                        color: GFColors.SECONDARY,
-                        onPressed: () async {
-                          Clipboard.setData(
-                              ClipboardData(text: torrentInfo.hash!));
-                          Get.snackbar('复制种子HASH', '种子HASH复制成功！');
-                        },
-                        icon: const Icon(Icons.copy, size: 10),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      GFButton(
-                        text: '自动TMM: ${torrentInfo.autoTmm! ? "✔" : "✖"}',
-                        color: torrentInfo.autoTmm!
-                            ? GFColors.SUCCESS
-                            : GFColors.DANGER,
-                        onPressed: () async {
-                          await controller.controlTorrents(
-                              command: 'AutoManagement',
-                              hashes: [torrentInfo.hash!],
-                              enable: !torrentInfo.autoTmm!);
-                        },
-                      ),
-                      GFButton(
-                        text: '超级做种: ${torrentInfo.superSeeding! ? "✔" : "✖"}',
-                        color: torrentInfo.superSeeding!
-                            ? GFColors.SUCCESS
-                            : GFColors.DANGER,
-                        onPressed: () async {
-                          await controller.controlTorrents(
-                              command: 'SuperSeeding',
-                              hashes: [torrentInfo.hash!],
-                              enable: !torrentInfo.superSeeding!);
-                        },
-                      ),
-                      GFButton(
-                        text: '强制开始: ${torrentInfo.forceStart! ? "✔" : "✖"}',
-                        color: torrentInfo.forceStart!
-                            ? GFColors.SUCCESS
-                            : GFColors.DANGER,
-                        onPressed: () async {
-                          await controller.controlTorrents(
-                              command: 'ForceStart',
-                              hashes: [torrentInfo.hash!],
-                              enable: !torrentInfo.forceStart!);
-                        },
-                      ),
-                    ],
-                  ),
-
-                  SizedBox(
-                    height: 200,
-                    child: GridView(
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 4,
-                      ),
-                      padding: EdgeInsets.zero,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Card(
-                          color: Colors.purple,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text('做种时间'),
-                              Text(
-                                torrentInfo.category!.isNotEmpty
-                                    ? torrentInfo.category!
-                                    : '未分类',
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                    fontSize: 10, color: Colors.white),
-                              ),
-                            ],
-                          ),
+                        GFButton(
+                          text: '重新校验',
+                          color: GFColors.DANGER,
+                          onPressed: () async {
+                            Get.defaultDialog(
+                                title: '',
+                                middleText: '重新校验种子？',
+                                onConfirm: () async {
+                                  await controller.controlTorrents(
+                                      command: 'recheck',
+                                      hashes: [torrentInfo.hash!]);
+                                },
+                                cancel: const Text('取消'),
+                                confirm: const Text('确定'));
+                          },
+                          icon: const Icon(Icons.auto_mode, size: 10),
                         ),
-                        Card(
-                          color: Colors.purple,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text('做种时间'),
-                              Text(
-                                formatDuration(torrentInfo.seedingTime!),
-                                style: const TextStyle(fontSize: 10),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Card(
-                          color: Colors.redAccent,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text('状态'),
-                              Text(
-                                controller.status.firstWhere(
-                                  (element) =>
-                                      element['value'] == torrentInfo.state!,
-                                  orElse: () => {
-                                    "name": "未知状态",
-                                    "value": TorrentState.unknown
-                                  },
-                                )['name'],
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 10),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Card(
-                          color: Colors.brown,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text('大小'),
-                              Text(
-                                filesize(torrentInfo.totalSize!),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 10),
-                              ),
-                              Text(
-                                filesize(torrentInfo.size!),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 10),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Card(
-                          color: Colors.deepOrange,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text('已上传'),
-                              Text(
-                                '本次: ${filesize(torrentInfo.uploadedSession)}',
-                                style: const TextStyle(fontSize: 10),
-                              ),
-                              Text(
-                                '共: ${filesize(torrentInfo.uploaded)}',
-                                style: const TextStyle(fontSize: 10),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Card(
-                          color: Colors.green,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text('上传速度'),
-                              Text(
-                                '速度: ${filesize(torrentInfo.upSpeed)}/S',
-                                style: const TextStyle(fontSize: 10),
-                              ),
-                              Text(
-                                '限速: ${filesize(torrentInfo.upLimit)}/S',
-                                style: const TextStyle(fontSize: 10),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Card(
+                        GFButton(
+                          text: '强制汇报',
                           color: GFColors.SUCCESS,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text('已下载'),
-                              Text(
-                                '已下载: ${filesize(torrentInfo.downloaded)}',
-                                style: const TextStyle(fontSize: 10),
-                              ),
-                              Text(
-                                '本次已下载: ${filesize(torrentInfo.downloadedSession)}',
-                                style: const TextStyle(fontSize: 10),
-                              ),
-                            ],
-                          ),
+                          onPressed: () async {
+                            await controller.controlTorrents(
+                                command: 'reannounce',
+                                hashes: [torrentInfo.hash!]);
+                          },
+                          icon: const Icon(Icons.campaign, size: 10),
                         ),
-                        Card(
-                          color: Colors.deepOrangeAccent,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text('分享率'),
-                              Text(
-                                '分享率: ${torrentInfo.ratio?.toStringAsFixed(2)}',
-                                style: const TextStyle(fontSize: 10),
-                              ),
-                              Text(
-                                '限制: ${torrentInfo.ratioLimit}',
-                                style: const TextStyle(fontSize: 10),
-                              ),
-                            ],
-                          ),
+                        GFButton(
+                          text: '复制哈希',
+                          color: GFColors.SECONDARY,
+                          onPressed: () async {
+                            Clipboard.setData(
+                                ClipboardData(text: torrentInfo.hash!));
+                            Get.snackbar('复制种子HASH', '种子HASH复制成功！');
+                          },
+                          icon: const Icon(Icons.copy, size: 10),
                         ),
                       ],
                     ),
-                  ),
-                  Text(
-                    '可用性: ${torrentInfo.availability}',
-                    style: const TextStyle(fontSize: 10),
-                  ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        GFButton(
+                          text: '自动TMM: ${torrentInfo.autoTmm! ? "✔" : "✖"}',
+                          color: torrentInfo.autoTmm!
+                              ? GFColors.SUCCESS
+                              : GFColors.DANGER,
+                          onPressed: () async {
+                            await controller.controlTorrents(
+                                command: 'AutoManagement',
+                                hashes: [torrentInfo.hash!],
+                                enable: !torrentInfo.autoTmm!);
+                          },
+                        ),
+                        GFButton(
+                          text:
+                              '超级做种: ${torrentInfo.superSeeding! ? "✔" : "✖"}',
+                          color: torrentInfo.superSeeding!
+                              ? GFColors.SUCCESS
+                              : GFColors.DANGER,
+                          onPressed: () async {
+                            await controller.controlTorrents(
+                                command: 'SuperSeeding',
+                                hashes: [torrentInfo.hash!],
+                                enable: !torrentInfo.superSeeding!);
+                          },
+                        ),
+                        GFButton(
+                          text: '强制开始: ${torrentInfo.forceStart! ? "✔" : "✖"}',
+                          color: torrentInfo.forceStart!
+                              ? GFColors.SUCCESS
+                              : GFColors.DANGER,
+                          onPressed: () async {
+                            await controller.controlTorrents(
+                                command: 'ForceStart',
+                                hashes: [torrentInfo.hash!],
+                                enable: !torrentInfo.forceStart!);
+                          },
+                        ),
+                      ],
+                    ),
 
-                  // Text(
-                  //   '文件路径: ${torrentInfo.contentPath}',
-                  //   style: const TextStyle(fontSize: 10),
-                  // ),
+                    SizedBox(
+                      height: 200,
+                      child: GridView(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 4,
+                        ),
+                        padding: EdgeInsets.zero,
+                        children: [
+                          Card(
+                            color: Colors.purple,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text('做种时间'),
+                                Text(
+                                  torrentInfo.category!.isNotEmpty
+                                      ? torrentInfo.category!
+                                      : '未分类',
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                      fontSize: 10, color: Colors.white),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Card(
+                            color: Colors.purple,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text('做种时间'),
+                                Text(
+                                  formatDuration(torrentInfo.seedingTime!),
+                                  style: const TextStyle(fontSize: 10),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Card(
+                            color: Colors.redAccent,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text('状态'),
+                                Text(
+                                  controller.status.firstWhere(
+                                    (element) =>
+                                        element['value'] == torrentInfo.state!,
+                                    orElse: () => {
+                                      "name": "未知状态",
+                                      "value": TorrentState.unknown
+                                    },
+                                  )['name'],
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 10),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Card(
+                            color: Colors.brown,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text('大小'),
+                                Text(
+                                  filesize(torrentInfo.totalSize!),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 10),
+                                ),
+                                Text(
+                                  filesize(torrentInfo.size!),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 10),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Card(
+                            color: Colors.deepOrange,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text('已上传'),
+                                Text(
+                                  '本次: ${filesize(torrentInfo.uploadedSession)}',
+                                  style: const TextStyle(fontSize: 10),
+                                ),
+                                Text(
+                                  '共: ${filesize(torrentInfo.uploaded)}',
+                                  style: const TextStyle(fontSize: 10),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Card(
+                            color: Colors.green,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text('上传速度'),
+                                Text(
+                                  '速度: ${filesize(torrentInfo.upSpeed)}/S',
+                                  style: const TextStyle(fontSize: 10),
+                                ),
+                                Text(
+                                  '限速: ${filesize(torrentInfo.upLimit)}/S',
+                                  style: const TextStyle(fontSize: 10),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Card(
+                            color: GFColors.SUCCESS,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text('已下载'),
+                                Text(
+                                  '已下载: ${filesize(torrentInfo.downloaded)}',
+                                  style: const TextStyle(fontSize: 10),
+                                ),
+                                Text(
+                                  '本次已下载: ${filesize(torrentInfo.downloadedSession)}',
+                                  style: const TextStyle(fontSize: 10),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Card(
+                            color: Colors.deepOrangeAccent,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text('分享率'),
+                                Text(
+                                  '分享率: ${torrentInfo.ratio?.toStringAsFixed(2)}',
+                                  style: const TextStyle(fontSize: 10),
+                                ),
+                                Text(
+                                  '限制: ${torrentInfo.ratioLimit}',
+                                  style: const TextStyle(fontSize: 10),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      '可用性: ${torrentInfo.availability}',
+                      style: const TextStyle(fontSize: 10),
+                    ),
 
-                  Text(
-                    '下载路径: ${torrentInfo.downloadPath}',
-                    style: const TextStyle(fontSize: 10),
-                  ),
+                    // Text(
+                    //   '文件路径: ${torrentInfo.contentPath}',
+                    //   style: const TextStyle(fontSize: 10),
+                    // ),
 
-                  Text(
-                    'FL Piece Prio: ${torrentInfo.fLPiecePrio}',
-                    style: const TextStyle(fontSize: 10),
-                  ),
+                    Text(
+                      '下载路径: ${torrentInfo.downloadPath}',
+                      style: const TextStyle(fontSize: 10),
+                    ),
 
-                  // Text(
-                  //   '磁力链接: ${torrentInfo.magnetUri}',
-                  //   style: const TextStyle(fontSize: 10),
-                  // ),
-                  Text(
-                    '最大分享比率: ${torrentInfo.maxRatio}',
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                  Text(
-                    '最大做种时间: ${formatDuration(torrentInfo.maxSeedingTime!)}',
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                  Text(
-                    '完成数量: ${torrentInfo.numComplete}',
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                  Text(
-                    '未完成数量: ${torrentInfo.numIncomplete}',
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                  Text(
-                    '正在做种数量: ${torrentInfo.numLeechs}',
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                  Text(
-                    '做种数量: ${torrentInfo.numSeeds}',
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                  Text(
-                    '优先级: ${torrentInfo.priority}',
-                    style: const TextStyle(fontSize: 10),
-                  ),
+                    Text(
+                      'FL Piece Prio: ${torrentInfo.fLPiecePrio}',
+                      style: const TextStyle(fontSize: 10),
+                    ),
 
-                  Text(
-                    '保存路径: ${torrentInfo.savePath}',
-                    style: const TextStyle(fontSize: 10),
-                  ),
+                    // Text(
+                    //   '磁力链接: ${torrentInfo.magnetUri}',
+                    //   style: const TextStyle(fontSize: 10),
+                    // ),
+                    Text(
+                      '最大分享比率: ${torrentInfo.maxRatio}',
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                    Text(
+                      '最大做种时间: ${formatDuration(torrentInfo.maxSeedingTime!)}',
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                    Text(
+                      '完成数量: ${torrentInfo.numComplete}',
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                    Text(
+                      '未完成数量: ${torrentInfo.numIncomplete}',
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                    Text(
+                      '正在做种数量: ${torrentInfo.numLeechs}',
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                    Text(
+                      '做种数量: ${torrentInfo.numSeeds}',
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                    Text(
+                      '优先级: ${torrentInfo.priority}',
+                      style: const TextStyle(fontSize: 10),
+                    ),
 
-                  Text(
-                    '做种时间限制: ${torrentInfo.seedingTimeLimit}',
-                    style: const TextStyle(fontSize: 10),
-                  ),
+                    Text(
+                      '保存路径: ${torrentInfo.savePath}',
+                      style: const TextStyle(fontSize: 10),
+                    ),
 
-                  Text(
-                    'Seq DL: ${torrentInfo.seqDl}',
-                    style: const TextStyle(fontSize: 10),
-                  ),
+                    Text(
+                      '做种时间限制: ${torrentInfo.seedingTimeLimit}',
+                      style: const TextStyle(fontSize: 10),
+                    ),
 
-                  Text(
-                    '标签: ${torrentInfo.tags}',
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                  Text(
-                    '活跃时间: ${formatDuration(torrentInfo.timeActive!)}',
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                  Text(
-                    '追踪器: ${torrentInfo.tracker}',
-                    style: const TextStyle(fontSize: 10),
-                  ),
+                    Text(
+                      'Seq DL: ${torrentInfo.seqDl}',
+                      style: const TextStyle(fontSize: 10),
+                    ),
 
-                  Text(
-                    '追踪器数量: ${torrentInfo.trackersCount}',
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                ],
-              );
-            }),
+                    Text(
+                      '标签: ${torrentInfo.tags}',
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                    Text(
+                      '活跃时间: ${formatDuration(torrentInfo.timeActive!)}',
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                    Text(
+                      '追踪器: ${torrentInfo.tracker}',
+                      style: const TextStyle(fontSize: 10),
+                    ),
+
+                    Text(
+                      '追踪器数量: ${torrentInfo.trackersCount}',
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                    CustomCard(
+                        child: Column(
+                      children: [
+                        const Text(
+                          '已辅种种子',
+                          style: TextStyle(fontSize: 10),
+                        ),
+                        ...seedTrackers.map((e) => ListTile(
+                              title: Text(
+                                e.name,
+                                style: const TextStyle(
+                                    fontSize: 12, color: Colors.green),
+                              ),
+                              subtitle: CustomTextTag(
+                                labelText: e.value,
+                              ),
+                            )),
+                      ],
+                    ))
+                  ],
+                );
+              }),
+            ),
           ),
         ));
   }

@@ -8,8 +8,12 @@ import 'package:qbittorrent_api/qbittorrent_api.dart';
 
 import '../../models/download.dart';
 import '../../utils/logger_helper.dart';
+import '../home/pages/models/website.dart';
+import '../home/pages/my_site/controller.dart';
 
 class QBittorrentController extends GetxController {
+  MySiteController mySiteController = Get.find();
+
   Downloader downloader;
   late QBittorrentApiV2 client;
   StreamSubscription<List<TorrentInfo>>? torrentListSubscription;
@@ -21,11 +25,13 @@ class QBittorrentController extends GetxController {
   List<TorrentInfo> allTorrents = [];
   List<TorrentInfo> showTorrents = [];
   Map<String, Category?> categoryMap = {};
+  Map<String, WebSite> trackerToWebSiteMap = {};
   String? category;
   String selectedTracker = 'all';
   TorrentSort sortKey = TorrentSort.name;
   String searchKey = '';
   int freeSpace = 0;
+  int subInterval = 5;
   List<ServerState> statusList = [];
   bool sortReversed = false;
   bool isLoading = false;
@@ -107,13 +113,34 @@ class QBittorrentController extends GetxController {
     super.onInit();
   }
 
+  initData() async {
+    /// 初始化 qb 客户端
+    client = await getQbInstance(downloader);
+
+    /// 获取分类信息
+    categoryMap = {
+      '全部': const Category(name: '全部'),
+      '未分类': const Category(name: '', savePath: ''),
+    };
+    categoryMap.addAll(await client.torrents.getCategories());
+
+    /// 生成 tracker：website
+    buildTrackerToWebSite();
+
+    /// 获取上传下载信息
+    await getQbSpeed();
+
+    /// 订阅所有种子
+    subTorrentList();
+  }
+
   Future getQbSpeed() async {
     mainDataSubscription = client.sync
-        .subscribeMainData(interval: const Duration(seconds: 5))
+        .subscribeMainData(interval: Duration(seconds: subInterval))
         .listen((event) {
       allTorrents = event.torrents!.values.toList();
       statusList.add(event.serverState!);
-      trackers = {'all': []};
+      trackers = {'0All': []};
       trackers.addAll(mergeTrackers(event.trackers));
       if (statusList.length > 30) {
         statusList.removeAt(0);
@@ -122,9 +149,21 @@ class QBittorrentController extends GetxController {
     });
   }
 
+  buildTrackerToWebSite() {
+    List<WebSite> webSiteList = mySiteController.webSiteList.values.toList();
+    trackerToWebSiteMap = webSiteList.asMap().entries.fold({}, (result, entry) {
+      result[entry.value.tracker] = entry.value;
+      return result;
+    });
+  }
+
   Map<String, List<String>> mergeTrackers(Map<String, List<String>>? trackers) {
     return trackers?.entries.fold({}, (merged, entry) {
           var host = Uri.parse(entry.key).host;
+          var tracker = trackerToWebSiteMap.keys.firstWhere(
+              (element) => element.contains(host),
+              orElse: () => host);
+          host = trackerToWebSiteMap[tracker]?.name ?? tracker;
           merged?.putIfAbsent(host, () => []);
           merged?[host]!.addAll(entry.value);
           return merged;
@@ -213,24 +252,6 @@ class QBittorrentController extends GetxController {
     update();
   }
 
-  initData() async {
-    /// 初始化 qb 客户端
-    client = await getQbInstance(downloader);
-
-    /// 获取分类信息
-    categoryMap = {
-      '全部': const Category(name: '全部'),
-      '未分类': const Category(name: '', savePath: ''),
-    };
-    categoryMap.addAll(await client.torrents.getCategories());
-
-    /// 获取上传下载信息
-    await getQbSpeed();
-
-    /// 订阅所有种子
-    subTorrentList();
-  }
-
   subTorrentList() {
     if (torrentListSubscription != null) {
       torrentListSubscription?.cancel();
@@ -242,7 +263,8 @@ class QBittorrentController extends GetxController {
                 category: category,
                 sort: sortKey,
                 reverse: sortReversed,
-                hashes: showTorrents.map((e) => e.hash!).toList()))
+                hashes: showTorrents.map((e) => e.hash!).toList()),
+            interval: Duration(seconds: subInterval))
         .listen((event) {
       torrents = event;
       filterTorrents();
