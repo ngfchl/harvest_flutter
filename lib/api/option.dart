@@ -25,3 +25,10 @@ removeOptionApi(Option option) async {
   String apiUrl = '${Api.OPTION_OPERATE}/${option.id}';
   return await removeData(apiUrl);
 }
+
+/// 通知测试
+Future<CommonResponse> noticeTestApi(
+    Map<String, dynamic>? queryParameters) async {
+  return await fetchBasicList(Api.NOTICE_TEST,
+      queryParameters: queryParameters);
+}
