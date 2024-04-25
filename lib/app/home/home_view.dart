@@ -4,6 +4,7 @@ import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:harvest/api/mysite.dart';
+import 'package:harvest/models/common_response.dart';
 
 import 'controller/home_controller.dart';
 
@@ -323,6 +324,18 @@ class HomeView extends GetView<HomeController> {
                   child: const Text('CC 同步'),
                   onTap: () async {
                     await importFromCookieCloud();
+                  },
+                ),
+                PopupMenuItem<String>(
+                  child: const Text('清除缓存'),
+                  onTap: () async {
+                    CommonResponse res = await clearMyCacheApi();
+                    Get.snackbar(
+                      '清除缓存',
+                      '清除缓存：${res.msg}',
+                      colorText: Colors.white,
+                      backgroundColor: Colors.green.shade300,
+                    );
                   },
                 ),
               ],
