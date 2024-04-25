@@ -21,7 +21,7 @@ class Api {
   static const String IMPORT_COOKIE_PTPP = "mysite/cookie/ptpp";
 
   // CookieCloud
-  static const String IMPORT_COOKIE_CLOUD = "mysite/search";
+  static const String IMPORT_COOKIE_CLOUD = "mysite/cookie/cloud";
 
   // 通知测试
   static const String NOTIFY_TEST = "option/test";
@@ -64,6 +64,7 @@ class Api {
   static const String TASK_EXEC_URL = "option/exec";
 
   static const String SYSTEM_CONFIG = "auth/config";
+  static const String SYSTEM_LOGGING = "logging";
 
   /// 订阅相关
   static const String SUB_RSS = "option/rss";
