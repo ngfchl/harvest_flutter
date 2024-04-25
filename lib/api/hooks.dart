@@ -22,14 +22,18 @@ Future<CommonResponse<List<T>>> fetchDataList<T>(
   }
 }
 
-Future<CommonResponse<List>> fetchBasicList<T>(String apiEndpoint,
+Future<CommonResponse<List?>> fetchBasicList<T>(String apiEndpoint,
     {Map<String, dynamic>? queryParameters}) async {
   final response =
       await DioUtil().get(apiEndpoint, queryParameters: queryParameters);
   if (response.statusCode == 200) {
-    final dataList = response.data['data'] as List;
-    String msg = '成功获取到${dataList.length}条数据';
-    return CommonResponse<List>(data: dataList, code: 0, msg: msg);
+    if (response.data['data'] != null) {
+      final dataList = response.data['data'] as List;
+      String msg = '成功获取到${dataList.length}条数据';
+      return CommonResponse<List>(data: dataList, code: 0, msg: msg);
+    } else {
+      return CommonResponse.fromJson(response.data, (p0) => null);
+    }
   } else {
     String msg = '获取数据列表失败: ${response.statusCode}';
     // GFToast.showToast(msg, context);
