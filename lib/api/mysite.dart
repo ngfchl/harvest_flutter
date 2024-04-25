@@ -11,6 +11,11 @@ Future<CommonResponse> getMySiteList() async {
   return await fetchDataList(Api.MYSITE_LIST, (p0) => MySite.fromJson(p0));
 }
 
+/// 清除缓存
+Future<CommonResponse> clearMyCacheApi() async {
+  return await fetchBasicList(Api.CLEAR_CACHE);
+}
+
 /// 获取站点信息列表
 ///
 Future<CommonResponse> getWebSiteList() async {
