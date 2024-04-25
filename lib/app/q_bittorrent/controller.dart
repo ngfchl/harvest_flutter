@@ -27,7 +27,7 @@ class QBittorrentController extends GetxController {
   Map<String, Category?> categoryMap = {};
   Map<String, WebSite> trackerToWebSiteMap = {};
   String? category;
-  String selectedTracker = 'all';
+  String selectedTracker = ' All';
   TorrentSort sortKey = TorrentSort.name;
   String searchKey = '';
   int freeSpace = 0;
@@ -40,7 +40,7 @@ class QBittorrentController extends GetxController {
 
   QBittorrentController(this.downloader);
 
-  List filters = [
+  List<MetaDataItem> filters = [
     {"name": "全部", "value": TorrentFilter.all},
     {"name": "下载中", "value": TorrentFilter.downloading},
     {"name": "活动中", "value": TorrentFilter.active},
@@ -55,9 +55,9 @@ class QBittorrentController extends GetxController {
     {"name": "下载队列", "value": TorrentFilter.stalledDownloading},
     {"name": "上传队列", "value": TorrentFilter.stalledUploading},
     {"name": "错误", "value": TorrentFilter.errored},
-  ];
+  ].map((e) => MetaDataItem.fromJson(e)).toList();
 
-  List status = [
+  List<MetaDataItem> status = [
     {"name": "全部", "value": null},
     {"name": "下载中", "value": TorrentState.downloading},
     {"name": "下载暂停", "value": TorrentState.pausedDL},
@@ -80,7 +80,7 @@ class QBittorrentController extends GetxController {
 
     // {"name": "未知状态", "value": TorrentState.unknown},
     {"name": "错误", "value": TorrentState.error},
-  ];
+  ].map((e) => MetaDataItem.fromJson(e)).toList();
   List<MetaDataItem> qbSortOptions = [
     {'name': '名称', 'value': TorrentSort.name},
     {'name': '类别', 'value': TorrentSort.category},
@@ -140,12 +140,34 @@ class QBittorrentController extends GetxController {
         .listen((event) {
       allTorrents = event.torrents!.values.toList();
       statusList.add(event.serverState!);
-      trackers = {'0All': []};
+      trackers = {' All': [], ' 红种': []};
       trackers.addAll(mergeTrackers(event.trackers));
       if (statusList.length > 30) {
         statusList.removeAt(0);
       }
       update();
+    });
+  }
+
+  subTorrentList() {
+    if (torrentListSubscription != null) {
+      torrentListSubscription?.cancel();
+    }
+    torrentListSubscription = client.torrents
+        .subscribeTorrentsList(
+            options: TorrentListOptions(
+              filter: torrentFilter,
+              category: category,
+              sort: sortKey,
+              reverse: sortReversed,
+              // hashes: showTorrents.map((e) => e.hash!).toList(),
+            ),
+            interval: Duration(seconds: subInterval))
+        .listen((event) {
+      if (event.isNotEmpty) {
+        torrents = event;
+        filterTorrents();
+      }
     });
   }
 
@@ -171,6 +193,20 @@ class QBittorrentController extends GetxController {
         {};
   }
 
+  searchTorrents() {
+    if (searchKey.isNotEmpty) {
+      showTorrents = showTorrents
+          .where((TorrentInfo torrent) =>
+              torrent.name!.toLowerCase().contains(searchKey.toLowerCase()) ||
+              torrent.category!
+                  .toLowerCase()
+                  .contains(searchKey.toLowerCase()) ||
+              torrent.hash!.toLowerCase().contains(searchKey.toLowerCase()))
+          .toList();
+      update();
+    }
+  }
+
   filterTorrents() {
     showTorrents = torrents;
     if (torrentState != null) {
@@ -183,7 +219,10 @@ class QBittorrentController extends GetxController {
           .where((torrent) => torrent.category == category)
           .toList();
     }
-    if (selectedTracker != 'all') {
+    if (selectedTracker == ' 红种') {
+      showTorrents =
+          showTorrents.where((torrent) => torrent.tracker!.isEmpty).toList();
+    } else if (selectedTracker != ' All') {
       showTorrents = showTorrents
           .where((torrent) =>
               trackers[selectedTracker] != null &&
@@ -246,29 +285,11 @@ class QBittorrentController extends GetxController {
       default:
         Get.snackbar('出错啦！', '未知操作：$command');
     }
-
+    showTorrents.removeWhere((element) => hashes.contains(element.hash));
+    update();
     torrents = await client.torrents
         .getTorrentsList(options: const TorrentListOptions());
     update();
-  }
-
-  subTorrentList() {
-    if (torrentListSubscription != null) {
-      torrentListSubscription?.cancel();
-    }
-    torrentListSubscription = client.torrents
-        .subscribeTorrentsList(
-            options: TorrentListOptions(
-                filter: torrentFilter,
-                category: category,
-                sort: sortKey,
-                reverse: sortReversed,
-                hashes: showTorrents.map((e) => e.hash!).toList()),
-            interval: Duration(seconds: subInterval))
-        .listen((event) {
-      torrents = event;
-      filterTorrents();
-    });
   }
 
   Future<QBittorrentApiV2> getQbInstance(Downloader downloader) async {
