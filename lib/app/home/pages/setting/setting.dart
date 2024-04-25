@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/form_widgets.dart';
 
+import '../../../../api/option.dart';
 import '../../../../common/glass_widget.dart';
 import '../../../../common/utils.dart';
 import '../../../../utils/logger_helper.dart';
@@ -28,6 +29,7 @@ class SettingPage extends StatelessWidget {
               child: Column(
                 children: [
                   _versionCard(),
+                  _noticeTestForm(),
                   Flexible(
                     child: SingleChildScrollView(
                       child: Column(
@@ -452,6 +454,80 @@ class SettingPage extends StatelessWidget {
                                   Get.snackbar(
                                     '配置保存失败',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.red.shade300,
+                                  );
+                                }
+                              }),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _noticeTestForm() {
+    TextEditingController titleController =
+        TextEditingController(text: '这是一个消息标题');
+    TextEditingController messageController =
+        TextEditingController(text: '*这是一条测试消息*  \n__这是二号标题__\n```这是消息```');
+    final isEdit = false.obs;
+    return Obx(() {
+      return CustomCard(
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+        child: Column(
+          children: [
+            ListTile(
+                title: const Text('通知测试'),
+                dense: true,
+                // contentPadding: EdgeInsets.zero,
+                trailing: ExpandIcon(
+                  isExpanded: isEdit.value,
+                  onPressed: (value) {
+                    isEdit.value = !isEdit.value;
+                  },
+                  expandedColor: Colors.teal,
+                )),
+            if (isEdit.value)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    CustomTextField(
+                        controller: titleController, labelText: '消息标题'),
+                    CustomTextField(
+                      controller: messageController,
+                      labelText: '消息内容',
+                      maxLines: 5,
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FullWidthButton(
+                              text: '发送',
+                              onPressed: () async {
+                                final res = await noticeTestApi({
+                                  "title": titleController.text,
+                                  "message": messageController.text,
+                                });
+                                if (res.code == 0) {
+                                  Get.back();
+                                  Get.snackbar(
+                                    '测试消息内容发送成功',
+                                    '测试消息内容发送成功：${res.msg}',
+                                    colorText: Colors.white,
+                                    backgroundColor: Colors.green.shade300,
+                                  );
+                                  isEdit.value = false;
+                                } else {
+                                  Get.snackbar(
+                                    '测试消息内容发送失败',
+                                    '测试消息内容发送出错啦：${res.msg}',
                                     colorText: Colors.white,
                                     backgroundColor: Colors.red.shade300,
                                   );
