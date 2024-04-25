@@ -9,6 +9,8 @@ class CustomCard extends StatelessWidget {
   final Color color;
   final BorderRadiusGeometry borderRadius;
   final List<BoxShadow> boxShadow;
+  final double? height;
+  final double? width;
 
   const CustomCard({
     super.key,
@@ -29,11 +31,15 @@ class CustomCard extends StatelessWidget {
         blurRadius: 10.0,
       ),
     ],
+    this.height,
+    this.width,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: height,
+      width: width,
       margin: margin,
       padding: padding,
       decoration: BoxDecoration(
