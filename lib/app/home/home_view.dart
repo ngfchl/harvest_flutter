@@ -6,6 +6,8 @@ import 'package:getwidget/getwidget.dart';
 import 'package:harvest/api/mysite.dart';
 import 'package:harvest/models/common_response.dart';
 
+import '../../api/api.dart';
+import '../routes/app_pages.dart';
 import 'controller/home_controller.dart';
 
 class HomeView extends GetView<HomeController> {
@@ -51,199 +53,15 @@ class HomeView extends GetView<HomeController> {
         children: controller.pages,
       ),
       drawer: SizedBox(
-        width: 220,
+        width: 200,
         child: GFDrawer(
           semanticLabel: 'Harvest',
           elevation: 10,
           color: Colors.black87,
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              const SizedBox(
-                height: 30,
-              ),
-              GFDrawerHeader(
-                centerAlign: true,
-                closeButton: null,
-                decoration: const BoxDecoration(
-                  color: Colors.transparent,
-                ),
-                currentAccountPicture: const GFAvatar(
-                  radius: 80.0,
-                  backgroundImage: AssetImage('assets/images/logo.png'),
-                ),
-                // otherAccountsPictures: [
-                //   Image(
-                //     image: NetworkImage(
-                //         "https://cdn.pixabay.com/photo/2019/12/20/00/03/road-4707345_960_720.jpg"),
-                //     fit: BoxFit.cover,
-                //   ),
-                //   GFAvatar(
-                //     child: Text("ab"),
-                //   )
-                // ],
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 20.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Text(
-                        controller.userinfo['user'],
-                        style: const TextStyle(color: Colors.white70),
-                      ),
-                      // Text('admin@admin.com'),
-                      Text(
-                        '${controller.box.read('server')}',
-                        style: const TextStyle(
-                            fontSize: 12, color: Colors.white70),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              ListTile(
-                title: const Text(
-                  '豆瓣影视',
-                  style: TextStyle(color: Colors.white70),
-                  textAlign: TextAlign.center,
-                ),
-                onTap: () {
-                  Get.back();
-                  controller.pageController.jumpToPage(11);
-                },
-              ),
-              ListTile(
-                title: const Text(
-                  '站点数据',
-                  style: TextStyle(
-                    color: Colors.white70,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                onTap: () {
-                  Get.back();
-                  controller.changePage(1);
-                },
-              ),
-              ListTile(
-                title: const Text(
-                  '计划任务',
-                  style: TextStyle(
-                    color: Colors.white70,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                onTap: () {
-                  Get.back();
-                  controller.changePage(4);
-                },
-              ),
-              ListTile(
-                title: const Text(
-                  '下载管理',
-                  style: TextStyle(
-                    color: Colors.white70,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                onTap: () {
-                  Get.back();
-                  controller.changePage(3);
-                },
-              ),
-              ListTile(
-                title: const Text(
-                  '修改密码',
-                  style: TextStyle(
-                    color: Colors.white70,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                onTap: () {},
-              ),
-              ListTile(
-                title: const Text(
-                  '订阅管理',
-                  style: TextStyle(
-                    color: Colors.white70,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                onTap: () {
-                  Get.back();
-                  controller.pageController.jumpToPage(7);
-                },
-              ),
-              ListTile(
-                title: const Text(
-                  '订阅历史',
-                  style: TextStyle(
-                    color: Colors.white70,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                onTap: () {
-                  Get.back();
-                  controller.pageController.jumpToPage(9);
-                },
-              ),
-              ListTile(
-                title: const Text(
-                  '标签管理',
-                  style: TextStyle(
-                    color: Colors.white70,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                onTap: () {
-                  Get.back();
-                  controller.pageController.jumpToPage(8);
-                },
-              ),
-              ListTile(
-                title: const Text(
-                  'RSS订阅',
-                  style: TextStyle(
-                    color: Colors.white70,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                onTap: () {
-                  Get.back();
-                  controller.pageController.jumpToPage(6);
-                },
-              ),
-              ListTile(
-                title: const Text(
-                  '系统设置',
-                  style: TextStyle(
-                    color: Colors.white70,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                onTap: () {
-                  Get.back();
-                  controller.pageController.jumpToPage(5);
-                },
-              ),
-              ListTile(
-                title: const Text(
-                  '更换账号',
-                  style: TextStyle(
-                    color: Colors.white70,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                onTap: () {
-                  controller.logout();
-                },
-              ),
-            ],
-          ),
+          child: _buildMenuBar(),
         ),
       ),
-      drawerEdgeDragWidth: 280,
+      drawerEdgeDragWidth: 200,
       drawerEnableOpenDragGesture: false,
       drawerScrimColor: Colors.white.withOpacity(0.6),
       // floatingActionButton: GFIconButton(
@@ -255,23 +73,327 @@ class HomeView extends GetView<HomeController> {
       //   },
       // ),
       // floatingActionButtonLocation: FloatingActionButtonLocation.centerTop,
-      bottomNavigationBar: Obx(() => BottomNavigationBar(
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.white54.withOpacity(0.85),
-            elevation: 0,
-            // showSelectedLabels: false,
-            // showUnselectedLabels: false,
-            currentIndex: controller.initPage.value,
-            onTap: controller.changePage,
-            selectedFontSize: 12,
-            unselectedFontSize: 12,
-            // backgroundColor: Colors.blueGrey,
-            iconSize: 18,
-            selectedItemColor: Colors.teal.shade300,
-            unselectedItemColor: Colors.grey[150],
-            items: controller.menuItems,
-          )),
+      // bottomNavigationBar: Obx(() => BottomNavigationBar(
+      //       type: BottomNavigationBarType.fixed,
+      //       backgroundColor: Colors.white54.withOpacity(0.85),
+      //       elevation: 0,
+      //       // showSelectedLabels: false,
+      //       // showUnselectedLabels: false,
+      //       currentIndex: controller.initPage,
+      //       onTap: controller.changePage,
+      //       selectedFontSize: 12,
+      //       unselectedFontSize: 12,
+      //       // backgroundColor: Colors.blueGrey,
+      //       iconSize: 18,
+      //       selectedItemColor: Colors.teal.shade300,
+      //       unselectedItemColor: Colors.grey[150],
+      //       items: controller.menuItems,
+      //     )),
     );
+  }
+
+  Widget _buildMenuBar() {
+    return GetBuilder<HomeController>(builder: (controller) {
+      return NavigationRail(
+        useIndicator: true,
+        elevation: 1,
+        selectedIndex: controller.initPage,
+        onDestinationSelected: (index) => controller.changePage(index),
+        backgroundColor: Colors.brown.shade100,
+        labelType: NavigationRailLabelType.selected,
+        leading: GFDrawerHeader(
+          centerAlign: true,
+          closeButton: null,
+          decoration: const BoxDecoration(
+            color: Colors.transparent,
+          ),
+          currentAccountPicture: const GFAvatar(
+            radius: 80.0,
+            backgroundImage: AssetImage('assets/images/logo.png'),
+          ),
+          // otherAccountsPictures: [
+          //   Image(
+          //     image: NetworkImage(
+          //         "https://cdn.pixabay.com/photo/2019/12/20/00/03/road-4707345_960_720.jpg"),
+          //     fit: BoxFit.cover,
+          //   ),
+          //   GFAvatar(
+          //     child: Text("ab"),
+          //   )
+          // ],
+          child: Padding(
+            padding: const EdgeInsets.only(right: 20.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  controller.userinfo['user'],
+                  style: const TextStyle(color: Colors.white70),
+                ),
+                // Text('admin@admin.com'),
+                Text(
+                  '${controller.box.read('server')}',
+                  style: const TextStyle(fontSize: 12, color: Colors.white70),
+                ),
+              ],
+            ),
+          ),
+        ),
+        destinations: const [
+          NavigationRailDestination(
+            icon: Icon(Icons.home),
+            label: Text('仪表盘'),
+          ),
+          NavigationRailDestination(
+            icon: Icon(Icons.search),
+            label: Text('聚合搜索'),
+          ),
+          NavigationRailDestination(
+            icon: Icon(Icons.menu),
+            label: Text('站点数据'),
+          ),
+          NavigationRailDestination(
+            icon: Icon(Icons.cloud_download),
+            label: Text('下载管理'),
+          ),
+          NavigationRailDestination(
+            icon: Icon(Icons.task),
+            label: Text('计划任务'),
+          ),
+          NavigationRailDestination(
+            icon: Icon(Icons.settings),
+            label: Text('系统设置'),
+          ),
+          NavigationRailDestination(
+            icon: Icon(Icons.subscriptions_outlined),
+            label: Text('订阅管理'),
+          ),
+          NavigationRailDestination(
+            icon: Icon(Icons.rss_feed),
+            label: Text('站点RSS'),
+          ),
+          NavigationRailDestination(
+            icon: Icon(Icons.history),
+            label: Text('订阅历史'),
+          ),
+          NavigationRailDestination(
+            icon: Icon(Icons.tag),
+            label: Text('订阅标签'),
+          ),
+          NavigationRailDestination(
+            icon: Icon(Icons.movie),
+            label: Text('豆瓣影视'),
+          ),
+          NavigationRailDestination(
+            icon: Icon(Icons.document_scanner_rounded),
+            label: Text('网页日志'),
+          ),
+          NavigationRailDestination(
+            icon: Icon(Icons.document_scanner_rounded),
+            label: Text('任务日志'),
+          ),
+          NavigationRailDestination(
+            icon: Icon(Icons.account_box_rounded),
+            label: Text('更换账号'),
+          ),
+        ],
+      );
+    });
+  }
+
+  ListView _buildListView() {
+    return ListView(padding: EdgeInsets.zero, children: [
+      const SizedBox(
+        height: 30,
+      ),
+      GFDrawerHeader(
+        centerAlign: true,
+        closeButton: null,
+        decoration: const BoxDecoration(
+          color: Colors.transparent,
+        ),
+        currentAccountPicture: const GFAvatar(
+          radius: 80.0,
+          backgroundImage: AssetImage('assets/images/logo.png'),
+        ),
+        // otherAccountsPictures: [
+        //   Image(
+        //     image: NetworkImage(
+        //         "https://cdn.pixabay.com/photo/2019/12/20/00/03/road-4707345_960_720.jpg"),
+        //     fit: BoxFit.cover,
+        //   ),
+        //   GFAvatar(
+        //     child: Text("ab"),
+        //   )
+        // ],
+        child: Padding(
+          padding: const EdgeInsets.only(right: 20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                controller.userinfo['user'],
+                style: const TextStyle(color: Colors.white70),
+              ),
+              // Text('admin@admin.com'),
+              Text(
+                '${controller.box.read('server')}',
+                style: const TextStyle(fontSize: 12, color: Colors.white70),
+              ),
+            ],
+          ),
+        ),
+      ),
+      _buildMenuBar(),
+    ]);
+  }
+
+  List<Widget> menus() {
+    return [
+      ListTile(
+        title: const Text(
+          '豆瓣影视',
+          style: TextStyle(color: Colors.white70),
+          textAlign: TextAlign.center,
+        ),
+        onTap: () {
+          Get.back();
+          controller.pageController.jumpToPage(11);
+        },
+      ),
+      ListTile(
+        title: const Text(
+          '站点数据',
+          style: TextStyle(
+            color: Colors.white70,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        onTap: () {
+          Get.back();
+          controller.changePage(1);
+        },
+      ),
+      ListTile(
+        title: const Text(
+          '计划任务',
+          style: TextStyle(
+            color: Colors.white70,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        onTap: () {
+          Get.back();
+          controller.changePage(4);
+        },
+      ),
+      ListTile(
+        title: const Text(
+          '下载管理',
+          style: TextStyle(
+            color: Colors.white70,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        onTap: () {
+          Get.back();
+          controller.changePage(3);
+        },
+      ),
+      ListTile(
+        title: const Text(
+          '实时日志',
+          style: TextStyle(
+            color: Colors.white70,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        onTap: () {
+          Get.toNamed(Routes.WEBVIEW, arguments: {
+            'url': '${controller.box.read('server')}/api/${Api.SYSTEM_LOGGING}',
+          });
+        },
+      ),
+      ListTile(
+        title: const Text(
+          '订阅管理',
+          style: TextStyle(
+            color: Colors.white70,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        onTap: () {
+          Get.back();
+          controller.pageController.jumpToPage(7);
+        },
+      ),
+      ListTile(
+        title: const Text(
+          '订阅历史',
+          style: TextStyle(
+            color: Colors.white70,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        onTap: () {
+          Get.back();
+          controller.pageController.jumpToPage(9);
+        },
+      ),
+      ListTile(
+        title: const Text(
+          '标签管理',
+          style: TextStyle(
+            color: Colors.white70,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        onTap: () {
+          Get.back();
+          controller.pageController.jumpToPage(8);
+        },
+      ),
+      ListTile(
+        title: const Text(
+          'RSS订阅',
+          style: TextStyle(
+            color: Colors.white70,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        onTap: () {
+          Get.back();
+          controller.pageController.jumpToPage(6);
+        },
+      ),
+      ListTile(
+        title: const Text(
+          '系统设置',
+          style: TextStyle(
+            color: Colors.white70,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        onTap: () {
+          Get.back();
+          controller.pageController.jumpToPage(5);
+        },
+      ),
+      ListTile(
+        title: const Text(
+          '更换账号',
+          style: TextStyle(
+            color: Colors.white70,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        onTap: () {
+          controller.logout();
+        },
+      ),
+    ];
   }
 
   Widget _actionButtonList(context) {

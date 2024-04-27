@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -7,21 +9,22 @@ import 'package:harvest/app/home/pages/dou_ban/view.dart';
 import 'package:harvest/app/home/pages/download/download.dart';
 import 'package:harvest/app/home/pages/my_rss/view.dart';
 import 'package:harvest/app/home/pages/my_site/view.dart';
-import 'package:harvest/app/home/pages/option/view.dart';
-import 'package:harvest/app/home/pages/setting/setting.dart';
 import 'package:harvest/app/home/pages/subscribe/view.dart';
 import 'package:harvest/app/home/pages/subscribe_history/view.dart';
 import 'package:harvest/app/home/pages/subscribe_tag/view.dart';
 import 'package:harvest/app/home/pages/task/view.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../../api/api.dart';
 import '../../../utils/dio_util.dart';
 import '../../../utils/logger_helper.dart';
 import '../../../utils/storage.dart';
 import '../../routes/app_pages.dart';
 import '../pages/download/download_controller.dart';
+import '../pages/setting/setting.dart';
 
 class HomeController extends GetxController {
-  var initPage = 2.obs;
+  int initPage = 0;
   final userinfo = RxMap();
   GetStorage box = GetStorage();
   TextEditingController searchController = TextEditingController();
@@ -29,7 +32,7 @@ class HomeController extends GetxController {
 
   // final mySiteController = Get.put(MySiteController());
 
-  final PageController pageController = PageController(initialPage: 2);
+  final PageController pageController = PageController(initialPage: 0);
   final List<BottomNavigationBarItem> menuItems = [
     const BottomNavigationBarItem(
       icon: Icon(Icons.search),
@@ -60,18 +63,17 @@ class HomeController extends GetxController {
   }
 
   final List<Widget> pages = [
+    const DashBoardPage(),
     const AggSearchPage(),
     const MySitePage(),
-    const DashBoardPage(),
     const DownloadPage(),
     TaskPage(),
     SettingPage(),
-    const MyRssPage(),
     const SubscribePage(),
-    const SubscribeTagPage(),
+    const MyRssPage(),
     const SubscribeHistoryPage(),
-    const OptionPage(),
-    const DouBanPage()
+    const SubscribeTagPage(),
+    const DouBanPage(),
   ];
 
   @override
@@ -109,8 +111,43 @@ class HomeController extends GetxController {
     Get.offAllNamed(Routes.LOGIN);
   }
 
-  void changePage(int index) {
-    pageController.jumpToPage(index);
-    initPage.value = index;
+  Future<void> changePage(int index) async {
+    Get.back();
+    if (index == 11) {
+      String url =
+          '${box.read('server')}/api/${Api.SYSTEM_LOGGING}/tail.html?processname=uvicorn&limit=10240';
+      if (!Platform.isIOS && !Platform.isAndroid) {
+        Logger.instance.i('Explorer');
+        Uri uri = Uri.parse(url);
+        if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+          Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？');
+        }
+      } else {
+        Get.toNamed(Routes.WEBVIEW, arguments: {
+          'url': url,
+        });
+      }
+    } else if (index == 12) {
+      String url =
+          '${box.read('server')}/api/${Api.SYSTEM_LOGGING}/tail.html?processname=celery-worker&limit=10240';
+      if (!Platform.isIOS && !Platform.isAndroid) {
+        Logger.instance.i('Explorer');
+        Uri uri = Uri.parse(url);
+        if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+          Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？');
+        }
+      } else {
+        Get.toNamed(Routes.WEBVIEW, arguments: {
+          'url': url,
+        });
+      }
+    } else if (index == 13) {
+      logout();
+    } else {
+      pageController.jumpToPage(index);
+      initPage = index;
+    }
+
+    update();
   }
 }
