@@ -4,6 +4,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import traceback
 
 import yaml
@@ -63,6 +64,19 @@ class VersionManager:
                 shutil.move("build/app/outputs/flutter-apk/app-release.apk",
                             f"{self.output_folder}/harvest_{self.new_version}.apk")
                 print(f'APK 打包完成')
+            elif flag == 'macos':
+                subprocess.run(["flutter", "build", "macos"])
+                print(f'macos APP 编译完成，正在移动到指定文件夹 {self.output_folder}')
+                shutil.move("build/macos/Build/Products/Release/harvest.app",
+                            f"{self.output_folder}/harvest_{self.new_version}-macos.app")
+                print(f'MacOS 打包完成')
+            elif flag == 'windows':
+                subprocess.run(["flutter", "build", "windows"])
+                print(f'macos APP 编译完成，正在移动到指定文件夹 {self.output_folder}')
+                shutil.move("build\windows\x64\runner\Release",
+                            f"build\windows\x64\runner\harvest_{self.new_version}-win")
+                print(f'Windows 打包完成')
+                subprocess.Popen(['explorer', "build\windows\x64\runner"])
             elif flag == 'ios':
                 # subprocess.run(["rm", "-rf", f"{self.ios_path}Payload/*"])
                 res = subprocess.run(["rm -rf build/ios/iphoneos/*"], shell=True,
@@ -108,10 +122,13 @@ class VersionManager:
     def compile_and_install(self):
         with concurrent.futures.ThreadPoolExecutor() as executor:
             # 使用 executor.map 并行执行 compile 方法
-            results = executor.map(self.compile, [
-                'apk',
-                'ios',
-            ])
+            if sys.platform.startswith('win32'):
+                tasks = ['windows']
+            if sys.platform.startswith('darwin'):
+                tasks = ['macos',
+                         'apk',
+                         'ios', ]
+            results = executor.map(self.compile, tasks)
             # 处理结果或捕获异常
             for result in results:
                 try:
