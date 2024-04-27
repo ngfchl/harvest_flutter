@@ -19,7 +19,8 @@ String calculateTimeElapsed(String pastTime) {
 
   if (difference.inDays > 365) {
     int years = (difference.inDays / 365).floor();
-    return '$years 年前';
+    int months = ((difference.inDays % 365) / 30).floor();
+    return '$years 年${months > 0 ? '$months个月' : ''}前';
   } else if (difference.inDays > 30) {
     int months = (difference.inDays / 30).floor();
     return '$months 个月前';
