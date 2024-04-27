@@ -24,8 +24,6 @@ class LoginController extends GetxController {
 
   @override
   void onInit() async {
-    // 触发 网络权限授权
-    await Dio().get('https://ptools.fun');
     await serverRepository.init();
     Logger.instance.i(serverRepository.serverList);
     serverList = serverRepository.serverList;

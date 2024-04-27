@@ -1,4 +1,5 @@
 import 'package:app_service/app_service.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -16,7 +17,8 @@ void main() async {
   // 初始化 持久化数据信息
   await SPUtil.getInstance();
   GetItInjection.init();
-
+  // 触发 网络权限授权
+  await Dio().get('https://ptools.fun');
   // 初始化插件前需要在runApp之前调用初始化代码
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   initialization(null);
