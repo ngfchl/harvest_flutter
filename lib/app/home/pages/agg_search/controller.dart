@@ -1,16 +1,12 @@
 import 'dart:convert';
 
-import 'package:flutter_client_sse/constants/sse_request_type_enum.dart';
-import 'package:flutter_client_sse/flutter_client_sse.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:harvest/api/api.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:harvest/utils/logger_helper.dart' as LoggerHelper;
 import 'package:web_socket_channel/status.dart' as status;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import '../../../../models/authinfo.dart';
 import '../../../../models/download.dart';
 import '../../../torrent/torrent_controller.dart';
 import '../download/download_controller.dart';
@@ -146,7 +142,6 @@ class AggSearchController extends GetxController {
 
   cancelSearch() {
     isLoading = false;
-    SSEClient.unsubscribeFromSSE();
     channel.sink.close(status.goingAway);
     update();
   }
@@ -202,77 +197,6 @@ class AggSearchController extends GetxController {
       } else {
         searchMsg.add({"success": false, "msg": response.msg});
         update();
-      }
-    }, onError: (err) {
-      LoggerHelper.Logger.instance.e('搜索出错啦： ${err.toString()}');
-      cancelSearch();
-    }, onDone: () {
-      LoggerHelper.Logger.instance.e('搜索完成啦！');
-      cancelSearch();
-    });
-  }
-
-  doSearch() async {
-    // 打开加载状态
-    isLoading = true;
-    // 清空搜索记录
-    initSearchResult();
-
-    // 初始化站点数据
-    if (mySiteMap.isEmpty) {
-      LoggerHelper.Logger.instance.w('重新加载站点列表');
-      await initData();
-    }
-    // 准备基础数据
-    Map<String, dynamic> userinfo = box.read('userinfo') ?? {};
-    AuthInfo authInfo = AuthInfo.fromJson(userinfo);
-    final headers = <String, String>{
-      'Content-Type': 'application/json; charset=utf-8',
-      'Authorization': 'Bearer ${authInfo.authToken}'
-    };
-
-    // 打开 SSE 通道，开始搜索
-    SSEClient.subscribeToSSE(
-        method: SSERequestType.POST,
-        url: '${box.read('server')}/api/${Api.WEBSITE_SEARCH}',
-        header: headers,
-        body: {
-          "key": searchKey,
-          "max_count": maxCount,
-          "sites": sites,
-        }).listen((event) {
-      try {
-        Map<String, dynamic> jsonData = json.decode(event.data!);
-        CommonResponse response = CommonResponse.fromJson(jsonData, (p0) => p0);
-        LoggerHelper.Logger.instance.i(response.msg);
-        if (response.code == 0) {
-          List<SearchTorrentInfo> torrentInfoList =
-              List<Map<String, dynamic>>.from(response.data)
-                  .map((jsonItem) => SearchTorrentInfo.fromJson(jsonItem))
-                  .toList();
-          // 写入种子列表
-          searchResults.addAll(torrentInfoList);
-          hrResultList
-              .addAll(torrentInfoList.where((element) => element.hr).toList());
-          // 获取种子分类，并去重
-          succeedCategories
-              .addAll(torrentInfoList.map((e) => e.category).toList());
-          succeedCategories = succeedCategories.toSet().toList();
-          saleStatusList
-              .addAll(torrentInfoList.map((e) => e.saleStatus).toList());
-          saleStatusList = saleStatusList.toSet().toList();
-          // 写入有数据的站点
-          succeedSiteList.add(torrentInfoList[0].siteId);
-          searchMsg.insert(0, {"success": true, "msg": response.msg});
-          filterResults();
-        } else {
-          searchMsg.add({"success": false, "msg": response.msg});
-        }
-        update();
-      } catch (e, trace) {
-        LoggerHelper.Logger.instance.e(e.toString());
-        LoggerHelper.Logger.instance.e(trace.toString());
-        cancelSearch();
       }
     }, onError: (err) {
       LoggerHelper.Logger.instance.e('搜索出错啦： ${err.toString()}');

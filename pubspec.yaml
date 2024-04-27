@@ -1,7 +1,7 @@
 name: harvest
 description: Harvest Project App Client
 publish_to: none
-version: 2024.04.22+1
+version: 2024.04.26+2
 environment:
   sdk: '>=3.3.2 <4.0.0'
 dependencies:
@@ -24,8 +24,6 @@ dependencies:
   tmdb_api: ^2.2.0
   glassmorphism_ui: ^0.3.0
   dio_smart_retry: ^6.0.0
-  pubspec_manager: ^1.0.0
-  sqflite: ^2.3.2
   path: ^1.9.0
   filesize: ^2.0.1
   flutter_ellipsis_text: ^1.0.1
@@ -36,12 +34,11 @@ dependencies:
   flutter_slidable: ^3.1.0
   flutter_pickers: ^2.1.9
   permission_handler: ^11.3.1
-  flutter_client_sse: ^2.0.1
   flutter_inappwebview: ^6.0.0
   random_color: ^1.0.6-nullsafety
   syncfusion_flutter_sliders: ^25.1.38
   syncfusion_flutter_core: ^25.1.39
-  package_info_plus: ^8.0.0
+  package_info_plus: ^7.0.0
   app_service: ^3.0.0
   get_it: ^7.7.0
   flutter_native_splash: ^2.4.0
