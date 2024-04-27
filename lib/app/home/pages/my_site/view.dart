@@ -227,7 +227,8 @@ class _MySitePagePageState extends State<MySitePage>
             } else {
               path = website.pageIndex;
             }
-            String url = '${mySite.mirror}$path';
+            String url =
+                '${mySite.mirror!.endsWith('/') ? mySite.mirror : '${mySite.mirror}/'}$path';
             if (!Platform.isIOS && !Platform.isAndroid) {
               Logger.instance.i('Explorer');
               Uri uri = Uri.parse(url);
@@ -946,14 +947,6 @@ class _MySitePagePageState extends State<MySitePage>
                                   hrDiscern: hrDiscern.value,
                                   searchTorrents: searchTorrents.value,
                                   available: available.value,
-                                  id: 0,
-                                  sortId: 0,
-                                  removeTorrentRules: {},
-                                  timeJoin: '',
-                                  mail: 0,
-                                  notice: 0,
-                                  signInInfo: {},
-                                  statusInfo: {},
                                 );
                               } else {
                                 // 如果 mySite 为空，表示是添加操作
