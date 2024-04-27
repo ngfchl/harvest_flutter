@@ -72,7 +72,9 @@ class StatusInfo {
       myLevel: json['my_level'] as String,
       seedVolume: json['seed_volume'] ?? 0,
       updatedAt: DateTime.parse(json['updated_at'] as String),
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.parse(json['updated_at'] as String),
     );
   }
 }
