@@ -19,8 +19,30 @@ class Server {
     required this.selected,
   });
 
+  Server copyWith({
+    int? id,
+    String? name,
+    String? protocol,
+    String? domain,
+    String? username,
+    String? password,
+    int? port,
+    bool? selected,
+  }) {
+    return Server(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      protocol: protocol ?? this.protocol,
+      domain: domain ?? this.domain,
+      username: username ?? this.username,
+      password: password ?? this.password,
+      port: port ?? this.port,
+      selected: selected ?? this.selected,
+    );
+  }
+
   // 序列化方法，用于将对象转换为Map以便存入数据库
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return {
       'id': id,
       'name': name,
@@ -34,7 +56,7 @@ class Server {
   }
 
   // 反序列化方法，从数据库获取数据后转换回对象
-  factory Server.fromMap(Map<String, dynamic> map) {
+  factory Server.fromJson(Map<String, dynamic> map) {
     return Server(
       id: map['id'],
       name: map['name'],
