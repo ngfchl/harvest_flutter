@@ -127,24 +127,21 @@ class MySiteController extends GetxController {
   }
 
   Future<void> getSiteStatusFromServer() async {
-    await getMySiteList().then((value) {
-      if (value.code == 0) {
-        mySiteList = value.data;
-        isLoaded = true;
-        filterByKey();
-        update();
-      } else {
-        Logger.instance.w(value.msg);
-        Get.snackbar(
-          '',
-          value.msg.toString(),
-        );
-      }
-    }).catchError((e, stackTrace) {
-      Logger.instance.e(e.toString());
-      Logger.instance.e(stackTrace.toString());
-      Get.snackbar('', e.toString());
-    });
+    isLoaded = true;
+    update();
+
+    CommonResponse res = await getMySiteList();
+    if (res.code == 0) {
+      mySiteList = res.data;
+      filterByKey();
+      isLoaded = false;
+    } else {
+      Logger.instance.w(res.msg);
+      Get.snackbar(
+        '',
+        res.msg.toString(),
+      );
+    }
     update();
   }
 
