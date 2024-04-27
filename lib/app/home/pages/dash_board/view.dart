@@ -14,6 +14,7 @@ import '../../../../common/glass_widget.dart';
 import '../../../../common/hex_color.dart';
 import '../../../../common/utils.dart';
 import '../../../../theme/fitness_app_theme.dart';
+import '../../../../utils/calc_weeks.dart';
 import '../../../../utils/logger_helper.dart';
 import 'controller.dart';
 
@@ -80,6 +81,10 @@ class _DashBoardPageState extends State<DashBoardPage>
 
   Widget _buildSiteInfoCard() {
     return GetBuilder<DashBoardController>(builder: (controller) {
+      MySite earliestSite = controller.mySiteController.mySiteList.reduce(
+          (value, element) =>
+              value.timeJoin.compareTo(element.timeJoin) < 0 ? value : element);
+      RxBool showYear = true.obs;
       return CustomCard(
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(8.0),
@@ -124,7 +129,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                         style: TextStyle(
                                           fontFamily: FitnessAppTheme.fontName,
                                           fontWeight: FontWeight.w500,
-                                          fontSize: 16,
+                                          fontSize: 14,
                                           letterSpacing: -0.1,
                                           color: FitnessAppTheme.grey
                                               .withOpacity(0.5),
@@ -135,16 +140,16 @@ class _DashBoardPageState extends State<DashBoardPage>
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       crossAxisAlignment:
-                                          CrossAxisAlignment.end,
+                                          CrossAxisAlignment.center,
                                       children: <Widget>[
                                         const SizedBox(
-                                          width: 28,
-                                          height: 28,
-                                          child: Icon(Icons.upload),
+                                          width: 15,
+                                          height: 15,
+                                          child: Icon(Icons.upload, size: 15),
                                         ),
                                         Padding(
-                                          padding: const EdgeInsets.only(
-                                              left: 4, bottom: 3),
+                                          padding:
+                                              const EdgeInsets.only(left: 4),
                                           child: Text(
                                             filesize(controller.totalUploaded),
                                             textAlign: TextAlign.center,
@@ -152,7 +157,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                               fontFamily:
                                                   FitnessAppTheme.fontName,
                                               fontWeight: FontWeight.w600,
-                                              fontSize: 16,
+                                              fontSize: 14,
                                               color: FitnessAppTheme.darkerText,
                                             ),
                                           ),
@@ -208,7 +213,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                         style: TextStyle(
                                           fontFamily: FitnessAppTheme.fontName,
                                           fontWeight: FontWeight.w500,
-                                          fontSize: 16,
+                                          fontSize: 14,
                                           letterSpacing: -0.1,
                                           color: FitnessAppTheme.grey
                                               .withOpacity(0.5),
@@ -219,16 +224,19 @@ class _DashBoardPageState extends State<DashBoardPage>
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       crossAxisAlignment:
-                                          CrossAxisAlignment.end,
+                                          CrossAxisAlignment.center,
                                       children: <Widget>[
                                         const SizedBox(
-                                          width: 28,
-                                          height: 28,
-                                          child: Icon(Icons.download),
+                                          width: 15,
+                                          height: 15,
+                                          child: Icon(
+                                            Icons.download,
+                                            size: 15,
+                                          ),
                                         ),
                                         Padding(
-                                          padding: const EdgeInsets.only(
-                                              left: 4, bottom: 3),
+                                          padding:
+                                              const EdgeInsets.only(left: 4),
                                           child: Text(
                                             filesize(
                                                 controller.totalDownloaded),
@@ -237,7 +245,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                               fontFamily:
                                                   FitnessAppTheme.fontName,
                                               fontWeight: FontWeight.w600,
-                                              fontSize: 16,
+                                              fontSize: 14,
                                               color: FitnessAppTheme.darkerText,
                                             ),
                                           ),
@@ -273,70 +281,98 @@ class _DashBoardPageState extends State<DashBoardPage>
                   Padding(
                     padding: const EdgeInsets.only(right: 16),
                     child: Center(
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Container(
-                              width: 100,
-                              height: 100,
-                              decoration: BoxDecoration(
-                                color: FitnessAppTheme.white,
-                                borderRadius: const BorderRadius.all(
-                                  Radius.circular(100.0),
+                      child: InkWell(
+                        onTap: () {
+                          showYear.value = !showYear.value;
+                        },
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Container(
+                                width: 100,
+                                height: 100,
+                                decoration: BoxDecoration(
+                                  color: FitnessAppTheme.white,
+                                  borderRadius: const BorderRadius.all(
+                                    Radius.circular(100.0),
+                                  ),
+                                  border: Border.all(
+                                      width: 4,
+                                      color: FitnessAppTheme.nearlyDarkBlue
+                                          .withOpacity(0.2)),
                                 ),
-                                border: Border.all(
-                                    width: 4,
-                                    color: FitnessAppTheme.nearlyDarkBlue
-                                        .withOpacity(0.2)),
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: <Widget>[
-                                  Text(
-                                    '${controller.statusList.length}',
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      fontFamily: FitnessAppTheme.fontName,
-                                      fontWeight: FontWeight.normal,
-                                      fontSize: 24,
-                                      letterSpacing: 0.0,
-                                      color: FitnessAppTheme.nearlyDarkBlue,
-                                    ),
-                                  ),
-                                  Text(
-                                    '站点数',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontFamily: FitnessAppTheme.fontName,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
-                                      letterSpacing: 0.0,
-                                      color:
-                                          FitnessAppTheme.grey.withOpacity(0.5),
-                                    ),
-                                  ),
-                                ],
+                                child: Obx(() {
+                                  return Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: <Widget>[
+                                      const SizedBox(
+                                        height: 8,
+                                      ),
+                                      showYear.value
+                                          ? Text(
+                                              calcWeeksDays(
+                                                  earliestSite.timeJoin),
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                                fontFamily:
+                                                    FitnessAppTheme.fontName,
+                                                fontWeight: FontWeight.normal,
+                                                fontSize: 14,
+                                                letterSpacing: 0.0,
+                                                color: FitnessAppTheme
+                                                    .nearlyDarkBlue,
+                                              ),
+                                            )
+                                          : Text(
+                                              '🔥${calculateTimeElapsed(earliestSite.timeJoin).replaceAll('前', '')}',
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                                fontFamily:
+                                                    FitnessAppTheme.fontName,
+                                                fontWeight: FontWeight.normal,
+                                                fontSize: 14,
+                                                letterSpacing: 0.0,
+                                                color: FitnessAppTheme
+                                                    .nearlyDarkBlue,
+                                              ),
+                                            ),
+                                      Text(
+                                        'P龄',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontFamily: FitnessAppTheme.fontName,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                          letterSpacing: 0.0,
+                                          color: FitnessAppTheme.grey
+                                              .withOpacity(0.5),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }),
                               ),
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(4.0),
-                            child: CustomPaint(
-                              painter: CurvePainter(colors: [
-                                FitnessAppTheme.nearlyDarkBlue,
-                                HexColor("#8A98E8"),
-                                HexColor("#8A98E8")
-                              ], angle: 140 + (360 - 140) * 1.0),
-                              child: const SizedBox(
-                                width: 108,
-                                height: 108,
+                            Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: CustomPaint(
+                                painter: CurvePainter(colors: [
+                                  FitnessAppTheme.nearlyDarkBlue,
+                                  HexColor("#8A98E8"),
+                                  HexColor("#8A98E8")
+                                ], angle: 140 + (360 - 140) * 1.0),
+                                child: const SizedBox(
+                                  width: 108,
+                                  height: 108,
+                                ),
                               ),
-                            ),
-                          )
-                        ],
+                            )
+                          ],
+                        ),
                       ),
                     ),
                   )
@@ -365,12 +401,12 @@ class _DashBoardPageState extends State<DashBoardPage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         const Text(
-                          '做种量',
+                          '站点数',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontFamily: FitnessAppTheme.fontName,
                             fontWeight: FontWeight.w500,
-                            fontSize: 16,
+                            fontSize: 14,
                             letterSpacing: -0.2,
                             color: FitnessAppTheme.darkText,
                           ),
@@ -379,21 +415,81 @@ class _DashBoardPageState extends State<DashBoardPage>
                           padding: const EdgeInsets.only(top: 4),
                           child: Container(
                             height: 4,
-                            width: 70,
+                            width: 60,
                             decoration: BoxDecoration(
-                              color: HexColor('#87A0E5').withOpacity(0.2),
+                              color: HexColor('#87D0E5').withOpacity(0.2),
                               borderRadius:
                                   const BorderRadius.all(Radius.circular(4.0)),
                             ),
                             child: Row(
                               children: <Widget>[
                                 Container(
-                                  width: 70 / 1.2,
+                                  width: 60 / 1.2,
                                   height: 4,
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(colors: [
-                                      HexColor('#87A0E5'),
-                                      HexColor('#87A0E5').withOpacity(0.5),
+                                      HexColor('#87D0E5'),
+                                      HexColor('#87D0E5').withOpacity(0.5),
+                                    ]),
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(4.0)),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(
+                            '${controller.mySiteController.mySiteList.length}',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontFamily: FitnessAppTheme.fontName,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                              color: FitnessAppTheme.grey.withOpacity(0.5),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        const Text(
+                          '做种量',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: FitnessAppTheme.fontName,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                            letterSpacing: -0.2,
+                            color: FitnessAppTheme.darkText,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Container(
+                            height: 4,
+                            width: 60,
+                            decoration: BoxDecoration(
+                              color: HexColor('#89A0E5').withOpacity(0.2),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(4.0)),
+                            ),
+                            child: Row(
+                              children: <Widget>[
+                                Container(
+                                  width: 60 / 1.2,
+                                  height: 4,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(colors: [
+                                      HexColor('#89A0E5'),
+                                      HexColor('#89A0E5').withOpacity(0.5),
                                     ]),
                                     borderRadius: const BorderRadius.all(
                                         Radius.circular(4.0)),
@@ -411,7 +507,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                             style: TextStyle(
                               fontFamily: FitnessAppTheme.fontName,
                               fontWeight: FontWeight.w600,
-                              fontSize: 12,
+                              fontSize: 13,
                               color: FitnessAppTheme.grey.withOpacity(0.5),
                             ),
                           ),
@@ -434,7 +530,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                               style: TextStyle(
                                 fontFamily: FitnessAppTheme.fontName,
                                 fontWeight: FontWeight.w500,
-                                fontSize: 16,
+                                fontSize: 14,
                                 letterSpacing: -0.2,
                                 color: FitnessAppTheme.darkText,
                               ),
@@ -443,7 +539,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                               padding: const EdgeInsets.only(top: 4),
                               child: Container(
                                 height: 4,
-                                width: 70,
+                                width: 60,
                                 decoration: BoxDecoration(
                                   color: HexColor('#F56E98').withOpacity(0.2),
                                   borderRadius: const BorderRadius.all(
@@ -452,7 +548,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 child: Row(
                                   children: <Widget>[
                                     Container(
-                                      width: ((70 / 2) *
+                                      width: ((60 / 2) *
                                           animationController!.value),
                                       height: 4,
                                       decoration: BoxDecoration(
@@ -476,7 +572,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 style: TextStyle(
                                   fontFamily: FitnessAppTheme.fontName,
                                   fontWeight: FontWeight.w600,
-                                  fontSize: 12,
+                                  fontSize: 13,
                                   color: FitnessAppTheme.grey.withOpacity(0.5),
                                 ),
                               ),
@@ -500,7 +596,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                               style: TextStyle(
                                 fontFamily: FitnessAppTheme.fontName,
                                 fontWeight: FontWeight.w500,
-                                fontSize: 16,
+                                fontSize: 14,
                                 letterSpacing: -0.2,
                                 color: FitnessAppTheme.darkText,
                               ),
@@ -509,7 +605,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                               padding: const EdgeInsets.only(right: 0, top: 4),
                               child: Container(
                                 height: 4,
-                                width: 70,
+                                width: 60,
                                 decoration: BoxDecoration(
                                   color: HexColor('#F1B440').withOpacity(0.2),
                                   borderRadius: const BorderRadius.all(
@@ -518,7 +614,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 child: Row(
                                   children: <Widget>[
                                     Container(
-                                      width: ((70 / 2.5) *
+                                      width: ((60 / 2.5) *
                                           animationController!.value),
                                       height: 4,
                                       decoration: BoxDecoration(
@@ -542,7 +638,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 style: TextStyle(
                                   fontFamily: FitnessAppTheme.fontName,
                                   fontWeight: FontWeight.w600,
-                                  fontSize: 12,
+                                  fontSize: 13,
                                   color: FitnessAppTheme.grey.withOpacity(0.5),
                                 ),
                               ),
@@ -551,7 +647,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                         ),
                       ],
                     ),
-                  )
+                  ),
                 ],
               ),
             )
