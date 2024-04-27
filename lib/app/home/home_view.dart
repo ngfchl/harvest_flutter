@@ -6,8 +6,6 @@ import 'package:getwidget/getwidget.dart';
 import 'package:harvest/api/mysite.dart';
 import 'package:harvest/models/common_response.dart';
 
-import '../../api/api.dart';
-import '../routes/app_pages.dart';
 import 'controller/home_controller.dart';
 
 class HomeView extends GetView<HomeController> {
@@ -25,20 +23,19 @@ class HomeView extends GetView<HomeController> {
         backgroundColor: Colors.white54,
         elevation: 1.5,
         iconTheme: const IconThemeData(color: Colors.black38),
-        // flexibleSpace: Container(
-        //   decoration: BoxDecoration(
-        //     gradient: LinearGradient(
-        //       begin: Alignment.centerLeft,
-        //       end: Alignment.centerRight,
-        //       colors: [
-        //         Colors.white38.withOpacity(0.3),
-        //         Colors.white54.withOpacity(0.4),
-        //         Colors.white70.withOpacity(0.6),
-        //       ],
-        //     ),
-        //   ),
-        // ),
-
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [
+                Colors.orange.withOpacity(0.4),
+                Colors.grey.withOpacity(0.3),
+                Colors.brown.withOpacity(0.1),
+              ],
+            ),
+          ),
+        ),
         actions: <Widget>[
           _actionButtonList(context),
         ],
@@ -58,7 +55,7 @@ class HomeView extends GetView<HomeController> {
           semanticLabel: 'Harvest',
           elevation: 10,
           color: Colors.black87,
-          child: _buildMenuBar(),
+          child: _buildMenuBar(context),
         ),
       ),
       drawerEdgeDragWidth: 200,
@@ -92,308 +89,129 @@ class HomeView extends GetView<HomeController> {
     );
   }
 
-  Widget _buildMenuBar() {
+  Widget _buildMenuBar(context) {
     return GetBuilder<HomeController>(builder: (controller) {
-      return NavigationRail(
-        useIndicator: true,
-        elevation: 1,
-        selectedIndex: controller.initPage,
-        onDestinationSelected: (index) => controller.changePage(index),
-        backgroundColor: Colors.brown.shade100,
-        labelType: NavigationRailLabelType.selected,
-        leading: GFDrawerHeader(
-          centerAlign: true,
-          closeButton: null,
-          decoration: const BoxDecoration(
-            color: Colors.transparent,
+      return SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width, // 确保宽度适配屏幕
           ),
-          currentAccountPicture: const GFAvatar(
-            radius: 80.0,
-            backgroundImage: AssetImage('assets/images/logo.png'),
-          ),
-          // otherAccountsPictures: [
-          //   Image(
-          //     image: NetworkImage(
-          //         "https://cdn.pixabay.com/photo/2019/12/20/00/03/road-4707345_960_720.jpg"),
-          //     fit: BoxFit.cover,
-          //   ),
-          //   GFAvatar(
-          //     child: Text("ab"),
-          //   )
-          // ],
-          child: Padding(
-            padding: const EdgeInsets.only(right: 20.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Text(
-                  controller.userinfo['user'],
-                  style: const TextStyle(color: Colors.white70),
+          child: IntrinsicHeight(
+            child: NavigationRail(
+              useIndicator: true,
+              elevation: 1,
+              extended: true,
+              selectedIndex: controller.initPage,
+              onDestinationSelected: (index) => controller.changePage(index),
+              backgroundColor: Colors.brown.shade100,
+              labelType: NavigationRailLabelType.none,
+              leading: GFDrawerHeader(
+                centerAlign: true,
+                closeButton: null,
+                decoration: const BoxDecoration(
+                  color: Colors.transparent,
                 ),
-                // Text('admin@admin.com'),
-                Text(
-                  '${controller.box.read('server')}',
-                  style: const TextStyle(fontSize: 12, color: Colors.white70),
+                currentAccountPicture: const GFAvatar(
+                  radius: 80.0,
+                  backgroundImage: AssetImage('assets/images/launch_image.png'),
+                ),
+                // otherAccountsPictures: [
+                //   Image(
+                //     image: NetworkImage(
+                //         "https://cdn.pixabay.com/photo/2019/12/20/00/03/road-4707345_960_720.jpg"),
+                //     fit: BoxFit.cover,
+                //   ),
+                //   GFAvatar(
+                //     child: Text("ab"),
+                //   )
+                // ],
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 20.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Text(
+                        controller.userinfo['user'],
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                      // Text('admin@admin.com'),
+                      Tooltip(
+                        message: '${controller.box.read('server')}',
+                        child: Text(
+                          '${controller.box.read('server')}',
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 12, color: Colors.white70),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              destinations: const [
+                NavigationRailDestination(
+                  icon: Icon(Icons.home),
+                  label: Text('仪表盘'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.search),
+                  label: Text('聚合搜索'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.menu),
+                  label: Text('站点数据'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.cloud_download),
+                  label: Text('下载管理'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.task),
+                  label: Text('计划任务'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.settings),
+                  label: Text('系统设置'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.subscriptions_outlined),
+                  label: Text('订阅管理'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.rss_feed),
+                  label: Text('站点RSS'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.history),
+                  label: Text('订阅历史'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.tag),
+                  label: Text('订阅标签'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.movie),
+                  label: Text('豆瓣影视'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.document_scanner_rounded),
+                  label: Text('访问日志'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.list_alt),
+                  label: Text('任务日志'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.account_box_rounded),
+                  label: Text('更换账号'),
                 ),
               ],
             ),
           ),
         ),
-        destinations: const [
-          NavigationRailDestination(
-            icon: Icon(Icons.home),
-            label: Text('仪表盘'),
-          ),
-          NavigationRailDestination(
-            icon: Icon(Icons.search),
-            label: Text('聚合搜索'),
-          ),
-          NavigationRailDestination(
-            icon: Icon(Icons.menu),
-            label: Text('站点数据'),
-          ),
-          NavigationRailDestination(
-            icon: Icon(Icons.cloud_download),
-            label: Text('下载管理'),
-          ),
-          NavigationRailDestination(
-            icon: Icon(Icons.task),
-            label: Text('计划任务'),
-          ),
-          NavigationRailDestination(
-            icon: Icon(Icons.settings),
-            label: Text('系统设置'),
-          ),
-          NavigationRailDestination(
-            icon: Icon(Icons.subscriptions_outlined),
-            label: Text('订阅管理'),
-          ),
-          NavigationRailDestination(
-            icon: Icon(Icons.rss_feed),
-            label: Text('站点RSS'),
-          ),
-          NavigationRailDestination(
-            icon: Icon(Icons.history),
-            label: Text('订阅历史'),
-          ),
-          NavigationRailDestination(
-            icon: Icon(Icons.tag),
-            label: Text('订阅标签'),
-          ),
-          NavigationRailDestination(
-            icon: Icon(Icons.movie),
-            label: Text('豆瓣影视'),
-          ),
-          NavigationRailDestination(
-            icon: Icon(Icons.document_scanner_rounded),
-            label: Text('网页日志'),
-          ),
-          NavigationRailDestination(
-            icon: Icon(Icons.document_scanner_rounded),
-            label: Text('任务日志'),
-          ),
-          NavigationRailDestination(
-            icon: Icon(Icons.account_box_rounded),
-            label: Text('更换账号'),
-          ),
-        ],
       );
     });
-  }
-
-  ListView _buildListView() {
-    return ListView(padding: EdgeInsets.zero, children: [
-      const SizedBox(
-        height: 30,
-      ),
-      GFDrawerHeader(
-        centerAlign: true,
-        closeButton: null,
-        decoration: const BoxDecoration(
-          color: Colors.transparent,
-        ),
-        currentAccountPicture: const GFAvatar(
-          radius: 80.0,
-          backgroundImage: AssetImage('assets/images/logo.png'),
-        ),
-        // otherAccountsPictures: [
-        //   Image(
-        //     image: NetworkImage(
-        //         "https://cdn.pixabay.com/photo/2019/12/20/00/03/road-4707345_960_720.jpg"),
-        //     fit: BoxFit.cover,
-        //   ),
-        //   GFAvatar(
-        //     child: Text("ab"),
-        //   )
-        // ],
-        child: Padding(
-          padding: const EdgeInsets.only(right: 20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                controller.userinfo['user'],
-                style: const TextStyle(color: Colors.white70),
-              ),
-              // Text('admin@admin.com'),
-              Text(
-                '${controller.box.read('server')}',
-                style: const TextStyle(fontSize: 12, color: Colors.white70),
-              ),
-            ],
-          ),
-        ),
-      ),
-      _buildMenuBar(),
-    ]);
-  }
-
-  List<Widget> menus() {
-    return [
-      ListTile(
-        title: const Text(
-          '豆瓣影视',
-          style: TextStyle(color: Colors.white70),
-          textAlign: TextAlign.center,
-        ),
-        onTap: () {
-          Get.back();
-          controller.pageController.jumpToPage(11);
-        },
-      ),
-      ListTile(
-        title: const Text(
-          '站点数据',
-          style: TextStyle(
-            color: Colors.white70,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        onTap: () {
-          Get.back();
-          controller.changePage(1);
-        },
-      ),
-      ListTile(
-        title: const Text(
-          '计划任务',
-          style: TextStyle(
-            color: Colors.white70,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        onTap: () {
-          Get.back();
-          controller.changePage(4);
-        },
-      ),
-      ListTile(
-        title: const Text(
-          '下载管理',
-          style: TextStyle(
-            color: Colors.white70,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        onTap: () {
-          Get.back();
-          controller.changePage(3);
-        },
-      ),
-      ListTile(
-        title: const Text(
-          '实时日志',
-          style: TextStyle(
-            color: Colors.white70,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        onTap: () {
-          Get.toNamed(Routes.WEBVIEW, arguments: {
-            'url': '${controller.box.read('server')}/api/${Api.SYSTEM_LOGGING}',
-          });
-        },
-      ),
-      ListTile(
-        title: const Text(
-          '订阅管理',
-          style: TextStyle(
-            color: Colors.white70,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        onTap: () {
-          Get.back();
-          controller.pageController.jumpToPage(7);
-        },
-      ),
-      ListTile(
-        title: const Text(
-          '订阅历史',
-          style: TextStyle(
-            color: Colors.white70,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        onTap: () {
-          Get.back();
-          controller.pageController.jumpToPage(9);
-        },
-      ),
-      ListTile(
-        title: const Text(
-          '标签管理',
-          style: TextStyle(
-            color: Colors.white70,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        onTap: () {
-          Get.back();
-          controller.pageController.jumpToPage(8);
-        },
-      ),
-      ListTile(
-        title: const Text(
-          'RSS订阅',
-          style: TextStyle(
-            color: Colors.white70,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        onTap: () {
-          Get.back();
-          controller.pageController.jumpToPage(6);
-        },
-      ),
-      ListTile(
-        title: const Text(
-          '系统设置',
-          style: TextStyle(
-            color: Colors.white70,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        onTap: () {
-          Get.back();
-          controller.pageController.jumpToPage(5);
-        },
-      ),
-      ListTile(
-        title: const Text(
-          '更换账号',
-          style: TextStyle(
-            color: Colors.white70,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        onTap: () {
-          controller.logout();
-        },
-      ),
-    ];
   }
 
   Widget _actionButtonList(context) {
@@ -401,20 +219,25 @@ class HomeView extends GetView<HomeController> {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         // const Wen(),
-        const ThemeModal(
-          itemSize: 28,
-        ),
-        GFIconButton(
-          icon: Icon(
-            Icons.exit_to_app,
-            size: 22,
-            color: Colors.red.shade500,
+        const SizedBox(
+          height: 20,
+          width: 20,
+          child: ThemeModal(
+            itemSize: 28,
           ),
-          onPressed: () {
-            controller.logout();
-          },
-          type: GFButtonType.transparent,
         ),
+        // GFIconButton(
+        //   icon: Icon(
+        //     Icons.exit_to_app,
+        //     size: 22,
+        //     color: Colors.red.shade500,
+        //   ),
+        //   onPressed: () {
+        //     controller.logout();
+        //   },
+        //   type: GFButtonType.transparent,
+        // ),
+        const SizedBox(width: 15),
         CustomPopup(
           showArrow: false,
           // contentPadding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
@@ -463,15 +286,13 @@ class HomeView extends GetView<HomeController> {
               ],
             ),
           ),
-          child: Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: Icon(
-              Icons.add_box_outlined,
-              size: 24,
-              color: Colors.blue.shade800,
-            ),
+          child: Icon(
+            Icons.add_box_outlined,
+            size: 24,
+            color: Colors.blue.shade800,
           ),
         ),
+        const SizedBox(width: 20)
       ],
     );
   }
