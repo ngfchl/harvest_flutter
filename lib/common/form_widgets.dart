@@ -42,6 +42,7 @@ class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
   final String labelText;
   final String? prefixText;
+  final Icon? prefixIcon;
   final String? suffixText;
   final String? helperText;
   final List<TextInputFormatter> inputFormatters;
@@ -58,6 +59,7 @@ class CustomTextField extends StatelessWidget {
     this.keyboardType,
     this.helperText,
     this.prefixText,
+    this.prefixIcon,
     this.suffixText,
     this.onChanged,
   });
@@ -84,6 +86,7 @@ class CustomTextField extends StatelessWidget {
           ),
           helperText: helperText,
           prefixText: prefixText,
+          prefixIcon: prefixIcon,
           suffixText: suffixText,
           helperStyle: const TextStyle(fontSize: 12, color: Colors.black54),
           prefixStyle: const TextStyle(fontSize: 12, color: Colors.black54),
