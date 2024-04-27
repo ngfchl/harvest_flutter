@@ -92,14 +92,14 @@ class ServerRepository {
         where: '1 = 1', // 更新所有记录
       );
     }
-    return await _db.insert('servers', server.toMap()..remove('id'));
+    return await _db.insert('servers', server.toJson()..remove('id'));
   }
 
   // 获取所有服务器信息
   Future<List<Server>> getServers() async {
     final List<Map<String, dynamic>> maps = await _db.query('servers');
     return List.generate(maps.length, (i) {
-      return Server.fromMap(maps[i]);
+      return Server.fromJson(maps[i]);
     });
   }
 
@@ -116,7 +116,7 @@ class ServerRepository {
 
     await _db.update(
       'servers',
-      server.toMap(),
+      server.toJson(),
       where: 'id = ?',
       whereArgs: [server.id],
     );
@@ -141,7 +141,7 @@ class ServerRepository {
     );
 
     if (maps.isNotEmpty) {
-      return Server.fromMap(maps.first.cast<String, dynamic>());
+      return Server.fromJson(maps.first.cast<String, dynamic>());
     } else {
       return null;
     }
