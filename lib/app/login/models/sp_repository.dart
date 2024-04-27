@@ -16,11 +16,13 @@ class ServerRepository {
 
   // 获取所有服务器信息
   void getServers() {
-    List<Object?> storageData = SPUtil.getLocalStorage('servers');
-    serverList = storageData
-        .map((data) => Server.fromJson(
-            json.decode(data as String) as Map<String, dynamic>))
-        .toList();
+    if (SPUtil.containsKey('servers')) {
+      List<Object?> storageData = SPUtil.getLocalStorage('servers');
+      serverList = storageData
+          .map((data) => Server.fromJson(
+              json.decode(data as String) as Map<String, dynamic>))
+          .toList();
+    }
   }
 
 // 插入新的服务器信息
