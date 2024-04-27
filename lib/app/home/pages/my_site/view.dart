@@ -3,8 +3,10 @@ import 'dart:io';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:filesize/filesize.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
+import 'package:harvest/models/common_response.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -195,142 +197,73 @@ class _MySitePagePageState extends State<MySitePage>
     if (status == null) {
       Logger.instance.w('${mySite.nickname} - ${mySite.statusInfo}');
     }
-    return status == null
-        ? CustomCard(
-            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Column(
-              children: [
-                ListTile(
-                  leading: Image.network(
-                    website!.logo.startsWith('http')
-                        ? website.logo
-                        : '${mySite.mirror}${website.logo}',
-                    errorBuilder: (BuildContext context, Object exception,
-                        StackTrace? stackTrace) {
-                      // Placeholder widget when loading fails
-                      return const Image(
-                          image: AssetImage('assets/images/logo.png'));
-                    },
-                  ),
-                  title: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        mySite.nickname,
-                        style: const TextStyle(
-                          color: Colors.black38,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ),
-                  subtitle: Text(
-                    calcWeeksDays(mySite.timeJoin),
-                    style: const TextStyle(
-                      color: Colors.black38,
-                      fontSize: 10,
-                    ),
-                  ),
-                ),
-                siteOperateButtonBar(website, mySite)
-              ],
+    return CustomCard(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: Column(children: [
+        ListTile(
+          dense: true,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+          leading: ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Image.network(
+              website!.logo.startsWith('http')
+                  ? website.logo
+                  : '${mySite.mirror}${website.logo}',
+              fit: BoxFit.fill,
+              errorBuilder: (BuildContext context, Object exception,
+                  StackTrace? stackTrace) {
+                return const Image(image: AssetImage('assets/images/logo.png'));
+              },
+              width: 32,
+              height: 32,
             ),
-          )
-        : CustomCard(
-            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Column(children: [
-              ListTile(
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-                leading: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Image.network(
-                    website!.logo.startsWith('http')
-                        ? website.logo
-                        : '${mySite.mirror}${website.logo}',
-                    fit: BoxFit.fill,
-                    errorBuilder: (BuildContext context, Object exception,
-                        StackTrace? stackTrace) {
-                      return const Image(
-                          image: AssetImage('assets/images/logo.png'));
-                    },
-                    width: 32,
-                    height: 32,
-                  ),
+          ),
+          onTap: () async {
+            String path;
+            if (mySite.mail! > 0 && !website.pageMessage.contains('api')) {
+              path = website.pageMessage
+                  .replaceFirst("{}", mySite.userId.toString());
+            } else {
+              path = website.pageIndex;
+            }
+            String url = '${mySite.mirror}$path';
+            if (!Platform.isIOS && !Platform.isAndroid) {
+              Logger.instance.i('Explorer');
+              Uri uri = Uri.parse(url);
+              if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？');
+              }
+            } else {
+              Logger.instance.i('WebView');
+              Get.toNamed(Routes.WEBVIEW, arguments: {
+                'url': url,
+                'info': null,
+                'mySite': mySite,
+                'website': website
+              });
+            }
+          },
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                mySite.nickname,
+                style: const TextStyle(
+                  color: Colors.black38,
+                  fontSize: 13,
                 ),
-                onTap: () async {
-                  String path;
-                  if (mySite.mail! > 0 &&
-                      !website.pageMessage.contains('api')) {
-                    path = website.pageMessage
-                        .replaceFirst("{}", mySite.userId.toString());
-                  } else {
-                    path = website.pageIndex;
-                  }
-                  String url = '${mySite.mirror}$path';
-                  if (!Platform.isIOS && !Platform.isAndroid) {
-                    Logger.instance.i('Explorer');
-                    Uri uri = Uri.parse(url);
-                    if (!await launchUrl(uri,
-                        mode: LaunchMode.externalApplication)) {
-                      Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？');
-                    }
-                  } else {
-                    Logger.instance.i('WebView');
-                    Get.toNamed(Routes.WEBVIEW, arguments: {
-                      'url': url,
-                      'info': null,
-                      'mySite': mySite,
-                      'website': website
-                    });
-                  }
-                },
-                title: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              ),
+              if (mySite.mail! > 0)
+                Row(
                   children: [
-                    Text(
-                      mySite.nickname,
-                      style: const TextStyle(
-                        color: Colors.black38,
-                        fontSize: 13,
-                      ),
+                    const Icon(
+                      Icons.mail,
+                      size: 12,
+                      color: Colors.black38,
                     ),
-                    if (mySite.mail! > 0)
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.mail,
-                            size: 12,
-                            color: Colors.black38,
-                          ),
-                          Text(
-                            '${mySite.mail}',
-                            style: const TextStyle(
-                              color: Colors.black38,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
-                      ),
-                    if (mySite.notice! > 0)
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.notifications,
-                            size: 12,
-                            color: Colors.black38,
-                          ),
-                          Text(
-                            '${mySite.notice}',
-                            style: const TextStyle(
-                              color: Colors.black38,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
-                      ),
                     Text(
-                      status.myLevel,
+                      '${mySite.mail}',
                       style: const TextStyle(
                         color: Colors.black38,
                         fontSize: 10,
@@ -338,7 +271,42 @@ class _MySitePagePageState extends State<MySitePage>
                     ),
                   ],
                 ),
-                subtitle: Row(
+              if (mySite.notice! > 0)
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.notifications,
+                      size: 12,
+                      color: Colors.black38,
+                    ),
+                    Text(
+                      '${mySite.notice}',
+                      style: const TextStyle(
+                        color: Colors.black38,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
+                ),
+              if (status != null)
+                Text(
+                  status.myLevel,
+                  style: const TextStyle(
+                    color: Colors.black38,
+                    fontSize: 10,
+                  ),
+                ),
+            ],
+          ),
+          subtitle: status == null
+              ? Text(
+                  '站点失联啦？',
+                  style: TextStyle(
+                    color: Colors.red.shade200,
+                    fontSize: 10,
+                  ),
+                )
+              : Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
@@ -367,179 +335,264 @@ class _MySitePagePageState extends State<MySitePage>
                       ),
                   ],
                 ),
-                trailing: Text(
-                    calculateTimeElapsed(status.updatedAt.toString()),
-                    style: TextStyle(color: Colors.grey.shade400)),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Column(
+          trailing: _buildMySiteOperate(website, mySite),
+        ),
+        if (status != null)
+          Padding(
+            padding: const EdgeInsets.only(left: 12.0, right: 12, bottom: 12),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Row(
+                          textBaseline: TextBaseline.ideographic,
                           children: [
-                            Row(
-                              textBaseline: TextBaseline.ideographic,
-                              children: [
-                                const Icon(
-                                  Icons.upload_outlined,
-                                  color: Colors.green,
-                                  size: 14,
-                                ),
-                                const SizedBox(width: 2),
-                                Text(
-                                  '${filesize(status.uploaded)} (${status.seed})',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.black38,
-                                  ),
-                                ),
-                              ],
+                            const Icon(
+                              Icons.upload_outlined,
+                              color: Colors.green,
+                              size: 14,
                             ),
-                            const SizedBox(height: 2),
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.download_outlined,
-                                  color: Colors.red,
-                                  size: 14,
-                                ),
-                                const SizedBox(width: 2),
-                                Text(
-                                  '${filesize(status.downloaded)} (${status.leech})',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.black38,
-                                  ),
-                                ),
-                              ],
+                            const SizedBox(width: 2),
+                            Text(
+                              '${filesize(status.uploaded)} (${status.seed})',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.black38,
+                              ),
                             ),
                           ],
                         ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        const SizedBox(height: 2),
+                        Row(
                           children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.ios_share,
-                                  color: status.ratio > 1
-                                      ? Colors.black38
-                                      : Colors.deepOrange,
-                                  size: 14,
-                                ),
-                                const SizedBox(width: 2),
-                                Text(
-                                  formatNumber(status.ratio),
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.black38,
-                                  ),
-                                ),
-                              ],
+                            const Icon(
+                              Icons.download_outlined,
+                              color: Colors.red,
+                              size: 14,
                             ),
-                            const SizedBox(height: 2),
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.cloud_upload_outlined,
-                                  color: Colors.black38,
-                                  size: 14,
-                                ),
-                                const SizedBox(width: 2),
-                                Text(
-                                  filesize(status.seedVolume),
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.black38,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              textBaseline: TextBaseline.ideographic,
-                              children: [
-                                const Icon(
-                                  Icons.timer_outlined,
-                                  color: Colors.black38,
-                                  size: 14,
-                                ),
-                                const SizedBox(width: 2),
-                                Text(
-                                  formatNumber(status.bonusHour),
-                                  // '(${  status.siteSpFull != null && status.siteSpFull! > 0 ? ((status.statusBonusHour! / status.siteSpFull!) * 100).toStringAsFixed(2) : '0'}%)',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.black38,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                            Row(
-                              textBaseline: TextBaseline.ideographic,
-                              children: [
-                                const Icon(
-                                  Icons.score,
-                                  color: Colors.black38,
-                                  size: 14,
-                                ),
-                                const SizedBox(width: 2),
-                                Text(
-                                  '${formatNumber(status.myBonus)}(${formatNumber(status.myScore)})',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.black38,
-                                  ),
-                                ),
-                              ],
+                            const SizedBox(width: 2),
+                            Text(
+                              '${filesize(status.downloaded)} (${status.leech})',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.black38,
+                              ),
                             ),
                           ],
                         ),
                       ],
                     ),
-                    const SizedBox(height: 2),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '最近更新：${status.updatedAt.toString()}',
-                          textAlign: TextAlign.right,
-                          style: const TextStyle(
-                            color: Colors.black38,
-                            fontSize: 10.5,
-                          ),
-                        ),
-                        if (status.myHr != '' && status.myHr != "0")
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Text(
-                                'HR: ${status.myHr.replaceAll('区', '').replaceAll('专', '')}',
-                                textAlign: TextAlign.right,
-                                style: const TextStyle(
-                                  color: Colors.red,
-                                  fontSize: 10,
-                                ),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.ios_share,
+                              color: status.ratio > 1
+                                  ? Colors.black38
+                                  : Colors.deepOrange,
+                              size: 14,
+                            ),
+                            const SizedBox(width: 2),
+                            Text(
+                              formatNumber(status.ratio),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.black38,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.cloud_upload_outlined,
+                              color: Colors.black38,
+                              size: 14,
+                            ),
+                            const SizedBox(width: 2),
+                            Text(
+                              filesize(status.seedVolume),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.black38,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          textBaseline: TextBaseline.ideographic,
+                          children: [
+                            const Icon(
+                              Icons.timer_outlined,
+                              color: Colors.black38,
+                              size: 14,
+                            ),
+                            const SizedBox(width: 2),
+                            Text(
+                              formatNumber(status.bonusHour),
+                              // '(${  status.siteSpFull != null && status.siteSpFull! > 0 ? ((status.statusBonusHour! / status.siteSpFull!) * 100).toStringAsFixed(2) : '0'}%)',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.black38,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          textBaseline: TextBaseline.ideographic,
+                          children: [
+                            const Icon(
+                              Icons.score,
+                              color: Colors.black38,
+                              size: 14,
+                            ),
+                            const SizedBox(width: 2),
+                            Text(
+                              '${formatNumber(status.myBonus)}(${formatNumber(status.myScore)})',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.black38,
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ],
                 ),
+                const SizedBox(height: 2),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '最近更新：${calculateTimeElapsed(status.updatedAt.toString())}',
+                      textAlign: TextAlign.right,
+                      style: const TextStyle(
+                        color: Colors.black38,
+                        fontSize: 10.5,
+                      ),
+                    ),
+                    if (status.myHr != '' && status.myHr != "0")
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            'HR: ${status.myHr.replaceAll('区', '').replaceAll('专', '')}',
+                            textAlign: TextAlign.right,
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        // siteOperateButtonBar(website, mySite)
+      ]),
+    );
+  }
+
+  Widget _buildMySiteOperate(WebSite website, MySite mySite) {
+    String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    bool signed = mySite.getSignMaxKey() == today;
+    return CustomPopup(
+      showArrow: true,
+      // contentPadding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+      barrierColor: Colors.transparent,
+      backgroundColor: Colors.white70,
+      content: SizedBox(
+          width: 100,
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            if (website.signIn && mySite.signIn && !signed)
+              PopupMenuItem<String>(
+                child: const Text('我要签到'),
+                onTap: () async {
+                  CommonResponse res = await signIn(mySite.id);
+                  Get.back();
+                  if (res.code == 0) {
+                    Get.snackbar(
+                      '签到成功',
+                      '${mySite.nickname} 签到信息：${res.msg}',
+                      colorText: Colors.white,
+                      backgroundColor: Colors.green.shade300,
+                    );
+                    controller.getSiteStatusFromServer();
+                  } else {
+                    Get.snackbar(
+                      '签到失败',
+                      '${mySite.nickname} 签到任务执行出错啦：${res.msg}',
+                      colorText: Colors.white,
+                      backgroundColor: Colors.red.shade300,
+                    );
+                  }
+                },
               ),
-              siteOperateButtonBar(website, mySite)
-            ]),
-          );
+            if (website.signIn && mySite.signIn && signed)
+              PopupMenuItem<String>(
+                child: const Text('签到历史'),
+                onTap: () async {
+                  _showSignHistory(mySite);
+                },
+              ),
+            PopupMenuItem<String>(
+              child: const Text('更新数据'),
+              onTap: () async {
+                CommonResponse res = await getNewestStatus(mySite.id);
+                Get.back();
+                if (res.code == 0) {
+                  Get.snackbar(
+                    '站点数据刷新成功',
+                    '${mySite.nickname} 数据刷新：${res.msg}',
+                    colorText: Colors.white,
+                    backgroundColor: Colors.green.shade300,
+                  );
+                  controller.getSiteStatusFromServer();
+                } else {
+                  Get.snackbar(
+                    '站点数据刷新失败',
+                    '${mySite.nickname} 数据刷新出错啦：${res.msg}',
+                    colorText: Colors.white,
+                    backgroundColor: Colors.red.shade300,
+                  );
+                }
+              },
+            ),
+            PopupMenuItem<String>(
+              child: const Text('历史数据'),
+              onTap: () async {
+                _showStatusHistory(mySite);
+              },
+            ),
+            PopupMenuItem<String>(
+              child: const Text('编辑站点'),
+              onTap: () async {
+                _showEditBottomSheet(mySite: mySite);
+              },
+            ),
+          ])),
+      child: const Icon(
+        Icons.widgets_outlined,
+        size: 24,
+        color: Colors.black45,
+      ),
+    );
   }
 
   ButtonBar siteOperateButtonBar(WebSite website, MySite mySite) {

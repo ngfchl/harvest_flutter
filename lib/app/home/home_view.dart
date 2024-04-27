@@ -54,7 +54,7 @@ class HomeView extends GetView<HomeController> {
         child: GFDrawer(
           semanticLabel: 'Harvest',
           elevation: 10,
-          color: Colors.black87,
+          color: Colors.brown.shade100,
           child: _buildMenuBar(context),
         ),
       ),
@@ -99,7 +99,6 @@ class HomeView extends GetView<HomeController> {
           child: IntrinsicHeight(
             child: NavigationRail(
               useIndicator: true,
-              elevation: 1,
               extended: true,
               selectedIndex: controller.initPage,
               onDestinationSelected: (index) => controller.changePage(index),
@@ -151,59 +150,59 @@ class HomeView extends GetView<HomeController> {
               ),
               destinations: const [
                 NavigationRailDestination(
-                  icon: Icon(Icons.home),
+                  icon: Icon(Icons.home, size: 18),
                   label: Text('仪表盘'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.search),
+                  icon: Icon(Icons.search, size: 18),
                   label: Text('聚合搜索'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.menu),
+                  icon: Icon(Icons.language, size: 18),
                   label: Text('站点数据'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.cloud_download),
+                  icon: Icon(Icons.cloud_download, size: 18),
                   label: Text('下载管理'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.task),
+                  icon: Icon(Icons.task, size: 18),
                   label: Text('计划任务'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.settings),
+                  icon: Icon(Icons.settings, size: 18),
                   label: Text('系统设置'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.subscriptions_outlined),
+                  icon: Icon(Icons.subscriptions_outlined, size: 18),
                   label: Text('订阅管理'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.rss_feed),
+                  icon: Icon(Icons.rss_feed, size: 18),
                   label: Text('站点RSS'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.history),
+                  icon: Icon(Icons.history, size: 18),
                   label: Text('订阅历史'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.tag),
+                  icon: Icon(Icons.tag, size: 18),
                   label: Text('订阅标签'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.movie),
+                  icon: Icon(Icons.theaters, size: 18),
                   label: Text('豆瓣影视'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.document_scanner_rounded),
+                  icon: Icon(Icons.list_alt, size: 18),
                   label: Text('访问日志'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.list_alt),
+                  icon: Icon(Icons.description, size: 18),
                   label: Text('任务日志'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.account_box_rounded),
+                  icon: Icon(Icons.account_box_rounded, size: 18),
                   label: Text('更换账号'),
                 ),
               ],
@@ -240,7 +239,6 @@ class HomeView extends GetView<HomeController> {
         const SizedBox(width: 15),
         CustomPopup(
           showArrow: false,
-          // contentPadding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
           barrierColor: Colors.transparent,
           content: SizedBox(
             width: 100,
