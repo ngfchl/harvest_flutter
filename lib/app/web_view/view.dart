@@ -92,7 +92,8 @@ class _WebViewPageState extends State<WebViewPage> {
                 String cookieStr =
                     cookies.map((e) => '${e.name}=${e.value}').join('; ');
                 Logger.instance.w(cookieStr);
-                controller.mySite?.cookie = cookieStr;
+                controller.mySite =
+                    controller.mySite?.copyWith(cookie: cookieStr);
                 final response = await editMySite(controller.mySite!);
                 if (response.code == 0) {
                   Get.snackbar(
