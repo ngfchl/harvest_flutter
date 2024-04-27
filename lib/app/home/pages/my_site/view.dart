@@ -257,7 +257,8 @@ class _MySitePagePageState extends State<MySitePage>
                 ),
                 onTap: () async {
                   String path;
-                  if (mySite.mail > 0 && !website.pageMessage.contains('api')) {
+                  if (mySite.mail! > 0 &&
+                      !website.pageMessage.contains('api')) {
                     path = website.pageMessage
                         .replaceFirst("{}", mySite.userId.toString());
                   } else {
@@ -291,7 +292,7 @@ class _MySitePagePageState extends State<MySitePage>
                         fontSize: 13,
                       ),
                     ),
-                    if (mySite.mail > 0)
+                    if (mySite.mail! > 0)
                       Row(
                         children: [
                           const Icon(
@@ -308,7 +309,7 @@ class _MySitePagePageState extends State<MySitePage>
                           ),
                         ],
                       ),
-                    if (mySite.notice > 0)
+                    if (mySite.notice! > 0)
                       Row(
                         children: [
                           const Icon(
@@ -363,7 +364,8 @@ class _MySitePagePageState extends State<MySitePage>
                       ),
                   ],
                 ),
-                trailing: Text(calculateTimeElapsed(status.updatedAt),
+                trailing: Text(
+                    calculateTimeElapsed(status.updatedAt.toString()),
                     style: TextStyle(color: Colors.grey.shade400)),
               ),
               Padding(
@@ -506,7 +508,7 @@ class _MySitePagePageState extends State<MySitePage>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '最近更新：${status.updatedAt.replaceAll('T', ' ')}',
+                          '最近更新：${status.updatedAt.toString()}',
                           textAlign: TextAlign.right,
                           style: const TextStyle(
                             color: Colors.black38,
@@ -867,27 +869,36 @@ class _MySitePagePageState extends State<MySitePage>
                             ),
                             onPressed: () async {
                               if (mySite != null) {
-                                // 如果 mySite 不为空，表示是修改操作
-                                mySite?.site = siteController.text;
-                                mySite?.mirror = mirrorController.text;
-                                mySite?.nickname = nicknameController.text;
-                                mySite?.passkey = passkeyController.text;
-                                mySite?.authKey = apiKeyController.text;
-                                mySite?.userId = userIdController.text;
-                                mySite?.userAgent = userAgentController.text;
-                                mySite?.rss = rssController.text;
-                                mySite?.proxy = proxyController.text;
-                                mySite?.torrents = torrentsController.text;
-                                mySite?.cookie = cookieController.text;
-                                mySite?.getInfo = getInfo.value;
-                                mySite?.signIn = signIn.value;
-                                mySite?.available = available.value;
-                                mySite?.brushRss = brushRss.value;
-                                mySite?.brushFree = brushFree.value;
-                                mySite?.packageFile = packageFile.value;
-                                mySite?.repeatTorrents = repeatTorrents.value;
-                                mySite?.hrDiscern = hrDiscern.value;
-                                mySite?.searchTorrents = searchTorrents.value;
+                                mySite = mySite?.copyWith(
+                                  site: siteController.text,
+                                  mirror: mirrorController.text,
+                                  nickname: nicknameController.text,
+                                  passkey: passkeyController.text,
+                                  authKey: apiKeyController.text,
+                                  userId: userIdController.text,
+                                  userAgent: userAgentController.text,
+                                  proxy: proxyController.text,
+                                  rss: rssController.text,
+                                  torrents: torrentsController.text,
+                                  cookie: cookieController.text,
+                                  getInfo: getInfo.value,
+                                  signIn: signIn.value,
+                                  brushRss: brushRss.value,
+                                  brushFree: brushFree.value,
+                                  packageFile: packageFile.value,
+                                  repeatTorrents: repeatTorrents.value,
+                                  hrDiscern: hrDiscern.value,
+                                  searchTorrents: searchTorrents.value,
+                                  available: available.value,
+                                  id: 0,
+                                  sortId: 0,
+                                  removeTorrentRules: {},
+                                  timeJoin: '',
+                                  mail: 0,
+                                  notice: 0,
+                                  signInInfo: {},
+                                  statusInfo: {},
+                                );
                               } else {
                                 // 如果 mySite 为空，表示是添加操作
                                 mySite = MySite(
@@ -912,7 +923,6 @@ class _MySitePagePageState extends State<MySitePage>
                                   searchTorrents: searchTorrents.value,
                                   available: available.value,
                                   id: 0,
-                                  updatedAt: '',
                                   sortId: 0,
                                   removeTorrentRules: {},
                                   timeJoin: '',
@@ -1302,9 +1312,7 @@ class StatusToolTip extends StatelessWidget {
     return Column(
       children: [
         _buildDataRow(
-            '更新时间',
-            DateFormat('yyyy-MM-dd HH:mm:ss')
-                .format(DateTime.parse(data.updatedAt))),
+            '更新时间', DateFormat('yyyy-MM-dd HH:mm:ss').format(data.updatedAt)),
         _buildDataRow('做种量', filesize(data.seedVolume)),
         _buildDataRow('等级', data.myLevel),
         _buildDataRow('上传量', filesize(data.uploaded)),

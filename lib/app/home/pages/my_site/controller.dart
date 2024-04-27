@@ -156,7 +156,7 @@ class MySiteController extends GetxController {
     // 根据不同的排序键调用不同的排序方法
     switch (sortKey) {
       case 'statusMail':
-        sortByComparable((a, b) => b.mail.compareTo(a.mail));
+        sortByComparable((a, b) => b.mail!.compareTo(a.mail!));
         break;
       case 'mySiteId':
         sortByComparable((a, b) => a.id.compareTo(b.id));
@@ -288,10 +288,10 @@ class MySiteController extends GetxController {
         });
         break;
       case 'mail':
-        filterByCondition((item) => item.mail > 0);
+        filterByCondition((item) => item.mail! > 0);
         break;
       case 'notice':
-        filterByCondition((item) => item.notice > 0);
+        filterByCondition((item) => item.notice! > 0);
         break;
       case 'signInInfo':
         filterByCondition((item) =>
@@ -313,7 +313,7 @@ class MySiteController extends GetxController {
           // Logger.instance.i(isToday(item.statusInfo[today]!.updatedAt));
           return item.available &&
               (item.statusInfo[today] == null ||
-                  !isToday(item.statusInfo[today]!.updatedAt));
+                  !isToday(item.statusInfo[today]!.updatedAt.toString()));
         });
         break;
       case 'userId':
