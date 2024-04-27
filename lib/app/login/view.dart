@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../common/card_view.dart';
 import '../../common/form_widgets.dart';
 import '../../common/glass_widget.dart';
+import '../../models/common_response.dart';
 import '../../utils/logger_helper.dart';
 import 'controller.dart';
 import 'models/server.dart';
@@ -16,7 +17,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final LoginController serverController = Get.find();
+  final LoginController controller = Get.find();
 
   Widget _buildGridTile(Server server) {
     return GetBuilder<LoginController>(builder: (controller) {
@@ -33,7 +34,7 @@ class _LoginPageState extends State<LoginPage> {
       return InkWell(
         onTap: () async {
           if (!server.selected) {
-            serverController.selectServer(server);
+            controller.selectServer(server);
           }
         },
         onDoubleTap: () async {
@@ -45,7 +46,7 @@ class _LoginPageState extends State<LoginPage> {
             content: Text('您确定要删除${server.name}吗？'),
             barrierDismissible: false,
             onConfirm: () {
-              serverController.deleteServer(server);
+              controller.deleteServer(server);
               Navigator.pop(context);
             },
             onCancel: () {
@@ -147,7 +148,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<LoginController>(builder: (serverController) {
+    return GetBuilder<LoginController>(builder: (controller) {
       return Scaffold(
         appBar: AppBar(
           title: const Text('服务器列表'),
@@ -157,11 +158,13 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Wrap(spacing: 12, runSpacing: 8, children: [
-                ...serverController.serversList
-                    .map((server) => _buildGridTile(server)),
-                _buildAddServerTile(),
-              ]),
+              GetBuilder<LoginController>(builder: (controller) {
+                return Wrap(spacing: 12, runSpacing: 8, children: [
+                  ...controller.serverList
+                      .map((server) => _buildGridTile(server)),
+                  _buildAddServerTile(),
+                ]);
+              }),
               Padding(
                 padding: const EdgeInsets.only(bottom: 24.0),
                 child: ElevatedButton(
@@ -174,14 +177,22 @@ class _LoginPageState extends State<LoginPage> {
                       borderRadius: BorderRadius.circular(5.0), // 边角圆角大小可自定义
                     ),
                   ),
-                  onPressed: serverController.hasSelectedServer
+                  onPressed: controller.hasSelectedServer
                       ? () async {
                           // 连接服务器的操作逻辑
-                          serverController.connectToServer();
+                          controller.connectToServer();
                         }
                       : null,
-                  child: const Text('连接服务器',
-                      style: TextStyle(color: Colors.white)),
+                  child:
+                      Stack(alignment: AlignmentDirectional.center, children: [
+                    const Text('连接服务器',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.white)),
+                    if (controller.isLoading)
+                      const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                  ]),
                 ),
               ),
             ],
@@ -192,9 +203,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void showEditOrCreateServerSheet(Server? serverToEdit) async {
-    String selectedProtocol =
-        serverToEdit?.protocol ?? 'http'; // 对于编辑模式，默认使用现有协议，否则使用'http'
-    Logger.instance.i(serverToEdit?.protocol);
     final formKey = GlobalKey<FormState>();
     TextEditingController nameController =
         TextEditingController(text: serverToEdit?.name ?? 'Server');
@@ -248,15 +256,18 @@ class _LoginPageState extends State<LoginPage> {
                     controller: usernameController,
                     labelText: '账号',
                   ),
-                  Obx(() {
-                    return TextFormField(
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 4.0, horizontal: 8),
+                    child: TextFormField(
                       controller: passwordController,
                       maxLines: 1,
                       decoration: InputDecoration(
                         labelText: '密码',
                         labelStyle: const TextStyle(
                             fontSize: 12, color: Colors.black54),
-                        contentPadding: const EdgeInsets.all(0),
+                        contentPadding:
+                            const EdgeInsets.symmetric(horizontal: 8),
                         enabledBorder: const UnderlineInputBorder(
                           borderSide: BorderSide(color: Color(0x19000000)),
                         ),
@@ -264,24 +275,23 @@ class _LoginPageState extends State<LoginPage> {
                           borderSide: BorderSide(color: Color(0x16000000)),
                         ),
                         suffixIcon: IconButton(
-                          icon: Icon(serverController.showPassword.value
+                          icon: Icon(controller.showPassword
                               ? Icons.visibility
                               : Icons.visibility_off),
                           onPressed: () {
-                            serverController.showPassword.value =
-                                !serverController.showPassword.value;
+                            controller.showPassword = !controller.showPassword;
                           },
                         ),
                       ),
-                      obscureText: serverController.showPassword.value,
+                      obscureText: controller.showPassword,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return '密码不能为空';
                         }
                         return null;
                       },
-                    );
-                  }),
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -298,62 +308,58 @@ class _LoginPageState extends State<LoginPage> {
                         },
                         child: const Text('取消'),
                       ),
-                      Obx(() {
-                        return ElevatedButton(
-                          onPressed: () async {
-                            final server = Server(
-                              id: 0,
-                              name: nameController.text,
-                              protocol: protocolController.text,
-                              domain: domainController.text,
-                              port: int.parse(portController.text),
-                              username: usernameController.text,
-                              password: passwordController.text,
-                              selected: false,
+                      ElevatedButton(
+                        onPressed: () async {
+                          final server = Server(
+                            id: 0,
+                            name: nameController.text,
+                            protocol: protocolController.text,
+                            domain: domainController.text,
+                            port: int.parse(portController.text),
+                            username: usernameController.text,
+                            password: passwordController.text,
+                            selected: false,
+                          );
+                          bool flag =
+                              await controller.testServerConnection(server);
+                          if (flag) {
+                            Get.snackbar(
+                              '连接状态',
+                              '服务器连接成功',
+                              snackPosition: SnackPosition.TOP,
+                              backgroundColor: Colors.green.shade400,
+                              duration: const Duration(seconds: 3),
                             );
-                            bool flag =
-                                await controller.testServerConnection(server);
-                            if (flag) {
-                              Get.snackbar(
-                                '连接状态',
-                                '服务器连接成功',
-                                snackPosition: SnackPosition.TOP,
-                                backgroundColor: Colors.green.shade400,
-                                duration: const Duration(seconds: 3),
-                              );
-                            } else {
-                              Get.snackbar(
-                                '连接状态',
-                                '服务器连接失败',
-                                snackPosition: SnackPosition.TOP,
-                                backgroundColor: Colors.red.shade400,
-                                duration: const Duration(seconds: 3),
-                              );
-                            }
-                          },
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              // 按钮原有内容
-                              Text(
-                                controller.isLoading.value ? '正在测试...' : '测试',
+                          } else {
+                            Get.snackbar(
+                              '连接状态',
+                              '服务器连接失败',
+                              snackPosition: SnackPosition.TOP,
+                              backgroundColor: Colors.red.shade400,
+                              duration: const Duration(seconds: 3),
+                            );
+                          }
+                        },
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // 按钮原有内容
+                            Text(
+                              controller.isLoading ? '正在测试...' : '测试',
+                            ),
+                            // 如果正在加载，显示加载动画
+                            if (controller.isLoading)
+                              const Center(
+                                child: CircularProgressIndicator(),
                               ),
-                              // 如果正在加载，显示加载动画
-                              if (controller.isLoading.value)
-                                const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                            ],
-                          ),
-                        );
-                      }),
+                          ],
+                        ),
+                      ),
                       ElevatedButton(
                         onPressed: () async {
                           if (formKey.currentState!.validate()) {
-                            final id =
-                                serverToEdit?.id ?? 0; // 如果是编辑模式，使用已有id，否则设为0
                             final server = Server(
-                              id: id,
+                              id: serverToEdit?.id ?? 0,
                               name: nameController.text,
                               protocol: protocolController.text,
                               domain: domainController.text,
@@ -362,13 +368,14 @@ class _LoginPageState extends State<LoginPage> {
                               password: passwordController.text,
                               selected: serverToEdit?.selected ?? false,
                             );
-                            Logger.instance.d(server);
-                            Map result = await controller.saveServer(server);
-                            Logger.instance.d(result);
-                            if (result["flag"]) {
+                            Logger.instance.i(server);
+                            CommonResponse result =
+                                await controller.saveServer(server);
+                            Logger.instance.i(result);
+                            if (result.code == 0) {
                               Get.snackbar(
                                 server.id == 0 ? '保存结果' : '更新结果',
-                                server.id == 0 ? '服务器已成功添加' : '服务器已成功更新',
+                                result.msg!,
                                 snackPosition: SnackPosition.BOTTOM,
                                 backgroundColor: Colors.green.shade400,
                                 duration: const Duration(seconds: 3),
@@ -378,8 +385,8 @@ class _LoginPageState extends State<LoginPage> {
                               Get.snackbar(
                                 server.id == 0 ? '保存结果' : '更新结果',
                                 server.id == 0
-                                    ? '保存服务器时出错：${result["message"]}'
-                                    : '更新服务器时出错：${result["message"]}',
+                                    ? '保存服务器时出错：${result.msg}'
+                                    : '更新服务器时出错：${result.msg}',
                                 snackPosition: SnackPosition.BOTTOM,
                                 backgroundColor: Colors.red.shade400,
                                 duration: const Duration(seconds: 3),

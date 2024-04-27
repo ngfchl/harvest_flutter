@@ -4,43 +4,43 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
 import '../../api/api.dart';
+import '../../models/common_response.dart';
 import '../../models/login_user.dart';
 import '../../utils/dio_util.dart';
 import '../../utils/logger_helper.dart';
 import '../../utils/storage.dart';
 import '../routes/app_pages.dart';
 import 'models/server.dart';
-import 'models/server_repository.dart';
+import 'models/sp_repository.dart';
 
 class LoginController extends GetxController {
-  var serversList = RxList<Server>();
-  var selectedServer = Rx<Server?>(null);
+  List<Server> serverList = [];
+  Server? selectedServer;
   final ServerRepository serverRepository = ServerRepository();
-  RxBool isLoading = false.obs;
-  RxBool showPassword = true.obs;
+  bool isLoading = false;
+  bool showPassword = true;
   DioUtil dioUtil = DioUtil();
   GetStorage box = GetStorage();
 
   @override
   void onInit() async {
-    super.onInit();
     // 触发 网络权限授权
     await Dio().get('https://ptools.fun');
     await serverRepository.init();
-    serversList.value = await serverRepository.getServers();
+    Logger.instance.i(serverRepository.serverList);
+    serverList = serverRepository.serverList;
     // 寻找selected为true的服务器，并赋值给selectedServer
-    selectedServer.value =
-        serversList.firstWhereOrNull((server) => server.selected);
-    if (selectedServer.value != null) {
-      Server? server = selectedServer.value;
-      initDio(server!);
+    selectedServer = serverList.firstWhereOrNull((server) => server.selected);
+    if (selectedServer != null) {
+      initDio(selectedServer!);
     }
     update();
+
     super.onInit();
   }
 
   bool get hasSelectedServer {
-    return serversList.any((server) => server.selected);
+    return serverList.any((server) => server.selected);
   }
 
   void initDio(Server server) async {
@@ -52,7 +52,8 @@ class LoginController extends GetxController {
 
   Future<bool> testServerConnection(Server server) async {
     Dio dio = Dio();
-    isLoading.value = true; // 开始加载状态
+    isLoading = true; // 开始加载状态
+    update();
     try {
       String baseUrl = '${server.protocol}://${server.domain}:${server.port}';
       Options options = Options(
@@ -66,98 +67,105 @@ class LoginController extends GetxController {
         // 连接成功
         Logger.instance
             .i('Succeed to connect to server: ${response.statusCode}');
-        isLoading.value = false; // 结束加载状态
+        isLoading = false; // 结束加载状态
+        update();
         return true;
       } else {
         // 连接失败或响应码非正常范围
         Logger.instance
             .e('Failed to connect to server: ${response.statusCode}');
-        isLoading.value = false; // 结束加载状态
+        isLoading = false; // 结束加载状态
+        update();
         return false;
       }
     } catch (e) {
       // 发生错误，如网络问题或服务器不可达
       Logger.instance.e('An error occurred while connecting to the server: $e');
-      isLoading.value = false; // 结束加载状态
+      isLoading = false; // 结束加载状态
+      update();
       return false;
     }
   }
 
   void selectServer(Server server) async {
-    selectedServer.value = server;
+    selectedServer = server;
     server.selected = true;
     await saveServer(server);
     initDio(server);
     update();
   }
 
-  Future<bool> deleteServer(Server server) async {
+  Future<CommonResponse> deleteServer(Server server) async {
     try {
       if (server.selected) {
-        selectedServer.value = null;
+        selectedServer = null;
         SPUtil.remove('SelectedServer');
       }
-      serverRepository.deleteServer(server.id);
-      serversList.value = await serverRepository.getServers();
-      Get.snackbar(
-        '删除',
-        '服务器已成功删除',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.shade400,
-        duration: const Duration(seconds: 3),
-      );
-      update();
-      return true;
-    } on Exception catch (e) {
-      String errMsg = e.toString();
-      if (e.toString().contains('UNIQUE constraint')) {
-        errMsg = "该服务器已存在！";
+      CommonResponse response = await serverRepository.deleteServer(server.id);
+      if (response.code == 0) {
+        serverList = serverRepository.serverList;
+        Get.snackbar(
+          '删除',
+          '服务器已成功删除',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green.shade400,
+          duration: const Duration(seconds: 3),
+        );
+      } else {
+        Get.snackbar(
+          '删除',
+          '删除服务器失败',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.shade400,
+          duration: const Duration(seconds: 3),
+        );
       }
-      Logger.instance.e(e);
+      update();
+      return response;
+    } on Exception catch (e) {
+      String msg = '删除服务器失败: $e';
       Get.snackbar(
         '删除',
-        '删除服务器失败: $errMsg',
+        msg,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red.shade400,
         duration: const Duration(seconds: 3),
       );
-      return false;
+      update();
+      return CommonResponse.error(msg: msg);
     }
   }
 
-  Future<Map<String, dynamic>> saveServer(Server server) async {
+  Future<CommonResponse> saveServer(Server server) async {
     try {
+      CommonResponse response;
       if (server.id == 0) {
         // 判断是否为新添加的服务器
-        await serverRepository.insertServer(server);
+        Logger.instance.i('添加服务器');
+        response = await serverRepository.insertServer(server);
       } else {
         // 根据ID更新服务器
-        await serverRepository.updateServer(server);
+        Logger.instance.i('更新服务器');
+        response = await serverRepository.updateServer(server);
       }
-      serversList.value = await serverRepository.getServers();
-
+      serverList = serverRepository.serverList;
       update(); // 更新UI，重新获取服务器列表
-      return {"flag": true, "message": "保存成功!"};
+      return response;
     } catch (e) {
-      String errMsg = "";
-      if (e.toString().contains('UNIQUE constraint')) {
-        errMsg = "该服务器已存在！";
-      }
-
-      return {
-        "flag": false,
-        "message": errMsg,
-      };
+      String errMsg = "更新服务器出错啦：$e";
+      update();
+      return CommonResponse.error(msg: errMsg);
     }
   }
 
   void connectToServer() async {
+    isLoading = true;
+    update();
     // 连接到服务器
-    Server? server = selectedServer.value;
-    if (server == null ||
-        server.id == 0 ||
-        server.username.isEmpty ||
-        server.password.isEmpty) {
+    if (selectedServer == null ||
+        selectedServer?.id == 0 ||
+        selectedServer!.username.isEmpty ||
+        selectedServer!.password.isEmpty) {
       // 判断是否为新添加的服务器
       Get.snackbar(
         '服务器信息设置有误',
@@ -168,12 +176,14 @@ class LoginController extends GetxController {
       );
       return;
     }
-    initDio(server);
+    initDio(selectedServer!);
     LoginUser loginUser = LoginUser(
-      username: server.username,
-      password: server.password,
+      username: selectedServer?.username,
+      password: selectedServer?.password,
     );
     await doLogin(loginUser);
+    isLoading = false;
+    update();
   }
 
   Future<bool> doLogin(LoginUser loginUser) async {
@@ -206,6 +216,8 @@ class LoginController extends GetxController {
       );
     }
     box.write('isLogin', false);
+    isLoading = false;
+    update();
     return false;
   }
 }
