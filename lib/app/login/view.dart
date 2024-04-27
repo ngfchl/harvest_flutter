@@ -166,7 +166,7 @@ class _LoginPageState extends State<LoginPage> {
                 ]);
               }),
               Padding(
-                padding: const EdgeInsets.only(bottom: 24.0),
+                padding: const EdgeInsets.symmetric(horizontal: 36.0),
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
@@ -183,16 +183,18 @@ class _LoginPageState extends State<LoginPage> {
                           controller.connectToServer();
                         }
                       : null,
-                  child:
-                      Stack(alignment: AlignmentDirectional.center, children: [
-                    const Text('连接服务器',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white)),
-                    if (controller.isLoading)
-                      const Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                  ]),
+                  child: Stack(
+                    alignment: AlignmentDirectional.center,
+                    children: [
+                      const Text('连接服务器',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.white)),
+                      if (controller.isLoading)
+                        const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -275,11 +277,15 @@ class _LoginPageState extends State<LoginPage> {
                           borderSide: BorderSide(color: Color(0x16000000)),
                         ),
                         suffixIcon: IconButton(
-                          icon: Icon(controller.showPassword
-                              ? Icons.visibility
-                              : Icons.visibility_off),
+                          icon: Icon(
+                            controller.showPassword
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                            size: 18,
+                          ),
                           onPressed: () {
                             controller.showPassword = !controller.showPassword;
+                            controller.update();
                           },
                         ),
                       ),
