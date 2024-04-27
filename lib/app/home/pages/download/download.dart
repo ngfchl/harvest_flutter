@@ -79,27 +79,23 @@ class _DownloadPageState extends State<DownloadPage>
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Obx(() {
-            var isTimerActive = controller.isTimerActive.value;
-            return GFIconButton(
-              icon: isTimerActive
-                  ? const Icon(Icons.pause)
-                  : const Icon(Icons.play_arrow),
-              // shape: GFIconButtonShape.standard,
-              type: GFButtonType.transparent,
-              color: GFColors.PRIMARY,
-              onPressed: () {
-                // controller.cancelPeriodicTimer();
-                isTimerActive
-                    ? controller.cancelPeriodicTimer()
-                    : controller.startPeriodicTimer();
-                LoggerHelper.Logger.instance
-                    .w(controller.periodicTimer.isActive);
-                LoggerHelper.Logger.instance.w(isTimerActive);
-                // controller.update();
-              },
-            );
-          }),
+          GFIconButton(
+            icon: controller.isTimerActive
+                ? const Icon(Icons.pause)
+                : const Icon(Icons.play_arrow),
+            // shape: GFIconButtonShape.standard,
+            type: GFButtonType.transparent,
+            color: GFColors.PRIMARY,
+            onPressed: () {
+              // controller.cancelPeriodicTimer();
+              controller.isTimerActive
+                  ? controller.cancelPeriodicTimer()
+                  : controller.startPeriodicTimer();
+              LoggerHelper.Logger.instance.w(controller.periodicTimer.isActive);
+              LoggerHelper.Logger.instance.w(controller.isTimerActive);
+              controller.update();
+            },
+          ),
           GFIconButton(
               icon: const Icon(Icons.settings),
               shape: GFIconButtonShape.standard,
@@ -119,37 +115,27 @@ class _DownloadPageState extends State<DownloadPage>
                     TextEditingController(
                         text: controller.timerDuration.toString());
                 Get.bottomSheet(
-                  SizedBox(
-                    height: 200,
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    height: 150,
                     child: ListView(
                       children: [
                         Row(
                           children: [
                             Expanded(
-                              child: Obx(() {
-                                return TextField(
-                                  controller: durationTextEditingController,
-                                  decoration: InputDecoration(
-                                    labelText: '刷新时间',
-                                    hintText: '3-10',
-                                    labelStyle: const TextStyle(fontSize: 10),
-                                    hintStyle: const TextStyle(fontSize: 10),
-                                    prefixIcon:
-                                        const Icon(Icons.timer_3, size: 15),
-                                    errorText: controller.isDurationValid.value
-                                        ? null
-                                        : 'Invalid input',
-                                  ),
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                        RegExp(r'^\d{0,2}(\.\d{0,2})?$')),
-                                    RangeInputFormatter(min: 3, max: 10),
-                                  ],
-                                  onChanged: (value) {
-                                    controller.validateInput(value);
-                                  },
-                                );
-                              }),
+                              child: CustomTextField(
+                                controller: durationTextEditingController,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                      RegExp(r'^\d{0,2}(\.\d{0,2})?$')),
+                                  RangeInputFormatter(min: 3, max: 10),
+                                ],
+                                prefixIcon: const Icon(Icons.timer_3, size: 15),
+                                labelText: '刷新时间 3-10秒刷新一次',
+                                onChanged: (value) {
+                                  controller.validateInput(value);
+                                },
+                              ),
                             ),
                             GFIconButton(
                                 type: GFButtonType.transparent,
@@ -161,7 +147,7 @@ class _DownloadPageState extends State<DownloadPage>
                                     if (duration < 3 || duration > 10) {
                                       Get.snackbar('出错啦', '超出范围，请设置 3-10');
                                     } else {
-                                      controller.duration.value = duration;
+                                      controller.duration = duration;
                                       SPUtil.setDouble('duration', duration);
                                       controller.cancelPeriodicTimer();
                                       controller.startPeriodicTimer();
@@ -177,31 +163,19 @@ class _DownloadPageState extends State<DownloadPage>
                         Row(
                           children: [
                             Expanded(
-                              child: Obx(() {
-                                return TextField(
-                                  controller:
-                                      timerDurationTextEditingController,
-                                  decoration: InputDecoration(
-                                    labelText: '刷新时长',
-                                    hintText: '3-10',
-                                    labelStyle: const TextStyle(fontSize: 10),
-                                    hintStyle: const TextStyle(fontSize: 10),
-                                    prefixIcon:
-                                        const Icon(Icons.timer_3, size: 15),
-                                    errorText: controller.isDurationValid.value
-                                        ? null
-                                        : 'Invalid input',
-                                  ),
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                        RegExp(r'^\d{0,2}(\.\d{0,2})?$')),
-                                    RangeInputFormatter(min: 1, max: 10),
-                                  ],
-                                  onChanged: (value) {
-                                    controller.validateInput(value, min: 1);
-                                  },
-                                );
-                              }),
+                              child: CustomTextField(
+                                controller: timerDurationTextEditingController,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                      RegExp(r'^\d{0,2}(\.\d{0,2})?$')),
+                                  RangeInputFormatter(min: 1, max: 10),
+                                ],
+                                prefixIcon: const Icon(Icons.timer_3, size: 15),
+                                onChanged: (value) {
+                                  controller.validateInput(value, min: 1);
+                                },
+                                labelText: '刷新时长 3-10 分钟',
+                              ),
                             ),
                             GFIconButton(
                                 type: GFButtonType.transparent,
@@ -214,7 +188,7 @@ class _DownloadPageState extends State<DownloadPage>
                                     if (duration < 1 || duration > 10) {
                                       Get.snackbar('出错啦', '超出范围，请设置 1-10');
                                     } else {
-                                      controller.timerDuration.value = duration;
+                                      controller.timerDuration = duration;
                                       SPUtil.setDouble(
                                           'timerDuration', duration);
                                       controller.fiveMinutesTimer.cancel();
@@ -636,41 +610,39 @@ class _DownloadPageState extends State<DownloadPage>
                 onLongPress: () async {
                   _showEditBottomSheet(downloader: downloader);
                 },
-                icon: Obx(() {
-                  return GFIconButton(
-                    icon: connectState.value
-                        ? const Icon(
-                            Icons.bolt,
-                            color: Colors.green,
-                            size: 24,
-                          )
-                        : const Icon(
-                            Icons.offline_bolt_outlined,
-                            color: Colors.red,
-                            size: 24,
+                icon: GFIconButton(
+                  icon: connectState.value
+                      ? const Icon(
+                          Icons.bolt,
+                          color: Colors.green,
+                          size: 24,
+                        )
+                      : const Icon(
+                          Icons.offline_bolt_outlined,
+                          color: Colors.red,
+                          size: 24,
+                        ),
+                  type: GFButtonType.transparent,
+                  onPressed: () {
+                    controller.testConnect(downloader).then((res) {
+                      connectState.value = res.data;
+                      Get.snackbar(
+                        '下载器连接测试',
+                        '',
+                        messageText: EllipsisText(
+                          text: res.msg!,
+                          ellipsis: '...',
+                          maxLines: 1,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: res.data ? Colors.white : Colors.red,
                           ),
-                    type: GFButtonType.transparent,
-                    onPressed: () {
-                      controller.testConnect(downloader).then((res) {
-                        connectState.value = res.data;
-                        Get.snackbar(
-                          '下载器连接测试',
-                          '',
-                          messageText: EllipsisText(
-                            text: res.msg!,
-                            ellipsis: '...',
-                            maxLines: 1,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: res.data ? Colors.white : Colors.red,
-                            ),
-                          ),
-                          colorText: res.data ? Colors.white : Colors.red,
-                        );
-                      });
-                    },
-                  );
-                }),
+                        ),
+                        colorText: res.data ? Colors.white : Colors.red,
+                      );
+                    });
+                  },
+                ),
               ),
               GetBuilder<DownloadController>(builder: (controller) {
                 return _buildLiveLineChart(downloader, chartSeriesController);
@@ -897,46 +869,46 @@ class _DownloadPageState extends State<DownloadPage>
             ),
             Expanded(
               child: SingleChildScrollView(
-                child: Obx(() {
-                  return Column(
-                    children: [
-                      CustomPickerField(
-                        controller: categoryController,
-                        labelText: '选择分类',
-                        data: const ["Qb", "Tr"],
-                      ),
-                      CustomPickerField(
-                        controller: protocolController,
-                        labelText: '选择协议',
-                        data: const ["http", "https"],
-                      ),
-                      CustomTextField(
-                        controller: nameController,
-                        labelText: '名称',
-                      ),
-                      CustomTextField(
-                        controller: usernameController,
-                        labelText: '账户',
-                      ),
-                      CustomTextField(
-                        controller: passwordController,
-                        labelText: '密码',
-                      ),
-                      CustomTextField(
-                        controller: hostController,
-                        labelText: 'HOST',
-                      ),
-                      CustomTextField(
-                        controller: portController,
-                        labelText: '端口',
-                      ),
-                      CustomPickerField(
-                        controller: torrentPathController,
-                        labelText: '选择路径',
-                        data: controller.pathList,
-                      ),
-                      const SizedBox(height: 5),
-                      Row(
+                child: Column(
+                  children: [
+                    CustomPickerField(
+                      controller: categoryController,
+                      labelText: '选择分类',
+                      data: const ["Qb", "Tr"],
+                    ),
+                    CustomPickerField(
+                      controller: protocolController,
+                      labelText: '选择协议',
+                      data: const ["http", "https"],
+                    ),
+                    CustomTextField(
+                      controller: nameController,
+                      labelText: '名称',
+                    ),
+                    CustomTextField(
+                      controller: usernameController,
+                      labelText: '账户',
+                    ),
+                    CustomTextField(
+                      controller: passwordController,
+                      labelText: '密码',
+                    ),
+                    CustomTextField(
+                      controller: hostController,
+                      labelText: 'HOST',
+                    ),
+                    CustomTextField(
+                      controller: portController,
+                      labelText: '端口',
+                    ),
+                    CustomPickerField(
+                      controller: torrentPathController,
+                      labelText: '选择路径',
+                      data: controller.pathList,
+                    ),
+                    const SizedBox(height: 5),
+                    Obx(() {
+                      return Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
@@ -957,83 +929,82 @@ class _DownloadPageState extends State<DownloadPage>
                                 },
                               ),
                             ),
-                          ]),
-                      ButtonBar(
-                        alignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          ElevatedButton(
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all(
-                                  Theme.of(context).colorScheme.error),
+                          ]);
+                    }),
+                    ButtonBar(
+                      alignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        ElevatedButton(
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all(
+                                Theme.of(context).colorScheme.error),
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text(
+                            '取消',
+                            style: TextStyle(
+                              color: Colors.white,
                             ),
-                            onPressed: () {
+                          ),
+                        ),
+                        ElevatedButton(
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all(
+                                Theme.of(context).colorScheme.primary),
+                          ),
+                          child: const Text(
+                            '保存',
+                            style: TextStyle(
+                              color: Colors.white,
+                            ),
+                          ),
+                          onPressed: () async {
+                            if (downloader != null) {
+                              // 如果 downloader 不为空，表示是修改操作
+                              downloader?.name = nameController.text;
+                              downloader?.category = categoryController.text;
+                              downloader?.username = usernameController.text;
+                              downloader?.password = passwordController.text;
+                              downloader?.protocol = protocolController.text;
+                              downloader?.host = hostController.text;
+                              downloader?.port = int.parse(portController.text);
+                              downloader?.torrentPath =
+                                  torrentPathController.text;
+                              downloader?.isActive = isActive.value;
+                              downloader?.brush = brush.value;
+                            } else {
+                              // 如果 downloader 为空，表示是添加操作
+                              downloader = Downloader(
+                                id: 0,
+                                name: nameController.text,
+                                category: categoryController.text,
+                                username: usernameController.text,
+                                password: passwordController.text,
+                                protocol: protocolController.text,
+                                host: hostController.text,
+                                port: int.parse(portController.text),
+                                torrentPath: torrentPathController.text,
+                                isActive: isActive.value,
+                                brush: brush.value,
+                                status: [],
+                              );
+                            }
+                            LoggerHelper.Logger.instance
+                                .i(downloader?.toJson());
+                            if (await controller
+                                .saveDownloaderToServer(downloader!)) {
                               Navigator.of(context).pop();
-                            },
-                            child: const Text(
-                              '取消',
-                              style: TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                          ElevatedButton(
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all(
-                                  Theme.of(context).colorScheme.primary),
-                            ),
-                            child: const Text(
-                              '保存',
-                              style: TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
-                            onPressed: () async {
-                              if (downloader != null) {
-                                // 如果 downloader 不为空，表示是修改操作
-                                downloader?.name = nameController.text;
-                                downloader?.category = categoryController.text;
-                                downloader?.username = usernameController.text;
-                                downloader?.password = passwordController.text;
-                                downloader?.protocol = protocolController.text;
-                                downloader?.host = hostController.text;
-                                downloader?.port =
-                                    int.parse(portController.text);
-                                downloader?.torrentPath =
-                                    torrentPathController.text;
-                                downloader?.isActive = isActive.value;
-                                downloader?.brush = brush.value;
-                              } else {
-                                // 如果 downloader 为空，表示是添加操作
-                                downloader = Downloader(
-                                  id: 0,
-                                  name: nameController.text,
-                                  category: categoryController.text,
-                                  username: usernameController.text,
-                                  password: passwordController.text,
-                                  protocol: protocolController.text,
-                                  host: hostController.text,
-                                  port: int.parse(portController.text),
-                                  torrentPath: torrentPathController.text,
-                                  isActive: isActive.value,
-                                  brush: brush.value,
-                                  status: [],
-                                );
-                              }
-                              LoggerHelper.Logger.instance
-                                  .i(downloader?.toJson());
-                              if (await controller
-                                  .saveDownloaderToServer(downloader!)) {
-                                Navigator.of(context).pop();
-                                controller.getDownloaderListFromServer();
-                                controller.update();
-                              }
-                            },
-                          ),
-                        ],
-                      )
-                    ],
-                  );
-                }),
+                              controller.getDownloaderListFromServer();
+                              controller.update();
+                            }
+                          },
+                        ),
+                      ],
+                    )
+                  ],
+                ),
               ),
             ),
           ],

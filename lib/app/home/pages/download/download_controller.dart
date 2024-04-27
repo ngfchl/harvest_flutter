@@ -1,8 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-// ignore: depend_on_referenced_packages
+import 'package:get/get.dart'; // ignore: depend_on_referenced_packages
 import 'package:path_provider/path_provider.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
 import 'package:transmission_api/transmission_api.dart' as tr;
@@ -16,14 +15,14 @@ import '../models/transmission.dart';
 
 class DownloadController extends GetxController {
   bool isLoaded = false;
-  RxList<Downloader> dataList = <Downloader>[].obs;
-  RxList<String> pathList = <String>[].obs;
-  RxBool isTimerActive = true.obs; // 使用 RxBool 控制定时器是否激活
-  final duration = 3.14.obs;
-  final timerDuration = 3.14.obs;
+  List<Downloader> dataList = <Downloader>[];
+  List<String> pathList = <String>[];
+  bool isTimerActive = true; // 使用 RxBool 控制定时器是否激活
+  double duration = 3.14;
+  double timerDuration = 3.14;
   late Timer periodicTimer;
   late Timer fiveMinutesTimer;
-  final isDurationValid = true.obs;
+  bool isDurationValid = true;
   bool realTimeState = true;
 
   DownloadController(this.realTimeState);
@@ -40,9 +39,8 @@ class DownloadController extends GetxController {
 
   @override
   void onInit() {
-    duration.value = SPUtil.getDouble('duration', defaultValue: 3.14)!;
-    timerDuration.value =
-        SPUtil.getDouble('timerDuration', defaultValue: 3.14)!;
+    duration = SPUtil.getDouble('duration', defaultValue: 3.14)!;
+    timerDuration = SPUtil.getDouble('timerDuration', defaultValue: 3.14)!;
     getDownloaderListFromServer();
     if (realTimeState) {
       refreshDownloadStatus();
@@ -70,7 +68,7 @@ class DownloadController extends GetxController {
       // 在定时器触发时获取最新的下载器数据
       refreshDownloadStatus();
     });
-    isTimerActive.value = true;
+    isTimerActive = true;
     update();
   }
 
@@ -79,7 +77,7 @@ class DownloadController extends GetxController {
     if (periodicTimer.isActive) {
       periodicTimer.cancel();
     }
-    isTimerActive.value = false;
+    isTimerActive = false;
     update();
   }
 
@@ -116,7 +114,7 @@ class DownloadController extends GetxController {
   getDownloaderListFromServer() {
     getDownloaderListApi().then((value) {
       if (value.code == 0) {
-        dataList.value = value.data;
+        dataList = value.data;
         isLoaded = true;
         _downloadStreamController.add(dataList.toList());
       } else {
@@ -129,7 +127,6 @@ class DownloadController extends GetxController {
     if (realTimeState) {
       refreshDownloadStatus();
     }
-
     update();
   }
 
@@ -235,9 +232,9 @@ class DownloadController extends GetxController {
   void validateInput(String input, {double min = 3, double max = 10}) {
     try {
       double parsedValue = double.parse(input);
-      isDurationValid.value = parsedValue >= 3 && parsedValue <= 10;
+      isDurationValid = parsedValue >= 3 && parsedValue <= 10;
     } catch (e) {
-      isDurationValid.value = false;
+      isDurationValid = false;
     }
     update();
   }
@@ -273,7 +270,7 @@ class DownloadController extends GetxController {
   getTorrentsPathList() async {
     CommonResponse response = await getDownloaderPaths();
     if (response.code == 0) {
-      pathList.value = [
+      pathList = [
         for (final item in response.data)
           if (item['path'] is String) item['path'].toString()
       ];
