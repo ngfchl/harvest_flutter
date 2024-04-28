@@ -167,7 +167,19 @@ class _LoginPageState extends State<LoginPage> {
               }),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 36.0),
-                child: ElevatedButton(
+                child: ElevatedButton.icon(
+                  icon: controller.isLoading
+                      ? const Center(
+                          child: SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator()),
+                        )
+                      : const Icon(
+                          Icons.link,
+                          size: 18,
+                        ),
+                  label: const Text('连接服务器'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     // 设置背景颜色为绿色
@@ -183,18 +195,6 @@ class _LoginPageState extends State<LoginPage> {
                           controller.connectToServer();
                         }
                       : null,
-                  child: Stack(
-                    alignment: AlignmentDirectional.center,
-                    children: [
-                      const Text('连接服务器',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.white)),
-                      if (controller.isLoading)
-                        const Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                    ],
-                  ),
                 ),
               ),
             ],
@@ -303,7 +303,12 @@ class _LoginPageState extends State<LoginPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       // 新增取消按钮
-                      ElevatedButton(
+                      ElevatedButton.icon(
+                        icon: const Icon(
+                          Icons.cancel_outlined,
+                          size: 18,
+                        ),
+                        label: const Text('取消'),
                         onPressed: () {
                           // 清理表单控制器
                           nameController.clear();
@@ -312,9 +317,8 @@ class _LoginPageState extends State<LoginPage> {
                           // 关闭底部表单
                           Navigator.pop(context);
                         },
-                        child: const Text('取消'),
                       ),
-                      ElevatedButton(
+                      ElevatedButton.icon(
                         onPressed: () async {
                           final server = Server(
                             id: 0,
@@ -346,22 +350,26 @@ class _LoginPageState extends State<LoginPage> {
                             );
                           }
                         },
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            // 按钮原有内容
-                            Text(
-                              controller.isLoading ? '正在测试...' : '测试',
-                            ),
-                            // 如果正在加载，显示加载动画
-                            if (controller.isLoading)
-                              const Center(
+                        icon: controller.isLoading
+                            ? const Center(
                                 child: CircularProgressIndicator(),
+                              )
+                            : const Icon(
+                                Icons.autorenew,
+                                size: 18,
                               ),
-                          ],
+                        label: Text(
+                          controller.isLoading ? '正在测试...' : '测试',
                         ),
                       ),
-                      ElevatedButton(
+                      ElevatedButton.icon(
+                        icon: const Icon(
+                          Icons.save,
+                          size: 18,
+                        ),
+                        label: serverToEdit == null
+                            ? const Text('添加')
+                            : const Text('保存'),
                         onPressed: () async {
                           if (formKey.currentState!.validate()) {
                             final server = Server(
@@ -400,9 +408,6 @@ class _LoginPageState extends State<LoginPage> {
                             }
                           }
                         },
-                        child: serverToEdit == null
-                            ? const Text('添加')
-                            : const Text('保存'),
                       ),
                     ],
                   ),
