@@ -59,7 +59,7 @@ class HomeView extends GetView<HomeController> {
         ),
       ),
       drawerEdgeDragWidth: 200,
-      drawerEnableOpenDragGesture: false,
+      // drawerEnableOpenDragGesture: false,
       drawerScrimColor: Colors.white.withOpacity(0.6),
       // floatingActionButton: GFIconButton(
       //   icon: const Icon(Icons.menu_outlined),
