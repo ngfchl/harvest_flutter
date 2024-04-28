@@ -31,24 +31,40 @@ class SettingPage extends StatelessWidget {
                   _versionCard(),
                   _noticeTestForm(),
                   Flexible(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          ..._optionListView(),
-                        ],
-                      ),
-                    ),
+                    child: controller.isLoaded
+                        ? const Center(child: CircularProgressIndicator())
+                        : SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                ..._optionListView(),
+                              ],
+                            ),
+                          ),
                   ),
+                  const SizedBox(height: 12),
                 ],
               ),
             );
           }),
         ),
-        floatingActionButton: IconButton(
-            onPressed: () {
-              _openAddOptionForm();
-            },
-            icon: const Icon(Icons.add)),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        floatingActionButton: CustomCard(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              IconButton(
+                  onPressed: () {
+                    controller.getOptionList();
+                  },
+                  icon: const Icon(Icons.refresh)),
+              IconButton(
+                  onPressed: () {
+                    _openAddOptionForm();
+                  },
+                  icon: const Icon(Icons.add)),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -58,6 +74,14 @@ class SettingPage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
       child: ListTile(
         dense: true,
+        contentPadding: EdgeInsets.zero,
+        leading: const IconButton(
+          icon: Icon(
+            Icons.info_outline,
+            color: Colors.black87,
+          ),
+          onPressed: null,
+        ),
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -97,36 +121,52 @@ class SettingPage extends StatelessWidget {
 
   void _openAddOptionForm() {
     Map<String, OptionFormBuilder> optionForms = _optionFormMap();
-    Get.defaultDialog(
-        title: '选择配置项',
-        content: SingleChildScrollView(
+    Get.bottomSheet(
+        backgroundColor: Colors.transparent,
+        CustomCard(
           child: Column(
-            children: controller.optionChoice
-                .where((e) => !controller.optionList
-                    .any((element) => element.name == e.value))
-                .map((choice) => CustomCard(
-                      child: ListTile(
-                          title: Center(child: Text(choice.name)),
-                          hoverColor: Colors.teal,
-                          focusColor: Colors.teal,
-                          splashColor: Colors.teal,
-                          onTap: () {
-                            Logger.instance.i(choice.value);
-                            if (optionForms[choice.value] != null) {
-                              Get.back();
-                              Get.bottomSheet(
-                                SingleChildScrollView(
-                                    child: CustomCard(
-                                        padding: EdgeInsets.zero,
-                                        margin: EdgeInsets.zero,
-                                        child:
-                                            optionForms[choice.value]!(null))),
-                                backgroundColor: Colors.transparent,
-                              );
-                            }
-                          }),
-                    ))
-                .toList(),
+            children: [
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(12.0),
+                  child: Text('请选择配置项'),
+                ),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: controller.optionChoice
+                        .where((e) => !controller.optionList
+                            .any((element) => element.name == e.value))
+                        .map((choice) => CustomCard(
+                              padding: EdgeInsets.zero,
+                              child: ListTile(
+                                  dense: true,
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Center(child: Text(choice.name)),
+                                  hoverColor: Colors.teal,
+                                  focusColor: Colors.teal,
+                                  splashColor: Colors.teal,
+                                  onTap: () {
+                                    Logger.instance.i(choice.value);
+                                    if (optionForms[choice.value] != null) {
+                                      Get.back();
+                                      Get.bottomSheet(
+                                        backgroundColor: Colors.transparent,
+                                        SingleChildScrollView(
+                                            child: CustomCard(
+                                                child:
+                                                    optionForms[choice.value]!(
+                                                        null))),
+                                      );
+                                    }
+                                  }),
+                            ))
+                        .toList(),
+                  ),
+                ),
+              ),
+            ],
           ),
         ));
   }
@@ -485,7 +525,12 @@ class SettingPage extends StatelessWidget {
             ListTile(
                 title: const Text('通知测试'),
                 dense: true,
-                // contentPadding: EdgeInsets.zero,
+                contentPadding: EdgeInsets.zero,
+                leading: const IconButton(
+                  icon: Icon(Icons.notification_important_outlined,
+                      color: Colors.green),
+                  onPressed: null,
+                ),
                 trailing: ExpandIcon(
                   isExpanded: isEdit.value,
                   onPressed: (value) {

@@ -45,12 +45,15 @@ class SettingController extends GetxController {
   }
 
   getOptionList() async {
+    isLoaded = true;
+    update();
     final res = await getOptionListApi();
     if (res.code == 0) {
       optionList = res.data;
     } else {
       Get.snackbar('获取配置列表出错', res.msg.toString());
     }
+    isLoaded = false;
     update();
   }
 
