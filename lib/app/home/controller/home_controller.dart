@@ -101,7 +101,7 @@ class HomeController extends GetxController {
     }
   }
 
-  logout() {
+  void logout() {
     SPUtil.remove("userinfo");
     SPUtil.remove("isLogin");
     box.remove("userinfo");

@@ -117,13 +117,15 @@ class CustomPortField extends StatelessWidget {
         TextInputFormatter.withFunction((oldValue, newValue) {
           try {
             final int value = int.parse(newValue.text);
-            if (value < 1 || value > 65535) {
+            if (value < 0 || value > 65535 && newValue.text.isNotEmpty) {
               return oldValue;
             }
-            return newValue;
           } catch (e) {
-            return oldValue;
+            if (newValue.text.isNotEmpty) {
+              return oldValue;
+            }
           }
+          return newValue;
         }),
         LengthLimitingTextInputFormatter(5), // 限制长度为5位数字
       ],
