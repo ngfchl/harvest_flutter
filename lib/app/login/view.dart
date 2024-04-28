@@ -173,13 +173,14 @@ class _LoginPageState extends State<LoginPage> {
                           child: SizedBox(
                               height: 18,
                               width: 18,
-                              child: CircularProgressIndicator()),
+                              child: CircularProgressIndicator(
+                                  color: Colors.white70)),
                         )
-                      : const Icon(
-                          Icons.link,
-                          size: 18,
-                        ),
-                  label: const Text('连接服务器'),
+                      : const Icon(Icons.link, size: 18, color: Colors.white70),
+                  label: const Text(
+                    '连接服务器',
+                    style: TextStyle(color: Colors.white70),
+                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     // 设置背景颜色为绿色
@@ -304,11 +305,21 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       // 新增取消按钮
                       ElevatedButton.icon(
-                        icon: const Icon(
-                          Icons.cancel_outlined,
-                          size: 18,
+                        icon: const Icon(Icons.cancel_outlined,
+                            size: 18, color: Colors.white70),
+                        label: const Text(
+                          '取消',
+                          style: TextStyle(color: Colors.white70),
                         ),
-                        label: const Text('取消'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+
+                          // 设置背景颜色为绿色
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(5.0), // 边角圆角大小可自定义
+                          ),
+                        ),
                         onPressed: () {
                           // 清理表单控制器
                           nameController.clear();
@@ -354,22 +365,36 @@ class _LoginPageState extends State<LoginPage> {
                             ? const Center(
                                 child: CircularProgressIndicator(),
                               )
-                            : const Icon(
-                                Icons.autorenew,
-                                size: 18,
-                              ),
+                            : const Icon(Icons.autorenew,
+                                size: 18, color: Colors.white70),
                         label: Text(
-                          controller.isLoading ? '正在测试...' : '测试',
+                          controller.isLoading ? '测试...' : '测试',
+                          style: const TextStyle(color: Colors.white70),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          // 设置背景颜色为绿色
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(5.0), // 边角圆角大小可自定义
+                          ),
                         ),
                       ),
                       ElevatedButton.icon(
-                        icon: const Icon(
-                          Icons.save,
-                          size: 18,
+                        icon: const Icon(Icons.save,
+                            size: 18, color: Colors.white70),
+                        label: Text(
+                          serverToEdit == null ? '添加' : '保存',
+                          style: const TextStyle(color: Colors.white70),
                         ),
-                        label: serverToEdit == null
-                            ? const Text('添加')
-                            : const Text('保存'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          // 设置背景颜色为绿色
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(5.0), // 边角圆角大小可自定义
+                          ),
+                        ),
                         onPressed: () async {
                           if (formKey.currentState!.validate()) {
                             final server = Server(
