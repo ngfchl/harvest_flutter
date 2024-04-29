@@ -124,62 +124,63 @@ class _MySitePagePageState extends State<MySitePage>
                             );
                           }),
               ),
+              const SizedBox(height: 50),
             ],
           ),
         ),
-        floatingActionButton: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            GFIconButton(
-              onPressed: () {
-                _showFilterBottomSheet();
-              },
-              icon: const Icon(
-                Icons.filter_tilt_shift,
-                // size: 32,
-                // color: Colors.blue,
-              ),
-              // text: '筛选',
-              // type: GFButtonType.outline2x,
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            GFIconButton(
-              onPressed: () {
-                _showSortBottomSheet();
-              },
-              icon: const Icon(
-                Icons.swap_vert_circle_outlined,
-                // size: 32,
-                // color: Colors.blue,
-              ),
-              // text: '排序',
-              // type: GFButtonType.outline2x,
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            GFIconButton(
-              onPressed: () {
-                _showEditBottomSheet();
-              },
-              icon: const Icon(
-                Icons.add_circle_outline,
-                // size: 32,
-                // color: Colors.blue,
-              ),
-              // text: '添加',
-              // type: GFButtonType.outline2x,
-            ),
-            const SizedBox(
-              height: 48,
-            )
-          ],
-        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        floatingActionButton: _buildBottomButtonBar(),
       );
     });
+  }
+
+  _buildBottomButtonBar() {
+    return CustomCard(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          GFIconButton(
+            onPressed: () {
+              _showFilterBottomSheet();
+            },
+            icon: const Icon(
+              Icons.filter_tilt_shift,
+              // size: 32,
+              // color: Colors.blue,
+            ),
+            // text: '筛选',
+            size: 18,
+            type: GFButtonType.transparent,
+          ),
+          GFIconButton(
+            onPressed: () {
+              _showSortBottomSheet();
+            },
+            icon: const Icon(
+              Icons.swap_vert_circle_outlined,
+              // size: 32,
+              // color: Colors.blue,
+            ),
+            // text: '排序',
+            size: 18,
+            type: GFButtonType.transparent,
+          ),
+          GFIconButton(
+            onPressed: () {
+              _showEditBottomSheet();
+            },
+            size: 18,
+            icon: const Icon(
+              Icons.add_circle_outline,
+              // size: 32,
+              // color: Colors.blue,
+            ),
+            // text: '添加',
+            type: GFButtonType.transparent,
+          ),
+        ],
+      ),
+    );
   }
 
   @override
