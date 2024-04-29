@@ -697,8 +697,8 @@ class TorrentController extends GetxController {
               ? data['rootFolder']
               : configuration?.createSubfolderEnabled,
           rename: data['rename'],
-          upLimit: data['upLimit'],
-          dlLimit: data['dlLimit'],
+          upLimit: data['upLimit'] * 1024 * 1024,
+          dlLimit: data['dlLimit'] * 1024 * 1024,
           ratioLimit: data['ratioLimit'].toDouble(),
           autoTMM: data['autoTMM'] == true
               ? data['autoTMM']
@@ -714,8 +714,8 @@ class TorrentController extends GetxController {
           paused: data['paused'],
           rootFolder: data['rootFolder'],
           rename: data['rename'],
-          upLimit: data['upLimit'],
-          dlLimit: data['dlLimit'],
+          upLimit: data['upLimit'] * 1024 * 1024,
+          dlLimit: data['dlLimit'] * 1024 * 1024,
           ratioLimit: data['ratioLimit'].toDouble(),
           autoTMM: data['autoTMM'],
           firstLastPiecePrio: data['firstLastPiecePrio'],
@@ -744,8 +744,8 @@ class TorrentController extends GetxController {
           paused: data['paused'],
           rootFolder: data['rootFolder'],
           rename: data['rename'],
-          upLimit: data['upLimit'] * 1024,
-          dlLimit: data['dlLimit'] * 1024,
+          upLimit: data['upLimit'] * 1024 * 1024,
+          dlLimit: data['dlLimit'] * 1024 * 1024,
           ratioLimit: data['ratioLimit'].toDouble(),
           autoTMM: data['autoTMM'],
           firstLastPiecePrio: data['firstLastPiecePrio'],
