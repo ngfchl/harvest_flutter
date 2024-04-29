@@ -41,7 +41,7 @@ class SettingPage extends StatelessWidget {
                             ),
                           ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 50),
                 ],
               ),
             );
@@ -56,12 +56,18 @@ class SettingPage extends StatelessWidget {
                   onPressed: () {
                     controller.getOptionList();
                   },
-                  icon: const Icon(Icons.refresh)),
+                  icon: const Icon(
+                    Icons.refresh,
+                    size: 18,
+                  )),
               IconButton(
                   onPressed: () {
                     _openAddOptionForm();
                   },
-                  icon: const Icon(Icons.add)),
+                  icon: const Icon(
+                    Icons.add,
+                    size: 18,
+                  )),
             ],
           ),
         ),

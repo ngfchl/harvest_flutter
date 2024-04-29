@@ -22,42 +22,65 @@ class TaskPage extends StatelessWidget {
     return GetBuilder<TaskController>(builder: (controller) {
       return Scaffold(
         backgroundColor: Colors.transparent,
-        body: GlassWidget(
-          child: GetBuilder<TaskController>(builder: (controller) {
-            return EasyRefresh(
-              onRefresh: () {
-                controller.getTaskInfo();
-              },
-              child: controller.isLoading
-                  ? const GFLoader()
-                  : GetBuilder<TaskController>(builder: (controller) {
-                      return ListView.builder(
-                        itemCount: controller.dataList.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          Schedule task = controller.dataList[index];
-                          return _buildTaskView(task);
-                        },
-                      );
-                    }),
-            );
-          }),
-        ),
-        floatingActionButton: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
+        body: Column(
           children: [
-            GFIconButton(
-              icon: const Icon(Icons.add),
-              shape: GFIconButtonShape.standard,
-              color: GFColors.PRIMARY.withOpacity(0.6),
-              onPressed: () {
-                editTask(null);
-              },
+            Expanded(
+              child: GlassWidget(
+                child: GetBuilder<TaskController>(builder: (controller) {
+                  return EasyRefresh(
+                    onRefresh: () {
+                      controller.getTaskInfo();
+                    },
+                    child: controller.isLoading
+                        ? const GFLoader()
+                        : GetBuilder<TaskController>(builder: (controller) {
+                            return ListView.builder(
+                              itemCount: controller.dataList.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                Schedule task = controller.dataList[index];
+                                return _buildTaskView(task);
+                              },
+                            );
+                          }),
+                  );
+                }),
+              ),
             ),
-            const SizedBox(height: 72)
+            const SizedBox(height: 50),
           ],
         ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        floatingActionButton: _buildBottomButtonBar(),
       );
     });
+  }
+
+  _buildBottomButtonBar() {
+    return CustomCard(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          GFIconButton(
+            icon: const Icon(Icons.refresh),
+            type: GFButtonType.transparent,
+            color: GFColors.PRIMARY,
+            size: 18,
+            onPressed: () {
+              controller.getTaskInfo();
+            },
+          ),
+          GFIconButton(
+            icon: const Icon(Icons.add),
+            type: GFButtonType.transparent,
+            color: GFColors.PRIMARY,
+            size: 18,
+            onPressed: () {
+              editTask(null);
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildTaskView(Schedule item) {

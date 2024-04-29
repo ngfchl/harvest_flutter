@@ -145,6 +145,19 @@ class _MySitePagePageState extends State<MySitePage>
         children: [
           GFIconButton(
             onPressed: () {
+              controller.getSiteStatusFromServer();
+            },
+            icon: const Icon(
+              Icons.refresh,
+              // size: 32,
+              // color: Colors.blue,
+            ),
+            // text: '筛选',
+            size: 18,
+            type: GFButtonType.transparent,
+          ),
+          GFIconButton(
+            onPressed: () {
               _showFilterBottomSheet();
             },
             icon: const Icon(
