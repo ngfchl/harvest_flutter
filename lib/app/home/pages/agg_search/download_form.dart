@@ -403,11 +403,14 @@ openDownloaderListSheet(BuildContext context, SearchTorrentInfo info) {
                               titleStyle: const TextStyle(
                                   fontSize: 14, color: Colors.black54),
                               backgroundColor: Colors.white,
-                              content: SingleChildScrollView(
-                                child: DownloadForm(
-                                  categories: categorise,
-                                  downloader: downloader,
-                                  info: info,
+                              content: SizedBox(
+                                height: 350,
+                                child: SingleChildScrollView(
+                                  child: DownloadForm(
+                                    categories: categorise,
+                                    downloader: downloader,
+                                    info: info,
+                                  ),
                                 ),
                               ),
                             );
