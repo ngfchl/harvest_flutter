@@ -53,20 +53,22 @@ class _MySitePagePageState extends State<MySitePage>
                   children: [
                     Expanded(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5),
-                        height: 25,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 0),
+                        margin: const EdgeInsets.only(top: 5),
+                        height: 30,
                         child: TextField(
                           controller: controller.searchController,
-                          style: const TextStyle(fontSize: 10),
+                          style: const TextStyle(fontSize: 12),
                           textAlignVertical: TextAlignVertical.bottom,
                           decoration: InputDecoration(
                             // labelText: '搜索',
                             hintText: '输入关键词...',
-                            labelStyle: const TextStyle(fontSize: 10),
-                            hintStyle: const TextStyle(fontSize: 10),
+                            labelStyle: const TextStyle(fontSize: 12),
+                            hintStyle: const TextStyle(fontSize: 12),
                             prefixIcon: const Icon(
                               Icons.search,
-                              size: 10,
+                              size: 14,
                             ),
                             // suffix: ,
                             suffixIcon: Padding(
@@ -74,7 +76,9 @@ class _MySitePagePageState extends State<MySitePage>
                               child: Text(
                                   '计数：${controller.showStatusList.length}',
                                   style: const TextStyle(
-                                      fontSize: 10, color: Colors.orange)),
+                                      textBaseline: TextBaseline.alphabetic,
+                                      fontSize: 12,
+                                      color: Colors.orange)),
                             ),
                             border: const OutlineInputBorder(
                               borderRadius:
