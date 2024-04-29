@@ -48,36 +48,51 @@ class _DownloadPageState extends State<DownloadPage>
     super.build(context);
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: GetBuilder<DownloadController>(builder: (controller) {
-        return StreamBuilder<List<Downloader>>(
-            stream: controller.downloadStream,
-            initialData: controller.dataList,
-            builder: (context, snapshot) {
-              controller.isLoaded = snapshot.hasData;
-              return GlassWidget(
-                child: EasyRefresh(
-                  controller: EasyRefreshController(),
-                  onRefresh: () async {
-                    controller.getDownloaderListFromServer();
-                    controller.startPeriodicTimer();
-                  },
-                  child: controller.isLoaded
-                      ? ListView.builder(
-                          itemCount: controller.dataList.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            Downloader downloader = controller.dataList[index];
-                            return buildDownloaderCard(downloader);
-                          })
-                      : Center(
-                          child: ListView(
-                          children: const [Expanded(child: GFLoader())],
-                        )),
-                ),
-              );
-            });
-      }),
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
+      body: Column(
+        children: [
+          Expanded(
+            child: GetBuilder<DownloadController>(builder: (controller) {
+              return StreamBuilder<List<Downloader>>(
+                  stream: controller.downloadStream,
+                  initialData: controller.dataList,
+                  builder: (context, snapshot) {
+                    controller.isLoaded = snapshot.hasData;
+                    return GlassWidget(
+                      child: EasyRefresh(
+                        controller: EasyRefreshController(),
+                        onRefresh: () async {
+                          controller.getDownloaderListFromServer();
+                          controller.startPeriodicTimer();
+                        },
+                        child: controller.isLoaded
+                            ? ListView.builder(
+                                itemCount: controller.dataList.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  Downloader downloader =
+                                      controller.dataList[index];
+                                  return buildDownloaderCard(downloader);
+                                })
+                            : Center(
+                                child: ListView(
+                                children: const [Expanded(child: GFLoader())],
+                              )),
+                      ),
+                    );
+                  });
+            }),
+          ),
+          const SizedBox(height: 50),
+        ],
+      ),
+      floatingActionButton: _buildBottomButtonBar(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+    );
+  }
+
+  _buildBottomButtonBar() {
+    return CustomCard(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           GFIconButton(
             icon: controller.isTimerActive
@@ -86,6 +101,7 @@ class _DownloadPageState extends State<DownloadPage>
             // shape: GFIconButtonShape.standard,
             type: GFButtonType.transparent,
             color: GFColors.PRIMARY,
+            size: 18,
             onPressed: () {
               // controller.cancelPeriodicTimer();
               controller.isTimerActive
@@ -101,6 +117,7 @@ class _DownloadPageState extends State<DownloadPage>
               shape: GFIconButtonShape.standard,
               type: GFButtonType.transparent,
               color: GFColors.PRIMARY,
+              size: 18,
               onPressed: () {
                 // controller.getAllCategory();
                 // GFToast.showToast(
@@ -219,14 +236,13 @@ class _DownloadPageState extends State<DownloadPage>
             shape: GFIconButtonShape.standard,
             type: GFButtonType.transparent,
             color: GFColors.PRIMARY,
+            size: 18,
             onPressed: () async {
               _showEditBottomSheet();
             },
           ),
-          const SizedBox(height: 72)
         ],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
@@ -498,6 +514,7 @@ class _DownloadPageState extends State<DownloadPage>
     }
     ChartSeriesController? chartSeriesController;
     return CustomCard(
+      margin: const EdgeInsets.only(left: 8, right: 8, top: 6, bottom: 2),
       child: Slidable(
         key: ValueKey('${downloader.id}_${downloader.name}'),
         startActionPane: ActionPane(
