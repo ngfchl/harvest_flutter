@@ -13,6 +13,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../common/card_view.dart';
 import '../../../../common/utils.dart';
 import '../../../../utils/logger_helper.dart' as LoggerHelper;
+import '../../../../utils/string_utils.dart';
 import '../../../routes/app_pages.dart';
 import '../models/my_site.dart';
 import 'controller.dart';
@@ -485,8 +486,8 @@ class _AggSearchPageState extends State<AggSearchPage>
   }
 
   _openSiteSheet() {
-    controller.mySiteController.mySiteList
-        .sort((a, b) => a.nickname.compareTo(b.nickname));
+    controller.mySiteController.mySiteList.sort(
+        (a, b) => a.nickname.toLowerCase().compareTo(b.nickname.toLowerCase()));
     List<MySite> canSearchList = controller.mySiteController.mySiteList
         .where((element) => element.available && element.searchTorrents)
         .toList();
@@ -526,7 +527,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                             _getRandomSites();
                           },
                           style: OutlinedButton.styleFrom(
-                            backgroundColor: Colors.purple,
+                            backgroundColor: Colors.deepOrangeAccent,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8.0), // 圆角半径
                             ),
@@ -565,7 +566,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                       BorderRadius.circular(8.0), // 圆角半径
                                 ),
                               ),
-                              child: Text('搜索站点数${controller.maxCount}')),
+                              child: Text('站点数${controller.maxCount}')),
                           InkWell(
                             child: const Icon(Icons.add),
                             onTap: () {
@@ -598,7 +599,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                         return const SizedBox.shrink();
                       }
                       return FilterChip(
-                        label: Text(mySite.nickname),
+                        label: Text(capitalize(mySite.nickname)),
                         selected: controller.sites.contains(mySite.id),
                         backgroundColor: Colors.blue.shade500,
                         labelStyle:
