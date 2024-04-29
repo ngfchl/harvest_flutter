@@ -3,3 +3,7 @@ class StringUtils {
     return "assets/lotties/$lotterName.json";
   }
 }
+
+String capitalize(String str) {
+  return str.isNotEmpty ? '${str[0].toUpperCase()}${str.substring(1)}' : str;
+}
