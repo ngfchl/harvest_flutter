@@ -1,3 +1,5 @@
+import '../../../../utils/logger_helper.dart';
+
 class SignInInfo {
   String updatedAt;
   String info;
@@ -52,6 +54,7 @@ class StatusInfo {
   });
 
   factory StatusInfo.fromJson(Map<String, dynamic> json) {
+    Logger.instance.i(json);
     return StatusInfo(
       ratio: json['downloaded'] > 0 ? json['uploaded'] / json['downloaded'] : 0,
       downloaded: json['downloaded'] as int,
@@ -143,13 +146,21 @@ class MySite {
   });
 
   factory MySite.fromJson(Map<String, dynamic> json) {
+    Logger.instance.i(json['nickname']);
     Map<String, SignInInfo> signInInfo =
         (json['sign_info'] as Map<String, dynamic>? ?? {}).map((key, value) =>
             MapEntry(key, SignInInfo.fromJson(value as Map<String, dynamic>)));
 
     Map<String, StatusInfo> statusInfo =
-        (json['status'] as Map<String, dynamic>? ?? {}).map((key, value) =>
-            MapEntry(key, StatusInfo.fromJson(value as Map<String, dynamic>)));
+        (json['status'] as Map<String, dynamic>? ?? {}).map((key, value) {
+      if (value['updated_at'] == null || value['updated_at'].isEmpty) {
+        value['updated_at'] = DateTime.parse(key).toString();
+      }
+      if (value['created_at'] == null || value['created_at'].isEmpty) {
+        value['created_at'] = DateTime.parse(key).toString();
+      }
+      return MapEntry(key, StatusInfo.fromJson(value as Map<String, dynamic>));
+    });
 
     return MySite(
       id: json['id'] as int,
