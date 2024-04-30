@@ -6,6 +6,7 @@ import 'package:getwidget/getwidget.dart';
 import 'package:harvest/api/mysite.dart';
 import 'package:harvest/models/common_response.dart';
 
+import '../../theme/theme.dart';
 import 'controller/home_controller.dart';
 
 class HomeView extends GetView<HomeController> {
@@ -219,15 +220,15 @@ class HomeView extends GetView<HomeController> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // const Wen(),
+        // const DarkModeSwitch(),
         SizedBox(
           height: 20,
           width: 20,
           child: GetBuilder<HomeController>(builder: (controller) {
             return InkWell(
               onTap: () {
-                Get.changeTheme(controller.isDarkMode
-                    ? ThemeData.light()
-                    : ThemeData.dark());
+                Get.changeTheme(controller.isDarkMode ? lightTheme : darkTheme);
+
                 controller.isDarkMode = !controller.isDarkMode;
                 controller.update();
               },
