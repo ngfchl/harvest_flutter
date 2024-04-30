@@ -29,6 +29,7 @@ class HomeController extends GetxController {
   GetStorage box = GetStorage();
   TextEditingController searchController = TextEditingController();
   DioUtil dioUtil = DioUtil();
+  bool isDarkMode = false;
 
   // final mySiteController = Get.put(MySiteController());
 
@@ -79,6 +80,7 @@ class HomeController extends GetxController {
   @override
   void onInit() async {
     try {
+      isDarkMode = Get.isDarkMode;
       initDio();
       userinfo.value = box.read('userinfo');
       update();
@@ -87,7 +89,7 @@ class HomeController extends GetxController {
       Get.offAllNamed(Routes.LOGIN);
     }
     // await mySiteController.initData();
-    pageController.jumpToPage(pages.length - 1);
+    // pageController.jumpToPage(pages.length - 1);
     super.onInit();
   }
 

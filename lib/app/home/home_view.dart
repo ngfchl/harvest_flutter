@@ -216,8 +216,27 @@ class HomeView extends GetView<HomeController> {
   Widget _actionButtonList(context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // const Wen(),
+        SizedBox(
+          height: 20,
+          width: 20,
+          child: GetBuilder<HomeController>(builder: (controller) {
+            return InkWell(
+              onTap: () {
+                Get.changeTheme(controller.isDarkMode
+                    ? ThemeData.light()
+                    : ThemeData.dark());
+                controller.isDarkMode = !controller.isDarkMode;
+                controller.update();
+              },
+              child: Icon(
+                  controller.isDarkMode ? Icons.dark_mode : Icons.light_mode),
+            );
+          }),
+        ),
+        const SizedBox(width: 15),
         const SizedBox(
           height: 20,
           width: 20,
