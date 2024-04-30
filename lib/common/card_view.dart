@@ -6,7 +6,7 @@ class CustomCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry margin;
   final EdgeInsetsGeometry? padding;
-  final Color color;
+  final Color? color;
   final BorderRadiusGeometry borderRadius;
   final List<BoxShadow> boxShadow;
   final double? height;
@@ -17,7 +17,7 @@ class CustomCard extends StatelessWidget {
     required this.child,
     this.margin = const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
     this.padding = const EdgeInsets.all(4),
-    this.color = Colors.white,
+    this.color,
     this.borderRadius = const BorderRadius.only(
       topLeft: Radius.circular(8.0),
       bottomLeft: Radius.circular(8.0),
@@ -43,7 +43,7 @@ class CustomCard extends StatelessWidget {
       margin: margin,
       padding: padding,
       decoration: BoxDecoration(
-        color: color,
+        color: color ?? Theme.of(context).colorScheme.background,
         borderRadius: borderRadius,
         boxShadow: boxShadow,
       ),
