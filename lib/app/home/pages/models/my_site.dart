@@ -1,5 +1,3 @@
-import '../../../../utils/logger_helper.dart';
-
 class SignInInfo {
   String updatedAt;
   String info;
@@ -54,7 +52,6 @@ class StatusInfo {
   });
 
   factory StatusInfo.fromJson(Map<String, dynamic> json) {
-    Logger.instance.i(json);
     return StatusInfo(
       ratio: json['downloaded'] > 0 ? json['uploaded'] / json['downloaded'] : 0,
       downloaded: json['downloaded'] as int,
@@ -146,7 +143,6 @@ class MySite {
   });
 
   factory MySite.fromJson(Map<String, dynamic> json) {
-    Logger.instance.i(json['nickname']);
     Map<String, SignInInfo> signInInfo =
         (json['sign_info'] as Map<String, dynamic>? ?? {}).map((key, value) =>
             MapEntry(key, SignInInfo.fromJson(value as Map<String, dynamic>)));
