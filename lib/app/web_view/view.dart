@@ -7,7 +7,9 @@ import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:harvest/api/mysite.dart';
 import 'package:harvest/utils/logger_helper.dart';
+import 'package:html/parser.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:xpath_selector_html_parser/xpath_selector_html_parser.dart';
 
 import '../home/pages/agg_search/download_form.dart';
 import 'controller.dart';
@@ -42,6 +44,37 @@ class _WebViewPageState extends State<WebViewPage> {
           style: const TextStyle(fontSize: 14),
         ),
         actions: [
+          GetBuilder<WebViewPageController>(builder: (controller) {
+            if (controller.mySite != null && controller.progress >= 100) {
+              return GFIconButton(
+                icon: const Icon(
+                  Icons.cookie_sharp,
+                  size: 24,
+                ),
+                onPressed: () async {
+                  try {
+                    String? htmlStr = await webController?.getHtml();
+                    // Logger.instance.i(htmlStr);
+                    var document = parse(htmlStr).documentElement;
+                    HtmlXPath selector = HtmlXPath.node(document!);
+                    Logger.instance.i(controller.website!.myUidRule);
+                    var result =
+                        selector.queryXPath(controller.website!.myUidRule);
+                    Logger.instance.i(result.attr);
+                    RegExp regex = RegExp(r'(?<=\=)(.*?)(&|$)');
+                    // Logger.instance.i(regex.firstMatch(result.attr!)?.group(0));
+                    Get.snackbar('获取 UID',
+                        '你的 UID 是：${regex.firstMatch(result.attr!)?.group(0)}');
+                  } catch (e) {
+                    Get.snackbar('获取 UID 失败', '请手动填写站点 UID');
+                    controller.mySite = controller.mySite?.copyWith(userId: '');
+                  }
+                },
+                type: GFButtonType.transparent,
+              );
+            }
+            return const SizedBox.shrink();
+          }),
           if (controller.info != null)
             GFIconButton(
               icon: const Icon(
@@ -80,41 +113,63 @@ class _WebViewPageState extends State<WebViewPage> {
             },
             type: GFButtonType.transparent,
           ),
-          if (controller.mySite != null)
-            GFIconButton(
-              icon: const Icon(
-                Icons.cookie_outlined,
-                size: 24,
-              ),
-              onPressed: () async {
-                List<Cookie> cookies =
-                    await cookieManager.getCookies(url: WebUri(controller.url));
-                String cookieStr =
-                    cookies.map((e) => '${e.name}=${e.value}').join('; ');
-                Logger.instance.w(cookieStr);
-                controller.mySite =
-                    controller.mySite?.copyWith(cookie: cookieStr);
-                final response = await editMySite(controller.mySite!);
-                if (response.code == 0) {
-                  Get.snackbar(
-                    '保存成功！',
-                    response.msg!,
-                    snackPosition: SnackPosition.TOP,
-                    backgroundColor: Colors.green.shade400,
-                    duration: const Duration(seconds: 3),
-                  );
-                } else {
-                  Get.snackbar(
-                    '保存出错啦！',
-                    response.msg!,
-                    snackPosition: SnackPosition.TOP,
-                    backgroundColor: Colors.red.shade400,
-                    duration: const Duration(seconds: 3),
-                  );
-                }
-              },
-              type: GFButtonType.transparent,
-            ),
+          GetBuilder<WebViewPageController>(builder: (controller) {
+            if (controller.mySite != null && controller.progress >= 100) {
+              return GFIconButton(
+                icon: const Icon(
+                  Icons.cookie_outlined,
+                  size: 24,
+                ),
+                onPressed: () async {
+                  List<Cookie> cookies = await cookieManager.getCookies(
+                      url: WebUri(controller.url));
+                  String cookieStr =
+                      cookies.map((e) => '${e.name}=${e.value}').join('; ');
+                  Logger.instance.w(cookieStr);
+                  controller.mySite =
+                      controller.mySite?.copyWith(cookie: cookieStr);
+                  if (controller.mySite?.userId == null ||
+                      controller.mySite?.userId == '') {
+                    try {
+                      String? htmlStr = await webController?.getHtml();
+                      // Logger.instance.i(htmlStr);
+                      var document = parse(htmlStr).documentElement;
+                      HtmlXPath selector = HtmlXPath.node(document!);
+                      var result =
+                          selector.queryXPath(controller.website!.myUidRule);
+                      RegExp regex = RegExp(r'(?<=\=)(.*?)(&|$)');
+                      controller.mySite = controller.mySite?.copyWith(
+                          userId: regex.firstMatch(result.attr!)?.group(0));
+                    } catch (e) {
+                      Get.snackbar('获取 UID 失败', '请手动填写站点 UID');
+                      controller.mySite =
+                          controller.mySite?.copyWith(userId: '');
+                    }
+                  }
+                  final response = await editMySite(controller.mySite!);
+                  if (response.code == 0) {
+                    Get.snackbar(
+                      '保存成功！',
+                      response.msg!,
+                      snackPosition: SnackPosition.TOP,
+                      backgroundColor: Colors.green.shade400,
+                      duration: const Duration(seconds: 3),
+                    );
+                  } else {
+                    Get.snackbar(
+                      '保存出错啦！',
+                      response.msg!,
+                      snackPosition: SnackPosition.TOP,
+                      backgroundColor: Colors.red.shade400,
+                      duration: const Duration(seconds: 3),
+                    );
+                  }
+                },
+                type: GFButtonType.transparent,
+              );
+            }
+            return const SizedBox.shrink();
+          }),
           GFIconButton(
             icon: const Icon(
               Icons.refresh,

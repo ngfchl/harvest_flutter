@@ -1,7 +1,7 @@
 name: harvest
 description: Harvest Project App Client
 publish_to: none
-version: 2024.04.26+2
+version: 2024.04.30+1
 environment:
   sdk: '>=3.3.2 <4.0.0'
 dependencies:
@@ -46,6 +46,8 @@ dependencies:
   dropdown_search: ^5.0.6
   web_socket_channel: ^2.4.5
   flutter_popup: ^3.3.0
+  xpath_selector_html_parser: ^3.0.1
+  html: ^0.15.4
 dev_dependencies:
   flutter_test:
     sdk: flutter
