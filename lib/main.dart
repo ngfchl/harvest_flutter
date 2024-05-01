@@ -5,7 +5,6 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:harvest/theme/theme.dart';
 import 'package:harvest/utils/dio_util.dart';
 import 'package:harvest/utils/storage.dart';
 
@@ -44,11 +43,7 @@ void main() async {
       debugShowCheckedModeBanner: false,
       initialRoute: AppPages.INITIAL,
       navigatorKey: Get.key,
-      theme: lightTheme,
-      darkTheme: darkTheme,
-      // theme: lightTheme,
-      // darkTheme: darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.light,
       getPages: AppPages.routes,
       onInit: () async {
         await onInit();

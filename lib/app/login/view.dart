@@ -326,7 +326,6 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
-
                           // 设置背景颜色为绿色
                           shape: RoundedRectangleBorder(
                             borderRadius:
@@ -421,7 +420,6 @@ class _LoginPageState extends State<LoginPage> {
                                 server.id == 0 ? '保存结果' : '更新结果',
                                 result.msg!,
                                 snackPosition: SnackPosition.BOTTOM,
-                                backgroundColor: Colors.green.shade400,
                                 duration: const Duration(seconds: 3),
                               );
                               Navigator.pop(context);
@@ -432,7 +430,6 @@ class _LoginPageState extends State<LoginPage> {
                                     ? '保存服务器时出错：${result.msg}'
                                     : '更新服务器时出错：${result.msg}',
                                 snackPosition: SnackPosition.BOTTOM,
-                                backgroundColor: Colors.red.shade400,
                                 duration: const Duration(seconds: 3),
                               );
                             }
