@@ -22,41 +22,33 @@ class _SubscribeHistoryPageState extends State<SubscribeHistoryPage> {
     return GetBuilder<SubscribeHistoryController>(builder: (controller) {
       return Column(
         children: [
-          CustomCard(
-            child: ListTile(
-              dense: true,
-              title: const Text(
-                '订阅历史',
-                style: TextStyle(fontSize: 18, color: Colors.black87),
-              ),
-              leading: IconButton(
-                  onPressed: () => controller.getSubHistoryFromServer(),
-                  icon: const Icon(
-                    Icons.refresh,
-                    color: Colors.green,
-                  )),
-              trailing: IconButton(
-                  icon: const Icon(
-                    Icons.add,
-                    size: 28,
-                    color: Colors.blue,
-                  ),
-                  onPressed: () {}),
+          Expanded(
+            child: ListView(
+              children: controller.subHistory
+                  .map((SubHistory history) => _buildSubHistory(history))
+                  .toList(),
             ),
           ),
-          Expanded(
-            child:
-                GetBuilder<SubscribeHistoryController>(builder: (controller) {
-              return SingleChildScrollView(
-                child: Wrap(
-                  children: controller.subHistory
-                      .map((SubHistory history) => _buildSubHistory(history))
-                      .toList(),
+          CustomCard(
+            child: ListTile(
+                dense: true,
+                title: const Text(
+                  '订阅历史',
+                  style: TextStyle(
+                    fontSize: 16,
+                  ),
                 ),
-              );
-            }),
+                leading: IconButton(
+                    onPressed: () => controller.getSubHistoryFromServer(),
+                    icon: const Icon(
+                      Icons.refresh,
+                      color: Colors.green,
+                    )),
+                trailing: Text(
+                  '${controller.subHistory.length} 条',
+                  style: const TextStyle(fontSize: 16),
+                )),
           ),
-          const SizedBox(height: 60),
         ],
       );
     });
@@ -125,7 +117,9 @@ class _SubscribeHistoryPageState extends State<SubscribeHistoryPage> {
             title: Text('${history.subscribe?.name}'),
             subtitle: Text(
               history.site!.site.toString(),
-              style: const TextStyle(fontSize: 10, color: Colors.black54),
+              style: const TextStyle(
+                fontSize: 10,
+              ),
             ),
             leading: history.pushed == true
                 ? const Icon(
@@ -150,7 +144,9 @@ class _SubscribeHistoryPageState extends State<SubscribeHistoryPage> {
               padding: const EdgeInsets.only(bottom: 12, left: 12, right: 12),
               child: Text(
                 history.message.toString(),
-                style: const TextStyle(fontSize: 12, color: Colors.black54),
+                style: const TextStyle(
+                  fontSize: 12,
+                ),
               )),
         ],
       ),

@@ -26,31 +26,6 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
     return GetBuilder<SubscribeTagController>(builder: (controller) {
       return Column(
         children: [
-          CustomCard(
-            child: ListTile(
-              dense: true,
-              title: const Text(
-                '订阅标签',
-                style: TextStyle(fontSize: 18, color: Colors.black87),
-              ),
-              leading: IconButton(
-                  onPressed: () => controller.getTagsFromServer(),
-                  icon: const Icon(
-                    Icons.refresh,
-                    color: Colors.green,
-                  )),
-              trailing: IconButton(
-                icon: const Icon(
-                  Icons.add,
-                  size: 28,
-                  color: Colors.blue,
-                ),
-                onPressed: () {
-                  _openEditDialog(null);
-                },
-              ),
-            ),
-          ),
           Expanded(
             child: GetBuilder<SubscribeTagController>(builder: (controller) {
               return SingleChildScrollView(
@@ -62,7 +37,30 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
               );
             }),
           ),
-          const SizedBox(height: 60),
+          CustomCard(
+            child: ListTile(
+              dense: true,
+              title: const Text(
+                '订阅标签',
+                style: TextStyle(fontSize: 16),
+              ),
+              leading: IconButton(
+                  onPressed: () => controller.getTagsFromServer(),
+                  icon: const Icon(
+                    Icons.refresh,
+                    color: Colors.green,
+                  )),
+              trailing: IconButton(
+                icon: const Icon(
+                  Icons.add,
+                  size: 20,
+                ),
+                onPressed: () {
+                  _openEditDialog(null);
+                },
+              ),
+            ),
+          ),
         ],
       );
     });
@@ -102,12 +100,9 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
               onPressed: (context) async {
                 Get.defaultDialog(
                   title: '确认',
-                  backgroundColor: Colors.white,
                   radius: 5,
                   titleStyle: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.deepPurple),
+                      fontSize: 16, fontWeight: FontWeight.w900),
                   middleText: '确定要删除标签吗？',
                   actions: [
                     ElevatedButton(
@@ -121,13 +116,9 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                         Get.back(result: true);
                         CommonResponse res = await controller.removeSubTag(tag);
                         if (res.code == 0) {
-                          Get.snackbar('删除通知', res.msg.toString(),
-                              backgroundColor: Colors.green.shade500,
-                              colorText: Colors.white70);
+                          Get.snackbar('删除通知', res.msg.toString());
                         } else {
-                          Get.snackbar('删除通知', res.msg.toString(),
-                              backgroundColor: Colors.red.shade500,
-                              colorText: Colors.white70);
+                          Get.snackbar('删除通知', res.msg.toString());
                         }
                       },
                       child: const Text('确认'),
@@ -150,7 +141,9 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
           title: Text(tag.name!),
           subtitle: Text(
             tag.category!,
-            style: const TextStyle(fontSize: 10, color: Colors.black54),
+            style: const TextStyle(
+              fontSize: 10,
+            ),
           ),
           onTap: () => _openEditDialog(tag),
           trailing: IconButton(
@@ -190,16 +183,23 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
     final isLoading = false.obs;
 
     available.value = tag != null ? tag.available! : true;
-    String title = tag != null ? '编辑标签：${tag.name!}' : '添加订阅标签';
-    Get.defaultDialog(
-        title: title,
-        content: Column(
-          children: [
-            CustomTextField(
-              controller: nameController,
-              labelText: '名称',
-            ),
-            DropdownButtonFormField<String>(
+    String title = tag != null ? '编辑标签：${tag.name!}' : '添加标签';
+    Get.bottomSheet(CustomCard(
+      child: Column(
+        children: [
+          GFTypography(
+            text: title,
+            textColor: Theme.of(context).colorScheme.onBackground,
+            dividerColor: Theme.of(context).colorScheme.onBackground,
+          ),
+          CustomTextField(
+            controller: nameController,
+            labelText: '名称',
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: DropdownButtonFormField<String>(
+              isDense: true,
               value: categoryController.text,
               onChanged: (String? newValue) {
                 categoryController.text = newValue!;
@@ -208,77 +208,82 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                   .map<DropdownMenuItem<String>>(
                       (MetaDataItem item) => DropdownMenuItem<String>(
                             value: item.value,
-                            child: Center(child: Text(item.name)),
+                            child: Text(
+                              item.name,
+                              style: const TextStyle(fontSize: 14),
+                            ),
                           ))
                   .toList(),
             ),
-            Obx(() {
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Obx(() {
               return SwitchListTile(
                   dense: true,
                   contentPadding: EdgeInsets.zero,
-                  title: const Text(
-                    '标签可用',
-                    style: TextStyle(fontSize: 12, color: Colors.black54),
-                  ),
+                  title: const Text('标签可用'),
                   value: available.value,
                   onChanged: (bool val) {
                     available.value = val;
                   });
             }),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () {
-                    // 清空表单数据
-                    nameController.clear();
-                    categoryController.clear();
-                    available.value = true;
-                    Get.back();
-                  },
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(
-                        Colors.redAccent.withAlpha(150)),
-                  ),
-                  icon: const Icon(Icons.cancel_outlined, color: Colors.white),
-                  label: const Text(
-                    '取消',
-                    style: TextStyle(color: Colors.white),
-                  ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton.icon(
+                onPressed: () {
+                  // 清空表单数据
+                  nameController.clear();
+                  categoryController.clear();
+                  available.value = true;
+                  Get.back();
+                },
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(
+                      Colors.redAccent.withAlpha(150)),
                 ),
-                Obx(() {
-                  return ElevatedButton.icon(
-                    onPressed: () async {
-                      isLoading.value = true;
-                      SubTag newTag;
-                      if (tag != null) {
-                        newTag = tag.copyWith(
-                          name: nameController.text,
-                          category: categoryController.text,
-                          available: available.value,
-                        );
-                      } else {
-                        newTag = SubTag.fromJson({
-                          'id': 0,
-                          'name': nameController.text,
-                          'category': categoryController.text,
-                          'available': available.value,
-                        });
-                      }
-                      submitForm(newTag);
-                      isLoading.value = false;
-                    },
-                    icon: isLoading.value
-                        ? const GFLoader(size: 18)
-                        : const Icon(Icons.save),
-                    label: const Text('保存'),
-                  );
-                }),
-              ],
-            ),
-          ],
-        ));
+                icon: const Icon(Icons.cancel_outlined, color: Colors.white),
+                label: const Text(
+                  '取消',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+              Obx(() {
+                return ElevatedButton.icon(
+                  onPressed: () async {
+                    isLoading.value = true;
+                    SubTag newTag;
+                    if (tag != null) {
+                      newTag = tag.copyWith(
+                        name: nameController.text,
+                        category: categoryController.text,
+                        available: available.value,
+                      );
+                    } else {
+                      newTag = SubTag.fromJson({
+                        'id': 0,
+                        'name': nameController.text,
+                        'category': categoryController.text,
+                        'available': available.value,
+                      });
+                    }
+                    submitForm(newTag);
+                    isLoading.value = false;
+                  },
+                  icon: isLoading.value
+                      ? const GFLoader(size: 18)
+                      : const Icon(Icons.save),
+                  label: const Text('保存'),
+                );
+              }),
+            ],
+          ),
+        ],
+      ),
+    ));
   }
 
   void submitForm(SubTag tag) async {

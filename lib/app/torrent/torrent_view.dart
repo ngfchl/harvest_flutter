@@ -14,7 +14,6 @@ import 'package:qbittorrent_api/qbittorrent_api.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../../../utils/logger_helper.dart' as LoggerHelper;
-import '../../common/glass_widget.dart';
 import '../../utils/date_time_utils.dart';
 import '../../utils/logger_helper.dart';
 import '../home/pages/agg_search/download_form.dart';
@@ -57,204 +56,199 @@ class TorrentView extends GetView<TorrentController> {
         }),
         centerTitle: true,
       ),
-      body: GlassWidget(
-        child: GetBuilder<TorrentController>(builder: (controller) {
-          return controller.torrents.isEmpty
-              ? const GFLoader()
-              : EasyRefresh(
-                  controller: EasyRefreshController(),
-                  onRefresh: () async {
-                    controller.cancelPeriodicTimer();
-                    controller.startPeriodicTimer();
-                  },
-                  child: Column(
-                    children: [
-                      if (controller.downloader.category.toLowerCase() == 'qb')
-                        Container(
-                          height: 20,
-                          margin: const EdgeInsets.symmetric(
-                              vertical: 2.5, horizontal: 5),
-                          child: Row(
-                            children: [
-                              Obx(() {
-                                return GFDropdown(
-                                  padding: EdgeInsets.zero,
-                                  borderRadius: BorderRadius.circular(2),
-                                  // border:
-                                  //     const BorderSide(color: Colors.black12, width: 1),
-                                  dropdownButtonColor: Colors.white54,
-                                  itemHeight: 20,
-                                  value: controller.sortKey.value,
-                                  onChanged: (newValue) {
-                                    if (controller.sortKey.value == newValue) {
-                                      controller.sortReversed.value =
-                                          !controller.sortReversed.value;
-                                    } else {
-                                      controller.sortReversed.value = false;
-                                    }
-                                    LoggerHelper.Logger.instance
-                                        .w(controller.sortReversed.value);
-                                    controller.sortKey.value = newValue!;
-                                    controller.getAllTorrents();
-                                    controller.update();
-                                  },
-                                  items: controller.qbSortOptions
-                                      .map((item) => DropdownMenuItem(
-                                            value: item['value'],
-                                            child: Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 3.0),
-                                              child: Text(
-                                                item['name']!,
-                                                style: const TextStyle(
-                                                    fontSize: 10),
-                                              ),
+      body: GetBuilder<TorrentController>(builder: (controller) {
+        return controller.torrents.isEmpty
+            ? const GFLoader()
+            : EasyRefresh(
+                controller: EasyRefreshController(),
+                onRefresh: () async {
+                  controller.cancelPeriodicTimer();
+                  controller.startPeriodicTimer();
+                },
+                child: Column(
+                  children: [
+                    if (controller.downloader.category.toLowerCase() == 'qb')
+                      Container(
+                        height: 20,
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 2.5, horizontal: 5),
+                        child: Row(
+                          children: [
+                            Obx(() {
+                              return GFDropdown(
+                                padding: EdgeInsets.zero,
+                                borderRadius: BorderRadius.circular(2),
+                                // border:
+                                //     const BorderSide(color: Colors.black12, width: 1),
+                                dropdownButtonColor: Colors.white54,
+                                itemHeight: 20,
+                                value: controller.sortKey.value,
+                                onChanged: (newValue) {
+                                  if (controller.sortKey.value == newValue) {
+                                    controller.sortReversed.value =
+                                        !controller.sortReversed.value;
+                                  } else {
+                                    controller.sortReversed.value = false;
+                                  }
+                                  LoggerHelper.Logger.instance
+                                      .w(controller.sortReversed.value);
+                                  controller.sortKey.value = newValue!;
+                                  controller.getAllTorrents();
+                                  controller.update();
+                                },
+                                items: controller.qbSortOptions
+                                    .map((item) => DropdownMenuItem(
+                                          value: item['value'],
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 3.0),
+                                            child: Text(
+                                              item['name']!,
+                                              style:
+                                                  const TextStyle(fontSize: 10),
                                             ),
-                                          ))
-                                      .toList(),
-                                );
-                              }),
-                              const SizedBox(width: 5),
-                              Expanded(
-                                child: Obx(
-                                  () => TextField(
-                                    controller:
-                                        controller.searchController.value,
-                                    style: const TextStyle(fontSize: 10),
-                                    textAlignVertical: TextAlignVertical.bottom,
-                                    decoration: const InputDecoration(
-                                      // labelText: '搜索',
-                                      hintText: '输入关键词...',
-                                      labelStyle: TextStyle(fontSize: 10),
-                                      hintStyle: TextStyle(fontSize: 10),
-                                      prefixIcon: Icon(
-                                        Icons.search,
-                                        size: 10,
-                                      ),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(3.0)),
-                                      ),
+                                          ),
+                                        ))
+                                    .toList(),
+                              );
+                            }),
+                            const SizedBox(width: 5),
+                            Expanded(
+                              child: Obx(
+                                () => TextField(
+                                  controller: controller.searchController.value,
+                                  style: const TextStyle(fontSize: 10),
+                                  textAlignVertical: TextAlignVertical.bottom,
+                                  decoration: const InputDecoration(
+                                    // labelText: '搜索',
+                                    hintText: '输入关键词...',
+                                    labelStyle: TextStyle(fontSize: 10),
+                                    hintStyle: TextStyle(fontSize: 10),
+                                    prefixIcon: Icon(
+                                      Icons.search,
+                                      size: 10,
                                     ),
-                                    onChanged: (value) {
-                                      // 在这里处理搜索框输入的内容变化
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(3.0)),
+                                    ),
+                                  ),
+                                  onChanged: (value) {
+                                    // 在这里处理搜索框输入的内容变化
 
-                                      Logger.instance.i('搜索框内容变化：$value');
-                                      controller.searchKey.value = value;
-                                      controller.filterTorrents();
-                                    },
-                                  ),
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                      if (controller.downloader.category.toLowerCase() == 'tr')
-                        Container(
-                          height: 20,
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 5, vertical: 2.5),
-                          child: Row(
-                            children: [
-                              Obx(() {
-                                return GFDropdown(
-                                  padding: EdgeInsets.zero,
-                                  borderRadius: BorderRadius.circular(2),
-                                  // border:
-                                  //     const BorderSide(color: Colors.black12, width: 1),
-                                  dropdownButtonColor: Colors.white54,
-                                  itemHeight: 20,
-                                  value: controller.sortKey.value,
-                                  onChanged: (newValue) {
-                                    if (controller.sortKey.value == newValue) {
-                                      controller.sortReversed.value =
-                                          !controller.sortReversed.value;
-                                    } else {
-                                      controller.sortReversed.value = false;
-                                    }
-                                    LoggerHelper.Logger.instance
-                                        .w(controller.sortReversed.value);
-                                    controller.sortKey.value = newValue!;
-                                    controller.getAllTorrents();
-                                    controller.update();
+                                    Logger.instance.i('搜索框内容变化：$value');
+                                    controller.searchKey.value = value;
+                                    controller.filterTorrents();
                                   },
-                                  items: controller.trSortOptions
-                                      .map((item) => DropdownMenuItem(
-                                            value: item['value'],
-                                            child: Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 3.0),
-                                              child: Text(
-                                                item['name']!,
-                                                style: const TextStyle(
-                                                    fontSize: 10),
-                                              ),
-                                            ),
-                                          ))
-                                      .toList(),
-                                );
-                              }),
-                              const SizedBox(width: 5),
-                              Expanded(
-                                child: Obx(
-                                  () => TextField(
-                                    controller:
-                                        controller.searchController.value,
-                                    style: const TextStyle(fontSize: 10),
-                                    textAlignVertical: TextAlignVertical.bottom,
-                                    decoration: const InputDecoration(
-                                      // labelText: '搜索',
-                                      hintText: '输入关键词...',
-                                      isDense: true,
-                                      labelStyle: TextStyle(fontSize: 10),
-                                      hintStyle: TextStyle(fontSize: 10),
-                                      contentPadding: EdgeInsets.zero,
-                                      prefixIcon: Icon(
-                                        Icons.search,
-                                        size: 10,
-                                      ),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(3.0)),
-                                      ),
-                                    ),
-                                    onChanged: (value) {
-                                      Logger.instance.i('搜索框内容变化：$value');
-                                      controller.searchKey.value = value;
-                                      controller.filterTorrents();
-                                    },
-                                  ),
                                 ),
-                              )
-                            ],
-                          ),
+                              ),
+                            )
+                          ],
                         ),
-                      Expanded(
-                        child: Obx(() {
-                          return ListView.builder(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 5),
-                              itemCount: controller.showTorrents.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                if (controller.downloader.category
-                                        .toLowerCase() ==
-                                    'qb') {
-                                  TorrentInfo torrentInfo =
-                                      controller.showTorrents[index];
-                                  return _buildQbTorrentCard(torrentInfo);
-                                } else {
-                                  TransmissionBaseTorrent torrentInfo =
-                                      controller.showTorrents[index];
-                                  return _buildTrTorrentCard(torrentInfo);
-                                }
-                              });
-                        }),
                       ),
-                    ],
-                  ),
-                );
-        }),
-      ),
+                    if (controller.downloader.category.toLowerCase() == 'tr')
+                      Container(
+                        height: 20,
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 2.5),
+                        child: Row(
+                          children: [
+                            Obx(() {
+                              return GFDropdown(
+                                padding: EdgeInsets.zero,
+                                borderRadius: BorderRadius.circular(2),
+                                // border:
+                                //     const BorderSide(color: Colors.black12, width: 1),
+                                dropdownButtonColor: Colors.white54,
+                                itemHeight: 20,
+                                value: controller.sortKey.value,
+                                onChanged: (newValue) {
+                                  if (controller.sortKey.value == newValue) {
+                                    controller.sortReversed.value =
+                                        !controller.sortReversed.value;
+                                  } else {
+                                    controller.sortReversed.value = false;
+                                  }
+                                  LoggerHelper.Logger.instance
+                                      .w(controller.sortReversed.value);
+                                  controller.sortKey.value = newValue!;
+                                  controller.getAllTorrents();
+                                  controller.update();
+                                },
+                                items: controller.trSortOptions
+                                    .map((item) => DropdownMenuItem(
+                                          value: item['value'],
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 3.0),
+                                            child: Text(
+                                              item['name']!,
+                                              style:
+                                                  const TextStyle(fontSize: 10),
+                                            ),
+                                          ),
+                                        ))
+                                    .toList(),
+                              );
+                            }),
+                            const SizedBox(width: 5),
+                            Expanded(
+                              child: Obx(
+                                () => TextField(
+                                  controller: controller.searchController.value,
+                                  style: const TextStyle(fontSize: 10),
+                                  textAlignVertical: TextAlignVertical.bottom,
+                                  decoration: const InputDecoration(
+                                    // labelText: '搜索',
+                                    hintText: '输入关键词...',
+                                    isDense: true,
+                                    labelStyle: TextStyle(fontSize: 10),
+                                    hintStyle: TextStyle(fontSize: 10),
+                                    contentPadding: EdgeInsets.zero,
+                                    prefixIcon: Icon(
+                                      Icons.search,
+                                      size: 10,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(3.0)),
+                                    ),
+                                  ),
+                                  onChanged: (value) {
+                                    Logger.instance.i('搜索框内容变化：$value');
+                                    controller.searchKey.value = value;
+                                    controller.filterTorrents();
+                                  },
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                    Expanded(
+                      child: Obx(() {
+                        return ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 5),
+                            itemCount: controller.showTorrents.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              if (controller.downloader.category
+                                      .toLowerCase() ==
+                                  'qb') {
+                                TorrentInfo torrentInfo =
+                                    controller.showTorrents[index];
+                                return _buildQbTorrentCard(torrentInfo);
+                              } else {
+                                TransmissionBaseTorrent torrentInfo =
+                                    controller.showTorrents[index];
+                                return _buildTrTorrentCard(torrentInfo);
+                              }
+                            });
+                      }),
+                    ),
+                  ],
+                ),
+              );
+      }),
       endDrawer: GFDrawer(
         child: controller.downloader.category.toLowerCase() == 'qb'
             ? ListView(

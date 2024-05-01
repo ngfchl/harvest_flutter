@@ -10,6 +10,7 @@ import '../../../../models/common_response.dart';
 import '../../../../utils/logger_helper.dart';
 import '../models/MyRss.dart';
 import '../models/my_site.dart';
+import '../models/website.dart';
 import 'controller.dart';
 
 class MyRssPage extends StatefulWidget {
@@ -27,31 +28,6 @@ class _MyRssPageState extends State<MyRssPage> {
     return GetBuilder<MyRssController>(builder: (controller) {
       return Column(
         children: [
-          CustomCard(
-            child: ListTile(
-              dense: true,
-              title: const Text(
-                '站点RSS',
-                style: TextStyle(fontSize: 18, color: Colors.black87),
-              ),
-              leading: IconButton(
-                  onPressed: () => controller.getMyRssFromServer(),
-                  icon: const Icon(
-                    Icons.refresh,
-                    color: Colors.green,
-                  )),
-              trailing: IconButton(
-                icon: const Icon(
-                  Icons.add,
-                  size: 28,
-                  color: Colors.blue,
-                ),
-                onPressed: () {
-                  _openEditDialog(null);
-                },
-              ),
-            ),
-          ),
           Expanded(
             child: GetBuilder<MyRssController>(builder: (controller) {
               return SingleChildScrollView(
@@ -63,13 +39,38 @@ class _MyRssPageState extends State<MyRssPage> {
               );
             }),
           ),
-          const SizedBox(height: 60),
+          CustomCard(
+            child: ListTile(
+              dense: true,
+              title: const Text(
+                '站点RSS',
+                style: TextStyle(fontSize: 16),
+              ),
+              leading: IconButton(
+                  onPressed: () => controller.getMyRssFromServer(),
+                  icon: const Icon(
+                    Icons.refresh,
+                    color: Colors.green,
+                  )),
+              trailing: IconButton(
+                icon: const Icon(
+                  Icons.add,
+                  size: 20,
+                ),
+                onPressed: () {
+                  _openEditDialog(null);
+                },
+              ),
+            ),
+          ),
         ],
       );
     });
   }
 
   Widget _buildMyRss(MyRss rss) {
+    MySite mySite = controller.mySiteMap[rss.siteId]!;
+    WebSite webSite = controller.mySiteController.webSiteList[rss.siteId]!;
     return CustomCard(
         child: Slidable(
       key: ValueKey('${rss.id}_${rss.name}'),
@@ -97,12 +98,9 @@ class _MyRssPageState extends State<MyRssPage> {
             onPressed: (context) async {
               Get.defaultDialog(
                 title: '确认',
-                backgroundColor: Colors.white,
                 radius: 5,
-                titleStyle: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.deepPurple),
+                titleStyle:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                 middleText: '确定要删除标签吗？',
                 actions: [
                   ElevatedButton(
@@ -116,13 +114,9 @@ class _MyRssPageState extends State<MyRssPage> {
                       Get.back(result: true);
                       CommonResponse res = await controller.removeMyRss(rss);
                       if (res.code == 0) {
-                        Get.snackbar('删除通知', res.msg.toString(),
-                            backgroundColor: Colors.green.shade500,
-                            colorText: Colors.white70);
+                        Get.snackbar('删除通知', res.msg.toString());
                       } else {
-                        Get.snackbar('删除通知', res.msg.toString(),
-                            backgroundColor: Colors.red.shade500,
-                            colorText: Colors.white70);
+                        Get.snackbar('删除通知', res.msg.toString());
                       }
                     },
                     child: const Text('确认'),
@@ -145,31 +139,28 @@ class _MyRssPageState extends State<MyRssPage> {
         title: Text(rss.name!),
         subtitle: Text(
           rss.siteId!,
-          style: const TextStyle(fontSize: 10, color: Colors.black54),
+          style: const TextStyle(fontSize: 10),
         ),
-        trailing: SizedBox(
-          width: 80,
-          child: Row(
-            children: [
-              IconButton(
-                icon: rss.available == true
-                    ? const Icon(
-                        Icons.check_box,
-                        size: 18,
-                        color: Colors.green,
-                      )
-                    : const Icon(
-                        Icons.disabled_by_default,
-                        size: 18,
-                        color: Colors.red,
-                      ),
-                onPressed: () {
-                  MyRss newRss = rss.copyWith(available: !rss.available!);
-                  submitForm(newRss);
-                },
-              ),
-            ],
-          ),
+        leading: CircleAvatar(
+          backgroundImage: NetworkImage('${mySite.mirror}${webSite.logo}'),
+          backgroundColor: Colors.transparent,
+        ),
+        trailing: IconButton(
+          icon: rss.available == true
+              ? const Icon(
+                  Icons.check_box,
+                  size: 18,
+                  color: Colors.green,
+                )
+              : const Icon(
+                  Icons.disabled_by_default,
+                  size: 18,
+                  color: Colors.red,
+                ),
+          onPressed: () {
+            MyRss newRss = rss.copyWith(available: !rss.available!);
+            submitForm(newRss);
+          },
         ),
       ),
     ));
@@ -197,146 +188,163 @@ class _MyRssPageState extends State<MyRssPage> {
 
     available.value = rss != null ? rss.available! : true;
     String title = rss != null ? '编辑RSS：${rss.name!}' : '添加RSS';
-    Get.defaultDialog(
-        title: title,
-        content: Column(
-          children: [
-            CustomTextField(
-              controller: nameController,
-              labelText: '名称',
-            ),
-            DropdownSearch<MySite>(
-              items: controller.mySiteController.mySiteList,
-              selectedItem: controller.mySiteMap[siteController.text],
-              filterFn: (MySite item, String filter) =>
-                  item.site.toLowerCase().contains(filter.toLowerCase()) ||
-                  item.nickname.toLowerCase().contains(filter.toLowerCase()),
-              itemAsString: (MySite? item) => item!.site,
-              compareFn: (MySite item, MySite selectedItem) =>
-                  item.site == selectedItem.site,
-              onChanged: (MySite? item) {
-                siteController.text = item!.site;
-                Logger.instance.i(siteController);
-              },
-              popupProps: PopupPropsMultiSelection.menu(
-                searchDelay: const Duration(milliseconds: 50),
-                isFilterOnline: false,
-                showSelectedItems: true,
-                showSearchBox: true,
-                searchFieldProps: TextFieldProps(
-                  // padding: EdgeInsets.zero,
-                  decoration: InputDecoration(
-                    isDense: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8), // 设置搜索框的边框圆角
-                    ),
-                  ),
-                ),
-                itemBuilder:
-                    (BuildContext context, MySite item, bool isSelected) {
-                  return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 8),
-                    padding: EdgeInsets.zero,
-                    decoration: !isSelected
-                        ? null
-                        : BoxDecoration(
-                            border: Border.all(
-                                color: Theme.of(context).primaryColor),
-                            borderRadius: BorderRadius.circular(5),
-                            color: Colors.white,
-                          ),
-                    child: ListTile(
-                      dense: true,
-                      selected: isSelected,
-                      title: Text(item.site),
-                      subtitle: Text(item.nickname.toString()),
-                    ),
-                  );
-                },
+    Get.bottomSheet(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0), // 设置圆角半径
+        ),
+        CustomCard(
+          height: 410,
+          child: Column(
+            children: [
+              Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: GFTypography(
+                    text: title,
+                    textColor: Theme.of(context).colorScheme.onBackground,
+                    dividerColor: Theme.of(context).colorScheme.onBackground,
+                  )),
+              CustomTextField(
+                controller: nameController,
+                labelText: '名称',
               ),
-            ),
-            CustomTextField(
-              controller: rssController,
-              labelText: '链接',
-            ),
-            CustomTextField(
-              controller: sortController,
-              labelText: '优先级',
-            ),
-            Obx(() {
-              return SwitchListTile(
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text(
-                    '可用',
-                    style: TextStyle(fontSize: 12, color: Colors.black54),
-                  ),
-                  value: available.value,
-                  onChanged: (bool val) {
-                    available.value = val;
-                  });
-            }),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () {
-                    // 清空表单数据
-                    nameController.clear();
-                    rssController.clear();
-                    siteController.clear();
-                    sortController.clear();
-                    available.value = true;
-                    Get.back();
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: DropdownSearch<MySite>(
+                  items: controller.mySiteController.mySiteList,
+                  selectedItem: controller.mySiteMap[siteController.text],
+                  filterFn: (MySite item, String filter) =>
+                      item.site.toLowerCase().contains(filter.toLowerCase()) ||
+                      item.nickname
+                          .toLowerCase()
+                          .contains(filter.toLowerCase()),
+                  itemAsString: (MySite? item) => item!.site,
+                  compareFn: (MySite item, MySite selectedItem) =>
+                      item.site == selectedItem.site,
+                  onChanged: (MySite? item) {
+                    siteController.text = item!.site;
+                    Logger.instance.i(siteController);
                   },
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(
-                        Colors.redAccent.withAlpha(150)),
-                  ),
-                  icon: const Icon(Icons.cancel_outlined, color: Colors.white),
-                  label: const Text(
-                    '取消',
-                    style: TextStyle(color: Colors.white),
+                  popupProps: PopupPropsMultiSelection.menu(
+                    searchDelay: const Duration(milliseconds: 50),
+                    isFilterOnline: false,
+                    showSelectedItems: true,
+                    showSearchBox: true,
+                    searchFieldProps: TextFieldProps(
+                      // padding: EdgeInsets.zero,
+                      decoration: InputDecoration(
+                        isDense: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8), // 设置搜索框的边框圆角
+                        ),
+                      ),
+                    ),
+                    itemBuilder:
+                        (BuildContext context, MySite item, bool isSelected) {
+                      return Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 8),
+                        padding: EdgeInsets.zero,
+                        decoration: !isSelected
+                            ? null
+                            : BoxDecoration(
+                                border: Border.all(
+                                    color: Theme.of(context).primaryColor),
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                        child: ListTile(
+                          dense: true,
+                          selected: isSelected,
+                          title: Text(item.site),
+                          subtitle: Text(item.nickname.toString()),
+                        ),
+                      );
+                    },
                   ),
                 ),
-                Obx(() {
-                  return ElevatedButton.icon(
-                    onPressed: () async {
-                      isLoading.value = true;
-                      MyRss newTag;
-                      if (rss != null) {
-                        newTag = rss.copyWith(
-                          name: nameController.text,
-                          siteId: siteController.text,
-                          sort: int.parse(sortController.text),
-                          rss: rssController.text,
-                          available: available.value,
-                        );
-                      } else {
-                        newTag = MyRss.fromJson({
-                          'id': 0,
-                          'name': nameController.text,
-                          'sort': int.parse(sortController.text),
-                          'site_id': siteController.text,
-                          'rss': rssController.text,
-                          'available': available.value,
-                        });
-                      }
-                      Logger.instance.i(siteController.text);
-                      Logger.instance.i(newTag.toJson());
-                      submitForm(newTag);
-                      isLoading.value = false;
-                    },
-                    icon: isLoading.value
-                        ? const GFLoader(size: 18)
-                        : const Icon(Icons.save),
-                    label: const Text('保存'),
-                  );
+              ),
+              CustomTextField(
+                controller: rssController,
+                labelText: '链接',
+              ),
+              CustomTextField(
+                controller: sortController,
+                labelText: '优先级',
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Obx(() {
+                  return SwitchListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('可用'),
+                      value: available.value,
+                      onChanged: (bool val) {
+                        available.value = val;
+                      });
                 }),
-              ],
-            ),
-          ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      // 清空表单数据
+                      nameController.clear();
+                      rssController.clear();
+                      siteController.clear();
+                      sortController.clear();
+                      available.value = true;
+                      Get.back();
+                    },
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(
+                          Colors.redAccent.withAlpha(150)),
+                    ),
+                    icon:
+                        const Icon(Icons.cancel_outlined, color: Colors.white),
+                    label: const Text(
+                      '取消',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                  Obx(() {
+                    return ElevatedButton.icon(
+                      onPressed: () async {
+                        isLoading.value = true;
+                        MyRss newTag;
+                        if (rss != null) {
+                          newTag = rss.copyWith(
+                            name: nameController.text,
+                            siteId: siteController.text,
+                            sort: int.parse(sortController.text),
+                            rss: rssController.text,
+                            available: available.value,
+                          );
+                        } else {
+                          newTag = MyRss.fromJson({
+                            'id': 0,
+                            'name': nameController.text,
+                            'sort': int.parse(sortController.text),
+                            'site_id': siteController.text,
+                            'rss': rssController.text,
+                            'available': available.value,
+                          });
+                        }
+                        Logger.instance.i(siteController.text);
+                        Logger.instance.i(newTag.toJson());
+                        submitForm(newTag);
+                        isLoading.value = false;
+                      },
+                      icon: isLoading.value
+                          ? const GFLoader(size: 18)
+                          : const Icon(Icons.save),
+                      label: const Text('保存'),
+                    );
+                  }),
+                ],
+              ),
+            ],
+          ),
         ));
   }
 

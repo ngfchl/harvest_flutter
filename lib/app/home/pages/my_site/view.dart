@@ -142,58 +142,79 @@ class _MySitePagePageState extends State<MySitePage>
     return CustomCard(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          GFIconButton(
+          ElevatedButton.icon(
             onPressed: () {
               controller.getSiteStatusFromServer();
             },
             icon: const Icon(
               Icons.refresh,
-              // size: 32,
-              // color: Colors.blue,
+              size: 20,
             ),
-            // text: '筛选',
-            size: 18,
-            type: GFButtonType.transparent,
+            style: ButtonStyle(
+              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5.0)),
+              ),
+              backgroundColor: MaterialStateProperty.all(Colors.transparent),
+              side: MaterialStateProperty.all(BorderSide.none),
+            ),
+            label: const Text('刷新'),
           ),
-          GFIconButton(
+          ElevatedButton.icon(
             onPressed: () {
               _showFilterBottomSheet();
             },
             icon: const Icon(
               Icons.filter_tilt_shift,
-              // size: 32,
-              // color: Colors.blue,
+              size: 20,
             ),
-            // text: '筛选',
-            size: 18,
-            type: GFButtonType.transparent,
+            style: ButtonStyle(
+              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5.0)),
+              ),
+              backgroundColor: MaterialStateProperty.all(Colors.transparent),
+              side: MaterialStateProperty.all(BorderSide.none),
+            ),
+            label: const Text('筛选'),
           ),
-          GFIconButton(
+          ElevatedButton.icon(
             onPressed: () {
               _showSortBottomSheet();
             },
             icon: const Icon(
               Icons.swap_vert_circle_outlined,
-              // size: 32,
-              // color: Colors.blue,
+              size: 20,
             ),
-            // text: '排序',
-            size: 18,
-            type: GFButtonType.transparent,
+            style: ButtonStyle(
+              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5.0)),
+              ),
+              backgroundColor: MaterialStateProperty.all(Colors.transparent),
+              side: MaterialStateProperty.all(BorderSide.none),
+            ),
+            label: const Text('排序'),
           ),
-          GFIconButton(
+          ElevatedButton.icon(
             onPressed: () {
               _showEditBottomSheet();
             },
-            size: 18,
             icon: const Icon(
               Icons.add_circle_outline,
-              // size: 32,
-              // color: Colors.blue,
+              size: 20,
             ),
-            // text: '添加',
-            type: GFButtonType.transparent,
+            style: ButtonStyle(
+              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5.0)),
+              ),
+              backgroundColor: MaterialStateProperty.all(Colors.transparent),
+              side: MaterialStateProperty.all(BorderSide.none),
+            ),
+            label: const Text('添加'),
           ),
         ],
       ),
@@ -269,7 +290,6 @@ class _MySitePagePageState extends State<MySitePage>
               Text(
                 mySite.nickname,
                 style: const TextStyle(
-                  color: Colors.black38,
                   fontSize: 13,
                 ),
               ),
@@ -279,12 +299,10 @@ class _MySitePagePageState extends State<MySitePage>
                     const Icon(
                       Icons.mail,
                       size: 12,
-                      color: Colors.black38,
                     ),
                     Text(
                       '${mySite.mail}',
                       style: const TextStyle(
-                        color: Colors.black38,
                         fontSize: 10,
                       ),
                     ),
@@ -296,12 +314,10 @@ class _MySitePagePageState extends State<MySitePage>
                     const Icon(
                       Icons.notifications,
                       size: 12,
-                      color: Colors.black38,
                     ),
                     Text(
                       '${mySite.notice}',
                       style: const TextStyle(
-                        color: Colors.black38,
                         fontSize: 10,
                       ),
                     ),
@@ -311,7 +327,6 @@ class _MySitePagePageState extends State<MySitePage>
                 Text(
                   status.myLevel,
                   style: const TextStyle(
-                    color: Colors.black38,
                     fontSize: 10,
                   ),
                 ),
@@ -331,7 +346,6 @@ class _MySitePagePageState extends State<MySitePage>
                     Text(
                       calcWeeksDays(mySite.timeJoin),
                       style: const TextStyle(
-                        color: Colors.black38,
                         fontSize: 10,
                       ),
                     ),
@@ -341,12 +355,10 @@ class _MySitePagePageState extends State<MySitePage>
                           const Icon(
                             Icons.insert_invitation,
                             size: 12,
-                            color: Colors.black38,
                           ),
                           Text(
                             '${status.invitation}',
                             style: const TextStyle(
-                              color: Colors.black38,
                               fontSize: 10,
                             ),
                           ),
@@ -380,7 +392,6 @@ class _MySitePagePageState extends State<MySitePage>
                               '${filesize(status.uploaded)} (${status.seed})',
                               style: const TextStyle(
                                 fontSize: 12,
-                                color: Colors.black38,
                               ),
                             ),
                           ],
@@ -398,7 +409,6 @@ class _MySitePagePageState extends State<MySitePage>
                               '${filesize(status.downloaded)} (${status.leech})',
                               style: const TextStyle(
                                 fontSize: 12,
-                                color: Colors.black38,
                               ),
                             ),
                           ],
@@ -412,17 +422,17 @@ class _MySitePagePageState extends State<MySitePage>
                           children: [
                             Icon(
                               Icons.ios_share,
-                              color: status.ratio > 1
-                                  ? Colors.black38
-                                  : Colors.deepOrange,
+                              color:
+                                  status.ratio > 1 ? null : Colors.deepOrange,
                               size: 14,
                             ),
                             const SizedBox(width: 2),
                             Text(
                               formatNumber(status.ratio),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.black38,
+                                color:
+                                    status.ratio > 1 ? null : Colors.deepOrange,
                               ),
                             ),
                           ],
@@ -432,7 +442,6 @@ class _MySitePagePageState extends State<MySitePage>
                           children: [
                             const Icon(
                               Icons.cloud_upload_outlined,
-                              color: Colors.black38,
                               size: 14,
                             ),
                             const SizedBox(width: 2),
@@ -440,7 +449,6 @@ class _MySitePagePageState extends State<MySitePage>
                               filesize(status.seedVolume),
                               style: const TextStyle(
                                 fontSize: 12,
-                                color: Colors.black38,
                               ),
                             ),
                           ],
@@ -455,7 +463,6 @@ class _MySitePagePageState extends State<MySitePage>
                           children: [
                             const Icon(
                               Icons.timer_outlined,
-                              color: Colors.black38,
                               size: 14,
                             ),
                             const SizedBox(width: 2),
@@ -464,7 +471,6 @@ class _MySitePagePageState extends State<MySitePage>
                               // '(${  status.siteSpFull != null && status.siteSpFull! > 0 ? ((status.statusBonusHour! / status.siteSpFull!) * 100).toStringAsFixed(2) : '0'}%)',
                               style: const TextStyle(
                                 fontSize: 12,
-                                color: Colors.black38,
                               ),
                             ),
                           ],
@@ -475,7 +481,6 @@ class _MySitePagePageState extends State<MySitePage>
                           children: [
                             const Icon(
                               Icons.score,
-                              color: Colors.black38,
                               size: 14,
                             ),
                             const SizedBox(width: 2),
@@ -483,7 +488,6 @@ class _MySitePagePageState extends State<MySitePage>
                               '${formatNumber(status.myBonus)}(${formatNumber(status.myScore)})',
                               style: const TextStyle(
                                 fontSize: 12,
-                                color: Colors.black38,
                               ),
                             ),
                           ],
@@ -500,7 +504,6 @@ class _MySitePagePageState extends State<MySitePage>
                       '最近更新：${calculateTimeElapsed(status.updatedAt.toString())}',
                       textAlign: TextAlign.right,
                       style: const TextStyle(
-                        color: Colors.black38,
                         fontSize: 10.5,
                       ),
                     ),
@@ -535,7 +538,7 @@ class _MySitePagePageState extends State<MySitePage>
       showArrow: true,
       // contentPadding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
       barrierColor: Colors.transparent,
-      backgroundColor: Colors.white70,
+      backgroundColor: Theme.of(context).colorScheme.background,
       content: SizedBox(
           width: 100,
           child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -609,7 +612,6 @@ class _MySitePagePageState extends State<MySitePage>
       child: const Icon(
         Icons.widgets_outlined,
         size: 24,
-        color: Colors.black45,
       ),
     );
   }
@@ -654,7 +656,6 @@ class _MySitePagePageState extends State<MySitePage>
                 icon: Icon(
                   signed ? Icons.check : Icons.pan_tool_alt,
                   size: 12,
-                  color: Colors.white,
                 ),
                 text: '签到',
                 size: GFSize.SMALL,

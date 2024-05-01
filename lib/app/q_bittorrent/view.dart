@@ -76,8 +76,8 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                             ),
                                             focusedBorder: OutlineInputBorder(
                                               borderSide: const BorderSide(
-                                                  width: 1.0,
-                                                  color: Colors.black),
+                                                width: 1.0,
+                                              ),
                                               // 仅在聚焦时绘制底部边框
                                               borderRadius:
                                                   BorderRadius.circular(0.0),
@@ -185,7 +185,6 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                       '${series.name}: ${filesize(point.y)}',
                       style: const TextStyle(
                         fontSize: 12,
-                        color: Colors.black38,
                       ),
                     ),
                   );
@@ -200,7 +199,9 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                   axisLabelFormatter: (AxisLabelRenderDetails details) {
                     return ChartAxisLabel(
                       filesize(details.value),
-                      const TextStyle(fontSize: 10, color: Colors.black38),
+                      const TextStyle(
+                        fontSize: 10,
+                      ),
                     );
                   },
                   majorTickLines: const MajorTickLines(size: 0)),
@@ -213,7 +214,6 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                   yValueMapper: (ServerState sales, _) => sales.dlInfoSpeed,
                   color: Colors.red.withOpacity(0.5),
                   name: '下载速度',
-                  borderColor: Colors.black38,
                   borderWidth: 1,
                 ),
                 AreaSeries<ServerState, int>(
@@ -224,7 +224,6 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                   yValueMapper: (ServerState sales, _) => sales.upInfoSpeed,
                   color: Colors.blue.withOpacity(0.9),
                   name: '上传速度',
-                  borderColor: Colors.black38,
                   borderWidth: 1,
                   borderDrawMode: BorderDrawMode.all,
                 ),
@@ -763,7 +762,8 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                             Text(
                               filesize(torrentInfo.size),
                               style: const TextStyle(
-                                  fontSize: 10, color: Colors.black38),
+                                fontSize: 10,
+                              ),
                             ),
                             SizedBox(
                               height: 12,
@@ -780,7 +780,8 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                 elevation: 0,
                                 hoverColor: Colors.green,
                                 textStyle: const TextStyle(
-                                    fontSize: 10, color: Colors.black38),
+                                  fontSize: 10,
+                                ),
                                 onPressed: () {},
                               ),
                             ),
@@ -799,7 +800,8 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                           child: Text(
                             torrentInfo.name!,
                             style: const TextStyle(
-                                fontSize: 11, color: Colors.black38),
+                              fontSize: 11,
+                            ),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                           ),
@@ -810,7 +812,8 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                             ? torrentInfo.category!
                             : '未分类',
                         style: const TextStyle(
-                            fontSize: 10, color: Colors.black38),
+                          fontSize: 10,
+                        ),
                       ),
                     ],
                   ),
@@ -822,20 +825,26 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                         children: [
                           Row(
                             children: [
-                              const Icon(Icons.upload,
-                                  size: 12, color: Colors.black38),
+                              const Icon(
+                                Icons.upload,
+                                size: 12,
+                              ),
                               Text(filesize(torrentInfo.upSpeed),
                                   style: const TextStyle(
-                                      fontSize: 10, color: Colors.black38))
+                                    fontSize: 10,
+                                  ))
                             ],
                           ),
                           Row(
                             children: [
-                              const Icon(Icons.cloud_upload,
-                                  size: 12, color: Colors.black38),
+                              const Icon(
+                                Icons.cloud_upload,
+                                size: 12,
+                              ),
                               Text(filesize(torrentInfo.uploaded),
                                   style: const TextStyle(
-                                      fontSize: 10, color: Colors.black38))
+                                    fontSize: 10,
+                                  ))
                             ],
                           ),
                         ],
@@ -845,20 +854,26 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                         children: [
                           Row(
                             children: [
-                              const Icon(Icons.download,
-                                  size: 12, color: Colors.black38),
+                              const Icon(
+                                Icons.download,
+                                size: 12,
+                              ),
                               Text(filesize(torrentInfo.dlSpeed),
                                   style: const TextStyle(
-                                      fontSize: 10, color: Colors.black38))
+                                    fontSize: 10,
+                                  ))
                             ],
                           ),
                           Row(
                             children: [
-                              const Icon(Icons.cloud_download,
-                                  size: 12, color: Colors.black38),
+                              const Icon(
+                                Icons.cloud_download,
+                                size: 12,
+                              ),
                               Text(filesize(torrentInfo.downloaded),
                                   style: const TextStyle(
-                                      fontSize: 10, color: Colors.black38))
+                                    fontSize: 10,
+                                  ))
                             ],
                           ),
                         ],
@@ -871,13 +886,13 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                               const Icon(
                                 Icons.timer,
                                 size: 12,
-                                color: Colors.black38,
                               ),
                               EllipsisText(
                                 text: formatDuration(torrentInfo.timeActive!)
                                     .toString(),
                                 style: const TextStyle(
-                                    fontSize: 10, color: Colors.black38),
+                                  fontSize: 10,
+                                ),
                                 maxLines: 1,
                                 ellipsis: '...',
                               )
@@ -888,7 +903,6 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                               const Icon(
                                 Icons.timer,
                                 size: 12,
-                                color: Colors.black38,
                               ),
                               EllipsisText(
                                 text: DateFormat('yyyy-MM-dd HH:mm:ss')
@@ -896,7 +910,8 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                         torrentInfo.addedOn! * 1000))
                                     .toString(),
                                 style: const TextStyle(
-                                    fontSize: 10, color: Colors.black38),
+                                  fontSize: 10,
+                                ),
                                 maxLines: 1,
                                 ellipsis: '...',
                               )
@@ -913,7 +928,8 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                       trailing: Text(
                         '${(torrentInfo.progress! * 100).toStringAsFixed(2)}%',
                         style: const TextStyle(
-                            fontSize: 10, color: Colors.black38),
+                          fontSize: 10,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       alignment: MainAxisAlignment.center,
@@ -1033,7 +1049,6 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                               percentage: torrentInfo.progress!,
                               lineHeight: 12,
                               progressHeadType: GFProgressHeadType.square,
-                              backgroundColor: Colors.black26,
                               progressBarColor: GFColors.SUCCESS,
                               child: Row(
                                 mainAxisAlignment:

@@ -27,12 +27,21 @@ class _SubscribePageState extends State<SubscribePage> {
   Widget build(BuildContext context) {
     return GetBuilder<SubscribeController>(builder: (controller) {
       return Column(children: [
+        Expanded(
+          child: GetBuilder<SubscribeController>(builder: (controller) {
+            return ListView(
+              children: controller.subList
+                  .map((Subscribe sub) => _buildSub(sub))
+                  .toList(),
+            );
+          }),
+        ),
         CustomCard(
           child: ListTile(
             dense: true,
             title: const Text(
               '订阅管理',
-              style: TextStyle(fontSize: 18, color: Colors.black87),
+              style: TextStyle(fontSize: 16),
             ),
             leading: IconButton(
                 onPressed: () => controller.getSubscribeFromServer(),
@@ -43,8 +52,7 @@ class _SubscribePageState extends State<SubscribePage> {
             trailing: IconButton(
               icon: const Icon(
                 Icons.add,
-                size: 28,
-                color: Colors.blue,
+                size: 20,
               ),
               onPressed: () async {
                 // await _openEditDialog(null);
@@ -53,18 +61,6 @@ class _SubscribePageState extends State<SubscribePage> {
             ),
           ),
         ),
-        Expanded(
-          child: GetBuilder<SubscribeController>(builder: (controller) {
-            return SingleChildScrollView(
-              child: Wrap(
-                children: controller.subList
-                    .map((Subscribe sub) => _buildSub(sub))
-                    .toList(),
-              ),
-            );
-          }),
-        ),
-        const SizedBox(height: 60),
       ]);
     });
   }
@@ -149,7 +145,7 @@ class _SubscribePageState extends State<SubscribePage> {
                   title: Text(sub.name),
                   subtitle: Text(
                     sub.keyword,
-                    style: const TextStyle(fontSize: 10, color: Colors.black54),
+                    style: const TextStyle(fontSize: 10),
                   ),
                   onTap: () {
                     _openEditDialogX(sub);
@@ -235,16 +231,22 @@ class _SubscribePageState extends State<SubscribePage> {
     final dialogController = Get.put(EditDialogController());
     await dialogController.init(sub);
     Get.bottomSheet(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10.0), // 设置圆角半径
+      ),
       GetBuilder<EditDialogController>(
         builder: (controller) => Stack(
           children: [
-            SingleChildScrollView(
-              child: CustomCard(
-                padding: const EdgeInsets.all(12),
+            CustomCard(
+              padding: const EdgeInsets.all(12),
+              height: double.infinity,
+              child: SingleChildScrollView(
                 child: Column(
                   children: [
                     GFTypography(
                       text: controller.title,
+                      textColor: Theme.of(context).colorScheme.onBackground,
+                      dividerColor: Theme.of(context).colorScheme.onBackground,
                     ),
                     CustomTextField(
                       controller: controller.nameController,
@@ -255,7 +257,7 @@ class _SubscribePageState extends State<SubscribePage> {
                       labelText: '关键字',
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      padding: const EdgeInsets.all(8),
                       child: DropdownSearch<Downloader>(
                         items: controller.subController.downloaderList,
                         selectedItem: controller.subController.downloaderList
@@ -310,7 +312,7 @@ class _SubscribePageState extends State<SubscribePage> {
                             labelText: '分类',
                           ),
                     Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
+                      padding: const EdgeInsets.only(right: 18.0),
                       child: Row(
                         children: [
                           Expanded(
@@ -331,12 +333,7 @@ class _SubscribePageState extends State<SubscribePage> {
                     ),
                     SwitchListTile(
                         dense: true,
-                        contentPadding:
-                            const EdgeInsets.symmetric(horizontal: 8),
-                        title: const Text(
-                          '可用',
-                          style: TextStyle(fontSize: 12, color: Colors.black54),
-                        ),
+                        title: const Text('可用', style: TextStyle(fontSize: 14)),
                         value: controller.available.value,
                         onChanged: (bool val) {
                           controller.available.value = val;
@@ -344,12 +341,8 @@ class _SubscribePageState extends State<SubscribePage> {
                         }),
                     SwitchListTile(
                         dense: true,
-                        contentPadding:
-                            const EdgeInsets.symmetric(horizontal: 8),
-                        title: const Text(
-                          '直接下载',
-                          style: TextStyle(fontSize: 12, color: Colors.black54),
-                        ),
+                        title:
+                            const Text('直接下载', style: TextStyle(fontSize: 14)),
                         value: controller.start.value,
                         onChanged: (bool val) {
                           controller.start.value = val;
@@ -498,11 +491,9 @@ class _SubscribePageState extends State<SubscribePage> {
       Logger.instance.i(res.msg);
       if (res.code == 0) {
         Get.back();
-        Get.snackbar('保存成功！', res.msg!,
-            backgroundColor: Colors.green.shade300, colorText: Colors.white);
+        Get.snackbar('保存成功！', res.msg!);
       } else {
-        Get.snackbar('保存失败！', res.msg!,
-            backgroundColor: Colors.red.shade300, colorText: Colors.white);
+        Get.snackbar('保存失败！', res.msg!);
       }
     } finally {}
   }

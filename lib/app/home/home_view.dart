@@ -6,7 +6,6 @@ import 'package:getwidget/getwidget.dart';
 import 'package:harvest/api/mysite.dart';
 import 'package:harvest/models/common_response.dart';
 
-import '../../theme/theme.dart';
 import 'controller/home_controller.dart';
 
 class HomeView extends GetView<HomeController> {
@@ -19,9 +18,7 @@ class HomeView extends GetView<HomeController> {
     return Scaffold(
       key: _globalKey,
       extendBody: true,
-      // backgroundColor: Colors.white54,
       appBar: GFAppBar(
-        backgroundColor: Colors.white54,
         elevation: 1.5,
         iconTheme: const IconThemeData(color: Colors.black38),
         flexibleSpace: Container(
@@ -55,13 +52,13 @@ class HomeView extends GetView<HomeController> {
         child: GFDrawer(
           semanticLabel: 'Harvest',
           elevation: 10,
-          color: Colors.brown.shade100,
+          color: Theme.of(context).colorScheme.background,
           child: _buildMenuBar(context),
         ),
       ),
       drawerEdgeDragWidth: 200,
       // drawerEnableOpenDragGesture: false,
-      drawerScrimColor: Colors.white.withOpacity(0.6),
+      // drawerScrimColor: Colors.white.withOpacity(0.6),
       // floatingActionButton: GFIconButton(
       //   icon: const Icon(Icons.menu_outlined),
       //   color: Colors.teal.shade700,
@@ -102,8 +99,16 @@ class HomeView extends GetView<HomeController> {
               useIndicator: true,
               extended: true,
               selectedIndex: controller.initPage,
+              selectedLabelTextStyle: const TextStyle(color: Colors.blue),
+              selectedIconTheme:
+                  Theme.of(context).iconTheme.copyWith(color: Colors.blue),
+              unselectedLabelTextStyle:
+                  TextStyle(color: Theme.of(context).colorScheme.secondary),
+              unselectedIconTheme: Theme.of(context)
+                  .iconTheme
+                  .copyWith(color: Theme.of(context).colorScheme.secondary),
+              backgroundColor: Colors.transparent,
               onDestinationSelected: (index) => controller.changePage(index),
-              backgroundColor: Colors.brown.shade100,
               labelType: NavigationRailLabelType.none,
               leading: GFDrawerHeader(
                 centerAlign: true,
@@ -133,7 +138,6 @@ class HomeView extends GetView<HomeController> {
                     children: <Widget>[
                       Text(
                         controller.userinfo['user'],
-                        style: const TextStyle(color: Colors.white70),
                       ),
                       // Text('admin@admin.com'),
                       Tooltip(
@@ -141,8 +145,7 @@ class HomeView extends GetView<HomeController> {
                         child: Text(
                           '${controller.box.read('server')}',
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              fontSize: 12, color: Colors.white70),
+                          style: const TextStyle(fontSize: 12),
                         ),
                       ),
                     ],
@@ -220,23 +223,23 @@ class HomeView extends GetView<HomeController> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // const Wen(),
-        // const DarkModeSwitch(),
-        SizedBox(
-          height: 20,
-          width: 20,
-          child: GetBuilder<HomeController>(builder: (controller) {
-            return InkWell(
-              onTap: () {
-                Get.changeTheme(controller.isDarkMode ? lightTheme : darkTheme);
-
-                controller.isDarkMode = !controller.isDarkMode;
-                controller.update();
-              },
-              child: Icon(
-                  controller.isDarkMode ? Icons.dark_mode : Icons.light_mode),
-            );
-          }),
-        ),
+        const DarkModeSwitch(),
+        // SizedBox(
+        //   height: 20,
+        //   width: 20,
+        //   child: GetBuilder<HomeController>(builder: (controller) {
+        //     return InkWell(
+        //       onTap: () {
+        //         Get.changeTheme(controller.isDarkMode ? lightTheme : darkTheme);
+        //
+        //         controller.isDarkMode = !controller.isDarkMode;
+        //         controller.update();
+        //       },
+        //       child: Icon(
+        //           controller.isDarkMode ? Icons.dark_mode : Icons.light_mode),
+        //     );
+        //   }),
+        // ),
         const SizedBox(width: 15),
         const SizedBox(
           height: 20,
@@ -245,20 +248,11 @@ class HomeView extends GetView<HomeController> {
             itemSize: 28,
           ),
         ),
-        // GFIconButton(
-        //   icon: Icon(
-        //     Icons.exit_to_app,
-        //     size: 22,
-        //     color: Colors.red.shade500,
-        //   ),
-        //   onPressed: () {
-        //     controller.logout();
-        //   },
-        //   type: GFButtonType.transparent,
-        // ),
         const SizedBox(width: 15),
         CustomPopup(
           showArrow: false,
+          backgroundColor:
+              Theme.of(context).colorScheme.background.withOpacity(0.8),
           barrierColor: Colors.transparent,
           content: SizedBox(
             width: 100,
@@ -266,49 +260,68 @@ class HomeView extends GetView<HomeController> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 PopupMenuItem<String>(
-                  child: const Text('全员签到'),
+                  child: Text(
+                    '全员签到',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
                   onTap: () async {
                     await signAllSiteButton();
                   },
                 ),
                 PopupMenuItem<String>(
-                  child: const Text('站点数据'),
+                  child: Text(
+                    '站点数据',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
                   onTap: () async {
                     await getAllStatusButton();
                   },
                 ),
                 PopupMenuItem<String>(
-                  child: const Text('PTPP'),
+                  child: Text(
+                    'PTPP',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
                   onTap: () async {
                     await importFromPTPP();
                   },
                 ),
                 PopupMenuItem<String>(
-                  child: const Text('CC 同步'),
+                  child: Text(
+                    'CC 同步',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
                   onTap: () async {
                     await importFromCookieCloud();
                   },
                 ),
                 PopupMenuItem<String>(
-                  child: const Text('清除缓存'),
+                  child: Text(
+                    '清除缓存',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
                   onTap: () async {
                     CommonResponse res = await clearMyCacheApi();
                     Get.snackbar(
                       '清除缓存',
                       '清除缓存：${res.msg}',
-                      colorText: Colors.white,
-                      backgroundColor: Colors.green.shade300,
                     );
                   },
                 ),
               ],
             ),
           ),
-          child: Icon(
-            Icons.add_box_outlined,
-            size: 24,
-            color: Colors.blue.shade800,
-          ),
+          child: const Icon(Icons.add_box_outlined, size: 24),
         ),
         const SizedBox(width: 20)
       ],

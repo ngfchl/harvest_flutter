@@ -1,9 +1,9 @@
+import 'package:app_service/app_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../common/card_view.dart';
 import '../../common/form_widgets.dart';
-import '../../common/glass_widget.dart';
 import '../../models/common_response.dart';
 import '../../utils/logger_helper.dart';
 import 'controller.dart';
@@ -58,8 +58,8 @@ class _LoginPageState extends State<LoginPage> {
         },
         child: Container(
           decoration: decoration,
-          height: 120,
-          width: 120,
+          height: 150,
+          width: 150,
           child: CustomCard(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -77,6 +77,7 @@ class _LoginPageState extends State<LoginPage> {
                         server.name,
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.titleSmall,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Padding(
@@ -104,8 +105,8 @@ class _LoginPageState extends State<LoginPage> {
         showEditOrCreateServerSheet(null);
       },
       child: SizedBox(
-        height: 120,
-        width: 120,
+        height: 150,
+        width: 150,
         child: CustomCard(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -152,14 +153,26 @@ class _LoginPageState extends State<LoginPage> {
       return Scaffold(
         appBar: AppBar(
           title: const Text('服务器列表'),
-          backgroundColor: Colors.grey.shade300,
+          actions: const [
+            DarkModeSwitch(),
+            SizedBox(width: 15),
+            SizedBox(
+              height: 20,
+              width: 20,
+              child: ThemeModal(
+                itemSize: 28,
+              ),
+            ),
+            SizedBox(width: 15),
+          ],
         ),
-        body: GlassWidget(
+        body: SizedBox(
+          width: double.infinity,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               GetBuilder<LoginController>(builder: (controller) {
-                return Wrap(spacing: 12, runSpacing: 8, children: [
+                return Wrap(spacing: 20, runSpacing: 20, children: [
                   ...controller.serverList
                       .map((server) => _buildGridTile(server)),
                   _buildAddServerTile(),
@@ -179,7 +192,7 @@ class _LoginPageState extends State<LoginPage> {
                       : const Icon(Icons.link, size: 18, color: Colors.white70),
                   label: const Text(
                     '连接服务器',
-                    style: TextStyle(color: Colors.white70),
+                    style: TextStyle(color: Colors.white),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
@@ -344,35 +357,27 @@ class _LoginPageState extends State<LoginPage> {
                           bool flag =
                               await controller.testServerConnection(server);
                           if (flag) {
-                            Get.snackbar(
-                              '连接状态',
-                              '服务器连接成功',
-                              snackPosition: SnackPosition.TOP,
-                              backgroundColor: Colors.green.shade400,
-                              duration: const Duration(seconds: 3),
-                            );
+                            Get.snackbar('连接状态', '服务器连接成功');
                           } else {
-                            Get.snackbar(
-                              '连接状态',
-                              '服务器连接失败',
-                              snackPosition: SnackPosition.TOP,
-                              backgroundColor: Colors.red.shade400,
-                              duration: const Duration(seconds: 3),
-                            );
+                            Get.snackbar('连接状态', '服务器连接失败');
                           }
                         },
                         icon: controller.isLoading
                             ? const Center(
-                                child: CircularProgressIndicator(),
+                                child: SizedBox(
+                                    height: 18,
+                                    width: 18,
+                                    child: CircularProgressIndicator()),
                               )
                             : const Icon(Icons.autorenew,
                                 size: 18, color: Colors.white70),
                         label: Text(
                           controller.isLoading ? '测试...' : '测试',
-                          style: const TextStyle(color: Colors.white70),
+                          style: const TextStyle(color: Colors.white),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.secondary,
                           // 设置背景颜色为绿色
                           shape: RoundedRectangleBorder(
                             borderRadius:
@@ -382,10 +387,10 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       ElevatedButton.icon(
                         icon: const Icon(Icons.save,
-                            size: 18, color: Colors.white70),
+                            size: 18, color: Colors.white),
                         label: Text(
                           serverToEdit == null ? '添加' : '保存',
-                          style: const TextStyle(color: Colors.white70),
+                          style: const TextStyle(color: Colors.white),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,

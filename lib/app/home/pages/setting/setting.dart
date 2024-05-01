@@ -5,7 +5,6 @@ import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/form_widgets.dart';
 
 import '../../../../api/option.dart';
-import '../../../../common/glass_widget.dart';
 import '../../../../common/utils.dart';
 import '../../../../utils/logger_helper.dart';
 import '../models/option.dart';
@@ -22,31 +21,29 @@ class SettingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        body: GlassWidget(
-          child: GetBuilder<SettingController>(builder: (controller) {
-            return EasyRefresh(
-              onRefresh: controller.getOptionList,
-              child: Column(
-                children: [
-                  _versionCard(),
-                  _noticeTestForm(),
-                  Flexible(
-                    child: controller.isLoaded
-                        ? const Center(child: CircularProgressIndicator())
-                        : SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                ..._optionListView(),
-                              ],
-                            ),
+        body: GetBuilder<SettingController>(builder: (controller) {
+          return EasyRefresh(
+            onRefresh: controller.getOptionList,
+            child: Column(
+              children: [
+                _versionCard(context),
+                _noticeTestForm(),
+                Flexible(
+                  child: controller.isLoaded
+                      ? const Center(child: CircularProgressIndicator())
+                      : SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              ..._optionListView(),
+                            ],
                           ),
-                  ),
-                  const SizedBox(height: 50),
-                ],
-              ),
-            );
-          }),
-        ),
+                        ),
+                ),
+                const SizedBox(height: 50),
+              ],
+            ),
+          );
+        }),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         floatingActionButton: CustomCard(
           child: Row(
@@ -75,16 +72,16 @@ class SettingPage extends StatelessWidget {
     );
   }
 
-  _versionCard() {
+  _versionCard(context) {
     return CustomCard(
       padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
       child: ListTile(
         dense: true,
         contentPadding: EdgeInsets.zero,
-        leading: const IconButton(
+        leading: IconButton(
           icon: Icon(
             Icons.info_outline,
-            color: Colors.black87,
+            color: Theme.of(context).colorScheme.onBackground,
           ),
           onPressed: null,
         ),
@@ -101,7 +98,6 @@ class SettingPage extends StatelessWidget {
             title: '关于 ${controller.packageInfo.appName}',
             middleText:
                 '${controller.packageInfo.appName} 版本: ${controller.packageInfo.version}',
-            // backgroundColor: Colors.white,
             content: AboutDialog(
               applicationIcon: Image.asset(
                 'assets/images/logo.png',
@@ -990,16 +986,12 @@ class SettingPage extends StatelessWidget {
                                   Get.snackbar(
                                     '配置保存成功',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.green.shade300,
                                   );
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar(
                                     '配置保存失败',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.red.shade300,
                                   );
                                 }
                               }),

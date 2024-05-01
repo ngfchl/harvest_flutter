@@ -11,7 +11,6 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../../../../common/card_view.dart';
 import '../../../../common/form_widgets.dart';
-import '../../../../common/glass_widget.dart';
 import '../../../../models/common_response.dart';
 import '../../../../models/download.dart';
 import '../../../../utils/logger_helper.dart' as LoggerHelper;
@@ -47,7 +46,6 @@ class _DownloadPageState extends State<DownloadPage>
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-      backgroundColor: Colors.transparent,
       body: Column(
         children: [
           Expanded(
@@ -57,26 +55,24 @@ class _DownloadPageState extends State<DownloadPage>
                   initialData: controller.dataList,
                   builder: (context, snapshot) {
                     controller.isLoaded = snapshot.hasData;
-                    return GlassWidget(
-                      child: EasyRefresh(
-                        controller: EasyRefreshController(),
-                        onRefresh: () async {
-                          controller.getDownloaderListFromServer();
-                          controller.startPeriodicTimer();
-                        },
-                        child: controller.isLoaded
-                            ? ListView.builder(
-                                itemCount: controller.dataList.length,
-                                itemBuilder: (BuildContext context, int index) {
-                                  Downloader downloader =
-                                      controller.dataList[index];
-                                  return buildDownloaderCard(downloader);
-                                })
-                            : Center(
-                                child: ListView(
-                                children: const [Expanded(child: GFLoader())],
-                              )),
-                      ),
+                    return EasyRefresh(
+                      controller: EasyRefreshController(),
+                      onRefresh: () async {
+                        controller.getDownloaderListFromServer();
+                        controller.startPeriodicTimer();
+                      },
+                      child: controller.isLoaded
+                          ? ListView.builder(
+                              itemCount: controller.dataList.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                Downloader downloader =
+                                    controller.dataList[index];
+                                return buildDownloaderCard(downloader);
+                              })
+                          : Center(
+                              child: ListView(
+                              children: const [Expanded(child: GFLoader())],
+                            )),
                     );
                   });
             }),
@@ -94,14 +90,11 @@ class _DownloadPageState extends State<DownloadPage>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          GFIconButton(
-            icon: controller.isTimerActive
-                ? const Icon(Icons.pause)
-                : const Icon(Icons.play_arrow),
-            // shape: GFIconButtonShape.standard,
-            type: GFButtonType.transparent,
-            color: GFColors.PRIMARY,
-            size: 18,
+          IconButton(
+            icon: Icon(
+              controller.isTimerActive ? Icons.pause : Icons.play_arrow,
+              size: 20,
+            ),
             onPressed: () {
               // controller.cancelPeriodicTimer();
               controller.isTimerActive
@@ -112,30 +105,19 @@ class _DownloadPageState extends State<DownloadPage>
               controller.update();
             },
           ),
-          GFIconButton(
-              icon: const Icon(Icons.settings),
-              shape: GFIconButtonShape.standard,
-              type: GFButtonType.transparent,
-              color: GFColors.PRIMARY,
-              size: 18,
+          IconButton(
+              icon: const Icon(Icons.settings, size: 20),
               onPressed: () {
-                // controller.getAllCategory();
-                // GFToast.showToast(
-                //   '设置',
-                //   context,
-                //   backgroundColor: GFColors.SECONDARY,
-                //   toastBorderRadius: 5.0,
-                // );
                 TextEditingController durationTextEditingController =
                     TextEditingController(text: controller.duration.toString());
                 TextEditingController timerDurationTextEditingController =
                     TextEditingController(
                         text: controller.timerDuration.toString());
                 Get.bottomSheet(
-                  Container(
+                  CustomCard(
                     padding: const EdgeInsets.all(12),
-                    height: 150,
-                    child: ListView(
+                    height: 140,
+                    child: Column(
                       children: [
                         Row(
                           children: [
@@ -154,9 +136,8 @@ class _DownloadPageState extends State<DownloadPage>
                                 },
                               ),
                             ),
-                            GFIconButton(
-                                type: GFButtonType.transparent,
-                                icon: const Icon(Icons.save),
+                            IconButton(
+                                icon: const Icon(Icons.save, size: 20),
                                 onPressed: () {
                                   try {
                                     double duration = double.parse(
@@ -194,9 +175,11 @@ class _DownloadPageState extends State<DownloadPage>
                                 labelText: '刷新时长 3-10 分钟',
                               ),
                             ),
-                            GFIconButton(
-                                type: GFButtonType.transparent,
-                                icon: const Icon(Icons.save),
+                            IconButton(
+                                icon: const Icon(
+                                  Icons.save,
+                                  size: 20,
+                                ),
                                 onPressed: () {
                                   try {
                                     double duration = double.parse(
@@ -222,7 +205,6 @@ class _DownloadPageState extends State<DownloadPage>
                       ],
                     ),
                   ),
-                  backgroundColor: Colors.white54.withOpacity(0.9),
                   shape: const RoundedRectangleBorder(
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(2),
@@ -231,12 +213,11 @@ class _DownloadPageState extends State<DownloadPage>
                   ),
                 );
               }),
-          GFIconButton(
-            icon: const Icon(Icons.add),
-            shape: GFIconButtonShape.standard,
-            type: GFButtonType.transparent,
-            color: GFColors.PRIMARY,
-            size: 18,
+          IconButton(
+            icon: const Icon(
+              Icons.add,
+              size: 20,
+            ),
             onPressed: () async {
               _showEditBottomSheet();
             },
@@ -256,10 +237,7 @@ class _DownloadPageState extends State<DownloadPage>
             Icons.dangerous,
             color: Colors.red,
           ),
-          Text(
-            '下载器已禁用！',
-            style: TextStyle(color: Colors.grey),
-          ),
+          Text('下载器已禁用！'),
         ],
       );
     }
@@ -278,14 +256,13 @@ class _DownloadPageState extends State<DownloadPage>
         return Container(
           padding: const EdgeInsets.all(1),
           decoration: BoxDecoration(
-            color: Colors.teal.shade300,
-            border: Border.all(width: 2, color: Colors.teal.shade400),
+            border: Border.all(width: 2),
+            color: Theme.of(context).colorScheme.background,
           ),
           child: Text(
             '${series.name}: ${filesize(point.y)}',
             style: const TextStyle(
               fontSize: 12,
-              color: Colors.black38,
             ),
           ),
         );
@@ -320,7 +297,8 @@ class _DownloadPageState extends State<DownloadPage>
                             return ChartAxisLabel(
                               filesize(details.value),
                               const TextStyle(
-                                  fontSize: 10, color: Colors.black38),
+                                fontSize: 10,
+                              ),
                             );
                           },
                           majorTickLines: const MajorTickLines(size: 0)),
@@ -338,7 +316,6 @@ class _DownloadPageState extends State<DownloadPage>
                               sales.dlInfoSpeed,
                           color: Colors.red.withOpacity(0.5),
                           name: '下载速度',
-                          borderColor: Colors.black38,
                           borderWidth: 1,
                         ),
                         AreaSeries<TransferInfo, int>(
@@ -354,7 +331,6 @@ class _DownloadPageState extends State<DownloadPage>
                               sales.upInfoSpeed,
                           color: Colors.blue.withOpacity(0.9),
                           name: '上传速度',
-                          borderColor: Colors.black38,
                           borderWidth: 1,
                           borderDrawMode: BorderDrawMode.all,
                         ),
@@ -368,7 +344,6 @@ class _DownloadPageState extends State<DownloadPage>
                         '上传限速：${filesize(res.upRateLimit)}/s',
                         style: const TextStyle(
                           fontSize: 10,
-                          color: Colors.black38,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -376,7 +351,6 @@ class _DownloadPageState extends State<DownloadPage>
                         '下载限速：${filesize(res.dlRateLimit)}/s',
                         style: const TextStyle(
                           fontSize: 10,
-                          color: Colors.black38,
                         ),
                       ),
                     ],
@@ -412,8 +386,7 @@ class _DownloadPageState extends State<DownloadPage>
                           axisLabelFormatter: (AxisLabelRenderDetails details) {
                             return ChartAxisLabel(
                               filesize(details.value),
-                              const TextStyle(
-                                  fontSize: 10, color: Colors.black38),
+                              const TextStyle(fontSize: 10),
                             );
                           },
                           majorTickLines: const MajorTickLines(size: 0)),
@@ -430,7 +403,6 @@ class _DownloadPageState extends State<DownloadPage>
                           yValueMapper: (TransmissionStats sales, _) =>
                               sales.uploadSpeed,
                           name: '上传速度',
-                          borderColor: Colors.black38,
                           borderWidth: 1,
                         ),
                         AreaSeries<TransmissionStats, int>(
@@ -446,7 +418,6 @@ class _DownloadPageState extends State<DownloadPage>
                               sales.downloadSpeed,
                           enableTooltip: true,
                           name: '下载速度',
-                          borderColor: Colors.black38,
                           borderWidth: 1,
                         ),
                       ],
@@ -460,7 +431,6 @@ class _DownloadPageState extends State<DownloadPage>
                         '活动种子：${res.activeTorrentCount}',
                         style: const TextStyle(
                           fontSize: 10,
-                          color: Colors.black38,
                         ),
                       ),
                       const SizedBox(
@@ -470,7 +440,6 @@ class _DownloadPageState extends State<DownloadPage>
                         '暂停种子：${res.pausedTorrentCount}',
                         style: const TextStyle(
                           fontSize: 10,
-                          color: Colors.black38,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -479,7 +448,6 @@ class _DownloadPageState extends State<DownloadPage>
                           '上传限速：${filesize(res.speedLimitSettings!.speedLimitUp * 1024)}/s',
                           style: const TextStyle(
                             fontSize: 10,
-                            color: Colors.black38,
                           ),
                         ),
                       const SizedBox(width: 8),
@@ -488,7 +456,6 @@ class _DownloadPageState extends State<DownloadPage>
                           '下载限速：${filesize(res.speedLimitSettings!.speedLimitDown * 1024)}/s',
                           style: const TextStyle(
                             fontSize: 10,
-                            color: Colors.black38,
                           ),
                         ),
                     ],
@@ -545,7 +512,6 @@ class _DownloadPageState extends State<DownloadPage>
               onPressed: (context) async {
                 Get.defaultDialog(
                   title: '确认',
-                  backgroundColor: Colors.white,
                   radius: 5,
                   titleStyle: const TextStyle(
                       fontSize: 16,
@@ -565,13 +531,9 @@ class _DownloadPageState extends State<DownloadPage>
                         CommonResponse res =
                             await controller.removeDownloader(downloader);
                         if (res.code == 0) {
-                          Get.snackbar('删除通知', res.msg.toString(),
-                              backgroundColor: Colors.green.shade500,
-                              colorText: Colors.white70);
+                          Get.snackbar('删除通知', res.msg.toString());
                         } else {
-                          Get.snackbar('删除通知', res.msg.toString(),
-                              backgroundColor: Colors.red.shade500,
-                              colorText: Colors.white70);
+                          Get.snackbar('删除通知', res.msg.toString());
                         }
                       },
                       child: const Text('确认'),
@@ -603,7 +565,6 @@ class _DownloadPageState extends State<DownloadPage>
                 title: Text(
                   downloader.name,
                   style: const TextStyle(
-                    color: Colors.black38,
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),
@@ -611,7 +572,6 @@ class _DownloadPageState extends State<DownloadPage>
                 subTitle: Text(
                   '${downloader.protocol}://${downloader.host}:${downloader.port}',
                   style: const TextStyle(
-                    color: Colors.black38,
                     fontSize: 11,
                   ),
                 ),
@@ -655,7 +615,6 @@ class _DownloadPageState extends State<DownloadPage>
                             color: res.data ? Colors.white : Colors.red,
                           ),
                         ),
-                        colorText: res.data ? Colors.white : Colors.red,
                       );
                     });
                   },
@@ -699,7 +658,6 @@ class _DownloadPageState extends State<DownloadPage>
                       '${filesize(res.upInfoSpeed!)}/S',
                       style: const TextStyle(
                         fontSize: 10,
-                        color: Colors.black38,
                       ),
                     ),
                   ],
@@ -717,7 +675,6 @@ class _DownloadPageState extends State<DownloadPage>
                       '${filesize(res.dlInfoSpeed!)}/S',
                       style: const TextStyle(
                         fontSize: 10,
-                        color: Colors.black38,
                       ),
                     ),
                   ],
@@ -735,7 +692,6 @@ class _DownloadPageState extends State<DownloadPage>
                       filesize(res.upInfoData),
                       style: const TextStyle(
                         fontSize: 10,
-                        color: Colors.black38,
                       ),
                     ),
                   ],
@@ -754,7 +710,6 @@ class _DownloadPageState extends State<DownloadPage>
                       filesize(res.dlInfoData),
                       style: const TextStyle(
                         fontSize: 10,
-                        color: Colors.black38,
                       ),
                     ),
                   ],
@@ -786,7 +741,6 @@ class _DownloadPageState extends State<DownloadPage>
                   '${filesize(res.uploadSpeed)}/S',
                   style: const TextStyle(
                     fontSize: 10,
-                    color: Colors.black38,
                   ),
                 ),
               ],
@@ -804,7 +758,6 @@ class _DownloadPageState extends State<DownloadPage>
                   '${filesize(res.downloadSpeed, 0)}/S',
                   style: const TextStyle(
                     fontSize: 10,
-                    color: Colors.black38,
                   ),
                 ),
               ],
@@ -822,7 +775,6 @@ class _DownloadPageState extends State<DownloadPage>
                   filesize(res.currentStats.uploadedBytes),
                   style: const TextStyle(
                     fontSize: 10,
-                    color: Colors.black38,
                   ),
                 ),
               ],
@@ -841,7 +793,6 @@ class _DownloadPageState extends State<DownloadPage>
                   filesize(res.currentStats.downloadedBytes),
                   style: const TextStyle(
                     fontSize: 10,
-                    color: Colors.black38,
                   ),
                 ),
               ],

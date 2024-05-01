@@ -24,7 +24,6 @@ class SwitchTile extends StatelessWidget {
         title,
         style: const TextStyle(
           fontSize: 14,
-          color: Colors.black54,
         ),
       ),
       trailing: Transform.scale(
@@ -73,10 +72,10 @@ class CustomTextField extends StatelessWidget {
         onChanged: onChanged,
         maxLines: maxLines,
         inputFormatters: inputFormatters,
-        style: const TextStyle(fontSize: 13, color: Colors.black54),
+        style: const TextStyle(fontSize: 13),
         decoration: InputDecoration(
           labelText: labelText,
-          labelStyle: const TextStyle(fontSize: 12, color: Colors.black54),
+          labelStyle: const TextStyle(fontSize: 12),
           contentPadding: const EdgeInsets.symmetric(horizontal: 8),
           enabledBorder: const UnderlineInputBorder(
             borderSide: BorderSide(color: Color(0x19000000)),
@@ -88,9 +87,9 @@ class CustomTextField extends StatelessWidget {
           prefixText: prefixText,
           prefixIcon: prefixIcon,
           suffixText: suffixText,
-          helperStyle: const TextStyle(fontSize: 12, color: Colors.black54),
-          prefixStyle: const TextStyle(fontSize: 12, color: Colors.black54),
-          suffixStyle: const TextStyle(fontSize: 12, color: Colors.black54),
+          helperStyle: const TextStyle(fontSize: 12),
+          prefixStyle: const TextStyle(fontSize: 12),
+          suffixStyle: const TextStyle(fontSize: 12),
         ),
       ),
     );
@@ -166,9 +165,11 @@ class CustomPickerField extends StatelessWidget {
                 data: data,
                 selectData: controller.text,
                 pickerStyle: PickerStyle(
-                    textSize: 18,
-                    backgroundColor: Colors.white,
-                    textColor: Colors.black54),
+                  showTitleBar: false,
+                  textSize: 14,
+                  textColor: Theme.of(context).colorScheme.onBackground,
+                  backgroundColor: Theme.of(context).colorScheme.background,
+                ),
                 onConfirm: (p, position) {
                   controller.text = p;
                   onConfirm?.call(p, position);
@@ -190,14 +191,14 @@ class CustomPickerField extends StatelessWidget {
 class FullWidthButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
-  final Color backgroundColor;
-  final Color labelColor;
+  final Color? backgroundColor;
+  final Color? labelColor;
 
   const FullWidthButton({
     required this.text,
     required this.onPressed,
-    this.backgroundColor = Colors.blue, // 默认颜色为蓝色
-    this.labelColor = Colors.white, // 默认颜色为蓝色
+    this.backgroundColor, // 默认颜色为蓝色
+    this.labelColor, // 默认颜色为蓝色
     super.key,
   });
 
@@ -209,14 +210,13 @@ class FullWidthButton extends StatelessWidget {
           child: ElevatedButton(
             onPressed: onPressed,
             style: OutlinedButton.styleFrom(
-              backgroundColor: backgroundColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8.0), // 圆角半径
               ),
             ),
             child: Text(
               text,
-              style: TextStyle(color: labelColor),
+              style: TextStyle(color: Theme.of(context).colorScheme.primary),
             ),
           ),
         ),

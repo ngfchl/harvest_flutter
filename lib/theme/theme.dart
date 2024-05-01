@@ -32,7 +32,7 @@ ThemeData darkTheme = ThemeData.dark().copyWith(
   ),
   scaffoldBackgroundColor: ThemeData.dark().scaffoldBackgroundColor,
   colorScheme: ThemeData.light().copyWith().colorScheme.copyWith(
-        background: Colors.black38,
+        background: Colors.black54,
       ),
   iconTheme: const IconThemeData(
     color: Colors.blue,

@@ -288,19 +288,10 @@ class _AggSearchPageState extends State<AggSearchPage>
                     ),
                     SizedBox(
                       width: double.infinity,
-                      child: Card(
-                        color: Colors.teal.withOpacity(0.7),
-                        margin: null,
-                        child: Center(
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 3.0, bottom: 0),
-                            child: Text(website.name.toString(),
-                                style: const TextStyle(
-                                    fontSize: 9,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500,
-                                    overflow: TextOverflow.ellipsis)),
-                          ),
+                      child: Center(
+                        child: CustomTextTag(
+                          labelText: website.name.toString(),
+                          backgroundColor: Colors.teal.shade500,
                         ),
                       ),
                     ),
