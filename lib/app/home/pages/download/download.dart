@@ -86,145 +86,152 @@ class _DownloadPageState extends State<DownloadPage>
   }
 
   _buildBottomButtonBar() {
-    return CustomCard(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          IconButton(
-            icon: Icon(
-              controller.isTimerActive ? Icons.pause : Icons.play_arrow,
-              size: 20,
-            ),
-            onPressed: () {
-              // controller.cancelPeriodicTimer();
-              controller.isTimerActive
-                  ? controller.cancelPeriodicTimer()
-                  : controller.startPeriodicTimer();
-              LoggerHelper.Logger.instance.w(controller.periodicTimer.isActive);
-              LoggerHelper.Logger.instance.w(controller.isTimerActive);
-              controller.update();
-            },
-          ),
-          IconButton(
-              icon: const Icon(Icons.settings, size: 20),
+    return GetBuilder<DownloadController>(builder: (controller) {
+      return CustomCard(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            IconButton(
+              icon: Icon(
+                controller.isTimerActive ? Icons.pause : Icons.play_arrow,
+                size: 20,
+              ),
               onPressed: () {
-                TextEditingController durationTextEditingController =
-                    TextEditingController(text: controller.duration.toString());
-                TextEditingController timerDurationTextEditingController =
-                    TextEditingController(
-                        text: controller.timerDuration.toString());
-                Get.bottomSheet(
-                  CustomCard(
-                    padding: const EdgeInsets.all(12),
-                    height: 140,
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: CustomTextField(
-                                controller: durationTextEditingController,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(
-                                      RegExp(r'^\d{0,2}(\.\d{0,2})?$')),
-                                  RangeInputFormatter(min: 3, max: 10),
-                                ],
-                                prefixIcon: const Icon(Icons.timer_3, size: 15),
-                                labelText: '刷新时间 3-10秒刷新一次',
-                                onChanged: (value) {
-                                  controller.validateInput(value);
-                                },
-                              ),
-                            ),
-                            IconButton(
-                                icon: const Icon(Icons.save, size: 20),
-                                onPressed: () {
-                                  try {
-                                    double duration = double.parse(
-                                        durationTextEditingController.text);
-                                    if (duration < 3 || duration > 10) {
-                                      Get.snackbar('出错啦', '超出范围，请设置 3-10');
-                                    } else {
-                                      controller.duration = duration;
-                                      SPUtil.setDouble('duration', duration);
-                                      controller.cancelPeriodicTimer();
-                                      controller.startPeriodicTimer();
-                                      controller.update();
-                                      Get.snackbar('OK 啦', '保存成功！');
-                                    }
-                                  } catch (e) {
-                                    Get.snackbar('出错啦', '请输入数字');
-                                  }
-                                })
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: CustomTextField(
-                                controller: timerDurationTextEditingController,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(
-                                      RegExp(r'^\d{0,2}(\.\d{0,2})?$')),
-                                  RangeInputFormatter(min: 1, max: 10),
-                                ],
-                                prefixIcon: const Icon(Icons.timer_3, size: 15),
-                                onChanged: (value) {
-                                  controller.validateInput(value, min: 1);
-                                },
-                                labelText: '刷新时长 3-10 分钟',
-                              ),
-                            ),
-                            IconButton(
-                                icon: const Icon(
-                                  Icons.save,
-                                  size: 20,
-                                ),
-                                onPressed: () {
-                                  try {
-                                    double duration = double.parse(
-                                        timerDurationTextEditingController
-                                            .text);
-                                    if (duration < 1 || duration > 10) {
-                                      Get.snackbar('出错啦', '超出范围，请设置 1-10');
-                                    } else {
-                                      controller.timerDuration = duration;
-                                      SPUtil.setDouble(
-                                          'timerDuration', duration);
-                                      controller.fiveMinutesTimer.cancel();
-                                      controller.timerToStop();
-                                      controller.update();
-                                      Get.snackbar('OK 啦', '保存成功！');
-                                    }
-                                  } catch (e) {
-                                    Get.snackbar('出错啦', '请输入数字');
-                                  }
-                                })
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(2),
-                      topRight: Radius.circular(2),
-                    ),
-                  ),
-                );
-              }),
-          IconButton(
-            icon: const Icon(
-              Icons.add,
-              size: 20,
+                // controller.cancelPeriodicTimer();
+                controller.isTimerActive
+                    ? controller.cancelPeriodicTimer()
+                    : controller.startPeriodicTimer();
+                LoggerHelper.Logger.instance
+                    .w(controller.periodicTimer.isActive);
+                LoggerHelper.Logger.instance.w(controller.isTimerActive);
+                controller.update();
+              },
             ),
-            onPressed: () async {
-              _showEditBottomSheet();
-            },
-          ),
-        ],
-      ),
-    );
+            IconButton(
+                icon: const Icon(Icons.settings, size: 20),
+                onPressed: () {
+                  TextEditingController durationTextEditingController =
+                      TextEditingController(
+                          text: controller.duration.toString());
+                  TextEditingController timerDurationTextEditingController =
+                      TextEditingController(
+                          text: controller.timerDuration.toString());
+                  Get.bottomSheet(
+                    CustomCard(
+                      padding: const EdgeInsets.all(12),
+                      height: 140,
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: CustomTextField(
+                                  controller: durationTextEditingController,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(
+                                        RegExp(r'^\d{0,2}(\.\d{0,2})?$')),
+                                    RangeInputFormatter(min: 3, max: 10),
+                                  ],
+                                  prefixIcon:
+                                      const Icon(Icons.timer_3, size: 15),
+                                  labelText: '刷新时间 3-10秒刷新一次',
+                                  onChanged: (value) {
+                                    controller.validateInput(value);
+                                  },
+                                ),
+                              ),
+                              IconButton(
+                                  icon: const Icon(Icons.save, size: 20),
+                                  onPressed: () {
+                                    try {
+                                      double duration = double.parse(
+                                          durationTextEditingController.text);
+                                      if (duration < 3 || duration > 10) {
+                                        Get.snackbar('出错啦', '超出范围，请设置 3-10');
+                                      } else {
+                                        controller.duration = duration;
+                                        SPUtil.setDouble('duration', duration);
+                                        controller.cancelPeriodicTimer();
+                                        controller.startPeriodicTimer();
+                                        controller.update();
+                                        Get.snackbar('OK 啦', '保存成功！');
+                                      }
+                                    } catch (e) {
+                                      Get.snackbar('出错啦', '请输入数字');
+                                    }
+                                  })
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: CustomTextField(
+                                  controller:
+                                      timerDurationTextEditingController,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(
+                                        RegExp(r'^\d{0,2}(\.\d{0,2})?$')),
+                                    RangeInputFormatter(min: 1, max: 10),
+                                  ],
+                                  prefixIcon:
+                                      const Icon(Icons.timer_3, size: 15),
+                                  onChanged: (value) {
+                                    controller.validateInput(value, min: 1);
+                                  },
+                                  labelText: '刷新时长 3-10 分钟',
+                                ),
+                              ),
+                              IconButton(
+                                  icon: const Icon(
+                                    Icons.save,
+                                    size: 20,
+                                  ),
+                                  onPressed: () {
+                                    try {
+                                      double duration = double.parse(
+                                          timerDurationTextEditingController
+                                              .text);
+                                      if (duration < 1 || duration > 10) {
+                                        Get.snackbar('出错啦', '超出范围，请设置 1-10');
+                                      } else {
+                                        controller.timerDuration = duration;
+                                        SPUtil.setDouble(
+                                            'timerDuration', duration);
+                                        controller.fiveMinutesTimer.cancel();
+                                        controller.timerToStop();
+                                        controller.update();
+                                        Get.snackbar('OK 啦', '保存成功！');
+                                      }
+                                    } catch (e) {
+                                      Get.snackbar('出错啦', '请输入数字');
+                                    }
+                                  })
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(2),
+                        topRight: Radius.circular(2),
+                      ),
+                    ),
+                  );
+                }),
+            IconButton(
+              icon: const Icon(
+                Icons.add,
+                size: 20,
+              ),
+              onPressed: () async {
+                _showEditBottomSheet();
+              },
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildLiveLineChart(
@@ -402,6 +409,7 @@ class _DownloadPageState extends State<DownloadPage>
                               index,
                           yValueMapper: (TransmissionStats sales, _) =>
                               sales.uploadSpeed,
+                          color: Colors.blue.withOpacity(0.9),
                           name: '上传速度',
                           borderWidth: 1,
                         ),
@@ -416,6 +424,7 @@ class _DownloadPageState extends State<DownloadPage>
                               index,
                           yValueMapper: (TransmissionStats sales, _) =>
                               sales.downloadSpeed,
+                          color: Colors.red.withOpacity(0.9),
                           enableTooltip: true,
                           name: '下载速度',
                           borderWidth: 1,
@@ -435,12 +444,6 @@ class _DownloadPageState extends State<DownloadPage>
                       ),
                       const SizedBox(
                         width: 8,
-                      ),
-                      Text(
-                        '暂停种子：${res.pausedTorrentCount}',
-                        style: const TextStyle(
-                          fontSize: 10,
-                        ),
                       ),
                       const SizedBox(width: 8),
                       if (res.speedLimitSettings?.speedLimitUpEnabled == true)
@@ -745,7 +748,7 @@ class _DownloadPageState extends State<DownloadPage>
                 ),
               ],
             ),
-            const SizedBox(height: 5),
+            const SizedBox(height: 2),
             Row(
               children: [
                 const Icon(
@@ -762,7 +765,7 @@ class _DownloadPageState extends State<DownloadPage>
                 ),
               ],
             ),
-            const SizedBox(height: 5),
+            const SizedBox(height: 2),
             Row(
               children: [
                 const Icon(
@@ -779,7 +782,7 @@ class _DownloadPageState extends State<DownloadPage>
                 ),
               ],
             ),
-            const SizedBox(height: 5),
+            const SizedBox(height: 2),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -791,6 +794,24 @@ class _DownloadPageState extends State<DownloadPage>
                 const SizedBox(width: 2),
                 Text(
                   filesize(res.currentStats.downloadedBytes),
+                  style: const TextStyle(
+                    fontSize: 10,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.pause,
+                  color: Colors.amber,
+                  size: 14,
+                ),
+                const SizedBox(width: 2),
+                Text(
+                  '${res.pausedTorrentCount}',
                   style: const TextStyle(
                     fontSize: 10,
                   ),
@@ -825,12 +846,12 @@ class _DownloadPageState extends State<DownloadPage>
     RxBool brush = downloader != null ? downloader.brush.obs : false.obs;
     await controller.getTorrentsPathList();
     Get.bottomSheet(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
       CustomCard(
-        padding: const EdgeInsets.all(20),
         child: Column(
           children: [
             Text(
-              downloader != null ? '编辑站点：${downloader.name}' : '添加站点',
+              downloader != null ? '编辑下载器：${downloader.name}' : '添加下载器',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: Theme.of(context).colorScheme.primary,
                   ),

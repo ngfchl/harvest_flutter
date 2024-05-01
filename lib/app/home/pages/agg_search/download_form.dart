@@ -69,7 +69,7 @@ class DownloadForm extends StatelessWidget {
               if (info != null)
                 Text(
                   '种子名称: ${info!.subtitle.isNotEmpty ? info!.subtitle : info!.title}',
-                  style: const TextStyle(fontSize: 12, color: Colors.black54),
+                  style: const TextStyle(fontSize: 12),
                 ),
               CustomTextField(
                 controller: urlController,
@@ -101,7 +101,7 @@ class DownloadForm extends StatelessWidget {
                     contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                     title: const Text(
                       '暂停下载',
-                      style: TextStyle(fontSize: 12, color: Colors.black54),
+                      style: TextStyle(fontSize: 12),
                     ),
                     value: paused.value,
                     onChanged: (bool val) {
@@ -114,7 +114,7 @@ class DownloadForm extends StatelessWidget {
                     contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                     title: const Text(
                       '高级选项',
-                      style: TextStyle(fontSize: 12, color: Colors.black54),
+                      style: TextStyle(fontSize: 12),
                     ),
                     value: advancedConfig.value,
                     onChanged: (bool val) {
@@ -138,8 +138,8 @@ class DownloadForm extends StatelessWidget {
                                       title: const Text(
                                         '内容布局',
                                         style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.black54),
+                                          fontSize: 12,
+                                        ),
                                       ),
                                       value: rootFolder.value,
                                       onChanged: (bool val) {
@@ -155,8 +155,8 @@ class DownloadForm extends StatelessWidget {
                                       title: const Text(
                                         '自动管理',
                                         style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.black54),
+                                          fontSize: 12,
+                                        ),
                                       ),
                                       value: autoTMM.value,
                                       onChanged: (bool val) {
@@ -169,8 +169,7 @@ class DownloadForm extends StatelessWidget {
                                         horizontal: 8),
                                     title: const Text(
                                       '优先下载首尾数据块',
-                                      style: TextStyle(
-                                          fontSize: 12, color: Colors.black54),
+                                      style: TextStyle(fontSize: 12),
                                     ),
                                     value: firstLastPiecePrio.value,
                                     onChanged: (bool val) {
@@ -374,7 +373,7 @@ openDownloaderListSheet(BuildContext context, SearchTorrentInfo info) {
                         ),
                         subtitle: Text(
                           '${downloader.protocol}://${downloader.host}:${downloader.port}',
-                          style: const TextStyle(color: Colors.black54),
+                          style: const TextStyle(),
                         ),
                         leading: CircleAvatar(
                           backgroundImage: Image.asset(
@@ -400,8 +399,7 @@ openDownloaderListSheet(BuildContext context, SearchTorrentInfo info) {
                             Get.defaultDialog(
                               // barrierDismissible: false,
                               title: '下载到：${downloader.name}',
-                              titleStyle: const TextStyle(
-                                  fontSize: 14, color: Colors.black54),
+                              titleStyle: const TextStyle(fontSize: 14),
                               backgroundColor: Colors.white,
                               content: SizedBox(
                                 height: 350,

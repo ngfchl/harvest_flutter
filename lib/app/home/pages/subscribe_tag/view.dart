@@ -169,11 +169,6 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
   }
 
   _openEditDialog(SubTag? tag) {
-    '''
-    String? name,
-    String? category,
-    bool? available,
-    ''';
     final TextEditingController nameController =
         TextEditingController(text: tag != null ? tag.name : '');
     final TextEditingController categoryController = TextEditingController(
@@ -184,106 +179,109 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
 
     available.value = tag != null ? tag.available! : true;
     String title = tag != null ? '编辑标签：${tag.name!}' : '添加标签';
-    Get.bottomSheet(CustomCard(
-      child: Column(
-        children: [
-          GFTypography(
-            text: title,
-            textColor: Theme.of(context).colorScheme.onBackground,
-            dividerColor: Theme.of(context).colorScheme.onBackground,
-          ),
-          CustomTextField(
-            controller: nameController,
-            labelText: '名称',
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: DropdownButtonFormField<String>(
-              isDense: true,
-              value: categoryController.text,
-              onChanged: (String? newValue) {
-                categoryController.text = newValue!;
-              },
-              items: controller.tagCategoryList
-                  .map<DropdownMenuItem<String>>(
-                      (MetaDataItem item) => DropdownMenuItem<String>(
-                            value: item.value,
-                            child: Text(
-                              item.name,
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                          ))
-                  .toList(),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Obx(() {
-              return SwitchListTile(
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('标签可用'),
-                  value: available.value,
-                  onChanged: (bool val) {
-                    available.value = val;
-                  });
-            }),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    Get.bottomSheet(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+        CustomCard(
+          child: Column(
             children: [
-              ElevatedButton.icon(
-                onPressed: () {
-                  // 清空表单数据
-                  nameController.clear();
-                  categoryController.clear();
-                  available.value = true;
-                  Get.back();
-                },
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(
-                      Colors.redAccent.withAlpha(150)),
-                ),
-                icon: const Icon(Icons.cancel_outlined, color: Colors.white),
-                label: const Text(
-                  '取消',
-                  style: TextStyle(color: Colors.white),
+              GFTypography(
+                text: title,
+                textColor: Theme.of(context).colorScheme.onBackground,
+                dividerColor: Theme.of(context).colorScheme.onBackground,
+              ),
+              CustomTextField(
+                controller: nameController,
+                labelText: '名称',
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: DropdownButtonFormField<String>(
+                  isDense: true,
+                  value: categoryController.text,
+                  onChanged: (String? newValue) {
+                    categoryController.text = newValue!;
+                  },
+                  items: controller.tagCategoryList
+                      .map<DropdownMenuItem<String>>(
+                          (MetaDataItem item) => DropdownMenuItem<String>(
+                                value: item.value,
+                                child: Text(
+                                  item.name,
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                              ))
+                      .toList(),
                 ),
               ),
-              Obx(() {
-                return ElevatedButton.icon(
-                  onPressed: () async {
-                    isLoading.value = true;
-                    SubTag newTag;
-                    if (tag != null) {
-                      newTag = tag.copyWith(
-                        name: nameController.text,
-                        category: categoryController.text,
-                        available: available.value,
-                      );
-                    } else {
-                      newTag = SubTag.fromJson({
-                        'id': 0,
-                        'name': nameController.text,
-                        'category': categoryController.text,
-                        'available': available.value,
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Obx(() {
+                  return SwitchListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('标签可用'),
+                      value: available.value,
+                      onChanged: (bool val) {
+                        available.value = val;
                       });
-                    }
-                    submitForm(newTag);
-                    isLoading.value = false;
-                  },
-                  icon: isLoading.value
-                      ? const GFLoader(size: 18)
-                      : const Icon(Icons.save),
-                  label: const Text('保存'),
-                );
-              }),
+                }),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      // 清空表单数据
+                      nameController.clear();
+                      categoryController.clear();
+                      available.value = true;
+                      Get.back();
+                    },
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(
+                          Colors.redAccent.withAlpha(150)),
+                    ),
+                    icon:
+                        const Icon(Icons.cancel_outlined, color: Colors.white),
+                    label: const Text(
+                      '取消',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                  Obx(() {
+                    return ElevatedButton.icon(
+                      onPressed: () async {
+                        isLoading.value = true;
+                        SubTag newTag;
+                        if (tag != null) {
+                          newTag = tag.copyWith(
+                            name: nameController.text,
+                            category: categoryController.text,
+                            available: available.value,
+                          );
+                        } else {
+                          newTag = SubTag.fromJson({
+                            'id': 0,
+                            'name': nameController.text,
+                            'category': categoryController.text,
+                            'available': available.value,
+                          });
+                        }
+                        submitForm(newTag);
+                        isLoading.value = false;
+                      },
+                      icon: isLoading.value
+                          ? const GFLoader(size: 18)
+                          : const Icon(Icons.save),
+                      label: const Text('保存'),
+                    );
+                  }),
+                ],
+              ),
             ],
           ),
-        ],
-      ),
-    ));
+        ));
   }
 
   void submitForm(SubTag tag) async {

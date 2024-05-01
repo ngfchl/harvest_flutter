@@ -157,6 +157,8 @@ class _MySitePagePageState extends State<MySitePage>
                 RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5.0)),
               ),
+              padding: MaterialStateProperty.all(
+                  const EdgeInsets.symmetric(horizontal: 5)),
               backgroundColor: MaterialStateProperty.all(Colors.transparent),
               side: MaterialStateProperty.all(BorderSide.none),
             ),
@@ -175,6 +177,8 @@ class _MySitePagePageState extends State<MySitePage>
                 RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5.0)),
               ),
+              padding: MaterialStateProperty.all(
+                  const EdgeInsets.symmetric(horizontal: 5)),
               backgroundColor: MaterialStateProperty.all(Colors.transparent),
               side: MaterialStateProperty.all(BorderSide.none),
             ),
@@ -193,6 +197,8 @@ class _MySitePagePageState extends State<MySitePage>
                 RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5.0)),
               ),
+              padding: MaterialStateProperty.all(
+                  const EdgeInsets.symmetric(horizontal: 5)),
               backgroundColor: MaterialStateProperty.all(Colors.transparent),
               side: MaterialStateProperty.all(BorderSide.none),
             ),
@@ -211,6 +217,8 @@ class _MySitePagePageState extends State<MySitePage>
                 RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5.0)),
               ),
+              padding: MaterialStateProperty.all(
+                  const EdgeInsets.symmetric(horizontal: 5)),
               backgroundColor: MaterialStateProperty.all(Colors.transparent),
               side: MaterialStateProperty.all(BorderSide.none),
             ),
@@ -547,7 +555,7 @@ class _MySitePagePageState extends State<MySitePage>
                 child: const Text('我要签到'),
                 onTap: () async {
                   CommonResponse res = await signIn(mySite.id);
-                  Get.back();
+
                   if (res.code == 0) {
                     Get.snackbar(
                       '签到成功',
@@ -577,7 +585,7 @@ class _MySitePagePageState extends State<MySitePage>
               child: const Text('更新数据'),
               onTap: () async {
                 CommonResponse res = await getNewestStatus(mySite.id);
-                Get.back();
+
                 if (res.code == 0) {
                   Get.snackbar(
                     '站点数据刷新成功',
@@ -634,7 +642,6 @@ class _MySitePagePageState extends State<MySitePage>
                   signed
                       ? _showSignHistory(mySite)
                       : signIn(mySite.id).then((res) {
-                          Get.back();
                           if (res.code == 0) {
                             Get.snackbar(
                               '签到成功',
@@ -667,7 +674,6 @@ class _MySitePagePageState extends State<MySitePage>
           child: GFButton(
             onPressed: () {
               getNewestStatus(mySite.id).then((res) {
-                Get.back();
                 if (res.code == 0) {
                   Get.snackbar(
                     '站点数据刷新成功',
@@ -780,6 +786,7 @@ class _MySitePagePageState extends State<MySitePage>
         mySite != null ? mySite.searchTorrents.obs : true.obs;
 
     Get.bottomSheet(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
       CustomCard(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -1022,113 +1029,18 @@ class _MySitePagePageState extends State<MySitePage>
   }
 
   void _showSortBottomSheet() {
-    Get.bottomSheet(Container(
-      padding: const EdgeInsets.all(8),
-      color: Colors.blueGrey.shade300,
-      width: 550,
-      child: Column(children: [
-        Expanded(
-          child: GetBuilder<MySiteController>(builder: (controller) {
-            return ListView.builder(
-              itemCount: controller.siteSortOptions.length,
-              itemBuilder: (context, index) {
-                Map<String, String> item = controller.siteSortOptions[index];
-                return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                      side: const BorderSide(color: Colors.grey, width: 1.0),
-                    ),
-                    child: ListTile(
-                      title: Text(item['name']!),
-                      selectedColor: Colors.amber,
-                      selected: controller.sortKey == item['value'],
-                      leading: controller.sortReversed
-                          ? const Icon(Icons.trending_up)
-                          : const Icon(Icons.trending_down),
-                      trailing: controller.sortKey == item['value']
-                          ? const Icon(Icons.check_box_outlined)
-                          : const Icon(Icons.check_box_outline_blank_rounded),
-                      onTap: () {
-                        if (controller.sortKey == item['value']!) {
-                          controller.sortReversed = true;
-                        } else {
-                          controller.sortReversed = false;
-                        }
-                        controller.sortKey = item['value']!;
-                        controller.sortStatusList();
-
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                  ),
-                );
-              },
-            );
-          }),
-        ),
-      ]),
-    ));
-  }
-
-  void _showFilterBottomSheet() {
-    Get.bottomSheet(Container(
-        padding: const EdgeInsets.all(8),
-        color: Colors.blueGrey.shade300,
-        width: 550,
-        child: Column(children: [
-          Expanded(child: GetBuilder<MySiteController>(builder: (controller) {
-            return ListView.builder(
-                itemCount: controller.filterOptions.length,
-                itemBuilder: (context, index) {
-                  Map<String, String> item = controller.filterOptions[index];
-                  return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        side: const BorderSide(color: Colors.grey, width: 1.0),
-                      ),
-                      child: ListTile(
-                          title: Text(item['name']!),
-                          trailing: controller.filterKey == item['value']
-                              ? const Icon(Icons.check_box_outlined)
-                              : const Icon(
-                                  Icons.check_box_outline_blank_rounded),
-                          selectedColor: Colors.amber,
-                          selected: controller.filterKey == item['value'],
-                          onTap: () {
-                            controller.filterKey = item['value']!;
-                            controller.filterByKey();
-
-                            Navigator.of(context).pop();
-                          }),
-                    ),
-                  );
-                });
-          }))
-        ])));
-  }
-
-  void _showSignHistory(MySite mySite) {
-    List<String> signKeys = mySite.signInInfo.keys.toList();
-    String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    signKeys.sort((a, b) => b.compareTo(a));
-    Get.bottomSheet(Container(
-        padding: const EdgeInsets.all(8),
-        color: Colors.blueGrey.shade300,
-        width: 550,
-        child: Column(children: [
-          Text(
-            "${mySite.nickname} [累计自动签到${mySite.signInInfo.length}天]",
-          ),
-          Expanded(
-              child: ListView.builder(
-                  itemCount: signKeys.length,
+    Get.bottomSheet(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+        CustomCard(
+          width: 550,
+          child: Column(children: [
+            Expanded(
+              child: GetBuilder<MySiteController>(builder: (controller) {
+                return ListView.builder(
+                  itemCount: controller.siteSortOptions.length,
                   itemBuilder: (context, index) {
-                    String signKey = signKeys[index];
-                    SignInInfo? item = mySite.signInInfo[signKey];
+                    Map<String, String> item =
+                        controller.siteSortOptions[index];
                     return Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Card(
@@ -1138,29 +1050,129 @@ class _MySitePagePageState extends State<MySitePage>
                               const BorderSide(color: Colors.grey, width: 1.0),
                         ),
                         child: ListTile(
-                            title: Text(
-                              item!.info,
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: signKey == today
-                                      ? Colors.amber
-                                      : Colors.black45),
-                            ),
-                            subtitle: Text(
-                              item.updatedAt,
-                              style: TextStyle(
-                                  fontSize: 10,
-                                  color: signKey == today
-                                      ? Colors.amber
-                                      : Colors.black26),
-                            ),
-                            selected: signKey == today,
-                            selectedColor: Colors.amber,
-                            onTap: () {}),
+                          title: Text(item['name']!),
+                          selectedColor: Colors.amber,
+                          selected: controller.sortKey == item['value'],
+                          leading: controller.sortReversed
+                              ? const Icon(Icons.trending_up)
+                              : const Icon(Icons.trending_down),
+                          trailing: controller.sortKey == item['value']
+                              ? const Icon(Icons.check_box_outlined)
+                              : const Icon(
+                                  Icons.check_box_outline_blank_rounded),
+                          onTap: () {
+                            if (controller.sortKey == item['value']!) {
+                              controller.sortReversed = true;
+                            } else {
+                              controller.sortReversed = false;
+                            }
+                            controller.sortKey = item['value']!;
+                            controller.sortStatusList();
+
+                            Navigator.of(context).pop();
+                          },
+                        ),
                       ),
                     );
-                  }))
-        ])));
+                  },
+                );
+              }),
+            ),
+          ]),
+        ));
+  }
+
+  void _showFilterBottomSheet() {
+    Get.bottomSheet(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+        CustomCard(
+          width: 550,
+          child: Column(children: [
+            Expanded(child: GetBuilder<MySiteController>(builder: (controller) {
+              return ListView.builder(
+                  itemCount: controller.filterOptions.length,
+                  itemBuilder: (context, index) {
+                    Map<String, String> item = controller.filterOptions[index];
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                          side:
+                              const BorderSide(color: Colors.grey, width: 1.0),
+                        ),
+                        child: ListTile(
+                            title: Text(item['name']!),
+                            trailing: controller.filterKey == item['value']
+                                ? const Icon(Icons.check_box_outlined)
+                                : const Icon(
+                                    Icons.check_box_outline_blank_rounded),
+                            selectedColor: Colors.amber,
+                            selected: controller.filterKey == item['value'],
+                            onTap: () {
+                              controller.filterKey = item['value']!;
+                              controller.filterByKey();
+
+                              Navigator.of(context).pop();
+                            }),
+                      ),
+                    );
+                  });
+            }))
+          ]),
+        ));
+  }
+
+  void _showSignHistory(MySite mySite) {
+    List<String> signKeys = mySite.signInInfo.keys.toList();
+    String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    signKeys.sort((a, b) => b.compareTo(a));
+    Get.bottomSheet(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+        CustomCard(
+            width: 550,
+            child: Column(children: [
+              Text(
+                "${mySite.nickname} [累计自动签到${mySite.signInInfo.length}天]",
+              ),
+              Expanded(
+                  child: ListView.builder(
+                      itemCount: signKeys.length,
+                      itemBuilder: (context, index) {
+                        String signKey = signKeys[index];
+                        SignInInfo? item = mySite.signInInfo[signKey];
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                              side: const BorderSide(
+                                  color: Colors.grey, width: 1.0),
+                            ),
+                            child: ListTile(
+                                title: Text(
+                                  item!.info,
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      color: signKey == today
+                                          ? Colors.amber
+                                          : Colors.black45),
+                                ),
+                                subtitle: Text(
+                                  item.updatedAt,
+                                  style: TextStyle(
+                                      fontSize: 10,
+                                      color: signKey == today
+                                          ? Colors.amber
+                                          : Colors.black26),
+                                ),
+                                selected: signKey == today,
+                                selectedColor: Colors.amber,
+                                onTap: () {}),
+                          ),
+                        );
+                      }))
+            ])));
   }
 
   void _showStatusHistory(MySite mySite) {
@@ -1173,10 +1185,9 @@ class _MySitePagePageState extends State<MySitePage>
         .sublist(rangeValues.value.start.toInt(), rangeValues.value.end.toInt())
         .obs;
     Get.bottomSheet(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
       Obx(() {
-        return Container(
-          padding: const EdgeInsets.all(8),
-          color: Colors.white70,
+        return CustomCard(
           width: 550,
           child: SingleChildScrollView(
             child: Column(children: [

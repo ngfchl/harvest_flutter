@@ -124,7 +124,7 @@ class SettingPage extends StatelessWidget {
   void _openAddOptionForm() {
     Map<String, OptionFormBuilder> optionForms = _optionFormMap();
     Get.bottomSheet(
-        backgroundColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
         CustomCard(
           child: Column(
             children: [
@@ -154,12 +154,10 @@ class SettingPage extends StatelessWidget {
                                     if (optionForms[choice.value] != null) {
                                       Get.back();
                                       Get.bottomSheet(
-                                        backgroundColor: Colors.transparent,
-                                        SingleChildScrollView(
-                                            child: CustomCard(
-                                                child:
-                                                    optionForms[choice.value]!(
-                                                        null))),
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(5.0)),
+                                        optionForms[choice.value]!(null),
                                       );
                                     }
                                   }),
@@ -279,16 +277,12 @@ class SettingPage extends StatelessWidget {
                                   Get.snackbar(
                                     '配置保存成功',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.green.shade300,
                                   );
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar(
                                     '配置保存失败',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.red.shade300,
                                   );
                                 }
                               }),
@@ -392,16 +386,12 @@ class SettingPage extends StatelessWidget {
                                   Get.snackbar(
                                     '配置保存成功',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.green.shade300,
                                   );
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar(
                                     '配置保存失败',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.red.shade300,
                                   );
                                 }
                               }),
@@ -488,16 +478,12 @@ class SettingPage extends StatelessWidget {
                                   Get.snackbar(
                                     '配置保存成功',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.green.shade300,
                                   );
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar(
                                     '配置保存失败',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.red.shade300,
                                   );
                                 }
                               }),
@@ -567,16 +553,12 @@ class SettingPage extends StatelessWidget {
                                   Get.snackbar(
                                     '测试消息内容发送成功',
                                     '测试消息内容发送成功：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.green.shade300,
                                   );
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar(
                                     '测试消息内容发送失败',
                                     '测试消息内容发送出错啦：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.red.shade300,
                                   );
                                 }
                               }),
@@ -635,7 +617,8 @@ class SettingPage extends StatelessWidget {
                         controller: tokenController, labelText: '令牌'),
                     SwitchListTile(
                         dense: true,
-                        contentPadding: EdgeInsets.zero,
+                        contentPadding:
+                            const EdgeInsets.symmetric(horizontal: 8),
                         title: const Text('辅种开关'),
                         value: repeat.value,
                         onChanged: (value) {
@@ -675,16 +658,12 @@ class SettingPage extends StatelessWidget {
                                   Get.snackbar(
                                     '配置保存成功',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.green.shade300,
                                   );
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar(
                                     '配置保存失败',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.red.shade300,
                                   );
                                 }
                               }),
@@ -772,16 +751,12 @@ class SettingPage extends StatelessWidget {
                                   Get.snackbar(
                                     '配置保存成功',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.green.shade300,
                                   );
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar(
                                     '配置保存失败',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.red.shade300,
                                   );
                                 }
                               }),
@@ -840,7 +815,8 @@ class SettingPage extends StatelessWidget {
                         labelText: '保存令牌'),
                     SwitchListTile(
                         dense: true,
-                        contentPadding: EdgeInsets.zero,
+                        contentPadding:
+                            const EdgeInsets.symmetric(horizontal: 8),
                         title: const Text('领取福利'),
                         value: welfare.value,
                         onChanged: (value) {
@@ -876,16 +852,12 @@ class SettingPage extends StatelessWidget {
                                   Get.snackbar(
                                     '配置保存成功',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.green.shade300,
                                   );
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar(
                                     '配置保存失败',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.red.shade300,
                                   );
                                 }
                               }),
@@ -1085,16 +1057,12 @@ class SettingPage extends StatelessWidget {
                                   Get.snackbar(
                                     '配置保存成功',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.green.shade300,
                                   );
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar(
                                     '配置保存失败',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.red.shade300,
                                   );
                                 }
                               }),
@@ -1182,16 +1150,12 @@ class SettingPage extends StatelessWidget {
                                   Get.snackbar(
                                     '配置保存成功',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.green.shade300,
                                   );
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar(
                                     '配置保存失败',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.red.shade300,
                                   );
                                 }
                               }),
@@ -1275,16 +1239,12 @@ class SettingPage extends StatelessWidget {
                                   Get.snackbar(
                                     '配置保存成功',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 保存成功：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.green.shade300,
                                   );
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar(
                                     '配置保存失败',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 保存出错啦：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.red.shade300,
                                   );
                                 }
                               }),
@@ -1378,16 +1338,12 @@ class SettingPage extends StatelessWidget {
                                   Get.snackbar(
                                     '配置保存成功',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.green.shade300,
                                   );
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar(
                                     '配置保存失败',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.red.shade300,
                                   );
                                 }
                               }),
@@ -1482,16 +1438,12 @@ class SettingPage extends StatelessWidget {
                                   Get.snackbar(
                                     '配置保存成功',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.green.shade300,
                                   );
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar(
                                     '配置保存失败',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.red.shade300,
                                   );
                                 }
                               }),
@@ -1585,16 +1537,12 @@ class SettingPage extends StatelessWidget {
                                   Get.snackbar(
                                     '配置保存成功',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.green.shade300,
                                   );
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar(
                                     '配置保存失败',
                                     '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                    colorText: Colors.white,
-                                    backgroundColor: Colors.red.shade300,
                                   );
                                 }
                               }),

@@ -94,12 +94,9 @@ class _SubscribePageState extends State<SubscribePage> {
                   onPressed: (context) async {
                     Get.defaultDialog(
                       title: '确认',
-                      backgroundColor: Colors.white,
                       radius: 5,
                       titleStyle: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.deepPurple),
+                          fontSize: 16, fontWeight: FontWeight.w900),
                       middleText: '确定要删除吗？',
                       actions: [
                         ElevatedButton(
