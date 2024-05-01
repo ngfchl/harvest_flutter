@@ -14,8 +14,8 @@ class VersionManager:
     def __init__(self, yaml_file_path, output_folder):
         self.yaml_file_path = yaml_file_path
         self.output_folder = os.path.expanduser(output_folder)
-        self.version_regex = r'^(\d{4}\.\d{2}\.\d{2})\+(\d+)$'
-        self.version_date_format = '%Y.%m.%d'
+        self.version_regex = r'^(\d{4}\.\d{4}).(\d+)\+(\d+)$'
+        self.version_date_format = '%Y.%m%d'
         self.ios_path = 'build/ios/iphoneos/'
         self.current_version = self.read_version()
         self.calc_version()
@@ -32,15 +32,20 @@ class VersionManager:
         print('开始计算新版本号')
         match = re.match(self.version_regex, self.current_version)
         if match:
-            date_str, count_str = match.groups()
+            date_str, count_str, build_str = match.groups()
+            print(date_str, count_str, build_str)
             current_date = datetime.datetime.strptime(date_str, self.version_date_format)
             current_count = int(count_str)
+            build_str = int(build_str)
             if current_date.date() == datetime.datetime.now().date():
                 current_count += 1
+                if current_count < 9:
+                    current_count = f"0{current_count}"
             else:
                 current_date = datetime.datetime.now()
-                current_count = 1
-            self.new_version = f"{current_date.strftime(self.version_date_format)}+{current_count}"
+                current_count = '01'
+            build_str += 1
+            self.new_version = f"{current_date.strftime(self.version_date_format)}.{current_count}+{build_str}"
             print(f'新版本号：{self.new_version}')
             print(f'开始替换新版本号')
             self.update_version(self.new_version)
@@ -67,16 +72,26 @@ class VersionManager:
             elif flag == 'macos':
                 subprocess.run(["flutter", "build", "macos"])
                 print(f'macos APP 编译完成，正在移动到指定文件夹 {self.output_folder}')
-                shutil.move("build/macos/Build/Products/Release/harvest.app",
-                            f"{self.output_folder}/harvest_{self.new_version}-macos.app")
+                res = subprocess.run(
+                    "zip -r harvest.app.zip harvest.app", cwd='build/macos/Build/Products/Release/',
+                    shell=True,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                print(res)
+                shutil.move("build/macos/Build/Products/Release/harvest.app.zip",
+                            f"{self.output_folder}/harvest_{self.new_version}-macos.zip")
                 print(f'MacOS 打包完成')
             elif flag == 'windows':
                 subprocess.run(["flutter", "build", "windows"])
                 print(f'macos APP 编译完成，正在移动到指定文件夹 {self.output_folder}')
-                shutil.move("build\windows\x64\runner\Release",
-                            f"build\windows\x64\runner\harvest_{self.new_version}-win")
+                res = subprocess.run(
+                    "Compress-Archive ./Release/ ./Release.zip", cwd='build/windows/x64/runner',
+                    shell=True,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                print(res)
+                shutil.move(r"build/windows/x64/runner/Release.zip",
+                            f"build/windows/x64/runner/harvest_{self.new_version}-win.zip")
                 print(f'Windows 打包完成')
-                subprocess.Popen(['explorer', "build\windows\x64\runner"])
+                subprocess.Popen(['explorer', "build/windows/x64/runner"])
             elif flag == 'ios':
                 # subprocess.run(["rm", "-rf", f"{self.ios_path}Payload/*"])
                 res = subprocess.run(["rm -rf build/ios/iphoneos/*"], shell=True,
@@ -145,3 +160,4 @@ class VersionManager:
 if __name__ == '__main__':
     manager = VersionManager('pubspec.yaml', '~/Desktop/harvest')
     manager.compile_and_install()
+    # manager.calc_version()
