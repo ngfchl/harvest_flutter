@@ -390,8 +390,6 @@ class MySiteController extends GetxController {
       Get.snackbar(
         '签到任务',
         '签到任务信息：${res.msg}',
-        colorText: Colors.white,
-        backgroundColor: Colors.green.withOpacity(0.7),
       );
     } else {
       Get.snackbar(
@@ -410,15 +408,11 @@ class MySiteController extends GetxController {
       Get.snackbar(
         'PTPP导入任务',
         'PTPP导入任务信息：${res.msg}',
-        colorText: Colors.white,
-        backgroundColor: Colors.green.withOpacity(0.7),
       );
     } else {
       Get.snackbar(
         'PTPP导入任务失败',
         'PTPP导入任务执行出错啦：${res.msg}',
-        colorText: Colors.white,
-        backgroundColor: Colors.red.withOpacity(0.7),
       );
     }
   }
@@ -430,15 +424,11 @@ class MySiteController extends GetxController {
       Get.snackbar(
         'CookieCloud任务',
         'CookieCloud任务信息：${res.msg}',
-        colorText: Colors.white,
-        backgroundColor: Colors.green.withOpacity(0.7),
       );
     } else {
       Get.snackbar(
         'CookieCloud失败',
         'CookieCloud任务执行出错啦：${res.msg}',
-        colorText: Colors.white,
-        backgroundColor: Colors.red.withOpacity(0.7),
       );
     }
   }
@@ -450,15 +440,11 @@ class MySiteController extends GetxController {
       Get.snackbar(
         '更新数据',
         '更新数据任务信息：${res.msg}',
-        colorText: Colors.white,
-        backgroundColor: Colors.green.withOpacity(0.7),
       );
     } else {
       Get.snackbar(
         '更新数据',
         '更新数据执行出错啦：${res.msg}',
-        colorText: Colors.white,
-        backgroundColor: Colors.red.withOpacity(0.7),
       );
     }
   }
