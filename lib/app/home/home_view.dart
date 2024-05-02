@@ -225,8 +225,7 @@ class HomeView extends GetView<HomeController> {
         const SizedBox(width: 15),
         CustomPopup(
           showArrow: false,
-          backgroundColor:
-              Theme.of(context).colorScheme.background.withOpacity(0.8),
+          backgroundColor: Theme.of(context).colorScheme.background,
           barrierColor: Colors.transparent,
           content: SizedBox(
             width: 100,

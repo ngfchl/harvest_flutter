@@ -118,7 +118,17 @@ class _MySitePagePageState extends State<MySitePage>
                     : controller.showStatusList.isEmpty
                         ? const Text('没有符合条件的数据！')
                         : GetBuilder<MySiteController>(builder: (controller) {
-                            return ListView.builder(
+                            return ReorderableListView.builder(
+                              onReorder: (int oldIndex, int newIndex) {
+                                if (oldIndex < newIndex) {
+                                  newIndex -= 1; // 移动时修正索引，因为item已被移除
+                                }
+                                final item = controller.showStatusList
+                                    .removeAt(oldIndex);
+                                controller.showStatusList
+                                    .insert(newIndex, item);
+                                controller.update();
+                              },
                               itemCount: controller.showStatusList.length,
                               itemBuilder: (BuildContext context, int index) {
                                 MySite mySite =
@@ -241,6 +251,7 @@ class _MySitePagePageState extends State<MySitePage>
       Logger.instance.w('${mySite.nickname} - ${mySite.statusInfo}');
     }
     return CustomCard(
+      key: Key("${mySite.id}-${mySite.site}"),
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Column(children: [
         ListTile(

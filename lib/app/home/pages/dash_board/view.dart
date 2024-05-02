@@ -12,7 +12,6 @@ import 'package:syncfusion_flutter_gauges/gauges.dart';
 import '../../../../common/card_view.dart';
 import '../../../../common/hex_color.dart';
 import '../../../../common/utils.dart';
-import '../../../../theme/fitness_app_theme.dart';
 import '../../../../utils/calc_weeks.dart';
 import '../../../../utils/logger_helper.dart';
 import '../../controller/common_api.dart';
@@ -42,38 +41,54 @@ class _DashBoardPageState extends State<DashBoardPage>
 
   @override
   Widget build(BuildContext context) {
+    if (controller.statusList.isNotEmpty) {
+      controller.children = [
+        Container(
+            key: const Key('_buildSiteInfoCard'), child: _buildSiteInfoCard()),
+        Container(
+            key: const Key('_buildSmartLabelPieChart'),
+            child: _buildSmartLabelPieChart(context)),
+        Container(
+            key: const Key('_buildStackedBar'),
+            child: _buildStackedBar(context)),
+        Container(key: const Key('_buildSiteInfo'), child: _buildSiteInfo()),
+      ];
+    }
+    controller.update();
     super.build(context);
-    return Scaffold(
-      body: GetBuilder<DashBoardController>(builder: (controller) {
-        return Column(
-          children: [
-            Expanded(
-              child: EasyRefresh(
-                onRefresh: controller.initChartData,
-                child: controller.isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : ListView(
-                        children: [
-                          const SizedBox(height: 5),
-                          if (controller.statusList.isNotEmpty)
-                            _buildSiteInfoCard(),
-                          if (controller.stackChartDataList.isNotEmpty)
-                            _buildStackedBar(context),
-                          if (controller.statusList.isNotEmpty)
-                            _buildSiteInfo(),
-                          if (controller.statusList.isNotEmpty)
-                            _buildSmartLabelPieChart(context),
-                          const SizedBox(height: 40),
-                        ],
-                      ),
-              ),
-            ),
-            const SizedBox(height: 15),
-          ],
-        );
-      }),
-      floatingActionButton: _buildBottomButtonBar(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+    return GetBuilder<DashBoardController>(builder: (controller) {
+      return Scaffold(
+        body: _showAllInfo(controller),
+        floatingActionButton: _buildBottomButtonBar(),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      );
+    });
+  }
+
+  Widget _showAllInfo(DashBoardController controller) {
+    return Column(
+      children: [
+        const SizedBox(height: 5),
+        Expanded(
+          child: EasyRefresh(
+            onRefresh: controller.initChartData,
+            child: controller.isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : ReorderableListView(
+                    onReorder: (int oldIndex, int newIndex) {
+                      if (oldIndex < newIndex) {
+                        newIndex -= 1; // 移动时修正索引，因为item已被移除
+                      }
+                      final item = controller.children.removeAt(oldIndex);
+                      controller.children.insert(newIndex, item);
+                      controller.update();
+                    },
+                    children: controller.children,
+                  ),
+          ),
+        ),
+        const SizedBox(height: 50),
+      ],
     );
   }
 
@@ -186,9 +201,9 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
-                                    const Padding(
-                                      padding:
-                                          EdgeInsets.only(left: 4, bottom: 2),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 4, bottom: 2),
                                       child: Text(
                                         '上传量',
                                         textAlign: TextAlign.center,
@@ -196,6 +211,9 @@ class _DashBoardPageState extends State<DashBoardPage>
                                           fontWeight: FontWeight.w500,
                                           fontSize: 14,
                                           letterSpacing: -0.1,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
                                         ),
                                       ),
                                     ),
@@ -208,7 +226,11 @@ class _DashBoardPageState extends State<DashBoardPage>
                                         const SizedBox(
                                           width: 15,
                                           height: 15,
-                                          child: Icon(Icons.upload, size: 15),
+                                          child: Icon(
+                                            Icons.upload,
+                                            size: 15,
+                                            color: Colors.lightGreen,
+                                          ),
                                         ),
                                         Padding(
                                           padding:
@@ -216,11 +238,12 @@ class _DashBoardPageState extends State<DashBoardPage>
                                           child: Text(
                                             filesize(controller.totalUploaded),
                                             textAlign: TextAlign.center,
-                                            style: const TextStyle(
-                                              fontFamily:
-                                                  FitnessAppTheme.fontName,
+                                            style: TextStyle(
                                               fontWeight: FontWeight.w600,
                                               fontSize: 14,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
                                             ),
                                           ),
                                         ),
@@ -231,13 +254,13 @@ class _DashBoardPageState extends State<DashBoardPage>
                                             '',
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
-                                              fontFamily:
-                                                  FitnessAppTheme.fontName,
                                               fontWeight: FontWeight.w600,
                                               fontSize: 12,
                                               letterSpacing: -0.2,
-                                              color: FitnessAppTheme.grey
-                                                  .withOpacity(0.5),
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary
+                                                  .withOpacity(0.8),
                                             ),
                                           ),
                                         ),
@@ -266,9 +289,9 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
-                                    const Padding(
-                                      padding:
-                                          EdgeInsets.only(left: 4, bottom: 2),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 4, bottom: 2),
                                       child: Text(
                                         '下载量',
                                         textAlign: TextAlign.center,
@@ -276,6 +299,9 @@ class _DashBoardPageState extends State<DashBoardPage>
                                           fontWeight: FontWeight.w500,
                                           fontSize: 14,
                                           letterSpacing: -0.1,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
                                         ),
                                       ),
                                     ),
@@ -291,6 +317,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                           child: Icon(
                                             Icons.download,
                                             size: 15,
+                                            color: Colors.redAccent,
                                           ),
                                         ),
                                         Padding(
@@ -300,11 +327,12 @@ class _DashBoardPageState extends State<DashBoardPage>
                                             filesize(
                                                 controller.totalDownloaded),
                                             textAlign: TextAlign.center,
-                                            style: const TextStyle(
-                                              fontFamily:
-                                                  FitnessAppTheme.fontName,
+                                            style: TextStyle(
                                               fontWeight: FontWeight.w600,
                                               fontSize: 14,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
                                             ),
                                           ),
                                         ),
@@ -315,13 +343,13 @@ class _DashBoardPageState extends State<DashBoardPage>
                                             '',
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
-                                              fontFamily:
-                                                  FitnessAppTheme.fontName,
                                               fontWeight: FontWeight.w600,
                                               fontSize: 12,
                                               letterSpacing: -0.2,
-                                              color: FitnessAppTheme.grey
-                                                  .withOpacity(0.5),
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary
+                                                  .withOpacity(0.8),
                                             ),
                                           ),
                                         ),
@@ -352,14 +380,18 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 width: 100,
                                 height: 100,
                                 decoration: BoxDecoration(
-                                  color: FitnessAppTheme.white,
+                                  color:
+                                      Theme.of(context).colorScheme.onSecondary,
                                   borderRadius: const BorderRadius.all(
                                     Radius.circular(100.0),
                                   ),
                                   border: Border.all(
-                                      width: 4,
-                                      color: FitnessAppTheme.nearlyDarkBlue
-                                          .withOpacity(0.2)),
+                                    width: 4,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary
+                                        .withOpacity(0.8),
+                                  ),
                                 ),
                                 child: Obx(() {
                                   return Column(
@@ -375,32 +407,40 @@ class _DashBoardPageState extends State<DashBoardPage>
                                               calcWeeksDays(
                                                   earliestSite.timeJoin),
                                               textAlign: TextAlign.center,
-                                              style: const TextStyle(
-                                                fontFamily:
-                                                    FitnessAppTheme.fontName,
+                                              style: TextStyle(
                                                 fontWeight: FontWeight.normal,
                                                 fontSize: 14,
                                                 letterSpacing: 0.0,
-                                                color: FitnessAppTheme
-                                                    .nearlyDarkBlue,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary
+                                                    .withOpacity(0.8),
                                               ),
                                             )
                                           : Text(
                                               '🔥${calculateTimeElapsed(earliestSite.timeJoin).replaceAll('前', '')}',
                                               textAlign: TextAlign.center,
-                                              style: const TextStyle(
+                                              style: TextStyle(
                                                 fontWeight: FontWeight.normal,
                                                 fontSize: 14,
                                                 letterSpacing: 0.0,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary
+                                                    .withOpacity(0.8),
                                               ),
                                             ),
-                                      const Text(
+                                      Text(
                                         'P龄',
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 12,
                                           letterSpacing: 0.0,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary
+                                              .withOpacity(0.8),
                                         ),
                                       ),
                                     ],
@@ -449,13 +489,14 @@ class _DashBoardPageState extends State<DashBoardPage>
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        const Text(
+                        Text(
                           '站点数',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontWeight: FontWeight.w500,
                             fontSize: 14,
                             letterSpacing: -0.2,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
                         Padding(
@@ -491,9 +532,13 @@ class _DashBoardPageState extends State<DashBoardPage>
                           child: Text(
                             '${controller.mySiteController.mySiteList.length}',
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 13,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primary
+                                  .withOpacity(0.8),
                             ),
                           ),
                         ),
@@ -505,13 +550,14 @@ class _DashBoardPageState extends State<DashBoardPage>
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        const Text(
+                        Text(
                           '做种量',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontWeight: FontWeight.w500,
                             fontSize: 14,
                             letterSpacing: -0.2,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
                         Padding(
@@ -547,10 +593,13 @@ class _DashBoardPageState extends State<DashBoardPage>
                           child: Text(
                             filesize(controller.totalSeedVol),
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 13,
-                              // color: FitnessAppTheme.grey.withOpacity(0.5),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primary
+                                  .withOpacity(0.8),
                             ),
                           ),
                         ),
@@ -566,13 +615,14 @@ class _DashBoardPageState extends State<DashBoardPage>
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            const Text(
+                            Text(
                               '做种中',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontWeight: FontWeight.w500,
                                 fontSize: 14,
                                 letterSpacing: -0.2,
+                                color: Theme.of(context).colorScheme.primary,
                               ),
                             ),
                             Padding(
@@ -609,10 +659,13 @@ class _DashBoardPageState extends State<DashBoardPage>
                               child: Text(
                                 '${controller.totalSeeding}',
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 13,
-                                  // color: FitnessAppTheme.grey.withOpacity(0.5),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withOpacity(0.8),
                                 ),
                               ),
                             ),
@@ -630,12 +683,13 @@ class _DashBoardPageState extends State<DashBoardPage>
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            const Text(
+                            Text(
                               '吸血中',
                               style: TextStyle(
                                 fontWeight: FontWeight.w500,
                                 fontSize: 14,
                                 letterSpacing: -0.2,
+                                color: Theme.of(context).colorScheme.primary,
                               ),
                             ),
                             Padding(
@@ -672,10 +726,13 @@ class _DashBoardPageState extends State<DashBoardPage>
                               child: Text(
                                 '${controller.totalLeeching}',
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 13,
-                                  // color: FitnessAppTheme.grey.withOpacity(0.5),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withOpacity(0.8),
                                 ),
                               ),
                             ),
@@ -714,10 +771,10 @@ class _DashBoardPageState extends State<DashBoardPage>
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Column(
         children: [
-          const Text('站点数据',
+          Text('站点数据',
               style: TextStyle(
                 fontSize: 12,
-                // color: Colors.black38,
+                color: Theme.of(context).colorScheme.primary,
               )),
           const SizedBox(height: 5),
           Expanded(
@@ -742,9 +799,11 @@ class _DashBoardPageState extends State<DashBoardPage>
                                     width: 60,
                                     child: Text(
                                       filesize(status?.uploaded ?? 0),
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 10,
-                                        // color: Colors.black38,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
                                       ),
                                       textAlign: TextAlign.right,
                                     ),
@@ -790,9 +849,10 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 child: Center(
                                     child: EllipsisText(
                                   text: mySite.nickname,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 10,
-                                    // color: Colors.black38,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
                                   ),
                                   ellipsis: '...',
                                   maxLines: 1,
@@ -837,9 +897,11 @@ class _DashBoardPageState extends State<DashBoardPage>
                                       width: 60,
                                       child: Text(
                                         filesize(status?.downloaded ?? 0),
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 10,
-                                          // color: Colors.black38,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
                                         ),
                                       )),
                                 ],
@@ -862,11 +924,11 @@ class _DashBoardPageState extends State<DashBoardPage>
       height: 240,
       padding: const EdgeInsets.only(left: 10),
       child: SfCircularChart(
-        title: const ChartTitle(
+        title: ChartTitle(
             text: '上传数据',
             textStyle: TextStyle(
               fontSize: 11,
-              // color: Colors.black38,
+              color: Theme.of(context).colorScheme.primary,
             )),
         centerX: '47%',
         centerY: '45%',
@@ -880,46 +942,6 @@ class _DashBoardPageState extends State<DashBoardPage>
             itemPadding: 5,
             // width: '64',
             isResponsive: true,
-            // offset: Offset(20, 0),
-            // legendItemBuilder:
-            //     (String name, dynamic series, dynamic point, int index) {
-            //   Logger.instance.w(name);
-            //   Logger.instance.w(series.series.dataSource);
-            //   Logger.instance.w(point.y);
-            //   // Logger.instance.w(index);
-            //   StatusInfo status = series.series.dataSource[index];
-            //   return Container(
-            //     height: 15,
-            //     width: 50,
-            //     padding: EdgeInsets.zero,
-            //     child: Row(
-            //       children: [
-            //         // const Icon(
-            //         //   Icons.ac_unit_outlined,
-            //         //   size: 12,
-            //         //   color: Colors.black38,
-            //         // ),
-            //         GFImageOverlay(
-            //           height: 10,
-            //           width: 10,
-            //           image:
-            //               NetworkImage('${status.siteUrl}${status.siteLogo}'),
-            //         ),
-            //         EllipsisText(
-            //           text: name,
-            //           maxWidth: 38,
-            //           style: const TextStyle(
-            //             fontSize: 8,
-            //             color: Colors.black38,
-            //           ),
-            //           isShowMore: false,
-            //           ellipsis: '..',
-            //           maxLines: 1,
-            //         ),
-            //       ],
-            //     ),
-            //   );
-            // },
             textStyle: TextStyle(
               fontSize: 8,
               color: Theme.of(context).colorScheme.primary,
@@ -932,17 +954,13 @@ class _DashBoardPageState extends State<DashBoardPage>
           activationMode: ActivationMode.singleTap,
           builder: (dynamic data, dynamic point, dynamic series, int pointIndex,
               int seriesIndex) {
-            return Container(
-              padding: const EdgeInsets.all(1),
-              decoration: BoxDecoration(
-                color: Colors.teal.shade300,
-                border: Border.all(width: 2, color: Colors.teal.shade400),
-              ),
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
               child: Text(
                 '${data.nickname}: ${filesize(data.latestStatusInfo?.uploaded ?? 0)}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
-                  // color: Colors.black38,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ),
             );
@@ -968,16 +986,16 @@ class _DashBoardPageState extends State<DashBoardPage>
         explodeOffset: '10%',
         radius: '65%',
         // pointRenderMode: PointRenderMode.gradient,
-        dataLabelSettings: const DataLabelSettings(
+        dataLabelSettings: DataLabelSettings(
           margin: EdgeInsets.zero,
           isVisible: true,
           labelPosition: ChartDataLabelPosition.outside,
           textStyle: TextStyle(
             fontSize: 8,
-            // color: Colors.black38,
+            color: Theme.of(context).colorScheme.primary,
           ),
           showZeroValue: false,
-          connectorLineSettings: ConnectorLineSettings(
+          connectorLineSettings: const ConnectorLineSettings(
             type: ConnectorType.curve,
             length: '20%',
           ),
