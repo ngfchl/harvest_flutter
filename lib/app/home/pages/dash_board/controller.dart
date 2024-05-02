@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 import '../models/my_site.dart';
 import '../my_site/controller.dart';
@@ -19,19 +20,32 @@ class DashBoardController extends GetxController {
   int totalSeedVol = 0;
   int totalSeeding = 0;
   int totalLeeching = 0;
+  bool isLoading = false;
+  int days = 7;
+  int maxDays = 0;
 
   @override
   void onInit() {
-    initChartData();
+    initData();
+
     super.onInit();
   }
 
-  void initChartData() async {
+  Future<void> initData() async {
+    isLoading = true;
+    update();
+    await initChartData();
+    isLoading = false;
+    update();
+  }
+
+  Future<void> initChartData() async {
     totalUploaded = 0;
     totalDownloaded = 0;
     totalSeedVol = 0;
     totalSeeding = 0;
     totalLeeching = 0;
+    List<String> dateList = generateDateList(days);
     if (statusList.isEmpty) {
       await mySiteController.initData();
       statusList = mySiteController.mySiteList;
@@ -48,11 +62,17 @@ class DashBoardController extends GetxController {
 
     for (final MySite mySite in statusList) {
       final StatusInfo? currentStatus = mySite.latestStatusInfo;
+      maxDays = mySite.statusInfo.length > maxDays
+          ? mySite.statusInfo.length
+          : maxDays;
       // 添加堆叠图表数据
       if (mySite.statusInfo.isNotEmpty) {
-        List<StatusInfo> statusInfoList = mySite.statusInfo.values.toList();
-        statusInfoList.sort(
-            (StatusInfo a, StatusInfo b) => a.createdAt.compareTo(b.createdAt));
+        dateList.sort((String a, String b) => a.compareTo(b));
+        List<StatusInfo?> statusInfoList = dateList
+            .map((e) => mySite.statusInfo[e])
+            .where((element) => element != null)
+            .toList();
+
         stackChartDataList
             .add({'site': mySite.nickname, 'data': statusInfoList});
       }
@@ -74,6 +94,20 @@ class DashBoardController extends GetxController {
         pieDataList.add({'genre': mySite.nickname, 'sold': 0});
       }
     }
+    isLoading = false;
     update();
+  }
+
+  List<String> generateDateList(days) {
+    // 当前日期
+    DateTime currentDate = DateTime.now();
+
+    // 直接生成最近15天的日期列表
+    List<String> recentDates = List.generate(
+        days + 1,
+        (i) => DateFormat('yyyy-MM-dd')
+            .format(currentDate.subtract(Duration(days: i))));
+
+    return recentDates;
   }
 }
