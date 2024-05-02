@@ -123,7 +123,8 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                       (BuildContext context, int index) {
                                     TorrentInfo torrentInfo =
                                         controller.showTorrents[index];
-                                    return _buildQbTorrentCard(torrentInfo);
+                                    return _buildQbTorrentCard(
+                                        torrentInfo, context);
                                   }),
                             ),
                           ],
@@ -633,7 +634,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
     );
   }
 
-  Widget _buildQbTorrentCard(TorrentInfo torrentInfo) {
+  Widget _buildQbTorrentCard(TorrentInfo torrentInfo, context) {
     RxBool paused = torrentInfo.state.toString().contains('pause').obs;
     return CustomCard(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
@@ -732,7 +733,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
           ),
           child: GestureDetector(
             onTap: () {
-              _openTorrentInfoDetail(torrentInfo);
+              _openTorrentInfoDetail(torrentInfo, context);
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -990,7 +991,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
     );
   }
 
-  void _openTorrentInfoDetail(TorrentInfo torrentInfo) async {
+  void _openTorrentInfoDetail(TorrentInfo torrentInfo, context) async {
     // List<TorrentContents> contents =
     //     await controller.client.torrents.getContents(hash: torrentInfo.hash!);
 
@@ -1027,7 +1028,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
         isScrollControlled: true,
         enableDrag: true,
         CustomCard(
-          height: double.infinity,
+          height: MediaQuery.of(context).size.height * 0.9,
           padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
           child: GetBuilder<QBittorrentController>(builder: (controller) {
             return ListView(
@@ -1037,7 +1038,6 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                   spacing: 12,
                   children: [
                     CustomCard(
-                      margin: const EdgeInsets.symmetric(horizontal: 12),
                       child: ListTile(
                         dense: true,
                         title: Tooltip(
@@ -1079,8 +1079,6 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                     ),
 
                     CustomCard(
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 4),
                       child: ListTile(
                         dense: true,
                         title: Text(
@@ -1107,10 +1105,12 @@ class QBittorrentPage extends GetView<QBittorrentController> {
 
                     Center(
                       child: CustomCard(
+                        width: double.infinity,
                         padding: const EdgeInsets.symmetric(
                             vertical: 12, horizontal: 24),
                         child: Wrap(
                           spacing: 28,
+                          alignment: WrapAlignment.spaceAround,
                           children: [
                             GFButton(
                               text: '重新校验',
@@ -1238,8 +1238,10 @@ class QBittorrentPage extends GetView<QBittorrentController> {
 
                     Center(
                       child: CustomCard(
+                        width: double.infinity,
                         padding: const EdgeInsets.all(12),
                         child: Wrap(
+                          alignment: WrapAlignment.spaceAround,
                           children: [
                             CustomCard(
                               color: RandomColor().randomColor(
@@ -1484,7 +1486,8 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                               : const Icon(Icons.link_off,
                                                   color: Colors.red),
                                           onPressed: () {
-                                            _openTorrentInfoDetail(e.value);
+                                            _openTorrentInfoDetail(
+                                                e.value, context);
                                           },
                                           onDeleted: () {
                                             _removeTorrent(controller, e.value);
