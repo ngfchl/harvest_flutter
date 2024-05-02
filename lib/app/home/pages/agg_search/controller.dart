@@ -68,7 +68,9 @@ class AggSearchController extends GetxController {
   }
 
   initData() async {
-    await mySiteController.initData();
+    if (mySiteController.mySiteList.isEmpty) {
+      await mySiteController.initData();
+    }
     mySiteMap = {
       for (var mysite in mySiteController.mySiteList) mysite.site: mysite
     };

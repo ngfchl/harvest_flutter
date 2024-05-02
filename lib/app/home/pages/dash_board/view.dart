@@ -41,20 +41,7 @@ class _DashBoardPageState extends State<DashBoardPage>
 
   @override
   Widget build(BuildContext context) {
-    if (controller.statusList.isNotEmpty) {
-      controller.children = [
-        Container(
-            key: const Key('_buildSiteInfoCard'), child: _buildSiteInfoCard()),
-        Container(
-            key: const Key('_buildSmartLabelPieChart'),
-            child: _buildSmartLabelPieChart(context)),
-        Container(
-            key: const Key('_buildStackedBar'),
-            child: _buildStackedBar(context)),
-        Container(key: const Key('_buildSiteInfo'), child: _buildSiteInfo()),
-      ];
-    }
-    controller.update();
+    // _updateShowInfoChildren();
     super.build(context);
     return GetBuilder<DashBoardController>(builder: (controller) {
       return Scaffold(
@@ -74,22 +61,46 @@ class _DashBoardPageState extends State<DashBoardPage>
             onRefresh: controller.initChartData,
             child: controller.isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : ReorderableListView(
-                    onReorder: (int oldIndex, int newIndex) {
-                      if (oldIndex < newIndex) {
-                        newIndex -= 1; // 移动时修正索引，因为item已被移除
-                      }
-                      final item = controller.children.removeAt(oldIndex);
-                      controller.children.insert(newIndex, item);
-                      controller.update();
-                    },
-                    children: controller.children,
-                  ),
+                : GetBuilder<DashBoardController>(builder: (controller) {
+                    if (controller.initCount == 0) {
+                      _updateShowInfoChildren();
+                    }
+                    return ReorderableListView(
+                      onReorder: (int oldIndex, int newIndex) {
+                        if (oldIndex < newIndex) {
+                          newIndex -= 1; // 移动时修正索引，因为item已被移除
+                        }
+                        final item = controller.children.removeAt(oldIndex);
+                        controller.children.insert(newIndex, item);
+                        controller.update();
+                      },
+                      children: controller.children,
+                    );
+                  }),
           ),
         ),
         const SizedBox(height: 50),
       ],
     );
+  }
+
+  _updateShowInfoChildren() {
+    controller.children = [
+      if (controller.statusList.isNotEmpty)
+        Container(
+            key: const Key('_buildSiteInfoCard'), child: _buildSiteInfoCard()),
+      if (controller.statusList.isNotEmpty)
+        Container(
+            key: const Key('_buildSmartLabelPieChart'),
+            child: _buildSmartLabelPieChart(context)),
+      if (controller.statusList.isNotEmpty)
+        Container(
+            key: const Key('_buildStackedBar'),
+            child: _buildStackedBar(context)),
+      if (controller.statusList.isNotEmpty)
+        Container(key: const Key('_buildSiteInfo'), child: _buildSiteInfo()),
+    ];
+    controller.initCount += 1;
   }
 
   _buildBottomButtonBar() {
@@ -954,7 +965,8 @@ class _DashBoardPageState extends State<DashBoardPage>
           activationMode: ActivationMode.singleTap,
           builder: (dynamic data, dynamic point, dynamic series, int pointIndex,
               int seriesIndex) {
-            return Padding(
+            return Container(
+              color: Theme.of(context).colorScheme.background.withOpacity(0.8),
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 '${data.nickname}: ${filesize(data.latestStatusInfo?.uploaded ?? 0)}',
@@ -1052,15 +1064,33 @@ class _DashBoardPageState extends State<DashBoardPage>
                     tooltipPosition: TooltipPosition.auto,
                     builder: (dynamic data, dynamic point, dynamic series,
                         int pointIndex, int seriesIndex) {
-                      return CustomCard(
+                      return Container(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .background
+                            .withOpacity(0.8),
+                        padding: const EdgeInsets.all(8),
                         child: SingleChildScrollView(
                           child: Column(
                             children: [
-                              Text(point.x),
+                              Text(
+                                point.x,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withOpacity(0.8),
+                                ),
+                              ),
                               Text(
                                 '${series.name}: ${ProperFilesize.generateHumanReadableFilesize(point.y)}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .secondary
+                                      .withOpacity(0.8),
                                 ),
                               ),
                             ],

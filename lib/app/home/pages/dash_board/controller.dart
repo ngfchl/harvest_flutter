@@ -25,6 +25,7 @@ class DashBoardController extends GetxController {
   int days = 7;
   int maxDays = 0;
   List<Widget> children = [];
+  int initCount = 0;
 
   @override
   void onInit() {
@@ -48,10 +49,10 @@ class DashBoardController extends GetxController {
     totalSeeding = 0;
     totalLeeching = 0;
     List<String> dateList = generateDateList(days);
-    if (statusList.isEmpty) {
+    if (mySiteController.mySiteList.isEmpty) {
       await mySiteController.initData();
-      statusList = mySiteController.mySiteList;
     }
+    statusList = mySiteController.mySiteList;
     statusList.sort((MySite a, MySite b) {
       final StatusInfo? statusA = a.latestStatusInfo;
       final StatusInfo? statusB = b.latestStatusInfo;
