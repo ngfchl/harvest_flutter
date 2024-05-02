@@ -918,7 +918,7 @@ class _MySitePagePageState extends State<MySitePage>
                           ElevatedButton(
                             style: ButtonStyle(
                               backgroundColor: MaterialStateProperty.all(
-                                  Theme.of(context).colorScheme.error),
+                                  Theme.of(context).colorScheme.secondary),
                             ),
                             onPressed: () {
                               Navigator.of(context).pop();
@@ -930,6 +930,45 @@ class _MySitePagePageState extends State<MySitePage>
                               ),
                             ),
                           ),
+                          if (mySite != null)
+                            ElevatedButton(
+                              style: ButtonStyle(
+                                backgroundColor: MaterialStateProperty.all(
+                                    Theme.of(context).colorScheme.error),
+                              ),
+                              onPressed: () async {
+                                Get.defaultDialog(
+                                    title: '删除站点：${mySite?.nickname}',
+                                    radius: 5,
+                                    titleStyle: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w900),
+                                    middleText: '确定要删除吗？',
+                                    actions: [
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          Get.back(result: false);
+                                        },
+                                        child: const Text('取消'),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () async {
+                                          Get.back(result: true);
+                                          Navigator.of(context).pop();
+                                          await controller
+                                              .removeSiteFromServer(mySite!);
+                                        },
+                                        child: const Text('确认'),
+                                      ),
+                                    ]);
+                              },
+                              child: const Text(
+                                '删除',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
                           ElevatedButton(
                             style: ButtonStyle(
                               backgroundColor: MaterialStateProperty.all(

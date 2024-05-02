@@ -102,6 +102,12 @@ saveMySite(MySite mySite) async {
   return await addData(apiUrl, mySite.toJson());
 }
 
+/// 删除站点
+removeMySite(MySite mySite) async {
+  String apiUrl = Api.MYSITE_LIST;
+  return await removeData('$apiUrl/${mySite.id}');
+}
+
 signInAll() async {
   final response = await DioUtil().get(
     Api.MYSITE_SIGNIN_OPERATE,

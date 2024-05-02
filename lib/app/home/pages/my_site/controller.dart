@@ -145,6 +145,24 @@ class MySiteController extends GetxController {
     update();
   }
 
+  Future<void> removeSiteFromServer(MySite mySite) async {
+    CommonResponse res = await removeMySite(mySite);
+    if (res.code == 0) {
+      await getSiteStatusFromServer();
+      Get.snackbar(
+        '删除站点',
+        res.msg.toString(),
+      );
+    } else {
+      Logger.instance.e(res.msg);
+      Get.snackbar(
+        '删除站点',
+        res.msg.toString(),
+      );
+    }
+    update();
+  }
+
   void sortStatusList() {
     // 排除空数据
     // showStatusList.value =
