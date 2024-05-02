@@ -6,6 +6,7 @@ import 'package:getwidget/getwidget.dart';
 import 'package:harvest/api/mysite.dart';
 import 'package:harvest/models/common_response.dart';
 
+import 'controller/common_api.dart';
 import 'controller/home_controller.dart';
 
 class HomeView extends GetView<HomeController> {
@@ -57,33 +58,6 @@ class HomeView extends GetView<HomeController> {
         ),
       ),
       drawerEdgeDragWidth: 200,
-      // drawerEnableOpenDragGesture: false,
-      // drawerScrimColor: Colors.white.withOpacity(0.6),
-      // floatingActionButton: GFIconButton(
-      //   icon: const Icon(Icons.menu_outlined),
-      //   color: Colors.teal.shade700,
-      //   size: 18,
-      //   onPressed: () {
-      //     _globalKey.currentState?.openDrawer();
-      //   },
-      // ),
-      // floatingActionButtonLocation: FloatingActionButtonLocation.centerTop,
-      // bottomNavigationBar: Obx(() => BottomNavigationBar(
-      //       type: BottomNavigationBarType.fixed,
-      //       backgroundColor: Colors.white54.withOpacity(0.85),
-      //       elevation: 0,
-      //       // showSelectedLabels: false,
-      //       // showUnselectedLabels: false,
-      //       currentIndex: controller.initPage,
-      //       onTap: controller.changePage,
-      //       selectedFontSize: 12,
-      //       unselectedFontSize: 12,
-      //       // backgroundColor: Colors.blueGrey,
-      //       iconSize: 18,
-      //       selectedItemColor: Colors.teal.shade300,
-      //       unselectedItemColor: Colors.grey[150],
-      //       items: controller.menuItems,
-      //     )),
     );
   }
 
@@ -321,90 +295,14 @@ class HomeView extends GetView<HomeController> {
               ],
             ),
           ),
-          child: const Icon(Icons.add_box_outlined, size: 24),
+          child: Icon(
+            Icons.add_box_outlined,
+            size: 24,
+            color: Theme.of(context).colorScheme.primary,
+          ),
         ),
         const SizedBox(width: 20)
       ],
     );
-  }
-
-  Future<void> signAllSiteButton() async {
-    final res = await signIn(null);
-    Get.back();
-    if (res.code == 0) {
-      Get.snackbar(
-        '签到任务',
-        '签到任务信息：${res.msg}',
-        colorText: Colors.white,
-        backgroundColor: Colors.green.withOpacity(0.7),
-      );
-    } else {
-      Get.snackbar(
-        '签到失败',
-        '签到任务执行出错啦：${res.msg}',
-        colorText: Colors.white,
-        backgroundColor: Colors.red.withOpacity(0.7),
-      );
-    }
-  }
-
-  Future<void> importFromPTPP() async {
-    final res = await importFromPTPPApi();
-    Get.back();
-    if (res.code == 0) {
-      Get.snackbar(
-        'PTPP导入任务',
-        'PTPP导入任务信息：${res.msg}',
-        colorText: Colors.white,
-        backgroundColor: Colors.green.withOpacity(0.7),
-      );
-    } else {
-      Get.snackbar(
-        'PTPP导入任务失败',
-        'PTPP导入任务执行出错啦：${res.msg}',
-        colorText: Colors.white,
-        backgroundColor: Colors.red.withOpacity(0.7),
-      );
-    }
-  }
-
-  Future<void> importFromCookieCloud() async {
-    final res = await importFromCookieCloudApi();
-    Get.back();
-    if (res.code == 0) {
-      Get.snackbar(
-        'CookieCloud任务',
-        'CookieCloud任务信息：${res.msg}',
-        colorText: Colors.white,
-        backgroundColor: Colors.green.withOpacity(0.7),
-      );
-    } else {
-      Get.snackbar(
-        'CookieCloud失败',
-        'CookieCloud任务执行出错啦：${res.msg}',
-        colorText: Colors.white,
-        backgroundColor: Colors.red.withOpacity(0.7),
-      );
-    }
-  }
-
-  Future<void> getAllStatusButton() async {
-    final res = await getNewestStatus(null);
-    Get.back();
-    if (res.code == 0) {
-      Get.snackbar(
-        '更新数据',
-        '更新数据任务信息：${res.msg}',
-        colorText: Colors.white,
-        backgroundColor: Colors.green.withOpacity(0.7),
-      );
-    } else {
-      Get.snackbar(
-        '更新数据',
-        '更新数据执行出错啦：${res.msg}',
-        colorText: Colors.white,
-        backgroundColor: Colors.red.withOpacity(0.7),
-      );
-    }
   }
 }

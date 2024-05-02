@@ -158,8 +158,7 @@ class _MySitePagePageState extends State<MySitePage>
                     borderRadius: BorderRadius.circular(5.0)),
               ),
               padding: MaterialStateProperty.all(
-                  const EdgeInsets.symmetric(horizontal: 5)),
-              backgroundColor: MaterialStateProperty.all(Colors.transparent),
+                  const EdgeInsets.symmetric(horizontal: 8)),
               side: MaterialStateProperty.all(BorderSide.none),
             ),
             label: const Text('刷新'),
@@ -178,8 +177,7 @@ class _MySitePagePageState extends State<MySitePage>
                     borderRadius: BorderRadius.circular(5.0)),
               ),
               padding: MaterialStateProperty.all(
-                  const EdgeInsets.symmetric(horizontal: 5)),
-              backgroundColor: MaterialStateProperty.all(Colors.transparent),
+                  const EdgeInsets.symmetric(horizontal: 8)),
               side: MaterialStateProperty.all(BorderSide.none),
             ),
             label: const Text('筛选'),
@@ -198,8 +196,7 @@ class _MySitePagePageState extends State<MySitePage>
                     borderRadius: BorderRadius.circular(5.0)),
               ),
               padding: MaterialStateProperty.all(
-                  const EdgeInsets.symmetric(horizontal: 5)),
-              backgroundColor: MaterialStateProperty.all(Colors.transparent),
+                  const EdgeInsets.symmetric(horizontal: 8)),
               side: MaterialStateProperty.all(BorderSide.none),
             ),
             label: const Text('排序'),
@@ -218,8 +215,7 @@ class _MySitePagePageState extends State<MySitePage>
                     borderRadius: BorderRadius.circular(5.0)),
               ),
               padding: MaterialStateProperty.all(
-                  const EdgeInsets.symmetric(horizontal: 5)),
-              backgroundColor: MaterialStateProperty.all(Colors.transparent),
+                  const EdgeInsets.symmetric(horizontal: 8)),
               side: MaterialStateProperty.all(BorderSide.none),
             ),
             label: const Text('添加'),
@@ -560,16 +556,12 @@ class _MySitePagePageState extends State<MySitePage>
                     Get.snackbar(
                       '签到成功',
                       '${mySite.nickname} 签到信息：${res.msg}',
-                      colorText: Colors.white,
-                      backgroundColor: Colors.green.shade300,
                     );
                     controller.getSiteStatusFromServer();
                   } else {
                     Get.snackbar(
                       '签到失败',
                       '${mySite.nickname} 签到任务执行出错啦：${res.msg}',
-                      colorText: Colors.white,
-                      backgroundColor: Colors.red.shade300,
                     );
                   }
                 },
@@ -590,16 +582,12 @@ class _MySitePagePageState extends State<MySitePage>
                   Get.snackbar(
                     '站点数据刷新成功',
                     '${mySite.nickname} 数据刷新：${res.msg}',
-                    colorText: Colors.white,
-                    backgroundColor: Colors.green.shade300,
                   );
                   controller.getSiteStatusFromServer();
                 } else {
                   Get.snackbar(
                     '站点数据刷新失败',
                     '${mySite.nickname} 数据刷新出错啦：${res.msg}',
-                    colorText: Colors.white,
-                    backgroundColor: Colors.red.shade300,
                   );
                 }
               },
@@ -646,16 +634,12 @@ class _MySitePagePageState extends State<MySitePage>
                             Get.snackbar(
                               '签到成功',
                               '${mySite.nickname} 签到信息：${res.msg}',
-                              colorText: Colors.white,
-                              backgroundColor: Colors.green.shade300,
                             );
                             controller.getSiteStatusFromServer();
                           } else {
                             Get.snackbar(
                               '签到失败',
                               '${mySite.nickname} 签到任务执行出错啦：${res.msg}',
-                              colorText: Colors.white,
-                              backgroundColor: Colors.red.shade300,
                             );
                           }
                         });
@@ -678,16 +662,12 @@ class _MySitePagePageState extends State<MySitePage>
                   Get.snackbar(
                     '站点数据刷新成功',
                     '${mySite.nickname} 数据刷新：${res.msg}',
-                    colorText: Colors.white,
-                    backgroundColor: Colors.green.shade300,
                   );
                   controller.getSiteStatusFromServer();
                 } else {
                   Get.snackbar(
                     '站点数据刷新失败',
                     '${mySite.nickname} 数据刷新出错啦：${res.msg}',
-                    colorText: Colors.white,
-                    backgroundColor: Colors.red.shade300,
                   );
                 }
               });

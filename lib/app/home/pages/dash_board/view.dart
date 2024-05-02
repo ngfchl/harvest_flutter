@@ -15,6 +15,7 @@ import '../../../../common/utils.dart';
 import '../../../../theme/fitness_app_theme.dart';
 import '../../../../utils/calc_weeks.dart';
 import '../../../../utils/logger_helper.dart';
+import '../../controller/common_api.dart';
 import 'controller.dart';
 
 class DashBoardPage extends StatefulWidget {
@@ -71,9 +72,80 @@ class _DashBoardPageState extends State<DashBoardPage>
                     : const Center(child: CircularProgressIndicator()),
               ),
             ),
+            const SizedBox(height: 15),
           ],
         );
       }),
+      floatingActionButton: _buildBottomButtonBar(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+    );
+  }
+
+  _buildBottomButtonBar() {
+    return CustomCard(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          ElevatedButton.icon(
+            onPressed: () async {
+              await signAllSiteButton();
+            },
+            icon: const Icon(
+              Icons.refresh,
+              size: 20,
+            ),
+            style: ButtonStyle(
+              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5.0)),
+              ),
+              padding: MaterialStateProperty.all(
+                  const EdgeInsets.symmetric(horizontal: 8)),
+              side: MaterialStateProperty.all(BorderSide.none),
+            ),
+            label: const Text('重新统计'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () async {
+              await getAllStatusButton();
+            },
+            icon: const Icon(
+              Icons.filter_tilt_shift,
+              size: 20,
+            ),
+            style: ButtonStyle(
+              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5.0)),
+              ),
+              padding: MaterialStateProperty.all(
+                  const EdgeInsets.symmetric(horizontal: 8)),
+              side: MaterialStateProperty.all(BorderSide.none),
+            ),
+            label: const Text('全员签到'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () async {
+              await clearMyCacheButton();
+            },
+            icon: const Icon(
+              Icons.swap_vert_circle_outlined,
+              size: 20,
+            ),
+            style: ButtonStyle(
+              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5.0)),
+              ),
+              padding: MaterialStateProperty.all(
+                  const EdgeInsets.symmetric(horizontal: 8)),
+              side: MaterialStateProperty.all(BorderSide.none),
+            ),
+            label: const Text('清除缓存'),
+          ),
+        ],
+      ),
     );
   }
 
