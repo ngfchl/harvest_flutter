@@ -111,7 +111,7 @@ class _DashBoardPageState extends State<DashBoardPage>
         children: [
           ElevatedButton.icon(
             onPressed: () async {
-              await signAllSiteButton();
+              await getAllStatusButton();
             },
             icon: const Icon(
               Icons.refresh,
@@ -130,7 +130,7 @@ class _DashBoardPageState extends State<DashBoardPage>
           ),
           ElevatedButton.icon(
             onPressed: () async {
-              await getAllStatusButton();
+              await signAllSiteButton();
             },
             icon: const Icon(
               Icons.filter_tilt_shift,
