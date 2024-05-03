@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harvest/common/meta_item.dart';
+import 'package:harvest/models/common_response.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
 
@@ -107,6 +109,16 @@ class QBittorrentController extends GetxController {
     {'name': '已查看完成', 'value': TorrentSort.seenComplete},
   ].map((e) => MetaDataItem.fromJson(e)).toList();
 
+  List<MetaDataItem> qbTrackerStatus = [
+    {'name': '禁用', 'value': TrackerStatus.disabled},
+    {'name': '未联系', 'value': TrackerStatus.notContacted},
+    {'name': '未工作', 'value': TrackerStatus.notWorking},
+    {'name': '错误', 'value': TrackerStatus.trackerError},
+    {'name': '不可达', 'value': TrackerStatus.unreachable},
+    {'name': '更新中', 'value': TrackerStatus.updating},
+    {'name': '工作中', 'value': TrackerStatus.working},
+  ].map((e) => MetaDataItem.fromJson(e)).toList();
+
   @override
   void onInit() async {
     await initData();
@@ -193,20 +205,6 @@ class QBittorrentController extends GetxController {
         {};
   }
 
-  searchTorrents() {
-    if (searchKey.isNotEmpty) {
-      showTorrents = showTorrents
-          .where((TorrentInfo torrent) =>
-              torrent.name!.toLowerCase().contains(searchKey.toLowerCase()) ||
-              torrent.category!
-                  .toLowerCase()
-                  .contains(searchKey.toLowerCase()) ||
-              torrent.hash!.toLowerCase().contains(searchKey.toLowerCase()))
-          .toList();
-      update();
-    }
-  }
-
   filterTorrents() {
     showTorrents = torrents;
     if (torrentState != null) {
@@ -227,6 +225,16 @@ class QBittorrentController extends GetxController {
           .where((torrent) =>
               trackers[selectedTracker] != null &&
               trackers[selectedTracker]!.contains(torrent.hash))
+          .toList();
+    }
+    if (searchKey.isNotEmpty) {
+      showTorrents = showTorrents
+          .where((TorrentInfo torrent) =>
+              torrent.name!.toLowerCase().contains(searchKey.toLowerCase()) ||
+              torrent.category!
+                  .toLowerCase()
+                  .contains(searchKey.toLowerCase()) ||
+              torrent.hash!.toLowerCase().contains(searchKey.toLowerCase()))
           .toList();
     }
     update();
@@ -307,6 +315,39 @@ class QBittorrentController extends GetxController {
       password: downloader.password,
     );
     return qbittorrent;
+  }
+
+  removeErrorTracker() async {
+    try {
+      List<String> toRemoveTorrentList = [];
+      var groupedTorrents = groupBy(torrents, (t) => t.contentPath);
+      for (var group in groupedTorrents.values) {
+        var hasTracker = group.any((t) => t.tracker?.isNotEmpty == true);
+        if (!hasTracker) {
+          toRemoveTorrentList.addAll(group.skip(1).map((t) => t.hash!));
+        } else {
+          toRemoveTorrentList.addAll(group
+              .where((element) => element.tracker!.isEmpty)
+              .map((t) => t.hash!));
+        }
+      }
+
+      Logger.instance.i(toRemoveTorrentList);
+      Logger.instance.i(toRemoveTorrentList.length);
+      if (toRemoveTorrentList.isEmpty) {
+        return CommonResponse.success(msg: '没有需要清理的种子！');
+      }
+      await controlTorrents(
+          command: 'delete', hashes: toRemoveTorrentList, deleteFiles: false);
+      showTorrents
+          .removeWhere((element) => toRemoveTorrentList.contains(element.hash));
+      String msg = '清理出错种子成功，本次共清理${toRemoveTorrentList.length}个种子！';
+      Logger.instance.i(msg);
+      return CommonResponse.success(msg: msg);
+    } catch (e) {
+      Logger.instance.e('出错啦！${e.toString()}');
+      return CommonResponse.error(msg: '清理出错种子失败！${e.toString()}');
+    }
   }
 
   @override
