@@ -182,6 +182,7 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
     Get.bottomSheet(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
         CustomCard(
+          height: 300,
           child: Column(
             children: [
               GFTypography(
@@ -189,44 +190,50 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                 textColor: Theme.of(context).colorScheme.onBackground,
                 dividerColor: Theme.of(context).colorScheme.onBackground,
               ),
-              CustomTextField(
-                controller: nameController,
-                labelText: '名称',
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: DropdownButtonFormField<String>(
-                  isDense: true,
-                  value: categoryController.text,
-                  onChanged: (String? newValue) {
-                    categoryController.text = newValue!;
-                  },
-                  items: controller.tagCategoryList
-                      .map<DropdownMenuItem<String>>(
-                          (MetaDataItem item) => DropdownMenuItem<String>(
-                                value: item.value,
-                                child: Text(
-                                  item.name,
-                                  style: const TextStyle(fontSize: 14),
-                                ),
-                              ))
-                      .toList(),
+              Expanded(
+                child: ListView(
+                  children: [
+                    CustomTextField(
+                      controller: nameController,
+                      labelText: '名称',
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: DropdownButtonFormField<String>(
+                        isDense: true,
+                        value: categoryController.text,
+                        onChanged: (String? newValue) {
+                          categoryController.text = newValue!;
+                        },
+                        items: controller.tagCategoryList
+                            .map<DropdownMenuItem<String>>(
+                                (MetaDataItem item) => DropdownMenuItem<String>(
+                                      value: item.value,
+                                      child: Text(
+                                        item.name,
+                                        style: const TextStyle(fontSize: 14),
+                                      ),
+                                    ))
+                            .toList(),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Obx(() {
+                        return SwitchListTile(
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
+                            title: const Text('标签可用'),
+                            value: available.value,
+                            onChanged: (bool val) {
+                              available.value = val;
+                            });
+                      }),
+                    ),
+                    const SizedBox(height: 10),
+                  ],
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Obx(() {
-                  return SwitchListTile(
-                      dense: true,
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text('标签可用'),
-                      value: available.value,
-                      onChanged: (bool val) {
-                        available.value = val;
-                      });
-                }),
-              ),
-              const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [

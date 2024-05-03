@@ -192,6 +192,7 @@ class _MyRssPageState extends State<MyRssPage> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0), // 设置圆角半径
         ),
+        isScrollControlled: true,
         CustomCard(
           height: 410,
           child: Column(
@@ -203,86 +204,95 @@ class _MyRssPageState extends State<MyRssPage> {
                     textColor: Theme.of(context).colorScheme.onBackground,
                     dividerColor: Theme.of(context).colorScheme.onBackground,
                   )),
-              CustomTextField(
-                controller: nameController,
-                labelText: '名称',
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: DropdownSearch<MySite>(
-                  items: controller.mySiteController.mySiteList,
-                  selectedItem: controller.mySiteMap[siteController.text],
-                  filterFn: (MySite item, String filter) =>
-                      item.site.toLowerCase().contains(filter.toLowerCase()) ||
-                      item.nickname
-                          .toLowerCase()
-                          .contains(filter.toLowerCase()),
-                  itemAsString: (MySite? item) => item!.site,
-                  compareFn: (MySite item, MySite selectedItem) =>
-                      item.site == selectedItem.site,
-                  onChanged: (MySite? item) {
-                    siteController.text = item!.site;
-                    Logger.instance.i(siteController);
-                  },
-                  popupProps: PopupPropsMultiSelection.menu(
-                    searchDelay: const Duration(milliseconds: 50),
-                    isFilterOnline: false,
-                    showSelectedItems: true,
-                    showSearchBox: true,
-                    searchFieldProps: TextFieldProps(
-                      // padding: EdgeInsets.zero,
-                      decoration: InputDecoration(
-                        isDense: true,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8), // 设置搜索框的边框圆角
+              Expanded(
+                child: ListView(
+                  children: [
+                    CustomTextField(
+                      controller: nameController,
+                      labelText: '名称',
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: DropdownSearch<MySite>(
+                        items: controller.mySiteController.mySiteList,
+                        selectedItem: controller.mySiteMap[siteController.text],
+                        filterFn: (MySite item, String filter) =>
+                            item.site
+                                .toLowerCase()
+                                .contains(filter.toLowerCase()) ||
+                            item.nickname
+                                .toLowerCase()
+                                .contains(filter.toLowerCase()),
+                        itemAsString: (MySite? item) => item!.site,
+                        compareFn: (MySite item, MySite selectedItem) =>
+                            item.site == selectedItem.site,
+                        onChanged: (MySite? item) {
+                          siteController.text = item!.site;
+                          Logger.instance.i(siteController);
+                        },
+                        popupProps: PopupPropsMultiSelection.menu(
+                          searchDelay: const Duration(milliseconds: 50),
+                          isFilterOnline: false,
+                          showSelectedItems: true,
+                          showSearchBox: true,
+                          searchFieldProps: TextFieldProps(
+                            // padding: EdgeInsets.zero,
+                            decoration: InputDecoration(
+                              isDense: true,
+                              border: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.circular(8), // 设置搜索框的边框圆角
+                              ),
+                            ),
+                          ),
+                          itemBuilder: (BuildContext context, MySite item,
+                              bool isSelected) {
+                            return Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 8),
+                              padding: EdgeInsets.zero,
+                              decoration: !isSelected
+                                  ? null
+                                  : BoxDecoration(
+                                      border: Border.all(
+                                          color:
+                                              Theme.of(context).primaryColor),
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                              child: ListTile(
+                                dense: true,
+                                selected: isSelected,
+                                title: Text(item.site),
+                                subtitle: Text(item.nickname.toString()),
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ),
-                    itemBuilder:
-                        (BuildContext context, MySite item, bool isSelected) {
-                      return Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 8),
-                        padding: EdgeInsets.zero,
-                        decoration: !isSelected
-                            ? null
-                            : BoxDecoration(
-                                border: Border.all(
-                                    color: Theme.of(context).primaryColor),
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                        child: ListTile(
-                          dense: true,
-                          selected: isSelected,
-                          title: Text(item.site),
-                          subtitle: Text(item.nickname.toString()),
-                        ),
-                      );
-                    },
-                  ),
+                    CustomTextField(
+                      controller: rssController,
+                      labelText: '链接',
+                    ),
+                    CustomTextField(
+                      controller: sortController,
+                      labelText: '优先级',
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Obx(() {
+                        return SwitchListTile(
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
+                            title: const Text('可用'),
+                            value: available.value,
+                            onChanged: (bool val) {
+                              available.value = val;
+                            });
+                      }),
+                    ),
+                  ],
                 ),
               ),
-              CustomTextField(
-                controller: rssController,
-                labelText: '链接',
-              ),
-              CustomTextField(
-                controller: sortController,
-                labelText: '优先级',
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Obx(() {
-                  return SwitchListTile(
-                      dense: true,
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text('可用'),
-                      value: available.value,
-                      onChanged: (bool val) {
-                        available.value = val;
-                      });
-                }),
-              ),
-              const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [

@@ -732,7 +732,6 @@ class _MySitePagePageState extends State<MySitePage>
   }
 
   void _showEditBottomSheet({MySite? mySite}) {
-    // List<String> siteList = controller.webSiteList.keys.toList();
     List<String> siteList = controller.webSiteList.entries
         .where((entry) => entry.value.alive)
         .map((entry) => entry.key)
@@ -742,6 +741,7 @@ class _MySitePagePageState extends State<MySitePage>
     if (mySite == null) {
       siteList.removeWhere((key) => hasKeys.contains(key));
     }
+    siteList.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
     final siteController = TextEditingController(text: mySite?.site ?? '');
     final apiKeyController = TextEditingController(text: mySite?.authKey ?? '');
     final nicknameController =
@@ -869,188 +869,187 @@ class _MySitePagePageState extends State<MySitePage>
                         controller: proxyController,
                         labelText: 'HTTP代理',
                       ),
-                      const SizedBox(height: 5),
-                      Wrap(spacing: 12, runSpacing: 8, children: [
-                        if (selectedSite.value!.alive)
-                          ChoiceChip(
-                            label: const Text('可用'),
-                            selected: available.value,
-                            onSelected: (value) {
-                              available.value = value;
-                            },
-                          ),
-                        ChoiceChip(
-                          label: const Text('数据'),
-                          selected: getInfo.value,
-                          onSelected: (value) {
-                            getInfo.value = value;
-                          },
-                        ),
-                        if (selectedSite.value!.searchTorrents)
-                          ChoiceChip(
-                            label: const Text('搜索'),
-                            selected: searchTorrents.value,
-                            onSelected: (value) {
-                              searchTorrents.value = value;
-                            },
-                          ),
-                        if (selectedSite.value!.signIn)
-                          ChoiceChip(
-                            label: const Text('签到'),
-                            selected: signIn.value,
-                            onSelected: (value) {
-                              signIn.value = value;
-                            },
-                          ),
-                        if (selectedSite.value!.repeatTorrents)
-                          ChoiceChip(
-                            label: const Text('辅种'),
-                            selected: repeatTorrents.value,
-                            onSelected: (value) {
-                              repeatTorrents.value = value;
-                            },
-                          ),
-                      ]),
-
-                      ButtonBar(
-                        alignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          ElevatedButton(
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all(
-                                  Theme.of(context).colorScheme.secondary),
-                            ),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text(
-                              '取消',
-                              style: TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                          if (mySite != null)
-                            ElevatedButton(
-                              style: ButtonStyle(
-                                backgroundColor: MaterialStateProperty.all(
-                                    Theme.of(context).colorScheme.error),
-                              ),
-                              onPressed: () async {
-                                Get.defaultDialog(
-                                    title: '删除站点：${mySite?.nickname}',
-                                    radius: 5,
-                                    titleStyle: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w900),
-                                    middleText: '确定要删除吗？',
-                                    actions: [
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          Get.back(result: false);
-                                        },
-                                        child: const Text('取消'),
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () async {
-                                          Get.back(result: true);
-                                          Navigator.of(context).pop();
-                                          await controller
-                                              .removeSiteFromServer(mySite!);
-                                        },
-                                        child: const Text('确认'),
-                                      ),
-                                    ]);
-                              },
-                              child: const Text(
-                                '删除',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ElevatedButton(
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all(
-                                  Theme.of(context).colorScheme.primary),
-                            ),
-                            child: const Text(
-                              '保存',
-                              style: TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
-                            onPressed: () async {
-                              if (mySite != null) {
-                                mySite = mySite?.copyWith(
-                                  site: siteController.text,
-                                  mirror: mirrorController.text,
-                                  nickname: nicknameController.text,
-                                  passkey: passkeyController.text,
-                                  authKey: apiKeyController.text,
-                                  userId: userIdController.text,
-                                  userAgent: userAgentController.text,
-                                  proxy: proxyController.text,
-                                  rss: rssController.text,
-                                  torrents: torrentsController.text,
-                                  cookie: cookieController.text,
-                                  getInfo: getInfo.value,
-                                  signIn: signIn.value,
-                                  brushRss: brushRss.value,
-                                  brushFree: brushFree.value,
-                                  packageFile: packageFile.value,
-                                  repeatTorrents: repeatTorrents.value,
-                                  hrDiscern: hrDiscern.value,
-                                  searchTorrents: searchTorrents.value,
-                                  available: available.value,
-                                );
-                              } else {
-                                // 如果 mySite 为空，表示是添加操作
-                                mySite = MySite(
-                                  site: siteController.text,
-                                  mirror: mirrorController.text,
-                                  nickname: nicknameController.text,
-                                  passkey: passkeyController.text,
-                                  authKey: apiKeyController.text,
-                                  userId: userIdController.text,
-                                  userAgent: userAgentController.text,
-                                  proxy: proxyController.text,
-                                  rss: rssController.text,
-                                  torrents: torrentsController.text,
-                                  cookie: cookieController.text,
-                                  getInfo: getInfo.value,
-                                  signIn: signIn.value,
-                                  brushRss: brushRss.value,
-                                  brushFree: brushFree.value,
-                                  packageFile: packageFile.value,
-                                  repeatTorrents: repeatTorrents.value,
-                                  hrDiscern: hrDiscern.value,
-                                  searchTorrents: searchTorrents.value,
-                                  available: available.value,
-                                  id: 0,
-                                  sortId: 0,
-                                  removeTorrentRules: {},
-                                  timeJoin: '',
-                                  mail: 0,
-                                  notice: 0,
-                                  signInInfo: {},
-                                  statusInfo: {},
-                                );
-                              }
-                              Logger.instance.i(mySite?.toJson());
-                              if (await controller
-                                  .saveMySiteToServer(mySite!)) {
-                                Navigator.of(context).pop();
-                                controller.getSiteStatusFromServer();
-                              }
-                            },
-                          ),
-                        ],
-                      )
+                      const SizedBox(height: 15),
                     ],
                   );
                 }),
               ),
+            ),
+            const SizedBox(height: 5),
+            Obx(() {
+              return Wrap(spacing: 12, runSpacing: 8, children: [
+                if (selectedSite.value!.alive)
+                  ChoiceChip(
+                    label: const Text('可用'),
+                    selected: available.value,
+                    onSelected: (value) {
+                      available.value = value;
+                    },
+                  ),
+                ChoiceChip(
+                  label: const Text('数据'),
+                  selected: getInfo.value,
+                  onSelected: (value) {
+                    getInfo.value = value;
+                  },
+                ),
+                if (selectedSite.value!.searchTorrents)
+                  ChoiceChip(
+                    label: const Text('搜索'),
+                    selected: searchTorrents.value,
+                    onSelected: (value) {
+                      searchTorrents.value = value;
+                    },
+                  ),
+                if (selectedSite.value!.signIn)
+                  ChoiceChip(
+                    label: const Text('签到'),
+                    selected: signIn.value,
+                    onSelected: (value) {
+                      signIn.value = value;
+                    },
+                  ),
+                if (selectedSite.value!.repeatTorrents)
+                  ChoiceChip(
+                    label: const Text('辅种'),
+                    selected: repeatTorrents.value,
+                    onSelected: (value) {
+                      repeatTorrents.value = value;
+                    },
+                  ),
+              ]);
+            }),
+            ButtonBar(
+              alignment: MainAxisAlignment.spaceAround,
+              children: [
+                ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(
+                        Theme.of(context).colorScheme.secondary),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text(
+                    '取消',
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                if (mySite != null)
+                  ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(
+                          Theme.of(context).colorScheme.error),
+                    ),
+                    onPressed: () async {
+                      Get.defaultDialog(
+                          title: '删除站点：${mySite?.nickname}',
+                          radius: 5,
+                          titleStyle: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w900),
+                          middleText: '确定要删除吗？',
+                          actions: [
+                            ElevatedButton(
+                              onPressed: () {
+                                Get.back(result: false);
+                              },
+                              child: const Text('取消'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () async {
+                                Get.back(result: true);
+                                Navigator.of(context).pop();
+                                await controller.removeSiteFromServer(mySite!);
+                              },
+                              child: const Text('确认'),
+                            ),
+                          ]);
+                    },
+                    child: const Text(
+                      '删除',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(
+                        Theme.of(context).colorScheme.primary),
+                  ),
+                  child: const Text(
+                    '保存',
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
+                  onPressed: () async {
+                    if (mySite != null) {
+                      mySite = mySite?.copyWith(
+                        site: siteController.text,
+                        mirror: mirrorController.text,
+                        nickname: nicknameController.text,
+                        passkey: passkeyController.text,
+                        authKey: apiKeyController.text,
+                        userId: userIdController.text,
+                        userAgent: userAgentController.text,
+                        proxy: proxyController.text,
+                        rss: rssController.text,
+                        torrents: torrentsController.text,
+                        cookie: cookieController.text,
+                        getInfo: getInfo.value,
+                        signIn: signIn.value,
+                        brushRss: brushRss.value,
+                        brushFree: brushFree.value,
+                        packageFile: packageFile.value,
+                        repeatTorrents: repeatTorrents.value,
+                        hrDiscern: hrDiscern.value,
+                        searchTorrents: searchTorrents.value,
+                        available: available.value,
+                      );
+                    } else {
+                      // 如果 mySite 为空，表示是添加操作
+                      mySite = MySite(
+                        site: siteController.text,
+                        mirror: mirrorController.text,
+                        nickname: nicknameController.text,
+                        passkey: passkeyController.text,
+                        authKey: apiKeyController.text,
+                        userId: userIdController.text,
+                        userAgent: userAgentController.text,
+                        proxy: proxyController.text,
+                        rss: rssController.text,
+                        torrents: torrentsController.text,
+                        cookie: cookieController.text,
+                        getInfo: getInfo.value,
+                        signIn: signIn.value,
+                        brushRss: brushRss.value,
+                        brushFree: brushFree.value,
+                        packageFile: packageFile.value,
+                        repeatTorrents: repeatTorrents.value,
+                        hrDiscern: hrDiscern.value,
+                        searchTorrents: searchTorrents.value,
+                        available: available.value,
+                        id: 0,
+                        sortId: 0,
+                        removeTorrentRules: {},
+                        timeJoin: '',
+                        mail: 0,
+                        notice: 0,
+                        signInInfo: {},
+                        statusInfo: {},
+                      );
+                    }
+                    Logger.instance.i(mySite?.toJson());
+                    if (await controller.saveMySiteToServer(mySite!)) {
+                      Navigator.of(context).pop();
+                      controller.getSiteStatusFromServer();
+                    }
+                  },
+                ),
+              ],
             ),
           ],
         ),

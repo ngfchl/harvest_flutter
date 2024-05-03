@@ -91,6 +91,9 @@ class WebSite {
       Logger.instance.e(trace.toString());
     }
   }
+
+  @override
+  String toString() => '$name - $nickname';
 }
 
 class LevelInfo {

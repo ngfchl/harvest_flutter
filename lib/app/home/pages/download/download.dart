@@ -850,11 +850,15 @@ class _DownloadPageState extends State<DownloadPage>
       CustomCard(
         child: Column(
           children: [
-            Text(
-              downloader != null ? '编辑下载器：${downloader.name}' : '添加下载器',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: GFTypography(
+                text: downloader != null ? '编辑下载器：${downloader.name}' : '添加下载器',
+                icon: const Icon(Icons.add),
+                dividerWidth: 128,
+                textColor: Theme.of(context).colorScheme.onBackground,
+                dividerColor: Theme.of(context).colorScheme.onBackground,
+              ),
             ),
             Expanded(
               child: SingleChildScrollView(
@@ -920,82 +924,79 @@ class _DownloadPageState extends State<DownloadPage>
                             ),
                           ]);
                     }),
-                    ButtonBar(
-                      alignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        ElevatedButton(
-                          style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all(
-                                Theme.of(context).colorScheme.error),
-                          ),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: const Text(
-                            '取消',
-                            style: TextStyle(
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        ElevatedButton(
-                          style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all(
-                                Theme.of(context).colorScheme.primary),
-                          ),
-                          child: const Text(
-                            '保存',
-                            style: TextStyle(
-                              color: Colors.white,
-                            ),
-                          ),
-                          onPressed: () async {
-                            if (downloader != null) {
-                              // 如果 downloader 不为空，表示是修改操作
-                              downloader?.name = nameController.text;
-                              downloader?.category = categoryController.text;
-                              downloader?.username = usernameController.text;
-                              downloader?.password = passwordController.text;
-                              downloader?.protocol = protocolController.text;
-                              downloader?.host = hostController.text;
-                              downloader?.port = int.parse(portController.text);
-                              downloader?.torrentPath =
-                                  torrentPathController.text;
-                              downloader?.isActive = isActive.value;
-                              downloader?.brush = brush.value;
-                            } else {
-                              // 如果 downloader 为空，表示是添加操作
-                              downloader = Downloader(
-                                id: 0,
-                                name: nameController.text,
-                                category: categoryController.text,
-                                username: usernameController.text,
-                                password: passwordController.text,
-                                protocol: protocolController.text,
-                                host: hostController.text,
-                                port: int.parse(portController.text),
-                                torrentPath: torrentPathController.text,
-                                isActive: isActive.value,
-                                brush: brush.value,
-                                status: [],
-                              );
-                            }
-                            LoggerHelper.Logger.instance
-                                .i(downloader?.toJson());
-                            if (await controller
-                                .saveDownloaderToServer(downloader!)) {
-                              Navigator.of(context).pop();
-                              controller.getDownloaderListFromServer();
-                              controller.update();
-                            }
-                          },
-                        ),
-                      ],
-                    )
                   ],
                 ),
               ),
             ),
+            ButtonBar(
+              alignment: MainAxisAlignment.spaceAround,
+              children: [
+                ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(
+                        Theme.of(context).colorScheme.secondary),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text(
+                    '取消',
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(
+                        Theme.of(context).colorScheme.primary),
+                  ),
+                  child: const Text(
+                    '保存',
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
+                  onPressed: () async {
+                    if (downloader != null) {
+                      // 如果 downloader 不为空，表示是修改操作
+                      downloader?.name = nameController.text;
+                      downloader?.category = categoryController.text;
+                      downloader?.username = usernameController.text;
+                      downloader?.password = passwordController.text;
+                      downloader?.protocol = protocolController.text;
+                      downloader?.host = hostController.text;
+                      downloader?.port = int.parse(portController.text);
+                      downloader?.torrentPath = torrentPathController.text;
+                      downloader?.isActive = isActive.value;
+                      downloader?.brush = brush.value;
+                    } else {
+                      // 如果 downloader 为空，表示是添加操作
+                      downloader = Downloader(
+                        id: 0,
+                        name: nameController.text,
+                        category: categoryController.text,
+                        username: usernameController.text,
+                        password: passwordController.text,
+                        protocol: protocolController.text,
+                        host: hostController.text,
+                        port: int.parse(portController.text),
+                        torrentPath: torrentPathController.text,
+                        isActive: isActive.value,
+                        brush: brush.value,
+                        status: [],
+                      );
+                    }
+                    LoggerHelper.Logger.instance.i(downloader?.toJson());
+                    if (await controller.saveDownloaderToServer(downloader!)) {
+                      Navigator.of(context).pop();
+                      controller.getDownloaderListFromServer();
+                      controller.update();
+                    }
+                  },
+                ),
+              ],
+            )
           ],
         ),
       ),

@@ -77,21 +77,18 @@ class MySiteController extends GetxController {
   }
 
   Future<void> getWebSiteListFromServer() async {
-    await getWebSiteList().then((value) {
-      if (value.code == 0) {
-        webSiteList = value.data;
-      } else {
-        Logger.instance.w(value.msg);
-        Get.snackbar(
-          '',
-          value.msg.toString(),
-        );
-      }
-    }).catchError((e, stackTrace) {
-      Logger.instance.e(e.toString());
-      Logger.instance.e(stackTrace.toString());
-      Get.snackbar('', e.toString());
-    });
+    CommonResponse value = await getWebSiteList();
+    if (value.code == 0) {
+      webSiteList.clear();
+      webSiteList = value.data;
+    } else {
+      Logger.instance.w(value.msg);
+      Get.snackbar(
+        '',
+        value.msg.toString(),
+      );
+    }
+
     filterByKey();
     update();
   }
@@ -132,6 +129,7 @@ class MySiteController extends GetxController {
 
     CommonResponse res = await getMySiteList();
     if (res.code == 0) {
+      mySiteList.clear();
       mySiteList = res.data;
       filterByKey();
       isLoaded = false;

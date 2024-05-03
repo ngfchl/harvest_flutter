@@ -236,241 +236,277 @@ class _SubscribePageState extends State<SubscribePage> {
           children: [
             CustomCard(
               padding: const EdgeInsets.all(12),
-              height: double.infinity,
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    GFTypography(
-                      text: controller.title,
-                      textColor: Theme.of(context).colorScheme.onBackground,
-                      dividerColor: Theme.of(context).colorScheme.onBackground,
-                    ),
-                    CustomTextField(
-                      controller: controller.nameController,
-                      labelText: '名称',
-                    ),
-                    CustomTextField(
-                      controller: controller.keywordController,
-                      labelText: '关键字',
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: DropdownSearch<Downloader>(
-                        items: controller.subController.downloaderList,
-                        selectedItem: controller.subController.downloaderList
-                            .firstWhereOrNull((element) =>
-                                element.id ==
-                                int.parse(
-                                    controller.downloaderController.text)),
-                        compareFn: (item, sItem) => item.id == sItem.id,
-                        itemAsString: (Downloader? item) => item!.name,
-                        dropdownDecoratorProps: DropDownDecoratorProps(
-                          dropdownSearchDecoration: InputDecoration(
-                            labelText: '下载器',
-                            filled: true,
-                            fillColor: Theme.of(context)
-                                .inputDecorationTheme
-                                .fillColor,
-                          ),
+              height: MediaQuery.of(context).size.height * 0.9,
+              child: Column(
+                children: [
+                  GFTypography(
+                    text: controller.title,
+                    textColor: Theme.of(context).colorScheme.onBackground,
+                    dividerColor: Theme.of(context).colorScheme.onBackground,
+                  ),
+                  Expanded(
+                    child: ListView(
+                      children: [
+                        CustomTextField(
+                          controller: controller.nameController,
+                          labelText: '名称',
                         ),
-                        onChanged: (Downloader? item) async {
-                          controller.downloaderCategoryController.clear();
-                          controller.subController.isDownloaderLoading = true;
-                          controller.update();
-                          controller.downloaderController.text =
-                              item!.id.toString();
-                          controller.categories.value = await controller
-                              .subController
-                              .getDownloaderCategories(item);
-                          controller.subController.isDownloaderLoading = false;
-                          controller.update();
-                          if (controller.categories.isNotEmpty) {
-                            controller.downloaderCategoryController.text =
-                                controller.categories.keys.toList()[0];
-                          }
-                          Logger.instance.i(controller.categories);
-                          controller.update();
-                        },
-                      ),
-                    ),
-                    controller.categories.isNotEmpty
-                        ? CustomPickerField(
-                            controller: controller.downloaderCategoryController,
-                            labelText: '下载到分类',
-                            data: controller.categories.keys.toList(),
-                            onChanged: (value, index) {
-                              controller.downloaderCategoryController.text =
-                                  value;
+                        CustomTextField(
+                          controller: controller.keywordController,
+                          labelText: '关键字',
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: DropdownSearch<Downloader>(
+                            items: controller.subController.downloaderList,
+                            selectedItem: controller
+                                .subController.downloaderList
+                                .firstWhereOrNull((element) =>
+                                    element.id ==
+                                    int.parse(
+                                        controller.downloaderController.text)),
+                            compareFn: (item, sItem) => item.id == sItem.id,
+                            itemAsString: (Downloader? item) => item!.name,
+                            dropdownDecoratorProps: DropDownDecoratorProps(
+                              dropdownSearchDecoration: InputDecoration(
+                                labelText: '下载器',
+                                filled: true,
+                                fillColor: Theme.of(context)
+                                    .inputDecorationTheme
+                                    .fillColor,
+                              ),
+                            ),
+                            onChanged: (Downloader? item) async {
+                              controller.downloaderCategoryController.clear();
+                              controller.subController.isDownloaderLoading =
+                                  true;
+                              controller.update();
+                              controller.downloaderController.text =
+                                  item!.id.toString();
+                              controller.categories.value = await controller
+                                  .subController
+                                  .getDownloaderCategories(item);
+                              controller.subController.isDownloaderLoading =
+                                  false;
+                              controller.update();
+                              if (controller.categories.isNotEmpty) {
+                                controller.downloaderCategoryController.text =
+                                    controller.categories.keys.toList()[0];
+                              }
+                              Logger.instance.i(controller.categories);
                               controller.update();
                             },
-                          )
-                        : CustomTextField(
-                            controller: controller.downloaderCategoryController,
-                            labelText: '分类',
-                          ),
-                    Padding(
-                      padding: const EdgeInsets.only(right: 18.0),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Slider(
-                              value: controller.size.value.toDouble(),
-                              min: 1,
-                              max: 100,
-                              divisions: 100,
-                              onChanged: (double value) {
-                                controller.size.value = value.toInt();
-                                controller.update();
-                              },
-                            ),
-                          ),
-                          Text('${controller.size.value} GB'),
-                        ],
-                      ),
-                    ),
-                    SwitchListTile(
-                        dense: true,
-                        title: const Text('可用', style: TextStyle(fontSize: 14)),
-                        value: controller.available.value,
-                        onChanged: (bool val) {
-                          controller.available.value = val;
-                          controller.update();
-                        }),
-                    SwitchListTile(
-                        dense: true,
-                        title:
-                            const Text('直接下载', style: TextStyle(fontSize: 14)),
-                        value: controller.start.value,
-                        onChanged: (bool val) {
-                          controller.start.value = val;
-                          controller.update();
-                        }),
-                    ExpansionTile(
-                      title: const Text('RSS选择'),
-                      dense: true,
-                      children: controller.subController.rssController.rssList
-                          .map((MyRss item) => CheckboxListTile(
-                                title: Text(item.name.toString()),
-                                dense: true,
-                                value: controller.rssList
-                                    .map((element) => element.id)
-                                    .contains(item.id),
-                                onChanged: (bool? value) {
-                                  Logger.instance.i(controller.rssList);
-                                  if (value == true) {
-                                    controller.rssList.add(item);
-                                  } else {
-                                    controller.rssList.removeWhere(
-                                        (element) => element.id == item.id);
-                                  }
-                                  Logger.instance.i(controller.rssList);
-                                  controller.update();
-                                },
-                              ))
-                          .toList(),
-                    ),
-                    Column(
-                        children: controller.subController.tagCategoryList
-                            .where((element) =>
-                                controller.prop[element.value] != null)
-                            .map((e) => ExpansionTile(
-                                  title: Text(e.name),
-                                  dense: true,
-                                  children: controller.subController.tags
-                                      .where((item) => item.category == e.value)
-                                      .map((item) => CheckboxListTile(
-                                            title: Text(item.name.toString()),
-                                            dense: true,
-                                            value: controller
-                                                    .prop[e.value]!.value ==
-                                                item.name,
-                                            selected: controller
-                                                    .prop[e.value]!.value ==
-                                                item.name,
-                                            onChanged: (bool? value) {
-                                              Logger.instance
-                                                  .i(controller.prop[e.value]);
-                                              if (value == true) {
-                                                controller.prop[e.value]
-                                                    ?.value = item.name!;
-                                              } else {
-                                                controller
-                                                    .prop[e.value]?.value = '';
-                                              }
-                                              Logger.instance
-                                                  .i(controller.prop[e.value]);
-                                              controller.update();
-                                            },
-                                          ))
-                                      .toList(),
-                                ))
-                            .toList()),
-                    Column(
-                      children: controller.subController.tagCategoryList
-                          .where((element) =>
-                              controller.props[element.value] != null)
-                          .map((e) => ExpansionTile(
-                                title: Text(e.name),
-                                dense: true,
-                                children: controller.subController.tags
-                                    .where((item) => item.category == e.value)
-                                    .map((item) => CheckboxListTile(
-                                          dense: true,
-                                          title: Text(item.name.toString()),
-                                          value: controller.props[e.value]!
-                                              .contains(item.name),
-                                          onChanged: (bool? value) {
-                                            Logger.instance
-                                                .i(controller.props[e.value]);
-                                            if (value == true) {
-                                              controller.props[e.value]!
-                                                  .add(item.name!);
-                                            } else {
-                                              controller.props[e.value]!
-                                                  .removeWhere((element) =>
-                                                      element == item.name);
-                                            }
-                                            Logger.instance
-                                                .i(controller.props[e.value]);
-                                            controller.update();
-                                          },
-                                        ))
-                                    .toList(),
-                              ))
-                          .toList(),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            Get.back();
-                          },
-                          style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all(
-                                Colors.redAccent.withAlpha(150)),
-                          ),
-                          icon: const Icon(Icons.cancel_outlined,
-                              color: Colors.white),
-                          label: const Text(
-                            '取消',
-                            style: TextStyle(color: Colors.white),
                           ),
                         ),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            controller.saveSub(sub);
-                          },
-                          icon: controller.isLoading.value
-                              ? const GFLoader(size: 18)
-                              : const Icon(Icons.save),
-                          label: const Text('保存'),
+                        controller.categories.isNotEmpty
+                            ? CustomPickerField(
+                                controller:
+                                    controller.downloaderCategoryController,
+                                labelText: '下载到分类',
+                                data: controller.categories.keys.toList(),
+                                onChanged: (value, index) {
+                                  controller.downloaderCategoryController.text =
+                                      value;
+                                  controller.update();
+                                },
+                              )
+                            : CustomTextField(
+                                controller:
+                                    controller.downloaderCategoryController,
+                                labelText: '分类',
+                              ),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 18.0),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Slider(
+                                  value: controller.size.value.toDouble(),
+                                  min: 1,
+                                  max: 100,
+                                  divisions: 100,
+                                  onChanged: (double value) {
+                                    controller.size.value = value.toInt();
+                                    controller.update();
+                                  },
+                                ),
+                              ),
+                              Text('${controller.size.value} GB'),
+                            ],
+                          ),
+                        ),
+                        SwitchListTile(
+                            dense: true,
+                            title: const Text('可用',
+                                style: TextStyle(fontSize: 14)),
+                            value: controller.available.value,
+                            onChanged: (bool val) {
+                              controller.available.value = val;
+                              controller.update();
+                            }),
+                        SwitchListTile(
+                            dense: true,
+                            title: const Text('直接下载',
+                                style: TextStyle(fontSize: 14)),
+                            value: controller.start.value,
+                            onChanged: (bool val) {
+                              controller.start.value = val;
+                              controller.update();
+                            }),
+                        ExpansionTile(
+                          title: const Text('RSS选择'),
+                          dense: true,
+                          children: controller
+                              .subController.rssController.rssList
+                              .map((MyRss item) => CheckboxListTile(
+                                    title: Text(item.name.toString()),
+                                    dense: true,
+                                    value: controller.rssList
+                                        .map((element) => element.id)
+                                        .contains(item.id),
+                                    onChanged: (bool? value) {
+                                      Logger.instance.i(controller.rssList);
+                                      if (value == true) {
+                                        controller.rssList.add(item);
+                                      } else {
+                                        controller.rssList.removeWhere(
+                                            (element) => element.id == item.id);
+                                      }
+                                      Logger.instance.i(controller.rssList);
+                                      controller.update();
+                                    },
+                                  ))
+                              .toList(),
+                        ),
+                        Column(
+                            children: controller.subController.tagCategoryList
+                                .where((element) =>
+                                    controller.prop[element.value] != null)
+                                .map((e) => ExpansionTile(
+                                      title: Text(e.name),
+                                      dense: true,
+                                      children: controller.subController.tags
+                                          .where((item) =>
+                                              item.category == e.value)
+                                          .map((item) => CheckboxListTile(
+                                                title:
+                                                    Text(item.name.toString()),
+                                                dense: true,
+                                                value: controller
+                                                        .prop[e.value]!.value ==
+                                                    item.name,
+                                                selected: controller
+                                                        .prop[e.value]!.value ==
+                                                    item.name,
+                                                onChanged: (bool? value) {
+                                                  Logger.instance.i(
+                                                      controller.prop[e.value]);
+                                                  if (value == true) {
+                                                    controller.prop[e.value]
+                                                        ?.value = item.name!;
+                                                  } else {
+                                                    controller.prop[e.value]
+                                                        ?.value = '';
+                                                  }
+                                                  Logger.instance.i(
+                                                      controller.prop[e.value]);
+                                                  controller.update();
+                                                },
+                                              ))
+                                          .toList(),
+                                    ))
+                                .toList()),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: GFTypography(
+                            text: '标签选择',
+                            type: GFTypographyType.typo6,
+                            icon: const Icon(Icons.sort_by_alpha),
+                            dividerWidth: 108,
+                            textColor:
+                                Theme.of(context).colorScheme.onBackground,
+                            dividerColor:
+                                Theme.of(context).colorScheme.onBackground,
+                          ),
+                        ),
+                        SizedBox(
+                          height: 360,
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: controller.subController.tagCategoryList
+                                  .where((element) =>
+                                      controller.props[element.value] != null)
+                                  .map((e) => ExpansionTile(
+                                        title: Text(e.name),
+                                        dense: true,
+                                        initiallyExpanded: true,
+                                        children: controller.subController.tags
+                                            .where((item) =>
+                                                item.category == e.value)
+                                            .map((item) => CheckboxListTile(
+                                                  dense: true,
+                                                  title: Text(
+                                                      item.name.toString()),
+                                                  value: controller
+                                                      .props[e.value]!
+                                                      .contains(item.name),
+                                                  onChanged: (bool? value) {
+                                                    Logger.instance.i(controller
+                                                        .props[e.value]);
+                                                    if (value == true) {
+                                                      controller.props[e.value]!
+                                                          .add(item.name!);
+                                                    } else {
+                                                      controller.props[e.value]!
+                                                          .removeWhere(
+                                                              (element) =>
+                                                                  element ==
+                                                                  item.name);
+                                                    }
+                                                    Logger.instance.i(controller
+                                                        .props[e.value]);
+                                                    controller.update();
+                                                  },
+                                                ))
+                                            .toList(),
+                                      ))
+                                  .toList(),
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Get.back();
+                        },
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all(
+                              Colors.redAccent.withAlpha(150)),
+                        ),
+                        icon: const Icon(Icons.cancel_outlined,
+                            color: Colors.white),
+                        label: const Text(
+                          '取消',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          controller.saveSub(sub);
+                        },
+                        icon: controller.isLoading.value
+                            ? const GFLoader(size: 18)
+                            : const Icon(Icons.save),
+                        label: const Text('保存'),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
             if (controller.subController.isDownloaderLoading) const GFLoader()

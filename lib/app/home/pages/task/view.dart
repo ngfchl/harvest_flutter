@@ -46,12 +46,12 @@ class TaskPage extends StatelessWidget {
           ],
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        floatingActionButton: _buildBottomButtonBar(),
+        floatingActionButton: _buildBottomButtonBar(context),
       );
     });
   }
 
-  _buildBottomButtonBar() {
+  _buildBottomButtonBar(context) {
     return CustomCard(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -65,7 +65,7 @@ class TaskPage extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.add, size: 20),
             onPressed: () {
-              editTask(null);
+              editTask(null, context);
             },
           ),
         ],
@@ -86,7 +86,7 @@ class TaskPage extends StatelessWidget {
               SlidableAction(
                 borderRadius: const BorderRadius.all(Radius.circular(8)),
                 onPressed: (context) async {
-                  await editTask(item);
+                  await editTask(item, context);
                 },
                 flex: 1,
                 backgroundColor: const Color(0xFF0392CF),
@@ -224,7 +224,7 @@ class TaskPage extends StatelessWidget {
     });
   }
 
-  editTask(Schedule? task) {
+  editTask(Schedule? task, context) {
     Crontab? cron = controller.crontabList[task?.crontab];
     final taskController =
         TextEditingController(text: task != null ? task.task : '');
@@ -251,77 +251,84 @@ class TaskPage extends StatelessWidget {
     Get.bottomSheet(
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(3))),
-      SingleChildScrollView(
-        child: Obx(() {
-          return CustomCard(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('编辑任务'),
-                      SizedBox(
-                        width: 120,
-                        child: SwitchListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: const Text(
-                            '高级',
-                            style: TextStyle(
-                              fontSize: 13,
-                            ),
-                          ),
-                          onChanged: (val) {
-                            advance.value = val;
-                          },
-                          value: advance.value,
-                          activeColor: Colors.green,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                CustomPickerField(
-                    controller: taskController,
-                    labelText: '选择任务',
-                    data: controller.taskList,
-                    onConfirm: (p, position) {}),
-                CustomTextField(
-                  controller: nameController,
-                  labelText: '任务名称',
-                ),
-                CustomTextField(
-                  controller: minuteController,
-                  labelText: '分钟',
-                ),
-                CustomTextField(
-                  controller: hourController,
-                  labelText: '小时',
-                ),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8),
-                  child: SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text(
-                      '开启任务',
+      Obx(() {
+        return CustomCard(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      task != null ? '编辑任务' : '添加任务',
                       style: TextStyle(
-                        fontSize: 13,
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 20,
                       ),
                     ),
-                    onChanged: (val) {
-                      enabled.value = val;
-                    },
-                    value: enabled.value!,
-                    activeColor: Colors.green,
-                  ),
+                    SizedBox(
+                      width: 150,
+                      child: SwitchListTile(
+                        dense: true,
+                        title: const Text(
+                          '高级',
+                          style: TextStyle(
+                            fontSize: 13,
+                          ),
+                        ),
+                        onChanged: (val) {
+                          advance.value = val;
+                        },
+                        value: advance.value,
+                        activeColor: Colors.green,
+                      ),
+                    ),
+                  ],
                 ),
-                if (advance.value)
-                  Column(
-                    children: [
+              ),
+              Expanded(
+                child: ListView(
+                  children: [
+                    CustomPickerField(
+                        controller: taskController,
+                        labelText: '选择任务',
+                        data: controller.taskList,
+                        onConfirm: (p, position) {}),
+                    CustomTextField(
+                      controller: nameController,
+                      labelText: '任务名称',
+                    ),
+                    CustomTextField(
+                      controller: minuteController,
+                      labelText: '分钟',
+                    ),
+                    CustomTextField(
+                      controller: hourController,
+                      labelText: '小时',
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 4.0, horizontal: 8),
+                      child: SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text(
+                          '开启任务',
+                          style: TextStyle(
+                            fontSize: 13,
+                          ),
+                        ),
+                        onChanged: (val) {
+                          enabled.value = val;
+                        },
+                        value: enabled.value!,
+                        activeColor: Colors.green,
+                      ),
+                    ),
+                    if (advance.value) ...[
                       CustomTextField(
                         controller: dayOfWeekController,
                         labelText: '周几',
@@ -335,73 +342,74 @@ class TaskPage extends StatelessWidget {
                         labelText: '几月',
                       ),
                     ],
-                  ),
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          Get.back();
-                        },
-                        icon: const Icon(
-                          Icons.cancel,
-                          size: 18,
-                        ),
-                        label: const Text('取消'),
-                      ),
-                      ElevatedButton.icon(
-                        onPressed: () async {
-                          if (task == null) {
-                            task = Schedule(
-                              id: 0,
-                              name: nameController.text,
-                              task: taskController.text,
-                              description: descriptionController.text,
-                              crontab: Crontab(
-                                minute: minuteController.text,
-                                hour: hourController.text,
-                                dayOfWeek: dayOfWeekController.text,
-                                dayOfMonth: dayOfMonthController.text,
-                                monthOfYear: monthOfYearController.text,
-                              ),
-                              args: argsController.text,
-                              kwargs: kwargsController.text,
-                            );
-                          } else {
-                            task?.enabled = enabled.value;
-                            task?.name = nameController.text;
-                            task?.task = taskController.text;
-                            task?.description = descriptionController.text;
-                            task?.args = argsController.text;
-                            task?.kwargs = kwargsController.text;
-                            cron?.minute = minuteController.text;
-                            cron?.hour = hourController.text;
-                            cron?.dayOfWeek = dayOfWeekController.text;
-                            cron?.dayOfMonth = dayOfMonthController.text;
-                            cron?.monthOfYear = monthOfYearController.text;
-                            task?.crontab = cron;
-                          }
-                          Logger.instance.i(task?.toJson());
-                          CommonResponse res = await controller.saveTask(task);
-                          if (res.code == 0) {
-                            Logger.instance.i('更新任务列表！');
-                            Get.back();
-                          }
-                          controller.update();
-                        },
-                        label: const Text('保存'),
-                        icon: const Icon(Icons.save, size: 18),
-                      ),
-                    ],
-                  ),
+                  ],
                 ),
-              ],
-            ),
-          );
-        }),
-      ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Get.back();
+                      },
+                      icon: const Icon(
+                        Icons.cancel,
+                        size: 18,
+                      ),
+                      label: const Text('取消'),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        if (task == null) {
+                          task = Schedule(
+                            id: 0,
+                            name: nameController.text,
+                            task: taskController.text,
+                            description: descriptionController.text,
+                            crontab: Crontab(
+                              minute: minuteController.text,
+                              hour: hourController.text,
+                              dayOfWeek: dayOfWeekController.text,
+                              dayOfMonth: dayOfMonthController.text,
+                              monthOfYear: monthOfYearController.text,
+                            ),
+                            args: argsController.text,
+                            kwargs: kwargsController.text,
+                          );
+                        } else {
+                          task?.enabled = enabled.value;
+                          task?.name = nameController.text;
+                          task?.task = taskController.text;
+                          task?.description = descriptionController.text;
+                          task?.args = argsController.text;
+                          task?.kwargs = kwargsController.text;
+                          cron?.minute = minuteController.text;
+                          cron?.hour = hourController.text;
+                          cron?.dayOfWeek = dayOfWeekController.text;
+                          cron?.dayOfMonth = dayOfMonthController.text;
+                          cron?.monthOfYear = monthOfYearController.text;
+                          task?.crontab = cron;
+                        }
+                        Logger.instance.i(task?.toJson());
+                        CommonResponse res = await controller.saveTask(task);
+                        if (res.code == 0) {
+                          Logger.instance.i('更新任务列表！');
+                          Get.back();
+                        }
+                        controller.update();
+                      },
+                      label: const Text('保存'),
+                      icon: const Icon(Icons.save, size: 18),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
     );
   }
 }
