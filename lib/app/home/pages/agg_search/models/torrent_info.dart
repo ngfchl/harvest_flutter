@@ -8,6 +8,7 @@ class SearchTorrentInfo {
   String title;
   String subtitle;
   String saleStatus;
+  double? progress;
   DateTime? saleExpire;
   bool hr;
   dynamic published;
@@ -27,6 +28,7 @@ class SearchTorrentInfo {
     required this.subtitle,
     required this.saleStatus,
     this.saleExpire,
+    this.progress,
     required this.hr,
     required this.published,
     required this.size,
@@ -52,6 +54,7 @@ class SearchTorrentInfo {
       detailUrl: json['detail_url'],
       title: json['title'],
       subtitle: json['subtitle'],
+      progress: json['progress'],
       saleStatus: json['sale_status'] ?? '无优惠',
       saleExpire: json['sale_expire'] != null
           ? DateTime.parse(json['sale_expire'])
@@ -75,6 +78,7 @@ class SearchTorrentInfo {
     data['detail_url'] = detailUrl;
     data['title'] = title;
     data['subtitle'] = subtitle;
+    data['progress'] = progress;
     data['sale_status'] = saleStatus;
     data['sale_expire'] = saleExpire?.toIso8601String();
     data['hr'] = hr;
