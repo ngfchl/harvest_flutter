@@ -116,9 +116,11 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                         Get.back(result: true);
                         CommonResponse res = await controller.removeSubTag(tag);
                         if (res.code == 0) {
-                          Get.snackbar('删除通知', res.msg.toString());
+                          Get.snackbar('删除通知', res.msg.toString(),
+                              colorText: Theme.of(context).colorScheme.primary);
                         } else {
-                          Get.snackbar('删除通知', res.msg.toString());
+                          Get.snackbar('删除通知', res.msg.toString(),
+                              colorText: Theme.of(context).colorScheme.error);
                         }
                       },
                       child: const Text('确认'),
@@ -299,10 +301,10 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
       if (res.code == 0) {
         Get.back();
         Get.snackbar('标签保存成功！', res.msg!,
-            backgroundColor: Colors.green.shade300, colorText: Colors.white);
+            colorText: Theme.of(context).colorScheme.primary);
       } else {
         Get.snackbar('标签保存失败！', res.msg!,
-            backgroundColor: Colors.red.shade300, colorText: Colors.white);
+            colorText: Theme.of(context).colorScheme.error);
       }
     } finally {}
   }

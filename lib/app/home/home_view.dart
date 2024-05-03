@@ -82,7 +82,8 @@ class HomeView extends GetView<HomeController> {
                   .iconTheme
                   .copyWith(color: Theme.of(context).colorScheme.secondary),
               backgroundColor: Colors.transparent,
-              onDestinationSelected: (index) => controller.changePage(index),
+              onDestinationSelected: (index) =>
+                  controller.changePage(index, context),
               labelType: NavigationRailLabelType.none,
               leading: GFDrawerHeader(
                 centerAlign: true,
@@ -285,10 +286,8 @@ class HomeView extends GetView<HomeController> {
                   ),
                   onTap: () async {
                     CommonResponse res = await clearMyCacheApi();
-                    Get.snackbar(
-                      '清除缓存',
-                      '清除缓存：${res.msg}',
-                    );
+                    Get.snackbar('清除缓存', '清除缓存：${res.msg}',
+                        colorText: Theme.of(context).colorScheme.primary);
                   },
                 ),
               ],

@@ -111,13 +111,18 @@ class _SubscribePageState extends State<SubscribePage> {
                             CommonResponse res =
                                 await controller.removeSubscribe(sub);
                             if (res.code == 0) {
-                              Get.snackbar('删除通知', res.msg.toString(),
-                                  backgroundColor: Colors.green.shade500,
-                                  colorText: Colors.white70);
+                              Get.snackbar(
+                                '删除通知',
+                                res.msg.toString(),
+                                colorText:
+                                    Theme.of(context).colorScheme.primary,
+                              );
                             } else {
-                              Get.snackbar('删除通知', res.msg.toString(),
-                                  backgroundColor: Colors.red.shade500,
-                                  colorText: Colors.white70);
+                              Get.snackbar(
+                                '删除通知',
+                                res.msg.toString(),
+                                colorText: Theme.of(context).colorScheme.error,
+                              );
                             }
                           },
                           child: const Text('确认'),
@@ -497,7 +502,7 @@ class _SubscribePageState extends State<SubscribePage> {
                       ),
                       ElevatedButton.icon(
                         onPressed: () {
-                          controller.saveSub(sub);
+                          controller.saveSub(sub, context);
                         },
                         icon: controller.isLoading.value
                             ? const GFLoader(size: 18)
@@ -524,9 +529,11 @@ class _SubscribePageState extends State<SubscribePage> {
       Logger.instance.i(res.msg);
       if (res.code == 0) {
         Get.back();
-        Get.snackbar('保存成功！', res.msg!);
+        Get.snackbar('保存成功！', res.msg!,
+            colorText: Theme.of(context).colorScheme.primary);
       } else {
-        Get.snackbar('保存失败！', res.msg!);
+        Get.snackbar('保存失败！', res.msg!,
+            colorText: Theme.of(context).colorScheme.error);
       }
     } finally {}
   }
@@ -586,7 +593,7 @@ class EditDialogController extends GetxController {
     title = sub != null ? '编辑标签：${sub.name}' : '添加订阅';
   }
 
-  Future<void> saveSub(Subscribe? sub) async {
+  Future<void> saveSub(Subscribe? sub, context) async {
     isLoading.value = true;
     Subscribe newTag;
     if (sub != null) {
@@ -641,11 +648,11 @@ class EditDialogController extends GetxController {
         rssList: rssList,
       );
     }
-    submitForm(newTag);
+    submitForm(newTag, context);
     isLoading.value = false;
   }
 
-  void submitForm(Subscribe sub) async {
+  void submitForm(Subscribe sub, context) async {
     try {
       CommonResponse res = await subController.saveSubscribe(sub);
 
@@ -653,10 +660,10 @@ class EditDialogController extends GetxController {
       if (res.code == 0) {
         Get.back();
         Get.snackbar('保存成功！', res.msg!,
-            backgroundColor: Colors.green.shade300, colorText: Colors.white);
+            colorText: Theme.of(context).colorScheme.primary);
       } else {
         Get.snackbar('保存失败！', res.msg!,
-            backgroundColor: Colors.red.shade300, colorText: Colors.white);
+            colorText: Theme.of(context).colorScheme.error);
       }
     } finally {}
   }

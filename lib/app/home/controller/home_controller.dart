@@ -113,7 +113,7 @@ class HomeController extends GetxController {
     Get.offAllNamed(Routes.LOGIN);
   }
 
-  Future<void> changePage(int index) async {
+  Future<void> changePage(int index, context) async {
     Get.back();
     if (index == 11) {
       String url =
@@ -122,7 +122,8 @@ class HomeController extends GetxController {
         Logger.instance.i('Explorer');
         Uri uri = Uri.parse(url);
         if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-          Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？');
+          Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
+              colorText: Theme.of(context).colorScheme.error);
         }
       } else {
         Get.toNamed(Routes.WEBVIEW, arguments: {
@@ -136,7 +137,8 @@ class HomeController extends GetxController {
         Logger.instance.i('Explorer');
         Uri uri = Uri.parse(url);
         if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-          Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？');
+          Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
+              colorText: Theme.of(context).colorScheme.error);
         }
       } else {
         Get.toNamed(Routes.WEBVIEW, arguments: {

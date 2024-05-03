@@ -147,17 +147,26 @@ class _DownloadPageState extends State<DownloadPage>
                                       double duration = double.parse(
                                           durationTextEditingController.text);
                                       if (duration < 3 || duration > 10) {
-                                        Get.snackbar('出错啦', '超出范围，请设置 3-10');
+                                        Get.snackbar('出错啦', '超出范围，请设置 3-10',
+                                            colorText: Theme.of(context)
+                                                .colorScheme
+                                                .error);
                                       } else {
                                         controller.duration = duration;
                                         SPUtil.setDouble('duration', duration);
                                         controller.cancelPeriodicTimer();
                                         controller.startPeriodicTimer();
                                         controller.update();
-                                        Get.snackbar('OK 啦', '保存成功！');
+                                        Get.snackbar('OK 啦', '保存成功！',
+                                            colorText: Theme.of(context)
+                                                .colorScheme
+                                                .primary);
                                       }
                                     } catch (e) {
-                                      Get.snackbar('出错啦', '请输入数字');
+                                      Get.snackbar('出错啦', '请输入数字',
+                                          colorText: Theme.of(context)
+                                              .colorScheme
+                                              .error);
                                     }
                                   })
                             ],
@@ -192,7 +201,10 @@ class _DownloadPageState extends State<DownloadPage>
                                           timerDurationTextEditingController
                                               .text);
                                       if (duration < 1 || duration > 10) {
-                                        Get.snackbar('出错啦', '超出范围，请设置 1-10');
+                                        Get.snackbar('出错啦', '超出范围，请设置 1-10',
+                                            colorText: Theme.of(context)
+                                                .colorScheme
+                                                .error);
                                       } else {
                                         controller.timerDuration = duration;
                                         SPUtil.setDouble(
@@ -200,10 +212,16 @@ class _DownloadPageState extends State<DownloadPage>
                                         controller.fiveMinutesTimer.cancel();
                                         controller.timerToStop();
                                         controller.update();
-                                        Get.snackbar('OK 啦', '保存成功！');
+                                        Get.snackbar('OK 啦', '保存成功！',
+                                            colorText: Theme.of(context)
+                                                .colorScheme
+                                                .primary);
                                       }
                                     } catch (e) {
-                                      Get.snackbar('出错啦', '请输入数字');
+                                      Get.snackbar('出错啦', '请输入数字',
+                                          colorText: Theme.of(context)
+                                              .colorScheme
+                                              .error);
                                     }
                                   })
                             ],
@@ -534,9 +552,11 @@ class _DownloadPageState extends State<DownloadPage>
                         CommonResponse res =
                             await controller.removeDownloader(downloader);
                         if (res.code == 0) {
-                          Get.snackbar('删除通知', res.msg.toString());
+                          Get.snackbar('删除通知', res.msg.toString(),
+                              colorText: Theme.of(context).colorScheme.primary);
                         } else {
-                          Get.snackbar('删除通知', res.msg.toString());
+                          Get.snackbar('删除通知', res.msg.toString(),
+                              colorText: Theme.of(context).colorScheme.error);
                         }
                       },
                       child: const Text('确认'),
@@ -615,7 +635,9 @@ class _DownloadPageState extends State<DownloadPage>
                           maxLines: 1,
                           style: TextStyle(
                             fontSize: 12,
-                            color: res.data ? Colors.white : Colors.red,
+                            color: res.code == 0
+                                ? Theme.of(context).colorScheme.primary
+                                : Theme.of(context).colorScheme.error,
                           ),
                         ),
                       );
@@ -844,7 +866,7 @@ class _DownloadPageState extends State<DownloadPage>
 
     RxBool isActive = downloader != null ? downloader.isActive.obs : true.obs;
     RxBool brush = downloader != null ? downloader.brush.obs : false.obs;
-    await controller.getTorrentsPathList();
+    await controller.getTorrentsPathList(context);
     Get.bottomSheet(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
       CustomCard(
@@ -988,7 +1010,8 @@ class _DownloadPageState extends State<DownloadPage>
                       );
                     }
                     LoggerHelper.Logger.instance.i(downloader?.toJson());
-                    if (await controller.saveDownloaderToServer(downloader!)) {
+                    if (await controller.saveDownloaderToServer(
+                        downloader!, context)) {
                       Navigator.of(context).pop();
                       controller.getDownloaderListFromServer();
                       controller.update();

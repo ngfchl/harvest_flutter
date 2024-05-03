@@ -287,7 +287,8 @@ class _MySitePagePageState extends State<MySitePage>
               Logger.instance.i('Explorer');
               Uri uri = Uri.parse(url);
               if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-                Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？');
+                Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
+                    colorText: Theme.of(context).colorScheme.primary);
               }
             } else {
               Logger.instance.i('WebView');
@@ -564,16 +565,13 @@ class _MySitePagePageState extends State<MySitePage>
                   CommonResponse res = await signIn(mySite.id);
 
                   if (res.code == 0) {
-                    Get.snackbar(
-                      '签到成功',
-                      '${mySite.nickname} 签到信息：${res.msg}',
-                    );
+                    Get.snackbar('签到成功', '${mySite.nickname} 签到信息：${res.msg}',
+                        colorText: Theme.of(context).colorScheme.primary);
                     controller.getSiteStatusFromServer();
                   } else {
                     Get.snackbar(
-                      '签到失败',
-                      '${mySite.nickname} 签到任务执行出错啦：${res.msg}',
-                    );
+                        '签到失败', '${mySite.nickname} 签到任务执行出错啦：${res.msg}',
+                        colorText: Theme.of(context).colorScheme.primary);
                   }
                 },
               ),
@@ -590,16 +588,13 @@ class _MySitePagePageState extends State<MySitePage>
                 CommonResponse res = await getNewestStatus(mySite.id);
 
                 if (res.code == 0) {
-                  Get.snackbar(
-                    '站点数据刷新成功',
-                    '${mySite.nickname} 数据刷新：${res.msg}',
-                  );
+                  Get.snackbar('站点数据刷新成功', '${mySite.nickname} 数据刷新：${res.msg}',
+                      colorText: Theme.of(context).colorScheme.primary);
                   controller.getSiteStatusFromServer();
                 } else {
                   Get.snackbar(
-                    '站点数据刷新失败',
-                    '${mySite.nickname} 数据刷新出错啦：${res.msg}',
-                  );
+                      '站点数据刷新失败', '${mySite.nickname} 数据刷新出错啦：${res.msg}',
+                      colorText: Theme.of(context).colorScheme.primary);
                 }
               },
             ),
@@ -643,15 +638,15 @@ class _MySitePagePageState extends State<MySitePage>
                       : signIn(mySite.id).then((res) {
                           if (res.code == 0) {
                             Get.snackbar(
-                              '签到成功',
-                              '${mySite.nickname} 签到信息：${res.msg}',
-                            );
+                                '签到成功', '${mySite.nickname} 签到信息：${res.msg}',
+                                colorText:
+                                    Theme.of(context).colorScheme.primary);
                             controller.getSiteStatusFromServer();
                           } else {
-                            Get.snackbar(
-                              '签到失败',
-                              '${mySite.nickname} 签到任务执行出错啦：${res.msg}',
-                            );
+                            Get.snackbar('签到失败',
+                                '${mySite.nickname} 签到任务执行出错啦：${res.msg}',
+                                colorText:
+                                    Theme.of(context).colorScheme.primary);
                           }
                         });
                 },
@@ -670,16 +665,13 @@ class _MySitePagePageState extends State<MySitePage>
             onPressed: () {
               getNewestStatus(mySite.id).then((res) {
                 if (res.code == 0) {
-                  Get.snackbar(
-                    '站点数据刷新成功',
-                    '${mySite.nickname} 数据刷新：${res.msg}',
-                  );
+                  Get.snackbar('站点数据刷新成功', '${mySite.nickname} 数据刷新：${res.msg}',
+                      colorText: Theme.of(context).colorScheme.primary);
                   controller.getSiteStatusFromServer();
                 } else {
                   Get.snackbar(
-                    '站点数据刷新失败',
-                    '${mySite.nickname} 数据刷新出错啦：${res.msg}',
-                  );
+                      '站点数据刷新失败', '${mySite.nickname} 数据刷新出错啦：${res.msg}',
+                      colorText: Theme.of(context).colorScheme.primary);
                 }
               });
             },

@@ -35,7 +35,7 @@ class TaskPage extends StatelessWidget {
                             itemCount: controller.dataList.length,
                             itemBuilder: (BuildContext context, int index) {
                               Schedule task = controller.dataList[index];
-                              return _buildTaskView(task);
+                              return _buildTaskView(task, context);
                             },
                           );
                         }),
@@ -73,7 +73,7 @@ class TaskPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTaskView(Schedule item) {
+  Widget _buildTaskView(Schedule item, context) {
     return GetBuilder<TaskController>(builder: (controller) {
       RxBool isRunning = false.obs;
       return CustomCard(
@@ -123,15 +123,12 @@ class TaskPage extends StatelessWidget {
                           CommonResponse res =
                               await controller.removeTask(item);
                           if (res.code == 0) {
-                            Get.snackbar(
-                              '任务删除通知',
-                              res.msg.toString(),
-                            );
+                            Get.snackbar('任务删除通知', res.msg.toString(),
+                                colorText:
+                                    Theme.of(context).colorScheme.primary);
                           } else {
-                            Get.snackbar(
-                              '任务删除通知',
-                              res.msg.toString(),
-                            );
+                            Get.snackbar('任务删除通知', res.msg.toString(),
+                                colorText: Theme.of(context).colorScheme.error);
                           }
                         },
                         child: const Text('确认'),
@@ -172,17 +169,13 @@ class TaskPage extends StatelessWidget {
                 CommonResponse res = await controller.changeScheduleState(item);
                 String title = item.enabled == true ? '任务启用通知' : '任务禁用通知';
                 if (res.code == 0) {
-                  Get.snackbar(
-                    title,
-                    res.msg.toString(),
-                    snackStyle: SnackStyle.FLOATING,
-                  );
+                  Get.snackbar(title, res.msg.toString(),
+                      snackStyle: SnackStyle.FLOATING,
+                      colorText: Theme.of(context).colorScheme.primary);
                 } else {
-                  Get.snackbar(
-                    title,
-                    res.msg.toString(),
-                    snackStyle: SnackStyle.FLOATING,
-                  );
+                  Get.snackbar(title, res.msg.toString(),
+                      snackStyle: SnackStyle.FLOATING,
+                      colorText: Theme.of(context).colorScheme.error);
                 }
                 controller.update();
               },
@@ -198,15 +191,11 @@ class TaskPage extends StatelessWidget {
                         // await Future.delayed(Duration(seconds: 2));
                         CommonResponse res = await controller.execTask(item);
                         if (res.code == 0) {
-                          Get.snackbar(
-                            '任务执行通知',
-                            res.msg.toString(),
-                          );
+                          Get.snackbar('任务执行通知', res.msg.toString(),
+                              colorText: Theme.of(context).colorScheme.primary);
                         } else {
-                          Get.snackbar(
-                            '任务执行通知',
-                            res.msg.toString(),
-                          );
+                          Get.snackbar('任务执行通知', res.msg.toString(),
+                              colorText: Theme.of(context).colorScheme.error);
                         }
                         isRunning.value = false;
                         controller.update();

@@ -10,7 +10,8 @@ import '../../../../utils/logger_helper.dart';
 import '../models/option.dart';
 import 'setting_controller.dart';
 
-typedef OptionFormBuilder = Widget Function(Option? option);
+typedef OptionFormBuilder = Widget Function(
+    Option? option, BuildContext context);
 
 class SettingPage extends StatelessWidget {
   SettingPage({super.key, param});
@@ -27,14 +28,14 @@ class SettingPage extends StatelessWidget {
             child: Column(
               children: [
                 _versionCard(context),
-                _noticeTestForm(),
+                _noticeTestForm(context),
                 Flexible(
                   child: controller.isLoaded
                       ? const Center(child: CircularProgressIndicator())
                       : SingleChildScrollView(
                           child: Column(
                             children: [
-                              ..._optionListView(),
+                              ..._optionListView(context),
                             ],
                           ),
                         ),
@@ -59,7 +60,7 @@ class SettingPage extends StatelessWidget {
                   )),
               IconButton(
                   onPressed: () {
-                    _openAddOptionForm();
+                    _openAddOptionForm(context);
                   },
                   icon: const Icon(
                     Icons.add,
@@ -121,7 +122,7 @@ class SettingPage extends StatelessWidget {
     );
   }
 
-  void _openAddOptionForm() {
+  void _openAddOptionForm(context) {
     Map<String, OptionFormBuilder> optionForms = _optionFormMap();
     Get.bottomSheet(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
@@ -157,7 +158,8 @@ class SettingPage extends StatelessWidget {
                                         shape: RoundedRectangleBorder(
                                             borderRadius:
                                                 BorderRadius.circular(5.0)),
-                                        optionForms[choice.value]!(null),
+                                        optionForms[choice.value]!(
+                                            null, context),
                                       );
                                     }
                                   }),
@@ -171,15 +173,15 @@ class SettingPage extends StatelessWidget {
         ));
   }
 
-  List<Widget> _optionListView() {
+  List<Widget> _optionListView(context) {
     Map<String, OptionFormBuilder> optionForms = _optionFormMap();
     List<Widget> children = [];
     for (var option in controller.optionList) {
-      children.add(optionForms[option.name]!(option));
+      children.add(optionForms[option.name]!(option, context));
     }
     return controller.optionList
         .map((option) =>
-            optionForms[option.name]?.call(option) ?? const SizedBox())
+            optionForms[option.name]?.call(option, context) ?? const SizedBox())
         .toList();
   }
 
@@ -202,7 +204,7 @@ class SettingPage extends StatelessWidget {
     return optionForms;
   }
 
-  Widget _monkeyTokenForm(Option? option) {
+  Widget _monkeyTokenForm(Option? option, context) {
     TextEditingController tokenController =
         TextEditingController(text: option?.value.token ?? '');
     final isActive = (option == null ? true : option.isActive).obs;
@@ -274,16 +276,17 @@ class SettingPage extends StatelessWidget {
                                     await controller.saveOption(option!);
                                 if (res.code == 0) {
                                   Get.back();
-                                  Get.snackbar(
-                                    '配置保存成功',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存成功',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                      colorText: Theme.of(context)
+                                          .colorScheme
+                                          .primary);
                                   isEdit.value = false;
                                 } else {
-                                  Get.snackbar(
-                                    '配置保存失败',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存失败',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                      colorText:
+                                          Theme.of(context).colorScheme.error);
                                 }
                               }),
                         ),
@@ -298,7 +301,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _qyWechatForm(Option? option) {
+  Widget _qyWechatForm(Option? option, context) {
     TextEditingController corpIdController =
         TextEditingController(text: option?.value.corpId ?? '');
     TextEditingController corpSecretController =
@@ -383,16 +386,17 @@ class SettingPage extends StatelessWidget {
                                     await controller.saveOption(option!);
                                 if (res.code == 0) {
                                   Get.back();
-                                  Get.snackbar(
-                                    '配置保存成功',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存成功',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                      colorText: Theme.of(context)
+                                          .colorScheme
+                                          .primary);
                                   isEdit.value = false;
                                 } else {
-                                  Get.snackbar(
-                                    '配置保存失败',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存失败',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                      colorText:
+                                          Theme.of(context).colorScheme.error);
                                 }
                               }),
                         ),
@@ -407,7 +411,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _fileListForm(Option? option) {
+  Widget _fileListForm(Option? option, context) {
     TextEditingController usernameController =
         TextEditingController(text: option?.value.username ?? '');
     TextEditingController passwordController =
@@ -475,16 +479,17 @@ class SettingPage extends StatelessWidget {
                                     await controller.saveOption(option!);
                                 if (res.code == 0) {
                                   Get.back();
-                                  Get.snackbar(
-                                    '配置保存成功',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存成功',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                      colorText: Theme.of(context)
+                                          .colorScheme
+                                          .primary);
                                   isEdit.value = false;
                                 } else {
-                                  Get.snackbar(
-                                    '配置保存失败',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存失败',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                      colorText:
+                                          Theme.of(context).colorScheme.error);
                                 }
                               }),
                         ),
@@ -499,7 +504,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _noticeTestForm() {
+  Widget _noticeTestForm(context) {
     TextEditingController titleController =
         TextEditingController(text: '这是一个消息标题');
     TextEditingController messageController =
@@ -551,15 +556,16 @@ class SettingPage extends StatelessWidget {
                                 if (res.code == 0) {
                                   Get.back();
                                   Get.snackbar(
-                                    '测试消息内容发送成功',
-                                    '测试消息内容发送成功：${res.msg}',
-                                  );
+                                      '测试消息内容发送成功', '测试消息内容发送成功：${res.msg}',
+                                      colorText: Theme.of(context)
+                                          .colorScheme
+                                          .primary);
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar(
-                                    '测试消息内容发送失败',
-                                    '测试消息内容发送出错啦：${res.msg}',
-                                  );
+                                      '测试消息内容发送失败', '测试消息内容发送出错啦：${res.msg}',
+                                      colorText:
+                                          Theme.of(context).colorScheme.error);
                                 }
                               }),
                         ),
@@ -574,7 +580,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _iyuuForm(Option? option) {
+  Widget _iyuuForm(Option? option, context) {
     TextEditingController tokenController =
         TextEditingController(text: option?.value.token ?? '');
     TextEditingController proxyController =
@@ -655,16 +661,17 @@ class SettingPage extends StatelessWidget {
                                     await controller.saveOption(option!);
                                 if (res.code == 0) {
                                   Get.back();
-                                  Get.snackbar(
-                                    '配置保存成功',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存成功',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                      colorText: Theme.of(context)
+                                          .colorScheme
+                                          .primary);
                                   isEdit.value = false;
                                 } else {
-                                  Get.snackbar(
-                                    '配置保存失败',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存失败',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                      colorText:
+                                          Theme.of(context).colorScheme.error);
                                 }
                               }),
                         ),
@@ -679,7 +686,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _pushDeerForm(Option? option) {
+  Widget _pushDeerForm(Option? option, context) {
     TextEditingController keyController =
         TextEditingController(text: option?.value.key ?? '');
     TextEditingController proxyController =
@@ -748,16 +755,17 @@ class SettingPage extends StatelessWidget {
                                     await controller.saveOption(option!);
                                 if (res.code == 0) {
                                   Get.back();
-                                  Get.snackbar(
-                                    '配置保存成功',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存成功',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                      colorText: Theme.of(context)
+                                          .colorScheme
+                                          .primary);
                                   isEdit.value = false;
                                 } else {
-                                  Get.snackbar(
-                                    '配置保存失败',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存失败',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                      colorText:
+                                          Theme.of(context).colorScheme.error);
                                 }
                               }),
                         ),
@@ -772,7 +780,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _aliDriveForm(Option? option) {
+  Widget _aliDriveForm(Option? option, context) {
     TextEditingController tokenController =
         TextEditingController(text: option?.value.refreshToken ?? '');
     RxBool welfare = true.obs;
@@ -849,16 +857,17 @@ class SettingPage extends StatelessWidget {
                                     await controller.saveOption(option!);
                                 if (res.code == 0) {
                                   Get.back();
-                                  Get.snackbar(
-                                    '配置保存成功',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存成功',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                      colorText: Theme.of(context)
+                                          .colorScheme
+                                          .primary);
                                   isEdit.value = false;
                                 } else {
-                                  Get.snackbar(
-                                    '配置保存失败',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存失败',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                      colorText:
+                                          Theme.of(context).colorScheme.error);
                                 }
                               }),
                         ),
@@ -873,7 +882,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _ssdForumForm(Option? option) {
+  Widget _ssdForumForm(Option? option, context) {
     TextEditingController cookieController =
         TextEditingController(text: option?.value.cookie ?? '');
     TextEditingController userAgentController =
@@ -955,16 +964,17 @@ class SettingPage extends StatelessWidget {
                                     await controller.saveOption(option!);
                                 if (res.code == 0) {
                                   Get.back();
-                                  Get.snackbar(
-                                    '配置保存成功',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存成功',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                      colorText: Theme.of(context)
+                                          .colorScheme
+                                          .primary);
                                   isEdit.value = false;
                                 } else {
-                                  Get.snackbar(
-                                    '配置保存失败',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存失败',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                      colorText:
+                                          Theme.of(context).colorScheme.error);
                                 }
                               }),
                         ),
@@ -979,7 +989,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _baiduOcrForm(Option? option) {
+  Widget _baiduOcrForm(Option? option, context) {
     TextEditingController appIdController =
         TextEditingController(text: option?.value.appId ?? '');
     TextEditingController apiKeyController =
@@ -1054,16 +1064,17 @@ class SettingPage extends StatelessWidget {
                                     await controller.saveOption(option!);
                                 if (res.code == 0) {
                                   Get.back();
-                                  Get.snackbar(
-                                    '配置保存成功',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存成功',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                      colorText: Theme.of(context)
+                                          .colorScheme
+                                          .primary);
                                   isEdit.value = false;
                                 } else {
-                                  Get.snackbar(
-                                    '配置保存失败',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存失败',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                      colorText:
+                                          Theme.of(context).colorScheme.error);
                                 }
                               }),
                         ),
@@ -1078,7 +1089,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _barkForm(Option? option) {
+  Widget _barkForm(Option? option, context) {
     TextEditingController deviceIdController =
         TextEditingController(text: option?.value.deviceKey ?? '');
     TextEditingController serverController =
@@ -1147,16 +1158,17 @@ class SettingPage extends StatelessWidget {
                                     await controller.saveOption(option!);
                                 if (res.code == 0) {
                                   Get.back();
-                                  Get.snackbar(
-                                    '配置保存成功',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存成功',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                      colorText: Theme.of(context)
+                                          .colorScheme
+                                          .primary);
                                   isEdit.value = false;
                                 } else {
-                                  Get.snackbar(
-                                    '配置保存失败',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存失败',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                      colorText:
+                                          Theme.of(context).colorScheme.error);
                                 }
                               }),
                         ),
@@ -1171,7 +1183,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _pushPlusForm(Option? option) {
+  Widget _pushPlusForm(Option? option, context) {
     TextEditingController tokenController =
         TextEditingController(text: option?.value.token ?? '');
     final isActive = (option == null ? true : option.isActive).obs;
@@ -1236,16 +1248,17 @@ class SettingPage extends StatelessWidget {
                                     await controller.saveOption(option!);
                                 if (res.code == 0) {
                                   Get.back();
-                                  Get.snackbar(
-                                    '配置保存成功',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 保存成功：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存成功',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 保存成功：${res.msg}',
+                                      colorText: Theme.of(context)
+                                          .colorScheme
+                                          .primary);
                                   isEdit.value = false;
                                 } else {
-                                  Get.snackbar(
-                                    '配置保存失败',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 保存出错啦：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存失败',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 保存出错啦：${res.msg}',
+                                      colorText:
+                                          Theme.of(context).colorScheme.error);
                                 }
                               }),
                         ),
@@ -1260,7 +1273,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _wxPusherForm(Option? option) {
+  Widget _wxPusherForm(Option? option, context) {
     TextEditingController tokenController =
         TextEditingController(text: option?.value.token ?? '');
     TextEditingController appIdController =
@@ -1335,16 +1348,17 @@ class SettingPage extends StatelessWidget {
                                     await controller.saveOption(option!);
                                 if (res.code == 0) {
                                   Get.back();
-                                  Get.snackbar(
-                                    '配置保存成功',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存成功',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                      colorText: Theme.of(context)
+                                          .colorScheme
+                                          .primary);
                                   isEdit.value = false;
                                 } else {
-                                  Get.snackbar(
-                                    '配置保存失败',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存失败',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                      colorText:
+                                          Theme.of(context).colorScheme.error);
                                 }
                               }),
                         ),
@@ -1359,7 +1373,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _telegramForm(Option? option) {
+  Widget _telegramForm(Option? option, context) {
     TextEditingController tokenController =
         TextEditingController(text: option?.value.telegramToken ?? '');
     TextEditingController proxyController =
@@ -1435,16 +1449,17 @@ class SettingPage extends StatelessWidget {
                                     await controller.saveOption(option!);
                                 if (res.code == 0) {
                                   Get.back();
-                                  Get.snackbar(
-                                    '配置保存成功',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存成功',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                      colorText: Theme.of(context)
+                                          .colorScheme
+                                          .primary);
                                   isEdit.value = false;
                                 } else {
-                                  Get.snackbar(
-                                    '配置保存失败',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存失败',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                      colorText:
+                                          Theme.of(context).colorScheme.error);
                                 }
                               }),
                         ),
@@ -1459,7 +1474,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _cookieCloudForm(Option? option) {
+  Widget _cookieCloudForm(Option? option, context) {
     TextEditingController serverController =
         TextEditingController(text: option?.value.server ?? '');
     TextEditingController keyController =
@@ -1534,16 +1549,17 @@ class SettingPage extends StatelessWidget {
                                     await controller.saveOption(option!);
                                 if (res.code == 0) {
                                   Get.back();
-                                  Get.snackbar(
-                                    '配置保存成功',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存成功',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                      colorText: Theme.of(context)
+                                          .colorScheme
+                                          .primary);
                                   isEdit.value = false;
                                 } else {
-                                  Get.snackbar(
-                                    '配置保存失败',
-                                    '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
-                                  );
+                                  Get.snackbar('配置保存失败',
+                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                      colorText:
+                                          Theme.of(context).colorScheme.error);
                                 }
                               }),
                         ),

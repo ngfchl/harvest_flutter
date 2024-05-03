@@ -84,12 +84,10 @@ class _SubscribeHistoryPageState extends State<SubscribeHistoryPage> {
                           await controller.removeHistory(history);
                       if (res.code == 0) {
                         Get.snackbar('删除通知', res.msg.toString(),
-                            backgroundColor: Colors.green.shade500,
-                            colorText: Colors.white70);
+                            colorText: Theme.of(context).colorScheme.primary);
                       } else {
                         Get.snackbar('删除通知', res.msg.toString(),
-                            backgroundColor: Colors.red.shade500,
-                            colorText: Colors.white70);
+                            colorText: Theme.of(context).colorScheme.error);
                       }
                     },
                     child: const Text('确认'),

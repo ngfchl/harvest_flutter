@@ -236,11 +236,13 @@ class TorrentView extends GetView<TorrentController> {
                                   'qb') {
                                 TorrentInfo torrentInfo =
                                     controller.showTorrents[index];
-                                return _buildQbTorrentCard(torrentInfo);
+                                return _buildQbTorrentCard(
+                                    torrentInfo, context);
                               } else {
                                 TransmissionBaseTorrent torrentInfo =
                                     controller.showTorrents[index];
-                                return _buildTrTorrentCard(torrentInfo);
+                                return _buildTrTorrentCard(
+                                    torrentInfo, context);
                               }
                             });
                       }),
@@ -878,7 +880,7 @@ class TorrentView extends GetView<TorrentController> {
     }
   }
 
-  Widget _buildQbTorrentCard(TorrentInfo torrentInfo) {
+  Widget _buildQbTorrentCard(TorrentInfo torrentInfo, context) {
     double cardHeight = 80;
     bool paused = torrentInfo.state.toString().contains('pause');
     bool deleteFile = false;
@@ -1142,7 +1144,9 @@ class TorrentView extends GetView<TorrentController> {
                           onPressed: () async {
                             Clipboard.setData(
                                 ClipboardData(text: torrentInfo.hash!));
-                            Get.snackbar('复制种子HASH', '种子HASH复制成功！');
+                            Get.snackbar('复制种子HASH', '种子HASH复制成功！',
+                                colorText:
+                                    Theme.of(context).colorScheme.primary);
                           },
                           icon: const Icon(Icons.copy, size: 10),
                         ),
@@ -1444,10 +1448,10 @@ class TorrentView extends GetView<TorrentController> {
             );
           },
           // onLongPress: () {
-          //   Get.snackbar('长按', '长按！');
+          //   Get.snackbar('长按', '长按！',colorText: Theme.of(context).colorScheme.primary);
           // },
           // onDoubleTap: () {
-          //   Get.snackbar('双击', '双击！');
+          //   Get.snackbar('双击', '双击！',colorText: Theme.of(context).colorScheme.primary);
           // },
           child: Column(
             children: [
@@ -1639,7 +1643,7 @@ class TorrentView extends GetView<TorrentController> {
     );
   }
 
-  Widget _buildTrTorrentCard(TransmissionBaseTorrent torrentInfo) {
+  Widget _buildTrTorrentCard(TransmissionBaseTorrent torrentInfo, context) {
     double cardHeight = 80;
     bool deleteFile = false;
     return CustomCard(
@@ -1814,13 +1818,14 @@ class TorrentView extends GetView<TorrentController> {
         ),
         child: GestureDetector(
             onTap: () {
-              Get.snackbar('单击', '单击！');
+              Get.snackbar('单击', '单击！',
+                  colorText: Theme.of(context).colorScheme.primary);
             },
             // onLongPress: () {
-            //   Get.snackbar('长按', '长按！');
+            //   Get.snackbar('长按', '长按！',colorText: Theme.of(context).colorScheme.primary);
             // },
             // onDoubleTap: () {
-            //   Get.snackbar('双击', '双击！');
+            //   Get.snackbar('双击', '双击！',colorText: Theme.of(context).colorScheme.primary);
             // },
             child: Column(
               children: [

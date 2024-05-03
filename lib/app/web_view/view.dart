@@ -64,9 +64,11 @@ class _WebViewPageState extends State<WebViewPage> {
                     RegExp regex = RegExp(r'(?<=\=)(.*?)(&|$)');
                     // Logger.instance.i(regex.firstMatch(result.attr!)?.group(0));
                     Get.snackbar('获取 UID',
-                        '你的 UID 是：${regex.firstMatch(result.attr!)?.group(0)}');
+                        '你的 UID 是：${regex.firstMatch(result.attr!)?.group(0)}',
+                        colorText: Theme.of(context).colorScheme.primary);
                   } catch (e) {
-                    Get.snackbar('获取 UID 失败', '请手动填写站点 UID');
+                    Get.snackbar('获取 UID 失败', '请手动填写站点 UID',
+                        colorText: Theme.of(context).colorScheme.error);
                     controller.mySite = controller.mySite?.copyWith(userId: '');
                   }
                 },
@@ -84,7 +86,8 @@ class _WebViewPageState extends State<WebViewPage> {
               onPressed: () async {
                 Uri uri = Uri.parse(controller.info!.magnetUrl);
                 if (!await launchUrl(uri)) {
-                  Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？');
+                  Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
+                      colorText: Theme.of(context).colorScheme.error);
                 }
               },
               type: GFButtonType.transparent,
@@ -108,7 +111,8 @@ class _WebViewPageState extends State<WebViewPage> {
             onPressed: () async {
               Uri uri = Uri.parse(controller.url);
               if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-                Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？');
+                Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
+                    colorText: Theme.of(context).colorScheme.error);
               }
             },
             type: GFButtonType.transparent,
@@ -141,7 +145,8 @@ class _WebViewPageState extends State<WebViewPage> {
                       controller.mySite = controller.mySite?.copyWith(
                           userId: regex.firstMatch(result.attr!)?.group(0));
                     } catch (e) {
-                      Get.snackbar('获取 UID 失败', '请手动填写站点 UID');
+                      Get.snackbar('获取 UID 失败', '请手动填写站点 UID',
+                          colorText: Theme.of(context).colorScheme.error);
                       controller.mySite =
                           controller.mySite?.copyWith(userId: '');
                     }
@@ -152,7 +157,7 @@ class _WebViewPageState extends State<WebViewPage> {
                       '保存成功！',
                       response.msg!,
                       snackPosition: SnackPosition.TOP,
-                      backgroundColor: Colors.green.shade400,
+                      colorText: Theme.of(context).colorScheme.primary,
                       duration: const Duration(seconds: 3),
                     );
                   } else {
@@ -160,7 +165,7 @@ class _WebViewPageState extends State<WebViewPage> {
                       '保存出错啦！',
                       response.msg!,
                       snackPosition: SnackPosition.TOP,
-                      backgroundColor: Colors.red.shade400,
+                      colorText: Theme.of(context).colorScheme.error,
                       duration: const Duration(seconds: 3),
                     );
                   }

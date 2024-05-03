@@ -287,7 +287,7 @@ class DownloadForm extends StatelessWidget {
                           'dlLimit': int.tryParse(dlLimitController.text) ?? 0,
                           'ratioLimit':
                               int.tryParse(ratioLimitController.text) ?? 0,
-                        });
+                        }, context);
                         isLoading.value = false;
                       },
                       icon: isLoading.value
@@ -305,7 +305,7 @@ class DownloadForm extends StatelessWidget {
     );
   }
 
-  void submitForm(Map<String, dynamic> formData) async {
+  void submitForm(Map<String, dynamic> formData, context) async {
     try {
       final TorrentController torrentController =
           Get.put(TorrentController(downloader, false));
@@ -320,10 +320,10 @@ class DownloadForm extends StatelessWidget {
       if (res.code == 0) {
         Get.back();
         Get.snackbar('种子推送成功！', res.msg!,
-            backgroundColor: Colors.green.shade300, colorText: Colors.white);
+            colorText: Theme.of(context).colorScheme.primary);
       } else {
         Get.snackbar('种子推送失败！', res.msg!,
-            backgroundColor: Colors.red.shade300, colorText: Colors.white);
+            colorText: Theme.of(context).colorScheme.error);
       }
     } finally {}
   }
@@ -386,8 +386,7 @@ openDownloaderListSheet(BuildContext context, SearchTorrentInfo info) {
                         onTap: () async {
                           // if (downloader.category.toLowerCase() != 'qb') {
                           //   Get.snackbar('警告', '目前仅支持 QB，Tr 相关功能正在开发中！',
-                          //       backgroundColor: Colors.amber.shade300,
-                          //       colorText: Colors.white54);
+                          //       backgroundColor: Colors.amber.shade300,colorText: Theme.of(context).colorScheme.primary);
                           //   return;
                           // }
 

@@ -38,10 +38,10 @@ class DownloadController extends GetxController {
   Map<int, dynamic> speedInfo = {};
 
   @override
-  void onInit() {
+  void onInit() async {
     duration = SPUtil.getDouble('duration', defaultValue: 3.14)!;
     timerDuration = SPUtil.getDouble('timerDuration', defaultValue: 3.14)!;
-    getDownloaderListFromServer();
+    await getDownloaderListFromServer();
     if (realTimeState) {
       refreshDownloadStatus();
       // 设置定时器，每隔一定时间刷新下载器数据
@@ -132,7 +132,7 @@ class DownloadController extends GetxController {
 
   Future<CommonResponse> removeDownloader(Downloader downloader) async {
     CommonResponse res = await removeDownloaderApi(downloader);
-    getDownloaderListFromServer();
+    await getDownloaderListFromServer();
     update();
     return res;
   }
@@ -239,7 +239,7 @@ class DownloadController extends GetxController {
     update();
   }
 
-  saveDownloaderToServer(Downloader downloader) async {
+  saveDownloaderToServer(Downloader downloader, context) async {
     CommonResponse response;
     if (downloader.id != 0) {
       response = await editDownloaderApi(downloader);
@@ -251,7 +251,7 @@ class DownloadController extends GetxController {
         '保存成功！',
         response.msg!,
         snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.green.shade400,
+        colorText: Theme.of(context).colorScheme.primary,
         duration: const Duration(seconds: 3),
       );
       return true;
@@ -260,14 +260,14 @@ class DownloadController extends GetxController {
         '保存出错啦！',
         response.msg!,
         snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.red.shade400,
+        colorText: Theme.of(context).colorScheme.error,
         duration: const Duration(seconds: 3),
       );
       return false;
     }
   }
 
-  getTorrentsPathList() async {
+  getTorrentsPathList(context) async {
     CommonResponse response = await getDownloaderPaths();
     if (response.code == 0) {
       pathList = [
@@ -279,7 +279,7 @@ class DownloadController extends GetxController {
         '获取种子文件夹出错啦！',
         response.msg!,
         snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.red.shade400,
+        colorText: Theme.of(context).colorScheme.error,
         duration: const Duration(seconds: 3),
       );
     }

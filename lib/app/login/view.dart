@@ -356,9 +356,12 @@ class _LoginPageState extends State<LoginPage> {
                           bool flag =
                               await controller.testServerConnection(server);
                           if (flag) {
-                            Get.snackbar('连接状态', '服务器连接成功');
+                            Get.snackbar('连接状态', '服务器连接成功',
+                                colorText:
+                                    Theme.of(context).colorScheme.primary);
                           } else {
-                            Get.snackbar('连接状态', '服务器连接失败');
+                            Get.snackbar('连接状态', '服务器连接失败',
+                                colorText: Theme.of(context).colorScheme.error);
                           }
                         },
                         icon: controller.isLoading
@@ -417,21 +420,24 @@ class _LoginPageState extends State<LoginPage> {
                             Logger.instance.i(result);
                             if (result.code == 0) {
                               Get.snackbar(
-                                server.id == 0 ? '保存结果' : '更新结果',
-                                result.msg!,
-                                snackPosition: SnackPosition.BOTTOM,
-                                duration: const Duration(seconds: 3),
-                              );
+                                  server.id == 0 ? '保存结果' : '更新结果', result.msg!,
+                                  snackPosition: SnackPosition.BOTTOM,
+                                  duration: const Duration(seconds: 3),
+                                  colorText: server.id == 0
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Theme.of(context).colorScheme.error);
                               Navigator.pop(context);
                             } else {
                               Get.snackbar(
-                                server.id == 0 ? '保存结果' : '更新结果',
-                                server.id == 0
-                                    ? '保存服务器时出错：${result.msg}'
-                                    : '更新服务器时出错：${result.msg}',
-                                snackPosition: SnackPosition.BOTTOM,
-                                duration: const Duration(seconds: 3),
-                              );
+                                  server.id == 0 ? '保存结果' : '更新结果',
+                                  server.id == 0
+                                      ? '保存服务器时出错：${result.msg}'
+                                      : '更新服务器时出错：${result.msg}',
+                                  snackPosition: SnackPosition.BOTTOM,
+                                  duration: const Duration(seconds: 3),
+                                  colorText: server.id == 0
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Theme.of(context).colorScheme.error);
                             }
                           }
                         },
