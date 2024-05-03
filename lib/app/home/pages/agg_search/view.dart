@@ -279,15 +279,18 @@ class _AggSearchPageState extends State<AggSearchPage>
               onTap: () {
                 Get.defaultDialog(
                     title: '海报预览',
-                    content: Image.network(
-                      imgUrl,
-                      errorBuilder: (BuildContext context, Object exception,
-                          StackTrace? stackTrace) {
-                        // Placeholder widget when loading fails
-                        return const Image(
-                            image: AssetImage('assets/images/logo.png'));
-                      },
-                      fit: BoxFit.fitHeight,
+                    content: InkWell(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Image.network(
+                        imgUrl,
+                        errorBuilder: (BuildContext context, Object exception,
+                            StackTrace? stackTrace) {
+                          // Placeholder widget when loading fails
+                          return const Image(
+                              image: AssetImage('assets/images/logo.png'));
+                        },
+                        fit: BoxFit.fitHeight,
+                      ),
                     ));
               },
               child: GFAvatar(
@@ -358,9 +361,9 @@ class _AggSearchPageState extends State<AggSearchPage>
               text: info.title,
               ellipsis: "...",
               maxLines: 1,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
-                color: Colors.black54,
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
             subTitle: Padding(
@@ -369,9 +372,9 @@ class _AggSearchPageState extends State<AggSearchPage>
                 text: info.subtitle,
                 ellipsis: "...",
                 maxLines: 1,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 10,
-                  color: Colors.black38,
+                  color: Theme.of(context).colorScheme.secondary,
                 ),
               ),
             ),
