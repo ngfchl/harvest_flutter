@@ -261,42 +261,65 @@ class _AggSearchPageState extends State<AggSearchPage>
           .w('显示出错啦: ${info.siteId} -  $mySite - $website');
       return const SizedBox.shrink();
     }
+    String imgUrl = info.poster.isNotEmpty &&
+            !info.poster.endsWith('spinner.svg') &&
+            !info.poster.endsWith('trans.gif')
+        ? info.poster.startsWith("http")
+            ? info.poster
+            : '${mySite.mirror}${info.poster}'
+        : website.logo.startsWith("http")
+            ? website.logo
+            : '${mySite.mirror}${website.logo}';
     return CustomCard(
       child: Column(
         children: [
           GFListTile(
             padding: EdgeInsets.zero,
-            avatar: GFAvatar(
-              backgroundImage: Image.network(
-                website.logo.startsWith("http")
-                    ? website.logo
-                    : '${mySite.mirror}${website.logo}',
-                errorBuilder: (BuildContext context, Object exception,
-                    StackTrace? stackTrace) {
-                  // Placeholder widget when loading fails
-                  return const Image(
-                      image: AssetImage('assets/images/logo.png'));
-                },
-                fit: BoxFit.fitHeight,
-              ).image,
-              shape: GFAvatarShape.standard,
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const Expanded(
-                      child: SizedBox(),
-                    ),
-                    SizedBox(
-                      width: double.infinity,
-                      child: Center(
-                        child: CustomTextTag(
-                          labelText: website.name.toString(),
-                          backgroundColor: Colors.teal.shade500,
+            avatar: InkWell(
+              onTap: () {
+                Get.defaultDialog(
+                    title: '海报预览',
+                    content: Image.network(
+                      imgUrl,
+                      errorBuilder: (BuildContext context, Object exception,
+                          StackTrace? stackTrace) {
+                        // Placeholder widget when loading fails
+                        return const Image(
+                            image: AssetImage('assets/images/logo.png'));
+                      },
+                      fit: BoxFit.fitHeight,
+                    ));
+              },
+              child: GFAvatar(
+                backgroundImage: Image.network(
+                  imgUrl,
+                  errorBuilder: (BuildContext context, Object exception,
+                      StackTrace? stackTrace) {
+                    // Placeholder widget when loading fails
+                    return const Image(
+                        image: AssetImage('assets/images/logo.png'));
+                  },
+                  fit: BoxFit.fitHeight,
+                ).image,
+                shape: GFAvatarShape.standard,
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Expanded(
+                        child: SizedBox(),
+                      ),
+                      SizedBox(
+                        width: double.infinity,
+                        child: Center(
+                          child: CustomTextTag(
+                            labelText: website.name.toString(),
+                            backgroundColor: Colors.teal.shade500,
+                          ),
                         ),
                       ),
-                    ),
-                  ]),
+                    ]),
+              ),
             ),
             icon: InkWell(
               onLongPress: () async =>
