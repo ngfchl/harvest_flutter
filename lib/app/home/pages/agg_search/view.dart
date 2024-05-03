@@ -11,6 +11,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../common/card_view.dart';
+import '../../../../common/form_widgets.dart';
 import '../../../../common/utils.dart';
 import '../../../../utils/logger_helper.dart' as LoggerHelper;
 import '../../../../utils/string_utils.dart';
@@ -471,6 +472,22 @@ class _AggSearchPageState extends State<AggSearchPage>
               ],
             ),
           ),
+          if (info.progress != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: GFProgressBar(
+                  percentage: info.progress! / 100,
+                  progressHeadType: GFProgressHeadType.square,
+                  trailing: Text(
+                    '${(info.progress!).toStringAsFixed(2)}%',
+                    style: const TextStyle(
+                      fontSize: 10,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  alignment: MainAxisAlignment.center,
+                  progressBarColor: Colors.green),
+            ),
         ],
       ),
     );
@@ -482,6 +499,7 @@ class _AggSearchPageState extends State<AggSearchPage>
     List<MySite> canSearchList = controller.mySiteController.mySiteList
         .where((element) => element.available && element.searchTorrents)
         .toList();
+    TextEditingController searchKey = TextEditingController();
     Get.bottomSheet(SizedBox(
       width: double.infinity,
       child: CustomCard(
@@ -579,11 +597,30 @@ class _AggSearchPageState extends State<AggSearchPage>
                   ],
                 ),
                 const SizedBox(height: 12),
+                CustomTextField(
+                  controller: searchKey,
+                  labelText: '筛选',
+                  onChanged: (String value) {
+                    searchKey.text = value;
+                    controller.update();
+                  },
+                ),
                 GetBuilder<AggSearchController>(builder: (controller) {
                   return Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: canSearchList.map((MySite mySite) {
+                    children: canSearchList
+                        .where((element) =>
+                            element.nickname
+                                .toLowerCase()
+                                .contains(searchKey.text.toLowerCase()) ||
+                            element.site
+                                .toLowerCase()
+                                .contains(searchKey.text.toLowerCase()) ||
+                            element.mirror!
+                                .toLowerCase()
+                                .contains(searchKey.text.toLowerCase()))
+                        .map((MySite mySite) {
                       WebSite? webSite =
                           controller.mySiteController.webSiteList[mySite.site];
                       if (webSite == null || !webSite.searchTorrents) {
