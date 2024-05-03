@@ -681,22 +681,28 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                 CustomCard(
                   height: 400,
                   padding: const EdgeInsets.all(12),
-                  child: ListView(children: [
-                    GFTypography(
-                      text: '添加种子',
-                      icon: const Icon(Icons.add),
-                      dividerWidth: 108,
-                      textColor: Theme.of(context).colorScheme.onBackground,
-                      dividerColor: Theme.of(context).colorScheme.onBackground,
+                  child: Column(children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: GFTypography(
+                        text: '添加种子',
+                        icon: const Icon(Icons.add),
+                        dividerWidth: 108,
+                        textColor: Theme.of(context).colorScheme.onBackground,
+                        dividerColor:
+                            Theme.of(context).colorScheme.onBackground,
+                      ),
                     ),
-                    DownloadForm(
-                      categories: controller.categoryMap.values.fold({},
-                          (map, element) {
-                        map[element!.name!] = element.savePath ?? '';
-                        return map;
-                      }),
-                      downloader: controller.downloader,
-                      info: null,
+                    Expanded(
+                      child: DownloadForm(
+                        categories: controller.categoryMap.values.fold({},
+                            (map, element) {
+                          map[element!.name!] = element.savePath ?? '';
+                          return map;
+                        }),
+                        downloader: controller.downloader,
+                        info: null,
+                      ),
                     ),
                   ]),
                 ),
