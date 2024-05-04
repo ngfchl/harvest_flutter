@@ -48,6 +48,7 @@ class CustomTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final int? maxLines;
   final Function(String)? onChanged;
+  final Function()? onTap;
 
   const CustomTextField({
     super.key,
@@ -61,6 +62,7 @@ class CustomTextField extends StatelessWidget {
     this.prefixIcon,
     this.suffixText,
     this.onChanged,
+    this.onTap,
   });
 
   @override
@@ -70,6 +72,7 @@ class CustomTextField extends StatelessWidget {
       child: TextField(
         controller: controller,
         onChanged: onChanged,
+        onTap: onTap,
         maxLines: maxLines,
         inputFormatters: inputFormatters,
         style: const TextStyle(fontSize: 13),
