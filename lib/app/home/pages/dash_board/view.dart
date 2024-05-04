@@ -763,10 +763,12 @@ class _DashBoardPageState extends State<DashBoardPage>
 
   Widget _buildSiteInfo() {
     int maxUploaded = controller.statusList
+        .where((element) => element.available == true)
         .map((MySite mySite) => mySite.latestStatusInfo?.uploaded ?? 0)
         .reduce((a, b) => a > b ? a : b);
 
     int maxDownloaded = controller.statusList
+        .where((element) => element.available == true)
         .map((MySite mySite) => mySite.latestStatusInfo?.downloaded ?? 0)
         .reduce((a, b) => a > b ? a : b);
 
@@ -777,219 +779,232 @@ class _DashBoardPageState extends State<DashBoardPage>
         colorHue: ColorHue.multiple(colorHues: [ColorHue.red, ColorHue.orange]),
         colorBrightness: ColorBrightness.dark,
         colorSaturation: ColorSaturation.highSaturation);
-    return CustomCard(
-      height: 200,
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Column(
-        children: [
-          Text('站点数据',
-              style: TextStyle(
-                fontSize: 12,
-                color: Theme.of(context).colorScheme.primary,
-              )),
-          const SizedBox(height: 5),
-          Expanded(
-            child: ListView.builder(
-                itemCount: controller.statusList.length,
-                itemBuilder: (context, index) {
-                  MySite mySite = controller.statusList[index];
-                  StatusInfo? status = mySite.latestStatusInfo;
+    return GetBuilder<DashBoardController>(builder: (controller) {
+      var statusList = controller.statusList
+          .where((element) => element.available == true)
+          .toList();
+      return CustomCard(
+        height: 200,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Column(
+          children: [
+            Text('站点数据',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.primary,
+                )),
+            const SizedBox(height: 5),
+            Expanded(
+              child: ListView.builder(
+                  itemCount: statusList.length,
+                  itemBuilder: (context, index) {
+                    MySite mySite = statusList[index];
+                    StatusInfo? status = mySite.latestStatusInfo;
 
-                  return Container(
-                    color: Colors.transparent,
-                    padding: const EdgeInsets.all(1),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  SizedBox(
-                                    width: 60,
-                                    child: Text(
-                                      filesize(status?.uploaded ?? 0),
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary,
-                                      ),
-                                      textAlign: TextAlign.right,
-                                    ),
-                                  ),
-                                  const SizedBox(
-                                    width: 5,
-                                  ),
-                                  Expanded(
-                                    child: SizedBox(
-                                      height: 18,
-                                      // width: 100,
-                                      child: SfLinearGauge(
-                                        showTicks: false,
-                                        showLabels: false,
-                                        animateAxis: true,
-                                        isAxisInversed: true,
-                                        axisTrackStyle:
-                                            const LinearAxisTrackStyle(
-                                                thickness: 16,
-                                                edgeStyle:
-                                                    LinearEdgeStyle.bothFlat,
-                                                borderWidth: 2,
-                                                borderColor: Color(0xff898989),
-                                                color: Colors.transparent),
-                                        barPointers: <LinearBarPointer>[
-                                          LinearBarPointer(
-                                            value: (status?.uploaded ?? 0) /
-                                                maxUploaded *
-                                                100,
-                                            thickness: 16,
-                                            edgeStyle: LinearEdgeStyle.bothFlat,
-                                            color: uploadColor,
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(
-                                width: 70,
-                                child: Center(
-                                    child: EllipsisText(
-                                  text: mySite.nickname,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                  ),
-                                  ellipsis: '...',
-                                  maxLines: 1,
-                                ))),
-                            Expanded(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  Expanded(
-                                    child: SizedBox(
-                                        height: 18,
-                                        // width: 100,
-                                        child: SfLinearGauge(
-                                          showTicks: false,
-                                          showLabels: false,
-                                          animateAxis: true,
-                                          axisTrackStyle:
-                                              const LinearAxisTrackStyle(
-                                            thickness: 16,
-                                            edgeStyle: LinearEdgeStyle.bothFlat,
-                                            borderWidth: 2,
-                                            borderColor: Color(0xff898989),
-                                            color: Colors.transparent,
-                                          ),
-                                          barPointers: <LinearBarPointer>[
-                                            LinearBarPointer(
-                                                value:
-                                                    (status?.downloaded ?? 0) /
-                                                        maxDownloaded *
-                                                        100,
-                                                thickness: 16,
-                                                edgeStyle:
-                                                    LinearEdgeStyle.bothFlat,
-                                                color: downloadColor),
-                                          ],
-                                        )),
-                                  ),
-                                  const SizedBox(
-                                    width: 5,
-                                  ),
-                                  SizedBox(
+                    return Container(
+                      color: Colors.transparent,
+                      padding: const EdgeInsets.all(1),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    SizedBox(
                                       width: 60,
                                       child: Text(
-                                        filesize(status?.downloaded ?? 0),
+                                        filesize(status?.uploaded ?? 0),
                                         style: TextStyle(
                                           fontSize: 10,
                                           color: Theme.of(context)
                                               .colorScheme
                                               .primary,
                                         ),
-                                      )),
-                                ],
+                                        textAlign: TextAlign.right,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      width: 5,
+                                    ),
+                                    Expanded(
+                                      child: SizedBox(
+                                        height: 18,
+                                        // width: 100,
+                                        child: SfLinearGauge(
+                                          showTicks: false,
+                                          showLabels: false,
+                                          animateAxis: true,
+                                          isAxisInversed: true,
+                                          axisTrackStyle:
+                                              const LinearAxisTrackStyle(
+                                                  thickness: 16,
+                                                  edgeStyle:
+                                                      LinearEdgeStyle.bothFlat,
+                                                  borderWidth: 2,
+                                                  borderColor:
+                                                      Color(0xff898989),
+                                                  color: Colors.transparent),
+                                          barPointers: <LinearBarPointer>[
+                                            LinearBarPointer(
+                                              value: (status?.uploaded ?? 0) /
+                                                  maxUploaded *
+                                                  100,
+                                              thickness: 16,
+                                              edgeStyle:
+                                                  LinearEdgeStyle.bothFlat,
+                                              color: uploadColor,
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                }),
-          ),
-        ],
-      ),
-    );
+                              SizedBox(
+                                  width: 70,
+                                  child: Center(
+                                      child: EllipsisText(
+                                    text: mySite.nickname,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                    ),
+                                    ellipsis: '...',
+                                    maxLines: 1,
+                                  ))),
+                              Expanded(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Expanded(
+                                      child: SizedBox(
+                                          height: 18,
+                                          // width: 100,
+                                          child: SfLinearGauge(
+                                            showTicks: false,
+                                            showLabels: false,
+                                            animateAxis: true,
+                                            axisTrackStyle:
+                                                const LinearAxisTrackStyle(
+                                              thickness: 16,
+                                              edgeStyle:
+                                                  LinearEdgeStyle.bothFlat,
+                                              borderWidth: 2,
+                                              borderColor: Color(0xff898989),
+                                              color: Colors.transparent,
+                                            ),
+                                            barPointers: <LinearBarPointer>[
+                                              LinearBarPointer(
+                                                  value: (status?.downloaded ??
+                                                          0) /
+                                                      maxDownloaded *
+                                                      100,
+                                                  thickness: 16,
+                                                  edgeStyle:
+                                                      LinearEdgeStyle.bothFlat,
+                                                  color: downloadColor),
+                                            ],
+                                          )),
+                                    ),
+                                    const SizedBox(
+                                      width: 5,
+                                    ),
+                                    SizedBox(
+                                        width: 60,
+                                        child: Text(
+                                          filesize(status?.downloaded ?? 0),
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary,
+                                          ),
+                                        )),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildSmartLabelPieChart(context) {
-    return CustomCard(
-      height: 240,
-      padding: const EdgeInsets.only(left: 10),
-      child: SfCircularChart(
-        title: ChartTitle(
-            text: '上传数据',
-            textStyle: TextStyle(
-              fontSize: 11,
-              color: Theme.of(context).colorScheme.primary,
-            )),
-        centerX: '47%',
-        centerY: '45%',
-        margin: const EdgeInsets.all(10),
-        legend: Legend(
-            position: LegendPosition.left,
-            // height: "20",
-            isVisible: true,
-            iconWidth: 8,
-            padding: 5,
-            itemPadding: 5,
-            // width: '64',
-            isResponsive: true,
-            textStyle: TextStyle(
-              fontSize: 8,
-              color: Theme.of(context).colorScheme.primary,
-            )),
-        series: _getSmartLabelPieSeries(),
-        tooltipBehavior: TooltipBehavior(
-          enable: true,
-          header: '',
-          canShowMarker: false,
-          activationMode: ActivationMode.singleTap,
-          builder: (dynamic data, dynamic point, dynamic series, int pointIndex,
-              int seriesIndex) {
-            return Container(
-              color: Theme.of(context).colorScheme.background.withOpacity(0.8),
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                '${data.nickname}: ${filesize(data.latestStatusInfo?.uploaded ?? 0)}',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Theme.of(context).colorScheme.primary,
+    return GetBuilder<DashBoardController>(builder: (controller) {
+      return CustomCard(
+        height: 240,
+        padding: const EdgeInsets.only(left: 10),
+        child: SfCircularChart(
+          title: ChartTitle(
+              text: '上传数据',
+              textStyle: TextStyle(
+                fontSize: 11,
+                color: Theme.of(context).colorScheme.primary,
+              )),
+          centerX: '47%',
+          centerY: '45%',
+          margin: const EdgeInsets.all(10),
+          legend: Legend(
+              position: LegendPosition.left,
+              // height: "20",
+              isVisible: true,
+              iconWidth: 8,
+              padding: 5,
+              itemPadding: 5,
+              // width: '64',
+              isResponsive: true,
+              textStyle: TextStyle(
+                fontSize: 8,
+                color: Theme.of(context).colorScheme.primary,
+              )),
+          series: _getSmartLabelPieSeries(),
+          tooltipBehavior: TooltipBehavior(
+            enable: true,
+            header: '',
+            canShowMarker: false,
+            activationMode: ActivationMode.singleTap,
+            builder: (dynamic data, dynamic point, dynamic series,
+                int pointIndex, int seriesIndex) {
+              return Container(
+                color:
+                    Theme.of(context).colorScheme.background.withOpacity(0.8),
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  '${data.nickname}: ${filesize(data.latestStatusInfo?.uploaded ?? 0)}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
+          enableMultiSelection: true,
         ),
-        enableMultiSelection: true,
-      ),
-    );
+      );
+    });
   }
 
   List<PieSeries<MySite, String>> _getSmartLabelPieSeries() {
     return <PieSeries<MySite, String>>[
       PieSeries<MySite, String>(
         name: '站点上传数据汇总',
-        dataSource: controller.statusList,
+        dataSource: controller.statusList
+            .where((element) => element.available == true)
+            .toList(),
         xValueMapper: (MySite data, _) => data.nickname,
-        yValueMapper: (MySite data, _) => data.latestStatusInfo?.uploaded,
+        yValueMapper: (MySite data, _) => data.latestStatusInfo?.uploaded ?? 0,
         dataLabelMapper: (MySite data, _) =>
             '${data.nickname}: ${filesize(data.latestStatusInfo?.uploaded ?? 0)}',
         enableTooltip: true,
@@ -1019,171 +1034,195 @@ class _DashBoardPageState extends State<DashBoardPage>
 
   Widget _buildStackedBar(context) {
     try {
-      return CustomCard(
-        height: 280,
-        child: Column(
-          children: [
-            SizedBox(
-              height: 200,
-              child: SfCartesianChart(
-                  title: ChartTitle(
-                      text: '每日数据',
-                      textStyle: TextStyle(
-                          fontSize: 11,
-                          color: Theme.of(context).colorScheme.primary)),
-                  isTransposed: true,
-                  margin: const EdgeInsets.all(15),
-                  legend: Legend(
-                      isVisible: false,
-                      iconWidth: 8,
-                      iconHeight: 8,
-                      padding: 5,
-                      itemPadding: 5,
-                      textStyle: TextStyle(
-                        fontSize: 8,
-                        color: Theme.of(context).colorScheme.primary,
-                      )),
-                  enableSideBySideSeriesPlacement: false,
-                  plotAreaBorderWidth: 0,
-                  enableAxisAnimation: true,
-                  selectionType: SelectionType.point,
-                  zoomPanBehavior: ZoomPanBehavior(
-                    enablePinching: true,
-                    enableDoubleTapZooming: true,
-                    zoomMode: ZoomMode.x,
-                    enablePanning: true,
-                    enableMouseWheelZooming: true,
-                    enableSelectionZooming: true,
-                    maximumZoomLevel: 0.3,
-                  ),
-                  tooltipBehavior: TooltipBehavior(
-                    enable: true,
-                    canShowMarker: true,
-                    duration: 0,
-                    activationMode: ActivationMode.singleTap,
-                    tooltipPosition: TooltipPosition.auto,
-                    builder: (dynamic data, dynamic point, dynamic series,
-                        int pointIndex, int seriesIndex) {
-                      return Container(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .background
-                            .withOpacity(0.8),
-                        padding: const EdgeInsets.all(8),
-                        child: SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              Text(
-                                point.x,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primary
-                                      .withOpacity(0.8),
+      return GetBuilder<DashBoardController>(builder: (controller) {
+        return CustomCard(
+          height: 280,
+          child: Column(
+            children: [
+              SizedBox(
+                height: 200,
+                child: SfCartesianChart(
+                    title: ChartTitle(
+                        text: '每日数据',
+                        textStyle: TextStyle(
+                            fontSize: 11,
+                            color: Theme.of(context).colorScheme.primary)),
+                    isTransposed: true,
+                    margin: const EdgeInsets.all(15),
+                    legend: Legend(
+                        isVisible: false,
+                        iconWidth: 8,
+                        iconHeight: 8,
+                        padding: 5,
+                        itemPadding: 5,
+                        textStyle: TextStyle(
+                          fontSize: 8,
+                          color: Theme.of(context).colorScheme.primary,
+                        )),
+                    enableSideBySideSeriesPlacement: false,
+                    plotAreaBorderWidth: 0,
+                    enableAxisAnimation: true,
+                    selectionType: SelectionType.point,
+                    zoomPanBehavior: ZoomPanBehavior(
+                      enablePinching: true,
+                      enableDoubleTapZooming: true,
+                      zoomMode: ZoomMode.x,
+                      enablePanning: true,
+                      enableMouseWheelZooming: true,
+                      enableSelectionZooming: true,
+                      maximumZoomLevel: 0.3,
+                    ),
+                    tooltipBehavior: TooltipBehavior(
+                      enable: true,
+                      canShowMarker: true,
+                      duration: 0,
+                      activationMode: ActivationMode.singleTap,
+                      tooltipPosition: TooltipPosition.auto,
+                      builder: (dynamic data, dynamic point, dynamic series,
+                          int pointIndex, int seriesIndex) {
+                        return Container(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .background
+                              .withOpacity(0.8),
+                          padding: const EdgeInsets.all(8),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                Text(
+                                  point.x,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary
+                                        .withOpacity(0.8),
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                '${series.name}: ${ProperFilesize.generateHumanReadableFilesize(point.y)}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .secondary
-                                      .withOpacity(0.8),
+                                Text(
+                                  '${series.name}: ${ProperFilesize.generateHumanReadableFilesize(point.y)}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .secondary
+                                        .withOpacity(0.8),
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                  primaryXAxis: CategoryAxis(
-                    majorGridLines: const MajorGridLines(width: 0),
-                    axisLabelFormatter: (AxisLabelRenderDetails details) {
-                      return ChartAxisLabel(
-                        details.text,
-                        TextStyle(
-                          fontSize: 10,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      );
-                    },
-                  ),
-                  primaryYAxis: NumericAxis(
-                    axisLine: const AxisLine(width: 0),
-                    axisLabelFormatter: (AxisLabelRenderDetails details) {
-                      return ChartAxisLabel(
-                        filesize(details.value.toInt()),
-                        TextStyle(
-                          fontSize: 10,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      );
-                    },
-                    majorTickLines: const MajorTickLines(size: 0),
-                  ),
-                  series: List.generate(controller.stackChartDataList.length,
-                      (index) {
-                    Map siteData = controller.stackChartDataList[index];
-                    List<StatusInfo?> dataSource = siteData['data'].length >= 15
-                        ? siteData['data'].sublist(siteData['data'].length - 15)
-                        : siteData['data'];
-                    return StackedBarSeries<StatusInfo?, String>(
-                      name: siteData['site'],
-                      // width: 0.5,
-                      borderRadius: BorderRadius.circular(1),
-                      legendIconType: LegendIconType.circle,
-                      dataSource: dataSource,
-                      // isVisibleInLegend: true,
-                      xValueMapper: (StatusInfo? status, loop) => loop > 0
-                          ? formatCreatedTimeToDateString(status!)
-                          : null,
-                      yValueMapper: (StatusInfo? status, loop) {
-                        if (loop > 0 && loop < dataSource.length) {
-                          num increase =
-                              status!.uploaded - dataSource[loop - 1]!.uploaded;
-                          return increase > 0 ? increase : 0;
-                        }
-                        return null;
+                        );
                       },
-                      // pointColorMapper: (StatusInfo status, _) =>
-                      //     RandomColor().randomColor(),
-                      emptyPointSettings: const EmptyPointSettings(
-                        mode: EmptyPointMode.drop,
-                      ),
-                      dataLabelMapper: (StatusInfo? status, _) =>
-                          siteData['site'],
-                      // color: RandomColor().randomColor(),
-                      // enableTooltip: true,
-                    );
-                  }).toList()),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              child: Row(
-                children: [
-                  CustomTextTag(labelText: '最近${controller.days}天'),
-                  Expanded(
-                    child: Slider(
-                        min: 1,
-                        max: 15,
-                        divisions: 14,
-                        label: controller.days.toString(),
-                        value: controller.days.toDouble(),
-                        onChanged: (value) {
-                          controller.days = value.toInt();
+                    ),
+                    primaryXAxis: CategoryAxis(
+                      majorGridLines: const MajorGridLines(width: 0),
+                      axisLabelFormatter: (AxisLabelRenderDetails details) {
+                        return ChartAxisLabel(
+                          details.text,
+                          TextStyle(
+                            fontSize: 10,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        );
+                      },
+                    ),
+                    primaryYAxis: NumericAxis(
+                      axisLine: const AxisLine(width: 0),
+                      axisLabelFormatter: (AxisLabelRenderDetails details) {
+                        return ChartAxisLabel(
+                          filesize(details.value.toInt()),
+                          TextStyle(
+                            fontSize: 10,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        );
+                      },
+                      majorTickLines: const MajorTickLines(size: 0),
+                    ),
+                    series: List.generate(controller.stackChartDataList.length,
+                        (index) {
+                      Map siteData = controller.stackChartDataList[index];
+                      List<StatusInfo?> dataSource =
+                          siteData['data'].length >= 15
+                              ? siteData['data']
+                                  .sublist(siteData['data'].length - 15)
+                              : siteData['data'];
+                      return StackedBarSeries<StatusInfo?, String>(
+                        name: siteData['site'],
+                        // width: 0.5,
+                        borderRadius: BorderRadius.circular(1),
+                        legendIconType: LegendIconType.circle,
+                        dataSource: dataSource,
+                        // isVisibleInLegend: true,
+                        xValueMapper: (StatusInfo? status, loop) => loop > 0
+                            ? formatCreatedTimeToDateString(status!)
+                            : null,
+                        yValueMapper: (StatusInfo? status, loop) {
+                          if (loop > 0 && loop < dataSource.length) {
+                            num increase = status!.uploaded -
+                                dataSource[loop - 1]!.uploaded;
+                            return increase > 0 ? increase : 0;
+                          }
+                          return null;
+                        },
+                        // pointColorMapper: (StatusInfo status, _) =>
+                        //     RandomColor().randomColor(),
+                        emptyPointSettings: const EmptyPointSettings(
+                          mode: EmptyPointMode.drop,
+                        ),
+                        dataLabelMapper: (StatusInfo? status, _) =>
+                            siteData['site'],
+                        // color: RandomColor().randomColor(),
+                        // enableTooltip: true,
+                      );
+                    }).toList()),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Row(
+                  children: [
+                    CustomTextTag(labelText: '最近${controller.days}天'),
+                    InkWell(
+                      child: const Icon(Icons.remove),
+                      onTap: () {
+                        if (controller.days > 1) {
+                          controller.days--;
                           controller.initChartData();
                           controller.update();
-                        }),
-                  ),
-                ],
+                        }
+                      },
+                    ),
+                    Expanded(
+                      child: Slider(
+                          min: 1,
+                          max: 14,
+                          divisions: 14,
+                          label: controller.days.toString(),
+                          value: controller.days.toDouble(),
+                          onChanged: (value) {
+                            controller.days = value.toInt();
+                            controller.initChartData();
+                            controller.update();
+                          }),
+                    ),
+                    InkWell(
+                      child: const Icon(Icons.add),
+                      onTap: () {
+                        if (controller.days < 14) {
+                          controller.days++;
+                          controller.initChartData();
+                          controller.update();
+                        }
+                      },
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
-      );
+            ],
+          ),
+        );
+      });
     } catch (e, trace) {
       Logger.instance.e(e);
       Logger.instance.e(trace);
