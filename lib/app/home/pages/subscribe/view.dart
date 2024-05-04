@@ -319,6 +319,31 @@ class _SubscribePageState extends State<SubscribePage> {
                                 controller:
                                     controller.downloaderCategoryController,
                                 labelText: '分类',
+                                onTap: () async {
+                                  if (controller.categories.isEmpty) {
+                                    controller.subController
+                                        .isDownloaderLoading = true;
+                                    controller.update();
+                                    controller.categories.value =
+                                        await controller.subController
+                                            .getDownloaderCategories(controller
+                                                .subController.downloaderList
+                                                .firstWhere((element) =>
+                                                    element.id ==
+                                                    int.parse(controller
+                                                        .downloaderController
+                                                        .text)));
+                                    if (controller.categories.isNotEmpty) {
+                                      controller.downloaderCategoryController
+                                              .text =
+                                          controller.categories.keys
+                                              .toList()[0];
+                                    }
+                                    controller.subController
+                                        .isDownloaderLoading = true;
+                                    controller.update();
+                                  }
+                                },
                               ),
                         Padding(
                           padding: const EdgeInsets.only(right: 18.0),
@@ -488,6 +513,7 @@ class _SubscribePageState extends State<SubscribePage> {
                       ElevatedButton.icon(
                         onPressed: () {
                           Get.back();
+                          controller.categories.clear();
                         },
                         style: ButtonStyle(
                           backgroundColor: MaterialStateProperty.all(
@@ -501,8 +527,10 @@ class _SubscribePageState extends State<SubscribePage> {
                         ),
                       ),
                       ElevatedButton.icon(
-                        onPressed: () {
-                          controller.saveSub(sub, context);
+                        onPressed: () async {
+                          await controller.saveSub(sub, context);
+                          controller.categories.clear();
+                          Get.back();
                         },
                         icon: controller.isLoading.value
                             ? const GFLoader(size: 18)
@@ -585,8 +613,8 @@ class EditDialogController extends GetxController {
       'category': (sub?.category ?? '').obs,
       'season': (sub?.season ?? '').obs,
     };
-    categories.value = await subController
-        .getDownloaderCategories(subController.downloaderList[0]);
+    // categories.value = await subController
+    //     .getDownloaderCategories(subController.downloaderList[0]);
     available.value = sub?.available ?? true;
     start.value = sub?.start ?? true;
     size.value = sub?.size ?? 15;
