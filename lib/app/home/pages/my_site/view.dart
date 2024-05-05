@@ -862,55 +862,53 @@ class _MySitePagePageState extends State<MySitePage>
                         labelText: 'HTTP代理',
                       ),
                       const SizedBox(height: 15),
+                      Wrap(spacing: 12, runSpacing: 8, children: [
+                        if (selectedSite.value!.alive)
+                          ChoiceChip(
+                            label: const Text('可用'),
+                            selected: available.value,
+                            onSelected: (value) {
+                              available.value = value;
+                            },
+                          ),
+                        ChoiceChip(
+                          label: const Text('数据'),
+                          selected: getInfo.value,
+                          onSelected: (value) {
+                            getInfo.value = value;
+                          },
+                        ),
+                        if (selectedSite.value!.searchTorrents)
+                          ChoiceChip(
+                            label: const Text('搜索'),
+                            selected: searchTorrents.value,
+                            onSelected: (value) {
+                              searchTorrents.value = value;
+                            },
+                          ),
+                        if (selectedSite.value!.signIn)
+                          ChoiceChip(
+                            label: const Text('签到'),
+                            selected: signIn.value,
+                            onSelected: (value) {
+                              signIn.value = value;
+                            },
+                          ),
+                        if (selectedSite.value!.repeatTorrents)
+                          ChoiceChip(
+                            label: const Text('辅种'),
+                            selected: repeatTorrents.value,
+                            onSelected: (value) {
+                              repeatTorrents.value = value;
+                            },
+                          ),
+                      ]),
                     ],
                   );
                 }),
               ),
             ),
             const SizedBox(height: 5),
-            Obx(() {
-              return Wrap(spacing: 12, runSpacing: 8, children: [
-                if (selectedSite.value!.alive)
-                  ChoiceChip(
-                    label: const Text('可用'),
-                    selected: available.value,
-                    onSelected: (value) {
-                      available.value = value;
-                    },
-                  ),
-                ChoiceChip(
-                  label: const Text('数据'),
-                  selected: getInfo.value,
-                  onSelected: (value) {
-                    getInfo.value = value;
-                  },
-                ),
-                if (selectedSite.value!.searchTorrents)
-                  ChoiceChip(
-                    label: const Text('搜索'),
-                    selected: searchTorrents.value,
-                    onSelected: (value) {
-                      searchTorrents.value = value;
-                    },
-                  ),
-                if (selectedSite.value!.signIn)
-                  ChoiceChip(
-                    label: const Text('签到'),
-                    selected: signIn.value,
-                    onSelected: (value) {
-                      signIn.value = value;
-                    },
-                  ),
-                if (selectedSite.value!.repeatTorrents)
-                  ChoiceChip(
-                    label: const Text('辅种'),
-                    selected: repeatTorrents.value,
-                    onSelected: (value) {
-                      repeatTorrents.value = value;
-                    },
-                  ),
-              ]);
-            }),
             ButtonBar(
               alignment: MainAxisAlignment.spaceAround,
               children: [
