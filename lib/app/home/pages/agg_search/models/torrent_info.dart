@@ -53,7 +53,7 @@ class SearchTorrentInfo {
       magnetUrl: json['magnet_url'],
       detailUrl: json['detail_url'],
       title: json['title'],
-      subtitle: json['subtitle'],
+      subtitle: json['subtitle'] ?? '',
       progress: json['progress'],
       saleStatus: json['sale_status'] ?? '无优惠',
       saleExpire: json['sale_expire'] != null
@@ -88,5 +88,45 @@ class SearchTorrentInfo {
     data['leechers'] = leechers;
     data['completers'] = completers;
     return data;
+  }
+
+  SearchTorrentInfo copyWith({
+    String? siteId,
+    String? tid,
+    String? poster,
+    String? category,
+    String? magnetUrl,
+    String? detailUrl,
+    String? title,
+    String? subtitle,
+    String? saleStatus,
+    DateTime? saleExpire,
+    double? progress,
+    bool? hr,
+    DateTime? published,
+    int? size,
+    int? seeders,
+    int? leechers,
+    int? completers,
+  }) {
+    return SearchTorrentInfo(
+      siteId: siteId ?? this.siteId,
+      tid: tid ?? this.tid,
+      poster: poster ?? this.poster,
+      category: category ?? this.category,
+      magnetUrl: magnetUrl ?? this.magnetUrl,
+      detailUrl: detailUrl ?? this.detailUrl,
+      title: title ?? this.title,
+      subtitle: subtitle ?? this.subtitle,
+      progress: progress ?? this.progress,
+      saleStatus: saleStatus ?? this.saleStatus,
+      saleExpire: saleExpire ?? this.saleExpire,
+      hr: hr ?? this.hr,
+      published: published ?? this.published,
+      size: size ?? this.size,
+      seeders: seeders ?? this.seeders,
+      leechers: leechers ?? this.leechers,
+      completers: completers ?? this.completers,
+    );
   }
 }

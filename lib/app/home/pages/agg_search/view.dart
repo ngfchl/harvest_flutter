@@ -271,6 +271,7 @@ class _AggSearchPageState extends State<AggSearchPage>
         : website.logo.startsWith("http")
             ? website.logo
             : '${mySite.mirror}${website.logo}';
+
     return CustomCard(
       child: Column(
         children: [
@@ -290,8 +291,8 @@ class _AggSearchPageState extends State<AggSearchPage>
                       ),
                     ));
               },
-              child: GFAvatar(
-                shape: GFAvatarShape.standard,
+              child: SizedBox(
+                width: 50,
                 child: Stack(
                     alignment: AlignmentDirectional.bottomCenter,
                     children: [
@@ -313,9 +314,32 @@ class _AggSearchPageState extends State<AggSearchPage>
               ),
             ),
             icon: InkWell(
-              onLongPress: () async =>
-                  await launchUrl(Uri.parse(info.magnetUrl)),
-              onTap: () => openDownloaderListSheet(context, info),
+              onLongPress: () async {
+                if (info.magnetUrl.isEmpty &&
+                    mySite.mirror!.contains('m-team')) {
+                  final res = await controller.getMTeamDlLink(mySite, info);
+                  if (res.code == 0) {
+                    info = info.copyWith(magnetUrl: res.data);
+                  } else {
+                    Get.snackbar('下载链接', '${mySite.nickname} 获取种子下载链接失败！');
+                    return;
+                  }
+                }
+                await launchUrl(Uri.parse(info.magnetUrl));
+              },
+              onTap: () async {
+                if (mySite.mirror!.contains('m-team')) {
+                  final res = await controller.getMTeamDlLink(mySite, info);
+                  if (res.code == 0) {
+                    info = info.copyWith(magnetUrl: res.data);
+                  } else {
+                    Get.snackbar(
+                        '下载链接', '${mySite.nickname} 获取种子下载链接失败！${res.msg}');
+                    return;
+                  }
+                }
+                openDownloaderListSheet(context, info);
+              },
               child: Container(
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.black, width: 2.0),

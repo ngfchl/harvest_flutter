@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:harvest/models/common_response.dart';
@@ -175,6 +176,7 @@ class AggSearchController extends GetxController {
       CommonResponse response =
           CommonResponse.fromJson(json.decode(message), (p0) => p0);
       LoggerHelper.Logger.instance.i(response.msg);
+      LoggerHelper.Logger.instance.i(response.data);
       if (response.code == 0) {
         List<SearchTorrentInfo> torrentInfoList =
             List<Map<String, dynamic>>.from(response.data)
@@ -192,9 +194,11 @@ class AggSearchController extends GetxController {
             .addAll(torrentInfoList.map((e) => e.saleStatus).toList());
         saleStatusList = saleStatusList.toSet().toList();
         // 写入有数据的站点
-        succeedSiteList.add(torrentInfoList[0].siteId);
-        searchMsg.insert(0, {"success": true, "msg": response.msg});
-        filterResults();
+        if (torrentInfoList.isNotEmpty) {
+          succeedSiteList.add(torrentInfoList[0].siteId);
+          searchMsg.insert(0, {"success": true, "msg": response.msg});
+          filterResults();
+        }
         update();
       } else {
         searchMsg.add({"success": false, "msg": response.msg});
@@ -217,6 +221,22 @@ class AggSearchController extends GetxController {
     succeedSiteList.clear();
     showResults.clear();
     update();
+  }
+
+  Future<CommonResponse> getMTeamDlLink(
+      MySite mySite, SearchTorrentInfo torrent) async {
+    String url = '${mySite.mirror}api/torrent/genDlToken';
+    final res = await Dio(BaseOptions(headers: {
+      'x-api-key': '${mySite.authKey}',
+      'User-Agent': mySite.userAgent,
+    })).post(
+      url,
+      queryParameters: {"id": torrent.tid},
+    );
+    if (res.data['code'] == "0" || res.data['code'] == 0) {
+      return CommonResponse.success(data: res.data['data']);
+    }
+    return CommonResponse.error(msg: res.data['message']);
   }
 
   Future<Map<String, String>> getDownloaderCategories(
