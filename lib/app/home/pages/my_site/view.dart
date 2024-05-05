@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:filesize/filesize.dart';
 import 'package:flutter/material.dart';
@@ -260,15 +261,13 @@ class _MySitePagePageState extends State<MySitePage>
               const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
           leading: ClipRRect(
             borderRadius: BorderRadius.circular(10),
-            child: Image.network(
-              website!.logo.startsWith('http')
+            child: CachedNetworkImage(
+              imageUrl: website!.logo.startsWith('http')
                   ? website.logo
                   : '${mySite.mirror}${website.logo}',
               fit: BoxFit.fill,
-              errorBuilder: (BuildContext context, Object exception,
-                  StackTrace? stackTrace) {
-                return const Image(image: AssetImage('assets/images/logo.png'));
-              },
+              errorWidget: (context, url, error) =>
+                  const Image(image: AssetImage('assets/images/logo.png')),
               width: 32,
               height: 32,
             ),

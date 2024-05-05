@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:filesize/filesize.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
@@ -281,44 +282,31 @@ class _AggSearchPageState extends State<AggSearchPage>
                     title: '海报预览',
                     content: InkWell(
                       onTap: () => Navigator.of(context).pop(),
-                      child: Image.network(
-                        imgUrl,
-                        errorBuilder: (BuildContext context, Object exception,
-                            StackTrace? stackTrace) {
-                          // Placeholder widget when loading fails
-                          return const Image(
-                              image: AssetImage('assets/images/logo.png'));
-                        },
+                      child: CachedNetworkImage(
+                        imageUrl: imgUrl,
+                        errorWidget: (context, url, error) => const Image(
+                            image: AssetImage('assets/images/logo.png')),
                         fit: BoxFit.fitHeight,
                       ),
                     ));
               },
               child: GFAvatar(
-                backgroundImage: Image.network(
-                  imgUrl,
-                  errorBuilder: (BuildContext context, Object exception,
-                      StackTrace? stackTrace) {
-                    // Placeholder widget when loading fails
-                    return const Image(
-                        image: AssetImage('assets/images/logo.png'));
-                  },
-                  fit: BoxFit.fitHeight,
-                ).image,
                 shape: GFAvatarShape.standard,
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                child: Stack(
+                    alignment: AlignmentDirectional.bottomCenter,
                     children: [
-                      const Expanded(
-                        child: SizedBox(),
+                      CachedNetworkImage(
+                        imageUrl: imgUrl,
+                        errorWidget: (context, url, error) => const Image(
+                            image: AssetImage('assets/images/logo.png')),
+                        fit: BoxFit.fitHeight,
                       ),
                       SizedBox(
                         width: double.infinity,
-                        child: Center(
-                          child: CustomTextTag(
-                            labelText: website.name.toString(),
-                            backgroundColor: Colors.teal.shade500,
-                          ),
+                        child: CustomTextTag(
+                          labelText: website.name.toString(),
+                          backgroundColor:
+                              Colors.teal.shade500.withOpacity(0.7),
                         ),
                       ),
                     ]),
