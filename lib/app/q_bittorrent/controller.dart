@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:harvest/common/meta_item.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:path_provider/path_provider.dart';
@@ -11,6 +10,7 @@ import 'package:qbittorrent_api/qbittorrent_api.dart';
 
 import '../../models/download.dart';
 import '../../utils/logger_helper.dart';
+import '../../utils/storage.dart';
 import '../home/pages/models/website.dart';
 import '../home/pages/my_site/controller.dart';
 
@@ -22,7 +22,6 @@ class QBittorrentController extends GetxController {
   StreamSubscription<List<TorrentInfo>>? torrentListSubscription;
   StreamSubscription<MainData>? mainDataSubscription;
   late Preferences configuration;
-  GetStorage box = GetStorage();
   TorrentState? torrentState;
   TorrentFilter torrentFilter = TorrentFilter.all;
   List<TorrentInfo> torrents = [];
@@ -131,7 +130,8 @@ class QBittorrentController extends GetxController {
 
   initData() async {
     /// 初始化 qb 客户端
-    sortKey = box.read('${downloader.host}:${downloader.port}-sortKey') ??
+    sortKey = SPUtil.getLocalStorage(
+            '${downloader.host}:${downloader.port}-sortKey') ??
         TorrentSort.name;
     client = await getQbInstance(downloader);
 

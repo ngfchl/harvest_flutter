@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:harvest/app/home/pages/agg_search/view.dart';
 import 'package:harvest/app/home/pages/dash_board/view.dart';
 import 'package:harvest/app/home/pages/dou_ban/view.dart';
@@ -26,7 +25,6 @@ import '../pages/setting/setting.dart';
 class HomeController extends GetxController {
   int initPage = 0;
   final userinfo = RxMap();
-  GetStorage box = GetStorage();
   TextEditingController searchController = TextEditingController();
   DioUtil dioUtil = DioUtil();
   bool isDarkMode = false;
@@ -82,7 +80,7 @@ class HomeController extends GetxController {
     try {
       isDarkMode = Get.isDarkMode;
       initDio();
-      userinfo.value = box.read('userinfo');
+      userinfo.value = SPUtil.getLocalStorage('userinfo');
       update();
     } catch (e) {
       Logger.instance.e('初始化失败 $e');
@@ -94,7 +92,7 @@ class HomeController extends GetxController {
   }
 
   void initDio() async {
-    String? baseUrl = box.read('server');
+    String? baseUrl = SPUtil.getLocalStorage('server');
     if (baseUrl == null) {
       Get.offAllNamed(Routes.LOGIN);
     } else {
@@ -106,8 +104,6 @@ class HomeController extends GetxController {
   void logout() {
     SPUtil.remove("userinfo");
     SPUtil.remove("isLogin");
-    box.remove("userinfo");
-    box.remove("isLogin");
     Get.delete<DownloadController>();
     Get.delete<HomeController>();
     Get.offAllNamed(Routes.LOGIN);
@@ -117,7 +113,7 @@ class HomeController extends GetxController {
     Get.back();
     if (index == 11) {
       String url =
-          '${box.read('server')}/api/${Api.SYSTEM_LOGGING}/tail.html?processname=uvicorn&limit=10240';
+          '${SPUtil.getLocalStorage('server')}/api/${Api.SYSTEM_LOGGING}/tail.html?processname=uvicorn&limit=10240';
       if (!Platform.isIOS && !Platform.isAndroid) {
         Logger.instance.i('Explorer');
         Uri uri = Uri.parse(url);
@@ -132,7 +128,7 @@ class HomeController extends GetxController {
       }
     } else if (index == 12) {
       String url =
-          '${box.read('server')}/api/${Api.SYSTEM_LOGGING}/tail.html?processname=celery-worker&limit=10240';
+          '${SPUtil.getLocalStorage('server')}/api/${Api.SYSTEM_LOGGING}/tail.html?processname=celery-worker&limit=10240';
       if (!Platform.isIOS && !Platform.isAndroid) {
         Logger.instance.i('Explorer');
         Uri uri = Uri.parse(url);

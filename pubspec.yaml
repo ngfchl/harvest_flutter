@@ -13,7 +13,6 @@ dependencies:
   dio: ^5.4.2+1
   shared_preferences: ^2.2.2
   getwidget: ^4.0.0
-  get_storage: ^2.1.1
   qbittorrent_api: ^1.0.6
   transmission_api: ^0.0.1
   easy_refresh: ^3.3.4
@@ -53,4 +52,4 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-  - assets/images/
+    - assets/images/

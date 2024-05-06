@@ -2,13 +2,13 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:harvest/utils/logger_helper.dart' as LoggerHelper;
 import 'package:web_socket_channel/status.dart' as status;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../../../models/download.dart';
+import '../../../../utils/storage.dart';
 import '../../../torrent/torrent_controller.dart';
 import '../download/download_controller.dart';
 import '../models/my_site.dart';
@@ -38,7 +38,6 @@ class AggSearchController extends GetxController {
   bool sortReversed = false;
   bool isLoading = false;
   bool isDownloaderLoading = false;
-  GetStorage box = GetStorage();
   Map<String, MySite> mySiteMap = <String, MySite>{};
 
   List<Map<String, String>> sortKeyList = [
@@ -161,7 +160,7 @@ class AggSearchController extends GetxController {
       await initData();
     }
 
-    String baseUrl = box.read('server');
+    String baseUrl = SPUtil.getLocalStorage('server');
     final wsUrl =
         Uri.parse('${baseUrl.replaceFirst('http', 'ws')}/api/ws/search');
     channel = WebSocketChannel.connect(wsUrl);

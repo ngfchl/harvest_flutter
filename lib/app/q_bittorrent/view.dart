@@ -18,6 +18,7 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../../common/meta_item.dart';
 import '../../utils/date_time_utils.dart';
+import '../../utils/storage.dart';
 import '../home/pages/agg_search/download_form.dart';
 import 'controller.dart';
 
@@ -297,7 +298,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                             ? !controller.sortReversed
                                             : false;
                                     controller.sortKey = item.value;
-                                    controller.box.write(
+                                    SPUtil.setLocalStorage(
                                         '${controller.downloader.host}:${controller.downloader.port}-sortKey',
                                         controller.sortKey);
                                     controller.subTorrentList();

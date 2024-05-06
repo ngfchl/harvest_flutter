@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 
 import '../../api/api.dart';
 import '../../models/common_response.dart';
@@ -20,7 +19,6 @@ class LoginController extends GetxController {
   bool isLoading = false;
   bool showPassword = true;
   DioUtil dioUtil = DioUtil();
-  GetStorage box = GetStorage();
 
   @override
   void onInit() async {
@@ -46,7 +44,7 @@ class LoginController extends GetxController {
   void initDio(Server server) async {
     String baseUrl = '${server.protocol}://${server.domain}:${server.port}';
     await dioUtil.initialize(baseUrl);
-    box.write('server', baseUrl);
+    SPUtil.setString('server', baseUrl);
     update();
   }
 
@@ -192,8 +190,8 @@ class LoginController extends GetxController {
       Logger.instance.i(res.statusCode);
       Logger.instance.i(res.data);
       if (res.data['code'] == 0) {
-        box.write('userinfo', res.data["data"]);
-        box.write('isLogin', true);
+        SPUtil.setMap('userinfo', res.data["data"]);
+        SPUtil.setBool('isLogin', true);
         Get.snackbar(
           '登录成功！',
           "欢迎 ${loginUser.username} 回来",
@@ -215,7 +213,7 @@ class LoginController extends GetxController {
         backgroundColor: Colors.red.shade400,
       );
     }
-    box.write('isLogin', false);
+    SPUtil.setBool('isLogin', false);
     isLoading = false;
     update();
     return false;

@@ -1,16 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 
 import '../app/routes/app_pages.dart';
+import '../utils/storage.dart';
 
 class LoginMiddleware extends GetMiddleware {
   @override
   RouteSettings? redirect(String? route) {
-    GetStorage box = GetStorage();
-    if (box.read('server') == null ||
-        box.read('userinfo') == null ||
-        box.read('isLogin') != true && route != Routes.LOGIN) {
+    if (SPUtil.getLocalStorage('server') == null ||
+        SPUtil.getLocalStorage('userinfo') == null ||
+        SPUtil.getLocalStorage('isLogin') != true && route != Routes.LOGIN) {
       return const RouteSettings(name: Routes.LOGIN);
     }
     return null;

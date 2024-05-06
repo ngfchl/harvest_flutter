@@ -6,6 +6,7 @@ import 'package:getwidget/getwidget.dart';
 import 'package:harvest/api/mysite.dart';
 import 'package:harvest/models/common_response.dart';
 
+import '../../utils/storage.dart';
 import 'controller/common_api.dart';
 import 'controller/home_controller.dart';
 
@@ -116,9 +117,9 @@ class HomeView extends GetView<HomeController> {
                       ),
                       // Text('admin@admin.com'),
                       Tooltip(
-                        message: '${controller.box.read('server')}',
+                        message: '${SPUtil.getLocalStorage('server')}',
                         child: Text(
-                          '${controller.box.read('server')}',
+                          '${SPUtil.getLocalStorage('server')}',
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(fontSize: 12),
                         ),

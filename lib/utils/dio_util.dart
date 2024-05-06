@@ -1,16 +1,15 @@
 import 'package:dio/dio.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:harvest/models/authinfo.dart';
 import 'package:harvest/utils/logger_helper.dart';
+import 'package:harvest/utils/storage.dart';
 
 class CustomInterceptors extends Interceptor {
   @override
   Future<void> onResponse(
       Response response, ResponseInterceptorHandler handler) async {
     if ([403, 401].contains(response.statusCode)) {
-      GetStorage box = GetStorage();
-      box.write("isLogin", false);
+      SPUtil.setBool("isLogin", false);
     }
     return super.onResponse(response, handler);
   }
@@ -24,7 +23,6 @@ class DioUtil {
   late String token;
   late Options _defaultOptions;
   late Dio? dio;
-  late GetStorage box;
 
   factory DioUtil() {
     return _instance;
@@ -36,7 +34,6 @@ class DioUtil {
 
   Future<void> _initDio(String server) async {
     String baseUrl = '$server/api/';
-    box = GetStorage();
     _defaultOptions = await _buildRequestOptions();
     dio = Dio(BaseOptions(
       baseUrl: baseUrl,
@@ -127,7 +124,7 @@ class DioUtil {
   }
 
   Future<Options> _buildRequestOptions() async {
-    Map<String, dynamic> userinfo = box.read('userinfo') ?? {};
+    Map<String, dynamic> userinfo = SPUtil.getLocalStorage('userinfo') ?? {};
     if (userinfo.isNotEmpty) {
       AuthInfo authInfo = AuthInfo.fromJson(userinfo);
       token = authInfo.authToken ?? '';

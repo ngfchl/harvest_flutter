@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:get/route_manager.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:harvest/utils/storage.dart';
 
 import '../models/authinfo.dart';
@@ -21,7 +20,6 @@ class DioClient {
   }
 
   final Dio dio = Dio();
-  final box = GetStorage();
 
   void _init() {
     var server = SPUtil.getString("server") ?? '';

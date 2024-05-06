@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -11,7 +10,6 @@ import '../models/option.dart';
 class SettingController extends GetxController {
   bool isLoaded = false;
   String configData = '';
-  GetStorage box = GetStorage();
   late PackageInfo packageInfo;
   String server = '';
   String applicationLegalese = 'Copyright 2022-2024 无始无终. All rights reserved.';
@@ -39,7 +37,8 @@ class SettingController extends GetxController {
   Future<void> onInit() async {
     packageInfo = await PackageInfo.fromPlatform();
     await getOptionList();
-    server = box.read('server');
+    server = SPUtil.getLocalStorage('server');
+
     update();
     super.onInit();
   }
@@ -60,8 +59,6 @@ class SettingController extends GetxController {
   logout() {
     SPUtil.remove("userinfo");
     SPUtil.remove("isLogin");
-    box.remove("userinfo");
-    box.remove("isLogin");
     Get.offAllNamed(Routes.LOGIN);
   }
 
