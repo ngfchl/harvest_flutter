@@ -39,10 +39,13 @@ class DownloadController extends GetxController {
 
   @override
   void onInit() async {
+    realTimeState = SPUtil.getBool('realTimeState', defaultValue: true)!;
+    isTimerActive = realTimeState;
     duration = SPUtil.getDouble('duration', defaultValue: 3.14)!;
     timerDuration = SPUtil.getDouble('timerDuration', defaultValue: 3.14)!;
     await getDownloaderListFromServer();
     if (realTimeState) {
+      LoggerHelper.Logger.instance.i('调用刷新 init');
       refreshDownloadStatus();
       // 设置定时器，每隔一定时间刷新下载器数据
       startPeriodicTimer();
@@ -61,11 +64,20 @@ class DownloadController extends GetxController {
     });
   }
 
+  toggleRealTimeState() {
+    realTimeState = !realTimeState;
+    isTimerActive = !realTimeState;
+    isTimerActive ? cancelPeriodicTimer() : startPeriodicTimer();
+    update();
+  }
+
   void startPeriodicTimer() {
     // 设置定时器，每隔一定时间刷新下载器数据
     periodicTimer = Timer.periodic(
         Duration(milliseconds: (duration * 1000).toInt()), (Timer t) {
       // 在定时器触发时获取最新的下载器数据
+      LoggerHelper.Logger.instance.i('调用刷新 timer');
+
       refreshDownloadStatus();
     });
     isTimerActive = true;
@@ -100,6 +112,7 @@ class DownloadController extends GetxController {
   }
 
   Future<void> refreshDownloadStatus() async {
+    LoggerHelper.Logger.instance.i('开始刷新下载器状态');
     List<Future<void>> futures = [];
     for (Downloader item in dataList) {
       if (item.isActive) {
@@ -125,6 +138,8 @@ class DownloadController extends GetxController {
     });
     // 发送最新的下载列表到流中
     if (realTimeState) {
+      LoggerHelper.Logger.instance.i('调用刷新 list');
+
       refreshDownloadStatus();
     }
     update();

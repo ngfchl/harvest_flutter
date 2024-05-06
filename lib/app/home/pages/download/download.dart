@@ -1,8 +1,6 @@
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:filesize/filesize.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
@@ -14,7 +12,6 @@ import '../../../../common/form_widgets.dart';
 import '../../../../models/common_response.dart';
 import '../../../../models/download.dart';
 import '../../../../utils/logger_helper.dart' as LoggerHelper;
-import '../../../../utils/range_input.dart';
 import '../../../../utils/storage.dart';
 import '../../../routes/app_pages.dart';
 import '../models/transmission.dart';
@@ -35,14 +32,6 @@ class _DownloadPageState extends State<DownloadPage>
   bool get wantKeepAlive => true;
 
   @override
-  void initState() {
-    if (!controller.realTimeState) {
-      controller.startPeriodicTimer();
-    }
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
@@ -59,7 +48,6 @@ class _DownloadPageState extends State<DownloadPage>
                       controller: EasyRefreshController(),
                       onRefresh: () async {
                         controller.getDownloaderListFromServer();
-                        controller.startPeriodicTimer();
                       },
                       child: controller.isLoaded
                           ? ListView.builder(
@@ -95,140 +83,155 @@ class _DownloadPageState extends State<DownloadPage>
               icon: Icon(
                 controller.isTimerActive ? Icons.pause : Icons.play_arrow,
                 size: 20,
+                color: Theme.of(context).colorScheme.primary,
               ),
-              onPressed: () {
-                // controller.cancelPeriodicTimer();
-                controller.isTimerActive
-                    ? controller.cancelPeriodicTimer()
-                    : controller.startPeriodicTimer();
-                LoggerHelper.Logger.instance
-                    .w(controller.periodicTimer.isActive);
-                LoggerHelper.Logger.instance.w(controller.isTimerActive);
-                controller.update();
-              },
+              onPressed: () => controller.toggleRealTimeState(),
             ),
             IconButton(
-                icon: const Icon(Icons.settings, size: 20),
+                icon: Icon(
+                  Icons.settings,
+                  size: 20,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
                 onPressed: () {
-                  TextEditingController durationTextEditingController =
-                      TextEditingController(
-                          text: controller.duration.toString());
-                  TextEditingController timerDurationTextEditingController =
-                      TextEditingController(
-                          text: controller.timerDuration.toString());
                   Get.bottomSheet(
-                    CustomCard(
-                      padding: const EdgeInsets.all(12),
-                      height: 140,
-                      child: Column(
-                        children: [
-                          Row(
+                    GetBuilder<DownloadController>(builder: (controller) {
+                      return CustomCard(
+                        padding: const EdgeInsets.all(12),
+                        height: 200,
+                        child: SingleChildScrollView(
+                          child: Column(
                             children: [
-                              Expanded(
-                                child: CustomTextField(
-                                  controller: durationTextEditingController,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                        RegExp(r'^\d{0,2}(\.\d{0,2})?$')),
-                                    RangeInputFormatter(min: 3, max: 10),
-                                  ],
-                                  prefixIcon:
-                                      const Icon(Icons.timer_3, size: 15),
-                                  labelText: '刷新时间 3-10秒刷新一次',
-                                  onChanged: (value) {
-                                    controller.validateInput(value);
-                                  },
-                                ),
-                              ),
-                              IconButton(
-                                  icon: const Icon(Icons.save, size: 20),
-                                  onPressed: () {
-                                    try {
-                                      double duration = double.parse(
-                                          durationTextEditingController.text);
-                                      if (duration < 3 || duration > 10) {
-                                        Get.snackbar('出错啦', '超出范围，请设置 3-10',
-                                            colorText: Theme.of(context)
-                                                .colorScheme
-                                                .error);
-                                      } else {
-                                        controller.duration = duration;
-                                        SPUtil.setDouble('duration', duration);
-                                        controller.cancelPeriodicTimer();
-                                        controller.startPeriodicTimer();
-                                        controller.update();
-                                        Get.snackbar('OK 啦', '保存成功！',
-                                            colorText: Theme.of(context)
-                                                .colorScheme
-                                                .primary);
-                                      }
-                                    } catch (e) {
-                                      Get.snackbar('出错啦', '请输入数字',
-                                          colorText: Theme.of(context)
-                                              .colorScheme
-                                              .error);
-                                    }
-                                  })
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: CustomTextField(
-                                  controller:
-                                      timerDurationTextEditingController,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                        RegExp(r'^\d{0,2}(\.\d{0,2})?$')),
-                                    RangeInputFormatter(min: 1, max: 10),
-                                  ],
-                                  prefixIcon:
-                                      const Icon(Icons.timer_3, size: 15),
-                                  onChanged: (value) {
-                                    controller.validateInput(value, min: 1);
-                                  },
-                                  labelText: '刷新时长 3-10 分钟',
-                                ),
-                              ),
-                              IconButton(
-                                  icon: const Icon(
-                                    Icons.save,
-                                    size: 20,
+                              SwitchListTile(
+                                dense: true,
+                                title: Text(
+                                  '状态刷新',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
                                   ),
-                                  onPressed: () {
-                                    try {
-                                      double duration = double.parse(
-                                          timerDurationTextEditingController
-                                              .text);
-                                      if (duration < 1 || duration > 10) {
-                                        Get.snackbar('出错啦', '超出范围，请设置 1-10',
-                                            colorText: Theme.of(context)
-                                                .colorScheme
-                                                .error);
-                                      } else {
-                                        controller.timerDuration = duration;
-                                        SPUtil.setDouble(
-                                            'timerDuration', duration);
-                                        controller.fiveMinutesTimer.cancel();
-                                        controller.timerToStop();
-                                        controller.update();
-                                        Get.snackbar('OK 啦', '保存成功！',
-                                            colorText: Theme.of(context)
-                                                .colorScheme
-                                                .primary);
-                                      }
-                                    } catch (e) {
-                                      Get.snackbar('出错啦', '请输入数字',
-                                          colorText: Theme.of(context)
-                                              .colorScheme
-                                              .error);
-                                    }
-                                  })
+                                ),
+                                value: controller.realTimeState,
+                                onChanged: (bool value) async {
+                                  controller.realTimeState = value;
+                                  await SPUtil.setBool('realTimeState', value);
+                                  if (value == false) {
+                                    controller.cancelPeriodicTimer();
+                                  } else {
+                                    controller.startPeriodicTimer();
+                                  }
+                                  controller.update();
+                                },
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12.0),
+                                child: Row(
+                                  children: [
+                                    CustomTextTag(
+                                        backgroundColor: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                        labelText:
+                                            '刷新间隔：${controller.duration}秒'),
+                                    InkWell(
+                                      child: const Icon(Icons.remove),
+                                      onTap: () {
+                                        if (controller.duration > 3) {
+                                          controller.duration--;
+                                          SPUtil.setDouble(
+                                              'duration', controller.duration);
+                                          controller.update();
+                                        }
+                                      },
+                                    ),
+                                    Expanded(
+                                      child: Slider(
+                                          min: 3,
+                                          max: 15,
+                                          divisions: 12,
+                                          label: controller.duration.toString(),
+                                          value: controller.duration.toDouble(),
+                                          onChanged: (duration) {
+                                            controller.duration = duration;
+                                            SPUtil.setDouble('duration',
+                                                controller.duration);
+                                            controller.update();
+                                          }),
+                                    ),
+                                    InkWell(
+                                      child: const Icon(Icons.add),
+                                      onTap: () {
+                                        if (controller.duration < 15) {
+                                          controller.duration++;
+                                          SPUtil.setDouble(
+                                              'duration', controller.duration);
+                                          controller.update();
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12.0),
+                                child: Row(
+                                  children: [
+                                    CustomTextTag(
+                                        backgroundColor: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                        labelText:
+                                            '刷新时长：${controller.timerDuration}分'),
+                                    InkWell(
+                                      child: const Icon(Icons.remove),
+                                      onTap: () {
+                                        if (controller.timerDuration > 3) {
+                                          controller.timerDuration--;
+                                          SPUtil.setDouble('timerDuration',
+                                              controller.timerDuration);
+                                          controller.update();
+                                        }
+                                      },
+                                    ),
+                                    Expanded(
+                                      child: Slider(
+                                          min: 3,
+                                          max: 15,
+                                          divisions: 12,
+                                          label: controller.timerDuration
+                                              .toString(),
+                                          value: controller.timerDuration
+                                              .toDouble(),
+                                          onChanged: (duration) {
+                                            controller.timerDuration = duration;
+                                            SPUtil.setDouble(
+                                                'timerDuration', duration);
+                                            controller.update();
+                                          }),
+                                    ),
+                                    InkWell(
+                                      child: const Icon(Icons.add),
+                                      onTap: () {
+                                        if (controller.timerDuration < 15) {
+                                          controller.timerDuration++;
+                                          SPUtil.setDouble('timerDuration',
+                                              controller.timerDuration);
+                                          controller.update();
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
-                        ],
-                      ),
-                    ),
+                        ),
+                      );
+                    }),
                     shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(2),
@@ -238,9 +241,10 @@ class _DownloadPageState extends State<DownloadPage>
                   );
                 }),
             IconButton(
-              icon: const Icon(
+              icon: Icon(
                 Icons.add,
                 size: 20,
+                color: Theme.of(context).colorScheme.primary,
               ),
               onPressed: () async {
                 _showEditBottomSheet();
@@ -587,15 +591,16 @@ class _DownloadPageState extends State<DownloadPage>
                 ),
                 title: Text(
                   downloader.name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: Theme.of(context).colorScheme.primary),
                 ),
                 subTitle: Text(
                   '${downloader.protocol}://${downloader.host}:${downloader.port}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
                 onTap: () {
@@ -628,25 +633,19 @@ class _DownloadPageState extends State<DownloadPage>
                       connectState.value = res.data;
                       Get.snackbar(
                         '下载器连接测试',
-                        '',
-                        messageText: EllipsisText(
-                          text: res.msg!,
-                          ellipsis: '...',
-                          maxLines: 1,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: res.code == 0
-                                ? Theme.of(context).colorScheme.primary
-                                : Theme.of(context).colorScheme.error,
-                          ),
-                        ),
+                        res.msg!,
+                        colorText: res.code == 0
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context).colorScheme.error,
                       );
                     });
                   },
                 ),
               ),
               GetBuilder<DownloadController>(builder: (controller) {
-                return _buildLiveLineChart(downloader, chartSeriesController);
+                return controller.realTimeState
+                    ? _buildLiveLineChart(downloader, chartSeriesController)
+                    : const SizedBox.shrink();
               })
             ],
           ),
