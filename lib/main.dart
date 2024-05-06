@@ -43,7 +43,7 @@ void main() async {
       debugShowCheckedModeBanner: false,
       initialRoute: AppPages.INITIAL,
       navigatorKey: Get.key,
-      themeMode: ThemeMode.light,
+      // themeMode: ThemeMode.system,
       getPages: AppPages.routes,
       onInit: () async {
         await onInit();

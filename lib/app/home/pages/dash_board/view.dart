@@ -60,7 +60,9 @@ class _DashBoardPageState extends State<DashBoardPage>
           child: EasyRefresh(
             onRefresh: controller.initChartData,
             child: controller.isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? ListView(children: const [
+                    Center(child: CircularProgressIndicator())
+                  ])
                 : GetBuilder<DashBoardController>(builder: (controller) {
                     if (controller.initCount == 0) {
                       _updateShowInfoChildren();
@@ -126,7 +128,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                   const EdgeInsets.symmetric(horizontal: 8)),
               side: MaterialStateProperty.all(BorderSide.none),
             ),
-            label: const Text('重新统计'),
+            label: const Text('统计数据'),
           ),
           ElevatedButton.icon(
             onPressed: () async {
@@ -1182,39 +1184,50 @@ class _DashBoardPageState extends State<DashBoardPage>
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 child: Row(
                   children: [
-                    CustomTextTag(labelText: '最近${controller.days}天'),
-                    InkWell(
-                      child: const Icon(Icons.remove),
-                      onTap: () {
-                        if (controller.days > 1) {
-                          controller.days--;
-                          controller.initChartData();
-                          controller.update();
-                        }
-                      },
-                    ),
+                    CustomTextTag(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        labelText: '最近${controller.days}天'),
                     Expanded(
-                      child: Slider(
-                          min: 1,
-                          max: 14,
-                          divisions: 14,
-                          label: controller.days.toString(),
-                          value: controller.days.toDouble(),
-                          onChanged: (value) {
-                            controller.days = value.toInt();
-                            controller.initChartData();
-                            controller.update();
-                          }),
-                    ),
-                    InkWell(
-                      child: const Icon(Icons.add),
-                      onTap: () {
-                        if (controller.days < 14) {
-                          controller.days++;
-                          controller.initChartData();
-                          controller.update();
-                        }
-                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 12.0),
+                        child: Row(
+                          children: [
+                            InkWell(
+                              child: const Icon(Icons.remove),
+                              onTap: () {
+                                if (controller.days > 1) {
+                                  controller.days--;
+                                  controller.initChartData();
+                                  controller.update();
+                                }
+                              },
+                            ),
+                            Expanded(
+                              child: Slider(
+                                  min: 1,
+                                  max: 14,
+                                  divisions: 14,
+                                  label: controller.days.toString(),
+                                  value: controller.days.toDouble(),
+                                  onChanged: (value) {
+                                    controller.days = value.toInt();
+                                    controller.initChartData();
+                                    controller.update();
+                                  }),
+                            ),
+                            InkWell(
+                              child: const Icon(Icons.add),
+                              onTap: () {
+                                if (controller.days < 14) {
+                                  controller.days++;
+                                  controller.initChartData();
+                                  controller.update();
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
