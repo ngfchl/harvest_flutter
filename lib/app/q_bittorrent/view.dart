@@ -42,100 +42,90 @@ class QBittorrentPage extends GetView<QBittorrentController> {
             child: Column(
               children: [
                 Expanded(
-                  child: controller.torrents.isEmpty
-                      ? const GFLoader()
-                      : Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 5),
-                              child: GetBuilder<QBittorrentController>(
-                                  builder: (controller) {
-                                return Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: TextField(
-                                        controller: searchKeyController,
-                                        decoration: InputDecoration(
-                                          isDense: true,
-                                          hintText: '请输入搜索关键字',
-                                          hintStyle:
-                                              const TextStyle(fontSize: 14),
-                                          contentPadding:
-                                              const EdgeInsets.symmetric(
-                                                  vertical: 8, horizontal: 5),
-                                          border: OutlineInputBorder(
-                                            borderSide: BorderSide.none,
-                                            // 不绘制边框
-                                            borderRadius:
-                                                BorderRadius.circular(0.0),
-                                            // 确保角落没有圆角
-                                            gapPadding:
-                                                0.0, // 移除边框与hintText之间的间距
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderSide: const BorderSide(
-                                              width: 1.0,
-                                            ),
-                                            // 仅在聚焦时绘制底部边框
-                                            borderRadius:
-                                                BorderRadius.circular(0.0),
-                                          ),
-                                        ),
-                                        onChanged: (value) {
-                                          controller.searchKey = value;
-                                          controller.filterTorrents();
-                                        },
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 5),
+                        child: GetBuilder<QBittorrentController>(
+                            builder: (controller) {
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: searchKeyController,
+                                  decoration: InputDecoration(
+                                    isDense: true,
+                                    hintText: '请输入搜索关键字',
+                                    hintStyle: const TextStyle(fontSize: 14),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 8, horizontal: 5),
+                                    border: OutlineInputBorder(
+                                      borderSide: BorderSide.none,
+                                      // 不绘制边框
+                                      borderRadius: BorderRadius.circular(0.0),
+                                      // 确保角落没有圆角
+                                      gapPadding: 0.0, // 移除边框与hintText之间的间距
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: const BorderSide(
+                                        width: 1.0,
                                       ),
+                                      // 仅在聚焦时绘制底部边框
+                                      borderRadius: BorderRadius.circular(0.0),
                                     ),
-                                    const SizedBox(
-                                      width: 5,
-                                    ),
-                                    if (controller.searchKey.isNotEmpty)
-                                      IconButton(
-                                          onPressed: () {
-                                            if (controller.searchController.text
-                                                .isNotEmpty) {
-                                              controller.searchController.text =
-                                                  controller
-                                                      .searchController.text
-                                                      .substring(
-                                                          0,
-                                                          controller
-                                                                  .searchController
-                                                                  .text
-                                                                  .length -
-                                                              1);
-                                              controller.searchKey = controller
-                                                  .searchController.text;
-                                              controller.filterTorrents();
-                                            }
-                                          },
-                                          icon: const Icon(
-                                            Icons.backspace_outlined,
-                                            size: 18,
-                                          ))
-                                  ],
-                                );
-                              }),
-                            ),
-                            Expanded(
-                              child: ListView.builder(
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 5),
-                                  itemCount: controller.showTorrents.length,
-                                  itemBuilder:
-                                      (BuildContext context, int index) {
-                                    TorrentInfo torrentInfo =
-                                        controller.showTorrents[index];
-                                    return _buildQbTorrentCard(
-                                        torrentInfo, context);
-                                  }),
-                            ),
-                          ],
-                        ),
+                                  ),
+                                  onChanged: (value) {
+                                    controller.searchKey = value;
+                                    controller.filterTorrents();
+                                  },
+                                ),
+                              ),
+                              const SizedBox(
+                                width: 5,
+                              ),
+                              if (controller.searchKey.isNotEmpty)
+                                IconButton(
+                                    onPressed: () {
+                                      if (controller
+                                          .searchController.text.isNotEmpty) {
+                                        controller.searchController.text =
+                                            controller.searchController.text
+                                                .substring(
+                                                    0,
+                                                    controller.searchController
+                                                            .text.length -
+                                                        1);
+                                        controller.searchKey =
+                                            controller.searchController.text;
+                                        controller.filterTorrents();
+                                      }
+                                    },
+                                    icon: const Icon(
+                                      Icons.backspace_outlined,
+                                      size: 18,
+                                    ))
+                            ],
+                          );
+                        }),
+                      ),
+                      Expanded(
+                        child: controller.isLoading
+                            ? const Center(child: CircularProgressIndicator())
+                            : ListView.builder(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 5),
+                                itemCount: controller.showTorrents.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  TorrentInfo torrentInfo =
+                                      controller.showTorrents[index];
+                                  return _buildQbTorrentCard(
+                                      torrentInfo, context);
+                                }),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 70),
               ],

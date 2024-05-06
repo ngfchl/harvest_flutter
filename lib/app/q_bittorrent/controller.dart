@@ -121,7 +121,13 @@ class QBittorrentController extends GetxController {
 
   @override
   void onInit() async {
+    isLoading = true;
+    update();
+    var start = DateTime.now();
     await initData();
+    var end = DateTime.now();
+    Logger.instance.i(end.difference(start).inMilliseconds);
+
     super.onInit();
   }
 
@@ -144,6 +150,7 @@ class QBittorrentController extends GetxController {
 
     /// 订阅所有种子
     subTorrentList();
+    update();
   }
 
   Future getQbSpeed() async {
@@ -176,10 +183,12 @@ class QBittorrentController extends GetxController {
             ),
             interval: Duration(seconds: subInterval))
         .listen((event) {
+      isLoading = false;
       if (event.isNotEmpty) {
         torrents = event;
         filterTorrents();
       }
+      update();
     });
   }
 
