@@ -297,6 +297,9 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                             ? !controller.sortReversed
                                             : false;
                                     controller.sortKey = item.value;
+                                    controller.box.write(
+                                        '${controller.downloader.host}:${controller.downloader.port}-sortKey',
+                                        controller.sortKey);
                                     controller.subTorrentList();
                                     controller.update();
                                   },
