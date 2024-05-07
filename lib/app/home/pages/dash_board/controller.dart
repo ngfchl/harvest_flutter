@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
@@ -24,7 +23,6 @@ class DashBoardController extends GetxController {
   bool isLoading = false;
   int days = 7;
   int maxDays = 0;
-  List<Widget> children = [];
   int initCount = 0;
 
   @override

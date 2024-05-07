@@ -64,19 +64,19 @@ class _DashBoardPageState extends State<DashBoardPage>
                     Center(child: CircularProgressIndicator())
                   ])
                 : GetBuilder<DashBoardController>(builder: (controller) {
-                    if (controller.initCount == 0) {
-                      _updateShowInfoChildren();
-                    }
-                    return ReorderableListView(
-                      onReorder: (int oldIndex, int newIndex) {
-                        if (oldIndex < newIndex) {
-                          newIndex -= 1; // 移动时修正索引，因为item已被移除
-                        }
-                        final item = controller.children.removeAt(oldIndex);
-                        controller.children.insert(newIndex, item);
-                        controller.update();
-                      },
-                      children: controller.children,
+                    return ListView(
+                      children: controller.statusList.isNotEmpty
+                          ? [
+                              if (controller.statusList.isNotEmpty)
+                                _buildSiteInfoCard(),
+                              if (controller.statusList.isNotEmpty)
+                                _buildSmartLabelPieChart(context),
+                              if (controller.statusList.isNotEmpty)
+                                _buildStackedBar(context),
+                              if (controller.statusList.isNotEmpty)
+                                _buildSiteInfo(),
+                            ]
+                          : [const Center(child: Text('先去获取一下站点数据吧'))],
                     );
                   }),
           ),
@@ -84,25 +84,6 @@ class _DashBoardPageState extends State<DashBoardPage>
         const SizedBox(height: 50),
       ],
     );
-  }
-
-  _updateShowInfoChildren() {
-    controller.children = [
-      if (controller.statusList.isNotEmpty)
-        Container(
-            key: const Key('_buildSiteInfoCard'), child: _buildSiteInfoCard()),
-      if (controller.statusList.isNotEmpty)
-        Container(
-            key: const Key('_buildSmartLabelPieChart'),
-            child: _buildSmartLabelPieChart(context)),
-      if (controller.statusList.isNotEmpty)
-        Container(
-            key: const Key('_buildStackedBar'),
-            child: _buildStackedBar(context)),
-      if (controller.statusList.isNotEmpty)
-        Container(key: const Key('_buildSiteInfo'), child: _buildSiteInfo()),
-    ];
-    controller.initCount += 1;
   }
 
   _buildBottomButtonBar() {
