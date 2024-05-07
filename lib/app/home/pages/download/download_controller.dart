@@ -20,8 +20,8 @@ class DownloadController extends GetxController {
   bool isTimerActive = true; // 使用 RxBool 控制定时器是否激活
   double duration = 3.14;
   double timerDuration = 3.14;
-  late Timer periodicTimer;
-  late Timer fiveMinutesTimer;
+  Timer? periodicTimer;
+  Timer? fiveMinutesTimer;
   bool isDurationValid = true;
   bool realTimeState = true;
 
@@ -86,8 +86,8 @@ class DownloadController extends GetxController {
 
   // 取消定时器
   void cancelPeriodicTimer() {
-    if (periodicTimer.isActive) {
-      periodicTimer.cancel();
+    if (periodicTimer != null && periodicTimer?.isActive == true) {
+      periodicTimer?.cancel();
     }
     isTimerActive = false;
     update();
