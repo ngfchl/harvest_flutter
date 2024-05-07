@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:filesize/filesize.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
@@ -131,103 +132,215 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                 const SizedBox(height: 70),
               ],
             )),
-        endDrawer: _buildGfDrawer(),
+        endDrawer: _buildGfDrawer(context),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         floatingActionButton: _buildActionButtons(controller, context),
       );
     });
   }
 
-  GFDrawer _buildGfDrawer() {
-    return GFDrawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: <Widget>[
-          GFDrawerHeader(
-            centerAlign: true,
-            currentAccountPicture: GFAvatar(
-              radius: 80.0,
-              backgroundImage: AssetImage(
-                  'assets/images/${controller.downloader.category.toLowerCase()}.png'),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                    '${controller.downloader.protocol}://${controller.downloader.host}:${controller.downloader.port}'),
-              ],
-            ),
-          ),
-          SizedBox(
-            height: 60,
-            child: SfCartesianChart(
-              plotAreaBorderWidth: 0,
-              tooltipBehavior: TooltipBehavior(
-                enable: true,
-                shared: true,
-                decimalPlaces: 1,
-                builder: (dynamic data, dynamic point, dynamic series,
-                    int pointIndex, int seriesIndex) {
-                  // Logger.instance.w(data);
-                  return Container(
-                    padding: const EdgeInsets.all(1),
-                    decoration: BoxDecoration(
-                      color: Colors.teal.shade300,
-                      border: Border.all(width: 2, color: Colors.teal.shade400),
-                    ),
-                    child: Text(
-                      '${series.name}: ${filesize(point.y)}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                      ),
-                    ),
-                  );
-                },
+  Widget _buildGfDrawer(context) {
+    return GetBuilder<QBittorrentController>(builder: (controller) {
+      return GFDrawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            GFDrawerHeader(
+              centerAlign: true,
+              currentAccountPicture: GFAvatar(
+                radius: 80.0,
+                backgroundImage: AssetImage(
+                    'assets/images/${controller.downloader.category.toLowerCase()}.png'),
               ),
-              primaryXAxis: const CategoryAxis(
-                  isVisible: false,
-                  majorGridLines: MajorGridLines(width: 0),
-                  edgeLabelPlacement: EdgeLabelPlacement.shift),
-              primaryYAxis: NumericAxis(
-                  axisLine: const AxisLine(width: 0),
-                  axisLabelFormatter: (AxisLabelRenderDetails details) {
-                    return ChartAxisLabel(
-                      filesize(details.value),
-                      const TextStyle(
-                        fontSize: 10,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                      '${controller.downloader.protocol}://${controller.downloader.host}:${controller.downloader.port}'),
+                ],
+              ),
+            ),
+            SizedBox(
+              height: 80,
+              child: SfCartesianChart(
+                plotAreaBorderWidth: 0,
+                tooltipBehavior: TooltipBehavior(
+                  enable: true,
+                  shared: true,
+                  decimalPlaces: 1,
+                  builder: (dynamic data, dynamic point, dynamic series,
+                      int pointIndex, int seriesIndex) {
+                    // Logger.instance.w(data);
+                    return Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.background,
+                        border: Border.all(width: 1),
+                      ),
+                      child: Text(
+                        '${series.name}: ${filesize(point.y)}',
+                        style: const TextStyle(fontSize: 12),
                       ),
                     );
                   },
-                  majorTickLines: const MajorTickLines(size: 0)),
-              series: [
-                AreaSeries<ServerState, int>(
-                  animationDuration: 0,
-                  dataSource: controller.statusList,
-                  enableTooltip: true,
-                  xValueMapper: (ServerState sales, index) => index,
-                  yValueMapper: (ServerState sales, _) => sales.dlInfoSpeed,
-                  color: Colors.red.withOpacity(0.5),
-                  name: '下载速度',
-                  borderWidth: 1,
                 ),
-                AreaSeries<ServerState, int>(
-                  animationDuration: 0,
-                  dataSource: controller.statusList,
-                  enableTooltip: true,
-                  xValueMapper: (ServerState sales, index) => index,
-                  yValueMapper: (ServerState sales, _) => sales.upInfoSpeed,
-                  color: Colors.blue.withOpacity(0.9),
-                  name: '上传速度',
-                  borderWidth: 1,
-                  borderDrawMode: BorderDrawMode.all,
-                ),
-              ],
+                primaryXAxis: const CategoryAxis(
+                    isVisible: false,
+                    majorGridLines: MajorGridLines(width: 0),
+                    edgeLabelPlacement: EdgeLabelPlacement.shift),
+                primaryYAxis: NumericAxis(
+                    axisLine: const AxisLine(width: 0),
+                    axisLabelFormatter: (AxisLabelRenderDetails details) {
+                      return ChartAxisLabel(
+                        filesize(details.value),
+                        const TextStyle(
+                          fontSize: 10,
+                        ),
+                      );
+                    },
+                    majorTickLines: const MajorTickLines(size: 0)),
+                series: [
+                  AreaSeries<ServerState, int>(
+                    animationDuration: 0,
+                    dataSource: controller.statusList,
+                    enableTooltip: true,
+                    xValueMapper: (ServerState sales, index) => index,
+                    yValueMapper: (ServerState sales, _) => sales.dlInfoSpeed,
+                    color: Colors.red.withOpacity(0.5),
+                    name: '下载速度',
+                    borderWidth: 1,
+                  ),
+                  AreaSeries<ServerState, int>(
+                    animationDuration: 0,
+                    dataSource: controller.statusList,
+                    enableTooltip: true,
+                    xValueMapper: (ServerState sales, index) => index,
+                    yValueMapper: (ServerState sales, _) => sales.upInfoSpeed,
+                    color: Colors.blue.withOpacity(0.9),
+                    name: '上传速度',
+                    borderWidth: 1,
+                    borderDrawMode: BorderDrawMode.all,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+            if (controller.serverState != null)
+              SizedBox(
+                  height: 300,
+                  child: ListView(
+                    children: [
+                      ListTile(
+                        dense: true,
+                        title: Center(
+                            child: Text(
+                          '剩余空间',
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary),
+                        )),
+                        subtitle: Container(
+                          color: Colors.blue,
+                          child: Center(
+                            child: Text(
+                              filesize(controller.serverState!.freeSpaceOnDisk),
+                              style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary),
+                            ),
+                          ),
+                        ),
+                      ),
+                      ListTile(
+                        dense: true,
+                        title: Center(
+                            child: Text(
+                          '上传下载数据',
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary),
+                        )),
+                        subtitle: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            CustomTextTag(
+                                icon: const Icon(
+                                  Icons.upload_outlined,
+                                  color: Colors.green,
+                                  size: 14,
+                                ),
+                                backgroundColor: Colors.transparent,
+                                labelColor: Colors.green,
+                                labelText:
+                                    '${filesize(controller.serverState!.alltimeUl)}[${filesize(controller.serverState!.upInfoData)}]'),
+                            CustomTextTag(
+                                icon: const Icon(
+                                  Icons.download_outlined,
+                                  color: Colors.red,
+                                  size: 14,
+                                ),
+                                backgroundColor: Colors.transparent,
+                                labelColor: Colors.red,
+                                labelText:
+                                    '${filesize(controller.serverState!.alltimeDl)}[${filesize(controller.serverState!.dlInfoData)}]'),
+                          ],
+                        ),
+                      ),
+                      ListTile(
+                        subtitle: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            CustomTextTag(
+                                icon: const Icon(
+                                  Icons.upload_outlined,
+                                  color: Colors.green,
+                                  size: 14,
+                                ),
+                                backgroundColor: Colors.transparent,
+                                labelColor: Colors.green,
+                                labelText:
+                                    '[${filesize(controller.serverState!.upRateLimit)}/S]'),
+                            CustomTextTag(
+                                icon: const Icon(
+                                  Icons.download_outlined,
+                                  color: Colors.red,
+                                  size: 14,
+                                ),
+                                backgroundColor: Colors.transparent,
+                                labelColor: Colors.red,
+                                labelText:
+                                    '[${filesize(controller.serverState!.dlRateLimit)}/S]'),
+                          ],
+                        ),
+                        title: Center(
+                          child: Text(
+                            '切换限速模式',
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary),
+                          ),
+                        ),
+                        dense: true,
+                        trailing: Stack(
+                          alignment: AlignmentDirectional.center,
+                          children: [
+                            CupertinoSwitch(
+                                value:
+                                    controller.serverState!.useAltSpeedLimits ==
+                                        true,
+                                onChanged: (value) async {
+                                  await controller.toggleSpeedLimit();
+                                }),
+                            if (controller.toggleSpeedLimitLoading)
+                              const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: Center(child: GFLoader()))
+                          ],
+                        ),
+                      ),
+                    ],
+                  ))
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildActionButtons(QBittorrentController controller, context) {
@@ -601,17 +714,17 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                         controller.update();
                       },
                     ),
-                    // PopupMenuItem<String>(
-                    //   child: Text(
-                    //     '站点数据',
-                    //     style: TextStyle(
-                    //       color: Theme.of(context).colorScheme.secondary,
-                    //     ),
-                    //   ),
-                    //   onTap: () async {
-                    //     await getAllStatusButton();
-                    //   },
-                    // ),
+                    PopupMenuItem<String>(
+                      child: Text(
+                        '切换限速',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                      ),
+                      onTap: () async {
+                        await controller.toggleSpeedLimit();
+                      },
+                    ),
                     // PopupMenuItem<String>(
                     //   child: Text(
                     //     'PTPP',

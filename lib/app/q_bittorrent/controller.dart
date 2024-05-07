@@ -29,6 +29,7 @@ class QBittorrentController extends GetxController {
   List<TorrentInfo> showTorrents = [];
   Map<String, Category?> categoryMap = {};
   Map<String, WebSite> trackerToWebSiteMap = {};
+  ServerState? serverState;
   String? category;
   String selectedTracker = ' All';
   TorrentSort sortKey = TorrentSort.name;
@@ -40,6 +41,8 @@ class QBittorrentController extends GetxController {
   bool isLoading = false;
   TextEditingController searchController = TextEditingController();
   Map<String, List<String>> trackers = {};
+
+  bool toggleSpeedLimitLoading = false;
 
   QBittorrentController(this.downloader);
 
@@ -146,18 +149,19 @@ class QBittorrentController extends GetxController {
     buildTrackerToWebSite();
 
     /// 获取上传下载信息
-    await getQbSpeed();
+    await getQbStatus();
 
     /// 订阅所有种子
     subTorrentList();
     update();
   }
 
-  Future getQbSpeed() async {
+  Future getQbStatus() async {
     mainDataSubscription = client.sync
         .subscribeMainData(interval: Duration(seconds: subInterval))
         .listen((event) {
       allTorrents = event.torrents!.values.toList();
+      serverState = event.serverState;
       statusList.add(event.serverState!);
       trackers = {' All': [], ' 红种': []};
       trackers.addAll(mergeTrackers(event.trackers));
@@ -369,5 +373,16 @@ class QBittorrentController extends GetxController {
     torrentListSubscription?.cancel();
     mainDataSubscription?.cancel();
     super.onClose();
+  }
+
+  toggleSpeedLimit() async {
+    toggleSpeedLimitLoading = true;
+    update();
+    await client.transfer.toggleSpeedLimitsMode();
+    await mainDataSubscription?.cancel();
+    await getQbStatus();
+    await Future.delayed(const Duration(seconds: 2));
+    toggleSpeedLimitLoading = false;
+    update();
   }
 }
