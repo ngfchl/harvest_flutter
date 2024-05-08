@@ -1,11 +1,16 @@
 import 'package:get/get.dart';
+import 'package:harvest/app/home/controller/home_controller.dart';
 import 'package:harvest/models/common_response.dart';
 
 import '../../../../api/douban.dart';
 import '../../../../utils/logger_helper.dart';
+import '../agg_search/controller.dart';
 import 'model.dart';
 
 class DouBanController extends GetxController {
+  final searchController = Get.put(AggSearchController());
+  final homeController = Get.put(HomeController());
+
   List<MovieInfo> douBanTop250 = [];
   List<HotMediaInfo> douBanMovieHot = [];
   List<HotMediaInfo> douBanTvHot = [];
@@ -80,6 +85,17 @@ class DouBanController extends GetxController {
     douBanTvHot.clear();
     douBanTvHot = res.data;
     update();
+  }
+
+  goSearchPage(info) async {
+    Get.back();
+    searchController.searchKeyController.text = info.title;
+    await searchController.doWebsocketSearch();
+    homeController.changePage(1);
+    searchController.update();
+    homeController.update();
+    Logger.instance.i(homeController.initPage);
+    Logger.instance.i(homeController.pageController.page);
   }
 
   @override

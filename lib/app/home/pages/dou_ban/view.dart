@@ -56,6 +56,9 @@ class _DouBanPageState extends State<DouBanPage>
                       children: controller.douBanTop250
                           .map((e) => InkWell(
                                 onTap: () {
+                                  _buildOperateDialog(e, context);
+                                },
+                                onLongPress: () {
                                   Logger.instance.i('WebView');
                                   Get.toNamed(Routes.WEBVIEW, arguments: {
                                     'url': e.douBanUrl,
@@ -159,6 +162,9 @@ class _DouBanPageState extends State<DouBanPage>
                       children: controller.douBanMovieHot
                           .map((e) => InkWell(
                                 onTap: () {
+                                  _buildOperateDialog(e, context);
+                                },
+                                onLongPress: () {
                                   Logger.instance.i('WebView');
                                   Get.toNamed(Routes.WEBVIEW, arguments: {
                                     'url': e.url,
@@ -251,6 +257,9 @@ class _DouBanPageState extends State<DouBanPage>
                       children: controller.douBanTvHot
                           .map((e) => InkWell(
                                 onTap: () {
+                                  _buildOperateDialog(e, context);
+                                },
+                                onLongPress: () {
                                   Logger.instance.i('WebView');
                                   Get.toNamed(Routes.WEBVIEW, arguments: {
                                     'url': e.url,
@@ -302,6 +311,64 @@ class _DouBanPageState extends State<DouBanPage>
         ),
       );
     });
+  }
+
+  Future<dynamic> _buildOperateDialog(e, BuildContext context) {
+    return Get.defaultDialog(
+        title: '选中的资源名称',
+        content: GetBuilder<DouBanController>(builder: (controller) {
+          return Column(
+            children: [
+              InkWell(
+                onTap: () {
+                  try {
+                    Get.toNamed(Routes.WEBVIEW, arguments: {
+                      'url': e.douBanUrl,
+                    });
+                  } catch (err) {
+                    Get.toNamed(Routes.WEBVIEW, arguments: {
+                      'url': e.url,
+                    });
+                  }
+                },
+                child: Tooltip(
+                  message: '点击查看影视详情',
+                  child: Text(
+                    e.title,
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 15),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () => controller.goSearchPage(e),
+                    icon: Icon(
+                      Icons.search,
+                      color: Theme.of(context).colorScheme.onBackground,
+                    ),
+                    label: const Text('搜索'),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: () {},
+                    icon: Icon(
+                      Icons.subscriptions_outlined,
+                      color: Theme.of(context).colorScheme.onBackground,
+                    ),
+                    label: const Text('订阅'),
+                  ),
+                ],
+              ),
+            ],
+          );
+        }));
   }
 
   _buildBottomButtonBar() {
