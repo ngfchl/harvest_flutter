@@ -83,8 +83,7 @@ class HomeView extends GetView<HomeController> {
                   .iconTheme
                   .copyWith(color: Theme.of(context).colorScheme.secondary),
               backgroundColor: Colors.transparent,
-              onDestinationSelected: (index) =>
-                  controller.changePage(index, context),
+              onDestinationSelected: (index) => controller.changePage(index),
               labelType: NavigationRailLabelType.none,
               leading: GFDrawerHeader(
                 centerAlign: true,
@@ -197,7 +196,7 @@ class HomeView extends GetView<HomeController> {
     return GetBuilder<HomeController>(builder: (controller) {
       return BottomNavigationBar(
         onTap: (int index) {
-          controller.changePage(index + 1, context);
+          controller.changePage(index + 1);
         },
         selectedLabelStyle: const TextStyle(color: Colors.blue),
         selectedIconTheme:
