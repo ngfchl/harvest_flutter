@@ -291,9 +291,9 @@ class DownloadForm extends StatelessWidget {
                   ),
                   Obx(() {
                     return ElevatedButton.icon(
-                      onPressed: () {
+                      onPressed: () async {
                         isLoading.value = true;
-                        submitForm({
+                        await submitForm({
                           'mySite': mysite,
                           'magnet': urlController.text,
                           'savePath': savePathController.text,
@@ -325,7 +325,7 @@ class DownloadForm extends StatelessWidget {
     );
   }
 
-  void submitForm(Map<String, dynamic> formData, context) async {
+  Future<void> submitForm(Map<String, dynamic> formData, context) async {
     try {
       final TorrentController torrentController =
           Get.put(TorrentController(downloader, false));

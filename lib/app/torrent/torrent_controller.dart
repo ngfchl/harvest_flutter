@@ -706,7 +706,7 @@ class TorrentController extends GetxController {
           firstLastPiecePrio: data['firstLastPiecePrio'],
         );
       } else {
-        msg = '种子文件下载成功，已推送到下载队列...';
+        msg = '种子文件下载成功，正在推送到下载队列...';
         torrents = NewTorrents.files(
           files: [File(downloadResponse.data!)],
           savePath: data['savePath'],
@@ -729,30 +729,34 @@ class TorrentController extends GetxController {
 
       return CommonResponse.success(msg: '添加下载任务成功！$msg');
     } on QBittorrentException catch (e) {
-      String msg =
-          '推送种子文件失败，使用下载链接进行下载，请检查下载器！${e.statusCode} ${e.statusMessage}';
-      LoggerHelper.Logger.instance.e(e.runtimeType);
-      LoggerHelper.Logger.instance.e(e);
-      LoggerHelper.Logger.instance.e(msg);
+      try {
+        String msg =
+            '推送种子文件失败，使用下载链接进行下载，请检查下载器！${e.statusCode} ${e.statusMessage}';
+        LoggerHelper.Logger.instance.e(e);
+        LoggerHelper.Logger.instance.e(msg);
 
-      await client.torrents.addNewTorrents(
-        torrents: NewTorrents.urls(
-          urls: [data["magnet"]],
-          savePath: data['savePath'],
-          cookie: data['cookie'],
-          category: data['category'],
-          paused: data['paused'],
-          rootFolder: data['rootFolder'],
-          rename: data['rename'],
-          upLimit: data['upLimit'] * 1024 * 1024,
-          dlLimit: data['dlLimit'] * 1024 * 1024,
-          ratioLimit: data['ratioLimit'].toDouble(),
-          autoTMM: data['autoTMM'],
-          firstLastPiecePrio: data['firstLastPiecePrio'],
-        ),
-      );
+        await client.torrents.addNewTorrents(
+          torrents: NewTorrents.urls(
+            urls: [data["magnet"]],
+            savePath: data['savePath'],
+            cookie: data['cookie'],
+            category: data['category'],
+            paused: data['paused'],
+            rootFolder: data['rootFolder'],
+            rename: data['rename'],
+            upLimit: data['upLimit'] * 1024 * 1024,
+            dlLimit: data['dlLimit'] * 1024 * 1024,
+            ratioLimit: data['ratioLimit'].toDouble(),
+            autoTMM: data['autoTMM'],
+            firstLastPiecePrio: data['firstLastPiecePrio'],
+          ),
+        );
 
-      return CommonResponse.error(msg: msg);
+        return CommonResponse.error(msg: msg);
+      } catch (err) {
+        String msg = '添加下载任务失败！$e';
+        return CommonResponse.error(msg: msg);
+      }
     } catch (e) {
       String msg = '添加下载任务失败！$e';
       return CommonResponse.error(msg: msg);
