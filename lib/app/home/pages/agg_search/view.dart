@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:filesize/filesize.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +16,7 @@ import '../../../../common/form_widgets.dart';
 import '../../../../common/utils.dart';
 import '../../../../utils/logger_helper.dart' as LoggerHelper;
 import '../../../../utils/string_utils.dart';
+import '../../../routes/app_pages.dart';
 import '../models/my_site.dart';
 import 'controller.dart';
 import 'download_form.dart';
@@ -289,16 +292,25 @@ class _AggSearchPageState extends State<AggSearchPage>
 
     return InkWell(
       onLongPress: () async {
-        if (info.magnetUrl.isEmpty && mySite.mirror!.contains('m-team')) {
-          final res = await controller.getMTeamDlLink(mySite, info);
-          if (res.code == 0) {
-            info = info.copyWith(magnetUrl: res.data);
-          } else {
-            Get.snackbar('下载链接', '${mySite.nickname} 获取种子下载链接失败！');
-            return;
+        String url =
+            '${mySite.mirror}${website.pageDetail.replaceAll('{}', info.tid)}';
+
+        if (!Platform.isIOS && !Platform.isAndroid) {
+          LoggerHelper.Logger.instance.i('Explorer');
+          Uri uri = Uri.parse(url);
+          if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+            Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
+                colorText: Theme.of(context).colorScheme.error);
           }
+        } else {
+          LoggerHelper.Logger.instance.i('WebView');
+          Get.toNamed(Routes.WEBVIEW, arguments: {
+            'url': url,
+            'info': info,
+            'mySite': mySite,
+            'website': website
+          });
         }
-        await launchUrl(Uri.parse(info.magnetUrl));
       },
       onTap: () async {
         if (mySite.mirror!.contains('m-team')) {
@@ -351,62 +363,6 @@ class _AggSearchPageState extends State<AggSearchPage>
                       ]),
                 ),
               ),
-              // icon: InkWell(
-              //   onLongPress: () async {
-              //     if (info.magnetUrl.isEmpty &&
-              //         mySite.mirror!.contains('m-team')) {
-              //       final res = await controller.getMTeamDlLink(mySite, info);
-              //       if (res.code == 0) {
-              //         info = info.copyWith(magnetUrl: res.data);
-              //       } else {
-              //         Get.snackbar('下载链接', '${mySite.nickname} 获取种子下载链接失败！');
-              //         return;
-              //       }
-              //     }
-              //     await launchUrl(Uri.parse(info.magnetUrl));
-              //   },
-              //   onTap: () async {
-              //     if (mySite.mirror!.contains('m-team')) {
-              //       final res = await controller.getMTeamDlLink(mySite, info);
-              //       if (res.code == 0) {
-              //         info = info.copyWith(magnetUrl: res.data);
-              //       } else {
-              //         Get.snackbar(
-              //             '下载链接', '${mySite.nickname} 获取种子下载链接失败！${res.msg}');
-              //         return;
-              //       }
-              //     }
-              //     openDownloaderListSheet(context, info);
-              //   },
-              //   child: Container(
-              //       decoration: BoxDecoration(
-              //         border: Border.all(color: Colors.black, width: 2.0),
-              //         borderRadius: BorderRadius.circular(4.0),
-              //       ),
-              //       child: const Icon(Icons.file_download_outlined)),
-              // ),
-              // onTap: () async {
-              //   String url =
-              //       '${mySite.mirror}${website.pageDetail.replaceAll('{}', info.tid)}';
-              //
-              //   if (!Platform.isIOS && !Platform.isAndroid) {
-              //     LoggerHelper.Logger.instance.i('Explorer');
-              //     Uri uri = Uri.parse(url);
-              //     if (!await launchUrl(uri,
-              //         mode: LaunchMode.externalApplication)) {
-              //       Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
-              //           colorText: Theme.of(context).colorScheme.error);
-              //     }
-              //   } else {
-              //     LoggerHelper.Logger.instance.i('WebView');
-              //     Get.toNamed(Routes.WEBVIEW, arguments: {
-              //       'url': url,
-              //       'info': info,
-              //       'mySite': mySite,
-              //       'website': website
-              //     });
-              //   }
-              // },
               title: EllipsisText(
                 text: info.title.isNotEmpty ? info.title : info.subtitle,
                 ellipsis: "...",
