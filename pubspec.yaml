@@ -1,46 +1,45 @@
 name: harvest
 description: Harvest Project App Client
 publish_to: none
-version: 2024.0508.02+23
+version: 2024.0508.04+25
 environment:
   sdk: '>=3.3.2 <4.0.0'
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.6
+  cupertino_icons: ^1.0.8
   logger: ^2.2.0
   get: ^4.6.6
-  dio: ^5.4.2+1
-  shared_preferences: ^2.2.2
+  dio: ^5.4.3+1
+  shared_preferences: ^2.2.3
   getwidget: ^4.0.0
-  qbittorrent_api: ^1.0.6
+  qbittorrent_api: ^1.1.0
   transmission_api: ^0.0.1
-  easy_refresh: ^3.3.4
-  url_launcher: ^6.2.5
+  easy_refresh: ^3.3.5+1
+  url_launcher: ^6.2.6
   intl: ^0.19.0
   tmdb_api: ^2.2.0
   dio_smart_retry: ^6.0.0
   path: ^1.9.0
   filesize: ^2.0.1
   flutter_ellipsis_text: ^1.0.1
-  syncfusion_flutter_charts: ^25.1.42+1
+  syncfusion_flutter_charts: ^25.2.3
   basic_utils: ^5.7.0
-  syncfusion_flutter_gauges: ^25.1.37
+  syncfusion_flutter_gauges: ^25.2.3
   proper_filesize: ^0.0.2
   flutter_slidable: ^3.1.0
   flutter_pickers: ^2.1.9
   permission_handler: ^11.3.1
   flutter_inappwebview: ^6.0.0
-  random_color: ^1.0.6-nullsafety
-  syncfusion_flutter_sliders: ^25.1.38
-  syncfusion_flutter_core: ^25.1.39
-  package_info_plus: ^7.0.0
-  app_service: ^3.0.0
-  get_it: ^7.7.0
+  random_color: ^1.0.5
+  syncfusion_flutter_sliders: ^25.2.3
+  syncfusion_flutter_core: ^25.2.3
+  package_info_plus: ^8.0.0
+  app_service: ^4.0.1
   flutter_native_splash: ^2.4.0
   cached_network_image: ^3.3.1
   dropdown_search: ^5.0.6
-  web_socket_channel: ^2.4.5
+  web_socket_channel: ^3.0.0
   flutter_popup: ^3.3.0
   xpath_selector_html_parser: ^3.0.1
   html: ^0.15.4
@@ -48,7 +47,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.0
+  flutter_lints: ^3.0.2
 flutter:
   uses-material-design: true
   assets:

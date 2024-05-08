@@ -865,7 +865,22 @@ class _DownloadPageState extends State<DownloadPage>
 
     RxBool isActive = downloader != null ? downloader.isActive.obs : true.obs;
     RxBool brush = downloader != null ? downloader.brush.obs : false.obs;
-    await controller.getTorrentsPathList(context);
+    final response = await controller.getTorrentsPathList();
+    if (response.code == 0) {
+      controller.pathList = [
+        for (final item in response.data)
+          if (item['path'] is String) item['path'].toString()
+      ];
+      controller.update();
+    } else {
+      Get.snackbar(
+        '获取种子文件夹出错啦！',
+        response.msg!,
+        snackPosition: SnackPosition.TOP,
+        colorText: Theme.of(context).colorScheme.error,
+        duration: const Duration(seconds: 3),
+      );
+    }
     Get.bottomSheet(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
       CustomCard(
@@ -1009,11 +1024,27 @@ class _DownloadPageState extends State<DownloadPage>
                       );
                     }
                     LoggerHelper.Logger.instance.i(downloader?.toJson());
-                    if (await controller.saveDownloaderToServer(
-                        downloader!, context)) {
+                    CommonResponse response =
+                        await controller.saveDownloaderToServer(downloader!);
+                    if (response.code == 0) {
                       Navigator.of(context).pop();
-                      controller.getDownloaderListFromServer();
+                      Get.snackbar(
+                        '保存成功！',
+                        response.msg!,
+                        snackPosition: SnackPosition.TOP,
+                        colorText: Theme.of(context).colorScheme.primary,
+                        duration: const Duration(seconds: 3),
+                      );
+                      await controller.getDownloaderListFromServer();
                       controller.update();
+                    } else {
+                      Get.snackbar(
+                        '保存出错啦！',
+                        response.msg!,
+                        snackPosition: SnackPosition.TOP,
+                        colorText: Theme.of(context).colorScheme.error,
+                        duration: const Duration(seconds: 3),
+                      );
                     }
                   },
                 ),

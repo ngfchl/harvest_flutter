@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:get/get.dart'; // ignore: depend_on_referenced_packages
 import 'package:path_provider/path_provider.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
@@ -254,50 +253,17 @@ class DownloadController extends GetxController {
     update();
   }
 
-  saveDownloaderToServer(Downloader downloader, context) async {
+  saveDownloaderToServer(Downloader downloader) async {
     CommonResponse response;
     if (downloader.id != 0) {
       response = await editDownloaderApi(downloader);
     } else {
       response = await saveDownloaderApi(downloader);
     }
-    if (response.code == 0) {
-      Get.snackbar(
-        '保存成功！',
-        response.msg!,
-        snackPosition: SnackPosition.TOP,
-        colorText: Theme.of(context).colorScheme.primary,
-        duration: const Duration(seconds: 3),
-      );
-      return true;
-    } else {
-      Get.snackbar(
-        '保存出错啦！',
-        response.msg!,
-        snackPosition: SnackPosition.TOP,
-        colorText: Theme.of(context).colorScheme.error,
-        duration: const Duration(seconds: 3),
-      );
-      return false;
-    }
+    return response;
   }
 
-  getTorrentsPathList(context) async {
-    CommonResponse response = await getDownloaderPaths();
-    if (response.code == 0) {
-      pathList = [
-        for (final item in response.data)
-          if (item['path'] is String) item['path'].toString()
-      ];
-    } else {
-      Get.snackbar(
-        '获取种子文件夹出错啦！',
-        response.msg!,
-        snackPosition: SnackPosition.TOP,
-        colorText: Theme.of(context).colorScheme.error,
-        duration: const Duration(seconds: 3),
-      );
-    }
-    update();
+  getTorrentsPathList() async {
+    return await getDownloaderPaths();
   }
 }

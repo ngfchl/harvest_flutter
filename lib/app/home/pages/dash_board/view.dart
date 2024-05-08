@@ -61,7 +61,7 @@ class _DashBoardPageState extends State<DashBoardPage>
             onRefresh: controller.initChartData,
             child: controller.isLoading
                 ? ListView(children: [
-                    const SizedBox(height: 50),
+                    SizedBox(height: MediaQuery.of(context).size.width * 0.4),
                     const Center(child: CircularProgressIndicator()),
                     const SizedBox(height: 10),
                     Text(
@@ -76,8 +76,8 @@ class _DashBoardPageState extends State<DashBoardPage>
                       children: controller.statusList.isNotEmpty
                           ? [
                               _buildSiteInfoCard(),
-                              _buildSmartLabelPieChart(context),
-                              _buildStackedBar(context),
+                              _buildSmartLabelPieChart(),
+                              _buildStackedBar(),
                               _buildSiteInfo(),
                             ]
                           : [
@@ -930,7 +930,7 @@ class _DashBoardPageState extends State<DashBoardPage>
     });
   }
 
-  Widget _buildSmartLabelPieChart(context) {
+  Widget _buildSmartLabelPieChart() {
     return GetBuilder<DashBoardController>(builder: (controller) {
       return CustomCard(
         height: 240,
@@ -1022,7 +1022,7 @@ class _DashBoardPageState extends State<DashBoardPage>
     ];
   }
 
-  Widget _buildStackedBar(context) {
+  Widget _buildStackedBar() {
     try {
       return GetBuilder<DashBoardController>(builder: (controller) {
         return CustomCard(

@@ -59,7 +59,7 @@ class _DouBanPageState extends State<DouBanPage>
                       children: controller.douBanTop250
                           .map((e) => InkWell(
                                 onTap: () {
-                                  _buildOperateDialog(e, context);
+                                  _buildOperateDialog(e);
                                 },
                                 onLongPress: () {
                                   Logger.instance.i('WebView');
@@ -165,7 +165,7 @@ class _DouBanPageState extends State<DouBanPage>
                       children: controller.douBanMovieHot
                           .map((e) => InkWell(
                                 onTap: () {
-                                  _buildOperateDialog(e, context);
+                                  _buildOperateDialog(e);
                                 },
                                 onLongPress: () {
                                   Logger.instance.i('WebView');
@@ -260,7 +260,7 @@ class _DouBanPageState extends State<DouBanPage>
                       children: controller.douBanTvHot
                           .map((e) => InkWell(
                                 onTap: () {
-                                  _buildOperateDialog(e, context);
+                                  _buildOperateDialog(e);
                                 },
                                 onLongPress: () {
                                   Logger.instance.i('WebView');
@@ -316,7 +316,7 @@ class _DouBanPageState extends State<DouBanPage>
     });
   }
 
-  Future<dynamic> _buildOperateDialog(e, BuildContext context) {
+  Future<dynamic> _buildOperateDialog(mediaInfo) {
     return Get.defaultDialog(
         title: '选中的资源名称',
         content: GetBuilder<DouBanController>(builder: (controller) {
@@ -324,12 +324,12 @@ class _DouBanPageState extends State<DouBanPage>
             children: [
               InkWell(
                 onTap: () async {
-                  await _openMediaInfoDetail(e, context);
+                  await _openMediaInfoDetail(mediaInfo);
                 },
                 child: Tooltip(
                   message: '点击查看影视详情',
                   child: Text(
-                    e.title,
+                    mediaInfo.title,
                     style: TextStyle(
                         color: Theme.of(context).colorScheme.primary,
                         fontSize: 20,
@@ -344,7 +344,7 @@ class _DouBanPageState extends State<DouBanPage>
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   ElevatedButton.icon(
-                    onPressed: () => controller.goSearchPage(e),
+                    onPressed: () => controller.goSearchPage(mediaInfo),
                     icon: Icon(
                       Icons.search,
                       color: Theme.of(context).colorScheme.onBackground,
@@ -353,7 +353,7 @@ class _DouBanPageState extends State<DouBanPage>
                   ),
                   ElevatedButton.icon(
                     onPressed: () async {
-                      await _openMediaInfoDetail(e, context);
+                      await _openMediaInfoDetail(mediaInfo);
                     },
                     icon: Icon(
                       Icons.info_outline,
@@ -368,7 +368,7 @@ class _DouBanPageState extends State<DouBanPage>
         }));
   }
 
-  Future<void> _openMediaInfoDetail(mediaInfo, BuildContext context) async {
+  Future<void> _openMediaInfoDetail(mediaInfo) async {
     Get.back();
     String url;
     try {

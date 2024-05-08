@@ -13,10 +13,10 @@ packages:
     dependency: "direct main"
     description:
       name: app_service
-      sha256: "222ae8434a26d5ddb57996c80480289780006bb51eb1de8ab63c97da9ca5b580"
+      sha256: "7c3124804013b310dc691389e1c773b59f0f2cc6f61ecb845258ff687ba3799f"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0"
+    version: "4.0.1"
   archive:
     dependency: transitive
     description:
@@ -416,14 +416,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.6.6"
-  get_it:
-    dependency: "direct main"
-    description:
-      name: get_it
-      sha256: d85128a5dae4ea777324730dc65edd9c9f43155c109d5cc0a69cab74139fbac1
-      url: "https://pub.dev"
-    source: hosted
-    version: "7.7.0"
   getwidget:
     dependency: "direct main"
     description:
@@ -572,10 +564,10 @@ packages:
     dependency: "direct main"
     description:
       name: package_info_plus
-      sha256: "2c582551839386fa7ddbc7770658be7c0f87f388a4bff72066478f597c34d17f"
+      sha256: b93d8b4d624b4ea19b0a5a208b2d6eff06004bc3ce74c06040b120eeadd00ce0
       url: "https://pub.dev"
     source: hosted
-    version: "7.0.0"
+    version: "8.0.0"
   package_info_plus_platform_interface:
     dependency: transitive
     description:
@@ -628,10 +620,10 @@ packages:
     dependency: transitive
     description:
       name: path_provider_foundation
-      sha256: "5a7999be66e000916500be4f15a3633ebceb8302719b47b9cc49ce924125350f"
+      sha256: f234384a3fdd67f989b4d54a5d73ca2a6c422fa55ae694381ae0f4375cd1ea16
       url: "https://pub.dev"
     source: hosted
-    version: "2.3.2"
+    version: "2.4.0"
   path_provider_linux:
     dependency: transitive
     description:
@@ -732,10 +724,10 @@ packages:
     dependency: transitive
     description:
       name: pointycastle
-      sha256: "79fbafed02cfdbe85ef3fd06c7f4bc2cbcba0177e61b765264853d4253b21744"
+      sha256: "4be0097fcf3fd3e8449e53730c631200ebc7b88016acecab2b0da2f0149222fe"
       url: "https://pub.dev"
     source: hosted
-    version: "3.9.0"
+    version: "3.9.1"
   proper_filesize:
     dependency: "direct main"
     description:
@@ -897,34 +889,34 @@ packages:
     dependency: "direct main"
     description:
       name: syncfusion_flutter_charts
-      sha256: "75253e2d32ce2e739c8efe0aec52668334d880e2a96f6d0d2b4422f49af7c608"
+      sha256: "755dc3dee2afebba9e7ac0355fe89c0e6084f3c90b736a940c8990607c500160"
       url: "https://pub.dev"
     source: hosted
-    version: "25.1.42+1"
+    version: "25.2.3"
   syncfusion_flutter_core:
     dependency: "direct main"
     description:
       name: syncfusion_flutter_core
-      sha256: fc61878342caee6da7979ca0ca9bb178f1eb5ca9b836dada34b83caa39e4bfed
+      sha256: "6c534bb282e1429ac082354ace1b7c6d4496a258e62c948b7ca2b52acca8a514"
       url: "https://pub.dev"
     source: hosted
-    version: "25.1.42"
+    version: "25.2.3"
   syncfusion_flutter_gauges:
     dependency: "direct main"
     description:
       name: syncfusion_flutter_gauges
-      sha256: cdf566a67ef49b9d12d9d4813da2d33b29c7c4ab4ad1268da5d4842203752184
+      sha256: "812f51fe01ab0ed5069ecface98faba89b57a4e8035e271dffcde9f1bde42dd2"
       url: "https://pub.dev"
     source: hosted
-    version: "25.1.42"
+    version: "25.2.3"
   syncfusion_flutter_sliders:
     dependency: "direct main"
     description:
       name: syncfusion_flutter_sliders
-      sha256: cd351cb8391b9ee69043bcd1f28a518ae559bf165b2f8aa906592a007dad86ca
+      sha256: "9bc6b900c2325b9128798380d6dfa5ce07a6cecb15673e637013aa49b61d3167"
       url: "https://pub.dev"
     source: hosted
-    version: "25.1.42"
+    version: "25.2.3"
   synchronized:
     dependency: transitive
     description:
@@ -1101,14 +1093,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.5.1"
+  web_socket:
+    dependency: transitive
+    description:
+      name: web_socket
+      sha256: bfe704c186c6e32a46f6607f94d079cd0b747b9a489fceeecc93cd3adb98edd5
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.3"
   web_socket_channel:
     dependency: "direct main"
     description:
       name: web_socket_channel
-      sha256: "58c6666b342a38816b2e7e50ed0f1e261959630becd4c879c4f26bfa14aa5a42"
+      sha256: a2d56211ee4d35d9b344d9d4ce60f362e4f5d1aafb988302906bd732bc731276
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.5"
+    version: "3.0.0"
   win32:
     dependency: transitive
     description:
