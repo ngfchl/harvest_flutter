@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:filesize/filesize.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +14,6 @@ import '../../../../common/form_widgets.dart';
 import '../../../../common/utils.dart';
 import '../../../../utils/logger_helper.dart' as LoggerHelper;
 import '../../../../utils/string_utils.dart';
-import '../../../routes/app_pages.dart';
 import '../models/my_site.dart';
 import 'controller.dart';
 import 'download_form.dart';
@@ -290,262 +287,286 @@ class _AggSearchPageState extends State<AggSearchPage>
             ? website.logo
             : '${mySite.mirror}${website.logo}';
 
-    return CustomCard(
-      child: Column(
-        children: [
-          GFListTile(
-            padding: EdgeInsets.zero,
-            avatar: InkWell(
-              onTap: () {
-                Get.defaultDialog(
-                    title: '海报预览',
-                    content: InkWell(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: CachedNetworkImage(
-                        imageUrl: imgUrl,
-                        errorWidget: (context, url, error) => const Image(
-                            image: AssetImage('assets/images/logo.png')),
-                        fit: BoxFit.fitHeight,
-                      ),
-                    ));
-              },
-              child: SizedBox(
-                width: 50,
-                child: Stack(
-                    alignment: AlignmentDirectional.bottomCenter,
-                    children: [
-                      CachedNetworkImage(
-                        imageUrl: imgUrl,
-                        errorWidget: (context, url, error) => const Image(
-                            image: AssetImage('assets/images/logo.png')),
-                        fit: BoxFit.fitHeight,
-                      ),
-                      SizedBox(
-                        width: double.infinity,
-                        child: CustomTextTag(
+    return InkWell(
+      onLongPress: () async {
+        if (info.magnetUrl.isEmpty && mySite.mirror!.contains('m-team')) {
+          final res = await controller.getMTeamDlLink(mySite, info);
+          if (res.code == 0) {
+            info = info.copyWith(magnetUrl: res.data);
+          } else {
+            Get.snackbar('下载链接', '${mySite.nickname} 获取种子下载链接失败！');
+            return;
+          }
+        }
+        await launchUrl(Uri.parse(info.magnetUrl));
+      },
+      onTap: () async {
+        if (mySite.mirror!.contains('m-team')) {
+          final res = await controller.getMTeamDlLink(mySite, info);
+          if (res.code == 0) {
+            info = info.copyWith(magnetUrl: res.data);
+          } else {
+            Get.snackbar('下载链接', '${mySite.nickname} 获取种子下载链接失败！${res.msg}');
+            return;
+          }
+        }
+        openDownloaderListSheet(context, info);
+      },
+      child: CustomCard(
+        child: Column(
+          children: [
+            GFListTile(
+              padding: EdgeInsets.zero,
+              avatar: InkWell(
+                onTap: () {
+                  Get.defaultDialog(
+                      title: '海报预览',
+                      content: InkWell(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: CachedNetworkImage(
+                          imageUrl: imgUrl,
+                          errorWidget: (context, url, error) => const Image(
+                              image: AssetImage('assets/images/logo.png')),
+                          fit: BoxFit.fitWidth,
+                        ),
+                      ));
+                },
+                child: SizedBox(
+                  width: 55,
+                  child: Stack(
+                      alignment: AlignmentDirectional.bottomCenter,
+                      children: [
+                        CachedNetworkImage(
+                          imageUrl: imgUrl,
+                          errorWidget: (context, url, error) => const Image(
+                              image: AssetImage('assets/images/logo.png'),
+                              fit: BoxFit.fitWidth),
+                          fit: BoxFit.fitWidth,
+                        ),
+                        CustomTextTag(
                           labelText: website.name.toString(),
                           backgroundColor:
                               Colors.teal.shade500.withOpacity(0.7),
                         ),
-                      ),
-                    ]),
+                      ]),
+                ),
               ),
-            ),
-            icon: InkWell(
-              onLongPress: () async {
-                if (info.magnetUrl.isEmpty &&
-                    mySite.mirror!.contains('m-team')) {
-                  final res = await controller.getMTeamDlLink(mySite, info);
-                  if (res.code == 0) {
-                    info = info.copyWith(magnetUrl: res.data);
-                  } else {
-                    Get.snackbar('下载链接', '${mySite.nickname} 获取种子下载链接失败！');
-                    return;
-                  }
-                }
-                await launchUrl(Uri.parse(info.magnetUrl));
-              },
-              onTap: () async {
-                if (mySite.mirror!.contains('m-team')) {
-                  final res = await controller.getMTeamDlLink(mySite, info);
-                  if (res.code == 0) {
-                    info = info.copyWith(magnetUrl: res.data);
-                  } else {
-                    Get.snackbar(
-                        '下载链接', '${mySite.nickname} 获取种子下载链接失败！${res.msg}');
-                    return;
-                  }
-                }
-                openDownloaderListSheet(context, info);
-              },
-              child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.black, width: 2.0),
-                    borderRadius: BorderRadius.circular(4.0),
-                  ),
-                  child: const Icon(Icons.file_download_outlined)),
-            ),
-            onTap: () async {
-              String url =
-                  '${mySite.mirror}${website.pageDetail.replaceAll('{}', info.tid)}';
-
-              if (!Platform.isIOS && !Platform.isAndroid) {
-                LoggerHelper.Logger.instance.i('Explorer');
-                Uri uri = Uri.parse(url);
-                if (!await launchUrl(uri,
-                    mode: LaunchMode.externalApplication)) {
-                  Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
-                      colorText: Theme.of(context).colorScheme.error);
-                }
-              } else {
-                LoggerHelper.Logger.instance.i('WebView');
-                Get.toNamed(Routes.WEBVIEW, arguments: {
-                  'url': url,
-                  'info': info,
-                  'mySite': mySite,
-                  'website': website
-                });
-              }
-            },
-            title: EllipsisText(
-              text: info.title,
-              ellipsis: "...",
-              maxLines: 1,
-              style: TextStyle(
-                fontSize: 13,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-            subTitle: Padding(
-              padding: const EdgeInsets.only(top: 5.0),
-              child: EllipsisText(
-                text: info.subtitle,
+              // icon: InkWell(
+              //   onLongPress: () async {
+              //     if (info.magnetUrl.isEmpty &&
+              //         mySite.mirror!.contains('m-team')) {
+              //       final res = await controller.getMTeamDlLink(mySite, info);
+              //       if (res.code == 0) {
+              //         info = info.copyWith(magnetUrl: res.data);
+              //       } else {
+              //         Get.snackbar('下载链接', '${mySite.nickname} 获取种子下载链接失败！');
+              //         return;
+              //       }
+              //     }
+              //     await launchUrl(Uri.parse(info.magnetUrl));
+              //   },
+              //   onTap: () async {
+              //     if (mySite.mirror!.contains('m-team')) {
+              //       final res = await controller.getMTeamDlLink(mySite, info);
+              //       if (res.code == 0) {
+              //         info = info.copyWith(magnetUrl: res.data);
+              //       } else {
+              //         Get.snackbar(
+              //             '下载链接', '${mySite.nickname} 获取种子下载链接失败！${res.msg}');
+              //         return;
+              //       }
+              //     }
+              //     openDownloaderListSheet(context, info);
+              //   },
+              //   child: Container(
+              //       decoration: BoxDecoration(
+              //         border: Border.all(color: Colors.black, width: 2.0),
+              //         borderRadius: BorderRadius.circular(4.0),
+              //       ),
+              //       child: const Icon(Icons.file_download_outlined)),
+              // ),
+              // onTap: () async {
+              //   String url =
+              //       '${mySite.mirror}${website.pageDetail.replaceAll('{}', info.tid)}';
+              //
+              //   if (!Platform.isIOS && !Platform.isAndroid) {
+              //     LoggerHelper.Logger.instance.i('Explorer');
+              //     Uri uri = Uri.parse(url);
+              //     if (!await launchUrl(uri,
+              //         mode: LaunchMode.externalApplication)) {
+              //       Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
+              //           colorText: Theme.of(context).colorScheme.error);
+              //     }
+              //   } else {
+              //     LoggerHelper.Logger.instance.i('WebView');
+              //     Get.toNamed(Routes.WEBVIEW, arguments: {
+              //       'url': url,
+              //       'info': info,
+              //       'mySite': mySite,
+              //       'website': website
+              //     });
+              //   }
+              // },
+              title: EllipsisText(
+                text: info.title.isNotEmpty ? info.title : info.subtitle,
                 ellipsis: "...",
                 maxLines: 1,
                 style: TextStyle(
-                  fontSize: 10,
-                  color: Theme.of(context).colorScheme.secondary,
+                  fontSize: 13,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              subTitle: Padding(
+                padding: const EdgeInsets.only(top: 5.0),
+                child: EllipsisText(
+                  text: info.subtitle.isNotEmpty ? info.subtitle : info.title,
+                  ellipsis: "...",
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+                ),
+              ),
+              description: Padding(
+                padding: const EdgeInsets.only(top: 5.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.timer,
+                          color: Colors.black38,
+                          size: 12,
+                        ),
+                        const SizedBox(
+                          width: 2,
+                        ),
+                        Text(
+                          info.published is DateTime
+                              ? DateFormat('yyyy-MM-dd HH:mm:ss')
+                                  .format(info.published)
+                              : info.published.toString(),
+                          style: const TextStyle(
+                            color: Colors.black38,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.arrow_upward,
+                              color: Colors.green,
+                              size: 11,
+                            ),
+                            Text(
+                              info.seeders.toString(),
+                              style: const TextStyle(
+                                color: Colors.black38,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.arrow_downward,
+                              color: Colors.red,
+                              size: 11,
+                            ),
+                            Text(
+                              info.leechers.toString(),
+                              style: const TextStyle(
+                                color: Colors.black38,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.done,
+                              color: Colors.orange,
+                              size: 11,
+                            ),
+                            Text(
+                              info.completers.toString(),
+                              style: const TextStyle(
+                                color: Colors.black38,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),
-            description: Padding(
-              padding: const EdgeInsets.only(top: 5.0),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.timer,
+                  if (info.category.isNotEmpty)
+                    CustomTextTag(
+                        labelText: info.category, backgroundColor: Colors.blue),
+                  CustomTextTag(
+                      labelText: filesize(info.size),
+                      backgroundColor: Colors.indigo),
+                  if (info.saleStatus.isNotEmpty)
+                    CustomTextTag(labelText: info.saleStatus),
+                  if (info.saleExpire != null)
+                    CustomTextTag(
+                      labelText: DateFormat('yyyy-MM-dd HH:mm:ss')
+                          .format(info.saleExpire!),
+                      icon: const Icon(
+                        Icons.sell_outlined,
                         color: Colors.black38,
-                        size: 12,
+                        size: 11,
                       ),
-                      const SizedBox(
-                        width: 2,
+                      backgroundColor: Colors.teal,
+                    ),
+                  if (!info.hr)
+                    const CustomTextTag(
+                      labelText: 'HR',
+                      backgroundColor: Colors.red,
+                      icon: Icon(
+                        Icons.directions_run,
+                        color: Colors.black38,
+                        size: 11,
                       ),
-                      Text(
-                        info.published is DateTime
-                            ? DateFormat('yyyy-MM-dd HH:mm:ss')
-                                .format(info.published)
-                            : info.published.toString(),
-                        style: const TextStyle(
-                          color: Colors.black38,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.arrow_upward,
-                            color: Colors.green,
-                            size: 11,
-                          ),
-                          Text(
-                            info.seeders.toString(),
-                            style: const TextStyle(
-                              color: Colors.black38,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.arrow_downward,
-                            color: Colors.red,
-                            size: 11,
-                          ),
-                          Text(
-                            info.leechers.toString(),
-                            style: const TextStyle(
-                              color: Colors.black38,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.done,
-                            color: Colors.orange,
-                            size: 11,
-                          ),
-                          Text(
-                            info.completers.toString(),
-                            style: const TextStyle(
-                              color: Colors.black38,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                    ),
                 ],
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                if (info.category.isNotEmpty)
-                  CustomTextTag(
-                      labelText: info.category, backgroundColor: Colors.blue),
-                CustomTextTag(
-                    labelText: filesize(info.size),
-                    backgroundColor: Colors.indigo),
-                if (info.saleStatus.isNotEmpty)
-                  CustomTextTag(labelText: info.saleStatus),
-                if (info.saleExpire != null)
-                  CustomTextTag(
-                    labelText: DateFormat('yyyy-MM-dd HH:mm:ss')
-                        .format(info.saleExpire!),
-                    icon: const Icon(
-                      Icons.sell_outlined,
-                      color: Colors.black38,
-                      size: 11,
+            if (info.progress != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: GFProgressBar(
+                    percentage: info.progress! / 100,
+                    progressHeadType: GFProgressHeadType.square,
+                    trailing: Text(
+                      '${(info.progress!).toStringAsFixed(2)}%',
+                      style: const TextStyle(
+                        fontSize: 10,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    backgroundColor: Colors.teal,
-                  ),
-                if (!info.hr)
-                  const CustomTextTag(
-                    labelText: 'HR',
-                    backgroundColor: Colors.red,
-                    icon: Icon(
-                      Icons.directions_run,
-                      color: Colors.black38,
-                      size: 11,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          if (info.progress != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: GFProgressBar(
-                  percentage: info.progress! / 100,
-                  progressHeadType: GFProgressHeadType.square,
-                  trailing: Text(
-                    '${(info.progress!).toStringAsFixed(2)}%',
-                    style: const TextStyle(
-                      fontSize: 10,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  alignment: MainAxisAlignment.center,
-                  progressBarColor: Colors.green),
-            ),
-        ],
+                    alignment: MainAxisAlignment.center,
+                    progressBarColor: Colors.green),
+              ),
+          ],
+        ),
       ),
     );
   }

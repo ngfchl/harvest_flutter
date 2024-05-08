@@ -84,6 +84,7 @@ class AggSearchController extends GetxController {
   }
 
   saveDefaultSites() async {
+    maxCount = sites.length;
     SPUtil.setStringList(
         'custom_search_sites', sites.map((e) => e.toString()).toList());
     update();
@@ -186,7 +187,6 @@ class AggSearchController extends GetxController {
       CommonResponse response =
           CommonResponse.fromJson(json.decode(message), (p0) => p0);
       LoggerHelper.Logger.instance.i(response.msg);
-      LoggerHelper.Logger.instance.i(response.data);
       if (response.code == 0) {
         List<SearchTorrentInfo> torrentInfoList =
             List<Map<String, dynamic>>.from(response.data)
