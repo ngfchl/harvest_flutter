@@ -58,7 +58,7 @@ class HomeView extends GetView<HomeController> {
           child: _buildMenuBar(context),
         ),
       ),
-      drawerEdgeDragWidth: 200,
+      drawerEdgeDragWidth: 100,
     );
   }
 
