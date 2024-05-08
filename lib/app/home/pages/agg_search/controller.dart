@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:harvest/utils/logger_helper.dart' as LoggerHelper;
@@ -19,7 +20,7 @@ class AggSearchController extends GetxController {
   MySiteController mySiteController = Get.find();
   DownloadController downloadController = Get.find();
   late WebSocketChannel channel;
-  String searchKey = '';
+  TextEditingController searchKeyController = TextEditingController();
   String filterKey = '';
   String sortKey = '';
   List<int> sites = <int>[];
@@ -68,6 +69,10 @@ class AggSearchController extends GetxController {
   }
 
   initData() async {
+    sites = SPUtil.getStringList('custom_search_sites', defaultValue: [])
+        .map((e) => int.parse(e))
+        .toList();
+    maxCount = sites.length;
     if (mySiteController.mySiteList.isEmpty) {
       await mySiteController.initData();
     }
@@ -75,6 +80,12 @@ class AggSearchController extends GetxController {
       for (var mysite in mySiteController.mySiteList) mysite.site: mysite
     };
     await downloadController.getDownloaderListFromServer();
+    update();
+  }
+
+  saveDefaultSites() async {
+    SPUtil.setStringList(
+        'custom_search_sites', sites.map((e) => e.toString()).toList());
     update();
   }
 
@@ -167,7 +178,7 @@ class AggSearchController extends GetxController {
 
     await channel.ready;
     channel.sink.add(json.encode({
-      "key": searchKey,
+      "key": searchKeyController.text,
       "max_count": maxCount,
       "sites": sites,
     }));

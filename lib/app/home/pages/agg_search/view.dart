@@ -32,8 +32,6 @@ class _AggSearchPageState extends State<AggSearchPage>
     with AutomaticKeepAliveClientMixin {
   final controller = Get.put(AggSearchController());
 
-  TextEditingController searchKeyController = TextEditingController();
-
   @override
   bool get wantKeepAlive => true;
 
@@ -60,7 +58,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                   children: [
                     Expanded(
                       child: TextField(
-                        controller: searchKeyController,
+                        controller: controller.searchKeyController,
                         decoration: InputDecoration(
                           isDense: true,
                           hintText: '请输入搜索关键字',
@@ -82,7 +80,6 @@ class _AggSearchPageState extends State<AggSearchPage>
                           ),
                         ),
                         onSubmitted: (value) {
-                          controller.searchKey = value;
                           controller.doWebsocketSearch();
                         },
                       ),
@@ -123,7 +120,6 @@ class _AggSearchPageState extends State<AggSearchPage>
                             if (controller.isLoading) {
                               await controller.cancelSearch();
                             } else {
-                              controller.searchKey = searchKeyController.text;
                               controller.doWebsocketSearch();
                             }
                           },
@@ -571,26 +567,28 @@ class _AggSearchPageState extends State<AggSearchPage>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  ElevatedButton(
-                      onPressed: () {
-                        if (controller.sites.isEmpty) {
-                          controller.sites
-                              .addAll(canSearchList.map((e) => e.id).toList());
-                        } else {
-                          controller.sites.clear();
-                        }
-                        controller.update();
-                      },
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0), // 圆角半径
+                  GetBuilder<AggSearchController>(builder: (controller) {
+                    return ElevatedButton(
+                        onPressed: () {
+                          if (controller.sites.isEmpty) {
+                            controller.sites.addAll(
+                                canSearchList.map((e) => e.id).toList());
+                          } else {
+                            controller.sites.clear();
+                          }
+                          controller.update();
+                        },
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0), // 圆角半径
+                          ),
                         ),
-                      ),
-                      child: Text(
-                        '${controller.sites.isEmpty ? '全选' : '清除'} ${canSearchList.length}',
-                        style: const TextStyle(color: Colors.white),
-                      )),
+                        child: Text(
+                          '${controller.sites.isEmpty ? '全选' : '清除'} ${canSearchList.length}',
+                          style: const TextStyle(color: Colors.white),
+                        ));
+                  }),
                   GetBuilder<AggSearchController>(builder: (controller) {
                     return ElevatedButton(
                         onPressed: () {
@@ -625,10 +623,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                           },
                         ),
                         ElevatedButton(
-                            onPressed: () {
-                              controller.sites.clear();
-                              controller.update();
-                            },
+                            onPressed: () => controller.saveDefaultSites(),
                             style: OutlinedButton.styleFrom(
                               backgroundColor: Colors.amber,
                               shape: RoundedRectangleBorder(
@@ -636,7 +631,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                     BorderRadius.circular(8.0), // 圆角半径
                               ),
                             ),
-                            child: Text('站点数${controller.maxCount}')),
+                            child: Text('默认${controller.maxCount}')),
                         InkWell(
                           child: const Icon(Icons.add),
                           onTap: () {
