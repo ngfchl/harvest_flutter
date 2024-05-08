@@ -60,23 +60,32 @@ class _DashBoardPageState extends State<DashBoardPage>
           child: EasyRefresh(
             onRefresh: controller.initChartData,
             child: controller.isLoading
-                ? ListView(children: const [
-                    Center(child: CircularProgressIndicator())
+                ? ListView(children: [
+                    const SizedBox(height: 50),
+                    const Expanded(
+                        child: Center(child: CircularProgressIndicator())),
+                    const SizedBox(height: 10),
+                    Expanded(
+                        child: Center(
+                            child: Text(
+                      'loading...',
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary),
+                    ))),
                   ])
                 : GetBuilder<DashBoardController>(builder: (controller) {
                     return ListView(
                       children: controller.statusList.isNotEmpty
                           ? [
-                              if (controller.statusList.isNotEmpty)
-                                _buildSiteInfoCard(),
-                              if (controller.statusList.isNotEmpty)
-                                _buildSmartLabelPieChart(context),
-                              if (controller.statusList.isNotEmpty)
-                                _buildStackedBar(context),
-                              if (controller.statusList.isNotEmpty)
-                                _buildSiteInfo(),
+                              _buildSiteInfoCard(),
+                              _buildSmartLabelPieChart(context),
+                              _buildStackedBar(context),
+                              _buildSiteInfo(),
                             ]
-                          : [const Center(child: Text('先去获取一下站点数据吧'))],
+                          : [
+                              const SizedBox(height: 50),
+                              const Center(child: Text('先去获取一下站点数据吧'))
+                            ],
                     );
                   }),
           ),
