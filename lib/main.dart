@@ -48,6 +48,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appService = Get.find<AppService>();
+    appService.followSystem.value = true;
     return GetMaterialApp(
       title: "Harvest",
       defaultTransition: Transition.cupertino,
