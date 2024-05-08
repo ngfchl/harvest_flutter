@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harvest/common/card_view.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../utils/logger_helper.dart';
 import '../../../routes/app_pages.dart';
@@ -320,16 +323,8 @@ class _DouBanPageState extends State<DouBanPage>
           return Column(
             children: [
               InkWell(
-                onTap: () {
-                  try {
-                    Get.toNamed(Routes.WEBVIEW, arguments: {
-                      'url': e.douBanUrl,
-                    });
-                  } catch (err) {
-                    Get.toNamed(Routes.WEBVIEW, arguments: {
-                      'url': e.url,
-                    });
-                  }
+                onTap: () async {
+                  await _openMediaInfoDetail(e, context);
                 },
                 child: Tooltip(
                   message: '点击查看影视详情',
@@ -357,18 +352,41 @@ class _DouBanPageState extends State<DouBanPage>
                     label: const Text('搜索'),
                   ),
                   ElevatedButton.icon(
-                    onPressed: () {},
+                    onPressed: () async {
+                      await _openMediaInfoDetail(e, context);
+                    },
                     icon: Icon(
-                      Icons.subscriptions_outlined,
+                      Icons.info_outline,
                       color: Theme.of(context).colorScheme.onBackground,
                     ),
-                    label: const Text('订阅'),
+                    label: const Text('详情'),
                   ),
                 ],
               ),
             ],
           );
         }));
+  }
+
+  Future<void> _openMediaInfoDetail(mediaInfo, BuildContext context) async {
+    Get.back();
+    String url;
+    try {
+      url = mediaInfo.douBanUrl;
+    } catch (err) {
+      url = mediaInfo.url;
+    }
+    if (!Platform.isIOS && !Platform.isAndroid) {
+      Logger.instance.i('Explorer');
+      if (!await launchUrl(Uri.parse(url),
+          mode: LaunchMode.externalApplication)) {
+        Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
+            colorText: Theme.of(context).colorScheme.primary);
+      }
+    } else {
+      Logger.instance.i('WebView');
+      Get.toNamed(Routes.WEBVIEW, arguments: {'url': url});
+    }
   }
 
   _buildBottomButtonBar() {
