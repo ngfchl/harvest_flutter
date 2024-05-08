@@ -47,8 +47,8 @@ class SearchTorrentInfo {
 
     return SearchTorrentInfo(
       siteId: json['site_id'],
-      tid: json['tid'],
-      poster: json['poster'],
+      tid: json['tid'].toString(),
+      poster: json['poster'] ?? '',
       category: json['category'] ?? '无分类',
       magnetUrl: json['magnet_url'],
       detailUrl: json['detail_url'],
