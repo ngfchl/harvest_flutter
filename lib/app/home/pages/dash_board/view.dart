@@ -62,16 +62,14 @@ class _DashBoardPageState extends State<DashBoardPage>
             child: controller.isLoading
                 ? ListView(children: [
                     const SizedBox(height: 50),
-                    const Expanded(
-                        child: Center(child: CircularProgressIndicator())),
+                    const Center(child: CircularProgressIndicator()),
                     const SizedBox(height: 10),
-                    Expanded(
-                        child: Center(
-                            child: Text(
+                    Text(
                       'loading...',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                           color: Theme.of(context).colorScheme.primary),
-                    ))),
+                    ),
                   ])
                 : GetBuilder<DashBoardController>(builder: (controller) {
                     return ListView(
