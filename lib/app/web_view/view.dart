@@ -29,13 +29,23 @@ class _WebViewPageState extends State<WebViewPage> {
     final GlobalKey webViewKey = GlobalKey();
     InAppWebViewController? webController;
     final cookieManager = CookieManager.instance();
-    String domain = Uri.parse(controller.url).host;
-    List<String> cookieList = controller.mySite != null
-        ? controller.mySite!.cookie!.split(';').map((item) {
-            return "document.cookie='$item;domain=$domain;'";
-          }).toList()
-        : [];
-
+    // String domain = Uri.parse(controller.url).host;
+    // List<String> cookieList = controller.mySite != null
+    //     ? controller.mySite!.cookie!.split(';').map((item) {
+    //         return "document.cookie='$item;domain=$domain;'";
+    //       }).toList()
+    //     : [];
+    Map<String, String> headers = {
+      "Cookie": controller.mySite != null ? controller.mySite!.cookie! : '',
+      "User-Agent": controller.mySite != null
+          ? controller.mySite!.userAgent!
+          : 'Harvest App',
+    };
+    if (controller.mySite != null &&
+        controller.mySite!.mirror!.contains('m-team')) {
+      headers['Authorization'] = controller.mySite!.cookie!;
+    }
+    Logger.instance.i(headers);
     return Scaffold(
       extendBody: true,
       appBar: AppBar(
@@ -54,6 +64,9 @@ class _WebViewPageState extends State<WebViewPage> {
                 onPressed: () async {
                   try {
                     String? htmlStr = await webController?.getHtml();
+                    var auth = await webController?.webStorage.localStorage
+                        .getItem(key: 'auth');
+                    Logger.instance.i(auth);
                     // Logger.instance.i(htmlStr);
                     var document = parse(htmlStr).documentElement;
                     HtmlXPath selector = HtmlXPath.node(document!);
@@ -61,10 +74,11 @@ class _WebViewPageState extends State<WebViewPage> {
                     var result =
                         selector.queryXPath(controller.website!.myUidRule);
                     Logger.instance.i(result.attr);
-                    RegExp regex = RegExp(r'(?<=\=)(.*?)(&|$)');
-                    // Logger.instance.i(regex.firstMatch(result.attr!)?.group(0));
+                    RegExp regex = RegExp(r'\d+(?=\]?$)');
+                    Logger.instance
+                        .i(regex.firstMatch(result.attr!.trim())?.group(0));
                     Get.snackbar('获取 UID',
-                        '你的 UID 是：${regex.firstMatch(result.attr!)?.group(0)}',
+                        '你的 UID 是：${regex.firstMatch(result.attr!.trim())?.group(0)}',
                         colorText: Theme.of(context).colorScheme.primary);
                   } catch (e) {
                     Get.snackbar('获取 UID 失败', '请手动填写站点 UID',
@@ -129,6 +143,7 @@ class _WebViewPageState extends State<WebViewPage> {
                       url: WebUri(controller.url));
                   String cookieStr =
                       cookies.map((e) => '${e.name}=${e.value}').join('; ');
+
                   Logger.instance.w(cookieStr);
                   controller.mySite =
                       controller.mySite?.copyWith(cookie: cookieStr);
@@ -141,9 +156,14 @@ class _WebViewPageState extends State<WebViewPage> {
                       HtmlXPath selector = HtmlXPath.node(document!);
                       var result =
                           selector.queryXPath(controller.website!.myUidRule);
-                      RegExp regex = RegExp(r'(?<=\=)(.*?)(&|$)');
+                      var auth = await webController?.webStorage.localStorage
+                          .getItem(key: 'auth');
+                      Logger.instance.i(auth);
+                      RegExp regex = RegExp(r'\d+(?=\]?$)');
                       controller.mySite = controller.mySite?.copyWith(
-                          userId: regex.firstMatch(result.attr!)?.group(0));
+                        userId: regex.firstMatch(result.attr!.trim())?.group(0),
+                        cookie: cookieStr.isNotEmpty ? cookieStr : auth,
+                      );
                     } catch (e) {
                       Get.snackbar('获取 UID 失败', '请手动填写站点 UID',
                           colorText: Theme.of(context).colorScheme.error);
@@ -207,13 +227,8 @@ class _WebViewPageState extends State<WebViewPage> {
             Expanded(
               child: InAppWebView(
                 key: webViewKey,
-                initialUrlRequest: URLRequest(
-                    url: WebUri(controller.url),
-                    headers: {
-                      "Cookie": controller.mySite != null
-                          ? controller.mySite!.cookie!
-                          : ''
-                    }),
+                initialUrlRequest:
+                    URLRequest(url: WebUri(controller.url), headers: headers),
                 initialSettings: InAppWebViewSettings(
                   isInspectable: kDebugMode,
                   mediaPlaybackRequiresUserGesture: false,
@@ -225,10 +240,10 @@ class _WebViewPageState extends State<WebViewPage> {
                   iframeAllowFullscreen: true,
                 ),
                 initialUserScripts: UnmodifiableListView<UserScript>([
-                  UserScript(
-                    source: cookieList.join("\n"),
-                    injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
-                  )
+                  // UserScript(
+                  //   source: cookieList.join("\n"),
+                  //   injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+                  // )
                 ]),
                 onWebViewCreated: (inAppWebViewController) async {
                   webController = inAppWebViewController;
