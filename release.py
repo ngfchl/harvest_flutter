@@ -81,8 +81,10 @@ class VersionManager:
                             f"{self.output_folder}/harvest_{self.new_version}-macos.zip")
                 print(f'MacOS 打包完成')
             elif flag == 'windows':
-                subprocess.run(["flutter", "build", "windows"])
-                print(f'macos APP 编译完成，正在移动到指定文件夹 {self.output_folder}')
+                res = subprocess.run(["flutter", "build", "windows"], shell=True,
+                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                print(
+                    f'windows APP 编译完成，{res.stdout}, 正在移动到指定文件夹 {self.output_folder}')
                 res = subprocess.run(
                     "Compress-Archive ./Release/ ./Release.zip", cwd='build/windows/x64/runner',
                     shell=True,
