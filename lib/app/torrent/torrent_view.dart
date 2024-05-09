@@ -637,17 +637,34 @@ class TorrentView extends GetView<TorrentController> {
             type: GFButtonType.transparent,
             color: GFColors.PRIMARY,
             onPressed: () async {
-              Get.defaultDialog(
-                // barrierDismissible: false,
-                title: '下载到：${controller.downloader.name}',
-                titleStyle:
-                    const TextStyle(fontSize: 14, color: Colors.black54),
-                backgroundColor: Colors.white,
-                content: SingleChildScrollView(
-                  child: DownloadForm(
-                    categories: controller.categoryList,
-                    downloader: controller.downloader,
-                    info: null,
+              Get.bottomSheet(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5.0)),
+                enableDrag: true,
+                CustomCard(
+                  height: 400,
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: GFTypography(
+                          text: '添加种子',
+                          icon: const Icon(Icons.add),
+                          dividerWidth: 108,
+                          textColor: Theme.of(context).colorScheme.onBackground,
+                          dividerColor:
+                              Theme.of(context).colorScheme.onBackground,
+                        ),
+                      ),
+                      Expanded(
+                        child: DownloadForm(
+                          categories: controller.categoryList,
+                          downloader: controller.downloader,
+                          info: null,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               );

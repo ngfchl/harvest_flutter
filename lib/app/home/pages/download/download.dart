@@ -609,7 +609,8 @@ class _DownloadPageState extends State<DownloadPage>
                     Get.toNamed(Routes.QB, arguments: downloader);
                   }
                   if (downloader.category == 'Tr') {
-                    Get.toNamed(Routes.TR, arguments: downloader);
+                    // Get.toNamed(Routes.TR, arguments: downloader);
+                    Get.toNamed(Routes.TORRENT, arguments: downloader);
                   }
                 },
                 onLongPress: () async {
