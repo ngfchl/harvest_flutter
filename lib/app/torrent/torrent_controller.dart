@@ -41,6 +41,7 @@ class TorrentController extends GetxController {
   Rx<int?> trTorrentState = Rx<int?>(null);
   Rx<TorrentFilter> torrentFilter = Rx<TorrentFilter>(TorrentFilter.all);
   Map<String, String> categoryList = {};
+  String defaultSavePath = '/downloads/';
 
   TorrentController(this.downloader, this.realTimeState);
 
@@ -219,7 +220,8 @@ class TorrentController extends GetxController {
         {'name': '全部', 'value': 'all_torrents'},
         {'name': '未分类', 'value': ''},
       ];
-
+      defaultSavePath =
+          (await client.application.getDefaultSavePath()) ?? '/downloads/';
       Map<String, Category> cList = await client.torrents.getCategories();
       if (cList.isEmpty) {
         await getAllTorrents();
@@ -239,6 +241,7 @@ class TorrentController extends GetxController {
 
       // LoggerHelper.Logger.instance.w(categories);
     } else {
+      defaultSavePath = await getTrDefaultSavePath();
       Set<Map<String, String>> uniqueCategories = {
         {'name': '全部', 'value': 'all_torrents'}
       };
@@ -259,7 +262,7 @@ class TorrentController extends GetxController {
         map[element.split('/').last] = element;
         return map;
       });
-      // LoggerHelper.Logger.instance.w('TR 路径：${uniqueCategories.length}');
+      LoggerHelper.Logger.instance.w('TR 路径：$defaultSavePath');
 
       categories.value = uniqueCategories.toList();
     }
@@ -573,13 +576,17 @@ class TorrentController extends GetxController {
     update();
   }
 
-  getTrFreeSpace() async {
+  Future<String> getTrDefaultSavePath() async {
     var res = await client.v1.session
         .sessionGet(fields: tr.SessionArgs().downloadDir());
+    return res['arguments']['download-dir'];
+  }
+
+  getTrFreeSpace() async {
+    defaultSavePath = await getTrDefaultSavePath();
     // LoggerHelper.Logger.instance.w(res['arguments']['download-dir']);
 
-    Map response = await client.v1.system
-        .freeSpace(path: res['arguments']['download-dir']);
+    Map response = await client.v1.system.freeSpace(path: defaultSavePath);
     freeSpace.value =
         TrFreeSpace.fromJson(response['arguments'] as Map<String, dynamic>)
             .sizeBytes!;
@@ -892,6 +899,7 @@ class TorrentController extends GetxController {
         '${downloader.protocol}://${downloader.host}:${downloader.port}',
         tr.AuthKeys(downloader.username, downloader.password),
         logConfig: const tr.ConfigLogger.showNone());
+    transmission.v1;
     return transmission;
   }
 

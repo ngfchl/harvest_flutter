@@ -55,7 +55,9 @@ class DownloadForm extends StatelessWidget {
           webSite != null ? webSite.limitSpeed.toString() : '0';
       urlController.text = info!.magnetUrl;
     } else {}
-    savePathController.text = categories[categories.keys.first]!;
+    savePathController.text = torrentController.defaultSavePath.isNotEmpty
+        ? torrentController.defaultSavePath
+        : categories[categories.keys.first]!;
     RxBool advancedConfig = false.obs;
     RxBool paused = false.obs;
     Rx<bool> rootFolder = false.obs;
@@ -95,7 +97,11 @@ class DownloadForm extends StatelessWidget {
                           data: categories.keys.toList(),
                           onChanged: (value, index) {
                             categoryController.text = value;
-                            savePathController.text = categories[value] ?? '';
+                            savePathController.text =
+                                categories[value] != null &&
+                                        categories[value]!.isNotEmpty
+                                    ? categories[value]!
+                                    : torrentController.defaultSavePath;
                           },
                         )
                       : CustomTextField(
@@ -103,9 +109,15 @@ class DownloadForm extends StatelessWidget {
                           labelText: '分类',
                         ),
                   if (categories.isNotEmpty || advancedConfig.value)
-                    CustomTextField(
-                      controller: savePathController,
-                      labelText: '路径',
+                    InkWell(
+                      onLongPress: () {
+                        savePathController.text =
+                            torrentController.defaultSavePath;
+                      },
+                      child: CustomTextField(
+                        controller: savePathController,
+                        labelText: '路径',
+                      ),
                     ),
                   Obx(() {
                     return SwitchListTile(
