@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harvest/app/home/controller/home_controller.dart';
 
@@ -9,6 +10,8 @@ import 'model.dart';
 class DouBanController extends GetxController {
   final searchController = Get.put(AggSearchController());
   final homeController = Get.put(HomeController());
+  final PageController pageController = PageController(initialPage: 0);
+
   DouBanHelper douBanHelper = DouBanHelper();
   List<TopMovieInfo> douBanTop250 = [];
   List<HotMediaInfo> douBanMovieHot = [];
@@ -36,6 +39,7 @@ class DouBanController extends GetxController {
   ];
   String selectMovieTag = '热门';
   String selectTvTag = '热门';
+  int initPage = 0;
 
   @override
   void onInit() async {
@@ -63,9 +67,17 @@ class DouBanController extends GetxController {
   }
 
   getDouBanTop250() async {
-    var res = await douBanHelper.getDouBanTop250(0);
     douBanTop250.clear();
-    douBanTop250 = res;
+    await getDouBanTop250Api();
+  }
+
+  getDouBanTop250Api() async {
+    if (initPage >= 225) {
+      return;
+    }
+    var res = await douBanHelper.getDouBanTop250(initPage);
+    douBanTop250.addAll(res);
+    initPage += 25;
     update();
   }
 

@@ -25,290 +25,313 @@ class _DouBanPageState extends State<DouBanPage>
 
   @override
   Widget build(BuildContext context) {
+    const List<Tab> tabs = [
+      Tab(text: '热门电影'),
+      Tab(text: '热门剧集'),
+      Tab(text: '热门榜单'),
+    ];
     return GetBuilder<DouBanController>(builder: (controller) {
-      return Scaffold(
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        floatingActionButton: _buildBottomButtonBar(),
-        body: EasyRefresh(
-          onRefresh: () async {
-            await controller.initData();
-          },
-          child: ListView(
+      return DefaultTabController(
+        length: tabs.length,
+        child: Scaffold(
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerDocked,
+          // floatingActionButton: _buildBottomButtonBar(),
+          bottomNavigationBar: const TabBar(tabs: tabs),
+          body: TabBarView(
             children: [
-              CustomCard(
-                child: Tooltip(
-                  message: '点击刷新TOP250',
-                  child: ListTile(
-                    dense: true,
-                    title: Text(
-                      '豆瓣TOP${controller.douBanTop250.length}',
-                      textAlign: TextAlign.center,
-                    ),
-                    onTap: () => controller.getDouBanTop250(),
-                  ),
-                ),
-              ),
-              if (controller.douBanTop250.isNotEmpty)
+              Column(children: [
                 CustomCard(
-                  padding: const EdgeInsets.all(8),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      children: controller.douBanTop250
-                          .map((e) => InkWell(
-                                onTap: () {
-                                  _buildOperateDialog(e);
-                                },
-                                onLongPress: () {
-                                  Logger.instance.i('WebView');
-                                  Get.toNamed(Routes.WEBVIEW, arguments: {
-                                    'url': e.douBanUrl,
-                                  });
-                                },
-                                child: Stack(
-                                  children: [
-                                    CachedNetworkImage(
-                                      imageUrl: '$cacheServer${e.poster}',
-                                      placeholder: (context, url) =>
-                                          const Center(
-                                              child:
-                                                  CircularProgressIndicator()),
-                                      errorWidget: (context, url, error) =>
-                                          Image.asset('assets/images/logo.png'),
-                                      width: 100,
-                                      height: 150,
-                                      fit: BoxFit.fitWidth,
-                                    ),
-                                    Positioned(
-                                      top: 2,
-                                      right: 2,
-                                      child: Container(
-                                        color: Colors.black38,
-                                        width: 100,
-                                        child: Text(
-                                          e.rank,
-                                          overflow: TextOverflow.ellipsis,
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 12),
-                                        ),
-                                      ),
-                                    ),
-                                    Positioned(
-                                      bottom: 2,
-                                      child: Container(
-                                        color: Colors.black38,
-                                        width: 100,
-                                        child: Text(
-                                          e.title,
-                                          overflow: TextOverflow.ellipsis,
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 12),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ))
-                          .toList(),
-                    ),
-                  ),
-                ),
-              CustomCard(
-                child: Column(
-                  children: [
-                    ListTile(
-                      dense: true,
-                      title: Text(
-                        '豆瓣热门电影 ${controller.douBanMovieHot.length}',
-                        textAlign: TextAlign.center,
+                  child: Column(
+                    children: [
+                      ListTile(
+                        dense: true,
+                        title: Text(
+                          '豆瓣热门电影 ${controller.douBanMovieHot.length}',
+                          textAlign: TextAlign.center,
+                        ),
                       ),
-                    ),
-                    SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Wrap(
-                          spacing: 8,
-                          children: controller.douBanMovieTags
-                              .map((e) => FilterChip(
-                                    labelPadding: EdgeInsets.zero,
-                                    label: Text(
-                                      e,
-                                      style: const TextStyle(fontSize: 12),
-                                    ),
-                                    selected: controller.selectMovieTag == e,
-                                    onSelected: (bool value) {
-                                      if (value == true) {
-                                        controller.selectMovieTag = e;
-                                        controller.getDouBanMovieHot(
-                                            controller.selectMovieTag);
-                                      }
-                                    },
-                                  ))
-                              .toList(),
-                        )),
-                  ],
-                ),
-              ),
-              if (controller.douBanMovieHot.isNotEmpty)
-                CustomCard(
-                  padding: const EdgeInsets.all(8),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      children: controller.douBanMovieHot
-                          .map((e) => InkWell(
-                                onTap: () {
-                                  _buildOperateDialog(e);
-                                },
-                                onLongPress: () {
-                                  Logger.instance.i('WebView');
-                                  Get.toNamed(Routes.WEBVIEW, arguments: {
-                                    'url': e.url,
-                                  });
-                                },
-                                child: SizedBox(
-                                  width: 100,
-                                  child: Stack(
-                                    children: [
-                                      CachedNetworkImage(
-                                        imageUrl: '$cacheServer${e.cover}',
-                                        placeholder: (context, url) =>
-                                            const Center(
-                                                child:
-                                                    CircularProgressIndicator()),
-                                        errorWidget: (context, url, error) =>
-                                            Image.asset(
-                                                'assets/images/logo.png'),
-                                        width: 100,
-                                        height: 150,
-                                        fit: BoxFit.fitWidth,
+                      SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Wrap(
+                            spacing: 8,
+                            children: controller.douBanMovieTags
+                                .map((e) => FilterChip(
+                                      labelPadding: EdgeInsets.zero,
+                                      label: Text(
+                                        e,
+                                        style: const TextStyle(fontSize: 12),
                                       ),
-                                      Positioned(
-                                        bottom: 2,
-                                        child: Container(
-                                          color: Colors.black38,
+                                      selected: controller.selectMovieTag == e,
+                                      onSelected: (bool value) {
+                                        if (value == true) {
+                                          controller.selectMovieTag = e;
+                                          controller.getDouBanMovieHot(
+                                              controller.selectMovieTag);
+                                        }
+                                      },
+                                    ))
+                                .toList(),
+                          )),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: CustomCard(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(8),
+                    child: SingleChildScrollView(
+                      child: Wrap(
+                        alignment: WrapAlignment.spaceAround,
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: controller.douBanMovieHot
+                            .map((e) => InkWell(
+                                  onTap: () {
+                                    _buildOperateDialog(e);
+                                  },
+                                  onLongPress: () {
+                                    Logger.instance.i('WebView');
+                                    Get.toNamed(Routes.WEBVIEW, arguments: {
+                                      'url': e.url,
+                                    });
+                                  },
+                                  child: SizedBox(
+                                    width: 100,
+                                    child: Stack(
+                                      children: [
+                                        CachedNetworkImage(
+                                          imageUrl: '$cacheServer${e.cover}',
+                                          placeholder: (context, url) =>
+                                              const Center(
+                                                  child:
+                                                      CircularProgressIndicator()),
+                                          errorWidget: (context, url, error) =>
+                                              Image.asset(
+                                                  'assets/images/logo.png'),
                                           width: 100,
-                                          child: Text(
-                                            e.title.trim(),
-                                            overflow: TextOverflow.ellipsis,
-                                            textAlign: TextAlign.center,
-                                            style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12),
+                                          height: 150,
+                                          fit: BoxFit.fitWidth,
+                                        ),
+                                        Positioned(
+                                          bottom: 2,
+                                          child: Container(
+                                            color: Colors.black38,
+                                            width: 100,
+                                            child: Text(
+                                              e.title.trim(),
+                                              overflow: TextOverflow.ellipsis,
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12),
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ))
-                          .toList(),
-                    ),
-                  ),
-                ),
-              CustomCard(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  children: [
-                    ListTile(
-                      dense: true,
-                      title: Text(
-                        '豆瓣热门电视剧 ${controller.douBanTvHot.length}',
-                        textAlign: TextAlign.center,
+                                ))
+                            .toList(),
                       ),
                     ),
-                    SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Wrap(
-                          spacing: 8,
-                          children: controller.douBanTvTags
-                              .map((e) => FilterChip(
-                                    labelPadding: EdgeInsets.zero,
-                                    label: Text(
-                                      e,
-                                      style: const TextStyle(fontSize: 12),
-                                    ),
-                                    selected: controller.selectTvTag == e,
-                                    onSelected: (bool value) {
-                                      if (value == true) {
-                                        controller.selectTvTag = e;
-                                        controller.getDouBanTvHot(
-                                            controller.selectTvTag);
-                                      }
-                                    },
-                                  ))
-                              .toList(),
-                        )),
-                  ],
+                  ),
                 ),
-              ),
-              if (controller.douBanTvHot.isNotEmpty)
+              ]),
+              Column(children: [
                 CustomCard(
-                  padding: const EdgeInsets.all(8),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      children: controller.douBanTvHot
-                          .map((e) => InkWell(
-                                onTap: () {
-                                  _buildOperateDialog(e);
-                                },
-                                onLongPress: () {
-                                  Logger.instance.i('WebView');
-                                  Get.toNamed(Routes.WEBVIEW, arguments: {
-                                    'url': e.url,
-                                  });
-                                },
-                                child: SizedBox(
-                                  width: 100,
-                                  child: Stack(
-                                    children: [
-                                      CachedNetworkImage(
-                                        imageUrl: '$cacheServer${e.cover}',
-                                        placeholder: (context, url) =>
-                                            const Center(
-                                                child:
-                                                    CircularProgressIndicator()),
-                                        errorWidget: (context, url, error) =>
-                                            Image.asset(
-                                                'assets/images/logo.png'),
-                                        width: 100,
-                                        height: 150,
-                                        fit: BoxFit.fitWidth,
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      ListTile(
+                        dense: true,
+                        title: Text(
+                          '豆瓣热门电视剧 ${controller.douBanTvHot.length}',
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Wrap(
+                            spacing: 8,
+                            children: controller.douBanTvTags
+                                .map((e) => FilterChip(
+                                      labelPadding: EdgeInsets.zero,
+                                      label: Text(
+                                        e,
+                                        style: const TextStyle(fontSize: 12),
                                       ),
-                                      Positioned(
-                                        bottom: 2,
-                                        child: Container(
-                                          color: Colors.black38,
+                                      selected: controller.selectTvTag == e,
+                                      onSelected: (bool value) {
+                                        if (value == true) {
+                                          controller.selectTvTag = e;
+                                          controller.getDouBanTvHot(
+                                              controller.selectTvTag);
+                                        }
+                                      },
+                                    ))
+                                .toList(),
+                          )),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: CustomCard(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(8),
+                    child: SingleChildScrollView(
+                      child: Wrap(
+                        alignment: WrapAlignment.spaceAround,
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: controller.douBanTvHot
+                            .map((e) => InkWell(
+                                  onTap: () {
+                                    _buildOperateDialog(e);
+                                  },
+                                  onLongPress: () {
+                                    Logger.instance.i('WebView');
+                                    Get.toNamed(Routes.WEBVIEW, arguments: {
+                                      'url': e.url,
+                                    });
+                                  },
+                                  child: SizedBox(
+                                    width: 100,
+                                    child: Stack(
+                                      children: [
+                                        CachedNetworkImage(
+                                          imageUrl: '$cacheServer${e.cover}',
+                                          placeholder: (context, url) =>
+                                              const Center(
+                                                  child:
+                                                      CircularProgressIndicator()),
+                                          errorWidget: (context, url, error) =>
+                                              Image.asset(
+                                                  'assets/images/logo.png'),
                                           width: 100,
-                                          child: Text(
-                                            e.title.trim(),
-                                            overflow: TextOverflow.ellipsis,
-                                            textAlign: TextAlign.center,
-                                            style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12),
+                                          height: 150,
+                                          fit: BoxFit.fitWidth,
+                                        ),
+                                        Positioned(
+                                          bottom: 2,
+                                          child: Container(
+                                            color: Colors.black38,
+                                            width: 100,
+                                            child: Text(
+                                              e.title.trim(),
+                                              overflow: TextOverflow.ellipsis,
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12),
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ))
-                          .toList(),
+                                ))
+                            .toList(),
+                      ),
                     ),
                   ),
                 ),
-              const SizedBox(height: 80),
+              ]),
+              Column(
+                children: [
+                  CustomCard(
+                    child: Tooltip(
+                      message: '点击刷新TOP250',
+                      child: ListTile(
+                        dense: true,
+                        title: const Text(
+                          '豆瓣TOP250',
+                          textAlign: TextAlign.center,
+                        ),
+                        onTap: () => controller.getDouBanTop250(),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: CustomCard(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(8),
+                      child: EasyRefresh(
+                        onLoad: () => controller.getDouBanTop250Api(),
+                        child: SingleChildScrollView(
+                          child: Wrap(
+                            alignment: WrapAlignment.spaceAround,
+                            spacing: 12,
+                            runSpacing: 12,
+                            children: controller.douBanTop250
+                                .map((e) => InkWell(
+                                      onTap: () {
+                                        _buildOperateDialog(e);
+                                      },
+                                      onLongPress: () {
+                                        Logger.instance.i('WebView');
+                                        Get.toNamed(Routes.WEBVIEW, arguments: {
+                                          'url': e.douBanUrl,
+                                        });
+                                      },
+                                      child: Stack(
+                                        children: [
+                                          CachedNetworkImage(
+                                            imageUrl: '$cacheServer${e.poster}',
+                                            placeholder: (context, url) =>
+                                                const Center(
+                                                    child:
+                                                        CircularProgressIndicator()),
+                                            errorWidget: (context, url,
+                                                    error) =>
+                                                Image.asset(
+                                                    'assets/images/logo.png'),
+                                            width: 100,
+                                            height: 150,
+                                            fit: BoxFit.fitWidth,
+                                          ),
+                                          Positioned(
+                                            top: 2,
+                                            right: 2,
+                                            child: Container(
+                                              color: Colors.black38,
+                                              width: 100,
+                                              child: Text(
+                                                e.rank,
+                                                overflow: TextOverflow.ellipsis,
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 12),
+                                              ),
+                                            ),
+                                          ),
+                                          Positioned(
+                                            bottom: 2,
+                                            child: Container(
+                                              color: Colors.black38,
+                                              width: 100,
+                                              child: Text(
+                                                e.title,
+                                                overflow: TextOverflow.ellipsis,
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 12),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ))
+                                .toList(),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
