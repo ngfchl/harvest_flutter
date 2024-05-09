@@ -1,19 +1,19 @@
 import 'package:get/get.dart';
 import 'package:harvest/app/home/controller/home_controller.dart';
-import 'package:harvest/models/common_response.dart';
 
-import '../../../../api/douban.dart';
 import '../../../../utils/logger_helper.dart';
 import '../agg_search/controller.dart';
+import 'douban_api.dart';
 import 'model.dart';
 
 class DouBanController extends GetxController {
   final searchController = Get.put(AggSearchController());
   final homeController = Get.put(HomeController());
-
-  List<MovieInfo> douBanTop250 = [];
+  DouBanHelper douBanHelper = DouBanHelper();
+  List<TopMovieInfo> douBanTop250 = [];
   List<HotMediaInfo> douBanMovieHot = [];
   List<HotMediaInfo> douBanTvHot = [];
+  List<int> top250PageNumList = [0, 25, 50, 75, 100, 125, 150, 175, 200, 225];
   List<String> douBanMovieTags = [
     '热门',
     '最新',
@@ -53,37 +53,35 @@ class DouBanController extends GetxController {
   }
 
   getDouBanMovieTags() async {
-    CommonResponse res = await getCategoryTagsApi('movie');
-    Logger.instance.i(res.data);
-    douBanMovieTags = res.data.map<String>((e) => e.toString()).toList();
+    douBanMovieTags = await douBanHelper.getDouBanTags(category: 'movie');
     update();
   }
 
   getDouBanVideoTags() async {
-    CommonResponse res = await getCategoryTagsApi('tv');
-    Logger.instance.i(res.data);
-    douBanTvTags = res.data.map<String>((e) => e.toString()).toList();
+    douBanTvTags = await douBanHelper.getDouBanTags(category: 'tv');
     update();
   }
 
   getDouBanTop250() async {
-    CommonResponse res = await getDouBanTop250Api();
+    var res = await douBanHelper.getDouBanTop250(0);
     douBanTop250.clear();
-    douBanTop250 = res.data;
+    douBanTop250 = res;
     update();
   }
 
   getDouBanMovieHot(String tag) async {
-    CommonResponse res = await getDouBanHotMovieApi(tag, 50);
+    var res = await douBanHelper.getDouBanHot(
+        category: 'movie', tag: tag, pageLimit: 50);
     douBanMovieHot.clear();
-    douBanMovieHot = res.data;
+    douBanMovieHot = res;
     update();
   }
 
   getDouBanTvHot(String tag) async {
-    CommonResponse res = await getDouBanHotTvApi(tag, 50);
+    var res = await douBanHelper.getDouBanHot(
+        category: 'tv', tag: tag, pageLimit: 50);
     douBanTvHot.clear();
-    douBanTvHot = res.data;
+    douBanTvHot = res;
     update();
   }
 

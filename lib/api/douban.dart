@@ -31,5 +31,6 @@ getDouBanHotTvApi(String tag, int pageLimit) async {
 }
 
 getDouBanTop250Api() async {
-  return await fetchDataList(Api.DOUBAN_TOP250, (p0) => MovieInfo.fromJson(p0));
+  return await fetchDataList(
+      Api.DOUBAN_TOP250, (p0) => TopMovieInfo.fromJson(p0));
 }

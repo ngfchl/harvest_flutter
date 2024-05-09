@@ -1,4 +1,4 @@
-class MovieInfo {
+class TopMovieInfo {
   String rank;
   String douBanUrl;
   String poster;
@@ -10,7 +10,7 @@ class MovieInfo {
   String evaluateNum;
   String quote;
 
-  MovieInfo({
+  TopMovieInfo({
     required this.rank,
     required this.douBanUrl,
     required this.poster,
@@ -23,8 +23,8 @@ class MovieInfo {
     required this.quote,
   });
 
-  factory MovieInfo.fromJson(Map<String, dynamic> json) {
-    return MovieInfo(
+  factory TopMovieInfo.fromJson(Map<String, dynamic> json) {
+    return TopMovieInfo(
       rank: json['rank'],
       douBanUrl: json['douban_url'],
       poster: json['poster'],
