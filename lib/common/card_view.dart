@@ -42,6 +42,7 @@ class CustomCard extends StatelessWidget {
       width: width,
       margin: margin,
       padding: padding,
+      constraints: const BoxConstraints(minWidth: 100),
       decoration: BoxDecoration(
         color: color ?? Theme.of(context).colorScheme.background,
         borderRadius: borderRadius,
