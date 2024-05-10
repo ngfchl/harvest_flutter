@@ -40,6 +40,7 @@ class DouBanController extends GetxController {
   String selectMovieTag = '热门';
   String selectTvTag = '热门';
   int initPage = 0;
+  bool isLoading = false;
 
   @override
   void onInit() async {
@@ -82,19 +83,34 @@ class DouBanController extends GetxController {
   }
 
   getDouBanMovieHot(String tag) async {
+    isLoading = true;
+    update();
     var res = await douBanHelper.getDouBanHot(
-        category: 'movie', tag: tag, pageLimit: 50);
+        category: 'movie', tag: tag, pageLimit: 51);
     douBanMovieHot.clear();
     douBanMovieHot = res;
+    isLoading = false;
     update();
   }
 
   getDouBanTvHot(String tag) async {
+    isLoading = true;
+    update();
     var res = await douBanHelper.getDouBanHot(
-        category: 'tv', tag: tag, pageLimit: 50);
+        category: 'tv', tag: tag, pageLimit: 51);
     douBanTvHot.clear();
     douBanTvHot = res;
+    isLoading = false;
     update();
+  }
+
+  getVideoDetail(String url) async {
+    isLoading = true;
+    update();
+    var res = await douBanHelper.getSubjectInfo(url);
+    isLoading = false;
+    update();
+    return res;
   }
 
   goSearchPage(info) async {

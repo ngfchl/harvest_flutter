@@ -56,8 +56,8 @@ class TopMovieInfo {
 
 class HotMediaInfo {
   String title;
-  String url;
-  String cover;
+  String douBanUrl;
+  String poster;
   bool playable;
   String id;
   String rate;
@@ -68,8 +68,8 @@ class HotMediaInfo {
 
   HotMediaInfo({
     required this.title,
-    required this.url,
-    required this.cover,
+    required this.douBanUrl,
+    required this.poster,
     required this.playable,
     required this.id,
     required this.rate,
@@ -82,8 +82,8 @@ class HotMediaInfo {
   factory HotMediaInfo.fromJson(Map<String, dynamic> json) {
     return HotMediaInfo(
       title: json['title'],
-      url: json['url'],
-      cover: json['cover'],
+      douBanUrl: json['url'],
+      poster: json['cover'],
       playable: json['playable'],
       id: json['id'],
       rate: json['rate'],
@@ -97,8 +97,8 @@ class HotMediaInfo {
   Map<String, dynamic> toJson() {
     return {
       'title': title,
-      'url': url,
-      'cover': cover,
+      'url': douBanUrl,
+      'cover': poster,
       'playable': playable,
       'id': id,
       'rate': rate,
@@ -107,5 +107,107 @@ class HotMediaInfo {
       'is_new': isNew,
       'episodes_info': episodesInfo,
     };
+  }
+}
+
+class Worker {
+  String name;
+  String url;
+  String? imgUrl;
+  String? role;
+
+  Worker({
+    required this.name,
+    required this.url,
+    this.imgUrl,
+    this.role,
+  });
+
+  factory Worker.fromJson(Map<String, dynamic> json) {
+    return Worker(
+      name: json['name'],
+      url: json['url'],
+      imgUrl: json['imgUrl'],
+      role: json['role'],
+    );
+  }
+}
+
+class VideoDetail {
+  String title;
+  String year;
+  List<Worker> director;
+  List<Worker> writer;
+  List<Worker> actors;
+  List<Worker> celebrities;
+  List<String> genres;
+  String? officialSite;
+  List<String> region;
+  List<String> language;
+  String duration;
+  List<String> releaseDate;
+  List<String>? alias;
+  List<String>? pictures;
+  String imdb;
+  String? rate;
+  String evaluate;
+  List<String> summary;
+  String hadSeen;
+  String wantLook;
+  String? season;
+  String? episode;
+
+  VideoDetail({
+    required this.title,
+    required this.year,
+    required this.director,
+    required this.writer,
+    required this.actors,
+    required this.genres,
+    required this.celebrities,
+    this.officialSite,
+    required this.region,
+    required this.language,
+    required this.duration,
+    required this.releaseDate,
+    this.alias,
+    this.pictures,
+    required this.imdb,
+    this.rate,
+    required this.evaluate,
+    required this.summary,
+    required this.hadSeen,
+    required this.wantLook,
+    this.season,
+    this.episode,
+  });
+
+  factory VideoDetail.fromJson(Map<String, dynamic> json) {
+    return VideoDetail(
+      title: json['title'],
+      year: json['year'],
+      director:
+          (json['director'] as List).map((e) => Worker.fromJson(e)).toList(),
+      writer: (json['writer'] as List).map((e) => Worker.fromJson(e)).toList(),
+      actors: (json['actors'] as List).map((e) => Worker.fromJson(e)).toList(),
+      celebrities:
+          (json['celebrities'] as List).map((e) => Worker.fromJson(e)).toList(),
+      genres: List<String>.from(json['genres']),
+      officialSite: json['official_site'],
+      region: List<String>.from(json['region']),
+      language: List<String>.from(json['language']),
+      duration: json['duration'],
+      releaseDate: List<String>.from(json['release_date']),
+      alias: List<String>.from(json['alias']),
+      imdb: json['imdb'],
+      rate: json['rate'],
+      evaluate: json['evaluate'],
+      summary: List<String>.from(json['summary'] ?? []),
+      pictures: List<String>.from(json['pictures'] ?? []),
+      hadSeen: json['had_seen'],
+      wantLook: json['want_look'],
+      season: json['season'],
+      episode: json['episode'],
+    );
   }
 }

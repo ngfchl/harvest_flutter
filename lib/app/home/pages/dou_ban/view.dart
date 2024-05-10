@@ -1,15 +1,18 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:custom_rating_bar/custom_rating_bar.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:getwidget/getwidget.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../utils/logger_helper.dart';
 import '../../../routes/app_pages.dart';
 import 'controller.dart';
+import 'model.dart';
 
 class DouBanPage extends StatefulWidget {
   const DouBanPage({super.key});
@@ -77,64 +80,79 @@ class _DouBanPageState extends State<DouBanPage>
                   ),
                 ),
                 Expanded(
-                  child: CustomCard(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(8),
-                    child: SingleChildScrollView(
-                      child: Wrap(
-                        alignment: WrapAlignment.spaceAround,
-                        spacing: 12,
-                        runSpacing: 12,
-                        children: controller.douBanMovieHot
-                            .map((e) => InkWell(
-                                  onTap: () {
-                                    _buildOperateDialog(e);
-                                  },
-                                  onLongPress: () {
-                                    Logger.instance.i('WebView');
-                                    Get.toNamed(Routes.WEBVIEW, arguments: {
-                                      'url': e.url,
-                                    });
-                                  },
-                                  child: SizedBox(
-                                    width: 100,
-                                    child: Stack(
-                                      children: [
-                                        CachedNetworkImage(
-                                          imageUrl: '$cacheServer${e.cover}',
-                                          placeholder: (context, url) =>
-                                              const Center(
-                                                  child:
-                                                      CircularProgressIndicator()),
-                                          errorWidget: (context, url, error) =>
-                                              Image.asset(
-                                                  'assets/images/logo.png'),
-                                          width: 100,
-                                          height: 150,
-                                          fit: BoxFit.fitWidth,
-                                        ),
-                                        Positioned(
-                                          bottom: 2,
-                                          child: Container(
-                                            color: Colors.black38,
-                                            width: 100,
-                                            child: Text(
-                                              e.title.trim(),
-                                              overflow: TextOverflow.ellipsis,
-                                              textAlign: TextAlign.center,
-                                              style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 12),
+                  child: Stack(
+                    children: [
+                      CustomCard(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(8),
+                        child: SingleChildScrollView(
+                          child: Wrap(
+                            alignment: WrapAlignment.spaceAround,
+                            spacing: 12,
+                            runSpacing: 12,
+                            children: controller.douBanMovieHot
+                                .map((e) => InkWell(
+                                      onTap: () async {
+                                        _buildOperateDialog(e);
+                                      },
+                                      onLongPress: () async {
+                                        // Logger.instance.i('WebView');
+                                        // Get.toNamed(Routes.WEBVIEW, arguments: {
+                                        //   'url': e.url,
+                                        // });
+                                        await controller
+                                            .getVideoDetail(e.douBanUrl);
+                                      },
+                                      child: SizedBox(
+                                        width: 100,
+                                        child: Stack(
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(8.0),
+                                              child: CachedNetworkImage(
+                                                imageUrl:
+                                                    '$cacheServer${e.poster}',
+                                                placeholder: (context, url) =>
+                                                    const Center(
+                                                        child:
+                                                            CircularProgressIndicator()),
+                                                errorWidget: (context, url,
+                                                        error) =>
+                                                    Image.asset(
+                                                        'assets/images/logo.png'),
+                                                width: 100,
+                                                height: 150,
+                                                fit: BoxFit.fitWidth,
+                                              ),
                                             ),
-                                          ),
+                                            Positioned(
+                                              bottom: 2,
+                                              child: Container(
+                                                color: Colors.black38,
+                                                width: 100,
+                                                child: Text(
+                                                  e.title.trim(),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  textAlign: TextAlign.center,
+                                                  style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 12),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                ))
-                            .toList(),
+                                      ),
+                                    ))
+                                .toList(),
+                          ),
+                        ),
                       ),
-                    ),
+                      if (controller.isLoading == true)
+                        const Center(child: CircularProgressIndicator())
+                    ],
                   ),
                 ),
               ]),
@@ -176,64 +194,77 @@ class _DouBanPageState extends State<DouBanPage>
                   ),
                 ),
                 Expanded(
-                  child: CustomCard(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(8),
-                    child: SingleChildScrollView(
-                      child: Wrap(
-                        alignment: WrapAlignment.spaceAround,
-                        spacing: 12,
-                        runSpacing: 12,
-                        children: controller.douBanTvHot
-                            .map((e) => InkWell(
-                                  onTap: () {
-                                    _buildOperateDialog(e);
-                                  },
-                                  onLongPress: () {
-                                    Logger.instance.i('WebView');
-                                    Get.toNamed(Routes.WEBVIEW, arguments: {
-                                      'url': e.url,
-                                    });
-                                  },
-                                  child: SizedBox(
-                                    width: 100,
-                                    child: Stack(
-                                      children: [
-                                        CachedNetworkImage(
-                                          imageUrl: '$cacheServer${e.cover}',
-                                          placeholder: (context, url) =>
-                                              const Center(
-                                                  child:
-                                                      CircularProgressIndicator()),
-                                          errorWidget: (context, url, error) =>
-                                              Image.asset(
-                                                  'assets/images/logo.png'),
-                                          width: 100,
-                                          height: 150,
-                                          fit: BoxFit.fitWidth,
-                                        ),
-                                        Positioned(
-                                          bottom: 2,
-                                          child: Container(
-                                            color: Colors.black38,
-                                            width: 100,
-                                            child: Text(
-                                              e.title.trim(),
-                                              overflow: TextOverflow.ellipsis,
-                                              textAlign: TextAlign.center,
-                                              style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 12),
+                  child: Stack(
+                    children: [
+                      CustomCard(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(8),
+                        child: SingleChildScrollView(
+                          child: Wrap(
+                            alignment: WrapAlignment.spaceAround,
+                            spacing: 12,
+                            runSpacing: 12,
+                            children: controller.douBanTvHot
+                                .map((e) => InkWell(
+                                      onTap: () async {
+                                        _buildOperateDialog(e);
+                                      },
+                                      onLongPress: () {
+                                        Logger.instance.i('WebView');
+                                        Get.toNamed(Routes.WEBVIEW, arguments: {
+                                          'url': e.douBanUrl,
+                                        });
+                                      },
+                                      child: SizedBox(
+                                        width: 100,
+                                        child: Stack(
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(8.0),
+                                              child: CachedNetworkImage(
+                                                imageUrl:
+                                                    '$cacheServer${e.poster}',
+                                                placeholder: (context, url) =>
+                                                    const Center(
+                                                        child:
+                                                            CircularProgressIndicator()),
+                                                errorWidget: (context, url,
+                                                        error) =>
+                                                    Image.asset(
+                                                        'assets/images/logo.png'),
+                                                width: 100,
+                                                height: 150,
+                                                fit: BoxFit.fitWidth,
+                                              ),
                                             ),
-                                          ),
+                                            Positioned(
+                                              bottom: 2,
+                                              child: Container(
+                                                color: Colors.black38,
+                                                width: 100,
+                                                child: Text(
+                                                  e.title.trim(),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  textAlign: TextAlign.center,
+                                                  style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 12),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                ))
-                            .toList(),
+                                      ),
+                                    ))
+                                .toList(),
+                          ),
+                        ),
                       ),
-                    ),
+                      if (controller.isLoading == true)
+                        const Center(child: CircularProgressIndicator())
+                    ],
                   ),
                 ),
               ]),
@@ -253,80 +284,214 @@ class _DouBanPageState extends State<DouBanPage>
                     ),
                   ),
                   Expanded(
-                    child: CustomCard(
+                    child: SizedBox(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(8),
-                      child: EasyRefresh(
-                        onLoad: () => controller.getDouBanTop250Api(),
-                        child: SingleChildScrollView(
-                          child: Wrap(
-                            alignment: WrapAlignment.spaceAround,
-                            spacing: 12,
-                            runSpacing: 12,
-                            children: controller.douBanTop250
-                                .map((e) => InkWell(
-                                      onTap: () {
-                                        _buildOperateDialog(e);
-                                      },
-                                      onLongPress: () {
-                                        Logger.instance.i('WebView');
-                                        Get.toNamed(Routes.WEBVIEW, arguments: {
-                                          'url': e.douBanUrl,
-                                        });
-                                      },
-                                      child: Stack(
-                                        children: [
-                                          CachedNetworkImage(
-                                            imageUrl: '$cacheServer${e.poster}',
-                                            placeholder: (context, url) =>
-                                                const Center(
-                                                    child:
-                                                        CircularProgressIndicator()),
-                                            errorWidget: (context, url,
-                                                    error) =>
-                                                Image.asset(
-                                                    'assets/images/logo.png'),
-                                            width: 100,
-                                            height: 150,
-                                            fit: BoxFit.fitWidth,
-                                          ),
-                                          Positioned(
-                                            top: 2,
-                                            right: 2,
-                                            child: Container(
-                                              color: Colors.black38,
-                                              width: 100,
-                                              child: Text(
-                                                e.rank,
-                                                overflow: TextOverflow.ellipsis,
-                                                textAlign: TextAlign.center,
-                                                style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 12),
-                                              ),
+                      child: Stack(
+                        children: [
+                          EasyRefresh(
+                            onLoad: () => controller.getDouBanTop250Api(),
+                            child: SingleChildScrollView(
+                              child: Wrap(
+                                children: controller.douBanTop250
+                                    .map((e) => InkWell(
+                                          onTap: () async {
+                                            _buildOperateDialog(e);
+                                          },
+                                          onLongPress: () {
+                                            Logger.instance.i('WebView');
+                                            Get.toNamed(Routes.WEBVIEW,
+                                                arguments: {
+                                                  'url': e.douBanUrl,
+                                                });
+                                          },
+                                          child: CustomCard(
+                                            padding: const EdgeInsets.all(8),
+                                            child: Row(
+                                              children: [
+                                                Stack(
+                                                  children: [
+                                                    ClipRRect(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              5.0),
+                                                      child: CachedNetworkImage(
+                                                        imageUrl:
+                                                            '$cacheServer${e.poster}',
+                                                        placeholder: (context,
+                                                                url) =>
+                                                            const Center(
+                                                                child:
+                                                                    CircularProgressIndicator()),
+                                                        errorWidget: (context,
+                                                                url, error) =>
+                                                            Image.asset(
+                                                                'assets/images/logo.png'),
+                                                        width: 100,
+                                                        height: 150,
+                                                        fit: BoxFit.fitWidth,
+                                                      ),
+                                                    ),
+                                                    Positioned(
+                                                      top: 2,
+                                                      right: 2,
+                                                      child: Container(
+                                                        color: Colors.black38,
+                                                        width: 100,
+                                                        child: Text(
+                                                          e.rank,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style:
+                                                              const TextStyle(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontSize: 12),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Positioned(
+                                                      bottom: 2,
+                                                      child: Container(
+                                                        color: Colors.black38,
+                                                        width: 100,
+                                                        child: Text(
+                                                          e.title,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style:
+                                                              const TextStyle(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontSize: 12),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                Expanded(
+                                                    child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          left: 12),
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      GFTypography(
+                                                        text: e.subtitle
+                                                            .toString(),
+                                                        type: GFTypographyType
+                                                            .typo5,
+                                                        dividerHeight: 0,
+                                                        textColor:
+                                                            Theme.of(context)
+                                                                .colorScheme
+                                                                .primary,
+                                                      ),
+                                                      Tooltip(
+                                                        message:
+                                                            e.cast.toString(),
+                                                        triggerMode:
+                                                            TooltipTriggerMode
+                                                                .tap,
+                                                        margin: const EdgeInsets
+                                                            .symmetric(
+                                                            horizontal: 36),
+                                                        child: Text(
+                                                          e.cast,
+                                                          style:
+                                                              const TextStyle(
+                                                                  fontSize: 13),
+                                                          maxLines: 2,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                        ),
+                                                      ),
+                                                      Tooltip(
+                                                        message:
+                                                            e.desc.toString(),
+                                                        triggerMode:
+                                                            TooltipTriggerMode
+                                                                .tap,
+                                                        margin: const EdgeInsets
+                                                            .symmetric(
+                                                            horizontal: 36),
+                                                        child: Text(
+                                                          '${e.desc}',
+                                                          style:
+                                                              const TextStyle(
+                                                                  fontSize: 13),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                        ),
+                                                      ),
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Tooltip(
+                                                            message:
+                                                                '评分：${e.ratingNum}',
+                                                            child: RatingBar
+                                                                .readOnly(
+                                                              initialRating:
+                                                                  double.parse(e
+                                                                          .ratingNum) /
+                                                                      2,
+                                                              filledIcon:
+                                                                  Icons.star,
+                                                              emptyIcon: Icons
+                                                                  .star_border,
+                                                              emptyColor: Colors
+                                                                  .redAccent,
+                                                              filledColor: Theme
+                                                                      .of(context)
+                                                                  .colorScheme
+                                                                  .primary,
+                                                              halfFilledColor:
+                                                                  Colors
+                                                                      .amberAccent,
+                                                              halfFilledIcon:
+                                                                  Icons
+                                                                      .star_half,
+                                                              maxRating: 5,
+                                                              size: 18,
+                                                            ),
+                                                          ),
+                                                          Text(e.evaluateNum),
+                                                        ],
+                                                      ),
+                                                      GFTypography(
+                                                        text: e.quote,
+                                                        type: GFTypographyType
+                                                            .typo5,
+                                                        dividerHeight: 0,
+                                                        textColor:
+                                                            Theme.of(context)
+                                                                .colorScheme
+                                                                .secondary,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ))
+                                              ],
                                             ),
                                           ),
-                                          Positioned(
-                                            bottom: 2,
-                                            child: Container(
-                                              color: Colors.black38,
-                                              width: 100,
-                                              child: Text(
-                                                e.title,
-                                                overflow: TextOverflow.ellipsis,
-                                                textAlign: TextAlign.center,
-                                                style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 12),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ))
-                                .toList(),
+                                        ))
+                                    .toList(),
+                              ),
+                            ),
                           ),
-                        ),
+                          if (controller.isLoading == true)
+                            const Center(child: CircularProgressIndicator())
+                        ],
                       ),
                     ),
                   ),
@@ -339,56 +504,247 @@ class _DouBanPageState extends State<DouBanPage>
     });
   }
 
-  Future<dynamic> _buildOperateDialog(mediaInfo) {
-    return Get.defaultDialog(
-        title: '选中的资源名称',
-        content: GetBuilder<DouBanController>(builder: (controller) {
-          return Column(
-            children: [
-              InkWell(
-                onTap: () async {
-                  await _openMediaInfoDetail(mediaInfo);
-                },
-                child: Tooltip(
-                  message: '点击查看影视详情',
-                  child: Text(
-                    mediaInfo.title,
-                    style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 15),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+  Future<dynamic> _buildOperateDialog(mediaInfo) async {
+    Logger.instance.i(mediaInfo.douBanUrl);
+    VideoDetail videoDetail =
+        await controller.getVideoDetail(mediaInfo.douBanUrl);
+    Get.bottomSheet(
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(2),
+            topRight: Radius.circular(2),
+          ),
+        ),
+        isScrollControlled: true,
+        enableDrag: true, GetBuilder<DouBanController>(builder: (controller) {
+      return CustomCard(
+        height: MediaQuery.of(context).size.height * 0.7,
+        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView(
                 children: [
-                  ElevatedButton.icon(
-                    onPressed: () => controller.goSearchPage(mediaInfo),
-                    icon: Icon(
-                      Icons.search,
-                      color: Theme.of(context).colorScheme.onBackground,
-                    ),
-                    label: const Text('搜索'),
+                  Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8.0),
+                        child: CachedNetworkImage(
+                          imageUrl: '$cacheServer${mediaInfo.poster}',
+                          placeholder: (context, url) =>
+                              const Center(child: CircularProgressIndicator()),
+                          errorWidget: (context, url, error) =>
+                              Image.asset('assets/images/logo.png'),
+                          width: 120,
+                          height: 180,
+                          fit: BoxFit.fitWidth,
+                        ),
+                      ),
+                      Expanded(
+                          child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${videoDetail.title}${videoDetail.year}',
+                              style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w700),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              '${videoDetail.director.map((e) => e.name).join('/')}/${videoDetail.genres}/${videoDetail.releaseDate}/${videoDetail.duration}',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                            ),
+                            // Text(
+                            //   videoDetail.writer.map((e) => e.name).join(' / '),
+                            //   overflow: TextOverflow.ellipsis,
+                            // ),
+                            // Text(
+                            //   videoDetail.actors.map((e) => e.name).join(' / '),
+                            //   overflow: TextOverflow.ellipsis,
+                            // ),
+                            if (videoDetail.alias != null)
+                              Text(
+                                videoDetail.alias!.join(' / '),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 2,
+                              ),
+                            Text(videoDetail.region.toString()),
+                            // Text(videoDetail.language.toString()),
+                            // Text(videoDetail.season.toString()),
+                            // Text(videoDetail.episode.toString()),
+                            videoDetail.rate != null &&
+                                    videoDetail.rate!.isNotEmpty
+                                ? Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      RatingBar.readOnly(
+                                        initialRating:
+                                            double.parse(videoDetail.rate!) / 2,
+                                        filledIcon: Icons.star,
+                                        emptyIcon: Icons.star_border,
+                                        emptyColor: Colors.redAccent,
+                                        filledColor: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                        halfFilledColor: Colors.amberAccent,
+                                        halfFilledIcon: Icons.star_half,
+                                        maxRating: 5,
+                                        size: 18,
+                                      ),
+                                      Text(
+                                        '${videoDetail.evaluate} 人评价',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.blue,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : const Text(
+                                    '暂无评分',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.blue,
+                                    ),
+                                  ),
+                            Text('iMdb: ${videoDetail.imdb}'),
+                          ],
+                        ),
+                      ))
+                    ],
                   ),
-                  ElevatedButton.icon(
-                    onPressed: () async {
-                      await _openMediaInfoDetail(mediaInfo);
-                    },
-                    icon: Icon(
-                      Icons.info_outline,
-                      color: Theme.of(context).colorScheme.onBackground,
+                  SizedBox(
+                    height: 178,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Wrap(
+                        alignment: WrapAlignment.spaceAround,
+                        children: [
+                          ...videoDetail.pictures!.map((imgUrl) => CustomCard(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  child: CachedNetworkImage(
+                                    imageUrl: '$cacheServer$imgUrl',
+                                    placeholder: (context, url) => const Center(
+                                        child: CircularProgressIndicator()),
+                                    height: 160,
+                                    memCacheWidth: 100,
+                                    fit: BoxFit.fitWidth,
+                                  ),
+                                ),
+                              ))
+                        ],
+                      ),
                     ),
-                    label: const Text('详情'),
                   ),
+                  SizedBox(
+                    height: 160,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          ...videoDetail.celebrities.map((worker) => CustomCard(
+                                width: 100,
+                                child: Column(
+                                  children: [
+                                    Expanded(
+                                      child: ClipRRect(
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                        child: CachedNetworkImage(
+                                          imageUrl:
+                                              '$cacheServer${worker.imgUrl}',
+                                          placeholder: (context, url) =>
+                                              const Center(
+                                                  child:
+                                                      CircularProgressIndicator()),
+                                          width: 100,
+                                          height: 150,
+                                          fit: BoxFit.fitWidth,
+                                        ),
+                                      ),
+                                    ),
+                                    Text(
+                                      worker.name,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    Text(
+                                      worker.role!,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ))
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Text(
+                        videoDetail.hadSeen,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.green,
+                        ),
+                      ),
+                      Text(
+                        videoDetail.wantLook,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.blue,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  ...videoDetail.summary.map((e) => Text(e)),
+                  const SizedBox(height: 8),
                 ],
               ),
-            ],
-          );
-        }));
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () => controller.goSearchPage(mediaInfo),
+                  icon: Icon(
+                    Icons.search,
+                    color: Theme.of(context).colorScheme.onBackground,
+                  ),
+                  label: const Text('搜索'),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    await _openMediaInfoDetail(mediaInfo);
+                  },
+                  icon: Icon(
+                    Icons.info_outline,
+                    color: Theme.of(context).colorScheme.onBackground,
+                  ),
+                  label: const Text('详情'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }));
   }
 
   Future<void> _openMediaInfoDetail(mediaInfo) async {
@@ -397,8 +753,9 @@ class _DouBanPageState extends State<DouBanPage>
     try {
       url = mediaInfo.douBanUrl;
     } catch (err) {
-      url = mediaInfo.url;
+      url = mediaInfo.douBanUrl;
     }
+    await controller.getVideoDetail(url);
     if (!Platform.isIOS && !Platform.isAndroid) {
       Logger.instance.i('Explorer');
       if (!await launchUrl(Uri.parse(url),
