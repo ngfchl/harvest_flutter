@@ -951,13 +951,15 @@ class _DownloadPageState extends State<DownloadPage>
                               ),
                             ),
                             Expanded(
-                              child: SwitchTile(
-                                title: '刷流',
-                                value: brush.value,
-                                onChanged: (value) {
-                                  brush.value = value;
-                                },
-                              ),
+                              child: Obx(() {
+                                return SwitchTile(
+                                  title: brush.value ? '刷流' : '辅种',
+                                  value: brush.value,
+                                  onChanged: (value) {
+                                    brush.value = value;
+                                  },
+                                );
+                              }),
                             ),
                           ]);
                     }),
