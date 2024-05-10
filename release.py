@@ -76,7 +76,7 @@ class VersionManager:
                     "zip -r harvest.app.zip harvest.app", cwd='build/macos/Build/Products/Release/',
                     shell=True,
                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                print(res)
+                print(res.stdout.decode('utf-8'))
                 shutil.move("build/macos/Build/Products/Release/harvest.app.zip",
                             f"{self.output_folder}/harvest_{self.new_version}-macos.zip")
                 print(f'MacOS 打包完成')
@@ -84,24 +84,27 @@ class VersionManager:
                 res = subprocess.run(["flutter", "build", "windows"], shell=True,
                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 print(
-                    f'windows APP 编译完成，{res.stdout}, 正在移动到指定文件夹 {self.output_folder}')
+                    f'windows APP 编译完成，{res.stdout.decode('utf-8')}, 正在移动到指定文件夹 {self.output_folder}')
                 res = subprocess.run(
                     "Compress-Archive ./Release/ ./Release.zip", cwd='build/windows/x64/runner',
                     shell=True,
                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                print(res)
-                shutil.move(r"build/windows/x64/runner/Release.zip",
-                            f"build/windows/x64/runner/harvest_{self.new_version}-win.zip")
+                print(res.stdout.decode('utf-8'))
+                res = subprocess.run(
+                    f"Move-Item Release.zip //Mac/Home/Desktop/harvest/harvest_{self.new_version}-win.zip",
+                    cwd='build/windows/x64/runner',
+                    shell=True,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                print(res.stdout.decode('utf-8'))
                 print(f'Windows 打包完成')
-                subprocess.Popen(['explorer', "build/windows/x64/runner"])
             elif flag == 'ios':
                 # subprocess.run(["rm", "-rf", f"{self.ios_path}Payload/*"])
                 res = subprocess.run(["rm -rf build/ios/iphoneos/*"], shell=True,
                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                print(res)
+                print(res.stdout.decode('utf-8'))
                 res = subprocess.run("flutter build ios", shell=True,
                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                print(res)
+                print(res.stdout.decode('utf-8'))
                 print(f'IOS 编译完成，打包为 ipa 文件')
                 res = subprocess.run(
                     "mkdir -p Payload/",
@@ -109,19 +112,19 @@ class VersionManager:
                     shell=True,
                     stdout=subprocess.PIPE, stderr=subprocess.PIPE
                 )
-                print(res)
+                print(res.stdout.decode('utf-8'))
                 res = subprocess.run(
                     "mv Runner.app Payload/",
                     cwd=self.ios_path,
                     shell=True,
                     stdout=subprocess.PIPE, stderr=subprocess.PIPE
                 )
-                print(res)
+                print(res.stdout.decode('utf-8'))
                 res = subprocess.run(
                     "zip -r Payload.zip Payload", cwd=self.ios_path,
                     shell=True,
                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                print(f"命令执行成功！{res}")
+                print(f"命令执行成功！{res.stdout.decode('utf-8')}")
                 print(
                     f'ipa 打包完成，正在移动到指定文件夹 {self.output_folder}/harvest_{self.new_version}.ipa')
                 shutil.move("build/ios/iphoneos/Payload.zip",
@@ -153,10 +156,11 @@ class VersionManager:
                 except Exception as e:
                     print(f"Compilation failed: {e}")
                     raise e
-            subprocess.run(
-                f"open {self.output_folder}", cwd=self.ios_path,
-                shell=True,
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if not sys.platform.startswith('win32'):
+                subprocess.run(
+                    f"open {self.output_folder}", cwd=self.ios_path, shell=True,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE
+                )
 
 
 if __name__ == '__main__':
