@@ -29,12 +29,12 @@ class _WebViewPageState extends State<WebViewPage> {
     final GlobalKey webViewKey = GlobalKey();
     InAppWebViewController? webController;
     final cookieManager = CookieManager.instance();
-    // String domain = Uri.parse(controller.url).host;
-    // List<String> cookieList = controller.mySite != null
-    //     ? controller.mySite!.cookie!.split(';').map((item) {
-    //         return "document.cookie='$item;domain=$domain;'";
-    //       }).toList()
-    //     : [];
+    String domain = Uri.parse(controller.url).host;
+    List<String> cookieList = controller.mySite != null
+        ? controller.mySite!.cookie!.split(';').map((item) {
+            return "document.cookie='$item;domain=$domain;'";
+          }).toList()
+        : [];
     Map<String, String> headers = {
       "Cookie": controller.mySite != null ? controller.mySite!.cookie! : '',
       "User-Agent": controller.mySite != null
@@ -240,10 +240,10 @@ class _WebViewPageState extends State<WebViewPage> {
                   iframeAllowFullscreen: true,
                 ),
                 initialUserScripts: UnmodifiableListView<UserScript>([
-                  // UserScript(
-                  //   source: cookieList.join("\n"),
-                  //   injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
-                  // )
+                  UserScript(
+                    source: cookieList.join("\n"),
+                    injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+                  )
                 ]),
                 onWebViewCreated: (inAppWebViewController) async {
                   webController = inAppWebViewController;
