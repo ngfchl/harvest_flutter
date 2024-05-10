@@ -527,17 +527,34 @@ class _DouBanPageState extends State<DouBanPage>
                 children: [
                   Row(
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: CachedNetworkImage(
-                          imageUrl: '$cacheServer${mediaInfo.poster}',
-                          placeholder: (context, url) =>
-                              const Center(child: CircularProgressIndicator()),
-                          errorWidget: (context, url, error) =>
-                              Image.asset('assets/images/logo.png'),
-                          width: 120,
-                          height: 180,
-                          fit: BoxFit.fitWidth,
+                      InkWell(
+                        onTap: () {
+                          Get.defaultDialog(
+                              title: '海报预览',
+                              content: InkWell(
+                                onTap: () => Navigator.of(context).pop(),
+                                child: CachedNetworkImage(
+                                  imageUrl: '$cacheServer${mediaInfo.poster}',
+                                  errorWidget: (context, url, error) =>
+                                      const Image(
+                                          image: AssetImage(
+                                              'assets/images/logo.png')),
+                                  fit: BoxFit.fitWidth,
+                                ),
+                              ));
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8.0),
+                          child: CachedNetworkImage(
+                            imageUrl: '$cacheServer${mediaInfo.poster}',
+                            placeholder: (context, url) => const Center(
+                                child: CircularProgressIndicator()),
+                            errorWidget: (context, url, error) =>
+                                Image.asset('assets/images/logo.png'),
+                            width: 120,
+                            height: 180,
+                            fit: BoxFit.fitWidth,
+                          ),
                         ),
                       ),
                       Expanded(
@@ -628,15 +645,32 @@ class _DouBanPageState extends State<DouBanPage>
                         alignment: WrapAlignment.spaceAround,
                         children: [
                           ...videoDetail.pictures!.map((imgUrl) => CustomCard(
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  child: CachedNetworkImage(
-                                    imageUrl: '$cacheServer$imgUrl',
-                                    placeholder: (context, url) => const Center(
-                                        child: CircularProgressIndicator()),
-                                    height: 160,
-                                    memCacheWidth: 100,
-                                    fit: BoxFit.fitWidth,
+                                child: InkWell(
+                                  onTap: () {
+                                    Get.defaultDialog(
+                                        content: InkWell(
+                                      onTap: () => Navigator.of(context).pop(),
+                                      child: CachedNetworkImage(
+                                        imageUrl: '$cacheServer$imgUrl',
+                                        errorWidget: (context, url, error) =>
+                                            const Image(
+                                                image: AssetImage(
+                                                    'assets/images/logo.png')),
+                                        fit: BoxFit.fitWidth,
+                                      ),
+                                    ));
+                                  },
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    child: CachedNetworkImage(
+                                      imageUrl: '$cacheServer$imgUrl',
+                                      placeholder: (context, url) =>
+                                          const Center(
+                                              child:
+                                                  CircularProgressIndicator()),
+                                      height: 160,
+                                      fit: BoxFit.fitWidth,
+                                    ),
                                   ),
                                 ),
                               ))
@@ -655,19 +689,39 @@ class _DouBanPageState extends State<DouBanPage>
                                 child: Column(
                                   children: [
                                     Expanded(
-                                      child: ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                        child: CachedNetworkImage(
-                                          imageUrl:
-                                              '$cacheServer${worker.imgUrl}',
-                                          placeholder: (context, url) =>
-                                              const Center(
-                                                  child:
-                                                      CircularProgressIndicator()),
-                                          width: 100,
-                                          height: 150,
-                                          fit: BoxFit.fitWidth,
+                                      child: InkWell(
+                                        onTap: () {
+                                          Get.defaultDialog(
+                                              title: '海报预览',
+                                              content: InkWell(
+                                                onTap: () =>
+                                                    Navigator.of(context).pop(),
+                                                child: CachedNetworkImage(
+                                                  imageUrl:
+                                                      '$cacheServer${worker.imgUrl}',
+                                                  errorWidget: (context, url,
+                                                          error) =>
+                                                      const Image(
+                                                          image: AssetImage(
+                                                              'assets/images/logo.png')),
+                                                  fit: BoxFit.fitWidth,
+                                                ),
+                                              ));
+                                        },
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
+                                          child: CachedNetworkImage(
+                                            imageUrl:
+                                                '$cacheServer${worker.imgUrl}',
+                                            placeholder: (context, url) =>
+                                                const Center(
+                                                    child:
+                                                        CircularProgressIndicator()),
+                                            width: 100,
+                                            height: 150,
+                                            fit: BoxFit.fitWidth,
+                                          ),
                                         ),
                                       ),
                                     ),
