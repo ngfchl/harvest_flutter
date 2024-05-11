@@ -1085,9 +1085,8 @@ class _MySitePagePageState extends State<MySitePage>
                                   Icons.check_box_outline_blank_rounded),
                           onTap: () {
                             if (controller.sortKey == item['value']!) {
-                              controller.sortReversed = true;
-                            } else {
-                              controller.sortReversed = false;
+                              controller.sortReversed =
+                                  !controller.sortReversed;
                             }
                             controller.sortKey = item['value']!;
                             controller.sortStatusList();

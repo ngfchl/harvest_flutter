@@ -239,11 +239,10 @@ class MySiteController extends GetxController {
     }
 
     // 反转序列
-    if (sortReversed) {
+    if (sortReversed == true) {
       Logger.instance.w('反转序列！');
       showStatusList = showStatusList.reversed.toList();
     }
-
     // 按照邮件地址排序（默认排序）
     // showStatusList.sort((a, b) => b.mail.compareTo(a.mail));
     update();
