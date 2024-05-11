@@ -740,6 +740,7 @@ class _MySitePagePageState extends State<MySitePage>
     siteList.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
     final siteController = TextEditingController(text: mySite?.site ?? '');
     final apiKeyController = TextEditingController(text: mySite?.authKey ?? '');
+
     final nicknameController =
         TextEditingController(text: mySite?.nickname ?? '');
     final passkeyController =
@@ -834,15 +835,18 @@ class _MySitePagePageState extends State<MySitePage>
                       ),
                       CustomTextField(
                         controller: userIdController,
+                        maxLength: 16,
                         labelText: 'User ID',
                       ),
 
                       CustomTextField(
                         controller: passkeyController,
+                        maxLength: 64,
                         labelText: 'Passkey',
                       ),
                       CustomTextField(
                         controller: apiKeyController,
+                        maxLength: 64,
                         labelText: 'AuthKey',
                       ),
                       CustomTextField(
@@ -982,17 +986,17 @@ class _MySitePagePageState extends State<MySitePage>
                   onPressed: () async {
                     if (mySite != null) {
                       mySite = mySite?.copyWith(
-                        site: siteController.text,
-                        mirror: mirrorController.text,
-                        nickname: nicknameController.text,
-                        passkey: passkeyController.text,
-                        authKey: apiKeyController.text,
-                        userId: userIdController.text,
-                        userAgent: userAgentController.text,
-                        proxy: proxyController.text,
-                        rss: rssController.text,
-                        torrents: torrentsController.text,
-                        cookie: cookieController.text,
+                        site: siteController.text.trim(),
+                        mirror: mirrorController.text.trim(),
+                        nickname: nicknameController.text.trim(),
+                        passkey: passkeyController.text.trim(),
+                        authKey: apiKeyController.text.trim(),
+                        userId: userIdController.text.trim(),
+                        userAgent: userAgentController.text.trim(),
+                        proxy: proxyController.text.trim(),
+                        rss: rssController.text.trim(),
+                        torrents: torrentsController.text.trim(),
+                        cookie: cookieController.text.trim(),
                         getInfo: getInfo.value,
                         signIn: signIn.value,
                         brushRss: brushRss.value,
@@ -1006,17 +1010,17 @@ class _MySitePagePageState extends State<MySitePage>
                     } else {
                       // 如果 mySite 为空，表示是添加操作
                       mySite = MySite(
-                        site: siteController.text,
-                        mirror: mirrorController.text,
-                        nickname: nicknameController.text,
-                        passkey: passkeyController.text,
-                        authKey: apiKeyController.text,
-                        userId: userIdController.text,
-                        userAgent: userAgentController.text,
-                        proxy: proxyController.text,
-                        rss: rssController.text,
-                        torrents: torrentsController.text,
-                        cookie: cookieController.text,
+                        site: siteController.text.trim(),
+                        mirror: mirrorController.text.trim(),
+                        nickname: nicknameController.text.trim(),
+                        passkey: passkeyController.text.trim(),
+                        authKey: apiKeyController.text.trim(),
+                        userId: userIdController.text.trim(),
+                        userAgent: userAgentController.text.trim(),
+                        proxy: proxyController.text.trim(),
+                        rss: rssController.text.trim(),
+                        torrents: torrentsController.text.trim(),
+                        cookie: cookieController.text.trim(),
                         getInfo: getInfo.value,
                         signIn: signIn.value,
                         brushRss: brushRss.value,

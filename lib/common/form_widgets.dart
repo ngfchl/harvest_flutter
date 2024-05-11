@@ -47,6 +47,7 @@ class CustomTextField extends StatelessWidget {
   final List<TextInputFormatter> inputFormatters;
   final TextInputType? keyboardType;
   final int? maxLines;
+  final int? maxLength;
   final Function(String)? onChanged;
   final Function()? onTap;
 
@@ -63,6 +64,7 @@ class CustomTextField extends StatelessWidget {
     this.suffixText,
     this.onChanged,
     this.onTap,
+    this.maxLength,
   });
 
   @override
@@ -72,6 +74,7 @@ class CustomTextField extends StatelessWidget {
       child: TextField(
         controller: controller,
         onChanged: onChanged,
+        maxLength: maxLength,
         onTap: onTap,
         maxLines: maxLines,
         inputFormatters: inputFormatters,
