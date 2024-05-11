@@ -59,33 +59,34 @@ class _DashBoardPageState extends State<DashBoardPage>
         Expanded(
           child: EasyRefresh(
             onRefresh: controller.initChartData,
-            child: controller.isLoading
-                ? ListView(children: [
-                    SizedBox(height: MediaQuery.of(context).size.width * 0.4),
-                    const Center(child: CircularProgressIndicator()),
-                    const SizedBox(height: 10),
-                    Text(
-                      'loading...',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary),
-                    ),
-                  ])
-                : GetBuilder<DashBoardController>(builder: (controller) {
-                    return ListView(
-                      children: controller.statusList.isNotEmpty
-                          ? [
-                              _buildSiteInfoCard(),
-                              _buildSmartLabelPieChart(),
-                              _buildStackedBar(),
-                              _buildSiteInfo(),
-                            ]
-                          : [
-                              const SizedBox(height: 50),
-                              const Center(child: Text('先去获取一下站点数据吧'))
-                            ],
-                    );
-                  }),
+            child: GetBuilder<DashBoardController>(builder: (controller) {
+              return ListView(
+                children: controller.isLoading
+                    ? [
+                        SizedBox(
+                            height: MediaQuery.of(context).size.width * 0.4),
+                        const Center(child: CircularProgressIndicator()),
+                        const SizedBox(height: 10),
+                        Text(
+                          'loading...',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary),
+                        ),
+                      ]
+                    : controller.statusList.isNotEmpty
+                        ? [
+                            _buildSiteInfoCard(),
+                            _buildSmartLabelPieChart(),
+                            _buildStackedBar(),
+                            _buildSiteInfo(),
+                          ]
+                        : [
+                            const SizedBox(height: 50),
+                            const Center(child: Text('先去获取一下站点数据吧'))
+                          ],
+              );
+            }),
           ),
         ),
         const SizedBox(height: 50),

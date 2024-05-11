@@ -30,15 +30,13 @@ class SettingPage extends StatelessWidget {
                 _versionCard(context),
                 _noticeTestForm(context),
                 Flexible(
-                  child: controller.isLoaded
-                      ? const Center(child: CircularProgressIndicator())
-                      : SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              ..._optionListView(context),
-                            ],
-                          ),
-                        ),
+                  child: ListView(
+                    children: controller.isLoaded
+                        ? [const Center(child: CircularProgressIndicator())]
+                        : [
+                            ..._optionListView(context),
+                          ],
+                  ),
                 ),
                 const SizedBox(height: 50),
               ],

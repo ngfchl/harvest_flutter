@@ -27,6 +27,7 @@ class MySiteController extends GetxController {
     {'name': '站点名称', 'value': 'siteName'},
     {'name': '站点昵称', 'value': 'mySiteNickname'},
     {'name': '注册时间', 'value': 'mySiteJoined'},
+    {'name': '更新时间', 'value': 'updatedAt'},
     {'name': '站点链接', 'value': 'siteUrl'},
     {'name': '做种体积', 'value': 'statusSeedVolume'},
     {'name': '站点魔力', 'value': 'statusMyBonus'},
@@ -185,6 +186,12 @@ class MySiteController extends GetxController {
         break;
       case 'mySiteJoined':
         sortByComparable((a, b) => a.timeJoin.compareTo(b.timeJoin));
+        break;
+      case 'updatedAt':
+        sortByComparable((a, b) =>
+            a.latestStatusInfo?.updatedAt
+                .compareTo(b.latestStatusInfo?.updatedAt ?? DateTime(2012)) ??
+            0);
         break;
       case 'siteUrl':
         sortByComparable((a, b) => a.mirror!.compareTo(b.mirror!));

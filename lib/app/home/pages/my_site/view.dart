@@ -115,9 +115,13 @@ class _MySitePagePageState extends State<MySitePage>
                 ),
               Expanded(
                 child: controller.isLoaded
-                    ? const GFLoader()
+                    ? ListView(
+                        children: const [GFLoader()],
+                      )
                     : controller.showStatusList.isEmpty
-                        ? const Text('没有符合条件的数据！')
+                        ? ListView(
+                            children: const [Center(child: Text('没有符合条件的数据！'))],
+                          )
                         : GetBuilder<MySiteController>(builder: (controller) {
                             return ReorderableListView.builder(
                               onReorder: (int oldIndex, int newIndex) {
@@ -548,7 +552,7 @@ class _MySitePagePageState extends State<MySitePage>
 
   Widget _buildMySiteOperate(WebSite website, MySite mySite) {
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    bool signed = mySite.getSignMaxKey() == today;
+    bool signed = mySite.getSignMaxKey() == today || mySite.signIn == false;
     return CustomPopup(
       showArrow: true,
       // contentPadding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
@@ -610,9 +614,10 @@ class _MySitePagePageState extends State<MySitePage>
               },
             ),
           ])),
-      child: const Icon(
+      child: Icon(
         Icons.widgets_outlined,
         size: 24,
+        color: signed == true ? Colors.green : Colors.amber,
       ),
     );
   }

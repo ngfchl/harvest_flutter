@@ -29,7 +29,9 @@ class TaskPage extends StatelessWidget {
                     controller.getTaskInfo();
                   },
                   child: controller.isLoading
-                      ? const GFLoader()
+                      ? ListView(
+                          children: const [Center(child: GFLoader())],
+                        )
                       : GetBuilder<TaskController>(builder: (controller) {
                           return ListView.builder(
                             itemCount: controller.dataList.length,

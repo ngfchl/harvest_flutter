@@ -289,6 +289,10 @@ class _DouBanPageState extends State<DouBanPage>
                       child: Stack(
                         children: [
                           EasyRefresh(
+                            onRefresh: () {
+                              controller.initPage = 0;
+                              controller.getDouBanTop250Api();
+                            },
                             onLoad: () => controller.getDouBanTop250Api(),
                             child: SingleChildScrollView(
                               child: Wrap(
