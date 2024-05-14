@@ -1,7 +1,7 @@
 name: harvest
 description: Harvest Project App Client
 publish_to: none
-version: 2024.0510.05+33
+version: 2024.0511.01+35
 environment:
   sdk: '>=3.3.2 <4.0.0'
 dependencies:
@@ -23,7 +23,7 @@ dependencies:
   path: ^1.9.0
   filesize: ^2.0.1
   flutter_ellipsis_text: ^1.0.1
-  syncfusion_flutter_charts: ^25.2.3
+  syncfusion_flutter_charts: ^25.2.3+1
   basic_utils: ^5.7.0
   syncfusion_flutter_gauges: ^25.2.3
   proper_filesize: ^0.0.2
@@ -48,7 +48,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.2
+  flutter_lints: ^4.0.0
 flutter:
   uses-material-design: true
   assets:
