@@ -77,6 +77,14 @@ class MySiteController extends GetxController {
     update();
   }
 
+  Map<String, WebSite> buildTrackerToWebSite() {
+    return webSiteList.values.toList().asMap().entries.fold({},
+        (result, entry) {
+      result[entry.value.tracker] = entry.value;
+      return result;
+    });
+  }
+
   Future<void> getWebSiteListFromServer() async {
     CommonResponse value = await getWebSiteList();
     if (value.code == 0) {

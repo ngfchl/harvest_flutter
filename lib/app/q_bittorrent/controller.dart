@@ -146,7 +146,7 @@ class QBittorrentController extends GetxController {
     categoryMap.addAll(await client.torrents.getCategories());
 
     /// 生成 tracker：website
-    buildTrackerToWebSite();
+    trackerToWebSiteMap = mySiteController.buildTrackerToWebSite();
 
     /// 获取上传下载信息
     await getQbStatus();
@@ -193,14 +193,6 @@ class QBittorrentController extends GetxController {
         filterTorrents();
       }
       update();
-    });
-  }
-
-  buildTrackerToWebSite() {
-    List<WebSite> webSiteList = mySiteController.webSiteList.values.toList();
-    trackerToWebSiteMap = webSiteList.asMap().entries.fold({}, (result, entry) {
-      result[entry.value.tracker] = entry.value;
-      return result;
     });
   }
 
