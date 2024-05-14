@@ -11,6 +11,8 @@ import '../q_bittorrent/binding.dart';
 import '../q_bittorrent/view.dart';
 import '../torrent/torrent_binding.dart';
 import '../torrent/torrent_view.dart';
+import '../tr/binding.dart';
+import '../tr/view.dart';
 import '../web_view/binding.dart';
 
 // ignore_for_file: constant_identifier_names
@@ -43,6 +45,14 @@ class AppPages {
       name: _Paths.QB,
       page: () => const QBittorrentPage(),
       binding: QBittorrentBinding(),
+      middlewares: [
+        LoginMiddleware(),
+      ],
+    ),
+    GetPage(
+      name: _Paths.TR,
+      page: () => const TrPage(),
+      binding: TrBinding(),
       middlewares: [
         LoginMiddleware(),
       ],
