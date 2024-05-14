@@ -14,7 +14,7 @@ class SettingController extends GetxController {
   String server = '';
   String applicationLegalese = 'Copyright 2022-2024 无始无终. All rights reserved.';
   List<Option> optionList = [];
-  List<SelectOption> optionChoice = [
+  List<Map<String, String>> optionMapList = [
     {'name': '油猴Token', 'value': 'monkey_token'},
     // {'name': '辅种配置', 'value': 'repeat'},
     // {'name': '通知详情', 'value': 'notice_content_item'},
@@ -31,10 +31,16 @@ class SettingController extends GetxController {
     {'name': 'SSDForm', 'value': 'ssdforum'},
     {'name': 'CookieCloud', 'value': 'cookie_cloud'},
     {'name': 'FileList', 'value': 'FileList'},
-  ].map((e) => SelectOption.fromJson(e)).toList();
+  ];
+  List<SelectOption> optionChoice = [];
+  Map<String, String> optionMap = {};
 
   @override
   Future<void> onInit() async {
+    optionChoice = optionMapList.map((e) => SelectOption.fromJson(e)).toList();
+    optionMap = Map.fromEntries(
+        optionMapList.map((item) => MapEntry(item['value']!, item['name']!)));
+
     packageInfo = await PackageInfo.fromPlatform();
     await getOptionList();
     server = SPUtil.getLocalStorage('server');

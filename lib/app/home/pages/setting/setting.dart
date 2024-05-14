@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/form_widgets.dart';
+import 'package:harvest/utils/storage.dart';
 
 import '../../../../api/option.dart';
 import '../../../../common/utils.dart';
@@ -276,14 +277,14 @@ class SettingPage extends StatelessWidget {
                                 if (res.code == 0) {
                                   Get.back();
                                   Get.snackbar('配置保存成功',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                      '${controller.optionMap['monkey_token']} 配置：${res.msg}',
                                       colorText: Theme.of(context)
                                           .colorScheme
                                           .primary);
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar('配置保存失败',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                      '${controller.optionMap['monkey_token']} 配置出错啦：${res.msg}',
                                       colorText:
                                           Theme.of(context).colorScheme.error);
                                 }
@@ -386,14 +387,14 @@ class SettingPage extends StatelessWidget {
                                 if (res.code == 0) {
                                   Get.back();
                                   Get.snackbar('配置保存成功',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                      '${controller.optionMap['wechat_work_push']} 配置：${res.msg}',
                                       colorText: Theme.of(context)
                                           .colorScheme
                                           .primary);
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar('配置保存失败',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                      '${controller.optionMap['wechat_work_push']} 配置出错啦：${res.msg}',
                                       colorText:
                                           Theme.of(context).colorScheme.error);
                                 }
@@ -479,14 +480,14 @@ class SettingPage extends StatelessWidget {
                                 if (res.code == 0) {
                                   Get.back();
                                   Get.snackbar('配置保存成功',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                      '${controller.optionMap['FileList']} 配置：${res.msg}',
                                       colorText: Theme.of(context)
                                           .colorScheme
                                           .primary);
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar('配置保存失败',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                      '${controller.optionMap['FileList']} 配置出错啦：${res.msg}',
                                       colorText:
                                           Theme.of(context).colorScheme.error);
                                 }
@@ -661,14 +662,14 @@ class SettingPage extends StatelessWidget {
                                 if (res.code == 0) {
                                   Get.back();
                                   Get.snackbar('配置保存成功',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                      '${controller.optionMap['iyuu_push']} 配置：${res.msg}',
                                       colorText: Theme.of(context)
                                           .colorScheme
                                           .primary);
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar('配置保存失败',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                      '${controller.optionMap['iyuu_push']} 配置出错啦：${res.msg}',
                                       colorText:
                                           Theme.of(context).colorScheme.error);
                                 }
@@ -736,7 +737,7 @@ class SettingPage extends StatelessWidget {
                                 if (option == null) {
                                   option = Option(
                                     id: 0,
-                                    name: 'iyuu_push',
+                                    name: 'pushdeer_push',
                                     isActive: isActive.value,
                                     value: OptionValue(
                                       token: keyController.text,
@@ -755,14 +756,14 @@ class SettingPage extends StatelessWidget {
                                 if (res.code == 0) {
                                   Get.back();
                                   Get.snackbar('配置保存成功',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                      '${controller.optionMap['pushdeer_push']} 配置：${res.msg}',
                                       colorText: Theme.of(context)
                                           .colorScheme
                                           .primary);
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar('配置保存失败',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                      '${controller.optionMap['pushdeer_push']} 配置出错啦：${res.msg}',
                                       colorText:
                                           Theme.of(context).colorScheme.error);
                                 }
@@ -835,10 +836,13 @@ class SettingPage extends StatelessWidget {
                           child: FullWidthButton(
                               text: '保存',
                               onPressed: () async {
+                                if (SPUtil.isJson(tokenController.text)) {
+                                  return;
+                                }
                                 if (option == null) {
                                   option = Option(
                                     id: 0,
-                                    name: 'iyuu_push',
+                                    name: 'aliyun_drive',
                                     isActive: isActive.value,
                                     value: OptionValue(
                                       refreshToken: tokenController.text,
@@ -857,14 +861,14 @@ class SettingPage extends StatelessWidget {
                                 if (res.code == 0) {
                                   Get.back();
                                   Get.snackbar('配置保存成功',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                      '${controller.optionMap['aliyun_drive']} 配置：${res.msg}',
                                       colorText: Theme.of(context)
                                           .colorScheme
                                           .primary);
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar('配置保存失败',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                      '${controller.optionMap['aliyun_drive']} 配置出错啦：${res.msg}',
                                       colorText:
                                           Theme.of(context).colorScheme.error);
                                 }
@@ -943,7 +947,7 @@ class SettingPage extends StatelessWidget {
                                 if (option == null) {
                                   option = Option(
                                     id: 0,
-                                    name: 'iyuu_push',
+                                    name: 'ssdforum',
                                     isActive: isActive.value,
                                     value: OptionValue(
                                       cookie: cookieController.text,
@@ -964,14 +968,14 @@ class SettingPage extends StatelessWidget {
                                 if (res.code == 0) {
                                   Get.back();
                                   Get.snackbar('配置保存成功',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                      '${controller.optionMap['ssdforum']} 配置：${res.msg}',
                                       colorText: Theme.of(context)
                                           .colorScheme
                                           .primary);
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar('配置保存失败',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                      '${controller.optionMap['ssdforum']} 配置出错啦：${res.msg}',
                                       colorText:
                                           Theme.of(context).colorScheme.error);
                                 }
@@ -1064,14 +1068,14 @@ class SettingPage extends StatelessWidget {
                                 if (res.code == 0) {
                                   Get.back();
                                   Get.snackbar('配置保存成功',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                      '${controller.optionMap['baidu_ocr']} 配置：${res.msg}',
                                       colorText: Theme.of(context)
                                           .colorScheme
                                           .primary);
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar('配置保存失败',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                      '${controller.optionMap['baidu_ocr']} 配置出错啦：${res.msg}',
                                       colorText:
                                           Theme.of(context).colorScheme.error);
                                 }
@@ -1158,14 +1162,14 @@ class SettingPage extends StatelessWidget {
                                 if (res.code == 0) {
                                   Get.back();
                                   Get.snackbar('配置保存成功',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                      '${controller.optionMap['bark_push']} 配置：${res.msg}',
                                       colorText: Theme.of(context)
                                           .colorScheme
                                           .primary);
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar('配置保存失败',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                      '${controller.optionMap['bark_push']} 配置出错啦：${res.msg}',
                                       colorText:
                                           Theme.of(context).colorScheme.error);
                                 }
@@ -1248,14 +1252,14 @@ class SettingPage extends StatelessWidget {
                                 if (res.code == 0) {
                                   Get.back();
                                   Get.snackbar('配置保存成功',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 保存成功：${res.msg}',
+                                      '${controller.optionMap['pushplus_push']} 保存成功：${res.msg}',
                                       colorText: Theme.of(context)
                                           .colorScheme
                                           .primary);
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar('配置保存失败',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 保存出错啦：${res.msg}',
+                                      '${controller.optionMap['pushplus_push']} 保存出错啦：${res.msg}',
                                       colorText:
                                           Theme.of(context).colorScheme.error);
                                 }
@@ -1348,14 +1352,14 @@ class SettingPage extends StatelessWidget {
                                 if (res.code == 0) {
                                   Get.back();
                                   Get.snackbar('配置保存成功',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                      '${controller.optionMap['wxpusher_push']} 配置：${res.msg}',
                                       colorText: Theme.of(context)
                                           .colorScheme
                                           .primary);
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar('配置保存失败',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                      '${controller.optionMap['wxpusher_push']} 配置出错啦：${res.msg}',
                                       colorText:
                                           Theme.of(context).colorScheme.error);
                                 }
@@ -1449,14 +1453,14 @@ class SettingPage extends StatelessWidget {
                                 if (res.code == 0) {
                                   Get.back();
                                   Get.snackbar('配置保存成功',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                      '${controller.optionMap['telegram_push']} 配置：${res.msg}',
                                       colorText: Theme.of(context)
                                           .colorScheme
                                           .primary);
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar('配置保存失败',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                      '${controller.optionMap['telegram_push']} 配置出错啦：${res.msg}',
                                       colorText:
                                           Theme.of(context).colorScheme.error);
                                 }
@@ -1549,14 +1553,14 @@ class SettingPage extends StatelessWidget {
                                 if (res.code == 0) {
                                   Get.back();
                                   Get.snackbar('配置保存成功',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存：${res.msg}',
+                                      '${controller.optionMap['cookie_cloud']} 配置：${res.msg}',
                                       colorText: Theme.of(context)
                                           .colorScheme
                                           .primary);
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar('配置保存失败',
-                                      '${controller.optionChoice.firstWhere((element) => element.value == option?.name).name} 数据保存出错啦：${res.msg}',
+                                      '${controller.optionMap['cookie_cloud']} 配置出错啦：${res.msg}',
                                       colorText:
                                           Theme.of(context).colorScheme.error);
                                 }
