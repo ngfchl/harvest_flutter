@@ -42,113 +42,119 @@ class _MySitePagePageState extends State<MySitePage>
   Widget build(BuildContext context) {
     super.build(context);
     return GetBuilder<MySiteController>(builder: (controller) {
-      return Scaffold(
-        body: EasyRefresh(
-          onRefresh: () async {
-            controller.getSiteStatusFromServer();
-          },
-          child: Column(
-            children: [
-              if (controller.mySiteList.isNotEmpty)
-                Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 0),
-                        margin: const EdgeInsets.only(top: 5),
-                        height: 30,
-                        child: TextField(
-                          controller: controller.searchController,
-                          style: const TextStyle(fontSize: 12),
-                          textAlignVertical: TextAlignVertical.bottom,
-                          decoration: InputDecoration(
-                            // labelText: '搜索',
-                            hintText: '输入关键词...',
-                            labelStyle: const TextStyle(fontSize: 12),
-                            hintStyle: const TextStyle(fontSize: 12),
-                            prefixIcon: const Icon(
-                              Icons.search,
-                              size: 14,
+      return SafeArea(
+        child: Scaffold(
+          body: EasyRefresh(
+            onRefresh: () async {
+              controller.getSiteStatusFromServer();
+            },
+            child: Column(
+              children: [
+                if (controller.mySiteList.isNotEmpty)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 0),
+                          margin: const EdgeInsets.only(top: 5),
+                          height: 30,
+                          child: TextField(
+                            controller: controller.searchController,
+                            style: const TextStyle(fontSize: 12),
+                            textAlignVertical: TextAlignVertical.bottom,
+                            decoration: InputDecoration(
+                              // labelText: '搜索',
+                              hintText: '输入关键词...',
+                              labelStyle: const TextStyle(fontSize: 12),
+                              hintStyle: const TextStyle(fontSize: 12),
+                              prefixIcon: const Icon(
+                                Icons.search,
+                                size: 14,
+                              ),
+                              // suffix: ,
+                              suffixIcon: Padding(
+                                padding: const EdgeInsets.all(5.0),
+                                child: Text(
+                                    '计数：${controller.showStatusList.length}',
+                                    style: const TextStyle(
+                                        textBaseline: TextBaseline.alphabetic,
+                                        fontSize: 12,
+                                        color: Colors.orange)),
+                              ),
+                              border: const OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(3.0)),
+                              ),
                             ),
-                            // suffix: ,
-                            suffixIcon: Padding(
-                              padding: const EdgeInsets.all(5.0),
-                              child: Text(
-                                  '计数：${controller.showStatusList.length}',
-                                  style: const TextStyle(
-                                      textBaseline: TextBaseline.alphabetic,
-                                      fontSize: 12,
-                                      color: Colors.orange)),
-                            ),
-                            border: const OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(3.0)),
-                            ),
+                            onChanged: (value) {
+                              Logger.instance.i('搜索框内容变化：$value');
+                              controller.searchKey = value;
+                              controller.filterByKey();
+                            },
                           ),
-                          onChanged: (value) {
-                            Logger.instance.i('搜索框内容变化：$value');
-                            controller.searchKey = value;
-                            controller.filterByKey();
-                          },
                         ),
                       ),
-                    ),
-                    if (controller.searchKey.isNotEmpty)
-                      IconButton(
-                          onPressed: () {
-                            controller.searchController.text =
-                                controller.searchController.text.substring(
-                                    0,
-                                    controller.searchController.text.length -
-                                        1);
-                            controller.searchKey =
-                                controller.searchController.text;
-                            controller.filterByKey();
-                            controller.update();
-                          },
-                          icon: const Icon(
-                            Icons.backspace_outlined,
-                            size: 18,
-                          ))
-                  ],
+                      if (controller.searchKey.isNotEmpty)
+                        IconButton(
+                            onPressed: () {
+                              controller.searchController.text =
+                                  controller.searchController.text.substring(
+                                      0,
+                                      controller.searchController.text.length -
+                                          1);
+                              controller.searchKey =
+                                  controller.searchController.text;
+                              controller.filterByKey();
+                              controller.update();
+                            },
+                            icon: const Icon(
+                              Icons.backspace_outlined,
+                              size: 18,
+                            ))
+                    ],
+                  ),
+                Expanded(
+                  child: controller.isLoaded
+                      ? ListView(
+                          children: const [GFLoader()],
+                        )
+                      : controller.showStatusList.isEmpty
+                          ? ListView(
+                              children: const [
+                                Center(child: Text('没有符合条件的数据！'))
+                              ],
+                            )
+                          : GetBuilder<MySiteController>(builder: (controller) {
+                              return ReorderableListView.builder(
+                                onReorder: (int oldIndex, int newIndex) {
+                                  if (oldIndex < newIndex) {
+                                    newIndex -= 1; // 移动时修正索引，因为item已被移除
+                                  }
+                                  final item = controller.showStatusList
+                                      .removeAt(oldIndex);
+                                  controller.showStatusList
+                                      .insert(newIndex, item);
+                                  controller.update();
+                                },
+                                itemCount: controller.showStatusList.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  MySite mySite =
+                                      controller.showStatusList[index];
+                                  return showSiteDataInfo(mySite);
+                                },
+                              );
+                            }),
                 ),
-              Expanded(
-                child: controller.isLoaded
-                    ? ListView(
-                        children: const [GFLoader()],
-                      )
-                    : controller.showStatusList.isEmpty
-                        ? ListView(
-                            children: const [Center(child: Text('没有符合条件的数据！'))],
-                          )
-                        : GetBuilder<MySiteController>(builder: (controller) {
-                            return ReorderableListView.builder(
-                              onReorder: (int oldIndex, int newIndex) {
-                                if (oldIndex < newIndex) {
-                                  newIndex -= 1; // 移动时修正索引，因为item已被移除
-                                }
-                                final item = controller.showStatusList
-                                    .removeAt(oldIndex);
-                                controller.showStatusList
-                                    .insert(newIndex, item);
-                                controller.update();
-                              },
-                              itemCount: controller.showStatusList.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                MySite mySite =
-                                    controller.showStatusList[index];
-                                return showSiteDataInfo(mySite);
-                              },
-                            );
-                          }),
-              ),
-              const SizedBox(height: 50),
-            ],
+                if (Platform.isIOS) const SizedBox(height: 10),
+                const SizedBox(height: 50),
+              ],
+            ),
           ),
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.miniCenterDocked,
+          floatingActionButton: _buildBottomButtonBar(),
         ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        floatingActionButton: _buildBottomButtonBar(),
       );
     });
   }

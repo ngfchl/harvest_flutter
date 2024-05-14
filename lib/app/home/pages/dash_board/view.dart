@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:filesize/filesize.dart';
 import 'package:flutter/material.dart';
@@ -44,10 +46,13 @@ class _DashBoardPageState extends State<DashBoardPage>
     // _updateShowInfoChildren();
     super.build(context);
     return GetBuilder<DashBoardController>(builder: (controller) {
-      return Scaffold(
-        body: _showAllInfo(controller),
-        floatingActionButton: _buildBottomButtonBar(),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      return SafeArea(
+        child: Scaffold(
+          body: _showAllInfo(controller),
+          floatingActionButton: _buildBottomButtonBar(),
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.miniCenterDocked,
+        ),
       );
     });
   }
@@ -89,6 +94,7 @@ class _DashBoardPageState extends State<DashBoardPage>
             }),
           ),
         ),
+        if (Platform.isIOS) const SizedBox(height: 10),
         const SizedBox(height: 50),
       ],
     );

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:filesize/filesize.dart';
 import 'package:flutter/material.dart';
@@ -34,42 +36,46 @@ class _DownloadPageState extends State<DownloadPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Scaffold(
-      body: Column(
-        children: [
-          Expanded(
-            child: GetBuilder<DownloadController>(builder: (controller) {
-              return StreamBuilder<List<Downloader>>(
-                  stream: controller.downloadStream,
-                  initialData: controller.dataList,
-                  builder: (context, snapshot) {
-                    controller.isLoaded = snapshot.hasData;
-                    return EasyRefresh(
-                      controller: EasyRefreshController(),
-                      onRefresh: () async {
-                        controller.getDownloaderListFromServer();
-                      },
-                      child: controller.isLoaded
-                          ? ListView.builder(
-                              itemCount: controller.dataList.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                Downloader downloader =
-                                    controller.dataList[index];
-                                return buildDownloaderCard(downloader);
-                              })
-                          : Center(
-                              child: ListView(
-                              children: const [Expanded(child: GFLoader())],
-                            )),
-                    );
-                  });
-            }),
-          ),
-          const SizedBox(height: 50),
-        ],
+    return SafeArea(
+      child: Scaffold(
+        body: Column(
+          children: [
+            Expanded(
+              child: GetBuilder<DownloadController>(builder: (controller) {
+                return StreamBuilder<List<Downloader>>(
+                    stream: controller.downloadStream,
+                    initialData: controller.dataList,
+                    builder: (context, snapshot) {
+                      controller.isLoaded = snapshot.hasData;
+                      return EasyRefresh(
+                        controller: EasyRefreshController(),
+                        onRefresh: () async {
+                          controller.getDownloaderListFromServer();
+                        },
+                        child: controller.isLoaded
+                            ? ListView.builder(
+                                itemCount: controller.dataList.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  Downloader downloader =
+                                      controller.dataList[index];
+                                  return buildDownloaderCard(downloader);
+                                })
+                            : Center(
+                                child: ListView(
+                                children: const [Expanded(child: GFLoader())],
+                              )),
+                      );
+                    });
+              }),
+            ),
+            if (Platform.isIOS) const SizedBox(height: 10),
+            const SizedBox(height: 50),
+          ],
+        ),
+        floatingActionButton: _buildBottomButtonBar(),
+        floatingActionButtonLocation:
+            FloatingActionButtonLocation.miniCenterDocked,
       ),
-      floatingActionButton: _buildBottomButtonBar(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
@@ -609,8 +615,8 @@ class _DownloadPageState extends State<DownloadPage>
                     Get.toNamed(Routes.QB, arguments: downloader);
                   }
                   if (downloader.category == 'Tr') {
-                    // Get.toNamed(Routes.TR, arguments: downloader);
-                    Get.toNamed(Routes.TORRENT, arguments: downloader);
+                    Get.toNamed(Routes.TR, arguments: downloader);
+                    // Get.toNamed(Routes.TORRENT, arguments: downloader);
                   }
                 },
                 onLongPress: () async {

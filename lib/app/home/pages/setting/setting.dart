@@ -43,7 +43,8 @@ class SettingPage extends StatelessWidget {
             ),
           );
         }),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        floatingActionButtonLocation:
+            FloatingActionButtonLocation.miniCenterDocked,
         floatingActionButton: CustomCard(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
