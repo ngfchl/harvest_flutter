@@ -145,7 +145,7 @@ class _DownloadPageState extends State<DownloadPage>
                                     InkWell(
                                       child: const Icon(Icons.remove),
                                       onTap: () {
-                                        if (controller.duration > 3) {
+                                        if (controller.duration.toInt() > 3) {
                                           controller.duration--;
                                           SPUtil.setDouble(
                                               'duration', controller.duration);
@@ -170,7 +170,7 @@ class _DownloadPageState extends State<DownloadPage>
                                     InkWell(
                                       child: const Icon(Icons.add),
                                       onTap: () {
-                                        if (controller.duration < 15) {
+                                        if (controller.duration.toInt() < 15) {
                                           controller.duration++;
                                           SPUtil.setDouble(
                                               'duration', controller.duration);
@@ -195,7 +195,8 @@ class _DownloadPageState extends State<DownloadPage>
                                     InkWell(
                                       child: const Icon(Icons.remove),
                                       onTap: () {
-                                        if (controller.timerDuration > 3) {
+                                        if (controller.timerDuration.toInt() >
+                                            3) {
                                           controller.timerDuration--;
                                           SPUtil.setDouble('timerDuration',
                                               controller.timerDuration);
@@ -222,7 +223,8 @@ class _DownloadPageState extends State<DownloadPage>
                                     InkWell(
                                       child: const Icon(Icons.add),
                                       onTap: () {
-                                        if (controller.timerDuration < 15) {
+                                        if (controller.timerDuration.toInt() <
+                                            15) {
                                           controller.timerDuration++;
                                           SPUtil.setDouble('timerDuration',
                                               controller.timerDuration);
