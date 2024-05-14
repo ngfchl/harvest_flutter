@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/form_widgets.dart';
-import 'package:harvest/utils/storage.dart';
 
 import '../../../../api/option.dart';
 import '../../../../common/utils.dart';
@@ -836,9 +835,6 @@ class SettingPage extends StatelessWidget {
                           child: FullWidthButton(
                               text: '保存',
                               onPressed: () async {
-                                if (SPUtil.isJson(tokenController.text)) {
-                                  return;
-                                }
                                 if (option == null) {
                                   option = Option(
                                     id: 0,
