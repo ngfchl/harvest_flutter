@@ -2,7 +2,7 @@ import 'package:harvest/app/home/pages/models/SubHistory.dart';
 import 'package:harvest/app/home/pages/models/SubTag.dart';
 import 'package:harvest/app/home/pages/models/Subscribe.dart';
 
-import '../app/home/pages/models/MyRss.dart';
+import '../app/home/pages/models/my_rss.dart';
 import '../models/common_response.dart';
 import 'api.dart';
 import 'hooks.dart';

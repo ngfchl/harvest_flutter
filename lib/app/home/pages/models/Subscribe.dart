@@ -1,4 +1,4 @@
-import 'package:harvest/app/home/pages/models/MyRss.dart';
+import 'package:harvest/app/home/pages/models/my_rss.dart';
 
 class Subscribe {
   Subscribe({

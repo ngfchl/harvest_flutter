@@ -898,7 +898,6 @@ class TorrentView extends GetView<TorrentController> {
   }
 
   Widget _buildQbTorrentCard(TorrentInfo torrentInfo, context) {
-    double cardHeight = 80;
     bool paused = torrentInfo.state.toString().contains('pause');
     bool deleteFile = false;
     return CustomCard(
@@ -1661,7 +1660,6 @@ class TorrentView extends GetView<TorrentController> {
   }
 
   Widget _buildTrTorrentCard(TransmissionBaseTorrent torrentInfo, context) {
-    double cardHeight = 80;
     bool deleteFile = false;
     return CustomCard(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
@@ -1710,7 +1708,7 @@ class TorrentView extends GetView<TorrentController> {
                         Get.back(result: true);
                         await controller.controlTorrents(
                             command: 'delete',
-                            hashes: [torrentInfo.hashString!],
+                            hashes: [torrentInfo.hashString],
                             deleteFiles: deleteFile);
                       },
                       child: const Text('确认'),
@@ -1744,7 +1742,7 @@ class TorrentView extends GetView<TorrentController> {
                         await controller.controlTorrents(
                             command:
                                 torrentInfo.status == 0 ? 'resume' : 'pause',
-                            hashes: [torrentInfo.hashString!]);
+                            hashes: [torrentInfo.hashString]);
                       },
                       child: const Text('确认'),
                     ),
@@ -1787,7 +1785,7 @@ class TorrentView extends GetView<TorrentController> {
                         Get.back(result: true);
                         await controller.controlTorrents(
                           command: 'recheck',
-                          hashes: [torrentInfo.hashString!],
+                          hashes: [torrentInfo.hashString],
                         );
                       },
                       child: const Text('确认'),
@@ -1818,7 +1816,7 @@ class TorrentView extends GetView<TorrentController> {
                         Get.back(result: true);
                         await controller.controlTorrents(
                             command: 'reannounce',
-                            hashes: [torrentInfo.hashString!]);
+                            hashes: [torrentInfo.hashString]);
                       },
                       child: const Text('确认'),
                     ),
@@ -1848,7 +1846,7 @@ class TorrentView extends GetView<TorrentController> {
               children: [
                 Row(
                   children: [
-                    if (torrentInfo.trackerStats!.isNotEmpty)
+                    if (torrentInfo.trackerStats.isNotEmpty)
                       Row(children: [
                         const Icon(
                           Icons.link,
@@ -1856,7 +1854,7 @@ class TorrentView extends GetView<TorrentController> {
                         ),
                         Text(
                           basic_utils.DomainUtils.getDomainFromUrl(
-                                  torrentInfo.trackerStats![0].announce!)!
+                                  torrentInfo.trackerStats.first!.announce)!
                               .toString(),
                           style: const TextStyle(
                               fontSize: 10, color: Colors.black38),
@@ -1879,7 +1877,7 @@ class TorrentView extends GetView<TorrentController> {
                             child: GFButton(
                               text: controller.trStatus.firstWhere(
                                 (element) =>
-                                    element['value'] == torrentInfo.status!,
+                                    element['value'] == torrentInfo.status,
                                 orElse: () => {
                                   "name": "未知状态",
                                   "value": TorrentState.unknown
@@ -1904,9 +1902,9 @@ class TorrentView extends GetView<TorrentController> {
                     SizedBox(
                       width: 220,
                       child: Tooltip(
-                        message: torrentInfo.name!,
+                        message: torrentInfo.name,
                         child: Text(
-                          torrentInfo.name!,
+                          torrentInfo.name,
                           style: const TextStyle(
                               fontSize: 11,
                               color: Colors.black38,
@@ -1917,8 +1915,8 @@ class TorrentView extends GetView<TorrentController> {
                       ),
                     ),
                     Text(
-                      torrentInfo.downloadDir!.isNotEmpty
-                          ? torrentInfo.downloadDir!
+                      torrentInfo.downloadDir.isNotEmpty
+                          ? torrentInfo.downloadDir
                           : '未分类',
                       style:
                           const TextStyle(fontSize: 10, color: Colors.black38),
@@ -1985,7 +1983,7 @@ class TorrentView extends GetView<TorrentController> {
                               color: Colors.black38,
                             ),
                             EllipsisText(
-                              text: formatDuration(torrentInfo.activityDate!)
+                              text: formatDuration(torrentInfo.activityDate)
                                   .toString(),
                               style: const TextStyle(
                                   fontSize: 10, color: Colors.black38),
@@ -2004,7 +2002,7 @@ class TorrentView extends GetView<TorrentController> {
                             EllipsisText(
                               text: DateFormat('yyyy-MM-dd HH:mm:ss')
                                   .format(DateTime.fromMillisecondsSinceEpoch(
-                                      torrentInfo.addedDate! * 1000))
+                                      torrentInfo.addedDate * 1000))
                                   .toString(),
                               style: const TextStyle(
                                   fontSize: 10, color: Colors.black38),
@@ -2019,10 +2017,10 @@ class TorrentView extends GetView<TorrentController> {
                 ),
                 GFProgressBar(
                     margin: EdgeInsets.zero,
-                    percentage: torrentInfo.percentDone!.toDouble(),
+                    percentage: torrentInfo.percentDone.toDouble(),
                     progressHeadType: GFProgressHeadType.square,
                     trailing: Text(
-                      '${(torrentInfo.percentDone! * 100).toStringAsFixed(2)}%',
+                      '${(torrentInfo.percentDone * 100).toStringAsFixed(2)}%',
                       style:
                           const TextStyle(fontSize: 10, color: Colors.black38),
                       textAlign: TextAlign.center,

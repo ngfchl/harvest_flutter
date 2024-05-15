@@ -9,8 +9,8 @@ import '../../../../common/form_widgets.dart';
 import '../../../../models/common_response.dart';
 import '../../../../models/download.dart';
 import '../../../../utils/logger_helper.dart';
-import '../models/MyRss.dart';
 import '../models/Subscribe.dart';
+import '../models/my_rss.dart';
 import 'controller.dart';
 
 class SubscribePage extends StatefulWidget {

@@ -8,7 +8,7 @@ import '../../../../common/card_view.dart';
 import '../../../../common/form_widgets.dart';
 import '../../../../models/common_response.dart';
 import '../../../../utils/logger_helper.dart';
-import '../models/MyRss.dart';
+import '../models/my_rss.dart';
 import '../models/my_site.dart';
 import '../models/website.dart';
 import 'controller.dart';

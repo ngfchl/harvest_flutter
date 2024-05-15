@@ -4,7 +4,7 @@ import 'package:harvest/app/home/pages/models/my_site.dart';
 import '../../../../api/sub.dart';
 import '../../../../models/common_response.dart';
 import '../../../../utils/logger_helper.dart';
-import '../models/MyRss.dart';
+import '../models/my_rss.dart';
 import '../my_site/controller.dart';
 
 class MyRssController extends GetxController {
