@@ -51,18 +51,16 @@ class _MySitePagePageState extends State<MySitePage>
             child: Column(
               children: [
                 if (controller.mySiteList.isNotEmpty)
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 0),
-                          margin: const EdgeInsets.only(top: 5),
-                          height: 30,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8.0, vertical: 5),
+                    child: Row(
+                      children: [
+                        Expanded(
                           child: TextField(
                             controller: controller.searchController,
                             style: const TextStyle(fontSize: 12),
-                            textAlignVertical: TextAlignVertical.bottom,
+                            textAlignVertical: TextAlignVertical.center,
                             decoration: InputDecoration(
                               // labelText: '搜索',
                               hintText: '输入关键词...',
@@ -74,13 +72,17 @@ class _MySitePagePageState extends State<MySitePage>
                               ),
                               // suffix: ,
                               suffixIcon: Padding(
-                                padding: const EdgeInsets.all(5.0),
-                                child: Text(
-                                    '计数：${controller.showStatusList.length}',
-                                    style: const TextStyle(
-                                        textBaseline: TextBaseline.alphabetic,
-                                        fontSize: 12,
-                                        color: Colors.orange)),
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                        '计数：${controller.showStatusList.length}',
+                                        style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.orange)),
+                                  ],
+                                ),
                               ),
                               border: const OutlineInputBorder(
                                 borderRadius:
@@ -94,25 +96,26 @@ class _MySitePagePageState extends State<MySitePage>
                             },
                           ),
                         ),
-                      ),
-                      if (controller.searchKey.isNotEmpty)
-                        IconButton(
-                            onPressed: () {
-                              controller.searchController.text =
-                                  controller.searchController.text.substring(
-                                      0,
-                                      controller.searchController.text.length -
-                                          1);
-                              controller.searchKey =
-                                  controller.searchController.text;
-                              controller.filterByKey();
-                              controller.update();
-                            },
-                            icon: const Icon(
-                              Icons.backspace_outlined,
-                              size: 18,
-                            ))
-                    ],
+                        if (controller.searchKey.isNotEmpty)
+                          IconButton(
+                              onPressed: () {
+                                controller.searchController.text =
+                                    controller.searchController.text.substring(
+                                        0,
+                                        controller
+                                                .searchController.text.length -
+                                            1);
+                                controller.searchKey =
+                                    controller.searchController.text;
+                                controller.filterByKey();
+                                controller.update();
+                              },
+                              icon: const Icon(
+                                Icons.backspace_outlined,
+                                size: 18,
+                              ))
+                      ],
+                    ),
                   ),
                 Expanded(
                   child: controller.isLoaded

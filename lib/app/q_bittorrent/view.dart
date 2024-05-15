@@ -57,12 +57,13 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                               Expanded(
                                 child: TextField(
                                   controller: searchKeyController,
+                                  textAlignVertical: TextAlignVertical.center,
                                   decoration: InputDecoration(
                                     isDense: true,
                                     hintText: '请输入搜索关键字',
                                     hintStyle: const TextStyle(fontSize: 14),
                                     contentPadding: const EdgeInsets.symmetric(
-                                        vertical: 8, horizontal: 5),
+                                        vertical: 5, horizontal: 5),
                                     border: OutlineInputBorder(
                                       borderSide: BorderSide.none,
                                       // 不绘制边框
@@ -76,6 +77,20 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                       ),
                                       // 仅在聚焦时绘制底部边框
                                       borderRadius: BorderRadius.circular(0.0),
+                                    ),
+                                    suffixIcon: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.all(5.0),
+                                          child: Text(
+                                              '计数：${controller.showTorrents.length}',
+                                              style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.orange)),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                   onChanged: (value) {

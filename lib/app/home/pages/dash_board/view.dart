@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
 import 'package:get/get.dart';
 import 'package:harvest/app/home/pages/models/my_site.dart';
-import 'package:proper_filesize/proper_filesize.dart';
 import 'package:random_color/random_color.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
@@ -58,6 +57,7 @@ class _DashBoardPageState extends State<DashBoardPage>
   }
 
   Widget _showAllInfo(DashBoardController controller) {
+    Logger.instance.i(controller.statusList.length);
     return Column(
       children: [
         const SizedBox(height: 5),
@@ -1097,7 +1097,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   ),
                                 ),
                                 Text(
-                                  '${series.name}: ${ProperFilesize.generateHumanReadableFilesize(point.y)}',
+                                  '${series.name}: ${filesize(point.y)}',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Theme.of(context)

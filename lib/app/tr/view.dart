@@ -11,7 +11,6 @@ import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/meta_item.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../utils/logger_helper.dart' as LoggerHelper;
 import '../../common/form_widgets.dart';
 import '../../models/common_response.dart';
 import '../../utils/date_time_utils.dart';
@@ -53,12 +52,27 @@ class TrPage extends StatelessWidget {
                               Expanded(
                                 child: TextField(
                                   controller: searchKeyController,
+                                  textAlignVertical: TextAlignVertical.center,
                                   decoration: InputDecoration(
                                     isDense: true,
                                     hintText: '请输入搜索关键字',
                                     hintStyle: const TextStyle(fontSize: 14),
                                     contentPadding: const EdgeInsets.symmetric(
-                                        vertical: 8, horizontal: 5),
+                                        vertical: 5, horizontal: 5),
+                                    suffixIcon: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.all(5.0),
+                                          child: Text(
+                                              '计数：${controller.showTorrents.length}',
+                                              style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.orange)),
+                                        ),
+                                      ],
+                                    ),
                                     border: OutlineInputBorder(
                                       borderSide: BorderSide.none,
                                       // 不绘制边框
@@ -616,8 +630,6 @@ class TrPage extends StatelessWidget {
 
   Widget _buildTrTorrentCard(TransmissionBaseTorrent torrentInfo, context) {
     bool deleteFile = false;
-    LoggerHelper.Logger.instance
-        .i('${torrentInfo.error} - ${torrentInfo.errorString}');
     return GetBuilder<TrController>(builder: (controller) {
       return CustomCard(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),

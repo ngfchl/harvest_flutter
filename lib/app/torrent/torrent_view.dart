@@ -9,7 +9,6 @@ import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:intl/intl.dart';
-import 'package:proper_filesize/proper_filesize.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -479,8 +478,7 @@ class TorrentView extends GetView<TorrentController> {
                           axisLine: const AxisLine(width: 0),
                           axisLabelFormatter: (AxisLabelRenderDetails details) {
                             return ChartAxisLabel(
-                              ProperFilesize.generateHumanReadableFilesize(
-                                  details.value),
+                              filesize(details.value),
                               const TextStyle(
                                   fontSize: 10, color: Colors.black38),
                             );
