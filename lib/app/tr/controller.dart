@@ -21,8 +21,8 @@ class TrController extends GetxController {
   int freeSpace = 1;
   String sortKey = 'name';
   bool sortReversed = false;
-  List<TransmissionBaseTorrent> torrents = [];
-  List<TransmissionBaseTorrent> showTorrents = [];
+  List<TrTorrent> torrents = [];
+  List<TrTorrent> showTorrents = [];
   Map<String, String> categoryMap = {};
   List<Map<String, String>> categories = <Map<String, String>>[];
   String category = '全部';
@@ -56,10 +56,12 @@ class TrController extends GetxController {
   ].map((e) => MetaDataItem.fromJson(e)).toList();
   List<MetaDataItem> trStatus = [
     {"name": "全部", "value": null},
-    {"name": "下载ing", "value": 4},
-    {"name": "做种ing", "value": 6},
+    {"name": "红种", "value": 99},
+    {"name": "下载中", "value": 4},
+    // {"name": "活动中", "value": 100},
+    {"name": "做种中", "value": 6},
     {"name": "已停止", "value": 0},
-    {"name": "校验ing", "value": 2},
+    {"name": "校验中", "value": 2},
     {"name": "校验队列", "value": 1},
     {"name": "排队下载", "value": 3},
     {"name": "排队上传", "value": 5},
@@ -158,10 +160,25 @@ class TrController extends GetxController {
   }
 
   filterTorrentsByState() {
-    if (trTorrentState != null) {
-      showTorrents = showTorrents
-          .where((torrent) => torrent.status == trTorrentState)
-          .toList();
+    if (trTorrentState == null) {
+      return;
+    }
+    switch (trTorrentState) {
+      case 99:
+        showTorrents =
+            showTorrents.where((torrent) => torrent.error > 0).toList();
+        break;
+      case 100:
+        showTorrents = showTorrents
+            .where(
+                (torrent) => torrent.rateUpload > 0 || torrent.rateDownload > 0)
+            .toList();
+        break;
+      default:
+        showTorrents = showTorrents
+            .where((torrent) => torrent.status == trTorrentState)
+            .toList();
+        break;
     }
   }
 
@@ -171,7 +188,10 @@ class TrController extends GetxController {
     if (searchKey.isNotEmpty) {
       showTorrents = showTorrents
           .where((torrent) =>
-              torrent.name.toLowerCase().contains(searchKey.toLowerCase()))
+              torrent.name.toLowerCase().contains(searchKey.toLowerCase()) ||
+              torrent.hashString
+                  .toLowerCase()
+                  .contains(searchKey.toLowerCase()))
           .toList();
     }
   }
@@ -259,39 +279,61 @@ class TrController extends GetxController {
 
   Future<void> getAllTorrents() async {
     Map res = await client.torrent.torrentGet(
-        fields: TorrentFields()
-            .id
-            .name
-            .downloadDir
-            .addedDate
-            .sizeWhenDone
-            .startDate
-            .status
-            .totalSize
-            .percentDone
-            .trackerStats
-            .leftUntilDone
-            .rateDownload
-            .rateUpload
-            .recheckProgress
-            .peersGettingFromUs
-            .peersSendingToUs
-            .uploadRatio
-            .hashString
-            .magnetLink
-            .uploadedEver
-            .downloadedEver
-            .error
-            .errorString
-            .doneDate
-            .queuePosition
-            .activityDate);
+      fields: TorrentFields()
+          .id
+          .name
+          .downloadDir
+          .addedDate
+          .sizeWhenDone
+          .startDate
+          .status
+          .totalSize
+          .percentDone
+          .trackerStats
+          .leftUntilDone
+          .rateDownload
+          .rateUpload
+          .recheckProgress
+          .peersGettingFromUs
+          .peersSendingToUs
+          .uploadRatio
+          .hashString
+          .magnetLink
+          .uploadedEver
+          .downloadedEver
+          .error
+          .errorString
+          .doneDate
+          .queuePosition
+          .bandwidthPriority
+          .availability
+          .comment
+          .downloadLimited
+          .downloadLimit
+          .downloadLimitMode
+          .downloaders
+          .fileCount
+          .files
+          .isFinished
+          .isStalled
+          .percentComplete
+          .secondsDownloading
+          .secondsSeeding
+          .seedRatioLimited
+          .seedRatioLimit
+          .seedRatioMode
+          .uploadLimitMode
+          .uploadLimited
+          .uploadLimit
+          .uploadRatio
+          .pieces
+          .activityDate,
+    );
 
-    // LoggerHelper.Logger.instance.w(res['arguments']["torrents"][0]);
+    LoggerHelper.Logger.instance.w(res['arguments']["torrents"][0]);
     if (res['result'] == "success") {
       torrents = res['arguments']["torrents"]
-          .map<TransmissionBaseTorrent>(
-              (item) => TransmissionBaseTorrent.fromJson(item))
+          .map<TrTorrent>((item) => TrTorrent.fromJson(item))
           .toList();
       await getAllCategory();
       filterTorrents();

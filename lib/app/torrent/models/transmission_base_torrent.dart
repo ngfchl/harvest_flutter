@@ -19,6 +19,7 @@ class TrTorrent {
   num leftUntilDone;
   String magnetLink;
   String name;
+  String pieces;
   num peersGettingFromUs;
   num peersSendingToUs;
   num percentDone;
@@ -62,6 +63,7 @@ class TrTorrent {
     required this.leftUntilDone,
     required this.magnetLink,
     required this.name,
+    required this.pieces,
     required this.peersGettingFromUs,
     required this.peersSendingToUs,
     required this.percentDone,
@@ -114,6 +116,7 @@ class TrTorrent {
       leftUntilDone: json['leftUntilDone'] ?? 0,
       magnetLink: json['magnetLink'] ?? '',
       name: json['name'] ?? '',
+      pieces: json['pieces'] ?? '',
       peersGettingFromUs: json['peersGettingFromUs'] ?? 0,
       peersSendingToUs: json['peersSendingToUs'] ?? 0,
       percentDone: json['percentDone'] ?? 0,
