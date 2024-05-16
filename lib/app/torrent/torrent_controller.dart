@@ -468,8 +468,7 @@ class TorrentController extends GetxController {
       // LoggerHelper.Logger.instance.w(res['arguments']["torrents"][0]);
       if (res['result'] == "success") {
         torrents.value = res['arguments']["torrents"]
-            .map<TransmissionBaseTorrent>(
-                (item) => TransmissionBaseTorrent.fromJson(item))
+            .map<TrTorrent>((item) => TrTorrent.fromJson(item))
             .toList();
         await getAllCategory();
       }

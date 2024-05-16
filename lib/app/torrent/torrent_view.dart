@@ -238,7 +238,7 @@ class TorrentView extends GetView<TorrentController> {
                                 return _buildQbTorrentCard(
                                     torrentInfo, context);
                               } else {
-                                TransmissionBaseTorrent torrentInfo =
+                                TrTorrent torrentInfo =
                                     controller.showTorrents[index];
                                 return _buildTrTorrentCard(
                                     torrentInfo, context);
@@ -1657,7 +1657,7 @@ class TorrentView extends GetView<TorrentController> {
     );
   }
 
-  Widget _buildTrTorrentCard(TransmissionBaseTorrent torrentInfo, context) {
+  Widget _buildTrTorrentCard(TrTorrent torrentInfo, context) {
     bool deleteFile = false;
     return CustomCard(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),

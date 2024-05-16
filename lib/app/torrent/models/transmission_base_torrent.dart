@@ -1,4 +1,4 @@
-class TransmissionBaseTorrent {
+class TrTorrent {
   int activityDate;
   int addedDate;
   int bandwidthPriority;
@@ -41,7 +41,7 @@ class TransmissionBaseTorrent {
   num uploadRatio;
   num uploadedEver;
 
-  TransmissionBaseTorrent({
+  TrTorrent({
     required this.activityDate,
     required this.addedDate,
     required this.bandwidthPriority,
@@ -85,9 +85,9 @@ class TransmissionBaseTorrent {
     required this.uploadedEver,
   });
 
-  factory TransmissionBaseTorrent.fromJson(Map<String, dynamic> json) {
+  factory TrTorrent.fromJson(Map<String, dynamic> json) {
     if (json == null) throw ArgumentError.notNull('json');
-    return TransmissionBaseTorrent(
+    return TrTorrent(
       activityDate: json['activityDate'] ?? 0,
       addedDate: json['addedDate'] ?? 0,
       bandwidthPriority: json['bandwidthPriority'] ?? 0,
