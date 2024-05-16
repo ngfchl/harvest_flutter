@@ -47,7 +47,7 @@ class SettingPage extends StatelessWidget {
             FloatingActionButtonLocation.miniCenterDocked,
         floatingActionButton: CustomCard(
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               IconButton(
                   onPressed: () {
@@ -154,11 +154,14 @@ class SettingPage extends StatelessWidget {
                                     if (optionForms[choice.value] != null) {
                                       Get.back();
                                       Get.bottomSheet(
+                                        isScrollControlled: true,
                                         shape: RoundedRectangleBorder(
                                             borderRadius:
                                                 BorderRadius.circular(5.0)),
-                                        optionForms[choice.value]!(
-                                            null, context),
+                                        SingleChildScrollView(
+                                          child: optionForms[choice.value]!(
+                                              null, context),
+                                        ),
                                       );
                                     }
                                   }),
@@ -212,6 +215,7 @@ class SettingPage extends StatelessWidget {
       return CustomCard(
         padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
                 title: const Text('油猴 Token'),
@@ -240,7 +244,10 @@ class SettingPage extends StatelessWidget {
                 child: Column(
                   children: [
                     CustomTextField(
-                        controller: tokenController, labelText: '令牌'),
+                        autofocus: true,
+                        controller: tokenController,
+                        labelText: '令牌'),
+                    const SizedBox(height: 15),
                     Row(
                       children: [
                         Expanded(
@@ -317,6 +324,7 @@ class SettingPage extends StatelessWidget {
       return CustomCard(
         padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
                 title: const Text('企业微信'),
@@ -345,7 +353,9 @@ class SettingPage extends StatelessWidget {
                 child: Column(
                   children: [
                     CustomTextField(
-                        controller: corpIdController, labelText: '企业 ID'),
+                        autofocus: true,
+                        controller: corpIdController,
+                        labelText: '企业 ID'),
                     CustomTextField(
                         controller: corpSecretController, labelText: '企业密钥'),
                     CustomTextField(
@@ -421,6 +431,7 @@ class SettingPage extends StatelessWidget {
       return CustomCard(
         padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
                 title: const Text('FileList'),
@@ -449,7 +460,9 @@ class SettingPage extends StatelessWidget {
                 child: Column(
                   children: [
                     CustomTextField(
-                        controller: usernameController, labelText: '账号'),
+                        autofocus: true,
+                        controller: usernameController,
+                        labelText: '账号'),
                     CustomTextField(
                         controller: passwordController, labelText: '密码'),
                     Row(
@@ -513,6 +526,7 @@ class SettingPage extends StatelessWidget {
       return CustomCard(
         padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
                 title: const Text('通知测试'),
@@ -536,7 +550,9 @@ class SettingPage extends StatelessWidget {
                 child: Column(
                   children: [
                     CustomTextField(
-                        controller: titleController, labelText: '消息标题'),
+                        autofocus: true,
+                        controller: titleController,
+                        labelText: '消息标题'),
                     CustomTextField(
                       controller: messageController,
                       labelText: '消息内容',
@@ -591,6 +607,7 @@ class SettingPage extends StatelessWidget {
       return CustomCard(
         padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
                 title: const Text('爱语飞飞'),
@@ -619,7 +636,9 @@ class SettingPage extends StatelessWidget {
                 child: Column(
                   children: [
                     CustomTextField(
-                        controller: tokenController, labelText: '令牌'),
+                        autofocus: true,
+                        controller: tokenController,
+                        labelText: '令牌'),
                     SwitchListTile(
                         dense: true,
                         contentPadding:
@@ -696,6 +715,7 @@ class SettingPage extends StatelessWidget {
       return CustomCard(
         padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
                 title: const Text('PushDeer'),
@@ -724,7 +744,9 @@ class SettingPage extends StatelessWidget {
                 child: Column(
                   children: [
                     CustomTextField(
-                        controller: keyController, labelText: 'Key'),
+                        autofocus: true,
+                        controller: keyController,
+                        labelText: 'Key'),
                     CustomTextField(
                         controller: proxyController, labelText: '服务器'),
                     Row(
@@ -789,6 +811,7 @@ class SettingPage extends StatelessWidget {
       return CustomCard(
         padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
                 title: const Text('阿里云盘'),
@@ -818,6 +841,7 @@ class SettingPage extends StatelessWidget {
                   children: [
                     CustomTextField(
                         maxLines: 3,
+                        autofocus: true,
                         controller: tokenController,
                         labelText: '保存令牌'),
                     SwitchListTile(
@@ -894,6 +918,7 @@ class SettingPage extends StatelessWidget {
       return CustomCard(
         padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
                 title: const Text('SSDForum'),
@@ -922,7 +947,8 @@ class SettingPage extends StatelessWidget {
                 child: Column(
                   children: [
                     CustomTextField(
-                        maxLines: 10,
+                        maxLines: 5,
+                        autofocus: true,
                         controller: cookieController,
                         labelText: 'Cookie'),
                     const SizedBox(height: 5),
@@ -931,7 +957,7 @@ class SettingPage extends StatelessWidget {
                         controller: userAgentController,
                         labelText: 'UserAgent'),
                     CustomTextField(
-                        maxLines: 10,
+                        maxLines: 5,
                         controller: todaySayController,
                         labelText: '今天想说'),
                     Row(
@@ -1001,6 +1027,7 @@ class SettingPage extends StatelessWidget {
       return CustomCard(
         padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
                 title: const Text('百度 OCR'),
@@ -1029,7 +1056,9 @@ class SettingPage extends StatelessWidget {
                 child: Column(
                   children: [
                     CustomTextField(
-                        controller: appIdController, labelText: '应用 ID'),
+                        autofocus: true,
+                        controller: appIdController,
+                        labelText: '应用 ID'),
                     CustomTextField(
                         controller: apiKeyController, labelText: 'APIKey'),
                     CustomTextField(
@@ -1099,6 +1128,7 @@ class SettingPage extends StatelessWidget {
       return CustomCard(
         padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
                 title: const Text('Bark'),
@@ -1127,7 +1157,9 @@ class SettingPage extends StatelessWidget {
                 child: Column(
                   children: [
                     CustomTextField(
-                        controller: deviceIdController, labelText: '设备ID'),
+                        autofocus: true,
+                        controller: deviceIdController,
+                        labelText: '设备ID'),
                     CustomTextField(
                         controller: serverController, labelText: '服务器'),
                     Row(
@@ -1191,6 +1223,7 @@ class SettingPage extends StatelessWidget {
       return CustomCard(
         padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
                 title: const Text('PushPlus'),
@@ -1219,7 +1252,9 @@ class SettingPage extends StatelessWidget {
                 child: Column(
                   children: [
                     CustomTextField(
-                        controller: tokenController, labelText: '令牌'),
+                        autofocus: true,
+                        controller: tokenController,
+                        labelText: '令牌'),
                     Row(
                       children: [
                         Expanded(
@@ -1285,6 +1320,7 @@ class SettingPage extends StatelessWidget {
       return CustomCard(
         padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
                 title: const Text('WxPusher'),
@@ -1313,7 +1349,9 @@ class SettingPage extends StatelessWidget {
                 child: Column(
                   children: [
                     CustomTextField(
-                        controller: appIdController, labelText: '应用 ID'),
+                        autofocus: true,
+                        controller: appIdController,
+                        labelText: '应用 ID'),
                     CustomTextField(
                         controller: tokenController, labelText: '令牌'),
                     CustomTextField(
@@ -1385,6 +1423,7 @@ class SettingPage extends StatelessWidget {
       return CustomCard(
         padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
                 title: const Text('Telegram'),
@@ -1413,7 +1452,9 @@ class SettingPage extends StatelessWidget {
                 child: Column(
                   children: [
                     CustomTextField(
-                        controller: chatIdController, labelText: 'ID'),
+                        autofocus: true,
+                        controller: chatIdController,
+                        labelText: 'ID'),
                     CustomTextField(
                         controller: tokenController, labelText: '令牌'),
                     CustomTextField(
@@ -1486,6 +1527,7 @@ class SettingPage extends StatelessWidget {
       return CustomCard(
         padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
                 title: const Text('CookieCloud'),
@@ -1514,7 +1556,9 @@ class SettingPage extends StatelessWidget {
                 child: Column(
                   children: [
                     CustomTextField(
-                        controller: serverController, labelText: '服务器'),
+                        autofocus: true,
+                        controller: serverController,
+                        labelText: '服务器'),
                     CustomTextField(
                         controller: keyController, labelText: 'Key'),
                     CustomTextField(
