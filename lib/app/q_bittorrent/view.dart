@@ -72,9 +72,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                       gapPadding: 0.0, // 移除边框与hintText之间的间距
                                     ),
                                     focusedBorder: OutlineInputBorder(
-                                      borderSide: const BorderSide(
-                                        width: 1.0,
-                                      ),
+                                      borderSide: BorderSide.none,
                                       // 仅在聚焦时绘制底部边框
                                       borderRadius: BorderRadius.circular(0.0),
                                     ),
