@@ -48,6 +48,7 @@ class CustomTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final int? maxLines;
   final int? maxLength;
+  final bool autofocus;
   final Function(String)? onChanged;
   final Function()? onTap;
 
@@ -65,6 +66,7 @@ class CustomTextField extends StatelessWidget {
     this.onChanged,
     this.onTap,
     this.maxLength,
+    this.autofocus = false,
   });
 
   @override
@@ -72,6 +74,7 @@ class CustomTextField extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8),
       child: TextField(
+        autofocus: autofocus,
         controller: controller,
         onChanged: onChanged,
         maxLength: maxLength,
