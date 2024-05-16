@@ -148,7 +148,7 @@ class VersionManager:
                 tasks = [
                     'macos',
                     'apk',
-                    # 'ios',
+                    'ios',
                 ]
             results = executor.map(self.compile, tasks)
             # 处理结果或捕获异常
