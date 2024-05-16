@@ -1,20 +1,24 @@
 class TransmissionBaseTorrent {
   int activityDate;
+  int addedDate;
+  int bandwidthPriority;
+  String comment;
   int doneDate;
+  String downloadDir;
+  int downloadLimit;
+  bool downloadLimited;
   num downloadedEver;
   int error;
   String errorString;
-  int id;
-  num leftUntilDone;
-  String name;
+  List<FileStats> fileStats;
+  List<TorrentFile> files;
   String hashString;
+  int id;
+  bool isFinished;
+  bool isStalled;
+  num leftUntilDone;
   String magnetLink;
-  String downloadDir;
-
-  int addedDate;
-  int sizeWhenDone;
-  int startDate;
-
+  String name;
   num peersGettingFromUs;
   num peersSendingToUs;
   num percentDone;
@@ -22,27 +26,42 @@ class TransmissionBaseTorrent {
   num rateDownload;
   num rateUpload;
   num recheckProgress;
+  int secondsDownloading;
+  int secondsSeeding;
+  int seedRatioLimit;
+  int seedRatioLimited;
+  int seedRatioMode;
+  int sizeWhenDone;
+  int startDate;
   int status;
-  num totalSize;
+  int totalSize;
   List<TrackerStats?> trackerStats;
+  int uploadLimit;
+  bool uploadLimited;
   num uploadRatio;
   num uploadedEver;
 
   TransmissionBaseTorrent({
     required this.activityDate,
+    required this.addedDate,
+    required this.bandwidthPriority,
+    required this.comment,
     required this.doneDate,
+    required this.downloadDir,
+    required this.downloadLimit,
+    required this.downloadLimited,
     required this.downloadedEver,
     required this.error,
     required this.errorString,
-    required this.id,
-    required this.leftUntilDone,
-    required this.name,
-    required this.downloadDir,
-    required this.magnetLink,
-    required this.addedDate,
-    required this.sizeWhenDone,
-    required this.startDate,
+    required this.fileStats,
+    required this.files,
     required this.hashString,
+    required this.id,
+    required this.isFinished,
+    required this.isStalled,
+    required this.leftUntilDone,
+    required this.magnetLink,
+    required this.name,
     required this.peersGettingFromUs,
     required this.peersSendingToUs,
     required this.percentDone,
@@ -50,30 +69,51 @@ class TransmissionBaseTorrent {
     required this.rateDownload,
     required this.rateUpload,
     required this.recheckProgress,
+    required this.secondsDownloading,
+    required this.secondsSeeding,
+    required this.seedRatioLimit,
+    required this.seedRatioLimited,
+    required this.seedRatioMode,
+    required this.sizeWhenDone,
+    required this.startDate,
     required this.status,
     required this.totalSize,
     required this.trackerStats,
+    required this.uploadLimit,
+    required this.uploadLimited,
     required this.uploadRatio,
     required this.uploadedEver,
   });
 
-  factory TransmissionBaseTorrent.fromJson(Map<String, dynamic>? json) {
+  factory TransmissionBaseTorrent.fromJson(Map<String, dynamic> json) {
     if (json == null) throw ArgumentError.notNull('json');
     return TransmissionBaseTorrent(
       activityDate: json['activityDate'] ?? 0,
+      addedDate: json['addedDate'] ?? 0,
+      bandwidthPriority: json['bandwidthPriority'] ?? 0,
+      comment: json['comment'] ?? '',
       doneDate: json['doneDate'] ?? 0,
+      downloadDir: json['downloadDir'] ?? '',
+      downloadLimit: json['downloadLimit'] ?? 0,
+      downloadLimited: json['downloadLimited'] ?? false,
       downloadedEver: json['downloadedEver'] ?? 0,
       error: json['error'] ?? 0,
       errorString: json['errorString'] ?? '',
-      id: json['id'] ?? 0,
-      leftUntilDone: json['leftUntilDone'] ?? 0,
-      name: json['name'] ?? '',
-      downloadDir: json['downloadDir'] ?? '',
-      magnetLink: json['magnetLink'] ?? '',
+      fileStats: (json['fileStats'] as List?)
+              ?.map((v) => FileStats.fromJson(v))
+              .toList() ??
+          [],
+      files: (json['files'] as List?)
+              ?.map((v) => TorrentFile.fromJson(v))
+              .toList() ??
+          [],
       hashString: json['hashString'] ?? '',
-      addedDate: json['addedDate'] ?? 0,
-      sizeWhenDone: json['sizeWhenDone'] ?? 0,
-      startDate: json['startDate'] ?? 0,
+      id: json['id'] ?? 0,
+      isFinished: json['isFinished'] ?? false,
+      isStalled: json['isStalled'] ?? false,
+      leftUntilDone: json['leftUntilDone'] ?? 0,
+      magnetLink: json['magnetLink'] ?? '',
+      name: json['name'] ?? '',
       peersGettingFromUs: json['peersGettingFromUs'] ?? 0,
       peersSendingToUs: json['peersSendingToUs'] ?? 0,
       percentDone: json['percentDone'] ?? 0,
@@ -81,13 +121,63 @@ class TransmissionBaseTorrent {
       rateDownload: json['rateDownload'] ?? 0,
       rateUpload: json['rateUpload'] ?? 0,
       recheckProgress: json['recheckProgress'] ?? 0,
+      secondsDownloading: json['secondsDownloading'] ?? 0,
+      secondsSeeding: json['secondsSeeding'] ?? 0,
+      seedRatioLimit: json['seedRatioLimit'] ?? 0,
+      seedRatioLimited: json['seedRatioLimited'] ?? 0,
+      seedRatioMode: json['seedRatioMode'] ?? 0,
+      sizeWhenDone: json['sizeWhenDone'] ?? 0,
+      startDate: json['startDate'] ?? 0,
       status: json['status'] ?? 0,
       totalSize: json['totalSize'] ?? 0,
-      trackerStats: (json['trackerStats'] as List?)!
-          .map((v) => v == null ? null : TrackerStats.fromJson(v))
-          .toList(),
+      trackerStats: (json['trackerStats'] as List?)
+              ?.map((v) => TrackerStats.fromJson(v))
+              .toList() ??
+          [],
+      uploadLimit: json['uploadLimit'] ?? 0,
+      uploadLimited: json['uploadLimited'] ?? false,
       uploadRatio: json['uploadRatio'] ?? 0,
       uploadedEver: json['uploadedEver'] ?? 0,
+    );
+  }
+}
+
+class FileStats {
+  int bytesCompleted;
+  int priority;
+  bool wanted;
+
+  FileStats({
+    required this.bytesCompleted,
+    required this.priority,
+    required this.wanted,
+  });
+
+  factory FileStats.fromJson(Map<String, dynamic> json) {
+    return FileStats(
+      bytesCompleted: json['bytesCompleted'] ?? 0,
+      priority: json['priority'] ?? 0,
+      wanted: json['wanted'] ?? false,
+    );
+  }
+}
+
+class TorrentFile {
+  int bytesCompleted;
+  int length;
+  String name;
+
+  TorrentFile({
+    required this.bytesCompleted,
+    required this.length,
+    required this.name,
+  });
+
+  factory TorrentFile.fromJson(Map<String, dynamic> json) {
+    return TorrentFile(
+      bytesCompleted: json['bytesCompleted'] ?? 0,
+      length: json['length'] ?? 0,
+      name: json['name'] ?? '',
     );
   }
 }
