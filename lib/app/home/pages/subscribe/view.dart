@@ -246,8 +246,8 @@ class _SubscribePageState extends State<SubscribePage> {
                 children: [
                   GFTypography(
                     text: controller.title,
-                    textColor: Theme.of(context).colorScheme.onBackground,
-                    dividerColor: Theme.of(context).colorScheme.onBackground,
+                    textColor: Theme.of(context).colorScheme.onSurface,
+                    dividerColor: Theme.of(context).colorScheme.onSurface,
                   ),
                   Expanded(
                     child: ListView(
@@ -453,10 +453,9 @@ class _SubscribePageState extends State<SubscribePage> {
                             type: GFTypographyType.typo6,
                             icon: const Icon(Icons.sort_by_alpha),
                             dividerWidth: 108,
-                            textColor:
-                                Theme.of(context).colorScheme.onBackground,
+                            textColor: Theme.of(context).colorScheme.onSurface,
                             dividerColor:
-                                Theme.of(context).colorScheme.onBackground,
+                                Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                         SizedBox(

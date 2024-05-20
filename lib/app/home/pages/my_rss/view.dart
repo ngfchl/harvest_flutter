@@ -203,8 +203,8 @@ class _MyRssPageState extends State<MyRssPage> {
                   padding: const EdgeInsets.all(8),
                   child: GFTypography(
                     text: title,
-                    textColor: Theme.of(context).colorScheme.onBackground,
-                    dividerColor: Theme.of(context).colorScheme.onBackground,
+                    textColor: Theme.of(context).colorScheme.onSurface,
+                    dividerColor: Theme.of(context).colorScheme.onSurface,
                   )),
               Expanded(
                 child: ListView(

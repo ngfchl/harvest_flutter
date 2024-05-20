@@ -54,7 +54,7 @@ class HomeView extends GetView<HomeController> {
         child: GFDrawer(
           semanticLabel: 'Harvest',
           elevation: 10,
-          color: Theme.of(context).colorScheme.background,
+          color: Theme.of(context).colorScheme.surface,
           child: _buildMenuBar(context),
         ),
       ),
@@ -274,7 +274,7 @@ class HomeView extends GetView<HomeController> {
         const SizedBox(width: 15),
         CustomPopup(
           showArrow: false,
-          backgroundColor: Theme.of(context).colorScheme.background,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           barrierColor: Colors.transparent,
           content: SizedBox(
             width: 100,

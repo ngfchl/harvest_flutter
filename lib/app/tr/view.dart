@@ -182,9 +182,8 @@ class TrPage extends StatelessWidget {
                           text: '种子排序',
                           icon: const Icon(Icons.sort_by_alpha),
                           dividerWidth: 108,
-                          textColor: Theme.of(context).colorScheme.onBackground,
-                          dividerColor:
-                              Theme.of(context).colorScheme.onBackground,
+                          textColor: Theme.of(context).colorScheme.onSurface,
+                          dividerColor: Theme.of(context).colorScheme.onSurface,
                         ),
                         SizedBox(
                           height: 400,
@@ -261,9 +260,8 @@ class TrPage extends StatelessWidget {
                           text: '种子分类',
                           icon: const Icon(Icons.category),
                           dividerWidth: 108,
-                          textColor: Theme.of(context).colorScheme.onBackground,
-                          dividerColor:
-                              Theme.of(context).colorScheme.onBackground,
+                          textColor: Theme.of(context).colorScheme.onSurface,
+                          dividerColor: Theme.of(context).colorScheme.onSurface,
                         ),
                         SizedBox(
                           height: 400,
@@ -342,10 +340,9 @@ class TrPage extends StatelessWidget {
                             text: '种子状态',
                             icon: const Icon(Icons.info),
                             dividerWidth: 108,
-                            textColor:
-                                Theme.of(context).colorScheme.onBackground,
+                            textColor: Theme.of(context).colorScheme.onSurface,
                             dividerColor:
-                                Theme.of(context).colorScheme.onBackground,
+                                Theme.of(context).colorScheme.onSurface,
                           ),
                           SizedBox(
                             height: 340,
@@ -422,9 +419,8 @@ class TrPage extends StatelessWidget {
                           text: '站点筛选',
                           icon: const Icon(Icons.language),
                           dividerWidth: 108,
-                          textColor: Theme.of(context).colorScheme.onBackground,
-                          dividerColor:
-                              Theme.of(context).colorScheme.onBackground,
+                          textColor: Theme.of(context).colorScheme.onSurface,
+                          dividerColor: Theme.of(context).colorScheme.onSurface,
                         ),
                         CustomTextField(
                           controller: searchKey,
@@ -603,9 +599,8 @@ class TrPage extends StatelessWidget {
                           text: '添加种子',
                           icon: const Icon(Icons.add),
                           dividerWidth: 108,
-                          textColor: Theme.of(context).colorScheme.onBackground,
-                          dividerColor:
-                              Theme.of(context).colorScheme.onBackground,
+                          textColor: Theme.of(context).colorScheme.onSurface,
+                          dividerColor: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       Expanded(
@@ -796,9 +791,8 @@ class TrPage extends StatelessWidget {
                                       .host,
                               style: TextStyle(
                                   fontSize: 10,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onBackground),
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface),
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
                             ),
@@ -814,7 +808,7 @@ class TrPage extends StatelessWidget {
                                     fontSize: 10,
                                     color: Theme.of(context)
                                         .colorScheme
-                                        .onBackground),
+                                        .onSurface),
                               ),
                               SizedBox(
                                 height: 12,
@@ -831,7 +825,7 @@ class TrPage extends StatelessWidget {
                                       fontSize: 10,
                                       color: Theme.of(context)
                                           .colorScheme
-                                          .onBackground),
+                                          .onSurface),
                                 ),
                               ),
                             ],
@@ -850,9 +844,8 @@ class TrPage extends StatelessWidget {
                               torrentInfo.name,
                               style: TextStyle(
                                   fontSize: 11,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onBackground,
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
                                   fontWeight: FontWeight.bold),
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
@@ -865,8 +858,7 @@ class TrPage extends StatelessWidget {
                               : '未分类',
                           style: TextStyle(
                               fontSize: 10,
-                              color:
-                                  Theme.of(context).colorScheme.onBackground),
+                              color: Theme.of(context).colorScheme.onSurface),
                         ),
                       ],
                     ),
@@ -882,13 +874,13 @@ class TrPage extends StatelessWidget {
                                     size: 12,
                                     color: Theme.of(context)
                                         .colorScheme
-                                        .onBackground),
+                                        .onSurface),
                                 Text(filesize(torrentInfo.rateUpload),
                                     style: TextStyle(
                                         fontSize: 10,
                                         color: Theme.of(context)
                                             .colorScheme
-                                            .onBackground))
+                                            .onSurface))
                               ],
                             ),
                             Row(
@@ -897,13 +889,13 @@ class TrPage extends StatelessWidget {
                                     size: 12,
                                     color: Theme.of(context)
                                         .colorScheme
-                                        .onBackground),
+                                        .onSurface),
                                 Text(filesize(torrentInfo.uploadedEver),
                                     style: TextStyle(
                                         fontSize: 10,
                                         color: Theme.of(context)
                                             .colorScheme
-                                            .onBackground))
+                                            .onSurface))
                               ],
                             ),
                           ],
@@ -917,13 +909,13 @@ class TrPage extends StatelessWidget {
                                     size: 12,
                                     color: Theme.of(context)
                                         .colorScheme
-                                        .onBackground),
+                                        .onSurface),
                                 Text(filesize(torrentInfo.rateDownload),
                                     style: TextStyle(
                                         fontSize: 10,
                                         color: Theme.of(context)
                                             .colorScheme
-                                            .onBackground))
+                                            .onSurface))
                               ],
                             ),
                             Row(
@@ -932,13 +924,13 @@ class TrPage extends StatelessWidget {
                                     size: 12,
                                     color: Theme.of(context)
                                         .colorScheme
-                                        .onBackground),
+                                        .onSurface),
                                 Text(filesize(torrentInfo.downloadedEver),
                                     style: TextStyle(
                                         fontSize: 10,
                                         color: Theme.of(context)
                                             .colorScheme
-                                            .onBackground))
+                                            .onSurface))
                               ],
                             ),
                           ],
@@ -951,9 +943,8 @@ class TrPage extends StatelessWidget {
                                 Icon(
                                   Icons.timer,
                                   size: 12,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onBackground,
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
                                 ),
                                 EllipsisText(
                                   text: formatDuration(torrentInfo.activityDate)
@@ -962,7 +953,7 @@ class TrPage extends StatelessWidget {
                                       fontSize: 10,
                                       color: Theme.of(context)
                                           .colorScheme
-                                          .onBackground),
+                                          .onSurface),
                                   maxLines: 1,
                                   ellipsis: '...',
                                 )
@@ -973,9 +964,8 @@ class TrPage extends StatelessWidget {
                                 Icon(
                                   Icons.timer,
                                   size: 12,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onBackground,
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
                                 ),
                                 EllipsisText(
                                   text: DateFormat('yyyy-MM-dd HH:mm:ss')
@@ -987,7 +977,7 @@ class TrPage extends StatelessWidget {
                                       fontSize: 10,
                                       color: Theme.of(context)
                                           .colorScheme
-                                          .onBackground),
+                                          .onSurface),
                                   maxLines: 1,
                                   ellipsis: '...',
                                 )
@@ -1005,8 +995,7 @@ class TrPage extends StatelessWidget {
                           '${(torrentInfo.percentDone * 100).toStringAsFixed(2)}%',
                           style: TextStyle(
                               fontSize: 10,
-                              color:
-                                  Theme.of(context).colorScheme.onBackground),
+                              color: Theme.of(context).colorScheme.onSurface),
                           textAlign: TextAlign.center,
                         ),
                         alignment: MainAxisAlignment.center,
@@ -1031,8 +1020,6 @@ class TrPage extends StatelessWidget {
   }
 
   void _openTorrentInfoDetail(TrTorrent torrentInfo, context) async {
-    // List<TorrentContents> contents =
-    //     await controller.client.torrents.getContents(hash: torrentInfo.hashString);
     LoggerHelper.Logger.instance.i(torrentInfo.files);
 
     Get.bottomSheet(
@@ -1117,9 +1104,9 @@ class TrPage extends StatelessWidget {
                             child: ListTile(
                               dense: true,
                               title: Tooltip(
-                                message: torrentInfo.name!,
+                                message: torrentInfo.name,
                                 child: Text(
-                                  torrentInfo.name!,
+                                  torrentInfo.name,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
@@ -1752,11 +1739,7 @@ class TrPage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  ListView(
-                    children: [
-                      ...torrentInfo.files.map((element) => Text(element.name))
-                    ],
-                  ),
+                  TreeView(torrentInfo.files),
                   ListView(
                     children: [
                       Center(child: Text('Tracker数量：${repeatTorrents.length}')),
@@ -1831,6 +1814,117 @@ class TrPage extends StatelessWidget {
             child: const Text('确认'),
           );
         }),
+      ],
+    );
+  }
+}
+
+class TreeNode {
+  String name;
+  Map<String, TreeNode> children;
+  TorrentFile? content;
+
+  TreeNode(this.name)
+      : children = {},
+        content = null;
+
+  @override
+  String toString() => name;
+}
+
+void printTree(TreeNode node, String indent) {
+  LoggerHelper.Logger.instance.i(indent + node.name);
+  for (var child in node.children.values) {
+    printTree(child, '$indent  ');
+  }
+}
+
+class TreeView extends StatelessWidget {
+  final List<TorrentFile> contents;
+
+  const TreeView(this.contents, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    List<TreeNode> nodes = generateTreeNodes(contents);
+    return ListView.builder(
+      itemCount: nodes.length,
+      itemBuilder: (context, index) {
+        TreeNode node = nodes[index];
+        return _buildTreeTile(node, 0);
+      },
+    );
+  }
+
+  List<TreeNode> generateTreeNodes(List<TorrentFile> contents) {
+    Map<String, TreeNode> nodesMap = {};
+
+    for (TorrentFile content in contents) {
+      List<String> filePathParts = content.name.split('/');
+      TreeNode currentNode = nodesMap.putIfAbsent(
+          filePathParts.first, () => TreeNode(filePathParts.first));
+      for (int i = 1; i < filePathParts.length; i++) {
+        String part = filePathParts[i];
+        if (currentNode.children.containsKey(part)) {
+          currentNode = currentNode.children[part]!;
+        } else {
+          TreeNode newNode = TreeNode(part);
+          currentNode.children[part] = newNode;
+          currentNode = newNode;
+        }
+      }
+      if (currentNode.children.isEmpty) {
+        currentNode.content = content; // 只有叶子节点才赋值 content
+      }
+    }
+
+    return nodesMap.values.toList();
+  }
+
+  Widget _buildTreeTile(TreeNode node, int level) {
+    EdgeInsetsGeometry padding = EdgeInsets.only(left: level * 16.0);
+    if (node.content != null) {
+      return ListTile(
+        // contentPadding: padding,
+        leading: const Icon(Icons.file_copy_sharp),
+        dense: true,
+        title: Text(
+          node.name,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            CustomTextTag(
+              labelText: filesize(node.content!.length),
+              icon: const Icon(Icons.download_done,
+                  size: 10, color: Colors.white),
+            ),
+            CustomTextTag(
+                icon: const Icon(Icons.download_outlined,
+                    size: 10, color: Colors.white),
+                labelText: (node.content!.bytesCompleted / node.content!.length)
+                    .toStringAsFixed(2)),
+          ],
+        ),
+        // 添加其他内容字段
+      );
+    }
+    return ExpansionTile(
+      childrenPadding: padding,
+      dense: true,
+      leading: const Icon(
+        Icons.folder,
+        color: Colors.deepOrangeAccent,
+      ),
+      key: PageStorageKey<String>(node.name),
+      title: Text(
+        node.name,
+        overflow: TextOverflow.ellipsis,
+      ),
+      children: [
+        ...node.children.values
+            .map((child) => _buildTreeTile(child, level + 1)),
       ],
     );
   }

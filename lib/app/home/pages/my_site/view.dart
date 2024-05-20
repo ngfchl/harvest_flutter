@@ -566,7 +566,7 @@ class _MySitePagePageState extends State<MySitePage>
       showArrow: true,
       // contentPadding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
       barrierColor: Colors.transparent,
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       content: SizedBox(
           width: 100,
           child: Column(mainAxisSize: MainAxisSize.min, children: [

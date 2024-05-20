@@ -391,7 +391,7 @@ class TrController extends GetxController {
       case 'activityDate':
         showTorrents.sort((a, b) => a.activityDate.compareTo(b.activityDate));
       default:
-        Get.snackbar('出错啦！', '未知排序规则：${sortKey}');
+        Get.snackbar('出错啦！', '未知排序规则：$sortKey');
     }
 
     if (sortReversed) {

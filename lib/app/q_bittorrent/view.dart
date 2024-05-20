@@ -188,7 +188,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                     return Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.background,
+                        color: Theme.of(context).colorScheme.surface,
                         border: Border.all(width: 1),
                       ),
                       child: Text(
@@ -387,9 +387,8 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                         text: '种子排序',
                         icon: const Icon(Icons.sort_by_alpha),
                         dividerWidth: 108,
-                        textColor: Theme.of(context).colorScheme.onBackground,
-                        dividerColor:
-                            Theme.of(context).colorScheme.onBackground,
+                        textColor: Theme.of(context).colorScheme.onSurface,
+                        dividerColor: Theme.of(context).colorScheme.onSurface,
                       ),
                       SizedBox(
                         height: 400,
@@ -465,9 +464,8 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                         text: '种子分类',
                         icon: const Icon(Icons.category),
                         dividerWidth: 108,
-                        textColor: Theme.of(context).colorScheme.onBackground,
-                        dividerColor:
-                            Theme.of(context).colorScheme.onBackground,
+                        textColor: Theme.of(context).colorScheme.onSurface,
+                        dividerColor: Theme.of(context).colorScheme.onSurface,
                       ),
                       SizedBox(
                         height: 400,
@@ -549,9 +547,8 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                           text: '种子状态',
                           icon: const Icon(Icons.info),
                           dividerWidth: 108,
-                          textColor: Theme.of(context).colorScheme.onBackground,
-                          dividerColor:
-                              Theme.of(context).colorScheme.onBackground,
+                          textColor: Theme.of(context).colorScheme.onSurface,
+                          dividerColor: Theme.of(context).colorScheme.onSurface,
                         ),
                         SizedBox(
                           height: 340,
@@ -635,9 +632,8 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                         text: '站点筛选',
                         icon: const Icon(Icons.language),
                         dividerWidth: 108,
-                        textColor: Theme.of(context).colorScheme.onBackground,
-                        dividerColor:
-                            Theme.of(context).colorScheme.onBackground,
+                        textColor: Theme.of(context).colorScheme.onSurface,
+                        dividerColor: Theme.of(context).colorScheme.onSurface,
                       ),
                       CustomTextField(
                         controller: searchKey,
@@ -702,7 +698,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
           ),
           CustomPopup(
               showArrow: false,
-              backgroundColor: Theme.of(context).colorScheme.background,
+              backgroundColor: Theme.of(context).colorScheme.surface,
               barrierColor: Colors.transparent,
               content: SizedBox(
                 width: 100,
@@ -809,9 +805,8 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                         text: '添加种子',
                         icon: const Icon(Icons.add),
                         dividerWidth: 108,
-                        textColor: Theme.of(context).colorScheme.onBackground,
-                        dividerColor:
-                            Theme.of(context).colorScheme.onBackground,
+                        textColor: Theme.of(context).colorScheme.onSurface,
+                        dividerColor: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     Expanded(
@@ -1340,7 +1335,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                               trailing: CustomPopup(
                                 showArrow: false,
                                 backgroundColor:
-                                    Theme.of(context).colorScheme.background,
+                                    Theme.of(context).colorScheme.surface,
                                 barrierColor: Colors.transparent,
                                 content: SingleChildScrollView(
                                   child: Column(

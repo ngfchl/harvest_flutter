@@ -44,7 +44,7 @@ class CustomCard extends StatelessWidget {
       padding: padding,
       constraints: const BoxConstraints(minWidth: 100),
       decoration: BoxDecoration(
-        color: color ?? Theme.of(context).colorScheme.background,
+        color: color ?? Theme.of(context).colorScheme.surface,
         borderRadius: borderRadius,
         boxShadow: boxShadow,
       ),

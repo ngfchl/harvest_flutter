@@ -189,8 +189,8 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
             children: [
               GFTypography(
                 text: title,
-                textColor: Theme.of(context).colorScheme.onBackground,
-                dividerColor: Theme.of(context).colorScheme.onBackground,
+                textColor: Theme.of(context).colorScheme.onSurface,
+                dividerColor: Theme.of(context).colorScheme.onSurface,
               ),
               Expanded(
                 child: ListView(

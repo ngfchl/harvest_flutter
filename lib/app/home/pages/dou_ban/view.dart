@@ -783,7 +783,7 @@ class _DouBanPageState extends State<DouBanPage>
                   onPressed: () => controller.goSearchPage(mediaInfo),
                   icon: Icon(
                     Icons.search,
-                    color: Theme.of(context).colorScheme.onBackground,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                   label: const Text('搜索'),
                 ),
@@ -793,7 +793,7 @@ class _DouBanPageState extends State<DouBanPage>
                   },
                   icon: Icon(
                     Icons.info_outline,
-                    color: Theme.of(context).colorScheme.onBackground,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                   label: const Text('详情'),
                 ),

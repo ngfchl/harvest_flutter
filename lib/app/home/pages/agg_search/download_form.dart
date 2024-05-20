@@ -443,10 +443,10 @@ openDownloaderListSheet(BuildContext context, SearchTorrentInfo info) {
                                       dividerWidth: 108,
                                       textColor: Theme.of(context)
                                           .colorScheme
-                                          .onBackground,
+                                          .onSurface,
                                       dividerColor: Theme.of(context)
                                           .colorScheme
-                                          .onBackground,
+                                          .onSurface,
                                     ),
                                   ),
                                   Expanded(

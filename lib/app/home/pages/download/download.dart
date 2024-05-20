@@ -901,8 +901,8 @@ class _DownloadPageState extends State<DownloadPage>
                 text: downloader != null ? '编辑下载器：${downloader.name}' : '添加下载器',
                 icon: const Icon(Icons.add),
                 dividerWidth: 128,
-                textColor: Theme.of(context).colorScheme.onBackground,
-                dividerColor: Theme.of(context).colorScheme.onBackground,
+                textColor: Theme.of(context).colorScheme.onSurface,
+                dividerColor: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             Expanded(

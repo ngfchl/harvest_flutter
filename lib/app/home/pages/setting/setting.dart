@@ -81,7 +81,7 @@ class SettingPage extends StatelessWidget {
         leading: IconButton(
           icon: Icon(
             Icons.info_outline,
-            color: Theme.of(context).colorScheme.onBackground,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
           onPressed: null,
         ),
