@@ -520,7 +520,16 @@ class TrPage extends StatelessWidget {
                           ),
                         ),
                         onTap: () async {
-                          await controller.toggleSpeedLimit();
+                          CommonResponse res =
+                              await controller.toggleSpeedLimit();
+                          if (res.code == 0) {
+                            Get.snackbar('限速切换成功', res.msg!,
+                                colorText:
+                                    Theme.of(context).colorScheme.primary);
+                          } else {
+                            Get.snackbar('限速切换失败', res.msg!,
+                                colorText: Theme.of(context).colorScheme.error);
+                          }
                         },
                       ),
                       // PopupMenuItem<String>(
@@ -1744,7 +1753,9 @@ class TrPage extends StatelessWidget {
                     ],
                   ),
                   ListView(
-                    children: [],
+                    children: [
+                      ...torrentInfo.files.map((element) => Text(element.name))
+                    ],
                   ),
                   ListView(
                     children: [

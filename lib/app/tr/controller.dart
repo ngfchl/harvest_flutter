@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:get/get.dart';
 import 'package:transmission_api/transmission_api.dart';
 
@@ -457,7 +458,57 @@ class TrController extends GetxController {
     super.onClose();
   }
 
-  removeErrorTracker() {}
+  removeErrorTracker() async {
+    try {
+      List<String> toRemoveTorrentList = [];
+      var groupedTorrents = groupBy(torrents, (t) => t.name);
+      for (var group in groupedTorrents.values) {
+        var hasTracker = group.any((t) => t.error != 2);
+        if (!hasTracker) {
+          toRemoveTorrentList.addAll(group.skip(1).map((t) => t.hashString));
+        } else {
+          toRemoveTorrentList.addAll(group
+              .where((element) => element.error == 2)
+              .map((t) => t.hashString));
+        }
+      }
 
-  toggleSpeedLimit() {}
+      LoggerHelper.Logger.instance.i(toRemoveTorrentList);
+      LoggerHelper.Logger.instance.i(toRemoveTorrentList.length);
+      if (toRemoveTorrentList.isEmpty) {
+        return CommonResponse.success(msg: '没有需要清理的种子！');
+      }
+      await controlTorrents(
+          command: 'delete', hashes: toRemoveTorrentList, deleteFiles: false);
+      showTorrents.removeWhere(
+          (element) => toRemoveTorrentList.contains(element.hashString));
+      String msg = '清理出错种子成功，本次共清理${toRemoveTorrentList.length}个种子！';
+      LoggerHelper.Logger.instance.i(msg);
+      return CommonResponse.success(msg: msg);
+    } catch (e) {
+      LoggerHelper.Logger.instance.e('出错啦！${e.toString()}');
+      return CommonResponse.error(msg: '清理出错种子失败！${e.toString()}');
+    }
+  }
+
+  toggleSpeedLimit() async {
+    try {
+      Map res = await client.session
+          .sessionGet(fields: SessionArgs().altSpeedEnabled());
+      LoggerHelper.Logger.instance.i(res);
+      res = await client.session.sessionSet(
+          args: SessionArgs()
+              .altSpeedEnabled(!res['arguments']['alt-speed-enabled']));
+      LoggerHelper.Logger.instance.i(res);
+      if (res['result'] == 'success') {
+        return CommonResponse.success(msg: '切换成功！');
+      } else {
+        return CommonResponse.error(msg: '切换失败！${res['result']}');
+      }
+    } catch (e, stackTrace) {
+      LoggerHelper.Logger.instance.e(e.toString());
+      LoggerHelper.Logger.instance.e(stackTrace);
+      return CommonResponse.error(msg: '切换失败！${e.toString()}');
+    }
+  }
 }
