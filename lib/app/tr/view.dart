@@ -622,7 +622,6 @@ class TrPage extends StatelessWidget {
   }
 
   Widget _buildTrTorrentCard(TrTorrent torrentInfo, context) {
-    bool deleteFile = false;
     return GetBuilder<TrController>(builder: (controller) {
       return CustomCard(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
@@ -634,50 +633,7 @@ class TrPage extends StatelessWidget {
             children: [
               SlidableAction(
                 onPressed: (context) async {
-                  Get.defaultDialog(
-                    title: '确认',
-                    backgroundColor: Colors.white54,
-                    radius: 5,
-                    titleStyle: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.deepPurple),
-                    middleText: '确定要删除种子吗？',
-                    content: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        StatefulBuilder(builder: (context, setInnerState) {
-                          return GFCheckbox(
-                            size: 18,
-                            activeBgColor: GFColors.DANGER,
-                            onChanged: (value) {
-                              setInnerState(() => deleteFile = value);
-                            },
-                            value: deleteFile,
-                          );
-                        }),
-                        const Text('删除文件？'),
-                      ],
-                    ),
-                    actions: [
-                      ElevatedButton(
-                        onPressed: () {
-                          Get.back(result: false);
-                        },
-                        child: const Text('取消'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () async {
-                          Get.back(result: true);
-                          await controller.controlTorrents(
-                              command: 'delete',
-                              hashes: [torrentInfo.hashString],
-                              deleteFiles: deleteFile);
-                        },
-                        child: const Text('确认'),
-                      ),
-                    ],
-                  );
+                  await _removeTorrent(torrentInfo);
                 },
                 flex: 2,
                 backgroundColor: const Color(0xFFFE4A49),
@@ -1819,5 +1775,52 @@ class TrPage extends StatelessWidget {
     );
   }
 
-  void _removeTorrent(value) {}
+  Future<void> _removeTorrent(TrTorrent torrentInfo) async {
+    final deleteFile = false.obs;
+
+    Get.defaultDialog(
+      title: '确认',
+      backgroundColor: Colors.white54,
+      radius: 5,
+      titleStyle: const TextStyle(
+          fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
+      middleText: '确定要删除种子吗？',
+      content: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Obx(() {
+            return GFCheckbox(
+              size: 18,
+              activeBgColor: GFColors.DANGER,
+              onChanged: (value) {
+                deleteFile.value = value;
+              },
+              value: deleteFile.value,
+            );
+          }),
+          const Text('删除文件？'),
+        ],
+      ),
+      actions: [
+        ElevatedButton(
+          onPressed: () {
+            Get.back(result: false);
+          },
+          child: const Text('取消'),
+        ),
+        GetBuilder<TrController>(builder: (controller) {
+          return ElevatedButton(
+            onPressed: () async {
+              Get.back(result: true);
+              await controller.controlTorrents(
+                  command: 'delete',
+                  hashes: [torrentInfo.hashString],
+                  deleteFiles: deleteFile.value);
+            },
+            child: const Text('确认'),
+          );
+        }),
+      ],
+    );
+  }
 }

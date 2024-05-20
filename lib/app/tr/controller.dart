@@ -189,6 +189,9 @@ class TrController extends GetxController {
       showTorrents = showTorrents
           .where((torrent) =>
               torrent.name.toLowerCase().contains(searchKey.toLowerCase()) ||
+              torrent.errorString
+                  .toLowerCase()
+                  .contains(searchKey.toLowerCase()) ||
               torrent.hashString
                   .toLowerCase()
                   .contains(searchKey.toLowerCase()))
@@ -246,29 +249,41 @@ class TrController extends GetxController {
     LoggerHelper.Logger.instance.w(hashes);
     switch (command) {
       case 'reannounce':
-        client.torrent.torrentReannounce(ids: hashes);
+        await client.torrent.torrentReannounce(ids: hashes);
+        break;
       case 'delete':
-        client.torrent.torrentRemove(ids: hashes, deleteLocalData: deleteFiles);
+        torrents.removeWhere((element) => hashes.contains(element.hashString));
+        filterTorrents();
+        await client.torrent
+            .torrentRemove(ids: hashes, deleteLocalData: deleteFiles);
+        break;
       case 'resume':
-        client.torrent.torrentStart(ids: hashes);
+        await client.torrent.torrentStart(ids: hashes);
+        break;
       case 'ForceStart':
-        client.torrent.torrentStartNow(ids: hashes);
+        await client.torrent.torrentStartNow(ids: hashes);
+        break;
       case 'pause':
-        client.torrent.torrentStop(ids: hashes);
+        await client.torrent.torrentStop(ids: hashes);
+        break;
       case 'recheck':
-        client.torrent.torrentVerify(ids: hashes);
+        await client.torrent.torrentVerify(ids: hashes);
+        break;
       case 'uploadLimit':
-        client.torrent.torrentSet(
+        await client.torrent.torrentSet(
             TorrentSetArgs().uploadLimited(true).uploadLimit(limit),
             ids: hashes);
+        break;
       case 'downloadLimit':
-        client.torrent.torrentSet(
+        await client.torrent.torrentSet(
             TorrentSetArgs().downloadLimited(true).downloadLimit(limit),
             ids: hashes);
+        break;
       case 'ShareLimit':
-        client.torrent.torrentSet(
+        await client.torrent.torrentSet(
             TorrentSetArgs().seedRatioLimit(limit as double),
             ids: hashes);
+        break;
     }
 
     getAllTorrents();
