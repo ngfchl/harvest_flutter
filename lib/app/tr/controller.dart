@@ -70,13 +70,15 @@ class TrController extends GetxController {
 
   @override
   void onInit() async {
+    isLoading = true;
+    update();
     await initData();
+    isLoading = false;
+    update();
     super.onInit();
   }
 
   initData() async {
-    isLoading = true;
-    update();
     trackerToWebSiteMap.addAll(mySiteController.buildTrackerToWebSite());
     duration = SPUtil.getDouble('duration', defaultValue: 3.0)!;
     timerDuration = SPUtil.getDouble('timerDuration', defaultValue: 3.0)!;
@@ -96,8 +98,6 @@ class TrController extends GetxController {
 
     await getAllTorrents();
     getTrackerList();
-    isLoading = false;
-    update();
   }
 
   getTrackerList() {
@@ -330,6 +330,7 @@ class TrController extends GetxController {
           .downloaders
           .fileCount
           .files
+          .fileStats
           .isFinished
           .isStalled
           .percentComplete
@@ -342,7 +343,6 @@ class TrController extends GetxController {
           .uploadLimited
           .uploadLimit
           .uploadRatio
-          .pieces
           .activityDate,
     );
 
