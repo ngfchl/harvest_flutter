@@ -582,9 +582,10 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                             '活动中(${controller.allTorrents.where((torrent) => [
                                   TorrentState.downloading,
                                   TorrentState.uploading,
-                                  TorrentState.checkingUP,
+                                  // TorrentState.checkingUP,
                                   TorrentState.forcedUP,
                                   TorrentState.moving,
+                                  // TorrentState.checkingDL,
                                 ].contains(torrent.state)).toList().length})',
                           ),
                           style: ListTileStyle.list,
@@ -899,7 +900,6 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                             command: 'recheck',
                             hashes: [torrentInfo.hash!],
                           );
-                          Get.back();
                         },
                         child: const Text('确认'),
                       ),
@@ -971,24 +971,17 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                 fontSize: 10,
                               ),
                             ),
-                            SizedBox(
-                              height: 12,
-                              child: GFButton(
-                                text: controller.status
-                                    .firstWhere(
-                                        (element) =>
-                                            element.value == torrentInfo.state!,
-                                        orElse: () => MetaDataItem(
-                                            name: "未知状态",
-                                            value: TorrentState.unknown))
-                                    .name,
-                                type: GFButtonType.transparent,
-                                elevation: 0,
-                                hoverColor: Colors.green,
-                                textStyle: const TextStyle(
-                                  fontSize: 10,
-                                ),
-                                onPressed: () {},
+                            Text(
+                              controller.status
+                                  .firstWhere(
+                                      (element) =>
+                                          element.value == torrentInfo.state!,
+                                      orElse: () => MetaDataItem(
+                                          name: "未知状态",
+                                          value: TorrentState.unknown))
+                                  .name,
+                              style: const TextStyle(
+                                fontSize: 10,
                               ),
                             ),
                           ],
@@ -1385,7 +1378,6 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                             await controller.controlTorrents(
                                                 command: 'recheck',
                                                 hashes: [torrentInfo.hash!]);
-                                            Get.back();
                                             controller.update();
                                           },
                                           child: const Text('确认'),
@@ -1403,10 +1395,10 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                   text: '强制汇报',
                                   color: GFColors.SUCCESS,
                                   onPressed: () async {
+                                    Get.back();
                                     await controller.controlTorrents(
                                         command: 'reannounce',
                                         hashes: [torrentInfo.hash!]);
-                                    Get.back();
                                   },
                                   icon: const Icon(
                                     Icons.campaign,
@@ -1438,12 +1430,12 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                       ? GFColors.SUCCESS
                                       : GFColors.DANGER,
                                   onPressed: () async {
+                                    Get.back();
                                     await controller.controlTorrents(
                                         command: 'AutoManagement',
                                         hashes: [torrentInfo.hash!],
                                         enable: !torrentInfo.autoTmm!);
                                     controller.update();
-                                    Get.back();
                                   },
                                   icon: torrentInfo.autoTmm!
                                       ? const Icon(
@@ -1463,11 +1455,11 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                       ? GFColors.SUCCESS
                                       : GFColors.DANGER,
                                   onPressed: () async {
+                                    Get.back();
                                     await controller.controlTorrents(
                                         command: 'SuperSeeding',
                                         hashes: [torrentInfo.hash!],
                                         enable: !torrentInfo.superSeeding!);
-                                    Get.back();
                                   },
                                   icon: torrentInfo.superSeeding!
                                       ? const Icon(
@@ -1487,11 +1479,11 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                       ? GFColors.SUCCESS
                                       : GFColors.DANGER,
                                   onPressed: () async {
+                                    Get.back();
                                     await controller.controlTorrents(
                                         command: 'ForceStart',
                                         hashes: [torrentInfo.hash!],
                                         enable: !torrentInfo.forceStart!);
-                                    Get.back();
                                   },
                                   icon: torrentInfo.forceStart!
                                       ? const Icon(

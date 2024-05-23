@@ -126,17 +126,17 @@ class QBittorrentController extends GetxController {
   @override
   void onInit() async {
     isLoading = true;
-    update();
+
+    /// 初始化 qb 客户端
+    client = await getQbInstance(downloader);
     await initData();
     super.onInit();
   }
 
   initData() async {
-    /// 初始化 qb 客户端
     sortKey = SPUtil.getLocalStorage(
             '${downloader.host}:${downloader.port}-sortKey') ??
         TorrentSort.name;
-    client = await getQbInstance(downloader);
 
     /// 获取分类信息
     categoryMap = {
