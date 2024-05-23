@@ -518,10 +518,27 @@ class _DownloadPageState extends State<DownloadPage>
       child: Slidable(
         key: ValueKey('${downloader.id}_${downloader.name}'),
         startActionPane: ActionPane(
-          openThreshold: 0.5,
-          closeThreshold: 0.5,
           motion: const ScrollMotion(),
           children: [
+            SlidableAction(
+              flex: 1,
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              onPressed: (context) async {
+                CommonResponse res =
+                    controller.reseedDownloader(downloader.id!);
+                if (res.code == 0) {
+                  Get.snackbar('辅种通知', res.msg.toString(),
+                      colorText: Theme.of(context).colorScheme.primary);
+                } else {
+                  Get.snackbar('辅种通知', res.msg.toString(),
+                      colorText: Theme.of(context).colorScheme.error);
+                }
+              },
+              backgroundColor: const Color(0xFF0A9D96),
+              foregroundColor: Colors.white,
+              icon: Icons.copy_sharp,
+              label: '辅种',
+            ),
             SlidableAction(
               flex: 1,
               borderRadius: const BorderRadius.all(Radius.circular(8)),
@@ -537,11 +554,11 @@ class _DownloadPageState extends State<DownloadPage>
         ),
         endActionPane: ActionPane(
           motion: const ScrollMotion(),
+          extentRatio: 0.25,
           children: [
             SlidableAction(
               flex: 1,
               borderRadius: const BorderRadius.all(Radius.circular(8)),
-
               onPressed: (context) async {
                 Get.defaultDialog(
                   title: '确认',

@@ -266,4 +266,8 @@ class DownloadController extends GetxController {
   getTorrentsPathList() async {
     return await getDownloaderPaths();
   }
+
+  reseedDownloader(int downloaderId) async {
+    return await repeatSingleDownloader(downloaderId);
+  }
 }
