@@ -67,6 +67,7 @@ class MySiteController extends GetxController {
   void onInit() async {
     searchKey = '';
     filterKey = '';
+    isLoaded = true;
     await initData();
     super.onInit();
   }
@@ -133,9 +134,6 @@ class MySiteController extends GetxController {
   }
 
   Future<void> getSiteStatusFromServer() async {
-    isLoaded = true;
-    update();
-
     CommonResponse res = await getMySiteList();
     if (res.code == 0) {
       mySiteList.clear();
