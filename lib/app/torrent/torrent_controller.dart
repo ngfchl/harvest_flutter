@@ -637,13 +637,23 @@ class TorrentController extends GetxController {
     try {
       String filePath =
           '${(await getApplicationDocumentsDirectory()).path}/download.torrent';
+      LoggerHelper.Logger.instance.i(filePath);
       final response = await Dio().download(
         downloadUrl,
         filePath,
-        options: Options(responseType: ResponseType.bytes, headers: {
-          "Cookie": cookieStringToMap(cookie),
-          "User-Agent": userAgent
-        }),
+        options: Options(
+            method: downloadUrl.contains('hdsky') ? 'POST' : 'GET',
+            followRedirects: true,
+            responseType: ResponseType.bytes,
+            validateStatus: (code) {
+              return code! <= 400;
+            },
+            headers: {"Cookie": cookie, "User-Agent": userAgent}),
+        onReceiveProgress: (received, total) {
+          if (total <= 0) return;
+          LoggerHelper.Logger.instance
+              .i('percentage: ${(received / total * 100).toStringAsFixed(0)}%');
+        },
       );
       LoggerHelper.Logger.instance.i(response.statusCode);
       LoggerHelper.Logger.instance.i(response.headers);
