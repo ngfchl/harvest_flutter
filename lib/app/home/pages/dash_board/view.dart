@@ -47,7 +47,7 @@ class _DashBoardPageState extends State<DashBoardPage>
     return GetBuilder<DashBoardController>(builder: (controller) {
       return SafeArea(
         child: Scaffold(
-          body: _showAllInfo(controller),
+          body: _showAllInfo(),
           floatingActionButton: _buildBottomButtonBar(),
           floatingActionButtonLocation:
               FloatingActionButtonLocation.miniCenterDocked,
@@ -56,48 +56,50 @@ class _DashBoardPageState extends State<DashBoardPage>
     });
   }
 
-  Widget _showAllInfo(DashBoardController controller) {
-    Logger.instance.i(controller.statusList.length);
-    return Column(
-      children: [
-        const SizedBox(height: 5),
-        Expanded(
-          child: EasyRefresh(
-            onRefresh: controller.initChartData,
-            child: GetBuilder<DashBoardController>(builder: (controller) {
-              return ListView(
-                children: controller.isLoading
-                    ? [
-                        SizedBox(
-                            height: MediaQuery.of(context).size.width * 0.4),
-                        const Center(child: CircularProgressIndicator()),
-                        const SizedBox(height: 10),
-                        Text(
-                          'loading...',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary),
-                        ),
-                      ]
-                    : controller.statusList.isNotEmpty
-                        ? [
-                            _buildSiteInfoCard(),
-                            _buildSmartLabelPieChart(),
-                            _buildStackedBar(),
-                            _buildSiteInfo(),
-                          ]
-                        : [
-                            const SizedBox(height: 50),
-                            const Center(child: Text('先去获取一下站点数据吧'))
-                          ],
-              );
-            }),
+  Widget _showAllInfo() {
+    return GetBuilder<DashBoardController>(builder: (controller) {
+      Logger.instance.i(controller.statusList.length);
+      return Column(
+        children: [
+          const SizedBox(height: 5),
+          Expanded(
+            child: EasyRefresh(
+              onRefresh: controller.initChartData,
+              child: GetBuilder<DashBoardController>(builder: (controller) {
+                return ListView(
+                  children: controller.isLoading
+                      ? [
+                          SizedBox(
+                              height: MediaQuery.of(context).size.width * 0.4),
+                          const Center(child: CircularProgressIndicator()),
+                          const SizedBox(height: 10),
+                          Text(
+                            'loading...',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary),
+                          ),
+                        ]
+                      : controller.statusList.isNotEmpty
+                          ? [
+                              _buildSiteInfoCard(),
+                              _buildSmartLabelPieChart(),
+                              _buildStackedBar(),
+                              _buildSiteInfo(),
+                            ]
+                          : [
+                              const SizedBox(height: 50),
+                              const Center(child: Text('先去获取一下站点数据吧'))
+                            ],
+                );
+              }),
+            ),
           ),
-        ),
-        if (Platform.isIOS) const SizedBox(height: 10),
-        const SizedBox(height: 50),
-      ],
-    );
+          if (Platform.isIOS) const SizedBox(height: 10),
+          const SizedBox(height: 50),
+        ],
+      );
+    });
   }
 
   _buildBottomButtonBar() {
