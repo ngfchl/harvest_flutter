@@ -117,13 +117,13 @@ class _DashBoardPageState extends State<DashBoardPage>
               size: 20,
             ),
             style: ButtonStyle(
-              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                 RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5.0)),
               ),
-              padding: MaterialStateProperty.all(
+              padding: WidgetStateProperty.all(
                   const EdgeInsets.symmetric(horizontal: 8)),
-              side: MaterialStateProperty.all(BorderSide.none),
+              side: WidgetStateProperty.all(BorderSide.none),
             ),
             label: const Text('统计数据'),
           ),
@@ -136,32 +136,33 @@ class _DashBoardPageState extends State<DashBoardPage>
               size: 20,
             ),
             style: ButtonStyle(
-              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                 RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5.0)),
               ),
-              padding: MaterialStateProperty.all(
+              padding: WidgetStateProperty.all(
                   const EdgeInsets.symmetric(horizontal: 8)),
-              side: MaterialStateProperty.all(BorderSide.none),
+              side: WidgetStateProperty.all(BorderSide.none),
             ),
             label: const Text('全员签到'),
           ),
           ElevatedButton.icon(
             onPressed: () async {
               await clearMyCacheButton();
+              await controller.mySiteController.initData();
             },
             icon: const Icon(
-              Icons.swap_vert_circle_outlined,
+              Icons.cached,
               size: 20,
             ),
             style: ButtonStyle(
-              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                 RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5.0)),
               ),
-              padding: MaterialStateProperty.all(
+              padding: WidgetStateProperty.all(
                   const EdgeInsets.symmetric(horizontal: 8)),
-              side: MaterialStateProperty.all(BorderSide.none),
+              side: WidgetStateProperty.all(BorderSide.none),
             ),
             label: const Text('清除缓存'),
           ),
