@@ -169,21 +169,21 @@ class _MySitePagePageState extends State<MySitePage>
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           ElevatedButton.icon(
-            onPressed: () {
-              controller.getSiteStatusFromServer();
+            onPressed: () async {
+              await controller.initData();
             },
             icon: const Icon(
               Icons.refresh,
               size: 20,
             ),
             style: ButtonStyle(
-              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                 RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5.0)),
               ),
-              padding: MaterialStateProperty.all(
+              padding: WidgetStateProperty.all(
                   const EdgeInsets.symmetric(horizontal: 8)),
-              side: MaterialStateProperty.all(BorderSide.none),
+              side: WidgetStateProperty.all(BorderSide.none),
             ),
             label: const Text('刷新'),
           ),
@@ -196,13 +196,13 @@ class _MySitePagePageState extends State<MySitePage>
               size: 20,
             ),
             style: ButtonStyle(
-              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                 RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5.0)),
               ),
-              padding: MaterialStateProperty.all(
+              padding: WidgetStateProperty.all(
                   const EdgeInsets.symmetric(horizontal: 8)),
-              side: MaterialStateProperty.all(BorderSide.none),
+              side: WidgetStateProperty.all(BorderSide.none),
             ),
             label: const Text('筛选'),
           ),
@@ -215,32 +215,32 @@ class _MySitePagePageState extends State<MySitePage>
               size: 20,
             ),
             style: ButtonStyle(
-              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                 RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5.0)),
               ),
-              padding: MaterialStateProperty.all(
+              padding: WidgetStateProperty.all(
                   const EdgeInsets.symmetric(horizontal: 8)),
-              side: MaterialStateProperty.all(BorderSide.none),
+              side: WidgetStateProperty.all(BorderSide.none),
             ),
             label: const Text('排序'),
           ),
           ElevatedButton.icon(
-            onPressed: () {
-              _showEditBottomSheet();
+            onPressed: () async {
+              await _showEditBottomSheet();
             },
             icon: const Icon(
               Icons.add_circle_outline,
               size: 20,
             ),
             style: ButtonStyle(
-              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                 RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5.0)),
               ),
-              padding: MaterialStateProperty.all(
+              padding: WidgetStateProperty.all(
                   const EdgeInsets.symmetric(horizontal: 8)),
-              side: MaterialStateProperty.all(BorderSide.none),
+              side: WidgetStateProperty.all(BorderSide.none),
             ),
             label: const Text('添加'),
           ),
@@ -619,7 +619,7 @@ class _MySitePagePageState extends State<MySitePage>
             PopupMenuItem<String>(
               child: const Text('编辑站点'),
               onTap: () async {
-                _showEditBottomSheet(mySite: mySite);
+                await _showEditBottomSheet(mySite: mySite);
               },
             ),
           ])),
@@ -719,8 +719,8 @@ class _MySitePagePageState extends State<MySitePage>
           width: 68,
           height: 26,
           child: GFButton(
-            onPressed: () {
-              _showEditBottomSheet(mySite: mySite);
+            onPressed: () async {
+              await _showEditBottomSheet(mySite: mySite);
             },
             icon: const Icon(
               Icons.edit,
@@ -736,7 +736,8 @@ class _MySitePagePageState extends State<MySitePage>
     );
   }
 
-  void _showEditBottomSheet({MySite? mySite}) {
+  Future<void> _showEditBottomSheet({MySite? mySite}) async {
+    await controller.getWebSiteListFromServer();
     List<String> siteList = controller.webSiteList.entries
         .where((entry) => entry.value.alive)
         .map((entry) => entry.key)
@@ -931,7 +932,7 @@ class _MySitePagePageState extends State<MySitePage>
               children: [
                 ElevatedButton(
                   style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(
+                    backgroundColor: WidgetStateProperty.all(
                         Theme.of(context).colorScheme.secondary),
                   ),
                   onPressed: () {
@@ -947,7 +948,7 @@ class _MySitePagePageState extends State<MySitePage>
                 if (mySite != null)
                   ElevatedButton(
                     style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(
+                      backgroundColor: WidgetStateProperty.all(
                           Theme.of(context).colorScheme.error),
                     ),
                     onPressed: () async {
@@ -983,7 +984,7 @@ class _MySitePagePageState extends State<MySitePage>
                   ),
                 ElevatedButton(
                   style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(
+                    backgroundColor: WidgetStateProperty.all(
                         Theme.of(context).colorScheme.primary),
                   ),
                   child: const Text(
