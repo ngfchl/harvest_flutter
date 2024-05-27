@@ -20,6 +20,7 @@ import '../../../utils/logger_helper.dart';
 import '../../../utils/storage.dart';
 import '../../routes/app_pages.dart';
 import '../pages/download/download_controller.dart';
+import '../pages/logging/view.dart';
 import '../pages/setting/setting.dart';
 
 class HomeController extends GetxController {
@@ -73,6 +74,7 @@ class HomeController extends GetxController {
     const SubscribeHistoryPage(),
     const SubscribeTagPage(),
     const DouBanPage(),
+    LoggingPage(),
   ];
 
   @override
@@ -112,40 +114,36 @@ class HomeController extends GetxController {
   Future<void> changePage(int index) async {
     Get.back();
     if (index == 11) {
-      String url =
-          '${SPUtil.getLocalStorage('server')}/api/${Api.SYSTEM_LOGGING}/tail.html?processname=uvicorn&limit=10240';
       if (!Platform.isIOS && !Platform.isAndroid) {
         Logger.instance.i('Explorer');
-        Uri uri = Uri.parse(url);
-        if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-          Get.snackbar(
-            '打开网页出错',
-            '打开网页出错，不支持的客户端？',
-          );
-        }
+        Get.defaultDialog(
+            title: '选择日志',
+            content: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                ElevatedButton(
+                    onPressed: () async {
+                      Get.back();
+                      String url =
+                          '${SPUtil.getLocalStorage('server')}/api/flower/tasks';
+                      await openUrl(url);
+                    },
+                    child: const Text('任务列表')),
+                ElevatedButton(
+                    onPressed: () async {
+                      Get.back();
+                      String url =
+                          '${SPUtil.getLocalStorage('server')}/api/${Api.SYSTEM_LOGGING}';
+                      await openUrl(url);
+                    },
+                    child: const Text('服务日志')),
+              ],
+            ));
       } else {
-        Get.toNamed(Routes.WEBVIEW, arguments: {
-          'url': url,
-        });
+        pageController.jumpToPage(index);
+        initPage = index;
       }
     } else if (index == 12) {
-      String url =
-          '${SPUtil.getLocalStorage('server')}/api/${Api.SYSTEM_LOGGING}/tail.html?processname=celery-worker&limit=10240';
-      if (!Platform.isIOS && !Platform.isAndroid) {
-        Logger.instance.i('Explorer');
-        Uri uri = Uri.parse(url);
-        if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-          Get.snackbar(
-            '打开网页出错',
-            '打开网页出错，不支持的客户端？',
-          );
-        }
-      } else {
-        Get.toNamed(Routes.WEBVIEW, arguments: {
-          'url': url,
-        });
-      }
-    } else if (index == 13) {
       logout();
     } else {
       pageController.jumpToPage(index);
@@ -153,5 +151,15 @@ class HomeController extends GetxController {
     }
 
     update();
+  }
+
+  Future<void> openUrl(String url) async {
+    Uri uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      Get.snackbar(
+        '打开网页出错',
+        '打开网页出错，不支持的客户端？',
+      );
+    }
   }
 }

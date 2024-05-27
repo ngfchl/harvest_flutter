@@ -174,12 +174,12 @@ class HomeView extends GetView<HomeController> {
                 ),
                 NavigationRailDestination(
                   icon: Icon(Icons.list_alt, size: 18),
-                  label: Text('访问日志'),
+                  label: Text('操作日志'),
                 ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.description, size: 18),
-                  label: Text('任务日志'),
-                ),
+                // NavigationRailDestination(
+                //   icon: Icon(Icons.description, size: 18),
+                //   label: Text('任务日志'),
+                // ),
                 NavigationRailDestination(
                   icon: Icon(Icons.account_box_rounded, size: 18),
                   label: Text('更换账号'),
