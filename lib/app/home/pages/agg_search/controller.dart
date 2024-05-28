@@ -253,12 +253,13 @@ class AggSearchController extends GetxController {
       Downloader downloader) async {
     isDownloaderLoading = true;
     try {
-      Get.put(TorrentController(downloader, false),
+      TorrentController torrentController = Get.put(
+          TorrentController(downloader, false),
           tag:
               '${downloader.protocol}://${downloader.host}:${downloader.port}');
-      TorrentController torrentController = Get.find(
-          tag:
-              '${downloader.protocol}://${downloader.host}:${downloader.port}');
+      // TorrentController torrentController = Get.find(
+      //     tag:
+      //         '${downloader.protocol}://${downloader.host}:${downloader.port}');
       if (downloader.category.toLowerCase() == 'tr') {
         torrentController.getAllTorrents();
       }

@@ -339,8 +339,10 @@ class DownloadForm extends StatelessWidget {
 
   Future<void> submitForm(Map<String, dynamic> formData, context) async {
     try {
-      final TorrentController torrentController =
-          Get.put(TorrentController(downloader, false));
+      final TorrentController torrentController = Get.put(
+          TorrentController(downloader, false),
+          tag:
+              '${downloader.protocol}://${downloader.host}:${downloader.port}');
       dynamic res;
       if (downloader.category.toLowerCase() == 'qb') {
         res = await torrentController.addTorrentFilesToQb(downloader, formData);
