@@ -740,10 +740,10 @@ packages:
     dependency: "direct main"
     description:
       name: qbittorrent_api
-      sha256: "5ac06c9c899f20595020f966fc482bef98d01d7bb09bf728dbe5003c81ff80c1"
+      sha256: "516bf8963875865a4927fe52b3f145dd3585fa7c5f239b2de7edaa561c2cd918"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.0"
+    version: "1.2.0"
   quiver:
     dependency: transitive
     description:
