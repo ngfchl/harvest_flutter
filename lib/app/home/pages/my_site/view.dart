@@ -34,6 +34,7 @@ class MySitePage extends StatefulWidget {
 class _MySitePagePageState extends State<MySitePage>
     with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
   final controller = Get.put(MySiteController());
+  FocusNode blankNode = FocusNode();
 
   @override
   bool get wantKeepAlive => true;
@@ -57,43 +58,49 @@ class _MySitePagePageState extends State<MySitePage>
                     child: Row(
                       children: [
                         Expanded(
-                          child: TextField(
-                            controller: controller.searchController,
-                            style: const TextStyle(fontSize: 12),
-                            textAlignVertical: TextAlignVertical.center,
-                            decoration: InputDecoration(
-                              // labelText: '搜索',
-                              hintText: '输入关键词...',
-                              labelStyle: const TextStyle(fontSize: 12),
-                              hintStyle: const TextStyle(fontSize: 12),
-                              prefixIcon: const Icon(
-                                Icons.search,
-                                size: 14,
-                              ),
-                              // suffix: ,
-                              suffixIcon: Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                        '计数：${controller.showStatusList.length}',
-                                        style: const TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.orange)),
-                                  ],
+                          child: InkWell(
+                            onTap: () {
+                              FocusScope.of(context).requestFocus(blankNode);
+                            },
+                            child: TextField(
+                              focusNode: blankNode,
+                              controller: controller.searchController,
+                              style: const TextStyle(fontSize: 12),
+                              textAlignVertical: TextAlignVertical.center,
+                              decoration: InputDecoration(
+                                // labelText: '搜索',
+                                hintText: '输入关键词...',
+                                labelStyle: const TextStyle(fontSize: 12),
+                                hintStyle: const TextStyle(fontSize: 12),
+                                prefixIcon: const Icon(
+                                  Icons.search,
+                                  size: 14,
+                                ),
+                                // suffix: ,
+                                suffixIcon: Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                          '计数：${controller.showStatusList.length}',
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.orange)),
+                                    ],
+                                  ),
+                                ),
+                                border: const OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(3.0)),
                                 ),
                               ),
-                              border: const OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(3.0)),
-                              ),
+                              onChanged: (value) {
+                                Logger.instance.i('搜索框内容变化：$value');
+                                controller.searchKey = value;
+                                controller.filterByKey();
+                              },
                             ),
-                            onChanged: (value) {
-                              Logger.instance.i('搜索框内容变化：$value');
-                              controller.searchKey = value;
-                              controller.filterByKey();
-                            },
                           ),
                         ),
                         if (controller.searchKey.isNotEmpty)
