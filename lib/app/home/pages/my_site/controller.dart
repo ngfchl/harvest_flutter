@@ -176,7 +176,8 @@ class MySiteController extends GetxController {
     // 根据不同的排序键调用不同的排序方法
     switch (sortKey) {
       case 'statusMail':
-        sortByComparable((a, b) => b.mail!.compareTo(a.mail!));
+        sortByComparable(
+            (a, b) => (b.mail! + b.notice!).compareTo(a.mail! + a.notice!));
         break;
       case 'mySiteId':
         sortByComparable((a, b) => a.id.compareTo(b.id));
