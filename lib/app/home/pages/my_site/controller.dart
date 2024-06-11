@@ -296,16 +296,20 @@ class MySiteController extends GetxController {
         filterByCondition((item) => !item.available);
         break;
       case 'passkey':
-        filterByCondition((item) => item.passkey!.isEmpty);
+        filterByCondition(
+            (item) => item.passkey == null || item.passkey!.isEmpty);
         break;
       case 'authKey':
-        filterByCondition((item) => item.authKey!.isEmpty);
+        filterByCondition(
+            (item) => item.authKey == null || item.authKey!.isEmpty);
         break;
       case 'cookie':
-        filterByCondition((item) => item.cookie!.isEmpty);
+        filterByCondition(
+            (item) => item.cookie == null || item.cookie!.isEmpty);
         break;
       case 'proxy':
-        filterByCondition((item) => item.proxy == null || item.proxy!.isEmpty);
+        filterByCondition((item) =>
+            item.proxy == null || item.proxy == null || item.proxy!.isEmpty);
         break;
       case 'timeJoin':
         filterByCondition((item) {
