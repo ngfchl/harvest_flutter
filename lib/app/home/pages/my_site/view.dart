@@ -858,12 +858,12 @@ class _MySitePagePageState extends State<MySitePage>
 
                       CustomTextField(
                         controller: passkeyController,
-                        maxLength: 64,
+                        maxLength: 128,
                         labelText: 'Passkey',
                       ),
                       CustomTextField(
                         controller: apiKeyController,
-                        maxLength: 64,
+                        maxLength: 128,
                         labelText: 'AuthKey',
                       ),
                       CustomTextField(
