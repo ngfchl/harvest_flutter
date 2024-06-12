@@ -632,7 +632,7 @@ class _MySitePagePageState extends State<MySitePage>
           ])),
       child: Icon(
         Icons.widgets_outlined,
-        size: 24,
+        size: 36,
         color: signed == true ? Colors.green : Colors.amber,
       ),
     );
