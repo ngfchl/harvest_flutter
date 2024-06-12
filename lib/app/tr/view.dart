@@ -33,7 +33,7 @@ class TrPage extends StatelessWidget {
       return Scaffold(
         appBar: AppBar(
           title: Text(
-              '${controller.downloader.name} - ${controller.torrents.length}'),
+              '${controller.downloader.name} - ${controller.torrentCount}'),
         ),
         body: EasyRefresh(
             controller: EasyRefreshController(),
@@ -98,6 +98,12 @@ class TrPage extends StatelessWidget {
                               const SizedBox(
                                 width: 5,
                               ),
+                              if (controller.torrentCount >
+                                  controller.torrents.length)
+                                const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator()),
                               if (controller.searchKey.isNotEmpty)
                                 IconButton(
                                     onPressed: () {

@@ -35,8 +35,10 @@ class TrController extends GetxController {
   double timerDuration = 3;
   Timer? periodicTimer;
   Map<String, WebSite?> trackerToWebSiteMap = {'全部': null};
-
+  TransmissionStats? trStats;
+  int torrentCount = 0;
   String? selectedTracker = '全部';
+  bool exitState = false;
 
   TrController(this.downloader);
 
@@ -117,7 +119,8 @@ class TrController extends GetxController {
         Duration(milliseconds: (duration * 1000).toInt()), (Timer t) async {
       // 在定时器触发时获取最新的下载器数据
       LoggerHelper.Logger.instance.i('调用刷新 timer');
-
+      await getTrSpeed();
+      update();
       await getAllTorrents();
     });
     timerToStop();
@@ -144,14 +147,9 @@ class TrController extends GetxController {
   Future getTrSpeed() async {
     var res = await client.session.sessionStats();
     if (res['result'] == "success") {
-      return CommonResponse(
-          data: TransmissionStats.fromJson(res["arguments"]), code: 0);
+      trStats = TransmissionStats.fromJson(res["arguments"]);
+      torrentCount = trStats!.torrentCount;
     }
-    return CommonResponse(
-      code: -1,
-      data: res,
-      msg: '${downloader.name} 获取实时信息失败！',
-    );
   }
 
   Future<String> getTrDefaultSavePath() async {
@@ -287,72 +285,98 @@ class TrController extends GetxController {
         break;
     }
 
-    getAllTorrents();
+    await getAllTorrents();
     LoggerHelper.Logger.instance.i(categories);
-
     update();
   }
 
   Future<void> getAllTorrents() async {
-    Map res = await client.torrent.torrentGet(
-      fields: TorrentFields()
-          .id
-          .name
-          .downloadDir
-          .addedDate
-          .sizeWhenDone
-          .startDate
-          .status
-          .totalSize
-          .percentDone
-          .trackerStats
-          .leftUntilDone
-          .rateDownload
-          .rateUpload
-          .recheckProgress
-          .peersGettingFromUs
-          .peersSendingToUs
-          .uploadRatio
-          .hashString
-          .magnetLink
-          .uploadedEver
-          .downloadedEver
-          .error
-          .errorString
-          .doneDate
-          .queuePosition
-          .bandwidthPriority
-          .availability
-          .comment
-          .downloadLimited
-          .downloadLimit
-          .downloadLimitMode
-          .downloaders
-          .fileCount
-          .files
-          .fileStats
-          .isFinished
-          .isStalled
-          .percentComplete
-          .secondsDownloading
-          .secondsSeeding
-          .seedRatioLimited
-          .seedRatioLimit
-          .seedRatioMode
-          .uploadLimitMode
-          .uploadLimited
-          .uploadLimit
-          .uploadRatio
-          .activityDate,
-    );
+    TorrentFields fields = TorrentFields()
+        .activityDate
+        .addedDate
+        .bandwidthPriority
+        .comment
+        .doneDate
+        .downloadDir
+        .downloadLimited
+        .downloadLimit
+        .downloadedEver
+        .error
+        .errorString
+        .files
+        .fileStats
+        .hashString
+        .id
+        .isFinished
+        .isStalled
+        .leftUntilDone
+        .magnetLink
+        .name
+        .peersGettingFromUs
+        .peersSendingToUs
+        .percentDone
+        .percentComplete
+        .queuePosition
+        .rateDownload
+        .rateUpload
+        .recheckProgress
+        .secondsDownloading
+        .secondsSeeding
+        .seedRatioLimited
+        .seedRatioLimit
+        .seedRatioMode
+        .sizeWhenDone
+        .startDate
+        .status
+        .totalSize
+        .trackerStats
+        .uploadLimitMode
+        .uploadLimited
+        .uploadLimit
+        .uploadRatio
+        .uploadedEver;
 
-    LoggerHelper.Logger.instance.w(res['arguments']["torrents"][0]);
+    if (torrents.isEmpty) {
+      List<int> ids = await getTorrentIds();
+      int i = 0;
+      int batchSize = 800;
+      for (int i = 0; i < ids.length; i += batchSize) {
+        if (exitState) {
+          break;
+        }
+        List<int> batchIds = ids.sublist(
+            i, (i + batchSize) >= ids.length ? ids.length : (i + batchSize));
+        Map res =
+            await client.torrent.torrentGet(fields: fields, ids: batchIds);
+        torrents.addAll(res['arguments']["torrents"]
+            .map<TrTorrent>((item) => TrTorrent.fromJson(item))
+            .toList());
+        await getAllCategory();
+        filterTorrents();
+        isLoading = false;
+      }
+    } else {
+      Map res = await client.torrent.torrentGet(fields: fields);
+      if (res['result'] == "success") {
+        torrents = res['arguments']["torrents"]
+            .map<TrTorrent>((item) => TrTorrent.fromJson(item))
+            .toList();
+        await getAllCategory();
+        filterTorrents();
+      }
+    }
+  }
+
+  Future<List<int>> getTorrentIds() async {
+    Map res = await client.torrent.torrentGet(fields: TorrentFields().id);
     if (res['result'] == "success") {
-      torrents = res['arguments']["torrents"]
-          .map<TrTorrent>((item) => TrTorrent.fromJson(item))
+      List<int> ids = (res['arguments']["torrents"] as List)
+          .map((e) => e["id"] as int)
           .toList();
-      await getAllCategory();
-      filterTorrents();
+      return ids;
+    } else {
+      LoggerHelper.Logger.instance.e('Failed to fetch torrent count');
+      return [];
     }
   }
 
@@ -454,7 +478,7 @@ class TrController extends GetxController {
 
   @override
   void onClose() {
-    // TODO: implement onClose
+    exitState = true;
     super.onClose();
   }
 
