@@ -24,6 +24,32 @@ class OptionValue {
   String? cookie;
   String? userAgent;
   String? todaySay;
+  bool? aliyundriveNotice;
+  bool? siteData;
+  bool? siteDataSuccess;
+  bool? todayData;
+  bool? packageTorrent;
+  bool? deleteTorrent;
+  bool? rssTorrent;
+  bool? pushTorrent;
+  bool? programUpgrade;
+  bool? ptppImport;
+  bool? announcement;
+  bool? message;
+  bool? signInSuccess;
+  bool? cookieSync;
+  bool? level;
+  bool? bonus;
+  bool? perBonus;
+  bool? score;
+  bool? ratio;
+  bool? seedingVol;
+  bool? uploaded;
+  bool? downloaded;
+  bool? seeding;
+  bool? leeching;
+  bool? invite;
+  bool? hr;
 
   OptionValue({
     this.token,
@@ -51,6 +77,32 @@ class OptionValue {
     this.cookie,
     this.userAgent,
     this.todaySay,
+    this.aliyundriveNotice,
+    this.siteData,
+    this.siteDataSuccess,
+    this.todayData,
+    this.packageTorrent,
+    this.deleteTorrent,
+    this.rssTorrent,
+    this.pushTorrent,
+    this.programUpgrade,
+    this.ptppImport,
+    this.announcement,
+    this.message,
+    this.signInSuccess,
+    this.cookieSync,
+    this.level,
+    this.bonus,
+    this.perBonus,
+    this.score,
+    this.ratio,
+    this.seedingVol,
+    this.uploaded,
+    this.downloaded,
+    this.seeding,
+    this.leeching,
+    this.invite,
+    this.hr,
   });
 
   factory OptionValue.fromJson(Map<String, dynamic>? json) => OptionValue(
@@ -79,6 +131,32 @@ class OptionValue {
         cookie: json?['cookie'],
         userAgent: json?['user_agent'],
         todaySay: json?['todaysay'].toString(),
+        aliyundriveNotice: json?['aliyundrive_notice'],
+        siteData: json?['site_data'],
+        siteDataSuccess: json?['site_data_success'],
+        todayData: json?['today_data'],
+        packageTorrent: json?['package_torrent'],
+        deleteTorrent: json?['delete_torrent'],
+        rssTorrent: json?['rss_torrent'],
+        pushTorrent: json?['push_torrent'],
+        programUpgrade: json?['program_upgrade'],
+        ptppImport: json?['ptpp_import'],
+        announcement: json?['announcement'],
+        message: json?['message'],
+        signInSuccess: json?['sign_in_success'],
+        cookieSync: json?['cookie_sync'],
+        level: json?['level'],
+        bonus: json?['bonus'],
+        perBonus: json?['per_bonus'],
+        score: json?['score'],
+        ratio: json?['ratio'],
+        seedingVol: json?['seeding_vol'],
+        uploaded: json?['uploaded'],
+        downloaded: json?['downloaded'],
+        seeding: json?['seeding'],
+        leeching: json?['leeching'],
+        invite: json?['invite'],
+        hr: json?['hr'],
       );
 
   Map<String, dynamic> toJson() {
@@ -108,6 +186,34 @@ class OptionValue {
     if (cookie != null) data['cookie'] = cookie!;
     if (userAgent != null) data['user_agent'] = userAgent!;
     if (todaySay != null) data['todaysay'] = todaySay!;
+    if (aliyundriveNotice != null) {
+      data['aliyundrive_notice'] = aliyundriveNotice!;
+    }
+    if (siteData != null) data['site_data'] = siteData!;
+    if (todayData != null) data['today_data'] = todayData!;
+    if (packageTorrent != null) data['package_torrent'] = packageTorrent!;
+    if (deleteTorrent != null) data['delete_torrent'] = deleteTorrent!;
+    if (rssTorrent != null) data['rss_torrent'] = rssTorrent!;
+    if (pushTorrent != null) data['push_torrent'] = pushTorrent!;
+    if (programUpgrade != null) data['program_upgrade'] = programUpgrade!;
+    if (ptppImport != null) data['ptpp_import'] = ptppImport!;
+    if (announcement != null) data['announcement'] = announcement!;
+    if (message != null) data['message'] = message!;
+    if (signInSuccess != null) data['sign_in_success'] = signInSuccess!;
+    if (siteDataSuccess != null) data['site_data_success'] = siteDataSuccess!;
+    if (cookieSync != null) data['cookie_sync'] = cookieSync!;
+    if (level != null) data['level'] = level!;
+    if (bonus != null) data['bonus'] = bonus!;
+    if (perBonus != null) data['per_bonus'] = perBonus!;
+    if (score != null) data['score'] = score!;
+    if (ratio != null) data['ratio'] = ratio!;
+    if (seedingVol != null) data['seeding_vol'] = seedingVol!;
+    if (uploaded != null) data['uploaded'] = uploaded!;
+    if (downloaded != null) data['downloaded'] = downloaded!;
+    if (seeding != null) data['seeding'] = seeding!;
+    if (leeching != null) data['leeching'] = leeching!;
+    if (invite != null) data['invite'] = invite!;
+    if (hr != null) data['hr'] = hr!;
     return data;
   }
 }
