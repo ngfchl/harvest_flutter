@@ -123,6 +123,9 @@ class SettingPage extends StatelessWidget {
 
   void _openAddOptionForm(context) {
     Map<String, OptionFormBuilder> optionForms = _optionFormMap();
+    Logger.instance.i(optionForms);
+    Logger.instance.i(controller.optionChoice.where((e) =>
+        !controller.optionList.any((element) => element.name == e.value)));
     Get.bottomSheet(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
         CustomCard(
@@ -202,8 +205,503 @@ class SettingPage extends StatelessWidget {
       'ssdforum': _ssdForumForm,
       'cookie_cloud': _cookieCloudForm,
       'FileList': _fileListForm,
+      'notice_category_enable': _noticeCategoryEnableForm,
+      'notice_content_item': _noticeContentItem,
     };
     return optionForms;
+  }
+
+  Widget _noticeCategoryEnableForm(Option? option, context) {
+    final isActive = (option == null ? true : option.isActive).obs;
+    final aliyundriveNotice =
+        (option == null ? true : option.value.aliyundriveNotice).obs;
+    final siteData = (option == null ? true : option.value.siteData).obs;
+    final todayData = (option == null ? true : option.value.todayData).obs;
+    final packageTorrent =
+        (option == null ? true : option.value.packageTorrent).obs;
+    final deleteTorrent =
+        (option == null ? true : option.value.deleteTorrent).obs;
+    final rssTorrent = (option == null ? true : option.value.rssTorrent).obs;
+    final pushTorrent = (option == null ? true : option.value.pushTorrent).obs;
+    final programUpgrade =
+        (option == null ? true : option.value.programUpgrade).obs;
+    final ptppImport = (option == null ? true : option.value.ptppImport).obs;
+    final announcement =
+        (option == null ? true : option.value.announcement).obs;
+    final message = (option == null ? true : option.value.message).obs;
+    final signInSuccess =
+        (option == null ? true : option.value.signInSuccess).obs;
+    final siteDataSuccess =
+        (option == null ? true : option.value.siteDataSuccess).obs;
+    final cookieSync = (option == null ? true : option.value.cookieSync).obs;
+    final isEdit = (option == null).obs;
+    Logger.instance.i(option);
+    Logger.instance.i(aliyundriveNotice.value);
+
+    return Obx(() {
+      return CustomCard(
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+        child:
+            Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+          ListTile(
+              title: const Text('通知开关'),
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              leading: option != null
+                  ? IconButton(
+                      onPressed: () async {
+                        option?.isActive = !option!.isActive;
+                        await controller.saveOption(option!);
+                      },
+                      icon: option?.isActive == true
+                          ? const Icon(Icons.check, color: Colors.green)
+                          : const Icon(Icons.clear, color: Colors.red))
+                  : const SizedBox.shrink(),
+              trailing: ExpandIcon(
+                isExpanded: isEdit.value,
+                onPressed: (value) {
+                  isEdit.value = !isEdit.value;
+                },
+                expandedColor: Colors.teal,
+              )),
+          if (isEdit.value)
+            SizedBox(
+              height: 300,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: ListView(
+                        children: [
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('阿里云'),
+                              value: aliyundriveNotice.value!,
+                              onChanged: (value) {
+                                aliyundriveNotice.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('站点数据'),
+                              value: siteData.value!,
+                              onChanged: (value) {
+                                siteData.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('成功站点消息'),
+                              value: siteDataSuccess.value!,
+                              onChanged: (value) {
+                                siteDataSuccess.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('今日数据'),
+                              value: todayData.value!,
+                              onChanged: (value) {
+                                todayData.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('拆包'),
+                              value: packageTorrent.value!,
+                              onChanged: (value) {
+                                packageTorrent.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('删种'),
+                              value: deleteTorrent.value!,
+                              onChanged: (value) {
+                                deleteTorrent.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('RSS'),
+                              value: rssTorrent.value!,
+                              onChanged: (value) {
+                                rssTorrent.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('种子推送'),
+                              value: pushTorrent.value!,
+                              onChanged: (value) {
+                                pushTorrent.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('Docker 升级'),
+                              value: programUpgrade.value!,
+                              onChanged: (value) {
+                                programUpgrade.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('PTPP 导入'),
+                              value: ptppImport.value!,
+                              onChanged: (value) {
+                                ptppImport.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('公告详情'),
+                              value: announcement.value!,
+                              onChanged: (value) {
+                                announcement.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('短消息详情'),
+                              value: message.value!,
+                              onChanged: (value) {
+                                message.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('签到成功消息'),
+                              value: signInSuccess.value!,
+                              onChanged: (value) {
+                                signInSuccess.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('CookieCloud 同步'),
+                              value: cookieSync.value!,
+                              onChanged: (value) {
+                                cookieSync.value = value;
+                              }),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: FullWidthButton(
+                          text: '保存',
+                          onPressed: () async {
+                            if (option == null) {
+                              option = Option(
+                                id: 0,
+                                name: 'notice_category_enable',
+                                isActive: isActive.value,
+                                value: OptionValue(
+                                  aliyundriveNotice: aliyundriveNotice.value,
+                                  siteData: siteData.value,
+                                  siteDataSuccess: siteDataSuccess.value,
+                                  todayData: todayData.value,
+                                  packageTorrent: packageTorrent.value,
+                                  deleteTorrent: deleteTorrent.value,
+                                  rssTorrent: rssTorrent.value,
+                                  pushTorrent: pushTorrent.value,
+                                  programUpgrade: programUpgrade.value,
+                                  ptppImport: ptppImport.value,
+                                  announcement: announcement.value,
+                                  message: message.value,
+                                  signInSuccess: signInSuccess.value,
+                                  cookieSync: cookieSync.value,
+                                ),
+                              );
+                            } else {
+                              option?.isActive = isActive.value;
+                              option?.value = OptionValue(
+                                aliyundriveNotice: aliyundriveNotice.value,
+                                siteData: siteData.value,
+                                todayData: todayData.value,
+                                packageTorrent: packageTorrent.value,
+                                deleteTorrent: deleteTorrent.value,
+                                rssTorrent: rssTorrent.value,
+                                pushTorrent: pushTorrent.value,
+                                programUpgrade: programUpgrade.value,
+                                ptppImport: ptppImport.value,
+                                announcement: announcement.value,
+                                message: message.value,
+                                signInSuccess: signInSuccess.value,
+                                siteDataSuccess: siteDataSuccess.value,
+                                cookieSync: cookieSync.value,
+                              );
+                            }
+                            final res = await controller.saveOption(option!);
+                            if (res.code == 0) {
+                              Get.back();
+                              Get.snackbar('配置保存成功',
+                                  '${controller.optionMap['notice_category_enable']} 配置：${res.msg}',
+                                  colorText:
+                                      Theme.of(context).colorScheme.primary);
+                              isEdit.value = false;
+                            } else {
+                              Get.snackbar('配置保存失败',
+                                  '${controller.optionMap['notice_category_enable']} 配置出错啦：${res.msg}',
+                                  colorText:
+                                      Theme.of(context).colorScheme.error);
+                            }
+                          }),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ]),
+      );
+    });
+  }
+
+  Widget _noticeContentItem(Option? option, context) {
+    final isActive = (option == null ? true : option.isActive).obs;
+    final level = (option == null ? true : option.value.level).obs;
+    final bonus = (option == null ? true : option.value.bonus).obs;
+    final perBonus = (option == null ? true : option.value.perBonus).obs;
+    final score = (option == null ? true : option.value.score).obs;
+    final ratio = (option == null ? true : option.value.ratio).obs;
+    final seedingVol = (option == null ? true : option.value.seedingVol).obs;
+    final uploaded = (option == null ? true : option.value.uploaded).obs;
+    final downloaded = (option == null ? true : option.value.downloaded).obs;
+    final seeding = (option == null ? true : option.value.seeding).obs;
+    final leeching = (option == null ? true : option.value.leeching).obs;
+    final invite = (option == null ? true : option.value.invite).obs;
+    final hr = (option == null ? true : option.value.hr).obs;
+
+    final isEdit = (option == null).obs;
+    Logger.instance.i(option);
+
+    return Obx(() {
+      return CustomCard(
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+        child:
+            Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+          ListTile(
+              title: const Text('站点详情'),
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              leading: option != null
+                  ? IconButton(
+                      onPressed: () async {
+                        option?.isActive = !option!.isActive;
+                        await controller.saveOption(option!);
+                      },
+                      icon: option?.isActive == true
+                          ? const Icon(Icons.check, color: Colors.green)
+                          : const Icon(Icons.clear, color: Colors.red))
+                  : const SizedBox.shrink(),
+              trailing: ExpandIcon(
+                isExpanded: isEdit.value,
+                onPressed: (value) {
+                  isEdit.value = !isEdit.value;
+                },
+                expandedColor: Colors.teal,
+              )),
+          if (isEdit.value)
+            SizedBox(
+              height: 300,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: ListView(
+                        children: [
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('等级'),
+                              value: level.value!,
+                              onChanged: (value) {
+                                level.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('魔力'),
+                              value: bonus.value!,
+                              onChanged: (value) {
+                                bonus.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('时魔'),
+                              value: perBonus.value!,
+                              onChanged: (value) {
+                                perBonus.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('积分'),
+                              value: score.value!,
+                              onChanged: (value) {
+                                score.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('分享率'),
+                              value: ratio.value!,
+                              onChanged: (value) {
+                                ratio.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('做种体积'),
+                              value: seedingVol.value!,
+                              onChanged: (value) {
+                                seedingVol.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('上传量'),
+                              value: uploaded.value!,
+                              onChanged: (value) {
+                                uploaded.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('下载量'),
+                              value: downloaded.value!,
+                              onChanged: (value) {
+                                downloaded.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('做种数量'),
+                              value: seeding.value!,
+                              onChanged: (value) {
+                                seeding.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('吸血数量'),
+                              value: leeching.value!,
+                              onChanged: (value) {
+                                leeching.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('邀请'),
+                              value: invite.value!,
+                              onChanged: (value) {
+                                invite.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              title: const Text('HR'),
+                              value: hr.value!,
+                              onChanged: (value) {
+                                hr.value = value;
+                              }),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: FullWidthButton(
+                          text: '保存',
+                          onPressed: () async {
+                            if (option == null) {
+                              option = Option(
+                                id: 0,
+                                name: 'notice_content_item',
+                                isActive: isActive.value,
+                                value: OptionValue(
+                                  level: level.value,
+                                  bonus: bonus.value,
+                                  perBonus: perBonus.value,
+                                  score: score.value,
+                                  ratio: ratio.value,
+                                  seedingVol: seedingVol.value,
+                                  uploaded: uploaded.value,
+                                  downloaded: downloaded.value,
+                                  seeding: seeding.value,
+                                  leeching: leeching.value,
+                                  invite: invite.value,
+                                  hr: hr.value,
+                                ),
+                              );
+                            } else {
+                              option?.isActive = isActive.value;
+                              option?.value = OptionValue(
+                                level: level.value,
+                                bonus: bonus.value,
+                                perBonus: perBonus.value,
+                                score: score.value,
+                                ratio: ratio.value,
+                                seedingVol: seedingVol.value,
+                                uploaded: uploaded.value,
+                                downloaded: downloaded.value,
+                                seeding: seeding.value,
+                                leeching: leeching.value,
+                                invite: invite.value,
+                                hr: hr.value,
+                              );
+                            }
+                            final res = await controller.saveOption(option!);
+                            if (res.code == 0) {
+                              Get.back();
+                              Get.snackbar('配置保存成功',
+                                  '${controller.optionMap['notice_content_item']} 配置：${res.msg}',
+                                  colorText:
+                                      Theme.of(context).colorScheme.primary);
+                              isEdit.value = false;
+                            } else {
+                              Get.snackbar('配置保存失败',
+                                  '${controller.optionMap['notice_content_item']} 配置出错啦：${res.msg}',
+                                  colorText:
+                                      Theme.of(context).colorScheme.error);
+                            }
+                          }),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ]),
+      );
+    });
   }
 
   Widget _monkeyTokenForm(Option? option, context) {

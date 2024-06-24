@@ -17,8 +17,8 @@ class SettingController extends GetxController {
   List<Map<String, String>> optionMapList = [
     {'name': '油猴Token', 'value': 'monkey_token'},
     // {'name': '辅种配置', 'value': 'repeat'},
-    // {'name': '通知详情', 'value': 'notice_content_item'},
-    // {'name': '通知开关', 'value': 'notice_category_enable'},
+    {'name': '通知详情', 'value': 'notice_content_item'},
+    {'name': '通知开关', 'value': 'notice_category_enable'},
     {'name': '企业微信', 'value': 'wechat_work_push'},
     {'name': 'Wxpusher', 'value': 'wxpusher_push'},
     {'name': 'PushDeer', 'value': 'pushdeer_push'},
