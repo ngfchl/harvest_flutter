@@ -1,7 +1,7 @@
 name: harvest
 description: Harvest Project App Client
 publish_to: none
-version: 2024.0611.01+47
+version: 2024.0624.01+49
 environment:
   sdk: '>=3.3.2 <4.0.0'
 dependencies:
@@ -24,10 +24,10 @@ dependencies:
   filesize: ^2.0.1
   basic_utils: ^5.7.0
   flutter_ellipsis_text: ^1.0.1
-  syncfusion_flutter_core: ^25.2.7
-  syncfusion_flutter_charts: ^25.2.7
-  syncfusion_flutter_sliders: ^25.2.7
-  syncfusion_flutter_gauges: ^25.2.7
+  syncfusion_flutter_core: ^26.1.38
+  syncfusion_flutter_charts: ^26.1.38
+  syncfusion_flutter_sliders: ^26.1.38
+  syncfusion_flutter_gauges: ^26.1.38
   flutter_slidable: ^3.1.0
   flutter_pickers: ^2.1.9
   permission_handler: ^11.3.1
