@@ -180,7 +180,7 @@ class AggSearchController extends GetxController {
     await channel.ready;
     channel.sink.add(json.encode({
       "key": searchKeyController.text,
-      "max_count": maxCount,
+      "max_count": sites.length == mySiteMap.length ? maxCount : sites.length,
       "sites": sites,
     }));
     channel.stream.listen((message) {
