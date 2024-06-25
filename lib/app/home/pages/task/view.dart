@@ -222,9 +222,9 @@ class TaskPage extends StatelessWidget {
     final nameController =
         TextEditingController(text: task != null ? task.name : '');
     final minuteController =
-        TextEditingController(text: task != null ? cron?.minute : '');
+        TextEditingController(text: task != null ? cron?.minute : '1');
     final hourController =
-        TextEditingController(text: task != null ? cron?.hour : '');
+        TextEditingController(text: task != null ? cron?.hour : '*');
     final dayOfWeekController =
         TextEditingController(text: task != null ? cron?.dayOfMonth : '*');
     final dayOfMonthController =
