@@ -1866,7 +1866,7 @@ class SettingPage extends StatelessWidget {
                                     name: 'wxpusher_push',
                                     isActive: isActive.value,
                                     value: OptionValue(
-                                      appId: tokenController.text,
+                                      appId: appIdController.text,
                                       token: tokenController.text,
                                       uids: uidController.text,
                                     ),
@@ -1874,7 +1874,7 @@ class SettingPage extends StatelessWidget {
                                 } else {
                                   option?.isActive = isActive.value;
                                   option?.value = OptionValue(
-                                    appId: tokenController.text,
+                                    appId: appIdController.text,
                                     token: tokenController.text,
                                     uids: uidController.text,
                                   );
