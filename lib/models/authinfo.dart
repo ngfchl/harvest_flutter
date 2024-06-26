@@ -16,3 +16,43 @@ class AuthInfo {
     return data;
   }
 }
+
+class GitLog {
+  final String date;
+  final String data;
+  final String hex;
+
+  GitLog({required this.date, required this.data, required this.hex});
+
+  factory GitLog.fromJson(Map<String, dynamic> json) {
+    return GitLog(
+      date: json['date'],
+      data: json['data'],
+      hex: json['hex'],
+    );
+  }
+}
+
+class UpdateLogState {
+  final GitLog localLogs;
+  final List<GitLog> updateNotes;
+  final bool update;
+
+  UpdateLogState({
+    required this.localLogs,
+    required this.updateNotes,
+    required this.update,
+  });
+
+  factory UpdateLogState.fromJson(Map<String, dynamic> json) {
+    var updateNotesJson = json['update_notes'] as List;
+    List<GitLog> updateNotesList =
+        updateNotesJson.map((e) => GitLog.fromJson(e)).toList();
+
+    return UpdateLogState(
+      localLogs: GitLog.fromJson(json['local_logs']),
+      updateNotes: updateNotesList,
+      update: json['update'],
+    );
+  }
+}
