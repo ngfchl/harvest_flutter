@@ -12,9 +12,12 @@ import 'package:harvest/app/home/pages/subscribe/view.dart';
 import 'package:harvest/app/home/pages/subscribe_history/view.dart';
 import 'package:harvest/app/home/pages/subscribe_tag/view.dart';
 import 'package:harvest/app/home/pages/task/view.dart';
+import 'package:harvest/models/common_response.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../api/api.dart';
+import '../../../api/login.dart';
+import '../../../models/authinfo.dart';
 import '../../../utils/dio_util.dart';
 import '../../../utils/logger_helper.dart';
 import '../../../utils/storage.dart';
@@ -29,6 +32,7 @@ class HomeController extends GetxController {
   TextEditingController searchController = TextEditingController();
   DioUtil dioUtil = DioUtil();
   bool isDarkMode = false;
+  UpdateLogState? updateLogState;
 
   // final mySiteController = Get.put(MySiteController());
 
@@ -90,6 +94,8 @@ class HomeController extends GetxController {
     }
     // await mySiteController.initData();
     // pageController.jumpToPage(pages.length - 1);
+    await initUpdateLogState();
+
     super.onInit();
   }
 
@@ -109,6 +115,20 @@ class HomeController extends GetxController {
     Get.delete<DownloadController>();
     Get.delete<HomeController>();
     Get.offAllNamed(Routes.LOGIN);
+  }
+
+  Future<void> initUpdateLogState() async {
+    final res = await getGitUpdateLog();
+    if (res.code == 0) {
+      updateLogState = res.data;
+    } else {
+      Get.snackbar('更新日志', '获取更新日志失败！', colorText: Colors.red);
+    }
+    Logger.instance.i(updateLogState?.localLogs);
+  }
+
+  Future<CommonResponse> doDockerUpdate() async {
+    return await doDockerUpdateApi();
   }
 
   Future<void> changePage(int index) async {

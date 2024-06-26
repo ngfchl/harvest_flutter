@@ -4,6 +4,7 @@ import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:harvest/api/mysite.dart';
+import 'package:harvest/common/card_view.dart';
 import 'package:harvest/models/common_response.dart';
 
 import '../../utils/storage.dart';
@@ -17,49 +18,51 @@ class HomeView extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _globalKey,
-      extendBody: true,
-      appBar: GFAppBar(
-        elevation: 1.5,
-        iconTheme: const IconThemeData(color: Colors.black38),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [
-                Colors.orange.withOpacity(0.4),
-                Colors.grey.withOpacity(0.3),
-                Colors.brown.withOpacity(0.1),
-              ],
+    return GetBuilder<HomeController>(builder: (controller) {
+      return Scaffold(
+        key: _globalKey,
+        extendBody: true,
+        appBar: GFAppBar(
+          elevation: 1.5,
+          iconTheme: const IconThemeData(color: Colors.black38),
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [
+                  Colors.orange.withOpacity(0.4),
+                  Colors.grey.withOpacity(0.3),
+                  Colors.brown.withOpacity(0.1),
+                ],
+              ),
             ),
           ),
+          actions: <Widget>[
+            _actionButtonList(context),
+          ],
         ),
-        actions: <Widget>[
-          _actionButtonList(context),
-        ],
-      ),
-      body: PageView(
-        controller: controller.pageController,
-        physics: const NeverScrollableScrollPhysics(),
-        onPageChanged: (index) {
-          // controller.initPage.value = index;
-          // controller.update();
-        },
-        children: controller.pages,
-      ),
-      drawer: SizedBox(
-        width: 200,
-        child: GFDrawer(
-          semanticLabel: 'Harvest',
-          elevation: 10,
-          color: Theme.of(context).colorScheme.surface,
-          child: _buildMenuBar(context),
+        body: PageView(
+          controller: controller.pageController,
+          physics: const NeverScrollableScrollPhysics(),
+          onPageChanged: (index) {
+            // controller.initPage.value = index;
+            // controller.update();
+          },
+          children: controller.pages,
         ),
-      ),
-      drawerEdgeDragWidth: 100,
-    );
+        drawer: SizedBox(
+          width: 200,
+          child: GFDrawer(
+            semanticLabel: 'Harvest',
+            elevation: 10,
+            color: Theme.of(context).colorScheme.surface,
+            child: _buildMenuBar(context),
+          ),
+        ),
+        drawerEdgeDragWidth: 100,
+      );
+    });
   }
 
   Widget _buildMenuBar(context) {
@@ -241,114 +244,236 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget _actionButtonList(context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // const Wen(),
-        const DarkModeSwitch(),
-        // SizedBox(
-        //   height: 20,
-        //   width: 20,
-        //   child: GetBuilder<HomeController>(builder: (controller) {
-        //     return InkWell(
-        //       onTap: () {
-        //         Get.changeTheme(controller.isDarkMode ? lightTheme : darkTheme);
-        //
-        //         controller.isDarkMode = !controller.isDarkMode;
-        //         controller.update();
-        //       },
-        //       child: Icon(
-        //           controller.isDarkMode ? Icons.dark_mode : Icons.light_mode),
-        //     );
-        //   }),
-        // ),
-        const SizedBox(width: 15),
-        const SizedBox(
-          height: 20,
-          width: 20,
-          child: ThemeModal(
-            itemSize: 28,
+    return GetBuilder<HomeController>(builder: (controller) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          InkWell(
+            onTap: () {
+              if (controller.updateLogState == null) {
+                controller.initUpdateLogState();
+                controller.update();
+              }
+              Get.defaultDialog(
+                  title: "Docker更新日志",
+                  content: SizedBox(
+                    height: 300,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: controller.updateLogState!.updateNotes
+                            .map((note) => CustomCard(
+                                  width: double.infinity,
+                                  color: controller
+                                              .updateLogState?.localLogs.hex ==
+                                          note.hex
+                                      ? Colors.green
+                                      : Theme.of(context).colorScheme.surface,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      controller.updateLogState?.localLogs
+                                                  .hex ==
+                                              note.hex
+                                          ? Icon(
+                                              Icons.check,
+                                              size: 24,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurface
+                                                  .withOpacity(0.8),
+                                            )
+                                          : const SizedBox(),
+                                      Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              note.data.trimRight(),
+                                              style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: controller
+                                                                  .updateLogState
+                                                                  ?.update ==
+                                                              true &&
+                                                          note.date.compareTo(
+                                                                  controller
+                                                                      .updateLogState!
+                                                                      .localLogs
+                                                                      .date) >
+                                                              0
+                                                      ? Colors.red
+                                                      : Theme.of(context)
+                                                          .colorScheme
+                                                          .primary,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            Text(
+                                              note.date,
+                                              style: TextStyle(
+                                                  fontSize: 10,
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .onSurface
+                                                      .withOpacity(0.8)),
+                                              textAlign: TextAlign.right,
+                                            ),
+                                          ]),
+                                    ],
+                                  ),
+                                ))
+                            .toList(),
+                      ),
+                    ),
+                  ),
+                  confirm: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.blue,
+                        // 按钮文字颜色
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18.0), // 圆角半径
+                        ),
+                      ),
+                      onPressed: () async {
+                        final res = await controller.doDockerUpdate();
+                        Get.back();
+                        Get.snackbar('更新通知', '${res.msg}',
+                            colorText: Theme.of(context).colorScheme.primary);
+                      },
+                      child: const Text('更新')),
+                  cancel: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.red,
+                        // 按钮文字颜色
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18.0), // 圆角半径
+                        ),
+                      ),
+                      onPressed: () {
+                        Get.back();
+                      },
+                      child: const Text('取消')));
+            },
+            child: Icon(Icons.upload,
+                size: 28,
+                color: controller.updateLogState?.update == true
+                    ? Colors.red
+                    : Colors.black54),
           ),
-        ),
-        const SizedBox(width: 15),
-        CustomPopup(
-          showArrow: false,
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          barrierColor: Colors.transparent,
-          content: SizedBox(
-            width: 100,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                PopupMenuItem<String>(
-                  child: Text(
-                    '全员签到',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                  ),
-                  onTap: () async {
-                    await signAllSiteButton();
-                  },
-                ),
-                PopupMenuItem<String>(
-                  child: Text(
-                    '站点数据',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                  ),
-                  onTap: () async {
-                    await getAllStatusButton();
-                  },
-                ),
-                PopupMenuItem<String>(
-                  child: Text(
-                    'PTPP',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                  ),
-                  onTap: () async {
-                    await importFromPTPP();
-                  },
-                ),
-                PopupMenuItem<String>(
-                  child: Text(
-                    'CC 同步',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                  ),
-                  onTap: () async {
-                    await importFromCookieCloud();
-                  },
-                ),
-                PopupMenuItem<String>(
-                  child: Text(
-                    '清除缓存',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                  ),
-                  onTap: () async {
-                    CommonResponse res = await clearMyCacheApi();
-                    Get.snackbar('清除缓存', '清除缓存：${res.msg}',
-                        colorText: Theme.of(context).colorScheme.primary);
-                  },
-                ),
-              ],
+
+          const SizedBox(width: 15),
+
+          // const Wen(),
+
+          const DarkModeSwitch(),
+          // SizedBox(
+          //   height: 20,
+          //   width: 20,
+          //   child: GetBuilder<HomeController>(builder: (controller) {
+          //     return InkWell(
+          //       onTap: () {
+          //         Get.changeTheme(controller.isDarkMode ? lightTheme : darkTheme);
+          //
+          //         controller.isDarkMode = !controller.isDarkMode;
+          //         controller.update();
+          //       },
+          //       child: Icon(
+          //           controller.isDarkMode ? Icons.dark_mode : Icons.light_mode),
+          //     );
+          //   }),
+          // ),
+          const SizedBox(width: 15),
+          const SizedBox(
+            height: 20,
+            width: 20,
+            child: ThemeModal(
+              itemSize: 28,
             ),
           ),
-          child: Icon(
-            Icons.add_box_outlined,
-            size: 24,
-            color: Theme.of(context).colorScheme.primary,
+          const SizedBox(width: 15),
+          CustomPopup(
+            showArrow: false,
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            barrierColor: Colors.transparent,
+            content: SizedBox(
+              width: 100,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  PopupMenuItem<String>(
+                    child: Text(
+                      '全员签到',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                    ),
+                    onTap: () async {
+                      await signAllSiteButton();
+                    },
+                  ),
+                  PopupMenuItem<String>(
+                    child: Text(
+                      '站点数据',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                    ),
+                    onTap: () async {
+                      await getAllStatusButton();
+                    },
+                  ),
+                  PopupMenuItem<String>(
+                    child: Text(
+                      'PTPP',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                    ),
+                    onTap: () async {
+                      await importFromPTPP();
+                    },
+                  ),
+                  PopupMenuItem<String>(
+                    child: Text(
+                      'CC 同步',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                    ),
+                    onTap: () async {
+                      await importFromCookieCloud();
+                    },
+                  ),
+                  PopupMenuItem<String>(
+                    child: Text(
+                      '清除缓存',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                    ),
+                    onTap: () async {
+                      CommonResponse res = await clearMyCacheApi();
+                      Get.snackbar('清除缓存', '清除缓存：${res.msg}',
+                          colorText: Theme.of(context).colorScheme.primary);
+                    },
+                  ),
+                ],
+              ),
+            ),
+            child: Icon(
+              Icons.add_box_outlined,
+              size: 24,
+              color: Theme.of(context).colorScheme.primary,
+            ),
           ),
-        ),
-        const SizedBox(width: 20)
-      ],
-    );
+          const SizedBox(width: 20)
+        ],
+      );
+    });
   }
 }
