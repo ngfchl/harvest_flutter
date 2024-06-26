@@ -2,6 +2,7 @@ class Api {
   // 登录接口
   static const String LOGIN_URL = "auth/login";
   static const String USER_INFO = "auth/userinfo";
+  static const String UPDATE_LOG = "auth/update/log";
 
   // 我的站点列表增删改查
   static const String WEBSITE_LIST = "mysite/website";
@@ -25,6 +26,9 @@ class Api {
 
   // 通知测试
   static const String NOTIFY_TEST = "option/test";
+
+  // 更新 Docker
+  static const String DOCKER_UPDATE = "option/update/";
 
   // 下载器列表
   static const String DOWNLOADER_LIST = "option/downloaders";
