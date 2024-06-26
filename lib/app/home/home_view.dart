@@ -329,22 +329,26 @@ class HomeView extends GetView<HomeController> {
                       ),
                     ),
                   ),
-                  confirm: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        backgroundColor: Colors.blue,
-                        // 按钮文字颜色
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18.0), // 圆角半径
-                        ),
-                      ),
-                      onPressed: () async {
-                        final res = await controller.doDockerUpdate();
-                        Get.back();
-                        Get.snackbar('更新通知', '${res.msg}',
-                            colorText: Theme.of(context).colorScheme.primary);
-                      },
-                      child: const Text('更新')),
+                  confirm: controller.updateLogState!.update == true
+                      ? ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.blue,
+                            // 按钮文字颜色
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18.0), // 圆角半径
+                            ),
+                          ),
+                          onPressed: () async {
+                            final res = await controller.doDockerUpdate();
+                            Get.back();
+                            Get.snackbar('更新通知', '${res.msg}',
+                                colorText:
+                                    Theme.of(context).colorScheme.primary);
+                          },
+                          child: const Text('更新'),
+                        )
+                      : null,
                   cancel: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
