@@ -251,10 +251,9 @@ class HomeView extends GetView<HomeController> {
         children: [
           InkWell(
             onTap: () {
-              if (controller.updateLogState == null) {
-                controller.initUpdateLogState();
-                controller.update();
-              }
+              controller.initUpdateLogState();
+              controller.update();
+
               Get.defaultDialog(
                   title: "Docker更新日志",
                   content: SizedBox(
