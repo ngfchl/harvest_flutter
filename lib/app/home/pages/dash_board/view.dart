@@ -47,7 +47,9 @@ class _DashBoardPageState extends State<DashBoardPage>
     return GetBuilder<DashBoardController>(builder: (controller) {
       return SafeArea(
         child: Scaffold(
-          body: _showAllInfo(),
+          body: GetBuilder<DashBoardController>(builder: (controller) {
+            return _showAllInfo();
+          }),
           floatingActionButton: _buildBottomButtonBar(),
           floatingActionButtonLocation:
               FloatingActionButtonLocation.miniCenterDocked,
@@ -58,7 +60,6 @@ class _DashBoardPageState extends State<DashBoardPage>
 
   Widget _showAllInfo() {
     return GetBuilder<DashBoardController>(builder: (controller) {
-      Logger.instance.i(controller.statusList.length);
       return Column(
         children: [
           const SizedBox(height: 5),
