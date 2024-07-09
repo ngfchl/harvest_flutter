@@ -511,6 +511,18 @@ class _AggSearchPageState extends State<AggSearchPage>
                 ],
               ),
             ),
+            if (info.tags.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ...info.tags.map((e) => CustomTextTag(
+                          labelText: e,
+                        ))
+                  ],
+                ),
+              ),
             if (info.progress != null)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
