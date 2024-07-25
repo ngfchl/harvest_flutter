@@ -1,0 +1,34 @@
+name: Build and Deploy Web
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'latest'
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter pub upgrade
+
+      - name: Build web
+        run: flutter build web
+
+      - name: Deploy to web branch
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.TOKEN_GITHUB }}
+          publish_dir: ./build/web
+          publish_branch: web-dist
