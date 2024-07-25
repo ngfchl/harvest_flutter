@@ -302,7 +302,7 @@ class _AggSearchPageState extends State<AggSearchPage>
         String url =
             '${mySite.mirror}${website.pageDetail.replaceAll('{}', info.tid)}';
 
-        if (!Platform.isIOS && !Platform.isAndroid) {
+        if (identical(0, 0.0) || !Platform.isIOS && !Platform.isAndroid) {
           LoggerHelper.Logger.instance.i('Explorer');
           Uri uri = Uri.parse(url);
           if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {

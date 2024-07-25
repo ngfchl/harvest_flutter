@@ -303,7 +303,7 @@ class _MySitePagePageState extends State<MySitePage>
             }
             String url =
                 '${mySite.mirror!.endsWith('/') ? mySite.mirror : '${mySite.mirror}/'}$path';
-            if (!Platform.isIOS && !Platform.isAndroid) {
+            if (identical(0, 0.0) || !Platform.isIOS && !Platform.isAndroid) {
               Logger.instance.i('Explorer');
               Uri uri = Uri.parse(url);
               if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
