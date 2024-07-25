@@ -68,7 +68,8 @@ class _DownloadPageState extends State<DownloadPage>
                     });
               }),
             ),
-            if (Platform.isIOS) const SizedBox(height: 10),
+            if (!identical(0, 0.0) && Platform.isIOS)
+              const SizedBox(height: 10),
             const SizedBox(height: 50),
           ],
         ),
