@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../common/card_view.dart';
 import '../../../../common/form_widgets.dart';
@@ -514,6 +515,8 @@ class _DownloadPageState extends State<DownloadPage>
       connectState.value = false;
     }
     ChartSeriesController? chartSeriesController;
+    var pathDownloader =
+        '${downloader.protocol}://${downloader.host}:${downloader.port}';
     return CustomCard(
       margin: const EdgeInsets.only(left: 8, right: 8, top: 6, bottom: 2),
       child: Slidable(
@@ -623,16 +626,22 @@ class _DownloadPageState extends State<DownloadPage>
                       color: Theme.of(context).colorScheme.primary),
                 ),
                 subTitle: Text(
-                  '${downloader.protocol}://${downloader.host}:${downloader.port}',
+                  pathDownloader,
                   style: TextStyle(
                     fontSize: 11,
                     color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
-                onTap: () {
+                onTap: () async {
                   controller.cancelPeriodicTimer();
                   if (downloader.category == 'Qb') {
-                    Get.toNamed(Routes.QB, arguments: downloader);
+                    if (identical(0, 0.0)) {
+                      Uri uri = Uri.parse(pathDownloader);
+                      await launchUrl(uri,
+                          mode: LaunchMode.externalApplication);
+                    } else {
+                      Get.toNamed(Routes.QB, arguments: downloader);
+                    }
                   }
                   if (downloader.category == 'Tr') {
                     Get.toNamed(Routes.TR, arguments: downloader);
