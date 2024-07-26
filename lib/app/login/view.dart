@@ -220,18 +220,22 @@ class _LoginPageState extends State<LoginPage> {
 
   void showEditOrCreateServerSheet(Server? serverToEdit) async {
     final formKey = GlobalKey<FormState>();
+    String defaultProtocol = identical(0, 0.0) ? Uri.base.scheme : 'http';
+    String defaultDomain = identical(0, 0.0) ? Uri.base.host : '192.168.123.5';
+    String defaultPort = identical(0, 0.0) ? Uri.base.port.toString() : '28000';
+
     TextEditingController nameController =
-        TextEditingController(text: serverToEdit?.name ?? 'Server');
+        TextEditingController(text: serverToEdit?.name ?? 'DefaultServer');
     TextEditingController protocolController =
-        TextEditingController(text: serverToEdit?.protocol ?? 'http');
+        TextEditingController(text: serverToEdit?.protocol ?? defaultProtocol);
     TextEditingController domainController =
-        TextEditingController(text: serverToEdit?.domain ?? '192.168.123.5');
+        TextEditingController(text: serverToEdit?.domain ?? defaultDomain);
     TextEditingController usernameController =
         TextEditingController(text: serverToEdit?.username ?? 'admin');
     TextEditingController passwordController =
         TextEditingController(text: serverToEdit?.password ?? 'adminadmin');
-    TextEditingController portController =
-        TextEditingController(text: serverToEdit?.port.toString() ?? '28000');
+    TextEditingController portController = TextEditingController(
+        text: serverToEdit?.port.toString() ?? defaultPort);
     await Get.bottomSheet(
       enableDrag: true,
       GetBuilder<LoginController>(builder: (controller) {
