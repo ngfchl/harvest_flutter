@@ -31,22 +31,28 @@ class LoggingPage extends StatelessWidget {
               children: [
                 ElevatedButton(
                     onPressed: () {
+                      controller.currentLog = 'logging';
+                      controller.switchLogging();
+                    },
+                    child: const Text('服务')),
+                ElevatedButton(
+                    onPressed: () {
                       controller.currentLog = 'taskList';
                       controller.switchLogging();
                     },
-                    child: const Text('任务记录')),
+                    child: const Text('任务')),
                 ElevatedButton(
                     onPressed: () {
                       controller.currentLog = 'taskLog';
                       controller.switchLogging();
                     },
-                    child: const Text('任务日志')),
+                    child: const Text('Log')),
                 ElevatedButton(
                     onPressed: () {
                       controller.currentLog = 'accessLog';
                       controller.switchLogging();
                     },
-                    child: const Text('访问日志')),
+                    child: const Text('Web')),
               ],
             ),
             Expanded(
@@ -76,7 +82,7 @@ class LoggingPage extends StatelessWidget {
                     Logger.instance
                         .w((await inAppWebViewController.getTitle())!);
                     controller.isLoading = false;
-                    if (!controller.accessUrl.contains('/api/flower')) {
+                    if (!controller.accessUrl.contains('flower')) {
                       await controller.webController
                           ?.evaluateJavascript(source: """
                                       document.getElementsByTagName('body')[0].style.fontSize = '${controller.fontSize}px';
@@ -99,12 +105,12 @@ class LoggingPage extends StatelessWidget {
               ),
             ),
             CustomCard(
-              height: !controller.accessUrl.contains('/api/flower') ? 105 : 56,
+              height: !controller.accessUrl.contains('flower') ? 105 : 56,
               child: Padding(
                 padding: const EdgeInsets.only(left: 18.0),
                 child: Column(
                   children: [
-                    if (!controller.accessUrl.contains('/api/flower'))
+                    if (!controller.accessUrl.contains('flower'))
                       Row(
                         children: [
                           Text('获取日志长度：${controller.logLength}'),

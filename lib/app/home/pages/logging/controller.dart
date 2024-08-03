@@ -6,7 +6,7 @@ import '../../../../utils/storage.dart';
 class LoggingController extends GetxController {
   int progress = 0;
   bool isLoading = false;
-  String baseUrl = '${SPUtil.getLocalStorage('server')}/api/';
+  String baseUrl = '${SPUtil.getLocalStorage('server')}';
   String accessUrl = '';
   String currentLog = '';
   int logLength = 2048;
@@ -27,28 +27,28 @@ class LoggingController extends GetxController {
 
   connectTaskLog() {
     accessUrl =
-        '${baseUrl}logging/tail.html?processname=celery-worker&limit=$logLength';
+        '$baseUrl/supervisor/tail.html?processname=celery-worker&limit=$logLength';
   }
 
   connectTaskList() {
-    accessUrl = '${baseUrl}flower/tasks';
+    accessUrl = '$baseUrl/flower/tasks';
   }
 
   switchLogging() async {
     switch (currentLog) {
       case 'logging':
-        accessUrl = '${baseUrl}logging';
+        accessUrl = '$baseUrl/supervisor';
         break;
       case 'accessLog':
         accessUrl =
-            '${baseUrl}logging/tail.html?processname=uvicorn&limit=$logLength';
+            '$baseUrl/supervisor/tail.html?processname=uvicorn&limit=$logLength';
         break;
       case 'taskLog':
         accessUrl =
-            '${baseUrl}logging/tail.html?processname=celery-worker&limit=$logLength';
+            '$baseUrl/supervisor/tail.html?processname=celery-worker&limit=$logLength';
         break;
       case 'taskList':
-        accessUrl = '${baseUrl}flower/tasks';
+        accessUrl = '$baseUrl/flower/tasks';
         break;
     }
     await webController?.loadUrl(
