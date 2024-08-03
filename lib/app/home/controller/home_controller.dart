@@ -15,7 +15,6 @@ import 'package:harvest/app/home/pages/task/view.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../api/api.dart';
 import '../../../api/login.dart';
 import '../../../models/authinfo.dart';
 import '../../../utils/dio_util.dart';
@@ -145,7 +144,7 @@ class HomeController extends GetxController {
                     onPressed: () async {
                       Get.back();
                       String url =
-                          '${SPUtil.getLocalStorage('server')}/api/flower/tasks';
+                          '${SPUtil.getLocalStorage('server')}/flower/tasks';
                       await openUrl(url);
                     },
                     child: const Text('任务列表')),
@@ -153,7 +152,7 @@ class HomeController extends GetxController {
                     onPressed: () async {
                       Get.back();
                       String url =
-                          '${SPUtil.getLocalStorage('server')}/api/${Api.SYSTEM_LOGGING}';
+                          '${SPUtil.getLocalStorage('server')}/supervisor';
                       await openUrl(url);
                     },
                     child: const Text('服务日志')),
