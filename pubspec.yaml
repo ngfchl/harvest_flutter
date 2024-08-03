@@ -1,7 +1,7 @@
 name: harvest
 description: Harvest Project App Client
 publish_to: none
-version: 2024.0726.01+54
+version: 2024.0803.01+55
 environment:
   sdk: '>=3.3.2 <4.0.0'
 dependencies:
@@ -33,7 +33,7 @@ dependencies:
   permission_handler: ^11.3.1
   flutter_inappwebview: ^6.0.0
   random_color: ^1.0.5
-  package_info_plus: ^8.0.0
+  package_info_plus: ^8.0.1
   app_service: ^4.0.1
   flutter_native_splash: ^2.4.0
   cached_network_image: ^3.3.1
