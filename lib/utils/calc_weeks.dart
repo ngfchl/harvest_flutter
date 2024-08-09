@@ -3,9 +3,9 @@ String calcWeeksDays(String datetime) {
   int weeks = days ~/ 7;
   int day = days % 7;
   if (day == 0) {
-    return '🔥$weeks周';
+    return '$weeks周';
   }
-  return '🔥$weeks周$day天';
+  return '$weeks周$day天';
 }
 
 String calculateTimeElapsed(String pastTime) {

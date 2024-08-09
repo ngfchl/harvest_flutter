@@ -430,7 +430,9 @@ class _DashBoardPageState extends State<DashBoardPage>
                                               ),
                                             )
                                           : Text(
-                                              '🔥${calculateTimeElapsed(earliestSite.timeJoin).replaceAll('前', '')}',
+                                              calculateTimeElapsed(
+                                                      earliestSite.timeJoin)
+                                                  .replaceAll('前', ''),
                                               textAlign: TextAlign.center,
                                               style: TextStyle(
                                                 fontWeight: FontWeight.normal,
@@ -443,7 +445,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                               ),
                                             ),
                                       Text(
-                                        'P龄',
+                                        '🔥P龄',
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,

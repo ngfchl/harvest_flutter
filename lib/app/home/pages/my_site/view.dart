@@ -380,7 +380,7 @@ class _MySitePagePageState extends State<MySitePage>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      calcWeeksDays(mySite.timeJoin),
+                      '🔥${calcWeeksDays(mySite.timeJoin)}',
                       style: const TextStyle(
                         fontSize: 10,
                       ),
