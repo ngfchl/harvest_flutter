@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:app_service/app_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_popup/flutter_popup.dart';
@@ -42,15 +44,36 @@ class HomeView extends GetView<HomeController> {
             _actionButtonList(context),
           ],
         ),
-        body: PageView(
-          controller: controller.pageController,
-          physics: const NeverScrollableScrollPhysics(),
-          onPageChanged: (index) {
-            // controller.initPage.value = index;
-            // controller.update();
-          },
-          children: controller.pages,
-        ),
+        body: !identical(0, 0.0) && (Platform.isAndroid || Platform.isIOS)
+            ? PageView(
+                controller: controller.pageController,
+                physics: const NeverScrollableScrollPhysics(),
+                onPageChanged: (index) {
+                  // controller.initPage.value = index;
+                  // controller.update();
+                },
+                children: controller.pages,
+              )
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CustomCard(
+                    width: 200,
+                    height: double.infinity,
+                    child: _buildMenuBar(context),
+                  ),
+                  Expanded(
+                      child: PageView(
+                    controller: controller.pageController,
+                    physics: const NeverScrollableScrollPhysics(),
+                    onPageChanged: (index) {
+                      // controller.initPage.value = index;
+                      // controller.update();
+                    },
+                    children: controller.pages,
+                  ))
+                ],
+              ),
         drawer: SizedBox(
           width: 200,
           child: GFDrawer(
@@ -90,7 +113,7 @@ class HomeView extends GetView<HomeController> {
               labelType: NavigationRailLabelType.none,
               leading: GFDrawerHeader(
                 centerAlign: true,
-                closeButton: null,
+                closeButton: const SizedBox.shrink(),
                 decoration: const BoxDecoration(
                   color: Colors.transparent,
                 ),
