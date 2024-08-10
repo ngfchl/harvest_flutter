@@ -8,10 +8,10 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  logger: ^2.3.0
+  logger: ^2.4.0
   get: ^4.6.6
-  dio: ^5.4.3+1
-  shared_preferences: ^2.2.3
+  dio: ^5.5.0+1
+  shared_preferences: ^2.3.1
   getwidget: ^4.0.0
   qbittorrent_api: ^1.2.1
   transmission_api: ^0.0.1
@@ -24,26 +24,26 @@ dependencies:
   filesize: ^2.0.1
   basic_utils: ^5.7.0
   flutter_ellipsis_text: ^1.0.1
-  syncfusion_flutter_core: ^26.1.38
-  syncfusion_flutter_charts: ^26.1.38
-  syncfusion_flutter_sliders: ^26.1.38
-  syncfusion_flutter_gauges: ^26.1.38
-  flutter_slidable: ^3.1.0
+  syncfusion_flutter_core: ^26.2.8
+  syncfusion_flutter_charts: ^26.2.8
+  syncfusion_flutter_sliders: ^26.2.8
+  syncfusion_flutter_gauges: ^26.2.8
+  flutter_slidable: ^3.1.1
   flutter_pickers: ^2.1.9
   permission_handler: ^11.3.1
   flutter_inappwebview: ^6.0.0
   random_color: ^1.0.5
-  package_info_plus: ^8.0.1
+  package_info_plus: ^8.0.2
   app_service: ^4.0.1
-  flutter_native_splash: ^2.4.0
-  cached_network_image: ^3.3.1
+  flutter_native_splash: ^2.4.1
+  cached_network_image: ^3.4.0
   dropdown_search: ^5.0.6
-  web_socket_channel: ^3.0.0
+  web_socket_channel: ^3.0.1
   flutter_popup: ^3.3.0
   xpath_selector_html_parser: ^3.0.1
   html: ^0.15.4
   collection: ^1.18.0
-  custom_rating_bar: ^2.0.5
+  custom_rating_bar: ^3.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -51,4 +51,4 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-  - assets/images/
+    - assets/images/
