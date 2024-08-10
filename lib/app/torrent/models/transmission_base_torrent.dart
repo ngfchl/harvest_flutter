@@ -88,7 +88,6 @@ class TrTorrent {
   });
 
   factory TrTorrent.fromJson(Map<String, dynamic> json) {
-    if (json == null) throw ArgumentError.notNull('json');
     return TrTorrent(
       activityDate: json['activityDate'] ?? 0,
       addedDate: json['addedDate'] ?? 0,

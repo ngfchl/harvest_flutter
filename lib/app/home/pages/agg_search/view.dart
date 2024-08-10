@@ -220,13 +220,13 @@ class _AggSearchPageState extends State<AggSearchPage>
               size: 16,
             ),
             style: ButtonStyle(
-              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                 RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5.0)),
               ),
-              padding: MaterialStateProperty.all(
+              padding: WidgetStateProperty.all(
                   const EdgeInsets.symmetric(horizontal: 8)),
-              side: MaterialStateProperty.all(BorderSide.none),
+              side: WidgetStateProperty.all(BorderSide.none),
             ),
             label: const Text('清除'),
           ),
@@ -239,13 +239,13 @@ class _AggSearchPageState extends State<AggSearchPage>
               size: 16,
             ),
             style: ButtonStyle(
-              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                 RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5.0)),
               ),
-              padding: MaterialStateProperty.all(
+              padding: WidgetStateProperty.all(
                   const EdgeInsets.symmetric(horizontal: 8)),
-              side: MaterialStateProperty.all(BorderSide.none),
+              side: WidgetStateProperty.all(BorderSide.none),
             ),
             label: const Text('排序'),
           ),
@@ -258,13 +258,13 @@ class _AggSearchPageState extends State<AggSearchPage>
               size: 16,
             ),
             style: ButtonStyle(
-              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                 RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5.0)),
               ),
-              padding: MaterialStateProperty.all(
+              padding: WidgetStateProperty.all(
                   const EdgeInsets.symmetric(horizontal: 8)),
-              side: MaterialStateProperty.all(BorderSide.none),
+              side: WidgetStateProperty.all(BorderSide.none),
             ),
             label: const Text('筛选'),
           ),

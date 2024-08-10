@@ -515,7 +515,7 @@ class _SubscribePageState extends State<SubscribePage> {
                           controller.categories.clear();
                         },
                         style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all(
+                          backgroundColor: WidgetStateProperty.all(
                               Colors.redAccent.withAlpha(150)),
                         ),
                         icon: const Icon(Icons.cancel_outlined,

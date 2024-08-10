@@ -124,10 +124,6 @@ class DouBanController extends GetxController {
     Logger.instance.i(homeController.pageController.page);
   }
 
-  @override
-  void onReady() {
-    super.onReady();
-  }
 
   @override
   void onClose() {

@@ -650,9 +650,9 @@ class TorrentView extends GetView<TorrentController> {
                           text: '添加种子',
                           icon: const Icon(Icons.add),
                           dividerWidth: 108,
-                          textColor: Theme.of(context).colorScheme.onBackground,
+                          textColor: Theme.of(context).colorScheme.onSurface,
                           dividerColor:
-                              Theme.of(context).colorScheme.onBackground,
+                              Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       Expanded(

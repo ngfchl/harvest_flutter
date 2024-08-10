@@ -296,7 +296,7 @@ class _DownloadPageState extends State<DownloadPage>
           padding: const EdgeInsets.all(1),
           decoration: BoxDecoration(
             border: Border.all(width: 2),
-            color: Theme.of(context).colorScheme.background,
+            color: Theme.of(context).colorScheme.surface,
           ),
           child: Text(
             '${series.name}: ${filesize(point.y)}',
@@ -1007,7 +1007,7 @@ class _DownloadPageState extends State<DownloadPage>
               children: [
                 ElevatedButton(
                   style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(
+                    backgroundColor: WidgetStateProperty.all(
                         Theme.of(context).colorScheme.secondary),
                   ),
                   onPressed: () {
@@ -1022,7 +1022,7 @@ class _DownloadPageState extends State<DownloadPage>
                 ),
                 ElevatedButton(
                   style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(
+                    backgroundColor: WidgetStateProperty.all(
                         Theme.of(context).colorScheme.primary),
                   ),
                   child: const Text(

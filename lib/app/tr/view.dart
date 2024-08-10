@@ -489,7 +489,7 @@ class TrPage extends StatelessWidget {
             ),
             CustomPopup(
                 showArrow: false,
-                backgroundColor: Theme.of(context).colorScheme.background,
+                backgroundColor: Theme.of(context).colorScheme.surface,
                 barrierColor: Colors.transparent,
                 content: SizedBox(
                   width: 100,

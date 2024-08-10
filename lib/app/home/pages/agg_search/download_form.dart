@@ -291,7 +291,7 @@ class DownloadForm extends StatelessWidget {
                   ElevatedButton.icon(
                     onPressed: () => cancelForm(context),
                     style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(
+                      backgroundColor: WidgetStateProperty.all(
                           Colors.redAccent.withAlpha(150)),
                     ),
                     icon:

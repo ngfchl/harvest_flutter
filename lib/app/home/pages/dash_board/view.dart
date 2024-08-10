@@ -981,7 +981,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                 int pointIndex, int seriesIndex) {
               return Container(
                 color:
-                    Theme.of(context).colorScheme.background.withOpacity(0.8),
+                    Theme.of(context).colorScheme.surface.withOpacity(0.8),
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   '${data.nickname}: ${filesize(data.latestStatusInfo?.uploaded ?? 0)}',
@@ -1086,7 +1086,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                         return Container(
                           color: Theme.of(context)
                               .colorScheme
-                              .background
+                              .surface
                               .withOpacity(0.8),
                           padding: const EdgeInsets.all(8),
                           child: SingleChildScrollView(

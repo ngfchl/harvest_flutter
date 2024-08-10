@@ -248,7 +248,7 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                       Get.back();
                     },
                     style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(
+                      backgroundColor: WidgetStateProperty.all(
                           Colors.redAccent.withAlpha(150)),
                     ),
                     icon:
