@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 class PlatformTool {
   static bool isIOS() {
@@ -37,6 +38,13 @@ class PlatformTool {
     } catch (e) {
       return false;
     }
+  }
+
+  static bool isPhone() {
+    final data = MediaQueryData.fromView(
+        WidgetsBinding.instance.platformDispatcher.views.first);
+    return data.size.shortestSide < 600 ||
+        (!kIsWeb && (Platform.isAndroid || Platform.isIOS));
   }
 
   static String operatingSystem() {
