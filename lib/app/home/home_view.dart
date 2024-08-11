@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:app_service/app_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_popup/flutter_popup.dart';
@@ -19,71 +21,103 @@ class HomeView extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<HomeController>(builder: (controller) {
-      return Scaffold(
-        key: _globalKey,
-        extendBody: true,
-        appBar: GFAppBar(
-          elevation: 1.5,
-          iconTheme: const IconThemeData(color: Colors.black38),
-          flexibleSpace: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [
-                  Colors.orange.withOpacity(0.4),
-                  Colors.grey.withOpacity(0.3),
-                  Colors.brown.withOpacity(0.1),
-                ],
+      return PopScope(
+        canPop: false,
+        onPopInvoked: (didPop) async {
+          if (didPop) return;
+          Get.defaultDialog(
+            title: "退出",
+            content: const Text('确定要退出收割机吗？'),
+            // onConfirm: () {
+            //   exit(0);
+            // },
+            onCancel: () {
+              Navigator.of(context).pop(false);
+            },
+            confirm: ElevatedButton(
+                style: ButtonStyle(
+                  backgroundColor:
+                      WidgetStateProperty.all(Colors.redAccent.withAlpha(250)),
+                ),
+                onPressed: () {
+                  exit(0);
+                },
+                child: const Text(
+                  '退出',
+                  style: TextStyle(color: Colors.white),
+                )),
+            textCancel: '取消',
+            // textConfirm: '退出',
+            // confirmTextColor: Colors.red,
+            // buttonColor: Colors.red,
+          );
+        },
+        child: Scaffold(
+          key: _globalKey,
+          extendBody: true,
+          appBar: GFAppBar(
+            elevation: 1.5,
+            iconTheme: const IconThemeData(color: Colors.black38),
+            flexibleSpace: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    Colors.orange.withOpacity(0.4),
+                    Colors.grey.withOpacity(0.3),
+                    Colors.brown.withOpacity(0.1),
+                  ],
+                ),
               ),
             ),
+            actions: <Widget>[
+              _actionButtonList(context),
+            ],
           ),
-          actions: <Widget>[
-            _actionButtonList(context),
-          ],
-        ),
-        body: controller.isPhone
-            ? PageView(
-                controller: controller.pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                onPageChanged: (index) {
-                  // controller.initPage.value = index;
-                  // controller.update();
-                },
-                children: controller.pages,
-              )
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CustomCard(
-                    width: 200,
-                    height: double.infinity,
+          body: controller.isPhone
+              ? PageView(
+                  controller: controller.pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  onPageChanged: (index) {
+                    // controller.initPage.value = index;
+                    // controller.update();
+                  },
+                  children: controller.pages,
+                )
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CustomCard(
+                      width: 200,
+                      height: double.infinity,
+                      child: _buildMenuBar(context),
+                    ),
+                    Expanded(
+                        child: PageView(
+                      controller: controller.pageController,
+                      physics: const NeverScrollableScrollPhysics(),
+                      onPageChanged: (index) {
+                        // controller.initPage.value = index;
+                        // controller.update();
+                      },
+                      children: controller.pages,
+                    ))
+                  ],
+                ),
+          drawer: controller.isPhone
+              ? SizedBox(
+                  width: 200,
+                  child: GFDrawer(
+                    semanticLabel: 'Harvest',
+                    elevation: 10,
+                    color: Theme.of(context).colorScheme.surface,
                     child: _buildMenuBar(context),
                   ),
-                  Expanded(
-                      child: PageView(
-                    controller: controller.pageController,
-                    physics: const NeverScrollableScrollPhysics(),
-                    onPageChanged: (index) {
-                      // controller.initPage.value = index;
-                      // controller.update();
-                    },
-                    children: controller.pages,
-                  ))
-                ],
-              ),
-        drawer: controller.isPhone
-            ? SizedBox(
-                width: 200,
-                child: GFDrawer(
-                  semanticLabel: 'Harvest',
-                  elevation: 10,
-                  color: Theme.of(context).colorScheme.surface,
-                  child: _buildMenuBar(context),
-                ),
-              )
-            : null,
-        drawerEdgeDragWidth: 100,
+                )
+              : null,
+          drawerEdgeDragWidth: 100,
+        ),
       );
     });
   }
