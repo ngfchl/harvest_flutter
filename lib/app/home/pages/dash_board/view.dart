@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
 import 'package:get/get.dart';
+import 'package:getwidget/getwidget.dart';
 import 'package:harvest/app/home/pages/models/my_site.dart';
 import 'package:random_color/random_color.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -16,6 +17,7 @@ import '../../../../common/hex_color.dart';
 import '../../../../common/utils.dart';
 import '../../../../utils/calc_weeks.dart';
 import '../../../../utils/logger_helper.dart';
+import '../../../../utils/platform.dart';
 import '../../controller/common_api.dart';
 import 'controller.dart';
 
@@ -68,32 +70,39 @@ class _DashBoardPageState extends State<DashBoardPage>
             child: EasyRefresh(
               onRefresh: controller.initChartData,
               child: GetBuilder<DashBoardController>(builder: (controller) {
-                return ListView(
-                  children: controller.isLoading
-                      ? [
-                          SizedBox(
-                              height: MediaQuery.of(context).size.width * 0.4),
-                          const Center(child: CircularProgressIndicator()),
-                          const SizedBox(height: 10),
-                          Text(
-                            'loading...',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                color: Theme.of(context).colorScheme.primary),
-                          ),
-                        ]
-                      : controller.statusList.isNotEmpty
-                          ? [
+                return controller.isLoading
+                    ? GFLoader(
+                        type: GFLoaderType.circle,
+                        loaderColorOne: Theme.of(context).primaryColor,
+                        loaderColorTwo: Theme.of(context).primaryColor,
+                        loaderColorThree: Theme.of(context).primaryColor,
+                        loaderIconOne: const Icon(Icons.ac_unit, size: 18),
+                        loaderIconTwo:
+                            const Icon(Icons.ac_unit_outlined, size: 24),
+                        loaderIconThree:
+                            const Icon(Icons.ac_unit_rounded, size: 18),
+                      )
+                    : controller.statusList.isNotEmpty
+                        ? Wrap(
+                            alignment: WrapAlignment.spaceAround,
+                            direction: Axis.horizontal,
+                            children: [
                               _buildSiteInfoCard(),
                               _buildSmartLabelPieChart(),
                               _buildStackedBar(),
                               _buildSiteInfo(),
                             ]
-                          : [
-                              const SizedBox(height: 50),
-                              const Center(child: Text('先去获取一下站点数据吧'))
-                            ],
-                );
+                                .map((item) => FractionallySizedBox(
+                                      widthFactor:
+                                          PlatformTool.isPhone() ? 1 : 0.5,
+                                      child: item,
+                                    ))
+                                .toList())
+                        : Center(
+                            child: ElevatedButton.icon(
+                            onPressed: controller.initChartData,
+                            label: const Text('加载数据'),
+                          ));
               }),
             ),
           ),
@@ -180,6 +189,7 @@ class _DashBoardPageState extends State<DashBoardPage>
               value.timeJoin.compareTo(element.timeJoin) < 0 ? value : element);
       RxBool showYear = true.obs;
       return CustomCard(
+        height: 280,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(8.0),
           bottomLeft: Radius.circular(8.0),
@@ -788,7 +798,7 @@ class _DashBoardPageState extends State<DashBoardPage>
           .where((element) => element.available == true)
           .toList();
       return CustomCard(
-        height: 200,
+        height: 280,
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: Column(
           children: [
@@ -947,7 +957,7 @@ class _DashBoardPageState extends State<DashBoardPage>
   Widget _buildSmartLabelPieChart() {
     return GetBuilder<DashBoardController>(builder: (controller) {
       return CustomCard(
-        height: 240,
+        height: 280,
         padding: const EdgeInsets.only(left: 10),
         child: SfCircularChart(
           title: ChartTitle(
