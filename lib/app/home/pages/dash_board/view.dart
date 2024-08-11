@@ -83,21 +83,23 @@ class _DashBoardPageState extends State<DashBoardPage>
                             const Icon(Icons.ac_unit_rounded, size: 18),
                       )
                     : controller.statusList.isNotEmpty
-                        ? Wrap(
-                            alignment: WrapAlignment.spaceAround,
-                            direction: Axis.horizontal,
-                            children: [
-                              _buildSiteInfoCard(),
-                              _buildSmartLabelPieChart(),
-                              _buildStackedBar(),
-                              _buildSiteInfo(),
-                            ]
-                                .map((item) => FractionallySizedBox(
-                                      widthFactor:
-                                          PlatformTool.isPhone() ? 1 : 0.5,
-                                      child: item,
-                                    ))
-                                .toList())
+                        ? SingleChildScrollView(
+                            child: Wrap(
+                                alignment: WrapAlignment.spaceAround,
+                                direction: Axis.horizontal,
+                                children: [
+                                  _buildSiteInfoCard(),
+                                  _buildSmartLabelPieChart(),
+                                  _buildStackedBar(),
+                                  _buildSiteInfo(),
+                                ]
+                                    .map((item) => FractionallySizedBox(
+                                          widthFactor:
+                                              PlatformTool.isPhone() ? 1 : 0.5,
+                                          child: item,
+                                        ))
+                                    .toList()),
+                          )
                         : Center(
                             child: ElevatedButton.icon(
                             onPressed: controller.initChartData,
@@ -189,7 +191,7 @@ class _DashBoardPageState extends State<DashBoardPage>
               value.timeJoin.compareTo(element.timeJoin) < 0 ? value : element);
       RxBool showYear = true.obs;
       return CustomCard(
-        height: 280,
+        height: 260,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(8.0),
           bottomLeft: Radius.circular(8.0),
@@ -798,7 +800,7 @@ class _DashBoardPageState extends State<DashBoardPage>
           .where((element) => element.available == true)
           .toList();
       return CustomCard(
-        height: 280,
+        height: 260,
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: Column(
           children: [
@@ -957,7 +959,7 @@ class _DashBoardPageState extends State<DashBoardPage>
   Widget _buildSmartLabelPieChart() {
     return GetBuilder<DashBoardController>(builder: (controller) {
       return CustomCard(
-        height: 280,
+        height: 260,
         padding: const EdgeInsets.only(left: 10),
         child: SfCircularChart(
           title: ChartTitle(
@@ -1049,7 +1051,7 @@ class _DashBoardPageState extends State<DashBoardPage>
     try {
       return GetBuilder<DashBoardController>(builder: (controller) {
         return CustomCard(
-          height: 280,
+          height: 260,
           child: Column(
             children: [
               SizedBox(
