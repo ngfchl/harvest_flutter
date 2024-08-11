@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:filesize/filesize.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
@@ -156,8 +157,7 @@ class _MySitePagePageState extends State<MySitePage>
                               );
                             }),
                 ),
-                if (!identical(0, 0.0) && Platform.isIOS)
-                  const SizedBox(height: 10),
+                if (!kIsWeb && Platform.isIOS) const SizedBox(height: 10),
                 const SizedBox(height: 50),
               ],
             ),
@@ -303,7 +303,7 @@ class _MySitePagePageState extends State<MySitePage>
             }
             String url =
                 '${mySite.mirror!.endsWith('/') ? mySite.mirror : '${mySite.mirror}/'}$path';
-            if (identical(0, 0.0) || !Platform.isIOS && !Platform.isAndroid) {
+            if (kIsWeb || !Platform.isIOS && !Platform.isAndroid) {
               Logger.instance.i('Explorer');
               Uri uri = Uri.parse(url);
               if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {

@@ -19,6 +19,7 @@ import '../../../api/login.dart';
 import '../../../models/authinfo.dart';
 import '../../../utils/dio_util.dart';
 import '../../../utils/logger_helper.dart';
+import '../../../utils/platform.dart';
 import '../../../utils/storage.dart';
 import '../../routes/app_pages.dart';
 import '../pages/download/download_controller.dart';
@@ -31,6 +32,7 @@ class HomeController extends GetxController {
   TextEditingController searchController = TextEditingController();
   DioUtil dioUtil = DioUtil();
   bool isDarkMode = false;
+  bool isPhone = false;
   UpdateLogState? updateLogState;
 
   // final mySiteController = Get.put(MySiteController());
@@ -83,6 +85,8 @@ class HomeController extends GetxController {
   @override
   void onInit() async {
     try {
+      isPhone = PlatformTool.isPhone();
+      Logger.instance.i('手机端：$isPhone');
       isDarkMode = Get.isDarkMode;
       initDio();
       userinfo.value = SPUtil.getLocalStorage('userinfo');
@@ -133,7 +137,7 @@ class HomeController extends GetxController {
   Future<void> changePage(int index) async {
     Get.back();
     if (index == 11) {
-      if (identical(0, 0.0) || (!Platform.isIOS && !Platform.isAndroid)) {
+      if (PlatformTool.isWeb() || (!Platform.isIOS && !Platform.isAndroid)) {
         Logger.instance.i('Explorer');
         Get.defaultDialog(
             title: '选择日志',

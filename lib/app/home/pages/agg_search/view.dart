@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:filesize/filesize.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
 import 'package:get/get.dart';
@@ -189,8 +190,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                     ),
                   );
                 }),
-                if (!identical(0, 0.0) && Platform.isIOS)
-                  const SizedBox(height: 10),
+                if (!kIsWeb && Platform.isIOS) const SizedBox(height: 10),
                 const SizedBox(height: 50),
               ],
             ),
@@ -302,7 +302,7 @@ class _AggSearchPageState extends State<AggSearchPage>
         String url =
             '${mySite.mirror}${website.pageDetail.replaceAll('{}', info.tid)}';
 
-        if (identical(0, 0.0) || !Platform.isIOS && !Platform.isAndroid) {
+        if (kIsWeb || !Platform.isIOS && !Platform.isAndroid) {
           LoggerHelper.Logger.instance.i('Explorer');
           Uri uri = Uri.parse(url);
           if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {

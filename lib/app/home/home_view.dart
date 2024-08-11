@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:app_service/app_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_popup/flutter_popup.dart';
@@ -44,7 +42,7 @@ class HomeView extends GetView<HomeController> {
             _actionButtonList(context),
           ],
         ),
-        body: !identical(0, 0.0) && (Platform.isAndroid || Platform.isIOS)
+        body: controller.isPhone
             ? PageView(
                 controller: controller.pageController,
                 physics: const NeverScrollableScrollPhysics(),
@@ -74,15 +72,17 @@ class HomeView extends GetView<HomeController> {
                   ))
                 ],
               ),
-        drawer: SizedBox(
-          width: 200,
-          child: GFDrawer(
-            semanticLabel: 'Harvest',
-            elevation: 10,
-            color: Theme.of(context).colorScheme.surface,
-            child: _buildMenuBar(context),
-          ),
-        ),
+        drawer: controller.isPhone
+            ? SizedBox(
+                width: 200,
+                child: GFDrawer(
+                  semanticLabel: 'Harvest',
+                  elevation: 10,
+                  color: Theme.of(context).colorScheme.surface,
+                  child: _buildMenuBar(context),
+                ),
+              )
+            : null,
         drawerEdgeDragWidth: 100,
       );
     });

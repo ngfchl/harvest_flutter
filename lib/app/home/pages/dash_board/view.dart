@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:filesize/filesize.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
 import 'package:get/get.dart';
@@ -96,7 +97,7 @@ class _DashBoardPageState extends State<DashBoardPage>
               }),
             ),
           ),
-          if (!identical(0, 0.0) && Platform.isIOS) const SizedBox(height: 10),
+          if (!kIsWeb && Platform.isIOS) const SizedBox(height: 10),
           const SizedBox(height: 50),
         ],
       );
@@ -980,8 +981,7 @@ class _DashBoardPageState extends State<DashBoardPage>
             builder: (dynamic data, dynamic point, dynamic series,
                 int pointIndex, int seriesIndex) {
               return Container(
-                color:
-                    Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   '${data.nickname}: ${filesize(data.latestStatusInfo?.uploaded ?? 0)}',

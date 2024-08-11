@@ -1,4 +1,5 @@
 import 'package:app_service/app_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -220,9 +221,9 @@ class _LoginPageState extends State<LoginPage> {
 
   void showEditOrCreateServerSheet(Server? serverToEdit) async {
     final formKey = GlobalKey<FormState>();
-    String defaultProtocol = identical(0, 0.0) ? Uri.base.scheme : 'http';
-    String defaultDomain = identical(0, 0.0) ? Uri.base.host : '192.168.123.5';
-    String defaultPort = identical(0, 0.0) ? Uri.base.port.toString() : '28000';
+    String defaultProtocol = kIsWeb ? Uri.base.scheme : 'http';
+    String defaultDomain = kIsWeb ? Uri.base.host : '192.168.123.5';
+    String defaultPort = kIsWeb ? Uri.base.port.toString() : '28000';
 
     TextEditingController nameController =
         TextEditingController(text: serverToEdit?.name ?? 'DefaultServer');

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -23,7 +24,7 @@ class LoginController extends GetxController {
   @override
   void onInit() async {
     // 触发 网络权限授权
-    if (!identical(0, 0.0)) await Dio().get('https://ptools.fun');
+    if (!kIsWeb) await Dio().get('https://ptools.fun');
     await serverRepository.init();
     Logger.instance.i(serverRepository.serverList);
     serverList = serverRepository.serverList;

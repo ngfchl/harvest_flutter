@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:filesize/filesize.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
@@ -69,8 +70,7 @@ class _DownloadPageState extends State<DownloadPage>
                     });
               }),
             ),
-            if (!identical(0, 0.0) && Platform.isIOS)
-              const SizedBox(height: 10),
+            if (!kIsWeb && Platform.isIOS) const SizedBox(height: 10),
             const SizedBox(height: 50),
           ],
         ),
@@ -635,7 +635,7 @@ class _DownloadPageState extends State<DownloadPage>
                 onTap: () async {
                   controller.cancelPeriodicTimer();
                   if (downloader.category == 'Qb') {
-                    if (identical(0, 0.0)) {
+                    if (kIsWeb) {
                       Uri uri = Uri.parse(pathDownloader);
                       await launchUrl(uri,
                           mode: LaunchMode.externalApplication);
