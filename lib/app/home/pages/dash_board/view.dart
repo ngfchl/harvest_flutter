@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:filesize/filesize.dart';
 import 'package:flutter/foundation.dart';
@@ -186,9 +187,15 @@ class _DashBoardPageState extends State<DashBoardPage>
 
   Widget _buildSiteInfoCard() {
     return GetBuilder<DashBoardController>(builder: (controller) {
-      MySite earliestSite = controller.mySiteController.mySiteList.reduce(
+      List<String> excludeUrlList = [
+        'https://ssdforum.org/',
+        'https://cnlang.org/',
+      ];
+
+      MySite earliestSite = controller.mySiteController.mySiteList.where((item)=>!excludeUrlList.contains(item.mirror)).reduce(
           (value, element) =>
-              value.timeJoin.compareTo(element.timeJoin) < 0 ? value : element);
+              value.timeJoin.compareTo(element.timeJoin) < 0? value : element);
+      Logger.instance.d(earliestSite.mirror);
       RxBool showYear = true.obs;
       return CustomCard(
         height: 260,
