@@ -338,7 +338,6 @@ class TrController extends GetxController {
 
     if (torrents.isEmpty) {
       List<int> ids = await getTorrentIds();
-      int i = 0;
       int batchSize = 800;
       for (int i = 0; i < ids.length; i += batchSize) {
         if (exitState) {
