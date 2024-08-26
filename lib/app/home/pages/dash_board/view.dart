@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:collection/collection.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:filesize/filesize.dart';
 import 'package:flutter/foundation.dart';
@@ -62,6 +61,104 @@ class _DashBoardPageState extends State<DashBoardPage>
     });
   }
 
+  Widget _showTodayIncrement() {
+    // controller.todayIncrement = 0;
+    return GetBuilder<DashBoardController>(builder: (controller) {
+      return CustomCard(
+        height: 260,
+        child: SfCircularChart(
+          title: ChartTitle(
+            text:
+                '今日上传增量：${filesize(controller.todayUploadIncrement)} 下载增量：${filesize(controller.todayDownloadIncrement)}',
+            textStyle: TextStyle(
+                fontSize: 11, color: Theme.of(context).colorScheme.primary),
+          ),
+          legend: Legend(
+            position: LegendPosition.left,
+            // height: "20",
+            isVisible: true,
+            iconWidth: 8,
+            iconHeight: 8,
+            padding: 5,
+            itemPadding: 5,
+            // width: '64',
+            isResponsive: true,
+            textStyle: TextStyle(
+              fontSize: 8,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          series: <DoughnutSeries<Map, String>>[
+            DoughnutSeries<Map, String>(
+              name: '今日上传数据汇总',
+              dataSource: controller.uploadIncrementDataList,
+              xValueMapper: (Map data, _) => data["site"],
+              yValueMapper: (Map data, _) => data["data"],
+              dataLabelMapper: (Map data, _) {
+                return '${data["site"]}: ${filesize(data["data"])}';
+              },
+              legendIconType: LegendIconType.circle,
+              enableTooltip: true,
+              explode: true,
+              // explodeIndex: 0,
+              explodeOffset: '10%',
+              radius: '75%',
+              // pointRenderMode: PointRenderMode.gradient,
+              dataLabelSettings: DataLabelSettings(
+                margin: EdgeInsets.zero,
+                isVisible: true,
+                labelPosition: ChartDataLabelPosition.outside,
+                textStyle: TextStyle(
+                  fontSize: 8,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                showZeroValue: false,
+                connectorLineSettings: const ConnectorLineSettings(
+                  type: ConnectorType.curve,
+                  length: '40%',
+                ),
+                labelIntersectAction: LabelIntersectAction.shift,
+              ),
+            ),
+            DoughnutSeries<Map, String>(
+              name: '今日下载数据汇总',
+              dataSource: controller.downloadIncrementDataList,
+              xValueMapper: (Map data, _) => data["site"],
+              yValueMapper: (Map data, _) => data["data"],
+              dataLabelMapper: (Map data, _) {
+                return '${data["site"]}: ${filesize(data["data"])}';
+              },
+              legendIconType: LegendIconType.circle,
+              enableTooltip: true,
+              explode: true,
+              // explodeIndex: 0,
+              explodeOffset: '10%',
+              radius: '30%',
+              // pointRenderMode: PointRenderMode.gradient,
+              dataLabelSettings: DataLabelSettings(
+                margin: EdgeInsets.zero,
+                isVisible: true,
+                labelPosition: ChartDataLabelPosition.outside,
+                textStyle: TextStyle(
+                  fontSize: 8,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                showZeroValue: false,
+                connectorLineSettings: const ConnectorLineSettings(
+                  type: ConnectorType.curve,
+                  length: '20%',
+                ),
+                labelIntersectAction: LabelIntersectAction.shift,
+              ),
+            )
+          ],
+          // tooltipBehavior:
+          //     TooltipBehavior(enable: true, format: 'point.x : ${filesize(point.y)}'),
+        ),
+      );
+    });
+  }
+
   Widget _showAllInfo() {
     return GetBuilder<DashBoardController>(builder: (controller) {
       return Column(
@@ -93,6 +190,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   _buildSmartLabelPieChart(),
                                   _buildStackedBar(),
                                   _buildSiteInfo(),
+                                  _showTodayIncrement(),
                                 ]
                                     .map((item) => FractionallySizedBox(
                                           widthFactor:
@@ -187,14 +285,10 @@ class _DashBoardPageState extends State<DashBoardPage>
 
   Widget _buildSiteInfoCard() {
     return GetBuilder<DashBoardController>(builder: (controller) {
-      List<String> excludeUrlList = [
-        'https://ssdforum.org/',
-        'https://cnlang.org/',
-      ];
-
-      MySite earliestSite = controller.mySiteController.mySiteList.where((item)=>!excludeUrlList.contains(item.mirror)).reduce(
-          (value, element) =>
-              value.timeJoin.compareTo(element.timeJoin) < 0? value : element);
+      MySite earliestSite = controller.mySiteController.mySiteList
+          .where((item) => !controller.excludeUrlList.contains(item.mirror))
+          .reduce((value, element) =>
+              value.timeJoin.compareTo(element.timeJoin) < 0 ? value : element);
       Logger.instance.d(earliestSite.mirror);
       RxBool showYear = true.obs;
       return CustomCard(

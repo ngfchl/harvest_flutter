@@ -1,12 +1,17 @@
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../utils/date_time_utils.dart';
 import '../models/my_site.dart';
 import '../my_site/controller.dart';
 
 class DashBoardController extends GetxController {
   MySiteController mySiteController = Get.find();
 
+  List<String> excludeUrlList = [
+    'https://ssdforum.org/',
+    'https://cnlang.org/',
+  ];
   List<MySite> statusList = [];
   List<Map<String, dynamic>> pieDataList = [
     // {
@@ -15,8 +20,12 @@ class DashBoardController extends GetxController {
     // }
   ];
   List<Map> stackChartDataList = [];
+  List<Map> uploadIncrementDataList = [];
+  List<Map> downloadIncrementDataList = [];
   int totalUploaded = 0;
   int totalDownloaded = 0;
+  int todayUploadIncrement = 0;
+  int todayDownloadIncrement = 0;
   int totalSeedVol = 0;
   int totalSeeding = 0;
   int totalLeeching = 0;
@@ -46,7 +55,13 @@ class DashBoardController extends GetxController {
     totalSeedVol = 0;
     totalSeeding = 0;
     totalLeeching = 0;
+    todayUploadIncrement = 0;
+    todayDownloadIncrement = 0;
+    uploadIncrementDataList = [];
+    downloadIncrementDataList = [];
     List<String> dateList = generateDateList(days);
+    String todayStr = getTodayString();
+    String yesterdayStr = getYesterdayString();
     if (mySiteController.mySiteList.isEmpty) {
       await mySiteController.initData();
     }
@@ -61,7 +76,8 @@ class DashBoardController extends GetxController {
     stackChartDataList.clear();
     pieDataList.clear();
 
-    for (final MySite mySite in statusList) {
+    for (final MySite mySite
+        in statusList.where((item) => !excludeUrlList.contains(item.mirror))) {
       final StatusInfo? currentStatus = mySite.latestStatusInfo;
       maxDays = mySite.statusInfo.length > maxDays
           ? mySite.statusInfo.length
@@ -76,6 +92,22 @@ class DashBoardController extends GetxController {
 
         stackChartDataList
             .add({'site': mySite.nickname, 'data': statusInfoList});
+        if (mySite.available == true && mySite.statusInfo.length > 1) {
+          int increment = mySite.statusInfo[todayStr]!.uploaded -
+              mySite.statusInfo[yesterdayStr]!.uploaded;
+          int downloaded = mySite.statusInfo[todayStr]!.downloaded -
+              mySite.statusInfo[yesterdayStr]!.downloaded;
+          if (increment > 0) {
+            todayUploadIncrement += increment;
+            uploadIncrementDataList
+                .add({'site': mySite.nickname, 'data': increment});
+          }
+          if (downloaded > 0) {
+            todayDownloadIncrement += increment;
+            downloadIncrementDataList
+                .add({'site': mySite.nickname, 'data': increment});
+          }
+        }
       }
       // 处理存在状态信息的情况
       if (currentStatus != null) {
@@ -95,6 +127,12 @@ class DashBoardController extends GetxController {
         pieDataList.add({'genre': mySite.nickname, 'sold': 0});
       }
     }
+    print(uploadIncrementDataList);
+    uploadIncrementDataList
+        .sort((Map a, Map b) => b["data"].compareTo(a["data"]));
+
+    downloadIncrementDataList
+        .sort((Map a, Map b) => b["data"].compareTo(a["data"]));
     isLoading = false;
     update();
   }
