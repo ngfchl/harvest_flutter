@@ -54,3 +54,17 @@ String formatDuration(int seconds) {
 
   return parts.length > 2 ? parts.sublist(0, 2).join() : parts.join();
 }
+
+String getDateString(DateTime dt) {
+  return DateFormat('yyyy-MM-dd').format(dt);
+}
+
+String getTodayString() {
+  var dt = DateTime.now();
+  return getDateString(dt);
+}
+
+String getYesterdayString() {
+  var dt = DateTime.now().subtract(const Duration(days: 1));
+  return getDateString(dt);
+}
