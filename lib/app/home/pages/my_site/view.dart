@@ -303,6 +303,9 @@ class _MySitePagePageState extends State<MySitePage>
             }
             String url =
                 '${mySite.mirror!.endsWith('/') ? mySite.mirror : '${mySite.mirror}/'}$path';
+            if (mySite.mirror!.contains('m-team')) {
+              url = url.replaceFirst("api", "xp");
+            }
             if (kIsWeb || !Platform.isIOS && !Platform.isAndroid) {
               Logger.instance.i('Explorer');
               Uri uri = Uri.parse(url);
