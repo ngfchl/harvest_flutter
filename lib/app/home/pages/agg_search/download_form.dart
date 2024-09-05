@@ -305,6 +305,12 @@ class DownloadForm extends StatelessWidget {
                     return ElevatedButton.icon(
                       onPressed: () async {
                         isLoading.value = true;
+                        double? ratioLimit =
+                            double.tryParse(ratioLimitController.text);
+                        double? upLimit =
+                            double.tryParse(upLimitController.text);
+                        double? dlLimit =
+                            double.tryParse(dlLimitController.text);
                         await submitForm({
                           'mySite': mysite,
                           'magnet': urlController.text,
@@ -315,10 +321,11 @@ class DownloadForm extends StatelessWidget {
                           'autoTMM': autoTMM.value,
                           'firstLastPiecePrio': firstLastPiecePrio.value,
                           'rename': renameController.text,
-                          'upLimit': int.tryParse(upLimitController.text) ?? 0,
-                          'dlLimit': int.tryParse(dlLimitController.text) ?? 0,
-                          'ratioLimit':
-                              int.tryParse(ratioLimitController.text) ?? 0,
+                          'upLimit': upLimit! > 0 ? upLimit : null,
+                          'dlLimit': dlLimit! > 0 ? dlLimit : null,
+                          'ratioLimit': ratioLimit != null && ratioLimit > 0
+                              ? ratioLimit
+                              : null,
                         }, context);
                         isLoading.value = false;
                       },

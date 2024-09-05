@@ -715,7 +715,7 @@ class TorrentController extends GetxController {
           rename: data['rename'],
           upLimit: data['upLimit'] * 1024 * 1024,
           dlLimit: data['dlLimit'] * 1024 * 1024,
-          ratioLimit: data['ratioLimit'].toDouble(),
+          ratioLimit: data['ratioLimit'] ? data['ratioLimit'].toDouble() : null,
           autoTMM: data['autoTMM'] == true
               ? data['autoTMM']
               : configuration?.autoTmmEnabled,
@@ -732,7 +732,9 @@ class TorrentController extends GetxController {
           rename: data['rename'],
           upLimit: data['upLimit'] * 1024 * 1024,
           dlLimit: data['dlLimit'] * 1024 * 1024,
-          ratioLimit: data['ratioLimit'].toDouble(),
+          ratioLimit: data['ratioLimit'] || data['ratioLimit'] > 0
+              ? data['ratioLimit'].toDouble()
+              : null,
           autoTMM: data['autoTMM'],
           firstLastPiecePrio: data['firstLastPiecePrio'],
         );
@@ -762,7 +764,9 @@ class TorrentController extends GetxController {
             rename: data['rename'],
             upLimit: data['upLimit'] * 1024 * 1024,
             dlLimit: data['dlLimit'] * 1024 * 1024,
-            ratioLimit: data['ratioLimit'].toDouble(),
+            ratioLimit: data['ratioLimit'] || data['ratioLimit'] > 0
+                ? data['ratioLimit'].toDouble()
+                : null,
             autoTMM: data['autoTMM'],
             firstLastPiecePrio: data['firstLastPiecePrio'],
           ),
@@ -828,9 +832,10 @@ class TorrentController extends GetxController {
       }
       String msg = '${torrent.name} 添加成功！';
       try {
-        tr.TorrentSetArgs setArgs =
-            tr.TorrentSetArgs().seedRatioLimit(data['ratioLimit'].toDouble());
-
+        tr.TorrentSetArgs setArgs = tr.TorrentSetArgs();
+        if (data['ratioLimit'] != null && data['ratioLimit'] > 0) {
+          setArgs.seedRatioLimit(data['ratioLimit'].toDouble());
+        }
         if (data['upLimit'] > 0) {
           setArgs.uploadLimited(true).uploadLimit(data['upLimit'] * 1024);
         }
