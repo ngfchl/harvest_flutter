@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
@@ -77,8 +78,17 @@ class _WebViewPageState extends State<WebViewPage> {
                     RegExp regex = RegExp(r'\d+(?=\]?$)');
                     Logger.instance
                         .i(regex.firstMatch(result.attr!.trim())?.group(0));
-                    Get.snackbar('获取 UID',
-                        '你的 UID 是：${regex.firstMatch(result.attr!.trim())?.group(0)}',
+                    String cookies = await webController?.evaluateJavascript(
+                        source: "document.cookie");
+                    if (controller.mySite != null &&
+                        controller.mySite!.mirror!.contains('m-team')) {
+                      cookies = await webController?.evaluateJavascript(
+                          source: "localStorage.auth");
+                    }
+                    // 复制到剪切板
+                    Clipboard.setData(ClipboardData(text: cookies));
+                    Get.snackbar('获取 UID和 Cookie 成功',
+                        '你的 UID 是：${regex.firstMatch(result.attr!.trim())?.group(0)}，Cookie已复制到剪切板',
                         colorText: Theme.of(context).colorScheme.primary);
                   } catch (e) {
                     Get.snackbar('获取 UID 失败', '请手动填写站点 UID',
