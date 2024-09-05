@@ -173,10 +173,10 @@ packages:
     dependency: "direct main"
     description:
       name: dio
-      sha256: "0dfb6b6a1979dac1c1245e17cef824d7b452ea29bd33d3467269f9bef3715fb0"
+      sha256: "5598aa796bbf4699afd5c67c0f5f6e2ed542afc956884b9cd58c306966efc260"
       url: "https://pub.dev"
     source: hosted
-    version: "5.6.0"
+    version: "5.7.0"
   dio_cookie_manager:
     dependency: transitive
     description:
@@ -756,10 +756,10 @@ packages:
     dependency: transitive
     description:
       name: quiver
-      sha256: b1c1ac5ce6688d77f65f3375a9abb9319b3cb32486bdc7a1e0fdf004d7ba4e47
+      sha256: ea0b925899e64ecdfbf9c7becb60d5b50e706ade44a85b2363be2a22d88117d2
       url: "https://pub.dev"
     source: hosted
-    version: "3.2.1"
+    version: "3.2.2"
   random_color:
     dependency: "direct main"
     description:
@@ -897,34 +897,34 @@ packages:
     dependency: "direct main"
     description:
       name: syncfusion_flutter_charts
-      sha256: b5b48d8eb6a1482ebbf4d6bfc69345462377e161e076b4ec4e69496e2d234dc2
+      sha256: "305e2fa0fd9e3d319e6948f2d7a240aebf98822cf49fa17a81dd10e5bc162c15"
       url: "https://pub.dev"
     source: hosted
-    version: "26.2.10"
+    version: "26.2.13"
   syncfusion_flutter_core:
     dependency: "direct main"
     description:
       name: syncfusion_flutter_core
-      sha256: ca34210d70dd7ecb77489c21c8131a7f5546dea47780cd5f510326348091cb42
+      sha256: "877411504a07c874970c361762c447081e6e13219a6bea6fc88fbb31c2aff4a4"
       url: "https://pub.dev"
     source: hosted
-    version: "26.2.10"
+    version: "26.2.13"
   syncfusion_flutter_gauges:
     dependency: "direct main"
     description:
       name: syncfusion_flutter_gauges
-      sha256: "9de7f312c3f1e7ff4ee0d7de11c6f1e15a35403de5bac8c951303f4a0e43650b"
+      sha256: b8db2d6b933b99a852e28ebd1307e7e8792fbdcc4c39a6c8cf1bc02ae55dd450
       url: "https://pub.dev"
     source: hosted
-    version: "26.2.10"
+    version: "26.2.13"
   syncfusion_flutter_sliders:
     dependency: "direct main"
     description:
       name: syncfusion_flutter_sliders
-      sha256: "26cb37156c91be5cb39f8f8f8b467870525017ca9841cc4cd915eaea53db1d7f"
+      sha256: "5811b5c6a03f4f23928ce970cb537e5c6bcded5145715a5394ba1b21e805c207"
       url: "https://pub.dev"
     source: hosted
-    version: "26.2.10"
+    version: "26.2.13"
   synchronized:
     dependency: transitive
     description:
@@ -1049,10 +1049,10 @@ packages:
     dependency: transitive
     description:
       name: uuid
-      sha256: "83d37c7ad7aaf9aa8e275490669535c8080377cfa7a7004c24dfac53afffaa90"
+      sha256: f33d6bb662f0e4f79dcd7ada2e6170f3b3a2530c28fc41f49a411ddedd576a77
       url: "https://pub.dev"
     source: hosted
-    version: "4.4.2"
+    version: "4.5.0"
   vector_graphics:
     dependency: transitive
     description:
