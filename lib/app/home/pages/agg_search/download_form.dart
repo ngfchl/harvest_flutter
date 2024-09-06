@@ -307,10 +307,8 @@ class DownloadForm extends StatelessWidget {
                         isLoading.value = true;
                         double? ratioLimit =
                             double.tryParse(ratioLimitController.text);
-                        double? upLimit =
-                            double.tryParse(upLimitController.text);
-                        double? dlLimit =
-                            double.tryParse(dlLimitController.text);
+                        int? upLimit = int.tryParse(upLimitController.text);
+                        int? dlLimit = int.tryParse(dlLimitController.text);
                         await submitForm({
                           'mySite': mysite,
                           'magnet': urlController.text,
