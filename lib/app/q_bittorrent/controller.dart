@@ -32,7 +32,7 @@ class QBittorrentController extends GetxController {
   ServerState? serverState;
   String? category;
   String selectedTracker = ' All';
-  TorrentSort sortKey = TorrentSort.name;
+  TorrentSort? sortKey = TorrentSort.name;
   String searchKey = '';
   int freeSpace = 0;
   int subInterval = 5;
@@ -88,27 +88,28 @@ class QBittorrentController extends GetxController {
     {"name": "错误", "value": TorrentState.error},
   ].map((e) => MetaDataItem.fromJson(e)).toList();
   List<MetaDataItem> qbSortOptions = [
+    {"name": "无", "value": null},
     {'name': '名称', 'value': TorrentSort.name},
     {'name': '类别', 'value': TorrentSort.category},
     {'name': '大小', 'value': TorrentSort.size},
-    // {'name': '添加时间', 'value': TorrentSort.addedOn},
+    {'name': '添加时间', 'value': TorrentSort.addedOn},
     // {'name': '总大小', 'value': TorrentSort.totalSize},
+    {'name': '完成时间', 'value': TorrentSort.completionOn},
     {'name': '状态', 'value': TorrentSort.state},
     {'name': 'Tracker', 'value': TorrentSort.tracker},
     {'name': '进度', 'value': TorrentSort.progress},
+    {'name': '保存路径', 'value': TorrentSort.savePath},
     {'name': '已上传', 'value': TorrentSort.uploaded},
     {'name': '已下载', 'value': TorrentSort.downloaded},
     {'name': '下载速度', 'value': TorrentSort.dlSpeed},
     {'name': '上传速度', 'value': TorrentSort.upSpeed},
     {'name': '最后活动时间', 'value': TorrentSort.lastActivity},
     {'name': '活跃时间', 'value': TorrentSort.timeActive},
-    {'name': '保存路径', 'value': TorrentSort.savePath},
-    // {'name': '完成数', 'value': TorrentSort.completed},
-    {'name': '完成时间', 'value': TorrentSort.completionOn},
-    // {'name': 'Leechs 数量', 'value': TorrentSort.numLeechs},
-    // {'name': 'Seeds 数量', 'value': TorrentSort.numSeeds},
-    // {'name': '未完成数', 'value': TorrentSort.numIncomplete},
-    // {'name': '已完成数', 'value': TorrentSort.numComplete},
+    {'name': '完成数', 'value': TorrentSort.completed},
+    {'name': 'Leechs 数量', 'value': TorrentSort.numLeechs},
+    {'name': 'Seeds 数量', 'value': TorrentSort.numSeeds},
+    {'name': '未完成数', 'value': TorrentSort.numIncomplete},
+    {'name': '已完成数', 'value': TorrentSort.numComplete},
     {'name': '优先级', 'value': TorrentSort.priority},
     {'name': '已查看完成', 'value': TorrentSort.seenComplete},
   ].map((e) => MetaDataItem.fromJson(e)).toList();
@@ -134,9 +135,8 @@ class QBittorrentController extends GetxController {
   }
 
   initData() async {
-    sortKey = SPUtil.getLocalStorage(
-            '${downloader.host}:${downloader.port}-sortKey') ??
-        TorrentSort.name;
+    sortKey = stringToTorrentSort(SPUtil.getLocalStorage(
+        '${downloader.host}:${downloader.port}-sortKey'));
 
     /// 获取分类信息
     categoryMap = {
@@ -355,7 +355,6 @@ class QBittorrentController extends GetxController {
     }
   }
 
-
   @override
   void onClose() {
     torrentListSubscription?.cancel();
@@ -372,5 +371,58 @@ class QBittorrentController extends GetxController {
     await Future.delayed(const Duration(seconds: 2));
     toggleSpeedLimitLoading = false;
     update();
+  }
+
+  // 辅助方法，用于将字符串转换为 TorrentSort 枚举值
+  TorrentSort? stringToTorrentSort(String? value) {
+    final map = {
+      'added_on': TorrentSort.addedOn,
+      'amount_left': TorrentSort.amountLeft,
+      'auto_tmm': TorrentSort.autoTmm,
+      'availability': TorrentSort.availability,
+      'category': TorrentSort.category,
+      'completed': TorrentSort.completed,
+      'completion_on': TorrentSort.completionOn,
+      'content_path': TorrentSort.contentPath,
+      'dl_limit': TorrentSort.dlLimit,
+      'dlspeed': TorrentSort.dlSpeed,
+      'downloaded': TorrentSort.downloaded,
+      'downloaded_session': TorrentSort.downloadedSession,
+      'eta': TorrentSort.eta,
+      'f_l_piece_prio': TorrentSort.fLPiecePrio,
+      'force_start': TorrentSort.forceStart,
+      'hash': TorrentSort.hash,
+      'last_activity': TorrentSort.lastActivity,
+      'magnet_uri': TorrentSort.magnetUri,
+      'max_ratio': TorrentSort.maxRatio,
+      'max_seeding_time': TorrentSort.maxSeedingTime,
+      'name': TorrentSort.name,
+      'num_complete': TorrentSort.numComplete,
+      'num_incomplete': TorrentSort.numIncomplete,
+      'num_leechs': TorrentSort.numLeechs,
+      'num_seeds': TorrentSort.numSeeds,
+      'priority': TorrentSort.priority,
+      'progress': TorrentSort.progress,
+      'ratio': TorrentSort.ratio,
+      'ratio_limit': TorrentSort.ratioLimit,
+      'save_path': TorrentSort.savePath,
+      'seeding_time': TorrentSort.seedingTime,
+      'seeding_time_limit': TorrentSort.seedingTimeLimit,
+      'seen_complete': TorrentSort.seenComplete,
+      'seq_dl': TorrentSort.seqDl,
+      'size': TorrentSort.size,
+      'state': TorrentSort.state,
+      'super_seeding': TorrentSort.superSeeding,
+      'tags': TorrentSort.tags,
+      'time_active': TorrentSort.timeActive,
+      'total_size': TorrentSort.totalSize,
+      'tracker': TorrentSort.tracker,
+      'up_limit': TorrentSort.upLimit,
+      'uploaded': TorrentSort.uploaded,
+      'uploaded_session': TorrentSort.uploadedSession,
+      'upspeed': TorrentSort.upSpeed,
+    };
+
+    return map[value]; // 如果找不到对应的枚举值，则返回 TorrentSort.name
   }
 }
