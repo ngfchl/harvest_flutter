@@ -36,11 +36,14 @@ class DioUtil {
     String baseUrl = '$server/api/';
     _defaultOptions = await _buildRequestOptions();
     dio = Dio(BaseOptions(
-      baseUrl: baseUrl,
-      connectTimeout: const Duration(seconds: 120),
-      receiveTimeout: const Duration(seconds: 12),
-      responseType: ResponseType.json,
-    ));
+        baseUrl: baseUrl,
+        connectTimeout: const Duration(seconds: 120),
+        receiveTimeout: const Duration(seconds: 12),
+        responseType: ResponseType.json,
+        headers: {
+          "User-Agent": SPUtil.getString("CustomUA",
+              defaultValue: "Harvest APP Client/1.0"),
+        }));
 
     dio?.interceptors.add(LogInterceptor(
       requestHeader: true,
