@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:harvest/app/login/models/server.dart';
 import 'package:harvest/models/common_response.dart';
 
+import '../../../utils/logger_helper.dart';
 import '../../../utils/storage.dart';
 
 class ServerRepository {
@@ -77,10 +78,12 @@ class ServerRepository {
   // 删除服务器信息
   Future<CommonResponse> deleteServer(int key) async {
     try {
+      Logger.instance.i('删除服务器: $key');
       serverList.removeWhere((element) => element.id == key);
-      bool res = await SPUtil.setLocalStorage(
+      var res = await SPUtil.setLocalStorage(
           'servers', serverList.map((e) => json.encode(e.toJson())).toList());
-      if (res) {
+      Logger.instance.i('删除服务器结果: $res');
+      if (res == null) {
         getServers();
         return CommonResponse.success(msg: '服务器删除成功');
       }
