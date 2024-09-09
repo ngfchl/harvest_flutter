@@ -3,10 +3,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../api/api.dart';
 import '../../common/card_view.dart';
+import '../../common/custom_ua.dart';
 import '../../common/form_widgets.dart';
 import '../../models/common_response.dart';
+import '../../models/login_user.dart';
 import '../../utils/logger_helper.dart';
+import '../../utils/storage.dart';
+import '../routes/app_pages.dart';
 import 'controller.dart';
 import 'models/server.dart';
 
@@ -28,7 +33,8 @@ class _LoginPageState extends State<LoginPage> {
 
       if (server.selected) {
         decoration = BoxDecoration(
-          border: Border.all(color: Colors.green, width: 2),
+          border: Border.all(
+              color: Theme.of(context).colorScheme.primary, width: 2),
           borderRadius: BorderRadius.circular(8),
         );
       }
@@ -46,8 +52,25 @@ class _LoginPageState extends State<LoginPage> {
             title: '确认删除',
             content: Text('您确定要删除${server.name}吗？'),
             barrierDismissible: false,
-            onConfirm: () {
-              controller.deleteServer(server);
+            onConfirm: () async {
+              CommonResponse response = await controller.deleteServer(server);
+              if (response.code == 0) {
+                Get.snackbar(
+                  '删除',
+                  '服务器已成功删除',
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: Colors.green.shade400,
+                  duration: const Duration(seconds: 3),
+                );
+              } else {
+                Get.snackbar(
+                  '删除',
+                  '删除服务器失败',
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: Colors.red.shade400,
+                  duration: const Duration(seconds: 3),
+                );
+              }
               Navigator.pop(context);
             },
             onCancel: () {
@@ -165,6 +188,8 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
             SizedBox(width: 15),
+            CustomUAWidget(),
+            SizedBox(width: 15),
           ],
         ),
         body: SizedBox(
@@ -196,7 +221,7 @@ class _LoginPageState extends State<LoginPage> {
                     style: TextStyle(color: Colors.white),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     // 设置背景颜色为绿色
                     padding: const EdgeInsets.symmetric(horizontal: 40.0),
                     // 调整内边距使得按钮更宽
@@ -207,7 +232,19 @@ class _LoginPageState extends State<LoginPage> {
                   onPressed: controller.hasSelectedServer
                       ? () async {
                           // 连接服务器的操作逻辑
-                          controller.connectToServer();
+
+                          CommonResponse res = await controller.doLogin();
+
+                          Get.snackbar(
+                            res.code == 0 ? '登录成功！' : '登录失败',
+                            res.code == 0
+                                ? '登录成功！欢迎回来，${controller.selectedServer?.username}'
+                                : res.msg!,
+                            colorText: res.code == 0
+                                ? Theme.of(context).colorScheme.primary
+                                : Theme.of(context).colorScheme.error,
+                          );
+                          Get.offNamed(Routes.HOME);
                         }
                       : null,
                 ),
@@ -220,6 +257,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void showEditOrCreateServerSheet(Server? serverToEdit) async {
+    controller.testRes = false;
     final formKey = GlobalKey<FormState>();
     String defaultProtocol = kIsWeb ? Uri.base.scheme : 'http';
     String defaultDomain = kIsWeb ? Uri.base.host : '192.168.123.5';
@@ -364,6 +402,8 @@ class _LoginPageState extends State<LoginPage> {
                             Get.snackbar('连接状态', '服务器连接成功',
                                 colorText:
                                     Theme.of(context).colorScheme.primary);
+                            controller.testRes = true;
+                            controller.update();
                           } else {
                             Get.snackbar('连接状态', '服务器连接失败',
                                 colorText: Theme.of(context).colorScheme.error);
@@ -392,61 +432,64 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                       ),
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.save,
-                            size: 18, color: Colors.white),
-                        label: Text(
-                          serverToEdit == null ? '添加' : '保存',
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          // 设置背景颜色为绿色
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(5.0), // 边角圆角大小可自定义
+
+                      if (controller.testRes)
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.save,
+                              size: 18, color: Colors.white),
+                          label: Text(
+                            serverToEdit == null ? '添加' : '保存',
+                            style: const TextStyle(color: Colors.white),
                           ),
-                        ),
-                        onPressed: () async {
-                          if (formKey.currentState!.validate()) {
-                            final server = Server(
-                              id: serverToEdit?.id ?? 0,
-                              name: nameController.text,
-                              protocol: protocolController.text,
-                              domain: domainController.text,
-                              port: int.parse(portController.text),
-                              username: usernameController.text,
-                              password: passwordController.text,
-                              selected: serverToEdit?.selected ?? false,
-                            );
-                            Logger.instance.i(server);
-                            CommonResponse result =
-                                await controller.saveServer(server);
-                            Logger.instance.i(result);
-                            if (result.code == 0) {
-                              Get.snackbar(
-                                  server.id == 0 ? '保存结果' : '更新结果', result.msg!,
-                                  snackPosition: SnackPosition.BOTTOM,
-                                  duration: const Duration(seconds: 3),
-                                  colorText: server.id == 0
-                                      ? Theme.of(context).colorScheme.primary
-                                      : Theme.of(context).colorScheme.error);
-                              Navigator.pop(context);
-                            } else {
-                              Get.snackbar(
-                                  server.id == 0 ? '保存结果' : '更新结果',
-                                  server.id == 0
-                                      ? '保存服务器时出错：${result.msg}'
-                                      : '更新服务器时出错：${result.msg}',
-                                  snackPosition: SnackPosition.BOTTOM,
-                                  duration: const Duration(seconds: 3),
-                                  colorText: server.id == 0
-                                      ? Theme.of(context).colorScheme.primary
-                                      : Theme.of(context).colorScheme.error);
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            // 设置背景颜色为绿色
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(5.0), // 边角圆角大小可自定义
+                            ),
+                          ),
+                          onPressed: () async {
+                            if (formKey.currentState!.validate()) {
+                              final server = Server(
+                                id: serverToEdit?.id ?? 0,
+                                name: nameController.text,
+                                protocol: protocolController.text,
+                                domain: domainController.text,
+                                port: int.parse(portController.text),
+                                username: usernameController.text,
+                                password: passwordController.text,
+                                selected: serverToEdit?.selected ?? false,
+                              );
+                              Logger.instance.i(server);
+                              CommonResponse result =
+                                  await controller.saveServer(server);
+                              Logger.instance.i(result);
+                              if (result.code == 0) {
+                                Get.snackbar(server.id == 0 ? '保存结果' : '更新结果',
+                                    result.msg!,
+                                    snackPosition: SnackPosition.BOTTOM,
+                                    duration: const Duration(seconds: 3),
+                                    colorText: server.id == 0
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Theme.of(context).colorScheme.error);
+
+                                Navigator.pop(context);
+                              } else {
+                                Get.snackbar(
+                                    server.id == 0 ? '保存结果' : '更新结果',
+                                    server.id == 0
+                                        ? '保存服务器时出错：${result.msg}'
+                                        : '更新服务器时出错：${result.msg}',
+                                    snackPosition: SnackPosition.BOTTOM,
+                                    duration: const Duration(seconds: 3),
+                                    colorText: server.id == 0
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Theme.of(context).colorScheme.error);
+                              }
                             }
-                          }
-                        },
-                      ),
+                          },
+                        ),
                     ],
                   ),
                 ],
@@ -456,6 +499,70 @@ class _LoginPageState extends State<LoginPage> {
         );
       }),
     );
+  }
+
+  void connectToServer() async {
+    controller.isLoading = true;
+    controller.update();
+    // 连接到服务器
+    if (controller.selectedServer == null ||
+        controller.selectedServer?.id == 0 ||
+        controller.selectedServer!.username.isEmpty ||
+        controller.selectedServer!.password.isEmpty) {
+      // 判断是否为新添加的服务器
+      Get.snackbar(
+        '服务器信息设置有误',
+        '无法连接到服务器，请检查用户名和密码',
+        snackPosition: SnackPosition.BOTTOM,
+        colorText: Theme.of(context).colorScheme.error,
+        duration: const Duration(seconds: 3),
+      );
+      return;
+    }
+    controller.initDio(controller.selectedServer!);
+    LoginUser loginUser = LoginUser(
+      username: controller.selectedServer?.username,
+      password: controller.selectedServer?.password,
+    );
+    await doLogin(loginUser);
+    controller.isLoading = false;
+    controller.update();
+  }
+
+  Future<bool> doLogin(LoginUser loginUser) async {
+    try {
+      var res = await controller.dioUtil
+          .post(Api.LOGIN_URL, formData: loginUser.toJson());
+      Logger.instance.i(res.statusCode);
+      Logger.instance.i(res.data);
+      if (res.data['code'] == 0) {
+        SPUtil.setMap('userinfo', res.data["data"]);
+        SPUtil.setBool('isLogin', true);
+        Get.snackbar(
+          '登录成功！',
+          "欢迎 ${loginUser.username} 回来",
+          colorText: Theme.of(context).colorScheme.primary,
+        );
+        Get.offNamed(Routes.HOME);
+        return true;
+      }
+      Get.snackbar(
+        '登录失败',
+        res.data['msg'],
+        colorText: Theme.of(context).colorScheme.error,
+      );
+    } catch (e, stackTrace) {
+      Logger.instance.e(stackTrace.toString());
+      Get.snackbar(
+        '登录失败',
+        e.toString(),
+        colorText: Theme.of(context).colorScheme.error,
+      );
+    }
+    SPUtil.setBool('isLogin', false);
+    controller.isLoading = false;
+    controller.update();
+    return false;
   }
 
   @override
