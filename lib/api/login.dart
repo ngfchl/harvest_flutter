@@ -1,4 +1,3 @@
-import '../../utils/http.dart';
 import '../models/authinfo.dart';
 import '../models/common_response.dart';
 import '../models/login_user.dart';
@@ -8,20 +7,22 @@ import 'api.dart';
 /// 用户
 class UserAPI {
   /// 登录
-  static Future login({
-    LoginUser? params,
-  }) async {
-    var response = await DioClient().post(
-      '/user/login',
-      formData: params?.toJson(),
+  static Future<CommonResponse> login(LoginUser loginUser) async {
+    var response = await DioUtil().post(
+      Api.LOGIN_URL,
+      formData: loginUser.toJson(),
     );
-    return response;
+    if (response.data['code'] == 0) {
+      return CommonResponse.fromJson(
+          response.data, (p0) => AuthInfo.fromJson(p0));
+    }
+    return CommonResponse.error(msg: response.data['msg']);
   }
 
   /// Logout
   static Future logout() async {
-    return await DioClient().post(
-      '/user/logout',
+    return await DioUtil().post(
+      Api.LOGIN_URL,
     );
   }
 }
