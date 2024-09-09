@@ -9,6 +9,7 @@ import 'package:harvest/api/mysite.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/models/common_response.dart';
 
+import '../../common/custom_ua.dart';
 import '../../utils/storage.dart';
 import 'controller/common_api.dart';
 import 'controller/home_controller.dart';
@@ -306,6 +307,8 @@ class HomeView extends GetView<HomeController> {
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          const CustomUAWidget(),
+          const SizedBox(width: 15),
           InkWell(
             onTap: () {
               controller.initUpdateLogState();
