@@ -1765,14 +1765,14 @@ class SettingPage extends StatelessWidget {
                                     name: 'pushplus_push',
                                     isActive: isActive.value,
                                     value: OptionValue(
-                                      deviceKey: tokenController.text,
+                                      token: tokenController.text,
                                       template: 'markdown',
                                     ),
                                   );
                                 } else {
                                   option?.isActive = isActive.value;
                                   option?.value = OptionValue(
-                                    deviceKey: tokenController.text,
+                                    token: tokenController.text,
                                     template: 'markdown',
                                   );
                                 }
