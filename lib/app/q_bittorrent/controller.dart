@@ -291,7 +291,8 @@ class QBittorrentController extends GetxController {
         await client.torrents.setShareLimit(
             torrents: Torrents(hashes: hashes),
             ratioLimit: ratioLimit,
-            seedingTimeLimit: seedingTimeLimit);
+            seedingTimeLimit: seedingTimeLimit,
+            inactiveSeedingTimeLimit: const RatioLimit.none());
       case 'delete':
         await client.torrents
             .deleteTorrents(torrents: Torrents(hashes: hashes));

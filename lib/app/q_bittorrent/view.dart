@@ -425,7 +425,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                     controller.sortKey = item.value;
                                     SPUtil.setLocalStorage(
                                         '${controller.downloader.host}:${controller.downloader.port}-sortKey',
-                                        controller.sortKey?.value);
+                                        controller.sortKey.toString());
                                     controller.subTorrentList();
                                     controller.update();
                                   },
