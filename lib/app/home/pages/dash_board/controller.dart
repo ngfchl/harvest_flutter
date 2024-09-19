@@ -30,6 +30,12 @@ class DashBoardController extends GetxController {
   int totalSeeding = 0;
   int totalLeeching = 0;
   bool isLoading = false;
+  bool buildSiteInfoCard = true;
+  bool buildSmartLabelPieChart = true;
+  bool buildStackedBar = true;
+  bool buildSiteInfo = true;
+  bool showTodayUploadedIncrement = true;
+  bool showTodayDownloadedIncrement = true;
   int days = 7;
   int maxDays = 0;
   int initCount = 0;

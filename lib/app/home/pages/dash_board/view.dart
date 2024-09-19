@@ -61,7 +61,7 @@ class _DashBoardPageState extends State<DashBoardPage>
     });
   }
 
-  Widget _showTodayIncrement() {
+  Widget _showTodayUploadedIncrement() {
     // controller.todayIncrement = 0;
     return GetBuilder<DashBoardController>(builder: (controller) {
       return CustomCard(
@@ -69,7 +69,7 @@ class _DashBoardPageState extends State<DashBoardPage>
         child: SfCircularChart(
           title: ChartTitle(
             text:
-                '今日上传增量：${filesize(controller.todayUploadIncrement)} 下载增量：${filesize(controller.todayDownloadIncrement)}',
+                '今日上传增量：${filesize(controller.todayUploadIncrement)}【${controller.uploadIncrementDataList.length}个站点】',
             textStyle: TextStyle(
                 fontSize: 11, color: Theme.of(context).colorScheme.primary),
           ),
@@ -100,40 +100,9 @@ class _DashBoardPageState extends State<DashBoardPage>
               legendIconType: LegendIconType.circle,
               enableTooltip: true,
               explode: true,
-              // explodeIndex: 0,
+              explodeIndex: 0,
               explodeOffset: '10%',
-              radius: '75%',
-              // pointRenderMode: PointRenderMode.gradient,
-              dataLabelSettings: DataLabelSettings(
-                margin: EdgeInsets.zero,
-                isVisible: true,
-                labelPosition: ChartDataLabelPosition.outside,
-                textStyle: TextStyle(
-                  fontSize: 8,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                showZeroValue: false,
-                connectorLineSettings: const ConnectorLineSettings(
-                  type: ConnectorType.curve,
-                  length: '40%',
-                ),
-                labelIntersectAction: LabelIntersectAction.shift,
-              ),
-            ),
-            DoughnutSeries<Map, String>(
-              name: '今日下载数据汇总',
-              dataSource: controller.downloadIncrementDataList,
-              xValueMapper: (Map data, _) => data["site"],
-              yValueMapper: (Map data, _) => data["data"],
-              dataLabelMapper: (Map data, _) {
-                return '${data["site"]}: ${filesize(data["data"])}';
-              },
-              legendIconType: LegendIconType.circle,
-              enableTooltip: true,
-              explode: true,
-              // explodeIndex: 0,
-              explodeOffset: '10%',
-              radius: '30%',
+              radius: '60%',
               // pointRenderMode: PointRenderMode.gradient,
               dataLabelSettings: DataLabelSettings(
                 margin: EdgeInsets.zero,
@@ -147,6 +116,91 @@ class _DashBoardPageState extends State<DashBoardPage>
                 connectorLineSettings: const ConnectorLineSettings(
                   type: ConnectorType.curve,
                   length: '20%',
+                ),
+                labelIntersectAction: LabelIntersectAction.shift,
+              ),
+            ),
+          ],
+          tooltipBehavior: TooltipBehavior(
+            enable: true,
+            header: '',
+            canShowMarker: false,
+            activationMode: ActivationMode.singleTap,
+            builder: (dynamic data, dynamic point, dynamic series,
+                int pointIndex, int seriesIndex) {
+              return Container(
+                color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  '${point.x}: ${filesize(point.y ?? 0)}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _showTodayDownloadedIncrement() {
+    // controller.todayIncrement = 0;
+    return GetBuilder<DashBoardController>(builder: (controller) {
+      return CustomCard(
+        height: 260,
+        child: SfCircularChart(
+          title: ChartTitle(
+            text:
+                '今日下载增量：${filesize(controller.todayDownloadIncrement)}【${controller.downloadIncrementDataList.length}个站点】',
+            textStyle: TextStyle(
+                fontSize: 11, color: Theme.of(context).colorScheme.primary),
+          ),
+          legend: Legend(
+            position: LegendPosition.left,
+            // height: "20",
+            isVisible: true,
+            iconWidth: 8,
+            iconHeight: 8,
+            padding: 5,
+            itemPadding: 5,
+            // width: '64',
+            isResponsive: true,
+            textStyle: TextStyle(
+              fontSize: 8,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          series: <DoughnutSeries<Map, String>>[
+            DoughnutSeries<Map, String>(
+              name: '今日下载数据汇总',
+              dataSource: controller.downloadIncrementDataList,
+              xValueMapper: (Map data, _) => data["site"],
+              yValueMapper: (Map data, _) => data["data"],
+              dataLabelMapper: (Map data, _) {
+                return '${data["site"]}: ${filesize(data["data"])}';
+              },
+              legendIconType: LegendIconType.circle,
+              enableTooltip: true,
+              explode: true,
+              explodeIndex: 0,
+              explodeOffset: '10%',
+              radius: '60%',
+              pointRenderMode: PointRenderMode.gradient,
+              dataLabelSettings: DataLabelSettings(
+                margin: EdgeInsets.zero,
+                isVisible: true,
+                labelPosition: ChartDataLabelPosition.outside,
+                textStyle: TextStyle(
+                  fontSize: 8,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                showZeroValue: false,
+                connectorLineSettings: const ConnectorLineSettings(
+                  type: ConnectorType.curve,
+                  length: '10%',
                 ),
                 labelIntersectAction: LabelIntersectAction.shift,
               ),
@@ -181,23 +235,121 @@ class _DashBoardPageState extends State<DashBoardPage>
                             const Icon(Icons.ac_unit_rounded, size: 18),
                       )
                     : controller.statusList.isNotEmpty
-                        ? SingleChildScrollView(
-                            child: Wrap(
-                                alignment: WrapAlignment.spaceAround,
-                                direction: Axis.horizontal,
-                                children: [
-                                  _buildSiteInfoCard(),
-                                  _buildSmartLabelPieChart(),
-                                  _buildStackedBar(),
-                                  _buildSiteInfo(),
-                                  _showTodayIncrement(),
-                                ]
-                                    .map((item) => FractionallySizedBox(
-                                          widthFactor:
-                                              PlatformTool.isPhone() ? 1 : 0.5,
-                                          child: item,
-                                        ))
-                                    .toList()),
+                        ? InkWell(
+                            onLongPress: () {
+                              Get.defaultDialog(
+                                title: '小部件',
+                                radius: 5,
+                                titleStyle: const TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.w900),
+                                content: SizedBox(
+                                    height: 260,
+                                    width: 280,
+                                    child: GetBuilder<DashBoardController>(
+                                        builder: (controller) {
+                                      return ListView(
+                                        children: [
+                                          // CheckboxListTile(
+                                          //     title: const Text("站点数据汇总"),
+                                          //     value: controller
+                                          //         .buildSiteInfoCard,
+                                          //     onChanged: (bool? value) {
+                                          //       controller.buildSiteInfoCard =
+                                          //           value!;
+                                          //       controller.update();
+                                          //     }),
+                                          CheckboxListTile(
+                                              title: const Text("上传总量饼图"),
+                                              value: controller
+                                                  .buildSmartLabelPieChart,
+                                              onChanged: (bool? value) {
+                                                controller
+                                                        .buildSmartLabelPieChart =
+                                                    value!;
+                                                controller.update();
+                                              }),
+                                          CheckboxListTile(
+                                              title: const Text("每日数据柱图"),
+                                              value: controller.buildStackedBar,
+                                              onChanged: (bool? value) {
+                                                controller.buildStackedBar =
+                                                    value!;
+                                                controller.update();
+                                              }),
+                                          CheckboxListTile(
+                                              title: const Text("站点数据柱图"),
+                                              value: controller.buildSiteInfo,
+                                              onChanged: (bool? value) {
+                                                controller.buildSiteInfo =
+                                                    value!;
+                                                controller.update();
+                                              }),
+                                          CheckboxListTile(
+                                              title: const Text("今日上传增量"),
+                                              value: controller
+                                                  .showTodayUploadedIncrement,
+                                              onChanged: (bool? value) {
+                                                controller
+                                                        .showTodayUploadedIncrement =
+                                                    value!;
+                                                controller.update();
+                                              }),
+                                          CheckboxListTile(
+                                              title: const Text("今日下载增量"),
+                                              value: controller
+                                                  .showTodayDownloadedIncrement,
+                                              onChanged: (bool? value) {
+                                                controller
+                                                        .showTodayDownloadedIncrement =
+                                                    value!;
+                                                controller.update();
+                                              }),
+                                        ],
+                                      );
+                                    })),
+                                // actions: [
+                                //   ElevatedButton(
+                                //     onPressed: () {
+                                //       Get.back(result: false);
+                                //     },
+                                //     child: const Text('取消'),
+                                //   ),
+                                //   ElevatedButton(
+                                //     onPressed: () async {
+                                //       Get.back(result: true);
+                                //       Navigator.of(context).pop();
+                                //     },
+                                //     child: const Text('确认'),
+                                //   ),
+                                // ],
+                              );
+                            },
+                            child: SingleChildScrollView(
+                              child: Wrap(
+                                  alignment: WrapAlignment.spaceAround,
+                                  direction: Axis.horizontal,
+                                  children: [
+                                    if (controller.buildSiteInfoCard)
+                                      _buildSiteInfoCard(),
+                                    if (controller.buildSmartLabelPieChart)
+                                      _buildSmartLabelPieChart(),
+                                    if (controller.buildStackedBar)
+                                      _buildStackedBar(),
+                                    if (controller.buildSiteInfo)
+                                      _buildSiteInfo(),
+                                    if (controller.showTodayUploadedIncrement)
+                                      _showTodayUploadedIncrement(),
+                                    if (controller.showTodayDownloadedIncrement)
+                                      _showTodayDownloadedIncrement(),
+                                  ]
+                                      .map((item) => FractionallySizedBox(
+                                            widthFactor: PlatformTool.isPhone()
+                                                ? 1
+                                                : 0.5,
+                                            child: item,
+                                          ))
+                                      .toList()),
+                            ),
                           )
                         : Center(
                             child: ElevatedButton.icon(
