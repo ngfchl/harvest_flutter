@@ -108,6 +108,19 @@ removeMySite(MySite mySite) async {
   return await removeData('$apiUrl/${mySite.id}');
 }
 
+/// 批量更新操作
+bulkUpgrade(Map<String, String> data) async {
+  String apiUrl = Api.Bulk_UPGRADE_API;
+  final response = await DioUtil().post(apiUrl, formData: data);
+  if (response.statusCode == 200) {
+    Logger.instance.w(response.data);
+    return CommonResponse.fromJson(response.data, (p0) => null);
+  } else {
+    String msg = '站点刷新数据失败！: ${response.statusCode}';
+    return CommonResponse(data: null, code: -1, msg: msg);
+  }
+}
+
 signInAll() async {
   final response = await DioUtil().get(
     Api.MYSITE_SIGNIN_OPERATE,

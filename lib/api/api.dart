@@ -18,6 +18,9 @@ class Api {
   // 搜索
   static const String WEBSITE_SEARCH = "mysite/search";
 
+  // 批量操作
+  static const String Bulk_UPGRADE_API = "mysite/bulk/upgrade";
+
   // PTPP
   static const String IMPORT_COOKIE_PTPP = "mysite/cookie/ptpp";
 
