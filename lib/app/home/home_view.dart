@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:harvest/api/mysite.dart';
 import 'package:harvest/common/card_view.dart';
+import 'package:harvest/common/form_widgets.dart';
 import 'package:harvest/models/common_response.dart';
 
 import '../../common/custom_ua.dart';
@@ -488,6 +489,73 @@ class HomeView extends GetView<HomeController> {
                     ),
                     onTap: () async {
                       await getAllStatusButton();
+                    },
+                  ),
+                  PopupMenuItem<String>(
+                    child: Text(
+                      '批量操作',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                    ),
+                    onTap: () async {
+                      TextEditingController keyController =
+                          TextEditingController(text: '');
+                      TextEditingController valueController =
+                          TextEditingController(text: '');
+                      Map<String, String> selectOptions = {
+                        "站点UA": "user_agent",
+                        "网络代理": "proxy"
+                      };
+                      Get.defaultDialog(
+                        title: "批量操作",
+                        content: SizedBox(
+                          height: 120,
+                          width: 240,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CustomPickerField(
+                                controller: keyController,
+                                labelText: '要替换的属性',
+                                data: const ["站点UA", "网络代理"],
+                                // onChanged: (p, position) {
+                                //   keyController.text = selectOptions[p]!;
+                                // },
+                              ),
+                              CustomTextField(
+                                  controller: valueController, labelText: "替换为")
+                            ],
+                          ),
+                        ),
+                        actions: [
+                          ElevatedButton(
+                            onPressed: () {
+                              Get.back(result: false);
+                            },
+                            child: const Text('取消'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () async {
+                              Get.back(result: true);
+                              CommonResponse res = await bulkUpgrade({
+                                "key": selectOptions[keyController.text]!,
+                                "value": valueController.text,
+                              });
+                              if (res.code == 0) {
+                                Get.snackbar('批量操作通知', res.msg.toString(),
+                                    colorText:
+                                        Theme.of(context).colorScheme.primary);
+                              } else {
+                                Get.snackbar('批量操作通知', res.msg.toString(),
+                                    colorText:
+                                        Theme.of(context).colorScheme.error);
+                              }
+                            },
+                            child: const Text('确认'),
+                          ),
+                        ],
+                      );
                     },
                   ),
                   PopupMenuItem<String>(
