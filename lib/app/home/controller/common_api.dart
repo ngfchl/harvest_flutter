@@ -79,3 +79,18 @@ Future<void> clearMyCacheButton() async {
     '清除缓存：${res.msg}',
   );
 }
+
+Future<void> bulkUpgradeHandler(Map<String, dynamic> data) async {
+  CommonResponse res = await bulkUpgrade(data);
+  if (res.code == 0) {
+    Get.snackbar(
+      '批量操作通知',
+      res.msg.toString(),
+    );
+  } else {
+    Get.snackbar(
+      '批量操作通知',
+      res.msg.toString(),
+    );
+  }
+}

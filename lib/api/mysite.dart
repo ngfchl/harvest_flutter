@@ -109,7 +109,7 @@ removeMySite(MySite mySite) async {
 }
 
 /// 批量更新操作
-bulkUpgrade(Map<String, String> data) async {
+bulkUpgrade(Map<String, dynamic> data) async {
   String apiUrl = Api.Bulk_UPGRADE_API;
   final response = await DioUtil().post(apiUrl, formData: data);
   if (response.statusCode == 200) {
