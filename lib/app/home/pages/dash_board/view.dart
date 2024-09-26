@@ -92,10 +92,12 @@ class _DashBoardPageState extends State<DashBoardPage>
             DoughnutSeries<Map, String>(
               name: '今日上传数据汇总',
               dataSource: controller.uploadIncrementDataList,
-              xValueMapper: (Map data, _) => data["site"],
+              xValueMapper: (Map data, _) => controller.privateMode
+                  ? "${data["site"].substring(0, 1)}**"
+                  : data["site"],
               yValueMapper: (Map data, _) => data["data"],
               dataLabelMapper: (Map data, _) {
-                return '${data["site"]}: ${filesize(data["data"])}';
+                return '${controller.privateMode ? "${data["site"].substring(0, 1)}*" : data["site"]}: ${filesize(data["data"])}';
               },
               legendIconType: LegendIconType.circle,
               enableTooltip: true,
@@ -177,10 +179,12 @@ class _DashBoardPageState extends State<DashBoardPage>
             DoughnutSeries<Map, String>(
               name: '今日下载数据汇总',
               dataSource: controller.downloadIncrementDataList,
-              xValueMapper: (Map data, _) => data["site"],
+              xValueMapper: (Map data, _) => controller.privateMode
+                  ? "${data["site"].substring(0, 1)}**"
+                  : data["site"],
               yValueMapper: (Map data, _) => data["data"],
               dataLabelMapper: (Map data, _) {
-                return '${data["site"]}: ${filesize(data["data"])}';
+                return '${controller.privateMode ? "${data["site"].substring(0, 1)}**" : data["site"]}: ${filesize(data["data"])}';
               },
               legendIconType: LegendIconType.circle,
               enableTooltip: true,
@@ -302,6 +306,14 @@ class _DashBoardPageState extends State<DashBoardPage>
                                                 controller
                                                         .showTodayDownloadedIncrement =
                                                     value!;
+                                                controller.update();
+                                              }),
+                                          CheckboxListTile(
+                                              title: const Text("开启隐私模式"),
+                                              value: controller.privateMode,
+                                              onChanged: (bool? value) {
+                                                controller.privateMode = value!;
+                                                controller.initChartData();
                                                 controller.update();
                                               }),
                                         ],
@@ -1136,7 +1148,9 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   width: 70,
                                   child: Center(
                                       child: EllipsisText(
-                                    text: mySite.nickname,
+                                    text: controller.privateMode
+                                        ? "${mySite.nickname.substring(0, 1)}**"
+                                        : mySite.nickname,
                                     style: TextStyle(
                                       fontSize: 10,
                                       color:
@@ -1271,10 +1285,12 @@ class _DashBoardPageState extends State<DashBoardPage>
         dataSource: controller.statusList
             .where((element) => element.available == true)
             .toList(),
-        xValueMapper: (MySite data, _) => data.nickname,
+        xValueMapper: (MySite data, _) => controller.privateMode
+            ? "${data.nickname.substring(0, 1)}**"
+            : data.nickname,
         yValueMapper: (MySite data, _) => data.latestStatusInfo?.uploaded ?? 0,
         dataLabelMapper: (MySite data, _) =>
-            '${data.nickname}: ${filesize(data.latestStatusInfo?.uploaded ?? 0)}',
+            '${controller.privateMode ? "${data.nickname.substring(0, 1)}**" : data.nickname}: ${filesize(data.latestStatusInfo?.uploaded ?? 0)}',
         enableTooltip: true,
         explode: true,
         explodeIndex: 0,
@@ -1358,7 +1374,9 @@ class _DashBoardPageState extends State<DashBoardPage>
                             child: Column(
                               children: [
                                 Text(
-                                  point.x,
+                                  controller.privateMode
+                                      ? "${point.x.substring(0, 1)}**"
+                                      : point.x,
                                   style: TextStyle(
                                     fontSize: 13,
                                     color: Theme.of(context)
@@ -1417,7 +1435,9 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   .sublist(siteData['data'].length - 15)
                               : siteData['data'];
                       return StackedBarSeries<StatusInfo?, String>(
-                        name: siteData['site'],
+                        name: controller.privateMode
+                            ? siteData['site'].toString().substring(0, 1)
+                            : siteData['site'],
                         // width: 0.5,
                         borderRadius: BorderRadius.circular(1),
                         legendIconType: LegendIconType.circle,
@@ -1440,7 +1460,9 @@ class _DashBoardPageState extends State<DashBoardPage>
                           mode: EmptyPointMode.drop,
                         ),
                         dataLabelMapper: (StatusInfo? status, _) =>
-                            siteData['site'],
+                            controller.privateMode
+                                ? siteData['site'].toString().substring(0, 1)
+                                : siteData['site'],
                         // color: RandomColor().randomColor(),
                         // enableTooltip: true,
                       );

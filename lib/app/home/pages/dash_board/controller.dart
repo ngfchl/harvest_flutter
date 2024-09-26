@@ -29,6 +29,7 @@ class DashBoardController extends GetxController {
   int totalSeedVol = 0;
   int totalSeeding = 0;
   int totalLeeching = 0;
+  bool privateMode = false;
   bool isLoading = false;
   bool buildSiteInfoCard = true;
   bool buildSmartLabelPieChart = true;
@@ -43,7 +44,6 @@ class DashBoardController extends GetxController {
   @override
   void onInit() {
     initData();
-
     super.onInit();
   }
 
