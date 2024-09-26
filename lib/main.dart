@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:harvest/utils/dio_util.dart';
 import 'package:harvest/utils/storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:window_manager/window_manager.dart';
 
 import 'app/routes/app_pages.dart';
 
@@ -32,6 +33,23 @@ void main() async {
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
   ));
+  // 必须加上这一行。
+  if (GetPlatform.isDesktop) {
+    await windowManager.ensureInitialized();
+
+    WindowOptions windowOptions = const WindowOptions(
+      size: Size(1200, 900),
+      center: true,
+      backgroundColor: Colors.transparent,
+      skipTaskbar: false,
+      titleBarStyle: TitleBarStyle.hidden,
+    );
+    windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+      await windowManager.focus();
+    });
+  }
+
   FlutterNativeSplash.remove();
   runApp(const MyApp());
 }
