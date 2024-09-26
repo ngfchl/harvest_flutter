@@ -113,9 +113,9 @@ class DashBoardController extends GetxController {
                 .add({'site': mySite.nickname, 'data': increment});
           }
           if (downloaded > 0) {
-            todayDownloadIncrement += increment;
+            todayDownloadIncrement += downloaded;
             downloadIncrementDataList
-                .add({'site': mySite.nickname, 'data': increment});
+                .add({'site': mySite.nickname, 'data': downloaded});
           }
         }
       }
