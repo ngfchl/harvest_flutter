@@ -323,13 +323,17 @@ class QBittorrentController extends GetxController {
     return qbittorrent;
   }
 
-  removeErrorTracker() async {
+  ///@title 移除红种
+  ///@description 移除红种
+  ///@updateTime
+  Future<CommonResponse> removeErrorTracker() async {
     try {
       List<String> toRemoveTorrentList = [];
       var groupedTorrents = groupBy(torrents, (t) => t.contentPath);
       for (var group in groupedTorrents.values) {
         var hasTracker = group.any((t) => t.tracker?.isNotEmpty == true);
         if (!hasTracker) {
+          group.sort((t1, t2) => t2.progress!.compareTo(t1.progress!));
           toRemoveTorrentList.addAll(group.skip(1).map((t) => t.hash!));
         } else {
           toRemoveTorrentList.addAll(group

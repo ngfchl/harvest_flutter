@@ -488,6 +488,7 @@ class TrController extends GetxController {
       for (var group in groupedTorrents.values) {
         var hasTracker = group.any((t) => t.error != 2);
         if (!hasTracker) {
+          group.sort((t1, t2) => t2.percentDone.compareTo(t1.percentDone));
           toRemoveTorrentList.addAll(group.skip(1).map((t) => t.hashString));
         } else {
           toRemoveTorrentList.addAll(group
