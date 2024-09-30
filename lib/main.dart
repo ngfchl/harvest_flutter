@@ -34,7 +34,7 @@ void main() async {
     statusBarColor: Colors.transparent,
   ));
   // 必须加上这一行。
-  if (GetPlatform.isDesktop) {
+  if (GetPlatform.isDesktop && !GetPlatform.isWeb) {
     await windowManager.ensureInitialized();
 
     WindowOptions windowOptions = const WindowOptions(
