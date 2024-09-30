@@ -1098,7 +1098,7 @@ class SettingPage extends StatelessWidget {
         TextEditingController(text: option?.value.token ?? '');
     TextEditingController proxyController =
         TextEditingController(text: option?.value.proxy ?? '');
-    RxBool repeat = true.obs;
+    RxBool repeat = (option == null ? true : option.value.repeat!).obs;
     final isActive = (option == null ? true : option.isActive).obs;
     final isEdit = (option == null).obs;
     return Obx(() {
