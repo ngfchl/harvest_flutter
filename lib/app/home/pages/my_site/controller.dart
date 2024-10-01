@@ -23,7 +23,7 @@ class MySiteController extends GetxController {
 
   List<Map<String, String>> siteSortOptions = [
     // {'name': '站点ID', 'value': 'mySiteId'},
-    // {'name': '排序ID', 'value': 'mySiteSortId'},
+    {'name': '排序ID', 'value': 'mySiteSortId'},
     {'name': '站点名称', 'value': 'siteName'},
     {'name': '站点昵称', 'value': 'mySiteNickname'},
     {'name': '注册时间', 'value': 'mySiteJoined'},
@@ -67,7 +67,7 @@ class MySiteController extends GetxController {
   void onInit() async {
     searchKey = '';
     filterKey = '';
-    sortKey = SPUtil.getLocalStorage('mySite-sortKey') ?? 'mySiteJoined';
+    sortKey = SPUtil.getLocalStorage('mySite-sortKey') ?? 'mySiteSortId';
     isLoaded = true;
     await initData();
     super.onInit();

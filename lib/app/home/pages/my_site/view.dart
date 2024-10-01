@@ -761,6 +761,8 @@ class _MySitePagePageState extends State<MySitePage>
     siteList.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
     final siteController = TextEditingController(text: mySite?.site ?? '');
     final apiKeyController = TextEditingController(text: mySite?.authKey ?? '');
+    final sortIdController =
+        TextEditingController(text: mySite?.sortId.toString() ?? '1');
 
     final nicknameController =
         TextEditingController(text: mySite?.nickname ?? '');
@@ -859,7 +861,10 @@ class _MySitePagePageState extends State<MySitePage>
                         maxLength: 16,
                         labelText: 'User ID',
                       ),
-
+                      CustomTextField(
+                        controller: sortIdController,
+                        labelText: '排序 ID',
+                      ),
                       CustomTextField(
                         controller: passkeyController,
                         maxLength: 128,
@@ -938,21 +943,21 @@ class _MySitePagePageState extends State<MySitePage>
               ),
             ),
             const SizedBox(height: 5),
-            ButtonBar(
+            OverflowBar(
               alignment: MainAxisAlignment.spaceAround,
               children: [
                 ElevatedButton(
                   style: ButtonStyle(
                     backgroundColor: WidgetStateProperty.all(
-                        Theme.of(context).colorScheme.secondary),
+                        Theme.of(context).colorScheme.primary),
                   ),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: const Text(
+                  child: Text(
                     '取消',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onPrimary,
                     ),
                   ),
                 ),
@@ -986,22 +991,22 @@ class _MySitePagePageState extends State<MySitePage>
                             ),
                           ]);
                     },
-                    child: const Text(
+                    child: Text(
                       '删除',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onError,
                       ),
                     ),
                   ),
                 ElevatedButton(
                   style: ButtonStyle(
                     backgroundColor: WidgetStateProperty.all(
-                        Theme.of(context).colorScheme.primary),
+                        Theme.of(context).colorScheme.tertiary),
                   ),
-                  child: const Text(
+                  child: Text(
                     '保存',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onTertiary,
                     ),
                   ),
                   onPressed: () async {
@@ -1013,6 +1018,7 @@ class _MySitePagePageState extends State<MySitePage>
                         passkey: passkeyController.text.trim(),
                         authKey: apiKeyController.text.trim(),
                         userId: userIdController.text.trim(),
+                        sortId: int.parse(sortIdController.text.trim()),
                         userAgent: userAgentController.text.trim(),
                         proxy: proxyController.text.trim(),
                         rss: rssController.text.trim(),
@@ -1037,6 +1043,7 @@ class _MySitePagePageState extends State<MySitePage>
                         passkey: passkeyController.text.trim(),
                         authKey: apiKeyController.text.trim(),
                         userId: userIdController.text.trim(),
+                        sortId: int.parse(sortIdController.text.trim()),
                         userAgent: userAgentController.text.trim(),
                         proxy: proxyController.text.trim(),
                         rss: rssController.text.trim(),
@@ -1052,7 +1059,6 @@ class _MySitePagePageState extends State<MySitePage>
                         searchTorrents: searchTorrents.value,
                         available: available.value,
                         id: 0,
-                        sortId: 0,
                         removeTorrentRules: {},
                         timeJoin: '',
                         mail: 0,
@@ -1091,34 +1097,26 @@ class _MySitePagePageState extends State<MySitePage>
                         controller.siteSortOptions[index];
                     return Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                          side:
-                              const BorderSide(color: Colors.grey, width: 1.0),
-                        ),
-                        child: ListTile(
-                          title: Text(item['name']!),
-                          selectedColor: Colors.amber,
-                          selected: controller.sortKey == item['value'],
-                          leading: controller.sortReversed
-                              ? const Icon(Icons.trending_up)
-                              : const Icon(Icons.trending_down),
-                          trailing: controller.sortKey == item['value']
-                              ? const Icon(Icons.check_box_outlined)
-                              : const Icon(
-                                  Icons.check_box_outline_blank_rounded),
-                          onTap: () {
-                            if (controller.sortKey == item['value']!) {
-                              controller.sortReversed =
-                                  !controller.sortReversed;
-                            }
-                            controller.sortKey = item['value']!;
-                            controller.sortStatusList();
+                      child: ListTile(
+                        title: Text(item['name']!),
+                        dense: true,
+                        selectedColor: Colors.amber,
+                        selected: controller.sortKey == item['value'],
+                        leading: controller.sortReversed
+                            ? const Icon(Icons.trending_up)
+                            : const Icon(Icons.trending_down),
+                        trailing: controller.sortKey == item['value']
+                            ? const Icon(Icons.check_box_outlined)
+                            : const Icon(Icons.check_box_outline_blank_rounded),
+                        onTap: () {
+                          if (controller.sortKey == item['value']!) {
+                            controller.sortReversed = !controller.sortReversed;
+                          }
+                          controller.sortKey = item['value']!;
+                          controller.sortStatusList();
 
-                            Navigator.of(context).pop();
-                          },
-                        ),
+                          Navigator.of(context).pop();
+                        },
                       ),
                     );
                   },
@@ -1140,30 +1138,22 @@ class _MySitePagePageState extends State<MySitePage>
                   itemCount: controller.filterOptions.length,
                   itemBuilder: (context, index) {
                     Map<String, String> item = controller.filterOptions[index];
-                    return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                          side:
-                              const BorderSide(color: Colors.grey, width: 1.0),
-                        ),
-                        child: ListTile(
-                            title: Text(item['name']!),
-                            trailing: controller.filterKey == item['value']
-                                ? const Icon(Icons.check_box_outlined)
-                                : const Icon(
-                                    Icons.check_box_outline_blank_rounded),
-                            selectedColor: Colors.amber,
-                            selected: controller.filterKey == item['value'],
-                            onTap: () {
-                              controller.filterKey = item['value']!;
-                              controller.filterByKey();
+                    return ListTile(
+                        title: Text(item['name']!),
+                        contentPadding:
+                            const EdgeInsets.symmetric(horizontal: 16),
+                        dense: true,
+                        trailing: controller.filterKey == item['value']
+                            ? const Icon(Icons.check_box_outlined)
+                            : const Icon(Icons.check_box_outline_blank_rounded),
+                        selectedColor: Colors.amber,
+                        selected: controller.filterKey == item['value'],
+                        onTap: () {
+                          controller.filterKey = item['value']!;
+                          controller.filterByKey();
 
-                              Navigator.of(context).pop();
-                            }),
-                      ),
-                    );
+                          Navigator.of(context).pop();
+                        });
                   });
             }))
           ]),
@@ -1188,35 +1178,31 @@ class _MySitePagePageState extends State<MySitePage>
                       itemBuilder: (context, index) {
                         String signKey = signKeys[index];
                         SignInInfo? item = mySite.signInInfo[signKey];
-                        return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Card(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                              side: const BorderSide(
-                                  color: Colors.grey, width: 1.0),
-                            ),
-                            child: ListTile(
-                                title: Text(
-                                  item!.info,
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: signKey == today
-                                          ? Colors.amber
-                                          : Colors.black45),
-                                ),
-                                subtitle: Text(
-                                  item.updatedAt,
-                                  style: TextStyle(
-                                      fontSize: 10,
-                                      color: signKey == today
-                                          ? Colors.amber
-                                          : Colors.black26),
-                                ),
-                                selected: signKey == today,
-                                selectedColor: Colors.amber,
-                                onTap: () {}),
-                          ),
+                        return CustomCard(
+                          child: ListTile(
+                              title: Text(
+                                item!.info,
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color: signKey == today
+                                        ? Colors.amber
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .primary),
+                              ),
+                              subtitle: Text(
+                                item.updatedAt,
+                                style: TextStyle(
+                                    fontSize: 10,
+                                    color: signKey == today
+                                        ? Colors.amber
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .primary),
+                              ),
+                              selected: signKey == today,
+                              selectedColor: Colors.amber,
+                              onTap: () {}),
                         );
                       }))
             ])));
