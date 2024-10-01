@@ -127,8 +127,18 @@ class _MySitePagePageState extends State<MySitePage>
                   ),
                 Expanded(
                   child: controller.isLoaded
-                      ? ListView(
-                          children: const [GFLoader()],
+                      ? Center(
+                          child: GFLoader(
+                            type: GFLoaderType.custom,
+                            loaderIconOne: Icon(
+                              Icons.circle_outlined,
+                              size: 18,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primary
+                                  .withOpacity(0.8),
+                            ),
+                          ),
                         )
                       : controller.showStatusList.isEmpty
                           ? ListView(
@@ -642,14 +652,12 @@ class _MySitePagePageState extends State<MySitePage>
     );
   }
 
-  ButtonBar siteOperateButtonBar(WebSite website, MySite mySite) {
+  OverflowBar siteOperateButtonBar(WebSite website, MySite mySite) {
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     bool signed = mySite.getSignMaxKey() == today;
 
-    return ButtonBar(
+    return OverflowBar(
       alignment: MainAxisAlignment.spaceAround,
-      buttonPadding: const EdgeInsets.all(8),
-      buttonAlignedDropdown: true,
       children: [
         if (website.signIn && mySite.signIn)
           SizedBox(
