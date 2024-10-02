@@ -1,7 +1,7 @@
 name: harvest
 description: Harvest Project App Client
 publish_to: none
-version: 2024.0926.01+66
+version: 2024.1002.01+68
 environment:
   sdk: '>=3.3.2 <4.0.0'
 dependencies:
@@ -52,15 +52,4 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/images/
-#  fonts:
-#    - family: Noto
-#      fonts:
-#        - asset: assets/fonts/NotoSansSC-Bold.ttf
-#        - asset: assets/fonts/NotoSansSC-Medium.ttf
-#        - asset: assets/fonts/NotoSansSC-Regular.ttf
-#          style: normal
-#    - family: Roboto
-#      fonts:
-#        - asset: assets/fonts/Roboto-Regular.ttf
-#          style: normal
+  - assets/images/
