@@ -187,10 +187,10 @@ class MySiteController extends GetxController {
     // 无消息的数据
     List<MySite> otherStatusList = showStatusList
         .where((item) =>
-            item.statusInfo.isNotEmpty &&
-            (item.mail ?? 0) + (item.notice ?? 0) <= 0)
+            item.statusInfo.isEmpty ||
+            (item.statusInfo.isNotEmpty &&
+                (item.mail ?? 0) + (item.notice ?? 0) <= 0))
         .toList();
-
     // 根据不同的排序键调用不同的排序方法
     switch (sortKey) {
       case 'mySiteId':
