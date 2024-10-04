@@ -33,7 +33,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
     return GetBuilder<QBittorrentController>(builder: (controller) {
       return PopScope(
         canPop: false,
-        onPopInvokedWithResult: (didPop, _) async {
+        onPopInvoked: (didPop) async {
           if (didPop) return;
           Get.defaultDialog(
             title: "退出",

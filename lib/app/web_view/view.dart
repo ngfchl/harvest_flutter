@@ -49,7 +49,7 @@ class _WebViewPageState extends State<WebViewPage> {
     Logger.instance.i(headers);
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (didPop, _) async {
+      onPopInvoked: (didPop) async {
         if (didPop) return;
         Get.defaultDialog(
           title: "退出",

@@ -26,7 +26,7 @@ class HomeView extends GetView<HomeController> {
     return GetBuilder<HomeController>(builder: (controller) {
       return PopScope(
         canPop: false,
-        onPopInvokedWithResult: (didPop, _) async {
+        onPopInvoked: (didPop) async {
           if (didPop) return;
           Get.defaultDialog(
             title: "退出",
