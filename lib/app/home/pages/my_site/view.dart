@@ -276,6 +276,44 @@ class _MySitePagePageState extends State<MySitePage>
   Widget showSiteDataInfo(MySite mySite) {
     StatusInfo? status;
     WebSite? website = controller.webSiteList[mySite.site];
+    Logger.instance.w('${mySite.nickname} - ${website?.name}');
+    if (website == null) {
+      return CustomCard(
+        key: Key("${mySite.id}-${mySite.site}"),
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: ListTile(
+          dense: true,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+          leading: const Image(
+            image: AssetImage('assets/images/logo.png'),
+            width: 32,
+            height: 32,
+          ),
+          title: Text(
+            mySite.nickname,
+            style: const TextStyle(
+              fontSize: 13,
+            ),
+          ),
+          subtitle: Text(
+            '这个站点有问题啊？删了吧',
+            style: TextStyle(
+              color: Colors.red.shade200,
+              fontSize: 10,
+            ),
+          ),
+          trailing: IconButton(
+              onPressed: () async {
+                await _showEditBottomSheet(mySite: mySite);
+              },
+              icon: Icon(
+                Icons.edit,
+                color: Theme.of(context).colorScheme.primary,
+              )),
+        ),
+      );
+    }
     if (mySite.statusInfo.isNotEmpty) {
       status = mySite.statusInfo[mySite.getStatusMaxKey()];
     }
@@ -787,10 +825,10 @@ class _MySitePagePageState extends State<MySitePage>
     final cookieController = TextEditingController(text: mySite?.cookie ?? '');
     final mirrorController = TextEditingController(text: mySite?.mirror ?? '');
     Rx<WebSite?> selectedSite = mySite != null
-        ? controller.webSiteList[mySite.site]!.obs
+        ? controller.webSiteList[mySite.site].obs
         : controller.webSiteList.values.toList()[0].obs;
-    RxList<String>? urlList = mySite != null
-        ? controller.webSiteList[mySite.site]?.url.obs
+    RxList<String>? urlList = selectedSite.value != null
+        ? selectedSite.value?.url.obs
         : <String>[].obs;
     RxBool getInfo = mySite != null ? mySite.getInfo.obs : true.obs;
     RxBool available = mySite != null ? mySite.available.obs : true.obs;
@@ -808,6 +846,7 @@ class _MySitePagePageState extends State<MySitePage>
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
       CustomCard(
         padding: const EdgeInsets.all(20),
+        height: selectedSite.value != null ? 500 : 120,
         child: Column(
           children: [
             Text(
@@ -816,140 +855,141 @@ class _MySitePagePageState extends State<MySitePage>
                     color: Theme.of(context).colorScheme.primary,
                   ),
             ),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Obx(() {
-                  return Column(
-                    children: [
-                      CustomPickerField(
-                        controller: siteController,
-                        labelText: '选择站点',
-                        data: siteList,
-                        onChanged: (p, position) {
-                          siteController.text = p;
-                          selectedSite.value = controller.webSiteList[p];
-                          urlList?.value = selectedSite.value!.url;
-                          mirrorController.text = urlList![0];
-                          nicknameController.text = selectedSite.value!.name;
-                          signIn.value = selectedSite.value!.signIn;
-                          getInfo.value = selectedSite.value!.getInfo;
-                          repeatTorrents.value =
-                              selectedSite.value!.repeatTorrents;
-                          searchTorrents.value =
-                              selectedSite.value!.searchTorrents;
-                          available.value = selectedSite.value!.alive;
-                        },
-                        onConfirm: (p, position) {
-                          siteController.text = p;
-                          selectedSite.value = controller.webSiteList[p];
-                          urlList?.value = selectedSite.value!.url;
-                          mirrorController.text = urlList![0];
-                          nicknameController.text = selectedSite.value!.name;
-                          signIn.value = selectedSite.value!.signIn;
-                          getInfo.value = selectedSite.value!.getInfo;
-                          repeatTorrents.value =
-                              selectedSite.value!.repeatTorrents;
-                          searchTorrents.value =
-                              selectedSite.value!.searchTorrents;
-                          available.value = selectedSite.value!.alive;
-                        },
-                      ),
-                      if (urlList!.isNotEmpty)
+            if (selectedSite.value != null)
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Obx(() {
+                    return Column(
+                      children: [
                         CustomPickerField(
-                          controller: mirrorController,
-                          labelText: '选择网址',
-                          data: urlList,
-                        ),
-                      CustomTextField(
-                        controller: nicknameController,
-                        labelText: '站点昵称',
-                      ),
-                      CustomTextField(
-                        controller: userIdController,
-                        maxLength: 16,
-                        labelText: 'User ID',
-                      ),
-                      CustomTextField(
-                        controller: sortIdController,
-                        labelText: '排序 ID',
-                      ),
-                      CustomTextField(
-                        controller: passkeyController,
-                        maxLength: 128,
-                        labelText: 'Passkey',
-                      ),
-                      CustomTextField(
-                        controller: apiKeyController,
-                        maxLength: 128,
-                        labelText: 'AuthKey',
-                      ),
-                      CustomTextField(
-                        controller: userAgentController,
-                        labelText: 'User Agent',
-                      ),
-                      // CustomTextField(
-                      //   controller: rssController,
-                      //   labelText: 'RSS',
-                      // ),
-                      // CustomTextField(
-                      //   controller: torrentsController,
-                      //   labelText: 'Torrents',
-                      // ),
-                      CustomTextField(
-                        controller: cookieController,
-                        labelText: 'Cookie',
-                      ),
-                      CustomTextField(
-                        controller: proxyController,
-                        labelText: 'HTTP代理',
-                      ),
-                      const SizedBox(height: 15),
-                      Wrap(spacing: 12, runSpacing: 8, children: [
-                        if (selectedSite.value!.alive)
-                          ChoiceChip(
-                            label: const Text('可用'),
-                            selected: available.value,
-                            onSelected: (value) {
-                              available.value = value;
-                            },
-                          ),
-                        ChoiceChip(
-                          label: const Text('数据'),
-                          selected: getInfo.value,
-                          onSelected: (value) {
-                            getInfo.value = value;
+                          controller: siteController,
+                          labelText: '选择站点',
+                          data: siteList,
+                          onChanged: (p, position) {
+                            siteController.text = p;
+                            selectedSite.value = controller.webSiteList[p];
+                            urlList?.value = selectedSite.value!.url;
+                            mirrorController.text = urlList![0];
+                            nicknameController.text = selectedSite.value!.name;
+                            signIn.value = selectedSite.value!.signIn;
+                            getInfo.value = selectedSite.value!.getInfo;
+                            repeatTorrents.value =
+                                selectedSite.value!.repeatTorrents;
+                            searchTorrents.value =
+                                selectedSite.value!.searchTorrents;
+                            available.value = selectedSite.value!.alive;
+                          },
+                          onConfirm: (p, position) {
+                            siteController.text = p;
+                            selectedSite.value = controller.webSiteList[p];
+                            urlList?.value = selectedSite.value!.url;
+                            mirrorController.text = urlList![0];
+                            nicknameController.text = selectedSite.value!.name;
+                            signIn.value = selectedSite.value!.signIn;
+                            getInfo.value = selectedSite.value!.getInfo;
+                            repeatTorrents.value =
+                                selectedSite.value!.repeatTorrents;
+                            searchTorrents.value =
+                                selectedSite.value!.searchTorrents;
+                            available.value = selectedSite.value!.alive;
                           },
                         ),
-                        if (selectedSite.value!.searchTorrents)
+                        if (urlList!.isNotEmpty)
+                          CustomPickerField(
+                            controller: mirrorController,
+                            labelText: '选择网址',
+                            data: urlList,
+                          ),
+                        CustomTextField(
+                          controller: nicknameController,
+                          labelText: '站点昵称',
+                        ),
+                        CustomTextField(
+                          controller: userIdController,
+                          maxLength: 16,
+                          labelText: 'User ID',
+                        ),
+                        CustomTextField(
+                          controller: sortIdController,
+                          labelText: '排序 ID',
+                        ),
+                        CustomTextField(
+                          controller: passkeyController,
+                          maxLength: 128,
+                          labelText: 'Passkey',
+                        ),
+                        CustomTextField(
+                          controller: apiKeyController,
+                          maxLength: 128,
+                          labelText: 'AuthKey',
+                        ),
+                        CustomTextField(
+                          controller: userAgentController,
+                          labelText: 'User Agent',
+                        ),
+                        // CustomTextField(
+                        //   controller: rssController,
+                        //   labelText: 'RSS',
+                        // ),
+                        // CustomTextField(
+                        //   controller: torrentsController,
+                        //   labelText: 'Torrents',
+                        // ),
+                        CustomTextField(
+                          controller: cookieController,
+                          labelText: 'Cookie',
+                        ),
+                        CustomTextField(
+                          controller: proxyController,
+                          labelText: 'HTTP代理',
+                        ),
+                        const SizedBox(height: 15),
+                        Wrap(spacing: 12, runSpacing: 8, children: [
+                          if (selectedSite.value!.alive)
+                            ChoiceChip(
+                              label: const Text('可用'),
+                              selected: available.value,
+                              onSelected: (value) {
+                                available.value = value;
+                              },
+                            ),
                           ChoiceChip(
-                            label: const Text('搜索'),
-                            selected: searchTorrents.value,
+                            label: const Text('数据'),
+                            selected: getInfo.value,
                             onSelected: (value) {
-                              searchTorrents.value = value;
+                              getInfo.value = value;
                             },
                           ),
-                        if (selectedSite.value!.signIn)
-                          ChoiceChip(
-                            label: const Text('签到'),
-                            selected: signIn.value,
-                            onSelected: (value) {
-                              signIn.value = value;
-                            },
-                          ),
-                        if (selectedSite.value!.repeatTorrents)
-                          ChoiceChip(
-                            label: const Text('辅种'),
-                            selected: repeatTorrents.value,
-                            onSelected: (value) {
-                              repeatTorrents.value = value;
-                            },
-                          ),
-                      ]),
-                    ],
-                  );
-                }),
+                          if (selectedSite.value!.searchTorrents)
+                            ChoiceChip(
+                              label: const Text('搜索'),
+                              selected: searchTorrents.value,
+                              onSelected: (value) {
+                                searchTorrents.value = value;
+                              },
+                            ),
+                          if (selectedSite.value!.signIn)
+                            ChoiceChip(
+                              label: const Text('签到'),
+                              selected: signIn.value,
+                              onSelected: (value) {
+                                signIn.value = value;
+                              },
+                            ),
+                          if (selectedSite.value!.repeatTorrents)
+                            ChoiceChip(
+                              label: const Text('辅种'),
+                              selected: repeatTorrents.value,
+                              onSelected: (value) {
+                                repeatTorrents.value = value;
+                              },
+                            ),
+                        ]),
+                      ],
+                    );
+                  }),
+                ),
               ),
-            ),
             const SizedBox(height: 5),
             OverflowBar(
               alignment: MainAxisAlignment.spaceAround,
@@ -1006,82 +1046,83 @@ class _MySitePagePageState extends State<MySitePage>
                       ),
                     ),
                   ),
-                ElevatedButton(
-                  style: ButtonStyle(
-                    backgroundColor: WidgetStateProperty.all(
-                        Theme.of(context).colorScheme.tertiary),
-                  ),
-                  child: Text(
-                    '保存',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onTertiary,
+                if (selectedSite.value != null)
+                  ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.all(
+                          Theme.of(context).colorScheme.tertiary),
                     ),
+                    child: Text(
+                      '保存',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onTertiary,
+                      ),
+                    ),
+                    onPressed: () async {
+                      if (mySite != null) {
+                        mySite = mySite?.copyWith(
+                          site: siteController.text.trim(),
+                          mirror: mirrorController.text.trim(),
+                          nickname: nicknameController.text.trim(),
+                          passkey: passkeyController.text.trim(),
+                          authKey: apiKeyController.text.trim(),
+                          userId: userIdController.text.trim(),
+                          sortId: int.parse(sortIdController.text.trim()),
+                          userAgent: userAgentController.text.trim(),
+                          proxy: proxyController.text.trim(),
+                          rss: rssController.text.trim(),
+                          torrents: torrentsController.text.trim(),
+                          cookie: cookieController.text.trim(),
+                          getInfo: getInfo.value,
+                          signIn: signIn.value,
+                          brushRss: brushRss.value,
+                          brushFree: brushFree.value,
+                          packageFile: packageFile.value,
+                          repeatTorrents: repeatTorrents.value,
+                          hrDiscern: hrDiscern.value,
+                          searchTorrents: searchTorrents.value,
+                          available: available.value,
+                        );
+                      } else {
+                        // 如果 mySite 为空，表示是添加操作
+                        mySite = MySite(
+                          site: siteController.text.trim(),
+                          mirror: mirrorController.text.trim(),
+                          nickname: nicknameController.text.trim(),
+                          passkey: passkeyController.text.trim(),
+                          authKey: apiKeyController.text.trim(),
+                          userId: userIdController.text.trim(),
+                          sortId: int.parse(sortIdController.text.trim()),
+                          userAgent: userAgentController.text.trim(),
+                          proxy: proxyController.text.trim(),
+                          rss: rssController.text.trim(),
+                          torrents: torrentsController.text.trim(),
+                          cookie: cookieController.text.trim(),
+                          getInfo: getInfo.value,
+                          signIn: signIn.value,
+                          brushRss: brushRss.value,
+                          brushFree: brushFree.value,
+                          packageFile: packageFile.value,
+                          repeatTorrents: repeatTorrents.value,
+                          hrDiscern: hrDiscern.value,
+                          searchTorrents: searchTorrents.value,
+                          available: available.value,
+                          id: 0,
+                          removeTorrentRules: {},
+                          timeJoin: '',
+                          mail: 0,
+                          notice: 0,
+                          signInInfo: {},
+                          statusInfo: {},
+                        );
+                      }
+                      Logger.instance.i(mySite?.toJson());
+                      if (await controller.saveMySiteToServer(mySite!)) {
+                        Navigator.of(context).pop();
+                        controller.getSiteStatusFromServer();
+                      }
+                    },
                   ),
-                  onPressed: () async {
-                    if (mySite != null) {
-                      mySite = mySite?.copyWith(
-                        site: siteController.text.trim(),
-                        mirror: mirrorController.text.trim(),
-                        nickname: nicknameController.text.trim(),
-                        passkey: passkeyController.text.trim(),
-                        authKey: apiKeyController.text.trim(),
-                        userId: userIdController.text.trim(),
-                        sortId: int.parse(sortIdController.text.trim()),
-                        userAgent: userAgentController.text.trim(),
-                        proxy: proxyController.text.trim(),
-                        rss: rssController.text.trim(),
-                        torrents: torrentsController.text.trim(),
-                        cookie: cookieController.text.trim(),
-                        getInfo: getInfo.value,
-                        signIn: signIn.value,
-                        brushRss: brushRss.value,
-                        brushFree: brushFree.value,
-                        packageFile: packageFile.value,
-                        repeatTorrents: repeatTorrents.value,
-                        hrDiscern: hrDiscern.value,
-                        searchTorrents: searchTorrents.value,
-                        available: available.value,
-                      );
-                    } else {
-                      // 如果 mySite 为空，表示是添加操作
-                      mySite = MySite(
-                        site: siteController.text.trim(),
-                        mirror: mirrorController.text.trim(),
-                        nickname: nicknameController.text.trim(),
-                        passkey: passkeyController.text.trim(),
-                        authKey: apiKeyController.text.trim(),
-                        userId: userIdController.text.trim(),
-                        sortId: int.parse(sortIdController.text.trim()),
-                        userAgent: userAgentController.text.trim(),
-                        proxy: proxyController.text.trim(),
-                        rss: rssController.text.trim(),
-                        torrents: torrentsController.text.trim(),
-                        cookie: cookieController.text.trim(),
-                        getInfo: getInfo.value,
-                        signIn: signIn.value,
-                        brushRss: brushRss.value,
-                        brushFree: brushFree.value,
-                        packageFile: packageFile.value,
-                        repeatTorrents: repeatTorrents.value,
-                        hrDiscern: hrDiscern.value,
-                        searchTorrents: searchTorrents.value,
-                        available: available.value,
-                        id: 0,
-                        removeTorrentRules: {},
-                        timeJoin: '',
-                        mail: 0,
-                        notice: 0,
-                        signInInfo: {},
-                        statusInfo: {},
-                      );
-                    }
-                    Logger.instance.i(mySite?.toJson());
-                    if (await controller.saveMySiteToServer(mySite!)) {
-                      Navigator.of(context).pop();
-                      controller.getSiteStatusFromServer();
-                    }
-                  },
-                ),
               ],
             ),
           ],
