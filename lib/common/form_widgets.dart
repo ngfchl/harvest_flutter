@@ -174,10 +174,12 @@ class CustomPickerField extends StatelessWidget {
                 data: data,
                 selectData: controller.text,
                 pickerStyle: PickerStyle(
-                  showTitleBar: false,
+                  showTitleBar: true,
                   textSize: 14,
                   textColor: Theme.of(context).colorScheme.onSurface,
                   backgroundColor: Theme.of(context).colorScheme.surface,
+                  headDecoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface),
                 ),
                 onConfirm: (p, position) {
                   controller.text = p;
