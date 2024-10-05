@@ -396,16 +396,16 @@ class _LoginPageState extends State<LoginPage> {
                             password: passwordController.text,
                             selected: false,
                           );
-                          bool flag =
+                          CommonResponse flag =
                               await controller.testServerConnection(server);
-                          if (flag) {
+                          if (flag.code == 0) {
                             Get.snackbar('连接状态', '服务器连接成功',
                                 colorText:
                                     Theme.of(context).colorScheme.primary);
                             controller.testRes = true;
                             controller.update();
                           } else {
-                            Get.snackbar('连接状态', '服务器连接失败',
+                            Get.snackbar('连接状态', '${flag.msg}',
                                 colorText: Theme.of(context).colorScheme.error);
                           }
                         },

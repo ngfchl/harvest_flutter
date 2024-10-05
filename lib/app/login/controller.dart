@@ -48,7 +48,7 @@ class LoginController extends GetxController {
     update();
   }
 
-  Future<bool> testServerConnection(Server server) async {
+  Future<CommonResponse> testServerConnection(Server server) async {
     isLoading = true; // 开始加载状态
     update();
     try {
@@ -60,25 +60,15 @@ class LoginController extends GetxController {
       );
       CommonResponse response = await connectToServer(loginUser);
 
-      if (response.code == 0) {
-        // 连接成功
-        Logger.instance.i('Succeed to connect to server: ${response.data}');
-        isLoading = false; // 结束加载状态
-        update();
-        return true;
-      } else {
-        // 连接失败或响应码非正常范围
-        Logger.instance.e('Failed to connect to server: ${response.msg}');
-        isLoading = false; // 结束加载状态
-        update();
-        return false;
-      }
+      update();
+      return response;
     } catch (e) {
       // 发生错误，如网络问题或服务器不可达
-      Logger.instance.e('An error occurred while connecting to the server: $e');
+      String msg = '服务器访问失败: $e';
+      Logger.instance.e(msg);
       isLoading = false; // 结束加载状态
       update();
-      return false;
+      return CommonResponse.error(msg: msg);
     }
   }
 
