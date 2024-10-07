@@ -70,6 +70,9 @@ class TrController extends GetxController {
     {"name": "排队上传", "value": 5},
   ].map((e) => MetaDataItem.fromJson(e)).toList();
 
+  bool trackerLoading = false;
+  Map<String, List<String>> trackerHashes = {};
+
   @override
   void onInit() async {
     isLoading = true;
@@ -111,6 +114,7 @@ class TrController extends GetxController {
       trackers[host] ??= [];
       trackers[host]!.add(torrent.hashString);
     }
+    buildSiteToHashList();
   }
 
   void startPeriodicTimer() {
@@ -379,6 +383,20 @@ class TrController extends GetxController {
     }
   }
 
+  ////@title 生成Map site.name: hashes
+  ///@description TODO
+  ///@updateTime 2024.10.07 16:03
+  buildSiteToHashList() {
+    for (var website in mySiteController.webSiteList.values) {
+      trackers.forEach((trackerKey, hashList) {
+        if (website.tracker.contains(trackerKey)) {
+          trackerHashes.putIfAbsent(website.name, () => []).addAll(hashList);
+        }
+      });
+    }
+    LoggerHelper.Logger.instance.d(trackerHashes);
+  }
+
   sortTorrents() {
     switch (sortKey) {
       case 'name':
@@ -479,6 +497,31 @@ class TrController extends GetxController {
   void onClose() {
     exitState = true;
     super.onClose();
+  }
+
+  /*///@title 一键替换站点 tracker
+  ///@description TODO
+  ///@updateTime
+  */
+  replaceTrackers({required String site, required String newTracker}) async {
+    List<String> hashes = trackerHashes[site] ?? [];
+    LoggerHelper.Logger.instance.d(hashes);
+    if (hashes.isEmpty) {
+      return CommonResponse.success(msg: '本下载器没有 $site 站点的种子！');
+    }
+    try {
+      for (String infoHash in hashes) {
+        await client.torrent
+            .torrentSet(TorrentSetArgs().trackerReplace(['']), ids: infoHash);
+      }
+    } catch (e, trace) {
+      LoggerHelper.Logger.instance.e(e);
+      LoggerHelper.Logger.instance.e(trace);
+      String msg = '$site 站点替换 tracker 失败！';
+      return CommonResponse.error(msg: msg);
+    }
+    String msg = "$site 站点查找到${hashes.length}个种子，已替换";
+    return CommonResponse.success(msg: msg);
   }
 
   removeErrorTracker() async {

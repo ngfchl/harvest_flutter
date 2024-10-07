@@ -518,15 +518,17 @@ class TrPage extends StatelessWidget {
                 backgroundColor: Theme.of(context).colorScheme.surface,
                 barrierColor: Colors.transparent,
                 content: SizedBox(
-                  width: 100,
+                  width: 120,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       PopupMenuItem<String>(
-                        child: Text(
-                          '清除红种',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.secondary,
+                        child: Center(
+                          child: Text(
+                            '清除红种',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
                           ),
                         ),
                         onTap: () async {
@@ -541,10 +543,12 @@ class TrPage extends StatelessWidget {
                         },
                       ),
                       PopupMenuItem<String>(
-                        child: Text(
-                          '切换限速',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.secondary,
+                        child: Center(
+                          child: Text(
+                            '切换限速',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
                           ),
                         ),
                         onTap: () async {
@@ -560,6 +564,117 @@ class TrPage extends StatelessWidget {
                           }
                         },
                       ),
+                      PopupMenuItem<String>(
+                        child: Center(
+                            child: Text(
+                          '替换Tracker',
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary),
+                        )),
+                        onTap: () async {
+                          TextEditingController keyController =
+                              TextEditingController(text: '');
+                          TextEditingController valueController =
+                              TextEditingController(text: '');
+                          List<String> sites = controller.trackerHashes.keys
+                              .where((e) => e != ' All' && e != ' 红种')
+                              .toList();
+                          sites.sort((a, b) =>
+                              a.toLowerCase().compareTo(b.toLowerCase()));
+                          Get.bottomSheet(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5.0), // 圆角半径
+                            ),
+                            SizedBox(
+                              height: 240,
+                              // width: 240,
+                              child: Scaffold(
+                                body: Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    CustomPickerField(
+                                      controller: keyController,
+                                      labelText: '要替换的站点',
+                                      data: sites,
+                                      // onChanged: (p, position) {
+                                      //   keyController.text = selectOptions[p]!;
+                                      // },
+                                    ),
+                                    CustomTextField(
+                                        controller: valueController,
+                                        labelText: "替换为"),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      children: [
+                                        ElevatedButton(
+                                          style: OutlinedButton.styleFrom(
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      8.0), // 圆角半径
+                                            ),
+                                          ),
+                                          onPressed: () {
+                                            Get.back(result: false);
+                                          },
+                                          child: const Text('取消'),
+                                        ),
+                                        Stack(
+                                          children: [
+                                            ElevatedButton(
+                                              style: OutlinedButton.styleFrom(
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          8.0), // 圆角半径
+                                                ),
+                                              ),
+                                              onPressed: () async {
+                                                controller.trackerLoading =
+                                                    true;
+                                                controller.update();
+                                                CommonResponse res =
+                                                    await controller
+                                                        .replaceTrackers(
+                                                            site: keyController
+                                                                .text,
+                                                            newTracker:
+                                                                valueController
+                                                                    .text);
+                                                controller.trackerLoading =
+                                                    false;
+                                                controller.update();
+                                                if (res.code == 0) {
+                                                  Get.back(result: true);
+                                                }
+                                                Get.snackbar(
+                                                    'Tracker替换ing', res.msg!,
+                                                    colorText: res.code == 0
+                                                        ? Theme.of(context)
+                                                            .colorScheme
+                                                            .primary
+                                                        : Theme.of(context)
+                                                            .colorScheme
+                                                            .error);
+                                              },
+                                              child: const Text('确认'),
+                                            ),
+                                            if (controller.trackerLoading)
+                                              const Center(child: GFLoader()),
+                                          ],
+                                        ),
+                                      ],
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+
                       // PopupMenuItem<String>(
                       //   child: Text(
                       //     'PTPP',
