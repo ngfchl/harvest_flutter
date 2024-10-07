@@ -124,6 +124,8 @@ class QBittorrentController extends GetxController {
     {'name': '工作中', 'value': TrackerStatus.working},
   ].map((e) => MetaDataItem.fromJson(e)).toList();
 
+  bool trackerLoading = false;
+
   @override
   void onInit() async {
     isLoading = true;
@@ -357,6 +359,45 @@ class QBittorrentController extends GetxController {
     } catch (e) {
       Logger.instance.e('出错啦！${e.toString()}');
       return CommonResponse.error(msg: '清理出错种子失败！${e.toString()}');
+    }
+  }
+
+  replaceTrackers({required String site, required String newTracker}) async {
+    List<String> hashes = trackers[site] ?? [];
+    Logger.instance.d(hashes);
+    if (hashes.isEmpty) {
+      return CommonResponse.success(msg: '本下载器没有 $site 站点的种子！');
+    }
+    try {
+      for (String infoHash in hashes) {
+        await replaceSingleTorrentTracker(
+            infoHash: infoHash, newTracker: newTracker);
+      }
+    } catch (e, trace) {
+      Logger.instance.e(e);
+      Logger.instance.e(trace);
+      String msg = '$site 站点替换 tracker 失败！';
+      return CommonResponse.error(msg: msg);
+    }
+    String msg = "$site 站点查找到${hashes.length}个种子，已替换";
+    return CommonResponse.success(msg: msg);
+  }
+
+  replaceSingleTorrentTracker(
+      {required String infoHash, required String newTracker}) async {
+    List<Tracker> trackerList =
+        await client.torrents.getTrackers(hash: infoHash);
+
+    if (trackerList.isNotEmpty) {
+      List<String> urls = trackerList
+          .where((e) => e.url!.isNotEmpty && e.url!.startsWith('http'))
+          .map((e) => e.url!)
+          .toList();
+      Logger.instance.d(urls);
+      if (urls.isNotEmpty) {
+        await client.torrents
+            .editTracker(hash: infoHash, origUrl: urls[0], newUrl: newTracker);
+      }
     }
   }
 
