@@ -1,6 +1,11 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
+import 'package:logger/logger.dart';
 
+import '../../../../utils/logger_helper.dart' as logger_helper;
 import '../../../../utils/storage.dart';
 
 class LoggingController extends GetxController {
@@ -12,26 +17,62 @@ class LoggingController extends GetxController {
   int logLength = 2048;
   int fontSize = 20;
   InAppWebViewController? webController;
+  bool shouldScrollToBottom = true;
+  Level filterLevel = Level.info;
+
+  final ScrollController scrollController = ScrollController();
 
   @override
-  void onInit() {
+  void onInit() async {
     fontSize = SPUtil.getLocalStorage('loggingFontSize') ?? 20;
-    accessUrl = '${baseUrl}logging';
+    accessUrl = '$baseUrl/supervisor';
+    logger_helper.memoryLogOutput.logsNotifier.addListener(onNewLog);
+    scrollController.addListener(onScroll);
+    // localLogs = await readFile();
     super.onInit();
   }
 
-  connectAccessLog() {
-    accessUrl =
-        '${baseUrl}logging/tail.html?processname=uvicorn&limit=$logLength';
+  onScroll() {
+    if (scrollController.position.atEdge) {
+      if (scrollController.position.pixels == 0) {
+        shouldScrollToBottom = false;
+      } else {
+        shouldScrollToBottom = true;
+      }
+    } else {
+      shouldScrollToBottom = false;
+    }
+    update();
   }
 
-  connectTaskLog() {
-    accessUrl =
-        '$baseUrl/supervisor/tail.html?processname=celery-worker&limit=$logLength';
+  onNewLog() {
+    if (shouldScrollToBottom) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (scrollController.hasClients) {
+          scrollController.jumpTo(scrollController.position.maxScrollExtent);
+        }
+      });
+    }
+    update();
   }
 
-  connectTaskList() {
-    accessUrl = '$baseUrl/flower/tasks';
+  clearLogs() {
+    logger_helper.memoryLogOutput.clearLogs();
+    update();
+  }
+
+  setLogLevel(Level level) {
+    filterLevel = level;
+    update();
+  }
+
+  Future<List<String>> readFile() async {
+    // 获取应用文档目录
+    final filePath = '${Directory.systemTemp.path}/log.txt';
+    final file = File(filePath);
+    // 读取文件
+    List<String> contents = await file.readAsLines();
+    return contents;
   }
 
   switchLogging() async {
