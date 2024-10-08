@@ -209,7 +209,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                   decimalPlaces: 1,
                   builder: (dynamic data, dynamic point, dynamic series,
                       int pointIndex, int seriesIndex) {
-                    // Logger.instance.w(data);
+                    // Logger.instance.d(data);
                     return Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(

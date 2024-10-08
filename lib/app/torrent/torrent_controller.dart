@@ -176,9 +176,9 @@ class TorrentController extends GetxController {
       getFreeSpace();
 
       dynamic status = await getIntervalSpeed(downloader);
-      LoggerHelper.Logger.instance.w('state77:${status.code}');
+      LoggerHelper.Logger.instance.d('state77:${status.code}');
       if (status.code == 0) {
-        LoggerHelper.Logger.instance.w(statusList.value.length);
+        LoggerHelper.Logger.instance.d(statusList.value.length);
         statusList.value.add(status.data);
         if (statusList.value.length > 30) {
           statusList.value.removeAt(0);
@@ -239,7 +239,7 @@ class TorrentController extends GetxController {
       categories.addAll(
           categoryList.keys.map((e) => {'name': e, 'value': e}).toList());
 
-      // LoggerHelper.Logger.instance.w(categories);
+      // LoggerHelper.Logger.instance.d(categories);
     } else {
       defaultSavePath = await getTrDefaultSavePath();
       Set<Map<String, String>> uniqueCategories = {
@@ -254,7 +254,7 @@ class TorrentController extends GetxController {
               element.downloadDir!.replaceAll(RegExp(r'\/$'), '').toString())
           .toSet()
           .toList();
-      LoggerHelper.Logger.instance.w(dirs);
+      LoggerHelper.Logger.instance.d(dirs);
       uniqueCategories
           .addAll(dirs.map((e) => {'name': e.split('/').last, 'value': e}));
       // 去重
@@ -262,7 +262,7 @@ class TorrentController extends GetxController {
         map[element.split('/').last] = element;
         return map;
       });
-      LoggerHelper.Logger.instance.w('TR 路径：$defaultSavePath');
+      LoggerHelper.Logger.instance.d('TR 路径：$defaultSavePath');
 
       categories.value = uniqueCategories.toList();
     }
@@ -369,7 +369,7 @@ class TorrentController extends GetxController {
       }
     }
     if (sortReversed.value) {
-      LoggerHelper.Logger.instance.w('反转序列！');
+      LoggerHelper.Logger.instance.d('反转序列！');
       showTorrents.value = showTorrents.reversed.toList();
     }
   }
@@ -393,7 +393,7 @@ class TorrentController extends GetxController {
     final selectedState =
         isQbCategory ? torrentState.value : trTorrentState.value;
 
-    // LoggerHelper.Logger.instance.w('状态：$selectedState');
+    // LoggerHelper.Logger.instance.d('状态：$selectedState');
     if (selectedState != null) {
       showTorrents.value = showTorrents
           .where((torrent) => isQbCategory
@@ -404,7 +404,7 @@ class TorrentController extends GetxController {
   }
 
   filterTorrentsBySearchKey() {
-    // LoggerHelper.Logger.instance.w('搜索关键字：${searchKey.value}');
+    // LoggerHelper.Logger.instance.d('搜索关键字：${searchKey.value}');
 
     if (searchKey.value.isNotEmpty) {
       showTorrents.value = showTorrents
@@ -417,13 +417,13 @@ class TorrentController extends GetxController {
 
   filterTorrents() {
     showTorrents.value = torrents;
-    // LoggerHelper.Logger.instance.w(showTorrents.length);
+    // LoggerHelper.Logger.instance.d(showTorrents.length);
     filterTorrentsByCategory();
-    // LoggerHelper.Logger.instance.w(showTorrents.length);
+    // LoggerHelper.Logger.instance.d(showTorrents.length);
     filterTorrentsByState();
-    // LoggerHelper.Logger.instance.w(showTorrents.length);
+    // LoggerHelper.Logger.instance.d(showTorrents.length);
     filterTorrentsBySearchKey();
-    // LoggerHelper.Logger.instance.w(showTorrents.length);
+    // LoggerHelper.Logger.instance.d(showTorrents.length);
     update();
   }
 
@@ -465,7 +465,7 @@ class TorrentController extends GetxController {
               .queuePosition
               .activityDate);
 
-      // LoggerHelper.Logger.instance.w(res['arguments']["torrents"][0]);
+      // LoggerHelper.Logger.instance.d(res['arguments']["torrents"][0]);
       if (res['result'] == "success") {
         torrents.value = res['arguments']["torrents"]
             .map<TrTorrent>((item) => TrTorrent.fromJson(item))
@@ -474,7 +474,7 @@ class TorrentController extends GetxController {
       }
     }
     // if (sortReversed.value) {
-    //   LoggerHelper.Logger.instance.w('反转序列！');
+    //   LoggerHelper.Logger.instance.d('反转序列！');
     //   showTorrents.value = showTorrents.reversed.toList();
     //   sortReversed.value = false;
     // }
@@ -493,8 +493,8 @@ class TorrentController extends GetxController {
     RatioLimit ratioLimit = const RatioLimit.none(),
     RatioLimit seedingTimeLimit = const RatioLimit.none(),
   }) async {
-    LoggerHelper.Logger.instance.w(command);
-    LoggerHelper.Logger.instance.w(hashes);
+    LoggerHelper.Logger.instance.d(command);
+    LoggerHelper.Logger.instance.d(hashes);
     if (downloader.category.toLowerCase() == 'qb') {
       switch (command) {
         case 'pause':
@@ -541,7 +541,7 @@ class TorrentController extends GetxController {
 
       torrents.value = await client.torrents
           .getTorrentsList(options: const TorrentListOptions());
-      LoggerHelper.Logger.instance.w(torrents.length);
+      LoggerHelper.Logger.instance.d(torrents.length);
     } else {
       switch (command) {
         case 'reannounce':
@@ -583,7 +583,7 @@ class TorrentController extends GetxController {
 
   getTrFreeSpace() async {
     defaultSavePath = await getTrDefaultSavePath();
-    // LoggerHelper.Logger.instance.w(res['arguments']['download-dir']);
+    // LoggerHelper.Logger.instance.d(res['arguments']['download-dir']);
 
     Map response = await client.v1.system.freeSpace(path: defaultSavePath);
     freeSpace.value =

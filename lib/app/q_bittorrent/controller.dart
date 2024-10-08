@@ -257,8 +257,8 @@ class QBittorrentController extends GetxController {
     RatioLimit ratioLimit = const RatioLimit.none(),
     RatioLimit seedingTimeLimit = const RatioLimit.none(),
   }) async {
-    Logger.instance.w(command);
-    Logger.instance.w(hashes);
+    Logger.instance.d(command);
+    Logger.instance.d(hashes);
     switch (command) {
       case 'pause':
         await client.torrents.pauseTorrents(torrents: Torrents(hashes: hashes));

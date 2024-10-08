@@ -168,7 +168,7 @@ class AggSearchController extends GetxController {
 
     // 初始化站点数据
     if (mySiteMap.isEmpty) {
-      LoggerHelper.Logger.instance.w('重新加载站点列表');
+      LoggerHelper.Logger.instance.d('重新加载站点列表');
       await initData();
     }
 

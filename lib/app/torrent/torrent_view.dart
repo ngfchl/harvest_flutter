@@ -31,7 +31,7 @@ class TorrentView extends GetView<TorrentController> {
       decimalPlaces: 1,
       builder: (dynamic data, dynamic point, dynamic series, int pointIndex,
           int seriesIndex) {
-        // Logger.instance.w(data);
+        // Logger.instance.d(data);
         return Container(
           padding: const EdgeInsets.all(1),
           decoration: BoxDecoration(
@@ -90,7 +90,7 @@ class TorrentView extends GetView<TorrentController> {
                                     controller.sortReversed.value = false;
                                   }
                                   LoggerHelper.Logger.instance
-                                      .w(controller.sortReversed.value);
+                                      .d(controller.sortReversed.value);
                                   controller.sortKey.value = newValue!;
                                   controller.getAllTorrents();
                                   controller.update();
@@ -169,7 +169,7 @@ class TorrentView extends GetView<TorrentController> {
                                     controller.sortReversed.value = false;
                                   }
                                   LoggerHelper.Logger.instance
-                                      .w(controller.sortReversed.value);
+                                      .d(controller.sortReversed.value);
                                   controller.sortKey.value = newValue!;
                                   controller.getAllTorrents();
                                   controller.update();
@@ -350,7 +350,7 @@ class TorrentView extends GetView<TorrentController> {
                   //             onTap: () {
                   //               // controller.category.value = 'all_torrents';
                   //               controller.torrentState.value = null;
-                  //               LoggerHelper.Logger.instance.w(state['value']);
+                  //               LoggerHelper.Logger.instance.d(state['value']);
                   //               controller.torrentFilter.value = state['value'];
                   //               controller.filterTorrents();
                   //             },
@@ -386,7 +386,7 @@ class TorrentView extends GetView<TorrentController> {
                                   selectedColor: Colors.purple,
                                   onTap: () {
                                     LoggerHelper.Logger.instance
-                                        .w(state['value']);
+                                        .d(state['value']);
                                     controller.torrentState.value =
                                         state['value'];
                                     controller.filterTorrents();
@@ -540,7 +540,7 @@ class TorrentView extends GetView<TorrentController> {
                                   selectedColor: Colors.purple,
                                   onTap: () {
                                     LoggerHelper.Logger.instance
-                                        .w(state['value']);
+                                        .d(state['value']);
                                     controller.trTorrentState.value =
                                         state['value'];
                                     controller.filterTorrents();
@@ -623,8 +623,8 @@ class TorrentView extends GetView<TorrentController> {
                     ? controller.cancelPeriodicTimer()
                     : controller.startPeriodicTimer();
                 LoggerHelper.Logger.instance
-                    .w(controller.periodicTimer?.isActive);
-                LoggerHelper.Logger.instance.w(isTimerActive);
+                    .d(controller.periodicTimer?.isActive);
+                LoggerHelper.Logger.instance.d(isTimerActive);
                 controller.update();
               },
             );
@@ -651,8 +651,7 @@ class TorrentView extends GetView<TorrentController> {
                           icon: const Icon(Icons.add),
                           dividerWidth: 108,
                           textColor: Theme.of(context).colorScheme.onSurface,
-                          dividerColor:
-                              Theme.of(context).colorScheme.onSurface,
+                          dividerColor: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       Expanded(

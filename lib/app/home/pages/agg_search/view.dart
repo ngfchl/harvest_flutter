@@ -284,7 +284,7 @@ class _AggSearchPageState extends State<AggSearchPage>
     MySite? mySite = controller.mySiteMap[info.siteId];
     if (website == null || mySite == null) {
       LoggerHelper.Logger.instance
-          .w('显示出错啦: ${info.siteId} -  $mySite - $website');
+          .d('显示出错啦: ${info.siteId} -  $mySite - $website');
       return const SizedBox.shrink();
     }
     String imgUrl = info.poster.isNotEmpty &&

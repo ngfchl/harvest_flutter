@@ -276,7 +276,7 @@ class _MySitePagePageState extends State<MySitePage>
   Widget showSiteDataInfo(MySite mySite) {
     StatusInfo? status;
     WebSite? website = controller.webSiteList[mySite.site];
-    Logger.instance.w('${mySite.nickname} - ${website?.name}');
+    Logger.instance.d('${mySite.nickname} - ${website?.name}');
     if (website == null) {
       return CustomCard(
         key: Key("${mySite.id}-${mySite.site}"),
@@ -318,7 +318,7 @@ class _MySitePagePageState extends State<MySitePage>
       status = mySite.latestStatusInfo;
     }
     if (status == null) {
-      Logger.instance.w('${mySite.nickname} - ${mySite.statusInfo}');
+      Logger.instance.d('${mySite.nickname} - ${mySite.statusInfo}');
     }
     return CustomCard(
       key: Key("${mySite.id}-${mySite.site}"),

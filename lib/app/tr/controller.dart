@@ -186,7 +186,7 @@ class TrController extends GetxController {
   }
 
   filterTorrentsBySearchKey() {
-    // LoggerHelper.Logger.instance.w('搜索关键字：${searchKey.value}');
+    // LoggerHelper.Logger.instance.d('搜索关键字：${searchKey.value}');
 
     if (searchKey.isNotEmpty) {
       showTorrents = showTorrents
@@ -225,13 +225,13 @@ class TrController extends GetxController {
   filterTorrents() {
     showTorrents = torrents;
     update();
-    LoggerHelper.Logger.instance.w(showTorrents.length);
+    LoggerHelper.Logger.instance.d(showTorrents.length);
     filterTorrentsByCategory();
-    LoggerHelper.Logger.instance.w(showTorrents.length);
+    LoggerHelper.Logger.instance.d(showTorrents.length);
     filterTorrentsByState();
-    // LoggerHelper.Logger.instance.w(showTorrents.length);
+    // LoggerHelper.Logger.instance.d(showTorrents.length);
     filterTorrentsBySearchKey();
-    // LoggerHelper.Logger.instance.w(showTorrents.length);
+    // LoggerHelper.Logger.instance.d(showTorrents.length);
     filterTorrentsByTracker();
     sortTorrents();
     update();
@@ -248,8 +248,8 @@ class TrController extends GetxController {
     int ratioLimit = 0,
     int seedingTimeLimit = 0,
   }) async {
-    LoggerHelper.Logger.instance.w(command);
-    LoggerHelper.Logger.instance.w(hashes);
+    LoggerHelper.Logger.instance.d(command);
+    LoggerHelper.Logger.instance.d(hashes);
     switch (command) {
       case 'reannounce':
         await client.torrent.torrentReannounce(ids: hashes);
@@ -436,7 +436,7 @@ class TrController extends GetxController {
     }
 
     if (sortReversed) {
-      LoggerHelper.Logger.instance.w('反转序列！');
+      LoggerHelper.Logger.instance.d('反转序列！');
       showTorrents = showTorrents.reversed.toList();
     }
   }
@@ -463,14 +463,14 @@ class TrController extends GetxController {
       return map;
     });
     categoryMap['全部'] = '全部';
-    LoggerHelper.Logger.instance.w('TR 路径：$categoryMap');
-    LoggerHelper.Logger.instance.w('TR 路径：$defaultSavePath');
+    LoggerHelper.Logger.instance.d('TR 路径：$categoryMap');
+    LoggerHelper.Logger.instance.d('TR 路径：$defaultSavePath');
     categories = uniqueCategories.toList();
   }
 
   getTrFreeSpace() async {
     defaultSavePath = await getTrDefaultSavePath();
-    // LoggerHelper.Logger.instance.w(res['arguments']['download-dir']);
+    // LoggerHelper.Logger.instance.d(res['arguments']['download-dir']);
 
     Map response = await client.system.freeSpace(path: defaultSavePath);
     freeSpace =

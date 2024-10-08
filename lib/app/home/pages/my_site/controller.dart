@@ -93,7 +93,7 @@ class MySiteController extends GetxController {
       webSiteList.clear();
       webSiteList = value.data;
     } else {
-      Logger.instance.w(value.msg);
+      Logger.instance.d(value.msg);
       Get.snackbar(
         '',
         value.msg.toString(),
@@ -142,7 +142,7 @@ class MySiteController extends GetxController {
       filterByKey();
       isLoaded = false;
     } else {
-      Logger.instance.w(res.msg);
+      Logger.instance.d(res.msg);
       Get.snackbar(
         '',
         res.msg.toString(),
@@ -261,7 +261,7 @@ class MySiteController extends GetxController {
 
     // 反转序列
     if (sortReversed == true) {
-      Logger.instance.w('反转序列！');
+      Logger.instance.d('反转序列！');
       otherStatusList = otherStatusList.reversed.toList();
     }
     showStatusList = [...mailStatusList, ...otherStatusList];

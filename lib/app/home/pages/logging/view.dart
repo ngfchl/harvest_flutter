@@ -181,7 +181,7 @@ class LoggingPage extends StatelessWidget {
                         },
                         onLoadStop: (inAppWebViewController, webUri) async {
                           logger_helper.Logger.instance
-                              .w((await inAppWebViewController.getTitle())!);
+                              .d((await inAppWebViewController.getTitle())!);
                           controller.isLoading = false;
                           if (!controller.accessUrl.contains('flower')) {
                             await controller.webController
