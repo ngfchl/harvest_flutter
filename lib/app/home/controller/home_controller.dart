@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harvest/app/home/pages/agg_search/view.dart';
@@ -137,7 +135,7 @@ class HomeController extends GetxController {
   Future<void> changePage(int index) async {
     Get.back();
     if (index == 11) {
-      if (PlatformTool.isWeb() || (!Platform.isIOS && !Platform.isAndroid)) {
+      if (PlatformTool.isWeb()) {
         Logger.instance.i('Explorer');
         Get.defaultDialog(
             title: '选择日志',
