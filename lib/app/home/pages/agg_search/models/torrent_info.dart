@@ -1,3 +1,5 @@
+import 'package:harvest/utils/logger_helper.dart';
+
 class SearchTorrentInfo {
   String siteId;
   String tid;
@@ -42,17 +44,28 @@ class SearchTorrentInfo {
   factory SearchTorrentInfo.fromJson(Map<String, dynamic> json) {
     dynamic published;
     dynamic size;
+    dynamic saleExpire;
     try {
       published = DateTime.parse(json['published']);
     } catch (e) {
       published = json['published'];
+      Logger.instance.e(json['published']);
     }
     try {
       size = int.parse(json['size']);
     } catch (e) {
       size = 0;
     }
-
+    try {
+      saleExpire = json['sale_expire'] != null
+          ? DateTime.parse(json['sale_expire'])
+          : null;
+    } catch (e, trace) {
+      Logger.instance.e(e);
+      Logger.instance.e(trace);
+      Logger.instance.e(json);
+      saleExpire = null;
+    }
     return SearchTorrentInfo(
       siteId: json['site_id'],
       tid: json['tid'].toString(),
@@ -65,12 +78,10 @@ class SearchTorrentInfo {
       progress: json['progress'],
       tags: List<String>.from(json['tags']),
       saleStatus: json['sale_status'] ?? '无优惠',
-      saleExpire: json['sale_expire'] != null
-          ? DateTime.parse(json['sale_expire'])
-          : null,
+      saleExpire: saleExpire,
       hr: json['hr'] ?? false,
       published: published,
-      size: json['size'],
+      size: size,
       seeders: json['seeders'],
       leechers: json['leechers'],
       completers: json['completers'],
