@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../utils/date_time_utils.dart';
+import '../../../../utils/logger_helper.dart';
 import '../models/my_site.dart';
 import '../my_site/controller.dart';
 
@@ -137,7 +138,8 @@ class DashBoardController extends GetxController {
         pieDataList.add({'genre': mySite.nickname, 'sold': 0});
       }
     }
-    print(uploadIncrementDataList);
+    Logger.instance.d('上传增量列表：$uploadIncrementDataList');
+    Logger.instance.d('下载增量列表：$downloadIncrementDataList');
     uploadIncrementDataList
         .sort((Map a, Map b) => b["data"].compareTo(a["data"]));
 

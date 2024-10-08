@@ -453,7 +453,6 @@ class _DashBoardPageState extends State<DashBoardPage>
           .where((item) => !controller.excludeUrlList.contains(item.mirror))
           .reduce((value, element) =>
               value.timeJoin.compareTo(element.timeJoin) < 0 ? value : element);
-      Logger.instance.d(earliestSite.mirror);
       RxBool showYear = true.obs;
       return CustomCard(
         height: 260,
