@@ -41,14 +41,16 @@ class DateTimePrinter extends logger.PrettyPrinter {
   }
 }
 
+class MyFilter extends logger.LogFilter {
+  @override
+  bool shouldLog(logger.LogEvent event) {
+    return true;
+  }
+}
+
 class Logger {
   static final logger.Logger instance = logger.Logger(
-    // printer: logger.PrettyPrinter(
-    //   lineLength: 120,
-    //   // printTime: true,
-    //   dateTimeFormat: logger.DateTimeFormat.onlyTimeAndSinceStart,
-    //   noBoxingByDefault: true,
-    // ),
+    filter: MyFilter(),
     printer: DateTimePrinter(),
     level: logger.Level.trace,
     output: logger.MultiOutput(
