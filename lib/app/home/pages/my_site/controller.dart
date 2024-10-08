@@ -218,51 +218,44 @@ class MySiteController extends GetxController {
         otherStatusList.sort((a, b) => a.mirror!.compareTo(b.mirror!));
         break;
       case 'statusSeedVolume':
-        otherStatusList.sort((a, b) => a
-            .statusInfo[a.getStatusMaxKey()]!.seedVolume
-            .compareTo(b.statusInfo[b.getStatusMaxKey()]!.seedVolume));
+        otherStatusList.sort((a, b) => (a.latestStatusInfo?.seedVolume ?? 0)
+            .compareTo(b.latestStatusInfo?.seedVolume ?? 0));
         break;
       case 'statusMyBonus':
-        otherStatusList.sort((a, b) => a
-            .statusInfo[a.getStatusMaxKey()]!.myBonus
-            .compareTo(b.statusInfo[b.getStatusMaxKey()]!.myBonus));
+        otherStatusList.sort((a, b) => (a.latestStatusInfo?.myBonus ?? 0)
+            .compareTo(b.latestStatusInfo?.myBonus ?? 0));
         break;
       case 'statusMyScore':
-        otherStatusList.sort((a, b) => a
-            .statusInfo[a.getStatusMaxKey()]!.myScore
-            .compareTo(b.statusInfo[b.getStatusMaxKey()]!.myScore));
+        otherStatusList.sort((a, b) => (a.latestStatusInfo?.myScore ?? 0)
+            .compareTo(b.latestStatusInfo?.myScore ?? 0));
         break;
       case 'statusDownloaded':
-        otherStatusList.sort((a, b) => a
-            .statusInfo[a.getStatusMaxKey()]!.downloaded
-            .compareTo(b.statusInfo[b.getStatusMaxKey()]!.downloaded));
+        otherStatusList.sort((a, b) => (a.latestStatusInfo?.downloaded ?? 0)
+            .compareTo(b.latestStatusInfo?.downloaded ?? 0));
         break;
       case 'statusUploaded':
-        otherStatusList.sort((a, b) => a
-            .statusInfo[a.getStatusMaxKey()]!.uploaded
-            .compareTo(b.statusInfo[b.getStatusMaxKey()]!.uploaded));
+        otherStatusList.sort((a, b) => (a.latestStatusInfo?.uploaded ?? 0)
+            .compareTo(b.latestStatusInfo?.uploaded ?? 0));
         break;
       case 'statusBonusHour':
-        otherStatusList.sort((a, b) => a
-            .statusInfo[a.getStatusMaxKey()]!.bonusHour
-            .compareTo(b.statusInfo[b.getStatusMaxKey()]!.bonusHour));
+        otherStatusList.sort((a, b) => (a.latestStatusInfo?.bonusHour ?? 0)
+            .compareTo(b.latestStatusInfo?.bonusHour ?? 0));
         break;
       case 'statusInvitation':
-        otherStatusList.sort((a, b) => a
-            .statusInfo[a.getStatusMaxKey()]!.invitation
-            .compareTo(b.statusInfo[b.getStatusMaxKey()]!.invitation));
+        otherStatusList.sort((a, b) => (a.latestStatusInfo?.invitation ?? 0)
+            .compareTo(b.latestStatusInfo?.invitation ?? 0));
         break;
       case 'statusLeech':
-        otherStatusList.sort((a, b) => a.statusInfo[a.getStatusMaxKey()]!.leech
-            .compareTo(b.statusInfo[b.getStatusMaxKey()]!.leech));
+        otherStatusList.sort((a, b) => (a.latestStatusInfo?.leech ?? 0)
+            .compareTo(b.latestStatusInfo?.leech ?? 0));
         break;
       case 'statusSeed':
-        otherStatusList.sort((a, b) => a.statusInfo[a.getStatusMaxKey()]!.seed
-            .compareTo(b.statusInfo[b.getStatusMaxKey()]!.seed));
+        otherStatusList.sort((a, b) => (a.latestStatusInfo?.seed ?? 0)
+            .compareTo(b.latestStatusInfo?.seed ?? 0));
         break;
       case 'statusRatio':
-        otherStatusList.sort((a, b) => a.statusInfo[a.getStatusMaxKey()]!.ratio
-            .compareTo(b.statusInfo[b.getStatusMaxKey()]!.ratio));
+        otherStatusList.sort((a, b) => (a.latestStatusInfo?.ratio ?? 0)
+            .compareTo(b.latestStatusInfo?.ratio ?? 0));
         break;
     }
 

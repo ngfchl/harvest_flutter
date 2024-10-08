@@ -315,7 +315,7 @@ class _MySitePagePageState extends State<MySitePage>
       );
     }
     if (mySite.statusInfo.isNotEmpty) {
-      status = mySite.statusInfo[mySite.getStatusMaxKey()];
+      status = mySite.latestStatusInfo;
     }
     if (status == null) {
       Logger.instance.w('${mySite.nickname} - ${mySite.statusInfo}');
