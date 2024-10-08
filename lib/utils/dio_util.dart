@@ -46,9 +46,8 @@ class DioUtil {
         }));
 
     dio?.interceptors.add(LogInterceptor(
-      requestHeader: true,
-      responseBody: false,
-      responseHeader: true,
+      requestHeader: false,
+      responseHeader: false,
     )); // Add logging interceptor for debugging purposes
     dio?.interceptors.add(CustomInterceptors());
     dio?.interceptors.add(RetryInterceptor(
