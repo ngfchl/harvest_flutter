@@ -10,6 +10,7 @@ import 'package:getwidget/getwidget.dart';
 import 'package:harvest/app/home/pages/agg_search/models/torrent_info.dart';
 import 'package:harvest/app/home/pages/models/website.dart';
 import 'package:intl/intl.dart';
+import 'package:random_color/random_color.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../common/card_view.dart';
@@ -398,9 +399,9 @@ class _AggSearchPageState extends State<AggSearchPage>
                   children: [
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.timer,
-                          color: Colors.black38,
+                          color: Theme.of(context).colorScheme.primary,
                           size: 12,
                         ),
                         const SizedBox(
@@ -411,8 +412,8 @@ class _AggSearchPageState extends State<AggSearchPage>
                               ? DateFormat('yyyy-MM-dd HH:mm:ss')
                                   .format(info.published)
                               : info.published.toString(),
-                          style: const TextStyle(
-                            color: Colors.black38,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
                             fontSize: 10,
                           ),
                         ),
@@ -430,8 +431,8 @@ class _AggSearchPageState extends State<AggSearchPage>
                             ),
                             Text(
                               info.seeders.toString(),
-                              style: const TextStyle(
-                                color: Colors.black38,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.secondary,
                                 fontSize: 10,
                               ),
                             ),
@@ -446,8 +447,8 @@ class _AggSearchPageState extends State<AggSearchPage>
                             ),
                             Text(
                               info.leechers.toString(),
-                              style: const TextStyle(
-                                color: Colors.black38,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.secondary,
                                 fontSize: 10,
                               ),
                             ),
@@ -462,8 +463,8 @@ class _AggSearchPageState extends State<AggSearchPage>
                             ),
                             Text(
                               info.completers.toString(),
-                              style: const TextStyle(
-                                color: Colors.black38,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.secondary,
                                 fontSize: 10,
                               ),
                             ),
@@ -520,6 +521,14 @@ class _AggSearchPageState extends State<AggSearchPage>
                   children: [
                     ...info.tags.map((e) => CustomTextTag(
                           labelText: e,
+                          backgroundColor: RandomColor().randomColor(
+                              colorHue: ColorHue.multiple(colorHues: [
+                                ColorHue.purple,
+                                ColorHue.orange,
+                                ColorHue.blue,
+                              ]),
+                              colorBrightness: ColorBrightness.dark,
+                              colorSaturation: ColorSaturation.highSaturation),
                         ))
                   ],
                 ),
