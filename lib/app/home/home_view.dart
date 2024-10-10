@@ -236,10 +236,10 @@ class HomeView extends GetView<HomeController> {
                   icon: Icon(Icons.theaters, size: 18),
                   label: Text('豆瓣影视'),
                 ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.list_alt, size: 18),
-                  label: Text('操作日志'),
-                ),
+                // NavigationRailDestination(
+                //   icon: Icon(Icons.list_alt, size: 18),
+                //   label: Text('操作日志'),
+                // ),
                 // NavigationRailDestination(
                 //   icon: Icon(Icons.description, size: 18),
                 //   label: Text('任务日志'),

@@ -11,7 +11,6 @@ import 'package:harvest/app/home/pages/subscribe_history/view.dart';
 import 'package:harvest/app/home/pages/subscribe_tag/view.dart';
 import 'package:harvest/app/home/pages/task/view.dart';
 import 'package:harvest/models/common_response.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../api/login.dart';
 import '../../../models/authinfo.dart';
@@ -135,36 +134,6 @@ class HomeController extends GetxController {
   Future<void> changePage(int index) async {
     Get.back();
     if (index == 11) {
-      if (PlatformTool.isWeb()) {
-        Logger.instance.i('Explorer');
-        Get.defaultDialog(
-            title: '选择日志',
-            content: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                ElevatedButton(
-                    onPressed: () async {
-                      Get.back();
-                      String url =
-                          '${SPUtil.getLocalStorage('server')}/flower/tasks';
-                      await openUrl(url);
-                    },
-                    child: const Text('任务列表')),
-                ElevatedButton(
-                    onPressed: () async {
-                      Get.back();
-                      String url =
-                          '${SPUtil.getLocalStorage('server')}/supervisor';
-                      await openUrl(url);
-                    },
-                    child: const Text('服务日志')),
-              ],
-            ));
-      } else {
-        pageController.jumpToPage(index);
-        initPage = index;
-      }
-    } else if (index == 12) {
       logout();
     } else {
       pageController.jumpToPage(index);
@@ -172,15 +141,5 @@ class HomeController extends GetxController {
     }
 
     update();
-  }
-
-  Future<void> openUrl(String url) async {
-    Uri uri = Uri.parse(url);
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      Get.snackbar(
-        '打开网页出错',
-        '打开网页出错，不支持的客户端？',
-      );
-    }
   }
 }
