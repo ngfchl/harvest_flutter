@@ -4,6 +4,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../utils/logger_helper.dart' as logger_helper;
 import '../app/home/pages/logging/controller.dart';
@@ -125,166 +126,199 @@ class LoggingView extends StatelessWidget {
                               },
                             );
                           }),
-                      Column(
-                        children: [
-                          if (controller.progress < 100)
-                            LinearProgressIndicator(
-                              value: controller.progress / 100,
-                              backgroundColor: Colors.grey.withAlpha(33),
-                              valueColor:
-                                  const AlwaysStoppedAnimation(Colors.blue),
-                            ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              ElevatedButton(
-                                  onPressed: () {
-                                    controller.currentLog = 'logging';
-                                    controller.switchLogging();
-                                  },
-                                  child: const Text('服务')),
-                              ElevatedButton(
-                                  onPressed: () {
-                                    controller.currentLog = 'taskList';
-                                    controller.switchLogging();
-                                  },
-                                  child: const Text('任务')),
-                              ElevatedButton(
-                                  onPressed: () {
-                                    controller.currentLog = 'taskLog';
-                                    controller.switchLogging();
-                                  },
-                                  child: const Text('Log')),
-                              ElevatedButton(
-                                  onPressed: () {
-                                    controller.currentLog = 'accessLog';
-                                    controller.switchLogging();
-                                  },
-                                  child: const Text('Web')),
-                            ],
-                          ),
-                          Expanded(
-                            child: CustomCard(
-                              child: InAppWebView(
-                                key: webViewKey,
-                                initialUrlRequest: URLRequest(
-                                    url: WebUri(controller.accessUrl)),
-                                initialSettings: InAppWebViewSettings(
-                                  isInspectable: kDebugMode,
-                                  mediaPlaybackRequiresUserGesture: false,
-                                  allowsInlineMediaPlayback: true,
-                                  iframeAllow: "camera; microphone",
-                                  iframeAllowFullscreen: true,
-                                  defaultFontSize: 24,
+                      GetPlatform.isWeb
+                          ? Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                ElevatedButton(
+                                    onPressed: () async {
+                                      Get.back();
+                                      String url =
+                                          '${SPUtil.getLocalStorage('server')}/flower/tasks';
+                                      await openUrl(url);
+                                    },
+                                    child: const Text('任务列表')),
+                                ElevatedButton(
+                                    onPressed: () async {
+                                      Get.back();
+                                      String url =
+                                          '${SPUtil.getLocalStorage('server')}/supervisor';
+                                      await openUrl(url);
+                                    },
+                                    child: const Text('服务日志')),
+                              ],
+                            )
+                          : Column(
+                              children: [
+                                if (controller.progress < 100)
+                                  LinearProgressIndicator(
+                                    value: controller.progress / 100,
+                                    backgroundColor: Colors.grey.withAlpha(33),
+                                    valueColor: const AlwaysStoppedAnimation(
+                                        Colors.blue),
+                                  ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: [
+                                    ElevatedButton(
+                                        onPressed: () {
+                                          controller.currentLog = 'logging';
+                                          controller.switchLogging();
+                                        },
+                                        child: const Text('服务')),
+                                    ElevatedButton(
+                                        onPressed: () {
+                                          controller.currentLog = 'taskList';
+                                          controller.switchLogging();
+                                        },
+                                        child: const Text('任务')),
+                                    ElevatedButton(
+                                        onPressed: () {
+                                          controller.currentLog = 'taskLog';
+                                          controller.switchLogging();
+                                        },
+                                        child: const Text('Log')),
+                                    ElevatedButton(
+                                        onPressed: () {
+                                          controller.currentLog = 'accessLog';
+                                          controller.switchLogging();
+                                        },
+                                        child: const Text('Web')),
+                                  ],
                                 ),
-                                onWebViewCreated:
-                                    (inAppWebViewController) async {
-                                  controller.webController =
-                                      inAppWebViewController;
-                                  controller.isLoading = true;
-                                  controller.update();
-                                },
-                                onLoadStart: (inAppWebViewController, _) async {
-                                  controller.isLoading = true;
-                                  controller.update();
-                                },
-                                onLoadStop:
-                                    (inAppWebViewController, webUri) async {
-                                  logger_helper.Logger.instance.d(
-                                      (await inAppWebViewController
-                                          .getTitle())!);
-                                  controller.isLoading = false;
-                                  if (!controller.accessUrl
-                                      .contains('flower')) {
-                                    await controller.webController
-                                        ?.evaluateJavascript(source: """
+                                Expanded(
+                                  child: CustomCard(
+                                    child: InAppWebView(
+                                      key: webViewKey,
+                                      initialUrlRequest: URLRequest(
+                                          url: WebUri(controller.accessUrl)),
+                                      initialSettings: InAppWebViewSettings(
+                                        isInspectable: kDebugMode,
+                                        mediaPlaybackRequiresUserGesture: false,
+                                        allowsInlineMediaPlayback: true,
+                                        iframeAllow: "camera; microphone",
+                                        iframeAllowFullscreen: true,
+                                        defaultFontSize: 24,
+                                      ),
+                                      onWebViewCreated:
+                                          (inAppWebViewController) async {
+                                        controller.webController =
+                                            inAppWebViewController;
+                                        controller.isLoading = true;
+                                        controller.update();
+                                      },
+                                      onLoadStart:
+                                          (inAppWebViewController, _) async {
+                                        controller.isLoading = true;
+                                        controller.update();
+                                      },
+                                      onLoadStop: (inAppWebViewController,
+                                          webUri) async {
+                                        logger_helper.Logger.instance.d(
+                                            (await inAppWebViewController
+                                                .getTitle())!);
+                                        controller.isLoading = false;
+                                        if (!controller.accessUrl
+                                            .contains('flower')) {
+                                          await controller.webController
+                                              ?.evaluateJavascript(source: """
                                             document.getElementsByTagName('body')[0].style.fontSize = '${controller.fontSize}px';
                                             document.getElementsByTagName('body')[0].style.lineHeight = '1.8';
                                             document.getElementsByTagName('pre')[0].style.wordWrap = 'break-word';
                                             document.getElementsByTagName('pre')[0].style.whiteSpace = 'pre-wrap';
                                           """);
-                                  }
-                                  controller.update();
-                                },
-                                onProgressChanged:
-                                    (inAppWebViewController, progress) async {
-                                  logger_helper.Logger.instance
-                                      .i('当前进度: $progress');
-                                  controller.progress = progress;
-                                  controller.update();
-                                },
-                                onReceivedError:
-                                    (inAppWebViewController, _, err) {
-                                  // inAppWebViewController.reload();
-                                },
-                              ),
-                            ),
-                          ),
-                          CustomCard(
-                            height: !controller.accessUrl.contains('flower')
-                                ? 105
-                                : 56,
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 18.0),
-                              child: Column(
-                                children: [
-                                  if (!controller.accessUrl.contains('flower'))
-                                    Row(
+                                        }
+                                        controller.update();
+                                      },
+                                      onProgressChanged:
+                                          (inAppWebViewController,
+                                              progress) async {
+                                        logger_helper.Logger.instance
+                                            .i('当前进度: $progress');
+                                        controller.progress = progress;
+                                        controller.update();
+                                      },
+                                      onReceivedError:
+                                          (inAppWebViewController, _, err) {
+                                        // inAppWebViewController.reload();
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                CustomCard(
+                                  height:
+                                      !controller.accessUrl.contains('flower')
+                                          ? 105
+                                          : 56,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 18.0),
+                                    child: Column(
                                       children: [
-                                        Text('获取日志长度：${controller.logLength}'),
-                                        Expanded(
-                                          child: Slider(
-                                              min: 1,
-                                              max: 10,
-                                              value:
-                                                  controller.logLength / 1024,
-                                              onChanged: (value) {
-                                                controller.logLength =
-                                                    value.toInt() * 1024;
-                                                controller.switchLogging();
-                                                controller.webController?.loadUrl(
-                                                    urlRequest: URLRequest(
-                                                        url: WebUri(controller
-                                                            .accessUrl)));
-                                              }),
+                                        if (!controller.accessUrl
+                                            .contains('flower'))
+                                          Row(
+                                            children: [
+                                              Text(
+                                                  '获取日志长度：${controller.logLength}'),
+                                              Expanded(
+                                                child: Slider(
+                                                    min: 1,
+                                                    max: 10,
+                                                    value:
+                                                        controller.logLength /
+                                                            1024,
+                                                    onChanged: (value) {
+                                                      controller.logLength =
+                                                          value.toInt() * 1024;
+                                                      controller
+                                                          .switchLogging();
+                                                      controller.webController?.loadUrl(
+                                                          urlRequest: URLRequest(
+                                                              url: WebUri(controller
+                                                                  .accessUrl)));
+                                                    }),
+                                              ),
+                                            ],
+                                          ),
+                                        Row(
+                                          children: [
+                                            Text(
+                                                '页面字体大小：${controller.fontSize}'),
+                                            Expanded(
+                                              child: Slider(
+                                                  min: 12,
+                                                  max: 36,
+                                                  value:
+                                                      controller.fontSize / 1,
+                                                  onChanged: (value) async {
+                                                    controller.fontSize =
+                                                        value.toInt();
+                                                    SPUtil.setLocalStorage(
+                                                        'loggingFontSize',
+                                                        controller.fontSize);
+                                                    controller.update();
+                                                    // 初始化时或页面加载完成后设置字体大小
+                                                    var res = await controller
+                                                        .webController
+                                                        ?.evaluateJavascript(
+                                                            source: """
+                                              document.getElementsByTagName('body')[0].style.fontSize = '${controller.fontSize}px';
+                                            """);
+                                                    logger_helper
+                                                        .Logger.instance
+                                                        .i(res.toString());
+                                                  }),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
-                                  Row(
-                                    children: [
-                                      Text('页面字体大小：${controller.fontSize}'),
-                                      Expanded(
-                                        child: Slider(
-                                            min: 12,
-                                            max: 36,
-                                            value: controller.fontSize / 1,
-                                            onChanged: (value) async {
-                                              controller.fontSize =
-                                                  value.toInt();
-                                              SPUtil.setLocalStorage(
-                                                  'loggingFontSize',
-                                                  controller.fontSize);
-                                              controller.update();
-                                              // 初始化时或页面加载完成后设置字体大小
-                                              var res = await controller
-                                                  .webController
-                                                  ?.evaluateJavascript(
-                                                      source: """
-                                              document.getElementsByTagName('body')[0].style.fontSize = '${controller.fontSize}px';
-                                            """);
-                                              logger_helper.Logger.instance
-                                                  .i(res.toString());
-                                            }),
-                                      ),
-                                    ],
                                   ),
-                                ],
-                              ),
+                                ),
+                                const SizedBox(height: 30)
+                              ],
                             ),
-                          ),
-                          const SizedBox(height: 30)
-                        ],
-                      ),
                     ],
                   ),
                 );
@@ -292,5 +326,15 @@ class LoggingView extends StatelessWidget {
             )),
       ),
     );
+  }
+
+  Future<void> openUrl(String url) async {
+    Uri uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      Get.snackbar(
+        '打开网页出错',
+        '打开网页出错，不支持的客户端？',
+      );
+    }
   }
 }
