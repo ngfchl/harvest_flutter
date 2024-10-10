@@ -11,6 +11,7 @@ import 'package:harvest/common/form_widgets.dart';
 import 'package:harvest/models/common_response.dart';
 
 import '../../common/custom_ua.dart';
+import '../../common/logging.dart';
 import '../../utils/storage.dart';
 import '../../utils/string_utils.dart';
 import 'controller/common_api.dart';
@@ -309,6 +310,8 @@ class HomeView extends GetView<HomeController> {
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          const LoggingView(),
+          const SizedBox(width: 15),
           const CustomUAWidget(),
           const SizedBox(width: 15),
           InkWell(

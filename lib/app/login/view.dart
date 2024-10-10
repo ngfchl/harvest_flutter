@@ -7,6 +7,7 @@ import '../../api/api.dart';
 import '../../common/card_view.dart';
 import '../../common/custom_ua.dart';
 import '../../common/form_widgets.dart';
+import '../../common/logging.dart';
 import '../../models/common_response.dart';
 import '../../models/login_user.dart';
 import '../../utils/logger_helper.dart';
@@ -178,6 +179,8 @@ class _LoginPageState extends State<LoginPage> {
         appBar: AppBar(
           title: const Text('服务器列表'),
           actions: const [
+            LoggingView(),
+            SizedBox(width: 15),
             DarkModeSwitch(),
             SizedBox(width: 15),
             SizedBox(
@@ -403,11 +406,12 @@ class _LoginPageState extends State<LoginPage> {
                                 colorText:
                                     Theme.of(context).colorScheme.primary);
                             controller.testRes = true;
-                            controller.update();
                           } else {
                             Get.snackbar('连接状态', '${flag.msg}',
                                 colorText: Theme.of(context).colorScheme.error);
                           }
+                          controller.isLoading = false;
+                          controller.update();
                         },
                         icon: controller.isLoading
                             ? const Center(
