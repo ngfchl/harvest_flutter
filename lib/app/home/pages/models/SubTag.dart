@@ -52,4 +52,9 @@ class SubTag {
     map['available'] = _available;
     return map;
   }
+
+  @override
+  String toString() {
+    return '订阅标签：$_name - $_category';
+  }
 }

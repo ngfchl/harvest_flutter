@@ -68,4 +68,9 @@ class Server {
       selected: map['selected'] == 1,
     );
   }
+
+  @override
+  String toString() {
+    return 'Harvest服务器：$id - $name [$protocol://$domain:$port]';
+  }
 }

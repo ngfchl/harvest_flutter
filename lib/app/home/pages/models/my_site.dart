@@ -12,6 +12,11 @@ class SignInInfo {
       info: json['info'] as String,
     );
   }
+
+  @override
+  String toString() {
+    return '签到信息：$updatedAt';
+  }
 }
 
 class StatusInfo {
@@ -50,6 +55,11 @@ class StatusInfo {
     required this.updatedAt,
     required this.createdAt,
   });
+
+  @override
+  String toString() {
+    return '站点数据：$updatedAt';
+  }
 
   factory StatusInfo.fromJson(Map<String, dynamic> json) {
     return StatusInfo(
@@ -141,6 +151,11 @@ class MySite {
     required this.signInInfo,
     required this.statusInfo,
   });
+
+  @override
+  String toString() {
+    return '我的站点：$nickname - $site - $available';
+  }
 
   factory MySite.fromJson(Map<String, dynamic> json) {
     Map<String, SignInInfo> signInInfo =

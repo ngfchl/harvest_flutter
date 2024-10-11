@@ -93,7 +93,7 @@ class WebSite {
   }
 
   @override
-  String toString() => '$name - $nickname';
+  String toString() => '站点信息：$name - $nickname';
 }
 
 class LevelInfo {
@@ -123,5 +123,10 @@ class LevelInfo {
     keepAccount = json['keep_account'];
     graduation = json['graduation'];
     rights = json['rights'];
+  }
+
+  @override
+  String toString() {
+    return '$level：$rights';
   }
 }

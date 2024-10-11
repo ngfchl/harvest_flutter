@@ -88,4 +88,9 @@ class MyRss {
     map['updated_at'] = _updatedAt;
     return map;
   }
+
+  @override
+  String toString() {
+    return 'RSS：$_name - $_siteId';
+  }
 }

@@ -97,4 +97,9 @@ class SubHistory {
     map['updated_at'] = _updatedAt;
     return map;
   }
+
+  @override
+  String toString() {
+    return '订阅历史消息：$site - $message';
+  }
 }

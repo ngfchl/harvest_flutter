@@ -231,6 +231,11 @@ class Option {
     required this.isActive,
   });
 
+  @override
+  String toString() {
+    return '配置项：$name';
+  }
+
   // 从JSON构造Option对象
   factory Option.fromJson(Map<String, dynamic> json) {
     return Option(
@@ -266,6 +271,11 @@ class SelectOption {
       name: json['name'] as String,
       value: json['value'] as String,
     );
+  }
+
+  @override
+  String toString() {
+    return 'SelectOption：$name';
   }
 
   Map<String, dynamic> toJson() {

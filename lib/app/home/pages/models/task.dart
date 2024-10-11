@@ -18,6 +18,11 @@ class Schedule {
       this.args,
       this.kwargs});
 
+  @override
+  String toString() {
+    return '计划任务：$name：$crontab';
+  }
+
   Schedule.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
@@ -60,6 +65,11 @@ class Task {
     data['desc'] = desc;
     return data;
   }
+
+  @override
+  String toString() {
+    return '任务信息：$task - $desc';
+  }
 }
 
 class Crontab {
@@ -100,5 +110,10 @@ class Crontab {
     data['month_of_year'] = monthOfYear;
     data['express'] = express;
     return data;
+  }
+
+  @override
+  String toString() {
+    return 'Cron 表达式：$express';
   }
 }

@@ -169,4 +169,9 @@ class Subscribe {
     map['updated_at'] = updatedAt;
     return map;
   }
+
+  @override
+  String toString() {
+    return '订阅信息：$name - $keyword';
+  }
 }
