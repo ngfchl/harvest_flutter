@@ -26,15 +26,19 @@ class LoginController extends GetxController {
     if (!kIsWeb) await Dio().get('https://ptools.fun');
     await serverRepository.init();
     Logger.instance.i(serverRepository.serverList);
+    initServerList();
+    update();
+
+    super.onInit();
+  }
+
+  initServerList() {
     serverList = serverRepository.serverList;
     // 寻找selected为true的服务器，并赋值给selectedServer
     selectedServer = serverList.firstWhereOrNull((server) => server.selected);
     if (selectedServer != null) {
       initDio(selectedServer!);
     }
-    update();
-
-    super.onInit();
   }
 
   bool get hasSelectedServer {
@@ -76,7 +80,7 @@ class LoginController extends GetxController {
     selectedServer = server;
     server.selected = true;
     await saveServer(server);
-    initDio(server);
+    initServerList();
     update();
   }
 
