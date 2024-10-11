@@ -41,7 +41,7 @@ class LoggingView extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
       enableDrag: true,
       SizedBox(
-        height: MediaQuery.of(context).size.height,
+        height: MediaQuery.of(context).size.height * 0.9,
         child: DefaultTabController(
             length: tabs.length,
             child: GetBuilder<LoggingController>(
