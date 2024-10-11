@@ -46,7 +46,7 @@ class _WebViewPageState extends State<WebViewPage> {
         controller.mySite!.mirror!.contains('m-team')) {
       headers['Authorization'] = controller.mySite!.cookie!;
     }
-    Logger.instance.i(headers);
+    Logger.instance.d(headers);
     return PopScope(
       canPop: false,
       onPopInvoked: (didPop) async {
@@ -84,17 +84,17 @@ class _WebViewPageState extends State<WebViewPage> {
                       String? htmlStr = await webController?.getHtml();
                       var auth = await webController?.webStorage.localStorage
                           .getItem(key: 'auth');
-                      Logger.instance.i(auth);
+                      Logger.instance.d(auth);
                       // Logger.instance.i(htmlStr);
                       var document = parse(htmlStr).documentElement;
                       HtmlXPath selector = HtmlXPath.node(document!);
-                      Logger.instance.i(controller.website!.myUidRule);
+                      Logger.instance.d(controller.website!.myUidRule);
                       var result =
                           selector.queryXPath(controller.website!.myUidRule);
-                      Logger.instance.i(result.attr);
+                      Logger.instance.d(result.attr);
                       RegExp regex = RegExp(r'\d+(?=\]?$)');
-                      Logger.instance
-                          .i(regex.firstMatch(result.attr!.trim())?.group(0));
+                      Logger.instance.i(
+                          '获取到的 UID：${regex.firstMatch(result.attr!.trim())?.group(0)}');
                       String cookies = await webController?.evaluateJavascript(
                           source: "document.cookie");
                       if (controller.mySite != null &&
@@ -173,7 +173,7 @@ class _WebViewPageState extends State<WebViewPage> {
                     String cookieStr =
                         cookies.map((e) => '${e.name}=${e.value}').join('; ');
 
-                    Logger.instance.w(cookieStr);
+                    Logger.instance.d('获取到的 Cookie：$cookieStr');
                     controller.mySite =
                         controller.mySite?.copyWith(cookie: cookieStr);
                     if (controller.mySite?.userId == null ||
@@ -187,7 +187,7 @@ class _WebViewPageState extends State<WebViewPage> {
                             selector.queryXPath(controller.website!.myUidRule);
                         var auth = await webController?.webStorage.localStorage
                             .getItem(key: 'auth');
-                        Logger.instance.i(auth);
+                        Logger.instance.d(auth);
                         RegExp regex = RegExp(r'\d+(?=\]?$)');
                         controller.mySite = controller.mySite?.copyWith(
                           userId:
@@ -286,7 +286,7 @@ class _WebViewPageState extends State<WebViewPage> {
                   },
                   onLoadStop: (inAppWebViewController, webUri) async {
                     Logger.instance
-                        .w((await inAppWebViewController.getTitle())!);
+                        .i('当前页面标题：${await inAppWebViewController.getTitle()}');
                     controller.isLoading = false;
                     controller.canGoBack =
                         await inAppWebViewController.canGoBack();
@@ -297,7 +297,7 @@ class _WebViewPageState extends State<WebViewPage> {
                     controller.update();
                   },
                   onProgressChanged: (inAppWebViewController, progress) async {
-                    Logger.instance.i('当前进度: $progress');
+                    Logger.instance.d('当前进度: $progress');
                     controller.progress = progress;
                     controller.update();
                   },
