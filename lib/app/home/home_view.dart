@@ -256,54 +256,6 @@ class HomeView extends GetView<HomeController> {
     });
   }
 
-  _buildHomeMenu(context) {
-    return GetBuilder<HomeController>(builder: (controller) {
-      return BottomNavigationBar(
-        onTap: (int index) {
-          controller.changePage(index + 1);
-        },
-        selectedLabelStyle: const TextStyle(color: Colors.blue),
-        selectedIconTheme:
-            Theme.of(context).iconTheme.copyWith(color: Colors.blue),
-        unselectedLabelStyle:
-            TextStyle(color: Theme.of(context).colorScheme.secondary),
-        unselectedIconTheme: Theme.of(context)
-            .iconTheme
-            .copyWith(color: Theme.of(context).colorScheme.secondary),
-        backgroundColor: Colors.transparent,
-        currentIndex: controller.initPage > 0
-            ? controller.initPage - 1
-            : controller.initPage,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search, size: 18),
-            label: '聚合搜索',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.language, size: 18),
-            label: '站点数据',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.cloud_download, size: 18),
-            label: '下载管理',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.task, size: 18),
-            label: '计划任务',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings, size: 18),
-            label: '系统设置',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.subscriptions_outlined, size: 18),
-            label: '订阅管理',
-          ),
-        ],
-      );
-    });
-  }
-
   Widget _actionButtonList(context) {
     return GetBuilder<HomeController>(builder: (controller) {
       return Row(

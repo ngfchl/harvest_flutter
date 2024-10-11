@@ -97,7 +97,7 @@ class _MySitePagePageState extends State<MySitePage>
                                 ),
                               ),
                               onChanged: (value) {
-                                Logger.instance.i('搜索框内容变化：$value');
+                                Logger.instance.d('搜索框内容变化：$value');
                                 controller.searchKey = value;
                                 controller.filterByKey();
                               },
@@ -355,14 +355,14 @@ class _MySitePagePageState extends State<MySitePage>
               url = url.replaceFirst("api", "xp");
             }
             if (kIsWeb || !Platform.isIOS && !Platform.isAndroid) {
-              Logger.instance.i('Explorer');
+              Logger.instance.d('使用外部浏览器打开');
               Uri uri = Uri.parse(url);
               if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
                 Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
                     colorText: Theme.of(context).colorScheme.primary);
               }
             } else {
-              Logger.instance.i('WebView');
+              Logger.instance.d('使用内置浏览器打开');
               Get.toNamed(Routes.WEBVIEW, arguments: {
                 'url': url,
                 'info': null,
@@ -1116,7 +1116,7 @@ class _MySitePagePageState extends State<MySitePage>
                           statusInfo: {},
                         );
                       }
-                      Logger.instance.i(mySite?.toJson());
+                      Logger.instance.d(mySite?.toJson());
                       if (await controller.saveMySiteToServer(mySite!)) {
                         Navigator.of(context).pop();
                         controller.getSiteStatusFromServer();

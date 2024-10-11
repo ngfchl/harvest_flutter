@@ -124,7 +124,7 @@ class SettingPage extends StatelessWidget {
   void _openAddOptionForm(context) {
     Map<String, OptionFormBuilder> optionForms = _optionFormMap();
     Logger.instance.i(optionForms);
-    Logger.instance.i(controller.optionChoice.where((e) =>
+    Logger.instance.d(controller.optionChoice.where((e) =>
         !controller.optionList.any((element) => element.name == e.value)));
     Get.bottomSheet(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
@@ -153,7 +153,7 @@ class SettingPage extends StatelessWidget {
                                   focusColor: Colors.teal,
                                   splashColor: Colors.teal,
                                   onTap: () {
-                                    Logger.instance.i(choice.value);
+                                    Logger.instance.d(choice.value);
                                     if (optionForms[choice.value] != null) {
                                       Get.back();
                                       Get.bottomSheet(
@@ -235,8 +235,8 @@ class SettingPage extends StatelessWidget {
         (option == null ? true : option.value.siteDataSuccess).obs;
     final cookieSync = (option == null ? true : option.value.cookieSync).obs;
     final isEdit = (option == null).obs;
-    Logger.instance.i(option);
-    Logger.instance.i(aliyundriveNotice.value);
+    Logger.instance.d(option);
+    Logger.instance.d(aliyundriveNotice.value);
 
     return Obx(() {
       return CustomCard(
@@ -489,7 +489,7 @@ class SettingPage extends StatelessWidget {
     final hr = (option == null ? true : option.value.hr).obs;
 
     final isEdit = (option == null).obs;
-    Logger.instance.i(option);
+    Logger.instance.d(option);
 
     return Obx(() {
       return CustomCard(

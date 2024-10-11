@@ -93,7 +93,7 @@ class MySiteController extends GetxController {
       webSiteList.clear();
       webSiteList = value.data;
     } else {
-      Logger.instance.d(value.msg);
+      Logger.instance.e(value.msg);
       Get.snackbar(
         '',
         value.msg.toString(),
@@ -142,7 +142,7 @@ class MySiteController extends GetxController {
       filterByKey();
       isLoaded = false;
     } else {
-      Logger.instance.d(res.msg);
+      Logger.instance.e(res.msg);
       Get.snackbar(
         '',
         res.msg.toString(),
@@ -170,7 +170,7 @@ class MySiteController extends GetxController {
   }
 
   void sortStatusList() {
-    Logger.instance.d(sortKey);
+    Logger.instance.i('当前排序方式：$sortKey');
     SPUtil.setString('mySite-sortKey', sortKey);
     // 拆分数据为有消息和无消息两组
     // 有消息的数据
@@ -309,7 +309,7 @@ class MySiteController extends GetxController {
         break;
       case 'timeJoin':
         filterByCondition((item) {
-          Logger.instance.i(item.timeJoin);
+          Logger.instance.d(item.timeJoin);
           return item.timeJoin == '2024-02-01T00:00:00';
         });
         break;
@@ -335,8 +335,7 @@ class MySiteController extends GetxController {
         break;
       case 'status':
         filterByCondition((item) {
-          Logger.instance.i(item.statusInfo[today]?.updatedAt);
-          // Logger.instance.i(isToday(item.statusInfo[today]!.updatedAt));
+          Logger.instance.d(item.statusInfo[today]?.updatedAt);
           return item.available &&
               (item.statusInfo[today] == null ||
                   !isToday(item.statusInfo[today]!.updatedAt.toString()));

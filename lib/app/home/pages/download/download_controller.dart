@@ -44,7 +44,7 @@ class DownloadController extends GetxController {
     timerDuration = SPUtil.getDouble('timerDuration', defaultValue: 3.14)!;
     await getDownloaderListFromServer();
     if (realTimeState) {
-      LoggerHelper.Logger.instance.i('调用刷新 init');
+      LoggerHelper.Logger.instance.d('调用刷新 init');
       refreshDownloadStatus();
       // 设置定时器，每隔一定时间刷新下载器数据
       startPeriodicTimer();
@@ -75,7 +75,7 @@ class DownloadController extends GetxController {
     periodicTimer = Timer.periodic(
         Duration(milliseconds: (duration * 1000).toInt()), (Timer t) {
       // 在定时器触发时获取最新的下载器数据
-      LoggerHelper.Logger.instance.i('调用刷新 timer');
+      LoggerHelper.Logger.instance.d('调用刷新 timer');
 
       refreshDownloadStatus();
     });
@@ -137,7 +137,7 @@ class DownloadController extends GetxController {
     });
     // 发送最新的下载列表到流中
     if (realTimeState) {
-      LoggerHelper.Logger.instance.i('调用刷新 list');
+      LoggerHelper.Logger.instance.d('调用刷新 list');
 
       refreshDownloadStatus();
     }

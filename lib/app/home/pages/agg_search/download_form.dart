@@ -44,7 +44,7 @@ class DownloadForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Logger.instance.i(categories);
+    Logger.instance.d(categories);
     MySite? mysite;
     if (info != null) {
       mysite = searchController.mySiteMap[info!.siteId];

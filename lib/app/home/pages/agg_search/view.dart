@@ -285,7 +285,7 @@ class _AggSearchPageState extends State<AggSearchPage>
     MySite? mySite = controller.mySiteMap[info.siteId];
     if (website == null || mySite == null) {
       LoggerHelper.Logger.instance
-          .d('显示出错啦: ${info.siteId} -  $mySite - $website');
+          .e('显示出错啦: ${info.siteId} -  $mySite - $website');
       return const SizedBox.shrink();
     }
     String imgUrl = info.poster.isNotEmpty &&
@@ -304,14 +304,14 @@ class _AggSearchPageState extends State<AggSearchPage>
             '${mySite.mirror}${website.pageDetail.replaceAll('{}', info.tid)}';
 
         if (kIsWeb || !Platform.isIOS && !Platform.isAndroid) {
-          LoggerHelper.Logger.instance.i('Explorer');
+          LoggerHelper.Logger.instance.d('外置浏览器打开');
           Uri uri = Uri.parse(url);
           if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
             Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
                 colorText: Theme.of(context).colorScheme.error);
           }
         } else {
-          LoggerHelper.Logger.instance.i('WebView');
+          LoggerHelper.Logger.instance.d('内置浏览器打开');
           Get.toNamed(Routes.WEBVIEW, arguments: {
             'url': url,
             'info': info,
@@ -709,7 +709,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                 controller.sites
                                     .removeWhere((item) => item == mySite.id);
                               }
-                              LoggerHelper.Logger.instance.i(controller.sites);
+                              LoggerHelper.Logger.instance.d(controller.sites);
                               controller.update();
                             },
                           );
@@ -733,7 +733,7 @@ class _AggSearchPageState extends State<AggSearchPage>
     List<int> selectedNumbers =
         getRandomIndices(whereToSearch.length, controller.maxCount);
     controller.sites.addAll(selectedNumbers.map((e) => whereToSearch[e].id));
-    LoggerHelper.Logger.instance.i(controller.sites);
+    LoggerHelper.Logger.instance.d(controller.sites);
     controller.update();
   }
 

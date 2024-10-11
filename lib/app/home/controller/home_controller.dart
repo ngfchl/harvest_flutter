@@ -35,28 +35,6 @@ class HomeController extends GetxController {
   // final mySiteController = Get.put(MySiteController());
 
   final PageController pageController = PageController(initialPage: 0);
-  final List<BottomNavigationBarItem> menuItems = [
-    const BottomNavigationBarItem(
-      icon: Icon(Icons.search),
-      label: '聚合搜索',
-    ),
-    const BottomNavigationBarItem(
-      icon: Icon(Icons.settings_input_composite_sharp),
-      label: '我的站点',
-    ),
-    const BottomNavigationBarItem(
-      icon: Icon(Icons.home),
-      label: '仪表盘',
-    ),
-    const BottomNavigationBarItem(
-      icon: Icon(Icons.task_outlined),
-      label: '下载器',
-    ),
-    const BottomNavigationBarItem(
-      icon: Icon(Icons.task),
-      label: '计划任务',
-    ),
-  ];
 
   @override
   void onClose() {
@@ -83,7 +61,7 @@ class HomeController extends GetxController {
   void onInit() async {
     try {
       isPhone = PlatformTool.isPhone();
-      Logger.instance.i('手机端：$isPhone');
+      Logger.instance.d('手机端：$isPhone');
       isDarkMode = Get.isDarkMode;
       initDio();
       userinfo.value = SPUtil.getLocalStorage('userinfo');
@@ -124,7 +102,7 @@ class HomeController extends GetxController {
     } else {
       Get.snackbar('更新日志', '获取更新日志失败！', colorText: Colors.red);
     }
-    Logger.instance.i(updateLogState?.localLogs);
+    Logger.instance.d(updateLogState?.localLogs);
   }
 
   Future<CommonResponse> doDockerUpdate() async {

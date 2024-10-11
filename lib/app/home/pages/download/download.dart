@@ -283,7 +283,6 @@ class _DownloadPageState extends State<DownloadPage>
     if (downloader.status.isEmpty) {
       return const GFLoader();
     }
-    // LoggerHelper.Logger.instance.d(downloader.status.length);
     double chartHeight = 80;
     var tooltipBehavior = TooltipBehavior(
       enable: true,
@@ -291,7 +290,6 @@ class _DownloadPageState extends State<DownloadPage>
       decimalPlaces: 1,
       builder: (dynamic data, dynamic point, dynamic series, int pointIndex,
           int seriesIndex) {
-        // Logger.instance.d(data);
         return Container(
           padding: const EdgeInsets.all(1),
           decoration: BoxDecoration(
@@ -782,7 +780,6 @@ class _DownloadPageState extends State<DownloadPage>
       );
     } else {
       TransmissionStats res = downloader.status.last;
-      // LoggerHelper.Logger.instance.d(res.runtimeType);
       return Container(
         padding: const EdgeInsets.only(left: 20, right: 20),
         child: Column(
