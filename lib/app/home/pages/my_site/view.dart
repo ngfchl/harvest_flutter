@@ -200,7 +200,7 @@ class _MySitePagePageState extends State<MySitePage>
                     borderRadius: BorderRadius.circular(5.0)),
               ),
               padding: WidgetStateProperty.all(
-                  const EdgeInsets.symmetric(horizontal: 8)),
+                  const EdgeInsets.symmetric(horizontal: 5)),
               side: WidgetStateProperty.all(BorderSide.none),
             ),
             label: const Text('刷新'),
@@ -219,7 +219,7 @@ class _MySitePagePageState extends State<MySitePage>
                     borderRadius: BorderRadius.circular(5.0)),
               ),
               padding: WidgetStateProperty.all(
-                  const EdgeInsets.symmetric(horizontal: 8)),
+                  const EdgeInsets.symmetric(horizontal: 5)),
               side: WidgetStateProperty.all(BorderSide.none),
             ),
             label: const Text('筛选'),
@@ -238,7 +238,7 @@ class _MySitePagePageState extends State<MySitePage>
                     borderRadius: BorderRadius.circular(5.0)),
               ),
               padding: WidgetStateProperty.all(
-                  const EdgeInsets.symmetric(horizontal: 8)),
+                  const EdgeInsets.symmetric(horizontal: 5)),
               side: WidgetStateProperty.all(BorderSide.none),
             ),
             label: const Text('排序'),
@@ -257,7 +257,7 @@ class _MySitePagePageState extends State<MySitePage>
                     borderRadius: BorderRadius.circular(5.0)),
               ),
               padding: WidgetStateProperty.all(
-                  const EdgeInsets.symmetric(horizontal: 8)),
+                  const EdgeInsets.symmetric(horizontal: 5)),
               side: WidgetStateProperty.all(BorderSide.none),
             ),
             label: const Text('添加'),

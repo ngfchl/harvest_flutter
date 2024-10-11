@@ -390,7 +390,7 @@ class _DashBoardPageState extends State<DashBoardPage>
             },
             icon: const Icon(
               Icons.refresh,
-              size: 20,
+              size: 18,
             ),
             style: ButtonStyle(
               shape: WidgetStateProperty.all<RoundedRectangleBorder>(
@@ -398,7 +398,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                     borderRadius: BorderRadius.circular(5.0)),
               ),
               padding: WidgetStateProperty.all(
-                  const EdgeInsets.symmetric(horizontal: 8)),
+                  const EdgeInsets.symmetric(horizontal: 5)),
               side: WidgetStateProperty.all(BorderSide.none),
             ),
             label: const Text('统计数据'),
@@ -417,7 +417,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                     borderRadius: BorderRadius.circular(5.0)),
               ),
               padding: WidgetStateProperty.all(
-                  const EdgeInsets.symmetric(horizontal: 8)),
+                  const EdgeInsets.symmetric(horizontal: 5)),
               side: WidgetStateProperty.all(BorderSide.none),
             ),
             label: const Text('全员签到'),
@@ -437,7 +437,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                     borderRadius: BorderRadius.circular(5.0)),
               ),
               padding: WidgetStateProperty.all(
-                  const EdgeInsets.symmetric(horizontal: 8)),
+                  const EdgeInsets.symmetric(horizontal: 5)),
               side: WidgetStateProperty.all(BorderSide.none),
             ),
             label: const Text('清除缓存'),
