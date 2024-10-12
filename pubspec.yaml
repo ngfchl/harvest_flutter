@@ -1,7 +1,7 @@
 name: harvest
 description: Harvest Project App Client
 publish_to: none
-version: 2024.1010.01+75
+version: 2024.1012.01+76
 environment:
   sdk: '>=3.3.2 <4.0.0'
 dependencies:
@@ -53,4 +53,4 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/images/
+  - assets/images/
