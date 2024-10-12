@@ -45,6 +45,7 @@ dependencies:
   collection: ^1.18.0
   custom_rating_bar: ^3.0.0
   window_manager: ^0.4.2
+  dartssh2_plus: ^3.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -52,4 +53,4 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-  - assets/images/
+    - assets/images/
