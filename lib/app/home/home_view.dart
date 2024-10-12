@@ -138,9 +138,11 @@ class HomeView extends GetView<HomeController> {
               useIndicator: true,
               extended: true,
               selectedIndex: controller.initPage,
-              selectedLabelTextStyle: const TextStyle(color: Colors.blue),
-              selectedIconTheme:
-                  Theme.of(context).iconTheme.copyWith(color: Colors.blue),
+              selectedLabelTextStyle:
+                  TextStyle(color: Theme.of(context).colorScheme.primary),
+              selectedIconTheme: Theme.of(context)
+                  .iconTheme
+                  .copyWith(color: Theme.of(context).colorScheme.primary),
               unselectedLabelTextStyle:
                   TextStyle(color: Theme.of(context).colorScheme.secondary),
               unselectedIconTheme: Theme.of(context)
@@ -175,16 +177,34 @@ class HomeView extends GetView<HomeController> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
-                      Text(
-                        controller.userinfo['user'],
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            controller.userinfo['user'],
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(context).colorScheme.primary),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              controller.logout();
+                              controller.update();
+                            },
+                            icon: Icon(Icons.exit_to_app,
+                                size: 16,
+                                color: Theme.of(context).colorScheme.primary),
+                          ),
+                        ],
                       ),
-                      // Text('admin@admin.com'),
                       Tooltip(
                         message: '${SPUtil.getLocalStorage('server')}',
                         child: Text(
                           '${SPUtil.getLocalStorage('server')}',
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 12),
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).colorScheme.primary),
                         ),
                       ),
                     ],
@@ -240,13 +260,14 @@ class HomeView extends GetView<HomeController> {
                 //   icon: Icon(Icons.list_alt, size: 18),
                 //   label: Text('操作日志'),
                 // ),
+
                 // NavigationRailDestination(
-                //   icon: Icon(Icons.description, size: 18),
-                //   label: Text('任务日志'),
+                //   icon: Icon(Icons.account_box_rounded, size: 18),
+                //   label: Text('更换账号'),
                 // ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.account_box_rounded, size: 18),
-                  label: Text('更换账号'),
+                  icon: Icon(Icons.description, size: 18),
+                  label: Text('SSH终端'),
                 ),
               ],
             ),

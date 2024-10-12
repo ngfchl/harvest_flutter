@@ -20,8 +20,8 @@ import '../../../utils/platform.dart';
 import '../../../utils/storage.dart';
 import '../../routes/app_pages.dart';
 import '../pages/download/download_controller.dart';
-import '../pages/logging/view.dart';
 import '../pages/setting/setting.dart';
+import '../pages/ssh/view.dart';
 
 class HomeController extends GetxController {
   int initPage = 0;
@@ -54,7 +54,7 @@ class HomeController extends GetxController {
     const SubscribeHistoryPage(),
     const SubscribeTagPage(),
     const DouBanPage(),
-    LoggingPage(),
+    SshWidget(),
   ];
 
   @override
@@ -111,12 +111,9 @@ class HomeController extends GetxController {
 
   Future<void> changePage(int index) async {
     Get.back();
-    if (index == 11) {
-      logout();
-    } else {
-      pageController.jumpToPage(index);
-      initPage = index;
-    }
+
+    pageController.jumpToPage(index);
+    initPage = index;
 
     update();
   }
