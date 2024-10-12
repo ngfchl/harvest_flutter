@@ -28,16 +28,89 @@ class MemoryLogOutput extends logger.LogOutput {
 MemoryLogOutput memoryLogOutput = MemoryLogOutput();
 
 class DateTimePrinter extends logger.PrettyPrinter {
+  // DateTimePrinter({int methodCount = 1}) : super(methodCount: methodCount);
+
   @override
   List<String> log(logger.LogEvent event) {
+    var messageStr = stringifyMessage(event.message);
+
+    String? stackTraceStr;
+    if (event.error != null) {
+      if ((errorMethodCount == null || errorMethodCount! > 0)) {
+        stackTraceStr = formatStackTrace(
+          event.stackTrace ?? StackTrace.current,
+          errorMethodCount,
+        );
+      }
+    } else if (methodCount == null || methodCount! > 0) {
+      stackTraceStr = formatStackTrace(
+        event.stackTrace ?? StackTrace.current,
+        methodCount,
+      );
+    }
+
+    var errorStr = event.error?.toString();
+
+    String? timeStr;
+    // Keep backwards-compatibility to `printTime` check
+    // ignore: deprecated_member_use_from_same_package
+    if (printTime) {
+      timeStr = getTime(event.time);
+    }
+    // 获取调用栈信息
     String level = event.level.name.toUpperCase();
-    var log = ['[$level] [${event.time}]  ${event.message} '];
+
+    // 格式化日志信息，带上文件名和行号
+    var log = ['[$level] [${event.time}] ${event.message}'];
     if (event.error != null) {
       log = [
-        '[$level] [${event.time}]  ${event.message} \n  ${event.error} \n ${event.stackTrace}'
+        '[$event.level] [${timeStr}] ${messageStr} \n  ${errorStr} \n ${stackTraceStr}'
       ];
     }
-    return log;
+    return _formatAndPrint(
+      event.level,
+      messageStr,
+      timeStr,
+      errorStr,
+      stackTraceStr,
+    );
+  }
+
+  List<String> _formatAndPrint(
+    logger.Level level,
+    String message,
+    String? time,
+    String? error,
+    String? stacktrace,
+  ) {
+    List<String> buffer = [];
+
+    if (error != null) {
+      for (var line in error.split('\n')) {
+        if (line.contains('logger_helper')) {
+          continue;
+        }
+        buffer.add(line);
+      }
+    }
+
+    if (stacktrace != null) {
+      for (var line in stacktrace.split('\n')) {
+        if (line.contains('logger_helper')) {
+          continue;
+        }
+        buffer.add(line);
+      }
+    }
+
+    if (time != null) {
+      buffer.add(time);
+    }
+
+    for (var line in message.split('\n')) {
+      buffer.add(line);
+    }
+    return buffer;
   }
 }
 
