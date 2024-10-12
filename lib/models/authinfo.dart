@@ -31,6 +31,9 @@ class GitLog {
       hex: json['hex'],
     );
   }
+
+  @override
+  String toString() => '$date - $hex：$data';
 }
 
 class UpdateLogState {
