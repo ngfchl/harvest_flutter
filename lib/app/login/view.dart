@@ -200,13 +200,11 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              GetBuilder<LoginController>(builder: (controller) {
-                return Wrap(spacing: 20, runSpacing: 20, children: [
-                  ...controller.serverList
-                      .map((server) => _buildGridTile(server)),
-                  _buildAddServerTile(),
-                ]);
-              }),
+              Wrap(spacing: 20, runSpacing: 20, children: [
+                ...controller.serverList
+                    .map((server) => _buildGridTile(server)),
+                _buildAddServerTile(),
+              ]),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 36.0),
                 child: ElevatedButton.icon(

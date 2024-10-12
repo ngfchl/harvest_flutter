@@ -49,6 +49,7 @@ class LoginController extends GetxController {
     String baseUrl = '${server.protocol}://${server.domain}:${server.port}';
     await dioUtil.initialize(baseUrl);
     SPUtil.setString('server', baseUrl);
+    SPUtil.setString('serverDomain', server.domain);
     update();
   }
 
