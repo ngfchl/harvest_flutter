@@ -102,11 +102,11 @@ class DashBoardController extends GetxController {
         if (mySite.available == true && mySite.statusInfo.length > 1) {
           int increment = mySite.statusInfo[todayStr] != null
               ? mySite.statusInfo[todayStr]!.uploaded -
-                  mySite.statusInfo[yesterdayStr]!.uploaded
+                  (mySite.statusInfo[yesterdayStr]?.uploaded ?? 0)
               : 0;
           int downloaded = mySite.statusInfo[todayStr] != null
               ? mySite.statusInfo[todayStr]!.downloaded -
-                  mySite.statusInfo[yesterdayStr]!.downloaded
+                  (mySite.statusInfo[yesterdayStr]?.downloaded ?? 0)
               : 0;
           if (increment > 0) {
             todayUploadIncrement += increment;
