@@ -181,7 +181,7 @@ class HomeView extends GetView<HomeController> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            controller.userinfo['user'],
+                            '${controller.userinfo?.user.toString()}',
                             style: TextStyle(
                                 fontSize: 12,
                                 color: Theme.of(context).colorScheme.primary),
@@ -197,6 +197,13 @@ class HomeView extends GetView<HomeController> {
                           ),
                         ],
                       ),
+                      if (controller.authInfo != null)
+                        Text(
+                          'VIP：${controller.authInfo?.timeExpire.toString()}',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).colorScheme.primary),
+                        ),
                       Tooltip(
                         message: '${SPUtil.getLocalStorage('server')}',
                         child: Text(

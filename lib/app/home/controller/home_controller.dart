@@ -12,6 +12,7 @@ import 'package:harvest/app/home/pages/subscribe_tag/view.dart';
 import 'package:harvest/app/home/pages/task/view.dart';
 import 'package:harvest/models/common_response.dart';
 
+import '../../../api/api.dart';
 import '../../../api/login.dart';
 import '../../../models/authinfo.dart';
 import '../../../utils/dio_util.dart';
@@ -20,17 +21,19 @@ import '../../../utils/platform.dart';
 import '../../../utils/storage.dart';
 import '../../routes/app_pages.dart';
 import '../pages/download/download_controller.dart';
+import '../pages/models/AuthPeriod.dart';
 import '../pages/setting/setting.dart';
 import '../pages/ssh/view.dart';
 
 class HomeController extends GetxController {
   int initPage = 0;
-  final userinfo = RxMap();
+  AuthInfo? userinfo;
   TextEditingController searchController = TextEditingController();
   DioUtil dioUtil = DioUtil();
   bool isDarkMode = false;
   bool isPhone = false;
   UpdateLogState? updateLogState;
+  AuthPeriod? authInfo;
 
   // final mySiteController = Get.put(MySiteController());
 
@@ -44,27 +47,36 @@ class HomeController extends GetxController {
 
   final List<Widget> pages = [
     const DashBoardPage(),
-    const AggSearchPage(),
-    const MySitePage(),
-    const DownloadPage(),
-    TaskPage(),
-    SettingPage(),
-    const SubscribePage(),
-    const MyRssPage(),
-    const SubscribeHistoryPage(),
-    const SubscribeTagPage(),
-    const DouBanPage(),
-    SshWidget(),
   ];
+
+  @override
+  void onReady() {
+    pages.addAll([
+      const AggSearchPage(),
+      const MySitePage(),
+      const DownloadPage(),
+      TaskPage(),
+      SettingPage(),
+      const SubscribePage(),
+      const MyRssPage(),
+      const SubscribeHistoryPage(),
+      const SubscribeTagPage(),
+      const DouBanPage(),
+      SshWidget(),
+    ]);
+    update();
+  }
 
   @override
   void onInit() async {
     try {
+      await getAuthInfo();
+
       isPhone = PlatformTool.isPhone();
       Logger.instance.d('手机端：$isPhone');
       isDarkMode = Get.isDarkMode;
       initDio();
-      userinfo.value = SPUtil.getLocalStorage('userinfo');
+      userinfo = AuthInfo.fromJson(SPUtil.getLocalStorage('userinfo'));
       update();
     } catch (e) {
       Logger.instance.e('初始化失败 $e');
@@ -73,7 +85,6 @@ class HomeController extends GetxController {
     // await mySiteController.initData();
     // pageController.jumpToPage(pages.length - 1);
     await initUpdateLogState();
-
     super.onInit();
   }
 
@@ -85,6 +96,23 @@ class HomeController extends GetxController {
       // 初始化dio
       await dioUtil.initialize(baseUrl);
     }
+  }
+
+  getAuthInfo() async {
+    final response = await DioUtil().get(Api.AUTH_INFO);
+    if (response.statusCode == 200) {
+      // Logger.instance.d(response.data['data']);
+      final data = response.data;
+      String msg = '成功获取到授权信息：$data';
+      Logger.instance.i(msg);
+      if (data['code'] == 0) {
+        authInfo = AuthPeriod.fromJson(data['data']);
+      }
+    } else {
+      String msg = '获取数据列表失败: ${response.statusCode}';
+      Logger.instance.e(msg);
+    }
+    update();
   }
 
   void logout() {
