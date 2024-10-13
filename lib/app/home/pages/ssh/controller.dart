@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dartssh2_plus/dartssh2.dart';
@@ -23,13 +24,20 @@ class SshController extends GetxController {
   List<String> results = ['SSHClient欢迎你！'];
   List<DockerContainer> containerList = [];
 
+  // 使用StreamController来管理下载状态的流
+  final StreamController<List<DockerContainer>> containerStreamController =
+      StreamController<List<DockerContainer>>.broadcast();
+
+  Stream<List<DockerContainer>> get containerStream =>
+      containerStreamController.stream;
+
   @override
   void onInit() {
     String? serverDomain =
         SPUtil.getString('serverDomain', defaultValue: '192.168.1.1');
     String? password =
         SPUtil.getString('SSH_CLIENT_PASSWORD', defaultValue: '');
-    String? proxy = SPUtil.getString('SSH_CLIENT_PASSWORD', defaultValue: '');
+    String? proxy = SPUtil.getString('SSH_CLIENT_PROXY', defaultValue: '');
     hostController.text = serverDomain!;
     passwordController.text = password!;
     proxyController.text = proxy!;
@@ -148,6 +156,7 @@ class SshController extends GetxController {
         })
         .map((e) => DockerContainer.fromJson(e))
         .toList();
+    await checkAllImageUpdate();
     Logger.instance.i('Output: $containerList'); // 期望输出 Docker 容器列表
     update();
   }
@@ -198,7 +207,7 @@ class SshController extends GetxController {
     return await run(command);
   }
 
-  checkNewImage(String image) async {
+  Future<bool> checkNewImage(String image) async {
     clear();
     results.add('检查更新：$image');
     update();
@@ -207,15 +216,41 @@ class SshController extends GetxController {
 
     String updatedTime = await getImageLastUpdated(image);
     results.add('远程镜像更新时间：$updatedTime');
-
+    results.add('$image 当前镜像创建时间：$createdTime - $updatedTime 远程镜像更新时间');
     if (updatedTime.compareTo(createdTime) > 0) {
-      haveNewImage = true;
+      return true;
     }
-    update();
+    return false;
+  }
+
+  Future<void> fetchStatusForItem(DockerContainer item) async {
+    try {
+      item.hasNew = await checkNewImage(item.image.toString());
+      containerStreamController.sink.add([item]);
+      update();
+    } catch (e) {
+      Logger.instance.e('${item.image} 检查更新失败: $e');
+    }
+  }
+
+  checkAllImageUpdate() async {
+    results.add('开始检查镜像是否有更新');
+    List<Future<void>> futures = [];
+    for (DockerContainer item in containerList) {
+      if (!item.hasNew) {
+        Future<void> fetchStatus = fetchStatusForItem(item);
+        futures.add(fetchStatus);
+      }
+    }
+    await Future.wait(futures);
   }
 
   void getNewImage(String? image) async {
     String command = 'docker pull $image';
+    if (proxyController.text.isNotEmpty) {
+      command =
+          "export HTTP_PROXY=${proxyController.text} HTTPS_PROXY=${proxyController.text} && $command";
+    }
     clear();
     results.add('正在更新镜像：$image');
     update();

@@ -3,6 +3,7 @@ class DockerContainer {
   String? image;
   String? name;
   String? status;
+  bool hasNew = false;
 
   DockerContainer({this.id, this.image, this.name, this.status});
 

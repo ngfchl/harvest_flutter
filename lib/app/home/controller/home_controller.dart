@@ -49,24 +49,21 @@ class HomeController extends GetxController {
     const DashBoardPage(),
     const AggSearchPage(),
     const MySitePage(),
+    const DownloadPage(),
+    TaskPage(),
+    SettingPage(),
+    const SubscribePage(),
+    const MyRssPage(),
+    const SubscribeHistoryPage(),
+    const SubscribeTagPage(),
+    const DouBanPage(),
+    SshWidget(),
   ];
 
   @override
   void onReady() async {
     await getAuthInfo();
     await initUpdateLogState();
-    update();
-    pages.addAll([
-      const DownloadPage(),
-      TaskPage(),
-      SettingPage(),
-      const SubscribePage(),
-      const MyRssPage(),
-      const SubscribeHistoryPage(),
-      const SubscribeTagPage(),
-      const DouBanPage(),
-      SshWidget(),
-    ]);
     update();
   }
 
