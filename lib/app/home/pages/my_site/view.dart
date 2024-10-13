@@ -48,6 +48,7 @@ class _MySitePagePageState extends State<MySitePage>
         child: Scaffold(
           body: EasyRefresh(
             onRefresh: () async {
+              controller.initFlag = false;
               controller.getSiteStatusFromServer();
             },
             child: Column(
@@ -638,6 +639,7 @@ class _MySitePagePageState extends State<MySitePage>
                   if (res.code == 0) {
                     Get.snackbar('签到成功', '${mySite.nickname} 签到信息：${res.msg}',
                         colorText: Theme.of(context).colorScheme.primary);
+                    controller.initFlag = false;
                     controller.getSiteStatusFromServer();
                   } else {
                     Get.snackbar(
@@ -661,6 +663,7 @@ class _MySitePagePageState extends State<MySitePage>
                 if (res.code == 0) {
                   Get.snackbar('站点数据刷新成功', '${mySite.nickname} 数据刷新：${res.msg}',
                       colorText: Theme.of(context).colorScheme.primary);
+                  controller.initFlag = false;
                   controller.getSiteStatusFromServer();
                 } else {
                   Get.snackbar(
@@ -711,6 +714,7 @@ class _MySitePagePageState extends State<MySitePage>
                                 '签到成功', '${mySite.nickname} 签到信息：${res.msg}',
                                 colorText:
                                     Theme.of(context).colorScheme.primary);
+                            controller.initFlag = false;
                             controller.getSiteStatusFromServer();
                           } else {
                             Get.snackbar('签到失败',
@@ -737,6 +741,7 @@ class _MySitePagePageState extends State<MySitePage>
                 if (res.code == 0) {
                   Get.snackbar('站点数据刷新成功', '${mySite.nickname} 数据刷新：${res.msg}',
                       colorText: Theme.of(context).colorScheme.primary);
+                  controller.initFlag = false;
                   controller.getSiteStatusFromServer();
                 } else {
                   Get.snackbar(
@@ -1119,6 +1124,7 @@ class _MySitePagePageState extends State<MySitePage>
                       Logger.instance.d(mySite?.toJson());
                       if (await controller.saveMySiteToServer(mySite!)) {
                         Navigator.of(context).pop();
+                        controller.initFlag = false;
                         controller.getSiteStatusFromServer();
                       }
                     },

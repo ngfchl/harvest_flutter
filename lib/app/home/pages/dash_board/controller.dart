@@ -70,7 +70,10 @@ class DashBoardController extends GetxController {
     String todayStr = getTodayString();
     String yesterdayStr = getYesterdayString();
     if (mySiteController.mySiteList.isEmpty) {
+      mySiteController.initFlag = true;
       await mySiteController.initData();
+      update();
+      mySiteController.initFlag = false;
     }
     statusList = mySiteController.mySiteList;
     statusList.sort((MySite a, MySite b) {

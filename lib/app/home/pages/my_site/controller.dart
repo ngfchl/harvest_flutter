@@ -17,6 +17,7 @@ class MySiteController extends GetxController {
   List<MySite> mySiteList = <MySite>[];
   List<MySite> showStatusList = <MySite>[];
   bool isLoaded = false;
+  bool initFlag = false;
   String sortKey = 'statusMail';
   bool sortReversed = false;
   Map<String, WebSite> webSiteList = {};
@@ -74,6 +75,9 @@ class MySiteController extends GetxController {
   }
 
   initData() async {
+    if (!initFlag) {
+      return;
+    }
     await getWebSiteListFromServer();
     await getSiteStatusFromServer();
     update();
@@ -88,6 +92,8 @@ class MySiteController extends GetxController {
   }
 
   Future<void> getWebSiteListFromServer() async {
+    // 记录开始时间
+    DateTime startTime = DateTime.now();
     CommonResponse value = await getWebSiteList();
     if (value.code == 0) {
       webSiteList.clear();
@@ -99,7 +105,12 @@ class MySiteController extends GetxController {
         value.msg.toString(),
       );
     }
+    // 记录结束时间
+    DateTime endTime = DateTime.now();
 
+    // 计算耗时
+    Duration duration = endTime.difference(startTime);
+    Logger.instance.d('获取站点配置程序耗时: ${duration.inMilliseconds} 毫秒');
     filterByKey();
     update();
   }
@@ -135,6 +146,9 @@ class MySiteController extends GetxController {
   }
 
   Future<void> getSiteStatusFromServer() async {
+    // 记录开始时间
+    DateTime startTime = DateTime.now();
+
     CommonResponse res = await getMySiteList();
     if (res.code == 0) {
       mySiteList.clear();
@@ -148,6 +162,12 @@ class MySiteController extends GetxController {
         res.msg.toString(),
       );
     }
+    // 记录结束时间
+    DateTime endTime = DateTime.now();
+
+    // 计算耗时
+    Duration duration = endTime.difference(startTime);
+    Logger.instance.d('获取站点信息列表程序耗时: ${duration.inMilliseconds} 毫秒');
     update();
   }
 
