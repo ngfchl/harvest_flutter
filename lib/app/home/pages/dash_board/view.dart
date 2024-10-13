@@ -224,7 +224,10 @@ class _DashBoardPageState extends State<DashBoardPage>
           const SizedBox(height: 5),
           Expanded(
             child: EasyRefresh(
-              onRefresh: controller.initChartData,
+              onRefresh: () async {
+                controller.mySiteController.initFlag = true;
+                await controller.initChartData();
+              },
               child: GetBuilder<DashBoardController>(builder: (controller) {
                 return controller.isLoading
                     ? GFLoader(
@@ -365,7 +368,9 @@ class _DashBoardPageState extends State<DashBoardPage>
                           )
                         : Center(
                             child: ElevatedButton.icon(
-                            onPressed: controller.initChartData,
+                            onPressed: () async {
+                              await controller.initChartData();
+                            },
                             label: const Text('加载数据'),
                           ));
               }),
@@ -1481,10 +1486,10 @@ class _DashBoardPageState extends State<DashBoardPage>
                           children: [
                             InkWell(
                               child: const Icon(Icons.remove),
-                              onTap: () {
+                              onTap: () async {
                                 if (controller.days > 1) {
                                   controller.days--;
-                                  controller.initChartData();
+                                  await controller.initChartData();
                                   controller.update();
                                 }
                               },
@@ -1496,9 +1501,10 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   divisions: 14,
                                   label: controller.days.toString(),
                                   value: controller.days.toDouble(),
-                                  onChanged: (value) {
+                                  onChanged: (value) async {
                                     controller.days = value.toInt();
-                                    controller.initChartData();
+                                    await controller.initChartData();
+
                                     controller.update();
                                   }),
                             ),

@@ -47,13 +47,16 @@ class HomeController extends GetxController {
 
   final List<Widget> pages = [
     const DashBoardPage(),
+    const AggSearchPage(),
+    const MySitePage(),
   ];
 
   @override
-  void onReady() {
+  void onReady() async {
+    await getAuthInfo();
+    await initUpdateLogState();
+    update();
     pages.addAll([
-      const AggSearchPage(),
-      const MySitePage(),
       const DownloadPage(),
       TaskPage(),
       SettingPage(),
@@ -70,8 +73,6 @@ class HomeController extends GetxController {
   @override
   void onInit() async {
     try {
-      await getAuthInfo();
-
       isPhone = PlatformTool.isPhone();
       Logger.instance.d('手机端：$isPhone');
       isDarkMode = Get.isDarkMode;
@@ -82,9 +83,6 @@ class HomeController extends GetxController {
       Logger.instance.e('初始化失败 $e');
       Get.offAllNamed(Routes.LOGIN);
     }
-    // await mySiteController.initData();
-    // pageController.jumpToPage(pages.length - 1);
-    await initUpdateLogState();
     super.onInit();
   }
 

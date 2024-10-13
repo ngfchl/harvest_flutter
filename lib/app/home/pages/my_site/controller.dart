@@ -150,6 +150,11 @@ class MySiteController extends GetxController {
     DateTime startTime = DateTime.now();
 
     CommonResponse res = await getMySiteList();
+    DateTime endTime = DateTime.now();
+    // 计算耗时
+    Duration duration = endTime.difference(startTime);
+    Logger.instance.d('获取站点信息列表程序耗时: ${duration.inMilliseconds} 毫秒');
+    startTime = DateTime.now();
     if (res.code == 0) {
       mySiteList.clear();
       mySiteList = res.data;
@@ -163,11 +168,10 @@ class MySiteController extends GetxController {
       );
     }
     // 记录结束时间
-    DateTime endTime = DateTime.now();
-
+    endTime = DateTime.now();
     // 计算耗时
-    Duration duration = endTime.difference(startTime);
-    Logger.instance.d('获取站点信息列表程序耗时: ${duration.inMilliseconds} 毫秒');
+    duration = endTime.difference(startTime);
+    Logger.instance.d('解析站点信息列表程序耗时: ${duration.inMilliseconds} 毫秒');
     update();
   }
 

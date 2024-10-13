@@ -51,6 +51,7 @@ class DashBoardController extends GetxController {
   Future<void> initData() async {
     isLoading = true;
     update();
+    mySiteController.initFlag = true;
     await initChartData();
     isLoading = false;
     update();
@@ -70,7 +71,6 @@ class DashBoardController extends GetxController {
     String todayStr = getTodayString();
     String yesterdayStr = getYesterdayString();
     if (mySiteController.mySiteList.isEmpty) {
-      mySiteController.initFlag = true;
       await mySiteController.initData();
       update();
       mySiteController.initFlag = false;
