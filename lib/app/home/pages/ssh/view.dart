@@ -319,7 +319,7 @@ class SshWidget extends StatelessWidget {
                     title: const Text('SSH Client'),
                   ),
                   const CustomTextTag(
-                    labelText: 'SSH 连接设备为危险操作，请你一直要只考每一个 SSH 命令的含义确认操作',
+                    labelText: 'SSH 连接设备为危险操作，请你一定要知晓每一个 SSH 命令的含义确认操作',
                     backgroundColor: Colors.orange,
                   ),
                   const Text(
