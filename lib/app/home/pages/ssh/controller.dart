@@ -172,13 +172,15 @@ class SshController extends GetxController {
     update();
   }
 
-  getImageCreatedTime(String image) async {
-    String command = "docker inspect --format='{{.Created}}' $image";
+  getLocalImageDigest(String image) async {
+    // String command = "docker inspect --format='{{.Created}}' $image";
+    String command =
+        """docker inspect --format='{{with index .RepoDigests 0}}{{if .}}{{index (split . "@") 1}}{{end}}{{end}}' $image""";
     String createdTime = await run(command);
     return createdTime;
   }
 
-  getImageLastUpdated(String image) async {
+  getRemoteImageDigest(String image) async {
     String tag = 'latest';
     String name = '';
     if (image.contains(':')) {
@@ -199,9 +201,8 @@ class SshController extends GetxController {
     if (proxyController.text.isNotEmpty) {
       command += '-x ${proxyController.text} ';
     }
-    command += """
-        -s https://hub.docker.com/v2/repositories/$name/tags/$tag/ | grep '"last_updated"' | sed 's/.*"last_updated":"\\([^"]*\\)".*/\\1/'
-        """;
+    command +=
+        """-s https://hub.docker.com/v2/repositories/$name/tags/$tag/ | grep '"digest"' | sed 's/.*"digest":"\\([^"]*\\)".*/\\1/'""";
 
     results.add(command);
     return await run(command);
@@ -211,16 +212,14 @@ class SshController extends GetxController {
     clear();
     results.add('检查更新：$image');
     update();
-    String createdTime = await getImageCreatedTime(image);
-    results.add('当前镜像创建时间：$createdTime');
+    String localImageDigest = await getLocalImageDigest(image);
+    results.add('当前镜像digest：$localImageDigest');
 
-    String updatedTime = await getImageLastUpdated(image);
-    results.add('远程镜像更新时间：$updatedTime');
-    results.add('$image 当前镜像创建时间：$createdTime - $updatedTime 远程镜像更新时间');
-    if (updatedTime.compareTo(createdTime) > 0) {
-      return true;
-    }
-    return false;
+    String remoteImageDigest = await getRemoteImageDigest(image);
+    results.add('远程镜像digest：$remoteImageDigest');
+    results.add(
+        '$image 当前镜像digest：$localImageDigest - $remoteImageDigest 远程镜像digest');
+    return localImageDigest.toLowerCase() == remoteImageDigest.toLowerCase();
   }
 
   Future<void> fetchStatusForItem(DockerContainer item) async {
