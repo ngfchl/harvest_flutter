@@ -72,8 +72,8 @@ Future<void> getAllStatusButton() async {
   }
 }
 
-Future<void> clearMyCacheButton() async {
-  CommonResponse res = await clearMyCacheApi();
+Future<void> clearMyCacheButton(String key) async {
+  CommonResponse res = await clearMyCacheApi(key);
   Get.snackbar(
     '清除缓存',
     '清除缓存：${res.msg}',

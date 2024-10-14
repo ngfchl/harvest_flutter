@@ -12,8 +12,8 @@ Future<CommonResponse> getMySiteList() async {
 }
 
 /// 清除缓存
-Future<CommonResponse> clearMyCacheApi() async {
-  return await fetchBasicList(Api.CLEAR_CACHE);
+Future<CommonResponse> clearMyCacheApi(String key) async {
+  return await fetchBasicList(Api.CLEAR_CACHE, queryParameters: {"key": key});
 }
 
 /// 获取站点信息列表
