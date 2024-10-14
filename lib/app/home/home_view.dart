@@ -5,10 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
-import 'package:harvest/api/mysite.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/form_widgets.dart';
-import 'package:harvest/models/common_response.dart';
 
 import '../../common/custom_ua.dart';
 import '../../common/logging.dart';
@@ -746,19 +744,6 @@ class HomeView extends GetView<HomeController> {
                     ),
                     onTap: () async {
                       await importFromCookieCloud();
-                    },
-                  ),
-                  PopupMenuItem<String>(
-                    child: Text(
-                      '清除缓存',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.secondary,
-                      ),
-                    ),
-                    onTap: () async {
-                      CommonResponse res = await clearMyCacheApi();
-                      Get.snackbar('清除缓存', '清除缓存：${res.msg}',
-                          colorText: Theme.of(context).colorScheme.primary);
                     },
                   ),
                 ],

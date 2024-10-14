@@ -5,6 +5,7 @@ import 'package:filesize/filesize.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
+import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:harvest/app/home/pages/models/my_site.dart';
@@ -14,6 +15,7 @@ import 'package:syncfusion_flutter_gauges/gauges.dart';
 
 import '../../../../common/card_view.dart';
 import '../../../../common/hex_color.dart';
+import '../../../../common/meta_item.dart';
 import '../../../../common/utils.dart';
 import '../../../../utils/calc_weeks.dart';
 import '../../../../utils/logger_helper.dart';
@@ -384,6 +386,17 @@ class _DashBoardPageState extends State<DashBoardPage>
   }
 
   _buildBottomButtonBar() {
+    List<MetaDataItem> cacheList = [
+      {"name": "站点配置缓存", "value": "website_list"},
+      {"name": "我的站点缓存", "value": "my_site_list"},
+      {"name": "辅种数据缓存", "value": "repeat_info_hash_cache"},
+      {"name": "豆瓣缓存数据", "value": "*douban*"},
+      {"name": "RSS缓存数据", "value": "rss_data_list"},
+      {"name": "单下载器缓存", "value": "repeat_info_hash_cache:*-*"},
+      {"name": "辅种错误珲春", "value": "repeat_error_cache:*-*"},
+      {"name": "站点删种缓存", "value": "repeat_404_cache:*-*"},
+      {"name": "辅种成功缓存", "value": "repeat_success_cache:*-*"},
+    ].map((e) => MetaDataItem.fromJson(e)).toList();
     return CustomCard(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -427,25 +440,35 @@ class _DashBoardPageState extends State<DashBoardPage>
             ),
             label: const Text('全员签到'),
           ),
-          ElevatedButton.icon(
-            onPressed: () async {
-              await clearMyCacheButton();
-              await controller.mySiteController.initData();
-            },
-            icon: const Icon(
-              Icons.cached,
-              size: 20,
-            ),
-            style: ButtonStyle(
-              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5.0)),
+          CustomPopup(
+            showArrow: false,
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            barrierColor: Colors.transparent,
+            content: SizedBox(
+              width: 120,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ...cacheList.map((item) => PopupMenuItem<String>(
+                        child: Text(
+                          item.name,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                        ),
+                        onTap: () async {
+                          await clearMyCacheButton(item.value);
+                          await controller.mySiteController.initData();
+                        },
+                      )),
+                ],
               ),
-              padding: WidgetStateProperty.all(
-                  const EdgeInsets.symmetric(horizontal: 5)),
-              side: WidgetStateProperty.all(BorderSide.none),
             ),
-            label: const Text('清除缓存'),
+            child: Icon(
+              Icons.cleaning_services_rounded,
+              size: 24,
+              color: Theme.of(context).colorScheme.primary,
+            ),
           ),
         ],
       ),
