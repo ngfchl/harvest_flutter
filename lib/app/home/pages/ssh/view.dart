@@ -271,7 +271,10 @@ class SshWidget extends StatelessWidget {
                                                     String newCommand =
                                                         await controller
                                                             .generateNewContainerCommand(
-                                                                container.name
+                                                                container
+                                                                    .name
+                                                                    .toString(),
+                                                                container.image
                                                                     .toString());
                                                     Clipboard.setData(
                                                             ClipboardData(

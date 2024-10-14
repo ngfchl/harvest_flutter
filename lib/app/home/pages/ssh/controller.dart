@@ -82,7 +82,7 @@ class SshController extends GetxController {
     update();
   }
 
-  generateNewContainerCommand(String name) async {
+  generateNewContainerCommand(String name, String image) async {
     String command = "docker inspect --format='docker run -d "
         "--name {{(slice .Name 1)}} {{if .HostConfig.Privileged}}--privileged {{end}}"
         "{{range \$key, \$value := .Config.Labels}}--label {{\$key}}=\"{{\$value}}\" {{end}} "
@@ -90,7 +90,7 @@ class SshController extends GetxController {
         "{{range \$index, \$value := .HostConfig.PortBindings}}-p {{(index \$value 0).HostPort}}:{{(index \$value 0).HostPort}} "
         "{{end}} {{range \$index, \$value := .Mounts}}-v {{\$value.Source}}:{{\$value.Destination}} {{end}} "
         "{{range \$network, \$details := .NetworkSettings.Networks}}--network {{\$network}} {{if \$details.IPAddress}}--ip {{\$details.IPAddress}} {{end}} {{end}} "
-        "{{.Config.Image}}' $name";
+        " $image' $name";
 
     String newCommand = await run(command);
     Logger.instance.i(newCommand);
@@ -177,6 +177,7 @@ class SshController extends GetxController {
     String command =
         """docker inspect --format='{{with index .RepoDigests 0}}{{if .}}{{index (split . "@") 1}}{{end}}{{end}}' $image""";
     String createdTime = await run(command);
+    Logger.instance.d(createdTime);
     return createdTime;
   }
 
@@ -217,9 +218,10 @@ class SshController extends GetxController {
 
     String remoteImageDigest = await getRemoteImageDigest(image);
     results.add('远程镜像digest：$remoteImageDigest');
+    update();
     results.add(
-        '$image 当前镜像digest：$localImageDigest - $remoteImageDigest 远程镜像digest');
-    return localImageDigest.toLowerCase() == remoteImageDigest.toLowerCase();
+        '$image 有更新：${localImageDigest.toLowerCase() != remoteImageDigest.toLowerCase()}');
+    return localImageDigest.toLowerCase() != remoteImageDigest.toLowerCase();
   }
 
   Future<void> fetchStatusForItem(DockerContainer item) async {
@@ -244,12 +246,17 @@ class SshController extends GetxController {
     await Future.wait(futures);
   }
 
-  void getNewImage(String? image) async {
-    String command = 'docker pull $image';
+  addProxy(String command) {
     if (proxyController.text.isNotEmpty) {
       command =
           "export HTTP_PROXY=${proxyController.text} HTTPS_PROXY=${proxyController.text} && $command";
     }
+    return command;
+  }
+
+  void getNewImage(String? image) async {
+    String command = 'docker pull $image';
+    command = addProxy(command);
     clear();
     results.add('正在更新镜像：$image');
     update();
@@ -260,10 +267,11 @@ class SshController extends GetxController {
   void rebuildContainer(String name, String image) async {
     Logger.instance.i('正在重建容器：$name');
 
-    String newCommand = await generateNewContainerCommand(name);
+    String newCommand = await generateNewContainerCommand(name, image);
 
     String command =
         'docker pull $image && docker stop $name && docker rm -f $name && $newCommand';
+    command = addProxy(command);
     await execute(command);
     await getContainerList();
     update();
