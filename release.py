@@ -18,7 +18,8 @@ class VersionManager:
         self.version_date_format = '%Y.%m%d'
         self.ios_path = 'build/ios/iphoneos/'
         self.current_version = self.read_version()
-        self.calc_version()
+        if not sys.platform.startswith('win32'):
+            self.calc_version()
         self.tasks = ['apk', 'ios']
 
     def read_version(self):
@@ -83,22 +84,20 @@ class VersionManager:
             elif flag == 'windows':
                 res = subprocess.run(["flutter", "build", "windows"], shell=True,
                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                print(
-                    f'windows APP 编译完成，{res.stdout.decode("utf-8")}, 正在移动到指定文件夹 {self.output_folder}')
-                res = subprocess.run(
-                    "Compress-Archive ./Release/ ./Release.zip", cwd='build/windows/x64/runner',
+                print(f"{res.stdout.decode("utf-8")}")
+                print(f'Windows APP 编译完成, 开始压缩')
+                zip_path = shutil.make_archive('Release', 'zip', os.path.join(os.getcwd(),"build\\windows\\x64\\runner\\Release"))
+                print(f"压缩结果：{zip_path}")
+                print(f"APP 压缩完毕，准备移动，正在移动到指定文件夹 {self.output_folder}")
+                shutil.move(zip_path,
+                            f"{self.output_folder.replace('/', '\\')}\\harvest-win-{self.current_version}.zip")
+                print(f'Windows 打包完成，打开文件夹')
+                subprocess.run(
+                    [f"explorer", self.output_folder.replace('/', '\\')],
                     shell=True,
-                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                print(res.stdout.decode("utf-8"))
-                res = subprocess.run(
-                    f"Move-Item Release.zip //Mac/Home/Desktop/harvest/harvest_{self.new_version}-win.zip",
-                    cwd='build/windows/x64/runner',
-                    shell=True,
-                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                print(res.stdout.decode("utf-8"))
-                print(f'Windows 打包完成')
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE
+                )
             elif flag == 'ios':
-                # subprocess.run(["rm", "-rf", f"{self.ios_path}Payload/*"])
                 res = subprocess.run(["rm -rf build/ios/iphoneos/*"], shell=True,
                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 print(res.stdout.decode("utf-8"))
@@ -158,11 +157,6 @@ class VersionManager:
                 except Exception as e:
                     print(f"Compilation failed: {e}")
                     raise e
-            if not sys.platform.startswith('win32'):
-                subprocess.run(
-                    f"open {self.output_folder}", cwd=self.ios_path, shell=True,
-                    stdout=subprocess.PIPE, stderr=subprocess.PIPE
-                )
 
 
 if __name__ == '__main__':
