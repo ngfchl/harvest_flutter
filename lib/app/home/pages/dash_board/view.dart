@@ -393,7 +393,7 @@ class _DashBoardPageState extends State<DashBoardPage>
       {"name": "豆瓣缓存数据", "value": "*douban*"},
       {"name": "RSS缓存数据", "value": "rss_data_list"},
       {"name": "单下载器缓存", "value": "repeat_info_hash_cache:*-*"},
-      {"name": "辅种错误珲春", "value": "repeat_error_cache:*-*"},
+      {"name": "辅种错误缓存", "value": "repeat_error_cache:*-*"},
       {"name": "站点删种缓存", "value": "repeat_404_cache:*-*"},
       {"name": "辅种成功缓存", "value": "repeat_success_cache:*-*"},
     ].map((e) => MetaDataItem.fromJson(e)).toList();
