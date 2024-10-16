@@ -833,6 +833,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                       ),
                       onChanged: (val) {
                         controller.hrKey = val;
+                        controller.filterResults();
                         controller.update();
                       },
                       value: controller.hrKey,

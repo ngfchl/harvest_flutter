@@ -22,7 +22,7 @@ class AggSearchController extends GetxController {
   late WebSocketChannel channel;
   TextEditingController searchKeyController = TextEditingController();
   String filterKey = '';
-  String sortKey = '';
+  String sortKey = 'seeders';
   List<int> sites = <int>[];
   int maxCount = 0;
   List<SearchTorrentInfo> searchResults = <SearchTorrentInfo>[];
@@ -108,10 +108,10 @@ class AggSearchController extends GetxController {
         showResults.sort((a, b) => a.published.compareTo(b.published));
         break;
       case 'size':
-        showResults.sort((a, b) => a.size.compareTo(b.size));
+        showResults.sort((a, b) => b.size.compareTo(a.size));
         break;
       case 'seeders':
-        showResults.sort((a, b) => a.seeders.compareTo(b.seeders));
+        showResults.sort((a, b) => b.seeders.compareTo(a.seeders));
         break;
       case 'leechers':
         showResults.sort((a, b) => a.leechers.compareTo(b.leechers));
@@ -131,7 +131,7 @@ class AggSearchController extends GetxController {
     List<SearchTorrentInfo> filteredResults = List.from(searchResults);
 
     if (hrKey) {
-      filteredResults.removeWhere((element) => element.hr);
+      filteredResults.removeWhere((element) => !element.hr);
     }
 
     if (selectedSiteList.isNotEmpty) {
