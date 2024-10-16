@@ -43,7 +43,6 @@ class SearchTorrentInfo {
 
   factory SearchTorrentInfo.fromJson(Map<String, dynamic> json) {
     dynamic published;
-    dynamic size;
     dynamic saleExpire;
     try {
       published = DateTime.parse(json['published']);
@@ -51,11 +50,7 @@ class SearchTorrentInfo {
       published = json['published'];
       Logger.instance.e(json['published']);
     }
-    try {
-      size = int.parse(json['size']);
-    } catch (e) {
-      size = 0;
-    }
+
     try {
       saleExpire = json['sale_expire'] != null
           ? DateTime.parse(json['sale_expire'])
@@ -81,7 +76,7 @@ class SearchTorrentInfo {
       saleExpire: saleExpire,
       hr: json['hr'] ?? false,
       published: published,
-      size: size,
+      size: json['size'] ?? 0,
       seeders: json['seeders'],
       leechers: json['leechers'],
       completers: json['completers'],
