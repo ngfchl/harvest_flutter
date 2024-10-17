@@ -16,6 +16,9 @@ class Api {
   // 签到
   static const String MYSITE_SIGNIN_OPERATE = "mysite/sign";
 
+  // 辅种
+  static const String MYSITE_REPEAT_OPERATE = "mysite/repeat";
+
   // 搜索
   static const String WEBSITE_SEARCH = "mysite/search";
 

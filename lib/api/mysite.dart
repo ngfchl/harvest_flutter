@@ -48,6 +48,20 @@ signIn(int? mySiteId) async {
   }
 }
 
+/// 签到当前站点
+repeatSite(int? mySiteId) async {
+  final response = await DioUtil().get(
+    '${Api.MYSITE_REPEAT_OPERATE}/${mySiteId ?? ''}',
+  );
+  if (response.statusCode == 200) {
+    Logger.instance.w(response.data);
+    return CommonResponse.fromJson(response.data, (p0) => null);
+  } else {
+    String msg = '辅种失败！: ${response.statusCode}';
+    return CommonResponse(data: null, code: -1, msg: msg);
+  }
+}
+
 /// PTPP 导入
 importFromPTPPApi() async {
   final response = await DioUtil().get(
