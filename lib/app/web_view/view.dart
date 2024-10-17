@@ -371,6 +371,10 @@ class _WebViewPageState extends State<WebViewPage> {
     if (downloadLink == null) {
       return;
     }
+    if (!downloadLink.toLowerCase().startsWith('http')) {
+      downloadLink =
+          "${controller.mySite?.mirror}${downloadLink.startsWith('/') ? downloadLink.substring(1) : downloadLink}";
+    }
     Logger.instance.d(downloadLink);
     controller.info = SearchTorrentInfo(
         siteId: controller.mySite!.site,
