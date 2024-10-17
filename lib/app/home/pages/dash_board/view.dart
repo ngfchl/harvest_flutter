@@ -387,15 +387,15 @@ class _DashBoardPageState extends State<DashBoardPage>
 
   _buildBottomButtonBar() {
     List<MetaDataItem> cacheList = [
-      {"name": "站点配置缓存", "value": "website_list"},
-      {"name": "我的站点缓存", "value": "my_site_list"},
-      {"name": "辅种数据缓存", "value": "repeat_info_hash_cache"},
       {"name": "豆瓣缓存数据", "value": "*douban*"},
       {"name": "RSS缓存数据", "value": "rss_data_list"},
       {"name": "单下载器缓存", "value": "repeat_info_hash_cache:*-*"},
-      {"name": "辅种错误缓存", "value": "repeat_error_cache:*-*"},
       {"name": "站点删种缓存", "value": "repeat_404_cache:*-*"},
+      {"name": "辅种错误缓存", "value": "repeat_error_cache:*-*"},
       {"name": "辅种成功缓存", "value": "repeat_success_cache:*-*"},
+      {"name": "辅种数据缓存", "value": "repeat_info_hash_cache"},
+      {"name": "站点配置缓存", "value": "website_list"},
+      {"name": "我的站点缓存", "value": "my_site_list"},
     ].map((e) => MetaDataItem.fromJson(e)).toList();
     return CustomCard(
       child: Row(
