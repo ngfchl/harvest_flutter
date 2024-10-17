@@ -672,6 +672,22 @@ class _MySitePagePageState extends State<MySitePage>
                 }
               },
             ),
+            if (website.repeatTorrents && mySite.repeatTorrents)
+              PopupMenuItem<String>(
+                child: const Text('本站辅种'),
+                onTap: () async {
+                  CommonResponse res = await repeatSite(mySite.id);
+
+                  if (res.code == 0) {
+                    Get.snackbar('辅种任务发送成功', '${mySite.nickname} ${res.msg}',
+                        colorText: Theme.of(context).colorScheme.primary);
+                  } else {
+                    Get.snackbar(
+                        '辅种任务发送失败', '${mySite.nickname} 辅种出错啦：${res.msg}',
+                        colorText: Theme.of(context).colorScheme.primary);
+                  }
+                },
+              ),
             PopupMenuItem<String>(
               child: const Text('历史数据'),
               onTap: () async {
