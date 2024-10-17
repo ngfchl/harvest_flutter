@@ -7,6 +7,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:harvest/api/mysite.dart';
+import 'package:harvest/app/home/pages/agg_search/models/torrent_info.dart';
 import 'package:harvest/utils/logger_helper.dart';
 import 'package:html/parser.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -24,12 +25,13 @@ class WebViewPage extends StatefulWidget {
 
 class _WebViewPageState extends State<WebViewPage> {
   final controller = Get.find<WebViewPageController>();
+  InAppWebViewController? webController;
 
   @override
   Widget build(BuildContext context) {
     final GlobalKey webViewKey = GlobalKey();
-    InAppWebViewController? webController;
     final cookieManager = CookieManager.instance();
+
     String domain = Uri.parse(controller.url).host;
     List<String> cookieList = controller.mySite != null
         ? controller.mySite!.cookie!.split(';').map((item) {
@@ -73,7 +75,9 @@ class _WebViewPageState extends State<WebViewPage> {
           ),
           actions: [
             GetBuilder<WebViewPageController>(builder: (controller) {
-              if (controller.mySite != null && controller.progress >= 100) {
+              if (controller.mySite != null &&
+                  controller.mySite?.userId == null &&
+                  controller.progress >= 100) {
                 return GFIconButton(
                   icon: const Icon(
                     Icons.cookie_sharp,
@@ -119,32 +123,39 @@ class _WebViewPageState extends State<WebViewPage> {
               }
               return const SizedBox.shrink();
             }),
-            if (controller.info != null)
-              GFIconButton(
-                icon: const Icon(
-                  Icons.link_outlined,
-                  size: 24,
-                ),
-                onPressed: () async {
-                  Uri uri = Uri.parse(controller.info!.magnetUrl);
-                  if (!await launchUrl(uri)) {
-                    Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
+            GetBuilder<WebViewPageController>(builder: (controller) {
+              if (controller.info != null && controller.isTorrentPath) {
+                return GFIconButton(
+                  icon: const Icon(
+                    Icons.link_outlined,
+                    size: 24,
+                  ),
+                  onPressed: () async {
+                    Clipboard.setData(
+                        ClipboardData(text: controller.info!.magnetUrl));
+                    Get.snackbar('复制下载链接', '种子下载链接已复制到剪切板！',
                         colorText: Theme.of(context).colorScheme.error);
-                  }
-                },
-                type: GFButtonType.transparent,
-              ),
-            if (controller.info != null)
-              GFIconButton(
-                icon: const Icon(
-                  Icons.download_outlined,
-                  size: 24,
-                ),
-                onPressed: () {
-                  openDownloaderListSheet(context, controller.info!);
-                },
-                type: GFButtonType.transparent,
-              ),
+                  },
+                  type: GFButtonType.transparent,
+                );
+              }
+              return const SizedBox.shrink();
+            }),
+            GetBuilder<WebViewPageController>(builder: (controller) {
+              if (controller.info != null && controller.isTorrentPath) {
+                return GFIconButton(
+                  icon: const Icon(
+                    Icons.download_outlined,
+                    size: 24,
+                  ),
+                  onPressed: () {
+                    openDownloaderListSheet(context, controller.info!);
+                  },
+                  type: GFButtonType.transparent,
+                );
+              }
+              return const SizedBox.shrink();
+            }),
             GFIconButton(
               icon: const Icon(
                 Icons.travel_explore_outlined,
@@ -285,6 +296,8 @@ class _WebViewPageState extends State<WebViewPage> {
                     controller.update();
                   },
                   onLoadStop: (inAppWebViewController, webUri) async {
+                    Logger.instance.d(webUri!.toString);
+                    controller.url = webUri.toString();
                     Logger.instance
                         .i('当前页面标题：${await inAppWebViewController.getTitle()}');
                     controller.isLoading = false;
@@ -294,6 +307,7 @@ class _WebViewPageState extends State<WebViewPage> {
                         await inAppWebViewController.canGoForward();
                     controller.pageTitle.value =
                         (await inAppWebViewController.getTitle()) ?? '';
+                    await getTorrentLink();
                     controller.update();
                   },
                   onProgressChanged: (inAppWebViewController, progress) async {
@@ -335,5 +349,52 @@ class _WebViewPageState extends State<WebViewPage> {
         }),
       ),
     );
+  }
+
+  getTorrentLink() async {
+    controller.isTorrentPath = controller.checkTorrentPath(controller.url);
+    Logger.instance.d('当前是否为种子页面: ${controller.isTorrentPath}');
+    controller.update();
+    if (!controller.isTorrentPath) return;
+    String? htmlContent = await webController?.getHtml();
+    HtmlXPath selector = HtmlXPath.html(htmlContent!);
+
+    var title = selector
+        .queryXPath(controller.website!.detailTitleRule.replaceAll('[1]', ''))
+        .attr;
+    Logger.instance.d(title);
+    String downloadXpath = htmlContent.contains("右键查看")
+        ? "//a[contains(text(), '右键查看')]/@href"
+        : controller.website!.detailDownloadUrlRule;
+    var downloadLink = selector.query(downloadXpath).attrs.firstOrNull;
+
+    if (downloadLink == null) {
+      return;
+    }
+    Logger.instance.d(downloadLink);
+    controller.info = SearchTorrentInfo(
+        siteId: controller.mySite!.site,
+        tid: '',
+        poster: '',
+        category: '',
+        magnetUrl: downloadLink,
+        detailUrl: '',
+        title: title ?? '',
+        subtitle: '',
+        saleStatus: '',
+        tags: [],
+        hr: false,
+        published: null,
+        size: 0,
+        seeders: 0,
+        leechers: 0,
+        completers: 0);
+    Logger.instance.d(controller.info);
+    controller.update();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 }
