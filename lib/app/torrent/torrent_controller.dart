@@ -142,6 +142,8 @@ class TorrentController extends GetxController {
     await initClient();
     if (downloader.category.toLowerCase() == 'qb' && configuration == null) {
       configuration = await client.application.getApplicationPreferences();
+      LoggerHelper.Logger.instance
+          .d('种子自动管理模式：${configuration?.autoTmmEnabled}');
     }
     await getAllCategory();
 
@@ -716,9 +718,7 @@ class TorrentController extends GetxController {
           upLimit: data['upLimit'] * 1024 * 1024,
           dlLimit: data['dlLimit'] * 1024 * 1024,
           ratioLimit: data['ratioLimit'],
-          autoTMM: data['autoTMM'] == true
-              ? data['autoTMM']
-              : configuration?.autoTmmEnabled,
+          autoTMM: data['autoTMM'] ?? configuration?.autoTmmEnabled,
           firstLastPiecePrio: data['firstLastPiecePrio'],
         );
       } else {
@@ -733,7 +733,7 @@ class TorrentController extends GetxController {
           upLimit: data['upLimit'] * 1024 * 1024,
           dlLimit: data['dlLimit'] * 1024 * 1024,
           ratioLimit: data['ratioLimit'],
-          autoTMM: data['autoTMM'],
+          autoTMM: data['autoTMM'] ?? configuration?.autoTmmEnabled,
           firstLastPiecePrio: data['firstLastPiecePrio'],
         );
       }
@@ -763,7 +763,7 @@ class TorrentController extends GetxController {
             upLimit: data['upLimit'] * 1024 * 1024,
             dlLimit: data['dlLimit'] * 1024 * 1024,
             ratioLimit: data['ratioLimit'],
-            autoTMM: data['autoTMM'],
+            autoTMM: data['autoTMM'] ?? configuration?.autoTmmEnabled,
             firstLastPiecePrio: data['firstLastPiecePrio'],
           ),
         );
