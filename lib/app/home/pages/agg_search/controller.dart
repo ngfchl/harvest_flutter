@@ -18,7 +18,7 @@ import 'models/torrent_info.dart';
 
 class AggSearchController extends GetxController {
   MySiteController mySiteController = Get.find();
-  DownloadController downloadController = Get.find();
+  DownloadController downloadController = Get.put(DownloadController(false));
   late WebSocketChannel channel;
   TextEditingController searchKeyController = TextEditingController();
   String filterKey = '';
