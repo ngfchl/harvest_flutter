@@ -332,7 +332,7 @@ class _MySitePagePageState extends State<MySitePage>
           leading: ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: CachedNetworkImage(
-              imageUrl: website!.logo.startsWith('http')
+              imageUrl: website.logo.startsWith('http')
                   ? website.logo
                   : '${mySite.mirror}${website.logo}',
               fit: BoxFit.fill,
@@ -355,7 +355,7 @@ class _MySitePagePageState extends State<MySitePage>
             if (mySite.mirror!.contains('m-team')) {
               url = url.replaceFirst("api", "xp");
             }
-            if (kIsWeb || !Platform.isIOS && !Platform.isAndroid) {
+            if (kIsWeb) {
               Logger.instance.d('使用外部浏览器打开');
               Uri uri = Uri.parse(url);
               if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
