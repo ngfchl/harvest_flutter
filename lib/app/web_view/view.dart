@@ -99,6 +99,11 @@ class _WebViewPageState extends State<WebViewPage> {
                       RegExp regex = RegExp(r'\d+(?=\]?$)');
                       Logger.instance.i(
                           '获取到的 UID：${regex.firstMatch(result.attr!.trim())?.group(0)}');
+                      var passkeyRes = selector
+                          .queryXPath(controller.website!.myPasskeyRule)
+                          .attrs;
+                      Logger.instance.i('获取到的 Passkey：$passkeyRes');
+                      return;
                       String cookies = await webController?.evaluateJavascript(
                           source: "document.cookie");
                       if (controller.mySite != null &&
@@ -183,33 +188,44 @@ class _WebViewPageState extends State<WebViewPage> {
                         url: WebUri(controller.url));
                     String cookieStr =
                         cookies.map((e) => '${e.name}=${e.value}').join('; ');
-
+                    var auth = await webController?.webStorage.localStorage
+                        .getItem(key: 'auth');
+                    Logger.instance.d(auth);
+                    controller.mySite = controller.mySite?.copyWith(
+                      cookie: cookieStr.isNotEmpty ? cookieStr : auth,
+                    );
                     Logger.instance.d('获取到的 Cookie：$cookieStr');
                     controller.mySite =
                         controller.mySite?.copyWith(cookie: cookieStr);
+                    String? htmlStr = await webController?.getHtml();
+                    Logger.instance.i(htmlStr);
+                    var document = parse(htmlStr).documentElement;
+                    HtmlXPath selector = HtmlXPath.node(document!);
                     if (controller.mySite?.userId == null ||
                         controller.mySite?.userId == '') {
                       try {
-                        String? htmlStr = await webController?.getHtml();
-                        // Logger.instance.i(htmlStr);
-                        var document = parse(htmlStr).documentElement;
-                        HtmlXPath selector = HtmlXPath.node(document!);
                         var result =
                             selector.queryXPath(controller.website!.myUidRule);
-                        var auth = await webController?.webStorage.localStorage
-                            .getItem(key: 'auth');
-                        Logger.instance.d(auth);
+
                         RegExp regex = RegExp(r'\d+(?=\]?$)');
                         controller.mySite = controller.mySite?.copyWith(
                           userId:
                               regex.firstMatch(result.attr!.trim())?.group(0),
-                          cookie: cookieStr.isNotEmpty ? cookieStr : auth,
                         );
                       } catch (e) {
                         Get.snackbar('获取 UID 失败', '请手动填写站点 UID',
                             colorText: Theme.of(context).colorScheme.error);
+                      }
+                    }
+                    if (controller.mySite?.passkey == null ||
+                        controller.mySite?.passkey == '') {
+                      var passkeyRes = selector
+                          .queryXPath(controller.website!.myPasskeyRule)
+                          .attr;
+                      Logger.instance.i('获取到的 Passkey：$passkeyRes');
+                      if (passkeyRes != null && passkeyRes.isNotEmpty) {
                         controller.mySite =
-                            controller.mySite?.copyWith(userId: '');
+                            controller.mySite?.copyWith(passkey: passkeyRes);
                       }
                     }
                     final response = await editMySite(controller.mySite!);
