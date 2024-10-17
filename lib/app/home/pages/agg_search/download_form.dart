@@ -55,9 +55,8 @@ class DownloadForm extends StatelessWidget {
           webSite != null ? webSite.limitSpeed.toString() : '0';
       urlController.text = info!.magnetUrl;
     } else {}
-    savePathController.text = torrentController.defaultSavePath.isNotEmpty
-        ? torrentController.defaultSavePath
-        : categories[categories.keys.first]!;
+    savePathController.text =
+        categories[categories.keys.first] ?? torrentController.defaultSavePath;
     RxBool advancedConfig = false.obs;
     RxBool paused = false.obs;
     Rx<bool> rootFolder = false.obs;
