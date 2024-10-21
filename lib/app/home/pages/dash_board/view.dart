@@ -20,6 +20,7 @@ import '../../../../common/utils.dart';
 import '../../../../utils/calc_weeks.dart';
 import '../../../../utils/logger_helper.dart';
 import '../../../../utils/platform.dart';
+import '../../../../utils/storage.dart';
 import '../../controller/common_api.dart';
 import 'controller.dart';
 
@@ -268,7 +269,28 @@ class _DashBoardPageState extends State<DashBoardPage>
                                           //       controller.update();
                                           //     }),
                                           CheckboxListTile(
-                                              title: const Text("上传总量饼图"),
+                                              title: Text(
+                                                "开启隐私模式",
+                                                style: TextStyle(
+                                                    color: Theme.of(context)
+                                                        .primaryColor),
+                                              ),
+                                              value: controller.privateMode,
+                                              onChanged: (bool? value) {
+                                                controller.privateMode = value!;
+                                                SPUtil.setBool(
+                                                    'DashBoardPrivateMode',
+                                                    controller.privateMode);
+                                                controller.initChartData();
+                                                controller.update();
+                                              }),
+                                          CheckboxListTile(
+                                              title: Text(
+                                                "上传总量饼图",
+                                                style: TextStyle(
+                                                    color: Theme.of(context)
+                                                        .primaryColor),
+                                              ),
                                               value: controller
                                                   .buildSmartLabelPieChart,
                                               onChanged: (bool? value) {
@@ -278,7 +300,12 @@ class _DashBoardPageState extends State<DashBoardPage>
                                                 controller.update();
                                               }),
                                           CheckboxListTile(
-                                              title: const Text("每日数据柱图"),
+                                              title: Text(
+                                                "每日数据柱图",
+                                                style: TextStyle(
+                                                    color: Theme.of(context)
+                                                        .primaryColor),
+                                              ),
                                               value: controller.buildStackedBar,
                                               onChanged: (bool? value) {
                                                 controller.buildStackedBar =
@@ -286,7 +313,12 @@ class _DashBoardPageState extends State<DashBoardPage>
                                                 controller.update();
                                               }),
                                           CheckboxListTile(
-                                              title: const Text("站点数据柱图"),
+                                              title: Text(
+                                                "站点数据柱图",
+                                                style: TextStyle(
+                                                    color: Theme.of(context)
+                                                        .primaryColor),
+                                              ),
                                               value: controller.buildSiteInfo,
                                               onChanged: (bool? value) {
                                                 controller.buildSiteInfo =
@@ -294,7 +326,12 @@ class _DashBoardPageState extends State<DashBoardPage>
                                                 controller.update();
                                               }),
                                           CheckboxListTile(
-                                              title: const Text("今日上传增量"),
+                                              title: Text(
+                                                "今日上传增量",
+                                                style: TextStyle(
+                                                    color: Theme.of(context)
+                                                        .primaryColor),
+                                              ),
                                               value: controller
                                                   .showTodayUploadedIncrement,
                                               onChanged: (bool? value) {
@@ -304,21 +341,18 @@ class _DashBoardPageState extends State<DashBoardPage>
                                                 controller.update();
                                               }),
                                           CheckboxListTile(
-                                              title: const Text("今日下载增量"),
+                                              title: Text(
+                                                "今日下载增量",
+                                                style: TextStyle(
+                                                    color: Theme.of(context)
+                                                        .primaryColor),
+                                              ),
                                               value: controller
                                                   .showTodayDownloadedIncrement,
                                               onChanged: (bool? value) {
                                                 controller
                                                         .showTodayDownloadedIncrement =
                                                     value!;
-                                                controller.update();
-                                              }),
-                                          CheckboxListTile(
-                                              title: const Text("开启隐私模式"),
-                                              value: controller.privateMode,
-                                              onChanged: (bool? value) {
-                                                controller.privateMode = value!;
-                                                controller.initChartData();
                                                 controller.update();
                                               }),
                                         ],
@@ -373,7 +407,15 @@ class _DashBoardPageState extends State<DashBoardPage>
                             onPressed: () async {
                               await controller.initChartData();
                             },
-                            label: const Text('加载数据'),
+                            label: Text(
+                              '加载数据',
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  color: Theme.of(context).primaryColor),
+                            ),
+                            icon: Icon(Icons.cloud_download,
+                                size: 18,
+                                color: Theme.of(context).primaryColor),
                           ));
               }),
             ),
@@ -402,13 +444,14 @@ class _DashBoardPageState extends State<DashBoardPage>
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          ElevatedButton.icon(
+          IconButton(
             onPressed: () async {
               await getAllStatusButton();
             },
-            icon: const Icon(
-              Icons.refresh,
-              size: 18,
+            icon: Icon(
+              Icons.cloud_download,
+              size: 24,
+              color: Theme.of(context).colorScheme.primary,
             ),
             style: ButtonStyle(
               shape: WidgetStateProperty.all<RoundedRectangleBorder>(
@@ -419,15 +462,44 @@ class _DashBoardPageState extends State<DashBoardPage>
                   const EdgeInsets.symmetric(horizontal: 5)),
               side: WidgetStateProperty.all(BorderSide.none),
             ),
-            label: const Text('统计数据'),
+            // label: Text(
+            //   '统计数据',
+            //   style: TextStyle(
+            //       color: Theme.of(context).colorScheme.primary, fontSize: 12),
+            // ),
           ),
-          ElevatedButton.icon(
+          IconButton(
+            onPressed: () async {
+              await getAllStatusButton();
+            },
+            icon: Icon(
+              Icons.refresh,
+              size: 24,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            style: ButtonStyle(
+              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5.0)),
+              ),
+              padding: WidgetStateProperty.all(
+                  const EdgeInsets.symmetric(horizontal: 5)),
+              side: WidgetStateProperty.all(BorderSide.none),
+            ),
+            // label: Text(
+            //   '统计数据',
+            //   style: TextStyle(
+            //       color: Theme.of(context).colorScheme.primary, fontSize: 12),
+            // ),
+          ),
+          IconButton(
             onPressed: () async {
               await signAllSiteButton();
             },
-            icon: const Icon(
-              Icons.filter_tilt_shift,
-              size: 20,
+            icon: Icon(
+              Icons.credit_score,
+              size: 24,
+              color: Theme.of(context).colorScheme.primary,
             ),
             style: ButtonStyle(
               shape: WidgetStateProperty.all<RoundedRectangleBorder>(
@@ -438,7 +510,11 @@ class _DashBoardPageState extends State<DashBoardPage>
                   const EdgeInsets.symmetric(horizontal: 5)),
               side: WidgetStateProperty.all(BorderSide.none),
             ),
-            label: const Text('全员签到'),
+            // label: Text(
+            //   '全员签到',
+            //   style: TextStyle(
+            //       color: Theme.of(context).colorScheme.primary, fontSize: 12),
+            // ),
           ),
           CustomPopup(
             showArrow: false,

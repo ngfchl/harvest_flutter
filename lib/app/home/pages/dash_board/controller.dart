@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:harvest/utils/storage.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../utils/date_time_utils.dart';
@@ -67,6 +68,7 @@ class DashBoardController extends GetxController {
     todayDownloadIncrement = 0;
     uploadIncrementDataList = [];
     downloadIncrementDataList = [];
+    privateMode = SPUtil.getBool('DashBoardPrivateMode', defaultValue: false)!;
     List<String> dateList = generateDateList(days);
     String todayStr = getTodayString();
     String yesterdayStr = getYesterdayString();
