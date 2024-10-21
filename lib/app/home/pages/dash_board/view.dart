@@ -813,7 +813,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontWeight: FontWeight.w500,
-                            fontSize: 14,
+                            fontSize: 12,
                             letterSpacing: -0.2,
                             color: Theme.of(context).colorScheme.primary,
                           ),
@@ -822,7 +822,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                           padding: const EdgeInsets.only(top: 4),
                           child: Container(
                             height: 4,
-                            width: 60,
+                            width: 50,
                             decoration: BoxDecoration(
                               color: HexColor('#87D0E5').withOpacity(0.2),
                               borderRadius:
@@ -853,7 +853,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
-                              fontSize: 13,
+                              fontSize: 12,
                               color: Theme.of(context)
                                   .colorScheme
                                   .primary
@@ -874,7 +874,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontWeight: FontWeight.w500,
-                            fontSize: 14,
+                            fontSize: 12,
                             letterSpacing: -0.2,
                             color: Theme.of(context).colorScheme.primary,
                           ),
@@ -883,7 +883,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                           padding: const EdgeInsets.only(top: 4),
                           child: Container(
                             height: 4,
-                            width: 60,
+                            width: 50,
                             decoration: BoxDecoration(
                               color: HexColor('#89A0E5').withOpacity(0.2),
                               borderRadius:
@@ -910,11 +910,11 @@ class _DashBoardPageState extends State<DashBoardPage>
                         Padding(
                           padding: const EdgeInsets.only(top: 6),
                           child: Text(
-                            filesize(controller.totalSeedVol),
+                            filesize(controller.totalSeedVol, 0),
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
-                              fontSize: 13,
+                              fontSize: 12,
                               color: Theme.of(context)
                                   .colorScheme
                                   .primary
@@ -939,7 +939,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontWeight: FontWeight.w500,
-                                fontSize: 14,
+                                fontSize: 12,
                                 letterSpacing: -0.2,
                                 color: Theme.of(context).colorScheme.primary,
                               ),
@@ -948,7 +948,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                               padding: const EdgeInsets.only(top: 4),
                               child: Container(
                                 height: 4,
-                                width: 60,
+                                width: 50,
                                 decoration: BoxDecoration(
                                   color: HexColor('#F56E98').withOpacity(0.2),
                                   borderRadius: const BorderRadius.all(
@@ -980,7 +980,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  fontSize: 13,
+                                  fontSize: 12,
                                   color: Theme.of(context)
                                       .colorScheme
                                       .primary
@@ -1006,7 +1006,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                               '吸血中',
                               style: TextStyle(
                                 fontWeight: FontWeight.w500,
-                                fontSize: 14,
+                                fontSize: 12,
                                 letterSpacing: -0.2,
                                 color: Theme.of(context).colorScheme.primary,
                               ),
@@ -1015,7 +1015,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                               padding: const EdgeInsets.only(right: 0, top: 4),
                               child: Container(
                                 height: 4,
-                                width: 60,
+                                width: 50,
                                 decoration: BoxDecoration(
                                   color: HexColor('#F1B440').withOpacity(0.2),
                                   borderRadius: const BorderRadius.all(
@@ -1047,7 +1047,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  fontSize: 13,
+                                  fontSize: 12,
                                   color: Theme.of(context)
                                       .colorScheme
                                       .primary
