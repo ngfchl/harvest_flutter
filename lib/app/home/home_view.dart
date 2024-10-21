@@ -294,9 +294,13 @@ class HomeView extends GetView<HomeController> {
           const SizedBox(width: 15),
           InkWell(
             onTap: () {
-              controller.initUpdateLogState();
+              if (controller.updateLogState == null) {
+                controller.initUpdateLogState();
+                Get.snackbar('请稍后', '更新日志获取中，请稍后...',
+                    colorText: Theme.of(context).colorScheme.primary);
+                return;
+              }
               controller.update();
-
               Get.defaultDialog(
                   title: "Docker更新日志",
                   content: SizedBox(
@@ -406,39 +410,29 @@ class HomeView extends GetView<HomeController> {
                       child: const Text('取消')));
             },
             child: Icon(Icons.upload,
-                size: 28,
+                size: 24,
                 color: controller.updateLogState?.update == true
                     ? Colors.red
-                    : Colors.black54),
+                    : Theme.of(context).colorScheme.primary),
           ),
 
           const SizedBox(width: 15),
 
           // const Wen(),
 
-          const DarkModeSwitch(),
-          // SizedBox(
-          //   height: 20,
-          //   width: 20,
-          //   child: GetBuilder<HomeController>(builder: (controller) {
-          //     return InkWell(
-          //       onTap: () {
-          //         Get.changeTheme(controller.isDarkMode ? lightTheme : darkTheme);
-          //
-          //         controller.isDarkMode = !controller.isDarkMode;
-          //         controller.update();
-          //       },
-          //       child: Icon(
-          //           controller.isDarkMode ? Icons.dark_mode : Icons.light_mode),
-          //     );
-          //   }),
-          // ),
+          DarkModeSwitch(
+            borderColor: Theme.of(context).colorScheme.primary,
+            height: 24,
+            slideSize: 19,
+            borderWidth: 2,
+          ),
+
           const SizedBox(width: 15),
           const SizedBox(
-            height: 20,
-            width: 20,
+            height: 24,
+            width: 24,
             child: ThemeModal(
-              itemSize: 28,
+              itemSize: 32,
             ),
           ),
           const SizedBox(width: 15),
