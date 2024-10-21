@@ -321,12 +321,18 @@ class SshWidget extends StatelessWidget {
                   AppBar(
                     title: const Text('SSH Client'),
                   ),
-                  const CustomTextTag(
-                    labelText: 'SSH 连接设备为危险操作，请你一定要知晓每一个 SSH 命令的含义确认操作',
-                    backgroundColor: Colors.orange,
+                  const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: CustomTextTag(
+                      labelText: 'SSH 连接设备为危险操作，请你一定要知晓每一个 SSH 命令的含义确认操作',
+                      backgroundColor: Colors.orange,
+                    ),
                   ),
-                  const Text(
-                    '本功能仅支持使用 root 账户登录或者不使用 root账户可以直接操作的设备。已知不可用设备：群晖、极空间，',
+                  const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text(
+                      '本功能仅支持使用 root 账户登录或者不使用 root账户可以直接操作的设备。已知不可用设备：群晖、极空间，',
+                    ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),

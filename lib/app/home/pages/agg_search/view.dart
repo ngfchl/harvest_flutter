@@ -695,7 +695,11 @@ class _AggSearchPageState extends State<AggSearchPage>
                           return FilterChip(
                             label: Text(capitalize(mySite.nickname)),
                             selected: controller.sites.contains(mySite.id),
-                            backgroundColor: Colors.blue.shade500,
+                            labelPadding: EdgeInsets.zero,
+                            backgroundColor: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withOpacity(0.7),
                             labelStyle: const TextStyle(
                                 fontSize: 12, color: Colors.white),
                             selectedColor: Colors.green,
