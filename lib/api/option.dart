@@ -1,5 +1,6 @@
 import '../app/home/pages/models/option.dart';
 import '../models/common_response.dart';
+import '../utils/dio_util.dart';
 import 'api.dart';
 import 'hooks.dart';
 
@@ -31,4 +32,22 @@ Future<CommonResponse> noticeTestApi(
     Map<String, dynamic>? queryParameters) async {
   return await fetchBasicList(Api.NOTICE_TEST,
       queryParameters: queryParameters);
+}
+
+/// 订阅标签 导入
+importBaseSubTag() async {
+  try {
+    final response = await DioUtil().get(
+      Api.IMPORT_SUB_TAG,
+    );
+    if (response.statusCode == 200) {
+      return CommonResponse.fromJson(response.data, (p0) => null);
+    } else {
+      String msg = '订阅标签 导入失败！: ${response.statusCode}';
+      return CommonResponse(data: null, code: -1, msg: msg);
+    }
+  } catch (e, trace) {
+    String msg = '订阅标签 导入失败！: $e';
+    return CommonResponse(data: null, code: -1, msg: msg);
+  }
 }

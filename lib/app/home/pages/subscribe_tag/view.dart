@@ -1,7 +1,9 @@
+import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
+import 'package:harvest/api/option.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/models/common_response.dart';
 
@@ -28,8 +30,9 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
         children: [
           Expanded(
             child: GetBuilder<SubscribeTagController>(builder: (controller) {
-              return SingleChildScrollView(
-                child: Wrap(
+              return EasyRefresh(
+                onRefresh: () => controller.initData(),
+                child: ListView(
                   children: controller.tags
                       .map((SubTag tag) => _buildTag(tag))
                       .toList(),
@@ -45,10 +48,25 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                 style: TextStyle(fontSize: 16),
               ),
               leading: IconButton(
-                  onPressed: () => controller.getTagsFromServer(),
+                  onPressed: () async {
+                    CommonResponse res = await importBaseSubTag();
+                    if (res.code == 0) {
+                      Get.snackbar(
+                        '执行成功',
+                        res.msg.toString(),
+                        colorText: Theme.of(context).colorScheme.primary,
+                      );
+                    } else {
+                      Get.snackbar(
+                        '执行失败',
+                        res.msg.toString(),
+                        colorText: Theme.of(context).colorScheme.primary,
+                      );
+                    }
+                  },
                   icon: const Icon(
-                    Icons.refresh,
-                    color: Colors.green,
+                    Icons.save_alt_outlined,
+                    color: Colors.orange,
                   )),
               trailing: IconButton(
                 icon: const Icon(

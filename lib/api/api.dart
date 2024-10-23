@@ -81,6 +81,7 @@ class Api {
   static const String SUB_RSS = "option/rss";
   static const String SUB_SUB = "option/sub";
   static const String SUB_TAG = "option/tags";
+  static const String IMPORT_SUB_TAG = "option/import/tags";
   static const String SUB_HISTORY = "option/sub_history";
 
   /// 豆瓣 API
