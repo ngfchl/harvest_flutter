@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import '../app/home/pages/models/my_site.dart';
@@ -48,4 +50,13 @@ List<int> getRandomIndices(int listLength, int count) {
     }
   }
   return indices;
+}
+
+checkEditController(TextEditingController controller, String field, context) {
+  if (controller.text.isEmpty) {
+    Get.snackbar('字段检查', '$field 不能为空！',
+        colorText: Theme.of(context).colorScheme.error);
+    return false;
+  }
+  return true;
 }
