@@ -6,6 +6,7 @@ import 'package:getwidget/getwidget.dart';
 
 import '../../../../common/card_view.dart';
 import '../../../../common/form_widgets.dart';
+import '../../../../common/utils.dart';
 import '../../../../models/common_response.dart';
 import '../../../../utils/logger_helper.dart';
 import '../models/task.dart';
@@ -353,6 +354,17 @@ class TaskPage extends StatelessWidget {
                     ),
                     ElevatedButton.icon(
                       onPressed: () async {
+                        bool res1 = checkEditController(
+                            nameController, "任务名称", context);
+                        bool res2 = checkEditController(
+                            taskController, "计划任务", context);
+                        bool res3 = checkEditController(
+                            minuteController, "任务执行时间：分钟", context);
+                        bool res4 = checkEditController(
+                            hourController, "任务执行时间：小时", context);
+                        if (!res1 || !res2 || !res3 || !res4) {
+                          return;
+                        }
                         if (task == null) {
                           task = Schedule(
                             id: 0,
