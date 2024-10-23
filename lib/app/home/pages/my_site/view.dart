@@ -816,16 +816,18 @@ class _MySitePagePageState extends State<MySitePage>
   }
 
   Future<void> _showEditBottomSheet({MySite? mySite}) async {
-    List<String> siteList = controller.webSiteList.entries
-        .where((entry) => entry.value.alive)
-        .map((entry) => entry.key)
-        .toList();
+    // 获取已添加的站点名称
     List<String> hasKeys =
         controller.mySiteList.map((element) => element.site).toList();
+    // 筛选活着的和未添加过的站点
+    List<WebSite> webSiteList =
+        controller.webSiteList.values.where((item) => item.alive).toList();
+    // 如果是编辑模式，
     if (mySite == null) {
-      siteList.removeWhere((key) => hasKeys.contains(key));
+      webSiteList.removeWhere((item) => hasKeys.contains(item.name));
     }
-    siteList.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    webSiteList
+        .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     final siteController = TextEditingController(text: mySite?.site ?? '');
     final apiKeyController = TextEditingController(text: mySite?.authKey ?? '');
     final sortIdController =
@@ -862,8 +864,7 @@ class _MySitePagePageState extends State<MySitePage>
     RxBool hrDiscern = mySite != null ? mySite.hrDiscern.obs : false.obs;
     RxBool searchTorrents =
         mySite != null ? mySite.searchTorrents.obs : true.obs;
-    List<WebSite> webSiteList =
-        controller.webSiteList.values.where((item) => item.alive).toList();
+
     Get.bottomSheet(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
       CustomCard(
