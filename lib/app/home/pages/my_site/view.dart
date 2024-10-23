@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:filesize/filesize.dart';
 import 'package:flutter/foundation.dart';
@@ -815,7 +816,6 @@ class _MySitePagePageState extends State<MySitePage>
   }
 
   Future<void> _showEditBottomSheet({MySite? mySite}) async {
-    await controller.getWebSiteListFromServer();
     List<String> siteList = controller.webSiteList.entries
         .where((entry) => entry.value.alive)
         .map((entry) => entry.key)
@@ -830,7 +830,7 @@ class _MySitePagePageState extends State<MySitePage>
     final apiKeyController = TextEditingController(text: mySite?.authKey ?? '');
     final sortIdController =
         TextEditingController(text: mySite?.sortId.toString() ?? '1');
-
+    RxBool isLoading = false.obs;
     final nicknameController =
         TextEditingController(text: mySite?.nickname ?? '');
     final passkeyController =
@@ -862,7 +862,8 @@ class _MySitePagePageState extends State<MySitePage>
     RxBool hrDiscern = mySite != null ? mySite.hrDiscern.obs : false.obs;
     RxBool searchTorrents =
         mySite != null ? mySite.searchTorrents.obs : true.obs;
-
+    List<WebSite> webSiteList =
+        controller.webSiteList.values.where((item) => item.alive).toList();
     Get.bottomSheet(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
       CustomCard(
@@ -870,11 +871,41 @@ class _MySitePagePageState extends State<MySitePage>
         height: selectedSite.value != null ? 500 : 120,
         child: Column(
           children: [
-            Text(
-              mySite != null ? '编辑站点：${mySite.nickname}' : '添加站点',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+            ListTile(
+              title: Text(
+                mySite != null ? '编辑站点：${mySite.nickname}' : '添加站点',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+              ),
+              trailing: Obx(() {
+                return isLoading.value
+                    ? const Align(
+                        alignment: Alignment.centerRight,
+                        child: GFLoader(
+                          size: 18,
+                        ),
+                      )
+                    : ElevatedButton.icon(
+                        onPressed: () async {
+                          isLoading.value = true;
+                          await controller.getWebSiteListFromServer();
+                          controller.update();
+                          isLoading.value = false;
+                        },
+                        icon: Icon(
+                          Icons.cloud_download_outlined,
+                          size: 18,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        label: Text(
+                          '刷新站点列表',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      );
+              }),
             ),
             if (selectedSite.value != null)
               Expanded(
@@ -882,38 +913,70 @@ class _MySitePagePageState extends State<MySitePage>
                   child: Obx(() {
                     return Column(
                       children: [
-                        CustomPickerField(
-                          controller: siteController,
-                          labelText: '选择站点',
-                          data: siteList,
-                          onChanged: (p, position) {
-                            siteController.text = p;
-                            selectedSite.value = controller.webSiteList[p];
-                            urlList?.value = selectedSite.value!.url;
-                            mirrorController.text = urlList![0];
-                            nicknameController.text = selectedSite.value!.name;
-                            signIn.value = selectedSite.value!.signIn;
-                            getInfo.value = selectedSite.value!.getInfo;
-                            repeatTorrents.value =
-                                selectedSite.value!.repeatTorrents;
-                            searchTorrents.value =
-                                selectedSite.value!.searchTorrents;
-                            available.value = selectedSite.value!.alive;
-                          },
-                          onConfirm: (p, position) {
-                            siteController.text = p;
-                            selectedSite.value = controller.webSiteList[p];
-                            urlList?.value = selectedSite.value!.url;
-                            mirrorController.text = urlList![0];
-                            nicknameController.text = selectedSite.value!.name;
-                            signIn.value = selectedSite.value!.signIn;
-                            getInfo.value = selectedSite.value!.getInfo;
-                            repeatTorrents.value =
-                                selectedSite.value!.repeatTorrents;
-                            searchTorrents.value =
-                                selectedSite.value!.searchTorrents;
-                            available.value = selectedSite.value!.alive;
-                          },
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 4.0, horizontal: 8),
+                          child: DropdownSearch<WebSite>(
+                            items: webSiteList,
+                            selectedItem: webSiteList.firstWhereOrNull(
+                                (element) =>
+                                    element.name == siteController.text),
+                            compareFn: (item, sItem) => item.name == sItem.name,
+                            itemAsString: (WebSite? item) => item!.name,
+                            dropdownDecoratorProps: DropDownDecoratorProps(
+                              dropdownSearchDecoration: InputDecoration(
+                                labelText: '选择站点',
+                                filled: true,
+                                fillColor: Theme.of(context)
+                                    .inputDecorationTheme
+                                    .fillColor,
+                              ),
+                            ),
+                            popupProps: PopupProps.menu(
+                              showSearchBox: true,
+                              showSelectedItems: true,
+                              itemBuilder: (ctx, item, isSelected) {
+                                return ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.primary,
+                                    child: Text(
+                                      item.name[0],
+                                      style: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary,
+                                      ),
+                                    ),
+                                  ),
+                                  selected: isSelected,
+                                  title: Text(
+                                    item.name,
+                                    style: TextStyle(
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            onChanged: (WebSite? item) async {
+                              siteController.text = item!.name;
+                              selectedSite.value = item;
+                              urlList?.value = selectedSite.value!.url;
+                              mirrorController.text = urlList![0];
+                              nicknameController.text =
+                                  selectedSite.value!.name;
+                              signIn.value = selectedSite.value!.signIn;
+                              getInfo.value = selectedSite.value!.getInfo;
+                              repeatTorrents.value =
+                                  selectedSite.value!.repeatTorrents;
+                              searchTorrents.value =
+                                  selectedSite.value!.searchTorrents;
+                              available.value = selectedSite.value!.alive;
+                              controller.update();
+                            },
+                          ),
                         ),
                         if (urlList!.isNotEmpty)
                           CustomPickerField(
