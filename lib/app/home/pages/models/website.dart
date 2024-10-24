@@ -215,6 +215,8 @@ class LevelInfo {
   late double ratio;
   late int torrents;
   late int leeches;
+  late num score;
+  late num bonus;
   late num seedingDelta;
   late bool keepAccount;
   late bool graduation;
@@ -228,6 +230,8 @@ class LevelInfo {
     downloaded = json['downloaded'];
     ratio = json['ratio'];
     torrents = json['torrents'];
+    score = json['score'];
+    bonus = json['bonus'];
     leeches = json['leeches'];
     seedingDelta = json['seeding_delta'];
     keepAccount = json['keep_account'];
