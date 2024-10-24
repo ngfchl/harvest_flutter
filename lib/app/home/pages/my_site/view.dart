@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:collection/collection.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:filesize/filesize.dart';
@@ -21,6 +22,7 @@ import '../../../../common/utils.dart';
 import '../../../../utils/calc_weeks.dart';
 import '../../../../utils/format_number.dart';
 import '../../../../utils/logger_helper.dart';
+import '../../../../utils/string_utils.dart';
 import '../../../routes/app_pages.dart';
 import '../models/my_site.dart';
 import '../models/website.dart';
@@ -278,6 +280,7 @@ class _MySitePagePageState extends State<MySitePage>
   Widget showSiteDataInfo(MySite mySite) {
     StatusInfo? status;
     WebSite? website = controller.webSiteList[mySite.site];
+
     Logger.instance.d('${mySite.nickname} - ${website?.name}');
     if (website == null) {
       return CustomCard(
@@ -322,6 +325,22 @@ class _MySitePagePageState extends State<MySitePage>
     if (status == null) {
       Logger.instance.d('${mySite.nickname} - ${mySite.statusInfo}');
     }
+    LevelInfo? l = website.level?[status?.myLevel];
+    List<LevelInfo>? rights;
+    LevelInfo? nextLevel;
+    if (l?.levelId == 0) {
+      rights = website.level?.values.toList();
+    } else if (l == null) {
+    } else {
+      rights = website.level?.values
+          .where((item) => item.levelId > 0 && item.levelId <= l!.levelId)
+          .toList();
+      rights?.sort((a, b) => b.levelId.compareTo(a.levelId));
+      nextLevel = website.level?.values
+          .firstWhereOrNull((item) => item.levelId == l!.levelId + 1);
+    }
+    Logger.instance.d(rights);
+
     return CustomCard(
       key: Key("${mySite.id}-${mySite.site}"),
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -414,9 +433,125 @@ class _MySitePagePageState extends State<MySitePage>
                 ),
               if (status != null)
                 Text(
-                  status.myLevel,
+                  website.level?[status.myLevel]?.level ?? status.myLevel,
                   style: const TextStyle(
                     fontSize: 10,
+                  ),
+                ),
+              if (status != null && rights != null)
+                CustomPopup(
+                  showArrow: true,
+                  barrierColor: Colors.transparent,
+                  backgroundColor: Theme.of(context).colorScheme.surface,
+                  content: SingleChildScrollView(
+                    child: SizedBox(
+                        width: 200,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (nextLevel != null) ...[
+                              if (status.uploaded <
+                                  FileSizeConvert.parseToByte(
+                                          nextLevel.downloaded) *
+                                      nextLevel.ratio)
+                                Text(
+                                    '上传量：${filesize(status.uploaded)}/${FileSizeConvert.parseToFileSize((FileSizeConvert.parseToByte(nextLevel.downloaded) * nextLevel.ratio).toInt())}',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color:
+                                          Theme.of(context).colorScheme.error,
+                                    )),
+                              if (status.downloaded
+                                      .toString()
+                                      .compareTo(nextLevel.downloaded) <
+                                  0)
+                                Text(
+                                    '下载量：${filesize(status.downloaded)}/${nextLevel.downloaded}',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color:
+                                          Theme.of(context).colorScheme.error,
+                                    )),
+                              Text(
+                                  '注册时间：${calcWeeksDays(mySite.timeJoin)}/${nextLevel.days}周',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Theme.of(context).colorScheme.error,
+                                  )),
+                              if (status.uploaded / status.downloaded <
+                                  nextLevel.ratio)
+                                Text(
+                                    '分享率：${(status.uploaded / status.downloaded).toStringAsFixed(2)}/${nextLevel.ratio}',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color:
+                                          Theme.of(context).colorScheme.error,
+                                    )),
+                              if (nextLevel.torrents > 0)
+                                Text('需发种数量：${nextLevel.torrents}',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color:
+                                          Theme.of(context).colorScheme.error,
+                                    )),
+                              if (nextLevel.score > 0)
+                                Text(
+                                    '做种积分：${status.myScore}/${nextLevel.score}',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color:
+                                          Theme.of(context).colorScheme.error,
+                                    )),
+                              if (nextLevel.bonus > 0)
+                                Text('魔力值：${status.myBonus}/${nextLevel.bonus}',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color:
+                                          Theme.of(context).colorScheme.error,
+                                    )),
+                              if (nextLevel.keepAccount)
+                                Text('保留账号：${nextLevel.keepAccount}',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color:
+                                          Theme.of(context).colorScheme.error,
+                                    )),
+                              if (nextLevel.graduation)
+                                Text('毕业：${nextLevel.graduation}',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color:
+                                          Theme.of(context).colorScheme.error,
+                                    )),
+                              Text('即将获得：${nextLevel.rights}',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Theme.of(context).colorScheme.error,
+                                  )),
+                            ],
+                            ...rights
+                                .where((el) =>
+                                    el.rights.trim() != '无' &&
+                                    !el.rights.trim().contains('同上'))
+                                .map((LevelInfo item) => PopupMenuItem<String>(
+                                      child: Text(item.rights,
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: item.graduation
+                                                ? Colors.orange
+                                                : Theme.of(context)
+                                                    .colorScheme
+                                                    .primary,
+                                          )),
+                                    ))
+                          ],
+                        )),
+                  ),
+                  child: Text(
+                    website.level?[status.myLevel]?.level ?? status.myLevel,
+                    style: const TextStyle(
+                      fontSize: 10,
+                    ),
                   ),
                 ),
             ],
