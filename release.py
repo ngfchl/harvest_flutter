@@ -86,7 +86,8 @@ class VersionManager:
                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 print(f"{res.stdout.decode("utf-8")}")
                 print(f'Windows APP 编译完成, 开始压缩')
-                zip_path = shutil.make_archive('Release', 'zip', os.path.join(os.getcwd(),"build\\windows\\x64\\runner\\Release"))
+                zip_path = shutil.make_archive('Release', 'zip', os.path.join(os.getcwd(),
+                                                                              "build\\windows\\x64\\runner\\Release"))
                 print(f"压缩结果：{zip_path}")
                 print(f"APP 压缩完毕，准备移动，正在移动到指定文件夹 {self.output_folder}")
                 shutil.move(zip_path,
@@ -157,6 +158,7 @@ class VersionManager:
                 except Exception as e:
                     print(f"Compilation failed: {e}")
                     raise e
+            subprocess.run(["open", self.output_folder])
 
 
 if __name__ == '__main__':
