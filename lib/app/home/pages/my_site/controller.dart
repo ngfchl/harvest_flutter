@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import '../../../../api/mysite.dart';
 import '../../../../utils/date_time_utils.dart';
 import '../../../../utils/logger_helper.dart';
+import '../../../../utils/platform.dart';
 import '../../../../utils/storage.dart';
 
 class MySiteController extends GetxController {
@@ -18,6 +19,7 @@ class MySiteController extends GetxController {
   List<MySite> showStatusList = <MySite>[];
   bool isLoaded = false;
   bool initFlag = false;
+  bool openByInnerExplorer = true;
   String sortKey = 'statusMail';
   bool sortReversed = false;
   Map<String, WebSite> webSiteList = {};
@@ -78,6 +80,7 @@ class MySiteController extends GetxController {
     if (!initFlag) {
       return;
     }
+    toggleOpenByInnerExplorerFlag();
     await getWebSiteListFromServer();
     await getSiteStatusFromServer();
     update();
@@ -89,6 +92,16 @@ class MySiteController extends GetxController {
       result[entry.value.tracker] = entry.value;
       return result;
     });
+  }
+
+  toggleOpenByInnerExplorerFlag() {
+    if (!PlatformTool.isDesktopOS()) {
+      openByInnerExplorer = false;
+    } else {
+      openByInnerExplorer =
+          SPUtil.getBool('openByInnerExplorer', defaultValue: true)!;
+    }
+    update();
   }
 
   Future<void> getWebSiteListFromServer() async {

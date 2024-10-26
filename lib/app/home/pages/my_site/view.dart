@@ -11,6 +11,8 @@ import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:harvest/models/common_response.dart';
+import 'package:harvest/utils/platform.dart';
+import 'package:harvest/utils/storage.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -266,6 +268,16 @@ class _MySitePagePageState extends State<MySitePage>
             ),
             label: const Text('添加'),
           ),
+          if (PlatformTool.isDesktopOS())
+            GFToggle(
+                enabledText: '内置',
+                disabledText: '浏览器',
+                value: controller.openByInnerExplorer,
+                onChanged: (bool? value) {
+                  controller.openByInnerExplorer = value!;
+                  SPUtil.setBool('openByInnerExplorer', value);
+                  controller.update();
+                })
         ],
       ),
     );
@@ -375,7 +387,7 @@ class _MySitePagePageState extends State<MySitePage>
             if (mySite.mirror!.contains('m-team')) {
               url = url.replaceFirst("api", "xp");
             }
-            if (kIsWeb) {
+            if (kIsWeb || !controller.openByInnerExplorer) {
               Logger.instance.d('使用外部浏览器打开');
               Uri uri = Uri.parse(url);
               if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
