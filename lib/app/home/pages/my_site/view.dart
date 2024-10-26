@@ -11,8 +11,6 @@ import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:harvest/models/common_response.dart';
-import 'package:harvest/utils/platform.dart';
-import 'package:harvest/utils/storage.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -24,6 +22,7 @@ import '../../../../common/utils.dart';
 import '../../../../utils/calc_weeks.dart';
 import '../../../../utils/format_number.dart';
 import '../../../../utils/logger_helper.dart';
+import '../../../../utils/storage.dart';
 import '../../../../utils/string_utils.dart';
 import '../../../routes/app_pages.dart';
 import '../models/my_site.dart';
@@ -58,79 +57,94 @@ class _MySitePagePageState extends State<MySitePage>
             },
             child: Column(
               children: [
-                if (controller.mySiteList.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8.0, vertical: 5),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: InkWell(
-                            onTap: () {
-                              FocusScope.of(context).requestFocus(blankNode);
-                            },
-                            child: TextField(
-                              focusNode: blankNode,
-                              controller: controller.searchController,
-                              style: const TextStyle(fontSize: 12),
-                              textAlignVertical: TextAlignVertical.center,
-                              decoration: InputDecoration(
-                                // labelText: '搜索',
-                                hintText: '输入关键词...',
-                                labelStyle: const TextStyle(fontSize: 12),
-                                hintStyle: const TextStyle(fontSize: 12),
-                                prefixIcon: const Icon(
-                                  Icons.search,
-                                  size: 14,
-                                ),
-                                // suffix: ,
-                                suffixIcon: Padding(
-                                  padding: const EdgeInsets.only(right: 8.0),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                          '计数：${controller.showStatusList.length}',
-                                          style: const TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.orange)),
-                                    ],
-                                  ),
-                                ),
-                                border: const OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(3.0)),
+                // if (controller.mySiteList.isNotEmpty)
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
+                  child: Row(
+                    children: [
+                      GFToggle(
+                          enabledText: '内置',
+                          disabledText: '浏览器',
+                          enabledTextStyle: TextStyle(
+                              fontSize: 8,
+                              color: Theme.of(context).colorScheme.onPrimary),
+                          disabledTextStyle: TextStyle(
+                              fontSize: 5,
+                              color: Theme.of(context).colorScheme.onPrimary),
+                          type: GFToggleType.square,
+                          value: controller.openByInnerExplorer,
+                          onChanged: (bool? value) {
+                            controller.openByInnerExplorer = value!;
+                            SPUtil.setBool('openByInnerExplorer', value);
+                            controller.update();
+                          }),
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            FocusScope.of(context).requestFocus(blankNode);
+                          },
+                          child: TextField(
+                            focusNode: blankNode,
+                            controller: controller.searchController,
+                            style: const TextStyle(fontSize: 12),
+                            textAlignVertical: TextAlignVertical.center,
+                            decoration: InputDecoration(
+                              // labelText: '搜索',
+                              hintText: '输入关键词...',
+                              labelStyle: const TextStyle(fontSize: 12),
+                              hintStyle: const TextStyle(fontSize: 12),
+                              prefixIcon: const Icon(
+                                Icons.search,
+                                size: 14,
+                              ),
+                              // suffix: ,
+                              suffixIcon: Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                        '计数：${controller.showStatusList.length}',
+                                        style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.orange)),
+                                  ],
                                 ),
                               ),
-                              onChanged: (value) {
-                                Logger.instance.d('搜索框内容变化：$value');
-                                controller.searchKey = value;
-                                controller.filterByKey();
-                              },
+                              border: const OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(3.0)),
+                              ),
                             ),
+                            onChanged: (value) {
+                              Logger.instance.d('搜索框内容变化：$value');
+                              controller.searchKey = value;
+                              controller.filterByKey();
+                            },
                           ),
                         ),
-                        if (controller.searchKey.isNotEmpty)
-                          IconButton(
-                              onPressed: () {
-                                controller.searchController.text =
-                                    controller.searchController.text.substring(
-                                        0,
-                                        controller
-                                                .searchController.text.length -
-                                            1);
-                                controller.searchKey =
-                                    controller.searchController.text;
-                                controller.filterByKey();
-                                controller.update();
-                              },
-                              icon: const Icon(
-                                Icons.backspace_outlined,
-                                size: 18,
-                              ))
-                      ],
-                    ),
+                      ),
+                      if (controller.searchKey.isNotEmpty)
+                        IconButton(
+                            onPressed: () {
+                              controller.searchController.text =
+                                  controller.searchController.text.substring(
+                                      0,
+                                      controller.searchController.text.length -
+                                          1);
+                              controller.searchKey =
+                                  controller.searchController.text;
+                              controller.filterByKey();
+                              controller.update();
+                            },
+                            icon: const Icon(
+                              Icons.backspace_outlined,
+                              size: 18,
+                            ))
+                    ],
                   ),
+                ),
                 Expanded(
                   child: controller.isLoaded
                       ? Center(
@@ -268,16 +282,6 @@ class _MySitePagePageState extends State<MySitePage>
             ),
             label: const Text('添加'),
           ),
-          if (PlatformTool.isDesktopOS())
-            GFToggle(
-                enabledText: '内置',
-                disabledText: '浏览器',
-                value: controller.openByInnerExplorer,
-                onChanged: (bool? value) {
-                  controller.openByInnerExplorer = value!;
-                  SPUtil.setBool('openByInnerExplorer', value);
-                  controller.update();
-                })
         ],
       ),
     );

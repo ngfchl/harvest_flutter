@@ -80,7 +80,7 @@ class MySiteController extends GetxController {
     if (!initFlag) {
       return;
     }
-    toggleOpenByInnerExplorerFlag();
+    initOpenByInnerExplorerFlag();
     await getWebSiteListFromServer();
     await getSiteStatusFromServer();
     update();
@@ -94,7 +94,7 @@ class MySiteController extends GetxController {
     });
   }
 
-  toggleOpenByInnerExplorerFlag() {
+  initOpenByInnerExplorerFlag() {
     if (!PlatformTool.isDesktopOS()) {
       openByInnerExplorer = false;
     } else {
