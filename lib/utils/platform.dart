@@ -40,11 +40,23 @@ class PlatformTool {
     }
   }
 
+  static bool isLinux() {
+    try {
+      return Platform.isLinux || Platform.isFuchsia;
+    } catch (e) {
+      return false;
+    }
+  }
+
   static bool isPhone() {
     final data = MediaQueryData.fromView(
         WidgetsBinding.instance.platformDispatcher.views.first);
     return data.size.shortestSide < 600 ||
         (!kIsWeb && (Platform.isAndroid || Platform.isIOS));
+  }
+
+  static bool isDesktopOS() {
+    return isWindows() || isMacOS() || isLinux();
   }
 
   static String operatingSystem() {
