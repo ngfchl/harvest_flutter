@@ -325,21 +325,21 @@ class _MySitePagePageState extends State<MySitePage>
     if (status == null) {
       Logger.instance.d('${mySite.nickname} - ${mySite.statusInfo}');
     }
-    LevelInfo? l = website.level?[status?.myLevel];
-    List<LevelInfo>? rights;
+    LevelInfo? level = website.level?[status?.myLevel];
+    List<LevelInfo> rights = [];
     LevelInfo? nextLevel;
-    if (l?.levelId == 0) {
-      rights = website.level?.values.toList();
-    } else if (l == null) {
+    if (level?.levelId == 0) {
+      rights = [...?website.level?.values];
+    } else if (level == null) {
     } else {
-      rights = website.level?.values
-          .where((item) => item.levelId > 0 && item.levelId <= l!.levelId)
-          .toList();
-      rights?.sort((a, b) => b.levelId.compareTo(a.levelId));
+      rights = [
+        ...?website.level?.values
+            .where((item) => item.levelId > 0 && item.levelId <= level.levelId)
+      ];
+      rights.sort((a, b) => b.levelId.compareTo(a.levelId));
       nextLevel = website.level?.values
-          .firstWhereOrNull((item) => item.levelId == l!.levelId + 1);
+          .firstWhereOrNull((item) => item.levelId == level.levelId + 1);
     }
-    Logger.instance.d(rights);
 
     return CustomCard(
       key: Key("${mySite.id}-${mySite.site}"),
@@ -431,14 +431,14 @@ class _MySitePagePageState extends State<MySitePage>
                     ),
                   ],
                 ),
-              if (status != null)
+              if (status != null && level == null)
                 Text(
                   website.level?[status.myLevel]?.level ?? status.myLevel,
                   style: const TextStyle(
                     fontSize: 10,
                   ),
                 ),
-              if (status != null && rights != null)
+              if (status != null && level != null)
                 CustomPopup(
                   showArrow: true,
                   barrierColor: Colors.transparent,
@@ -472,12 +472,17 @@ class _MySitePagePageState extends State<MySitePage>
                                       color:
                                           Theme.of(context).colorScheme.error,
                                     )),
-                              Text(
-                                  '注册时间：${calcWeeksDays(mySite.timeJoin)}/${nextLevel.days}周',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: Theme.of(context).colorScheme.error,
-                                  )),
+                              if (int.parse(calcWeeksDays(mySite.timeJoin)
+                                      .split('周')
+                                      .first) <
+                                  nextLevel.days)
+                                Text(
+                                    '注册时间：${calcWeeksDays(mySite.timeJoin)}/${nextLevel.days}周 - ${calcWeeksDays(mySite.timeJoin).compareTo('${nextLevel.days}周')}',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color:
+                                          Theme.of(context).colorScheme.error,
+                                    )),
                               if (status.uploaded / status.downloaded <
                                   nextLevel.ratio)
                                 Text(
@@ -494,7 +499,8 @@ class _MySitePagePageState extends State<MySitePage>
                                       color:
                                           Theme.of(context).colorScheme.error,
                                     )),
-                              if (nextLevel.score > 0)
+                              if (nextLevel.score > 0 &&
+                                  status.myScore < nextLevel.score)
                                 Text(
                                     '做种积分：${status.myScore}/${nextLevel.score}',
                                     style: TextStyle(
@@ -502,7 +508,8 @@ class _MySitePagePageState extends State<MySitePage>
                                       color:
                                           Theme.of(context).colorScheme.error,
                                     )),
-                              if (nextLevel.bonus > 0)
+                              if (nextLevel.bonus > 0 &&
+                                  status.myBonus < nextLevel.bonus)
                                 Text('魔力值：${status.myBonus}/${nextLevel.bonus}',
                                     style: TextStyle(
                                       fontSize: 10,
@@ -549,8 +556,9 @@ class _MySitePagePageState extends State<MySitePage>
                   ),
                   child: Text(
                     website.level?[status.myLevel]?.level ?? status.myLevel,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 10,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                 ),
