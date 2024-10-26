@@ -446,7 +446,7 @@ class _DashBoardPageState extends State<DashBoardPage>
         children: [
           IconButton(
             onPressed: () async {
-              await getAllStatusButton();
+              await controller.initData();
             },
             icon: Icon(
               Icons.cloud_download,
