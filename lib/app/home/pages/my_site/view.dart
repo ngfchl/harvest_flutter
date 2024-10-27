@@ -488,9 +488,10 @@ class _MySitePagePageState extends State<MySitePage>
                                       color:
                                           Theme.of(context).colorScheme.error,
                                     )),
-                              if (int.parse(calcWeeksDays(mySite.timeJoin)
-                                      .split('周')
-                                      .first) <
+                              if ((int.tryParse(calcWeeksDays(mySite.timeJoin)
+                                          .split('周')
+                                          .first) ??
+                                      0) <
                                   nextLevel.days)
                                 Text(
                                     '注册时间：${calcWeeksDays(mySite.timeJoin)}/${nextLevel.days}周 - ${calcWeeksDays(mySite.timeJoin).compareTo('${nextLevel.days}周')}',
