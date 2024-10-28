@@ -348,6 +348,10 @@ class _AggSearchPageState extends State<AggSearchPage>
                           errorWidget: (context, url, error) => const Image(
                               image: AssetImage('assets/images/logo.png')),
                           fit: BoxFit.fitWidth,
+                          httpHeaders: {
+                            "user-agent": mySite.userAgent.toString(),
+                            "Cookie": mySite.cookie.toString(),
+                          },
                         ),
                       ));
                 },
@@ -362,6 +366,10 @@ class _AggSearchPageState extends State<AggSearchPage>
                               image: AssetImage('assets/images/logo.png'),
                               fit: BoxFit.fitWidth),
                           fit: BoxFit.fitWidth,
+                          httpHeaders: {
+                            "user-agent": mySite.userAgent.toString(),
+                            "Cookie": mySite.cookie.toString(),
+                          },
                         ),
                         CustomTextTag(
                           labelText: website.name.toString(),

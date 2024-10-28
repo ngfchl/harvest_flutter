@@ -404,6 +404,10 @@ class _MySitePagePageState extends State<MySitePage>
                   ? website.logo
                   : '${mySite.mirror}${website.logo}',
               fit: BoxFit.fill,
+              httpHeaders: {
+                "user-agent": mySite.userAgent.toString(),
+                "Cookie": mySite.cookie.toString(),
+              },
               errorWidget: (context, url, error) =>
                   const Image(image: AssetImage('assets/images/logo.png')),
               width: 32,
@@ -1424,7 +1428,7 @@ class _MySitePagePageState extends State<MySitePage>
                     return Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: ListTile(
-                        title: Text(item.name!),
+                        title: Text(item.name),
                         dense: true,
                         selectedColor: Colors.amber,
                         selected: controller.sortKey == item.value,
@@ -1465,7 +1469,7 @@ class _MySitePagePageState extends State<MySitePage>
                   itemBuilder: (context, index) {
                     MetaDataItem item = controller.filterOptions[index];
                     return ListTile(
-                        title: Text(item.name!),
+                        title: Text(item.name),
                         contentPadding:
                             const EdgeInsets.symmetric(horizontal: 16),
                         dense: true,
