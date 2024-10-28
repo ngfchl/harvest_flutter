@@ -2,6 +2,7 @@ import '../models/authinfo.dart';
 import '../models/common_response.dart';
 import '../models/login_user.dart';
 import '../utils/dio_util.dart';
+import '../utils/logger_helper.dart';
 import 'api.dart';
 
 /// 用户
@@ -30,8 +31,13 @@ class UserAPI {
 Future<CommonResponse> getGitUpdateLog() async {
   final response = await DioUtil().get(Api.UPDATE_LOG);
   if (response.statusCode == 200) {
-    final updateLogState = UpdateLogState.fromJson(response.data['data']);
-    return CommonResponse(data: updateLogState, code: 0);
+    Logger.instance.d(response.data);
+    return CommonResponse.fromJson(response.data, (p0) {
+      if (p0 == null) {
+        return null;
+      }
+      return UpdateLogState.fromJson(p0);
+    });
   } else {
     String msg = '获取Docker更新日志失败: ${response.statusCode}';
     // GFToast.showToast(msg, context);
