@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harvest/app/home/pages/models/my_site.dart';
 import 'package:harvest/app/home/pages/models/website.dart';
+import 'package:harvest/common/meta_item.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:intl/intl.dart';
 
@@ -14,7 +15,7 @@ import '../../../../utils/storage.dart';
 class MySiteController extends GetxController {
   final searchController = TextEditingController();
   String searchKey = '';
-  String filterKey = '';
+  String filterKey = 'available';
   List<MySite> mySiteList = <MySite>[];
   List<MySite> showStatusList = <MySite>[];
   bool isLoaded = false;
@@ -26,7 +27,7 @@ class MySiteController extends GetxController {
   bool sortReversed = false;
   Map<String, WebSite> webSiteList = {};
 
-  List<Map<String, String>> siteSortOptions = [
+  List<MetaDataItem> siteSortOptions = [
     // {'name': '站点ID', 'value': 'mySiteId'},
     {'name': '排序ID', 'value': 'mySiteSortId'},
     {'name': '站点名称', 'value': 'siteName'},
@@ -44,16 +45,16 @@ class MySiteController extends GetxController {
     {'name': '正在下载', 'value': 'statusLeech'},
     {'name': '正在做种', 'value': 'statusSeed'},
     {'name': '分享率', 'value': 'statusRatio'},
-  ];
+  ].map((item) => MetaDataItem.fromJson(item)).toList();
 
-  List<Map<String, String>> filterOptions = [
+  List<MetaDataItem> filterOptions = [
     {'name': '清除筛选', 'value': ''},
+    {'name': '站点存活', 'value': 'available'},
+    {'name': '站点死亡', 'value': 'unavailable'},
     {'name': '未签到', 'value': 'signIn'},
     {'name': '有新邮件', 'value': 'mail'},
     {'name': '有新公告', 'value': 'notice'},
     {'name': '无今日数据', 'value': 'status'},
-    {'name': '站点启用', 'value': 'available'},
-    {'name': '站点禁用', 'value': 'unavailable'},
     {'name': '无代理', 'value': 'proxy'},
     {'name': '无 UID', 'value': 'userId'},
     {'name': '无签到记录', 'value': 'signInInfo'},
@@ -66,12 +67,12 @@ class MySiteController extends GetxController {
     {'name': '无做种', 'value': 'noSeed'},
     {'name': '有下载', 'value': 'leech'},
     {'name': '分享率异常', 'value': 'ratio'},
-  ];
+  ].map((item) => MetaDataItem.fromJson(item)).toList();
 
   @override
   void onInit() async {
     searchKey = '';
-    filterKey = '';
+    filterKey = 'available';
     sortKey = SPUtil.getLocalStorage('mySite-sortKey') ?? 'mySiteSortId';
     baseUrl = SPUtil.getLocalStorage('server');
     isLoaded = true;

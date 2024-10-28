@@ -18,6 +18,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../api/mysite.dart';
 import '../../../../common/card_view.dart';
 import '../../../../common/form_widgets.dart';
+import '../../../../common/meta_item.dart';
 import '../../../../common/utils.dart';
 import '../../../../utils/calc_weeks.dart';
 import '../../../../utils/format_number.dart';
@@ -100,44 +101,59 @@ class _MySitePagePageState extends State<MySitePage>
                           onTap: () {
                             FocusScope.of(context).requestFocus(blankNode);
                           },
-                          child: TextField(
-                            focusNode: blankNode,
-                            controller: controller.searchController,
-                            style: const TextStyle(fontSize: 12),
-                            textAlignVertical: TextAlignVertical.center,
-                            decoration: InputDecoration(
-                              // labelText: '搜索',
-                              hintText: '输入关键词...',
-                              labelStyle: const TextStyle(fontSize: 12),
-                              hintStyle: const TextStyle(fontSize: 12),
-                              prefixIcon: const Icon(
-                                Icons.search,
-                                size: 14,
-                              ),
-                              // suffix: ,
-                              suffixIcon: Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                        '计数：${controller.showStatusList.length}',
-                                        style: const TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.orange)),
-                                  ],
+                          child: SizedBox(
+                            height: 32,
+                            child: TextField(
+                              focusNode: blankNode,
+                              controller: controller.searchController,
+                              style: const TextStyle(fontSize: 12),
+                              textAlignVertical: TextAlignVertical.center,
+                              decoration: InputDecoration(
+                                // labelText: '搜索',
+                                isDense: true,
+                                hintText: '输入关键词...',
+                                labelStyle: const TextStyle(fontSize: 12),
+                                hintStyle: const TextStyle(fontSize: 12),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 8, horizontal: 5),
+                                prefixIcon: const Icon(
+                                  Icons.search,
+                                  size: 14,
+                                ),
+                                // suffix: ,
+                                suffixIcon: Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                          '计数：${controller.showStatusList.length}',
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.orange)),
+                                    ],
+                                  ),
+                                ),
+                                border: OutlineInputBorder(
+                                  borderSide: BorderSide.none,
+                                  // 不绘制边框
+                                  borderRadius: BorderRadius.circular(0.0),
+                                  // 确保角落没有圆角
+                                  gapPadding: 0.0, // 移除边框与hintText之间的间距
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: const BorderSide(
+                                      width: 1.0, color: Colors.black),
+                                  // 仅在聚焦时绘制底部边框
+                                  borderRadius: BorderRadius.circular(0.0),
                                 ),
                               ),
-                              border: const OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(3.0)),
-                              ),
+                              onChanged: (value) {
+                                Logger.instance.d('搜索框内容变化：$value');
+                                controller.searchKey = value;
+                                controller.filterByKey();
+                              },
                             ),
-                            onChanged: (value) {
-                              Logger.instance.d('搜索框内容变化：$value');
-                              controller.searchKey = value;
-                              controller.filterByKey();
-                            },
                           ),
                         ),
                       ),
@@ -1404,26 +1420,25 @@ class _MySitePagePageState extends State<MySitePage>
                 return ListView.builder(
                   itemCount: controller.siteSortOptions.length,
                   itemBuilder: (context, index) {
-                    Map<String, String> item =
-                        controller.siteSortOptions[index];
+                    MetaDataItem item = controller.siteSortOptions[index];
                     return Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: ListTile(
-                        title: Text(item['name']!),
+                        title: Text(item.name!),
                         dense: true,
                         selectedColor: Colors.amber,
-                        selected: controller.sortKey == item['value'],
+                        selected: controller.sortKey == item.value,
                         leading: controller.sortReversed
                             ? const Icon(Icons.trending_up)
                             : const Icon(Icons.trending_down),
-                        trailing: controller.sortKey == item['value']
+                        trailing: controller.sortKey == item.value
                             ? const Icon(Icons.check_box_outlined)
                             : const Icon(Icons.check_box_outline_blank_rounded),
                         onTap: () {
-                          if (controller.sortKey == item['value']!) {
+                          if (controller.sortKey == item.value!) {
                             controller.sortReversed = !controller.sortReversed;
                           }
-                          controller.sortKey = item['value']!;
+                          controller.sortKey = item.value!;
                           controller.sortStatusList();
 
                           Navigator.of(context).pop();
@@ -1448,19 +1463,19 @@ class _MySitePagePageState extends State<MySitePage>
               return ListView.builder(
                   itemCount: controller.filterOptions.length,
                   itemBuilder: (context, index) {
-                    Map<String, String> item = controller.filterOptions[index];
+                    MetaDataItem item = controller.filterOptions[index];
                     return ListTile(
-                        title: Text(item['name']!),
+                        title: Text(item.name!),
                         contentPadding:
                             const EdgeInsets.symmetric(horizontal: 16),
                         dense: true,
-                        trailing: controller.filterKey == item['value']
+                        trailing: controller.filterKey == item.value
                             ? const Icon(Icons.check_box_outlined)
                             : const Icon(Icons.check_box_outline_blank_rounded),
                         selectedColor: Colors.amber,
-                        selected: controller.filterKey == item['value'],
+                        selected: controller.filterKey == item.value,
                         onTap: () {
-                          controller.filterKey = item['value']!;
+                          controller.filterKey = item.value!;
                           controller.filterByKey();
 
                           Navigator.of(context).pop();
