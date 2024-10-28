@@ -45,24 +45,46 @@ class HomeController extends GetxController {
     super.onClose();
   }
 
-  final List<Widget> pages = [
+  List<Widget> pages = [
     const DashBoardPage(),
     const AggSearchPage(),
-    const MySitePage(),
     const DownloadPage(),
     TaskPage(),
-    SettingPage(),
     const SubscribePage(),
-    const MyRssPage(),
     const SubscribeHistoryPage(),
-    const SubscribeTagPage(),
     const DouBanPage(),
-    SshWidget(),
+  ];
+  List<NavigationRailDestination> destinations = [
+    const NavigationRailDestination(
+      icon: Icon(Icons.home, size: 18),
+      label: Text('仪表盘'),
+    ),
+    const NavigationRailDestination(
+      icon: Icon(Icons.search, size: 18),
+      label: Text('聚合搜索'),
+    ),
+    const NavigationRailDestination(
+      icon: Icon(Icons.cloud_download, size: 18),
+      label: Text('下载管理'),
+    ),
+    const NavigationRailDestination(
+      icon: Icon(Icons.subscriptions_outlined, size: 18),
+      label: Text('订阅管理'),
+    ),
+    const NavigationRailDestination(
+      icon: Icon(Icons.history, size: 18),
+      label: Text('订阅历史'),
+    ),
+    const NavigationRailDestination(
+      icon: Icon(Icons.theaters, size: 18),
+      label: Text('豆瓣影视'),
+    ),
   ];
 
   @override
   void onReady() async {
     await getAuthInfo();
+    initMenus();
     await initUpdateLogState();
     update();
   }
@@ -110,9 +132,83 @@ class HomeController extends GetxController {
     update();
   }
 
+  initMenus() {
+    pages = [
+      const DashBoardPage(),
+      const AggSearchPage(),
+      if (userinfo?.isStaff == true) const MySitePage(),
+      const DownloadPage(),
+      TaskPage(),
+      if (userinfo?.isStaff == true) SettingPage(),
+      const SubscribePage(),
+      if (userinfo?.isStaff == true) const MyRssPage(),
+      const SubscribeHistoryPage(),
+      if (userinfo?.isStaff == true) const SubscribeTagPage(),
+      const DouBanPage(),
+      if (userinfo?.isStaff == true) SshWidget(),
+    ];
+    destinations = [
+      const NavigationRailDestination(
+        icon: Icon(Icons.home, size: 18),
+        label: Text('仪表盘'),
+      ),
+      const NavigationRailDestination(
+        icon: Icon(Icons.search, size: 18),
+        label: Text('聚合搜索'),
+      ),
+      if (userinfo?.isStaff == true)
+        const NavigationRailDestination(
+          icon: Icon(Icons.language, size: 18),
+          label: Text('站点数据'),
+        ),
+      const NavigationRailDestination(
+        icon: Icon(Icons.cloud_download, size: 18),
+        label: Text('下载管理'),
+      ),
+      if (userinfo?.isStaff == true)
+        const NavigationRailDestination(
+          icon: Icon(Icons.task, size: 18),
+          label: Text('计划任务'),
+        ),
+      if (userinfo?.isStaff == true)
+        const NavigationRailDestination(
+          icon: Icon(Icons.settings, size: 18),
+          label: Text('系统设置'),
+        ),
+      const NavigationRailDestination(
+        icon: Icon(Icons.subscriptions_outlined, size: 18),
+        label: Text('订阅管理'),
+      ),
+      if (userinfo?.isStaff == true)
+        const NavigationRailDestination(
+          icon: Icon(Icons.rss_feed, size: 18),
+          label: Text('站点RSS'),
+        ),
+      const NavigationRailDestination(
+        icon: Icon(Icons.history, size: 18),
+        label: Text('订阅历史'),
+      ),
+      if (userinfo?.isStaff == true)
+        const NavigationRailDestination(
+          icon: Icon(Icons.tag, size: 18),
+          label: Text('订阅标签'),
+        ),
+      const NavigationRailDestination(
+        icon: Icon(Icons.theaters, size: 18),
+        label: Text('豆瓣影视'),
+      ),
+      if (userinfo?.isStaff == true)
+        const NavigationRailDestination(
+          icon: Icon(Icons.description, size: 18),
+          label: Text('SSH终端'),
+        ),
+    ];
+  }
+
   void logout() {
     SPUtil.remove("userinfo");
     SPUtil.remove("isLogin");
+    dioUtil.dio?.close();
     Get.delete<DownloadController>();
     Get.delete<HomeController>();
     Get.offAllNamed(Routes.LOGIN);
@@ -123,7 +219,7 @@ class HomeController extends GetxController {
     if (res.code == 0) {
       updateLogState = res.data;
     } else {
-      Get.snackbar('更新日志', '获取更新日志失败！', colorText: Colors.red);
+      Get.snackbar('更新日志', '获取更新日志失败！${res.msg}', colorText: Colors.red);
     }
     Logger.instance.d(updateLogState?.localLogs);
   }

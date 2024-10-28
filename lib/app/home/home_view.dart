@@ -179,7 +179,7 @@ class HomeView extends GetView<HomeController> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            '${controller.userinfo?.user.toString()}',
+                            '${controller.userinfo?.isStaff == true ? '👑' : '🎩'}${controller.userinfo?.user.toString()}',
                             style: TextStyle(
                                 fontSize: 12,
                                 color: Theme.of(context).colorScheme.primary),
@@ -216,65 +216,7 @@ class HomeView extends GetView<HomeController> {
                   ),
                 ),
               ),
-              destinations: const [
-                NavigationRailDestination(
-                  icon: Icon(Icons.home, size: 18),
-                  label: Text('仪表盘'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.search, size: 18),
-                  label: Text('聚合搜索'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.language, size: 18),
-                  label: Text('站点数据'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.cloud_download, size: 18),
-                  label: Text('下载管理'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.task, size: 18),
-                  label: Text('计划任务'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.settings, size: 18),
-                  label: Text('系统设置'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.subscriptions_outlined, size: 18),
-                  label: Text('订阅管理'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.rss_feed, size: 18),
-                  label: Text('站点RSS'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.history, size: 18),
-                  label: Text('订阅历史'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.tag, size: 18),
-                  label: Text('订阅标签'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.theaters, size: 18),
-                  label: Text('豆瓣影视'),
-                ),
-                // NavigationRailDestination(
-                //   icon: Icon(Icons.list_alt, size: 18),
-                //   label: Text('操作日志'),
-                // ),
-
-                // NavigationRailDestination(
-                //   icon: Icon(Icons.account_box_rounded, size: 18),
-                //   label: Text('更换账号'),
-                // ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.description, size: 18),
-                  label: Text('SSH终端'),
-                ),
-              ],
+              destinations: controller.destinations,
             ),
           ),
         ),
