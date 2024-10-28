@@ -3,12 +3,21 @@ import '../app/home/pages/models/website.dart';
 import '../models/common_response.dart';
 import '../utils/dio_util.dart';
 import '../utils/logger_helper.dart';
+import '../utils/storage.dart';
 import 'api.dart';
 import 'hooks.dart';
 
+String baseUrl = SPUtil.getLocalStorage('server');
+
 /// 获取
 Future<CommonResponse> getMySiteList() async {
-  return await fetchDataList(Api.MYSITE_LIST, (p0) => MySite.fromJson(p0));
+  final response = await fetchDataList(Api.MYSITE_LIST, (p0) => p0);
+  if (response.code == 0) {
+    SPUtil.setMap('$baseUrl - mySiteList', {'mySiteList': response.data});
+    return CommonResponse.success(
+        data: response.data?.map((p0) => MySite.fromJson(p0)).toList());
+  }
+  return response;
 }
 
 /// 清除缓存
@@ -19,11 +28,15 @@ Future<CommonResponse> clearMyCacheApi(String key) async {
 /// 获取站点信息列表
 ///
 Future<CommonResponse> getWebSiteList() async {
-  final response =
-      await fetchDataList(Api.WEBSITE_LIST, (p0) => WebSite.fromJson(p0));
+  final response = await fetchDataList(Api.WEBSITE_LIST, (p0) => p0);
   if (response.code == 0) {
-    Map<String, WebSite> dataList =
-        response.data!.asMap().entries.fold({}, (result, entry) {
+    SPUtil.setMap('$baseUrl - webSiteList', {'webSiteList': response.data});
+    Map<String, WebSite> dataList = response.data!
+        .map((item) => WebSite.fromJson(item))
+        .toList()
+        .asMap()
+        .entries
+        .fold({}, (result, entry) {
       result[entry.value.name] = entry.value;
       return result;
     });
