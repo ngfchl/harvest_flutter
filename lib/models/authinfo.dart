@@ -1,18 +1,24 @@
 class AuthInfo {
   String? authToken;
   String? user;
+  bool? isSuperUser;
+  bool? isStaff;
 
   AuthInfo({this.authToken, this.user});
 
   AuthInfo.fromJson(Map<String, dynamic> json) {
     authToken = json['auth_token'];
     user = json['user'];
+    isSuperUser = json['is_superuser'];
+    isStaff = json['is_staff'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['auth_token'] = authToken;
     data['user'] = user;
+    data['is_superuser'] = isSuperUser;
+    data['is_staff'] = isStaff;
     return data;
   }
 }
