@@ -231,7 +231,8 @@ class MySite {
       'hr_discern': hrDiscern,
       'search_torrents': searchTorrents,
       'remove_torrent_rules': removeTorrentRules,
-      'updated_at': updatedAt,
+      'updated_at': updatedAt.toString(),
+      'time_join': timeJoin.toString(),
     };
   }
 
