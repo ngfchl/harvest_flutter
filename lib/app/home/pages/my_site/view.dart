@@ -57,7 +57,23 @@ class _MySitePagePageState extends State<MySitePage>
             },
             child: Column(
               children: [
-                // if (controller.mySiteList.isNotEmpty)
+                if (controller.loadingFromServer)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Center(
+                          child: GFLoader(size: 8, loaderstrokeWidth: 2)),
+                      const SizedBox(width: 5),
+                      Text(
+                        '当前为缓存数据，正在从服务器加载',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
                 Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),

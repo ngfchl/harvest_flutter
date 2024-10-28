@@ -19,8 +19,10 @@ class MySiteController extends GetxController {
   List<MySite> showStatusList = <MySite>[];
   bool isLoaded = false;
   bool initFlag = false;
+  bool loadingFromServer = false;
   bool openByInnerExplorer = true;
   String sortKey = 'statusMail';
+  late String baseUrl;
   bool sortReversed = false;
   Map<String, WebSite> webSiteList = {};
 
@@ -71,7 +73,10 @@ class MySiteController extends GetxController {
     searchKey = '';
     filterKey = '';
     sortKey = SPUtil.getLocalStorage('mySite-sortKey') ?? 'mySiteSortId';
+    baseUrl = SPUtil.getLocalStorage('server');
     isLoaded = true;
+    loadingFromServer = true;
+
     await initData();
     super.onInit();
   }
@@ -80,10 +85,20 @@ class MySiteController extends GetxController {
     if (!initFlag) {
       return;
     }
-    initOpenByInnerExplorerFlag();
-    await getWebSiteListFromServer();
-    await getSiteStatusFromServer();
+    openByInnerExplorer = SPUtil.getBool('openByInnerExplorer',
+        defaultValue: !PlatformTool.isDesktopOS())!;
+    await loadCacheInfo();
     update();
+    // 启动后台 Isolate
+    Future.microtask(() async {
+      Logger.instance.i('开始从数据库加载数据...');
+      // 模拟后台获取数据
+      await getWebSiteListFromServer();
+      await getSiteStatusFromServer();
+      loadingFromServer = false;
+      Logger.instance.i('从数据库加载数据完成！');
+      update(); // UI 更新
+    });
   }
 
   Map<String, WebSite> buildTrackerToWebSite() {
@@ -94,14 +109,48 @@ class MySiteController extends GetxController {
     });
   }
 
-  initOpenByInnerExplorerFlag() {
-    if (!PlatformTool.isDesktopOS()) {
-      openByInnerExplorer = false;
-    } else {
-      openByInnerExplorer =
-          SPUtil.getBool('openByInnerExplorer', defaultValue: true)!;
+  /*///@title 从缓存加载站点信息数据
+  ///@description TODO
+  ///@updateTime 2024-10-28
+   */
+  loadCacheInfo() async {
+    // 记录开始时间
+    Logger.instance.d('开始从缓存加载站点数据');
+    DateTime startTime = DateTime.now();
+    Map webSiteListMap = SPUtil.getMap('$baseUrl - webSiteList');
+    Map mySiteListMap = SPUtil.getMap('$baseUrl - mySiteList');
+    Logger.instance.d(
+        '共获取到站点配置缓存：${webSiteListMap['webSiteList'].length} 条，站点信息缓存：${mySiteListMap['mySiteList'].length} 条');
+    if (webSiteListMap.isNotEmpty) {
+      List<WebSite> webSiteObjectList = webSiteListMap['webSiteList']
+          .map((item) => WebSite.fromJson(item))
+          .toList()
+          .cast<WebSite>();
+      webSiteList = webSiteObjectList.asMap().entries.fold({}, (result, entry) {
+        result[entry.value.name] = entry.value;
+        return result;
+      });
+      update();
+      Logger.instance.d(
+          '获取站点配置缓存耗时: ${DateTime.now().difference(startTime).inMilliseconds} 毫秒');
     }
-    update();
+
+    if (mySiteListMap.isNotEmpty) {
+      try {
+        mySiteList = mySiteListMap['mySiteList']
+            ?.map((item) => MySite.fromJson(item))
+            .toList()
+            .cast<MySite>();
+        if (mySiteList.isNotEmpty) isLoaded = false;
+        filterByKey();
+        Logger.instance.d(
+            '获取站点信息缓存耗时: ${DateTime.now().difference(startTime).inMilliseconds} 毫秒');
+        update();
+      } catch (e, trace) {
+        Logger.instance.e(e);
+        Logger.instance.d(trace);
+      }
+    }
   }
 
   Future<void> getWebSiteListFromServer() async {
@@ -109,7 +158,6 @@ class MySiteController extends GetxController {
     DateTime startTime = DateTime.now();
     CommonResponse value = await getWebSiteList();
     if (value.code == 0) {
-      webSiteList.clear();
       webSiteList = value.data;
     } else {
       Logger.instance.e(value.msg);
@@ -120,11 +168,32 @@ class MySiteController extends GetxController {
     }
     // 记录结束时间
     DateTime endTime = DateTime.now();
-
     // 计算耗时
     Duration duration = endTime.difference(startTime);
     Logger.instance.d('获取站点配置程序耗时: ${duration.inMilliseconds} 毫秒');
-    filterByKey();
+    update();
+  }
+
+  Future<void> getSiteStatusFromServer() async {
+    // 记录开始时间
+    DateTime startTime = DateTime.now();
+    CommonResponse res = await getMySiteList();
+    if (res.code == 0) {
+      mySiteList = res.data;
+      filterByKey();
+      isLoaded = false;
+    } else {
+      Logger.instance.e(res.msg);
+      Get.snackbar(
+        '',
+        res.msg.toString(),
+      );
+    }
+    // 记录结束时间
+    var endTime = DateTime.now();
+    // 计算耗时
+    var duration = endTime.difference(startTime);
+    Logger.instance.d('解析站点信息列表程序耗时: ${duration.inMilliseconds} 毫秒');
     update();
   }
 
@@ -156,36 +225,6 @@ class MySiteController extends GetxController {
       );
       return false;
     }
-  }
-
-  Future<void> getSiteStatusFromServer() async {
-    // 记录开始时间
-    DateTime startTime = DateTime.now();
-
-    CommonResponse res = await getMySiteList();
-    DateTime endTime = DateTime.now();
-    // 计算耗时
-    Duration duration = endTime.difference(startTime);
-    Logger.instance.d('获取站点信息列表程序耗时: ${duration.inMilliseconds} 毫秒');
-    startTime = DateTime.now();
-    if (res.code == 0) {
-      mySiteList.clear();
-      mySiteList = res.data;
-      filterByKey();
-      isLoaded = false;
-    } else {
-      Logger.instance.e(res.msg);
-      Get.snackbar(
-        '',
-        res.msg.toString(),
-      );
-    }
-    // 记录结束时间
-    endTime = DateTime.now();
-    // 计算耗时
-    duration = endTime.difference(startTime);
-    Logger.instance.d('解析站点信息列表程序耗时: ${duration.inMilliseconds} 毫秒');
-    update();
   }
 
   Future<void> removeSiteFromServer(MySite mySite) async {

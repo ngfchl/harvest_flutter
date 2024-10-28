@@ -224,6 +224,22 @@ class _DashBoardPageState extends State<DashBoardPage>
     return GetBuilder<DashBoardController>(builder: (controller) {
       return Column(
         children: [
+          if (controller.mySiteController.loadingFromServer)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Center(child: GFLoader(size: 8, loaderstrokeWidth: 2)),
+                const SizedBox(width: 5),
+                Text(
+                  '当前为缓存数据，正在从服务器加载',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ],
+            ),
           const SizedBox(height: 5),
           Expanded(
             child: EasyRefresh(

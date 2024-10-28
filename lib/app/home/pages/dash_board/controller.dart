@@ -54,8 +54,19 @@ class DashBoardController extends GetxController {
     update();
     mySiteController.initFlag = true;
     await initChartData();
+
     isLoading = false;
     update();
+    // 监听后台任务完成的消息
+    Future.microtask(() async {
+      Logger.instance.i('开始从数据库加载数据...');
+      // 模拟后台获取数据
+      await mySiteController.getWebSiteListFromServer();
+      await mySiteController.getSiteStatusFromServer();
+      mySiteController.loadingFromServer = false;
+      Logger.instance.i('从数据库加载数据完成！');
+      update(); // UI 更新
+    });
   }
 
   Future<void> initChartData() async {
@@ -73,7 +84,7 @@ class DashBoardController extends GetxController {
     String todayStr = getTodayString();
     String yesterdayStr = getYesterdayString();
     if (mySiteController.mySiteList.isEmpty) {
-      await mySiteController.initData();
+      await mySiteController.loadCacheInfo();
       update();
       mySiteController.initFlag = false;
     }
