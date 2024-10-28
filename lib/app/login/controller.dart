@@ -16,26 +16,43 @@ class LoginController extends GetxController {
   Server? selectedServer;
   final ServerRepository serverRepository = ServerRepository();
   bool isLoading = false;
+  bool canConnectInternet = false;
   bool showPassword = true;
   bool testRes = false;
   DioUtil dioUtil = DioUtil();
 
   @override
   void onInit() async {
-    // 触发 网络权限授权
-    if (!kIsWeb) await Dio().get('https://ptools.fun');
+    super.onInit();
+    Logger.instance.i('初始化登录页面');
     await serverRepository.init();
     Logger.instance.i(serverRepository.serverList);
     initServerList();
+    await getNetworkPermission();
     update();
+  }
 
-    super.onInit();
+  Future<void> getNetworkPermission() async {
+    canConnectInternet =
+        SPUtil.getBool('canConnectInternet', defaultValue: false)!;
+    // 触发 网络权限授权
+    if (!kIsWeb && !canConnectInternet) {
+      Logger.instance.i('触发网络访问权限中...');
+      var res = await Dio().get('https://www.baidu.com');
+      if (res.statusCode == 200) {
+        canConnectInternet = true;
+        SPUtil.setBool('canConnectInternet', true);
+      }
+    }
   }
 
   initServerList() {
+    Logger.instance.i('开始读取服务器列表');
     serverList = serverRepository.serverList;
+    Logger.instance.i('读取完毕，共有${serverList.length}个服务器');
     // 寻找selected为true的服务器，并赋值给selectedServer
     selectedServer = serverList.firstWhereOrNull((server) => server.selected);
+    Logger.instance.i('选种服务器：${selectedServer?.name.toString()}');
     if (selectedServer != null) {
       initDio(selectedServer!);
     }
