@@ -33,4 +33,9 @@ class CommonResponse<T> {
     this.msg = msg ?? '';
     data = null;
   }
+
+  @override
+  String toString() {
+    return 'Code: $code, Msg: $msg, Data: $data';
+  }
 }
