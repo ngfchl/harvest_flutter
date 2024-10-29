@@ -64,6 +64,7 @@ class DashBoardController extends GetxController {
       await mySiteController.getWebSiteListFromServer();
       await mySiteController.getSiteStatusFromServer();
       mySiteController.loadingFromServer = false;
+      await initChartData();
       Logger.instance.i('从数据库加载数据完成！');
       update(); // UI 更新
     });
