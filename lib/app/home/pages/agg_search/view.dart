@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:harvest/app/home/pages/agg_search/models/torrent_info.dart';
 import 'package:harvest/app/home/pages/models/website.dart';
+import 'package:harvest/common/meta_item.dart';
 import 'package:intl/intl.dart';
 import 'package:random_color/random_color.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -756,13 +757,13 @@ class _AggSearchPageState extends State<AggSearchPage>
           child: ListView.builder(
         itemCount: controller.sortKeyList.length,
         itemBuilder: (context, index) {
-          Map<String, String> item = controller.sortKeyList[index];
+          MetaDataItem item = controller.sortKeyList[index];
           return CustomCard(
             padding: const EdgeInsets.symmetric(vertical: 3.0),
             child: ListTile(
               dense: true,
               title: Text(
-                item['name']!,
+                item.name,
                 style: const TextStyle(fontSize: 13),
               ),
               shape: RoundedRectangleBorder(
@@ -770,19 +771,19 @@ class _AggSearchPageState extends State<AggSearchPage>
                 side: const BorderSide(color: Colors.grey, width: 1.0),
               ),
               selectedColor: Colors.amber,
-              selected: controller.sortKey == item['value'],
+              selected: controller.sortKey == item.value,
               leading: controller.sortReversed
                   ? const Icon(Icons.trending_up)
                   : const Icon(Icons.trending_down),
-              trailing: controller.sortKey == item['value']
+              trailing: controller.sortKey == item.value
                   ? const Icon(Icons.check_box_outlined)
                   : const Icon(Icons.check_box_outline_blank_rounded),
               onTap: () {
-                if (controller.sortKey == item['value']!) {
+                if (controller.sortKey == item.value) {
                   controller.sortReversed = !controller.sortReversed;
                 }
 
-                controller.sortKey = item['value']!;
+                controller.sortKey = item.value;
                 controller.sortResults();
 
                 Navigator.of(context).pop();
@@ -832,6 +833,15 @@ class _AggSearchPageState extends State<AggSearchPage>
                       name: '分类',
                       value: controller.succeedCategories,
                       selected: controller.selectedCategories,
+                      onUpdate: () {
+                        controller.filterResults();
+                        controller.update();
+                      }),
+                if (controller.succeedResolution.isNotEmpty)
+                  FilterItem(
+                      name: '分辨率',
+                      value: controller.succeedResolution,
+                      selected: controller.selectedResolution,
                       onUpdate: () {
                         controller.filterResults();
                         controller.update();
