@@ -232,134 +232,138 @@ class HomeView extends GetView<HomeController> {
         children: [
           const LoggingView(),
           const SizedBox(width: 15),
-          const CustomUAWidget(),
-          const SizedBox(width: 15),
-          InkWell(
-            onTap: () {
-              if (controller.updateLogState == null) {
-                controller.initUpdateLogState();
-                Get.snackbar('请稍后', '更新日志获取中，请稍后...',
-                    colorText: Theme.of(context).colorScheme.primary);
-                return;
-              }
-              controller.update();
-              Get.defaultDialog(
-                  title: "Docker更新日志",
-                  content: SizedBox(
-                    height: 300,
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: controller.updateLogState!.updateNotes
-                            .map((note) => CustomCard(
-                                  width: double.infinity,
-                                  color: controller
-                                              .updateLogState?.localLogs.hex ==
-                                          note.hex
-                                      ? Colors.green
-                                      : Theme.of(context).colorScheme.surface,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 4),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      controller.updateLogState?.localLogs
-                                                  .hex ==
-                                              note.hex
-                                          ? Icon(
-                                              Icons.check,
-                                              size: 24,
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .onSurface
-                                                  .withOpacity(0.8),
-                                            )
-                                          : const SizedBox(),
-                                      Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          children: [
-                                            Text(
-                                              note.data.trimRight(),
-                                              style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: controller
-                                                                  .updateLogState
-                                                                  ?.update ==
-                                                              true &&
-                                                          note.date.compareTo(
-                                                                  controller
-                                                                      .updateLogState!
-                                                                      .localLogs
-                                                                      .date) >
-                                                              0
-                                                      ? Colors.red
-                                                      : Theme.of(context)
-                                                          .colorScheme
-                                                          .primary,
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                            Text(
-                                              note.date,
-                                              style: TextStyle(
-                                                  fontSize: 10,
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .onSurface
-                                                      .withOpacity(0.8)),
-                                              textAlign: TextAlign.right,
-                                            ),
-                                          ]),
-                                    ],
-                                  ),
-                                ))
-                            .toList(),
-                      ),
-                    ),
-                  ),
-                  confirm: controller.updateLogState!.update == true
-                      ? ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.blue,
-                            // 按钮文字颜色
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18.0), // 圆角半径
-                            ),
-                          ),
-                          onPressed: () async {
-                            final res = await controller.doDockerUpdate();
-                            Get.back();
-                            Get.snackbar('更新通知', '${res.msg}',
-                                colorText:
-                                    Theme.of(context).colorScheme.primary);
-                          },
-                          child: const Text('更新'),
-                        )
-                      : null,
-                  cancel: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        backgroundColor: Colors.red,
-                        // 按钮文字颜色
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18.0), // 圆角半径
+          if (controller.userinfo?.isStaff == true) ...[
+            const CustomUAWidget(),
+            const SizedBox(width: 15)
+          ],
+          if (controller.userinfo?.isStaff == true) ...[
+            InkWell(
+              onTap: () {
+                if (controller.updateLogState == null) {
+                  controller.initUpdateLogState();
+                  Get.snackbar('请稍后', '更新日志获取中，请稍后...',
+                      colorText: Theme.of(context).colorScheme.primary);
+                  return;
+                }
+                controller.update();
+                Get.defaultDialog(
+                    title: "Docker更新日志",
+                    content: SizedBox(
+                      height: 300,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: controller.updateLogState!.updateNotes
+                              .map((note) => CustomCard(
+                                    width: double.infinity,
+                                    color: controller.updateLogState?.localLogs
+                                                .hex ==
+                                            note.hex
+                                        ? Colors.green
+                                        : Theme.of(context).colorScheme.surface,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        controller.updateLogState?.localLogs
+                                                    .hex ==
+                                                note.hex
+                                            ? Icon(
+                                                Icons.check,
+                                                size: 24,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onSurface
+                                                    .withOpacity(0.8),
+                                              )
+                                            : const SizedBox(),
+                                        Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                            children: [
+                                              Text(
+                                                note.data.trimRight(),
+                                                style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: controller
+                                                                    .updateLogState
+                                                                    ?.update ==
+                                                                true &&
+                                                            note.date.compareTo(
+                                                                    controller
+                                                                        .updateLogState!
+                                                                        .localLogs
+                                                                        .date) >
+                                                                0
+                                                        ? Colors.red
+                                                        : Theme.of(context)
+                                                            .colorScheme
+                                                            .primary,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                              Text(
+                                                note.date,
+                                                style: TextStyle(
+                                                    fontSize: 10,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .onSurface
+                                                        .withOpacity(0.8)),
+                                                textAlign: TextAlign.right,
+                                              ),
+                                            ]),
+                                      ],
+                                    ),
+                                  ))
+                              .toList(),
                         ),
                       ),
-                      onPressed: () {
-                        Get.back();
-                      },
-                      child: const Text('取消')));
-            },
-            child: Icon(Icons.upload,
-                size: 24,
-                color: controller.updateLogState?.update == true
-                    ? Colors.red
-                    : Theme.of(context).colorScheme.primary),
-          ),
-
-          const SizedBox(width: 15),
-
+                    ),
+                    confirm: controller.updateLogState!.update == true
+                        ? ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: Colors.blue,
+                              // 按钮文字颜色
+                              shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.circular(18.0), // 圆角半径
+                              ),
+                            ),
+                            onPressed: () async {
+                              final res = await controller.doDockerUpdate();
+                              Get.back();
+                              Get.snackbar('更新通知', '${res.msg}',
+                                  colorText:
+                                      Theme.of(context).colorScheme.primary);
+                            },
+                            child: const Text('更新'),
+                          )
+                        : null,
+                    cancel: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor: Colors.red,
+                          // 按钮文字颜色
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18.0), // 圆角半径
+                          ),
+                        ),
+                        onPressed: () {
+                          Get.back();
+                        },
+                        child: const Text('取消')));
+              },
+              child: Icon(Icons.upload,
+                  size: 24,
+                  color: controller.updateLogState?.update == true
+                      ? Colors.red
+                      : Theme.of(context).colorScheme.primary),
+            ),
+            const SizedBox(width: 15),
+          ],
           // const Wen(),
 
           DarkModeSwitch(
@@ -377,320 +381,322 @@ class HomeView extends GetView<HomeController> {
               itemSize: 32,
             ),
           ),
-          const SizedBox(width: 15),
-          CustomPopup(
-            showArrow: false,
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            barrierColor: Colors.transparent,
-            content: SizedBox(
-              width: 100,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  PopupMenuItem<String>(
-                    child: Text(
-                      '全员签到',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.secondary,
-                      ),
-                    ),
-                    onTap: () async {
-                      await signAllSiteButton();
-                    },
-                  ),
-                  PopupMenuItem<String>(
-                    child: Text(
-                      '站点数据',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.secondary,
-                      ),
-                    ),
-                    onTap: () async {
-                      await getAllStatusButton();
-                    },
-                  ),
-                  PopupMenuItem<String>(
-                    child: Text(
-                      '批量操作',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.secondary,
-                      ),
-                    ),
-                    onTap: () async {
-                      const List<Tab> tabs = [
-                        Tab(text: '批量修改'),
-                        Tab(text: '清理数据'),
-                      ];
-                      TextEditingController keyController =
-                          TextEditingController(text: '');
-                      TextEditingController valueController =
-                          TextEditingController(text: '');
-                      Map<String, String> selectOptions = {
-                        "站点UA": "user_agent",
-                        "网络代理": "proxy"
-                      };
-                      Get.bottomSheet(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5.0), // 圆角半径
+          if (controller.userinfo?.isStaff == true) ...[
+            const SizedBox(width: 15),
+            CustomPopup(
+              showArrow: false,
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              barrierColor: Colors.transparent,
+              content: SizedBox(
+                width: 100,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    PopupMenuItem<String>(
+                      child: Text(
+                        '全员签到',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
                         ),
-                        SizedBox(
-                          height: 240,
-                          // width: 240,
-                          child: DefaultTabController(
-                            length: tabs.length,
-                            child: Scaffold(
-                              appBar: const TabBar(tabs: tabs),
-                              body: TabBarView(
-                                children: [
-                                  Column(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      CustomPickerField(
-                                        controller: keyController,
-                                        labelText: '要替换的属性',
-                                        data: const ["站点UA", "网络代理"],
-                                        // onChanged: (p, position) {
-                                        //   keyController.text = selectOptions[p]!;
-                                        // },
-                                      ),
-                                      CustomTextField(
-                                          controller: valueController,
-                                          labelText: "替换为"),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceAround,
-                                        children: [
-                                          ElevatedButton(
-                                            style: OutlinedButton.styleFrom(
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                        8.0), // 圆角半径
-                                              ),
-                                            ),
-                                            onPressed: () {
-                                              Get.back(result: false);
-                                            },
-                                            child: const Text('取消'),
-                                          ),
-                                          ElevatedButton(
-                                            style: OutlinedButton.styleFrom(
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                        8.0), // 圆角半径
-                                              ),
-                                            ),
-                                            onPressed: () async {
-                                              Get.back(result: true);
-                                              await bulkUpgradeHandler({
-                                                "key": selectOptions[
-                                                    keyController.text]!,
-                                                "value": StringUtils
-                                                    .parseJsonOrReturnString(
-                                                        valueController.text),
-                                              });
-                                            },
-                                            child: const Text('确认'),
-                                          ),
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 28.0),
-                                    child: Column(
+                      ),
+                      onTap: () async {
+                        await signAllSiteButton();
+                      },
+                    ),
+                    PopupMenuItem<String>(
+                      child: Text(
+                        '站点数据',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                      ),
+                      onTap: () async {
+                        await getAllStatusButton();
+                      },
+                    ),
+                    PopupMenuItem<String>(
+                      child: Text(
+                        '批量操作',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                      ),
+                      onTap: () async {
+                        const List<Tab> tabs = [
+                          Tab(text: '批量修改'),
+                          Tab(text: '清理数据'),
+                        ];
+                        TextEditingController keyController =
+                            TextEditingController(text: '');
+                        TextEditingController valueController =
+                            TextEditingController(text: '');
+                        Map<String, String> selectOptions = {
+                          "站点UA": "user_agent",
+                          "网络代理": "proxy"
+                        };
+                        Get.bottomSheet(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5.0), // 圆角半径
+                          ),
+                          SizedBox(
+                            height: 240,
+                            // width: 240,
+                            child: DefaultTabController(
+                              length: tabs.length,
+                              child: Scaffold(
+                                appBar: const TabBar(tabs: tabs),
+                                body: TabBarView(
+                                  children: [
+                                    Column(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceEvenly,
                                       children: [
-                                        CustomTextTag(
-                                            labelText: "慎用，清理后数据无法恢复",
-                                            backgroundColor: Theme.of(context)
-                                                .colorScheme
-                                                .error),
-                                        FullWidthButton(
-                                            text: "精简历史数据",
-                                            onPressed: () async {
-                                              Get.defaultDialog(
-                                                title: "确认吗？",
-                                                middleText:
-                                                    "本操作会精简站点数据，只保留最近15天的历史数据，确认精简数据吗？",
-                                                actions: [
-                                                  ElevatedButton(
-                                                    style: OutlinedButton
-                                                        .styleFrom(
-                                                      shape:
-                                                          RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(
-                                                                    8.0), // 圆角半径
-                                                      ),
-                                                    ),
-                                                    onPressed: () async {
-                                                      Get.back(result: false);
-                                                    },
-                                                    child: const Text('取消'),
-                                                  ),
-                                                  ElevatedButton(
-                                                    style: OutlinedButton
-                                                        .styleFrom(
-                                                      shape:
-                                                          RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(
-                                                                    8.0), // 圆角半径
-                                                      ),
-                                                    ),
-                                                    onPressed: () async {
-                                                      Get.back(result: true);
-                                                      await bulkUpgradeHandler({
-                                                        "key": "status_15",
-                                                        "value": {},
-                                                      });
-                                                    },
-                                                    child: const Text('确认'),
-                                                  ),
-                                                ],
-                                              );
-                                            }),
-                                        FullWidthButton(
-                                            text: "清除历史数据",
-                                            onPressed: () async {
-                                              Get.defaultDialog(
-                                                title: "确认吗？",
-                                                middleText: "确认清除站点历史数据吗？",
-                                                actions: [
-                                                  ElevatedButton(
-                                                    style: OutlinedButton
-                                                        .styleFrom(
-                                                      shape:
-                                                          RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(
-                                                                    8.0), // 圆角半径
-                                                      ),
-                                                    ),
-                                                    onPressed: () async {
-                                                      Get.back(result: false);
-                                                    },
-                                                    child: const Text('取消'),
-                                                  ),
-                                                  ElevatedButton(
-                                                    style: OutlinedButton
-                                                        .styleFrom(
-                                                      shape:
-                                                          RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(
-                                                                    8.0), // 圆角半径
-                                                      ),
-                                                    ),
-                                                    onPressed: () async {
-                                                      Get.back(result: true);
-                                                      await bulkUpgradeHandler({
-                                                        "key": "status",
-                                                        "value": {},
-                                                      });
-                                                    },
-                                                    child: const Text('确认'),
-                                                  ),
-                                                ],
-                                              );
-                                            }),
-                                        FullWidthButton(
-                                            text: "清除签到数据",
-                                            onPressed: () async {
-                                              Get.defaultDialog(
-                                                title: "确认吗？",
-                                                middleText: "确认清除站点签到数据吗？",
-                                                actions: [
-                                                  ElevatedButton(
-                                                    style: OutlinedButton
-                                                        .styleFrom(
-                                                      shape:
-                                                          RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(
-                                                                    8.0), // 圆角半径
-                                                      ),
-                                                    ),
-                                                    onPressed: () {
-                                                      Get.back(result: false);
-                                                    },
-                                                    child: const Text('取消'),
-                                                  ),
-                                                  ElevatedButton(
-                                                    style: OutlinedButton
-                                                        .styleFrom(
-                                                      shape:
-                                                          RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(
-                                                                    8.0), // 圆角半径
-                                                      ),
-                                                    ),
-                                                    onPressed: () async {
-                                                      Get.back(result: true);
-                                                      await bulkUpgradeHandler({
-                                                        "key": "sign_info",
-                                                        "value": {},
-                                                      });
-                                                    },
-                                                    child: const Text('确认'),
-                                                  ),
-                                                ],
-                                              );
-                                            }),
+                                        CustomPickerField(
+                                          controller: keyController,
+                                          labelText: '要替换的属性',
+                                          data: const ["站点UA", "网络代理"],
+                                          // onChanged: (p, position) {
+                                          //   keyController.text = selectOptions[p]!;
+                                          // },
+                                        ),
+                                        CustomTextField(
+                                            controller: valueController,
+                                            labelText: "替换为"),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceAround,
+                                          children: [
+                                            ElevatedButton(
+                                              style: OutlinedButton.styleFrom(
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          8.0), // 圆角半径
+                                                ),
+                                              ),
+                                              onPressed: () {
+                                                Get.back(result: false);
+                                              },
+                                              child: const Text('取消'),
+                                            ),
+                                            ElevatedButton(
+                                              style: OutlinedButton.styleFrom(
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          8.0), // 圆角半径
+                                                ),
+                                              ),
+                                              onPressed: () async {
+                                                Get.back(result: true);
+                                                await bulkUpgradeHandler({
+                                                  "key": selectOptions[
+                                                      keyController.text]!,
+                                                  "value": StringUtils
+                                                      .parseJsonOrReturnString(
+                                                          valueController.text),
+                                                });
+                                              },
+                                              child: const Text('确认'),
+                                            ),
+                                          ],
+                                        )
                                       ],
                                     ),
-                                  ),
-                                ],
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 28.0),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        children: [
+                                          CustomTextTag(
+                                              labelText: "慎用，清理后数据无法恢复",
+                                              backgroundColor: Theme.of(context)
+                                                  .colorScheme
+                                                  .error),
+                                          FullWidthButton(
+                                              text: "精简历史数据",
+                                              onPressed: () async {
+                                                Get.defaultDialog(
+                                                  title: "确认吗？",
+                                                  middleText:
+                                                      "本操作会精简站点数据，只保留最近15天的历史数据，确认精简数据吗？",
+                                                  actions: [
+                                                    ElevatedButton(
+                                                      style: OutlinedButton
+                                                          .styleFrom(
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      8.0), // 圆角半径
+                                                        ),
+                                                      ),
+                                                      onPressed: () async {
+                                                        Get.back(result: false);
+                                                      },
+                                                      child: const Text('取消'),
+                                                    ),
+                                                    ElevatedButton(
+                                                      style: OutlinedButton
+                                                          .styleFrom(
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      8.0), // 圆角半径
+                                                        ),
+                                                      ),
+                                                      onPressed: () async {
+                                                        Get.back(result: true);
+                                                        await bulkUpgradeHandler({
+                                                          "key": "status_15",
+                                                          "value": {},
+                                                        });
+                                                      },
+                                                      child: const Text('确认'),
+                                                    ),
+                                                  ],
+                                                );
+                                              }),
+                                          FullWidthButton(
+                                              text: "清除历史数据",
+                                              onPressed: () async {
+                                                Get.defaultDialog(
+                                                  title: "确认吗？",
+                                                  middleText: "确认清除站点历史数据吗？",
+                                                  actions: [
+                                                    ElevatedButton(
+                                                      style: OutlinedButton
+                                                          .styleFrom(
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      8.0), // 圆角半径
+                                                        ),
+                                                      ),
+                                                      onPressed: () async {
+                                                        Get.back(result: false);
+                                                      },
+                                                      child: const Text('取消'),
+                                                    ),
+                                                    ElevatedButton(
+                                                      style: OutlinedButton
+                                                          .styleFrom(
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      8.0), // 圆角半径
+                                                        ),
+                                                      ),
+                                                      onPressed: () async {
+                                                        Get.back(result: true);
+                                                        await bulkUpgradeHandler({
+                                                          "key": "status",
+                                                          "value": {},
+                                                        });
+                                                      },
+                                                      child: const Text('确认'),
+                                                    ),
+                                                  ],
+                                                );
+                                              }),
+                                          FullWidthButton(
+                                              text: "清除签到数据",
+                                              onPressed: () async {
+                                                Get.defaultDialog(
+                                                  title: "确认吗？",
+                                                  middleText: "确认清除站点签到数据吗？",
+                                                  actions: [
+                                                    ElevatedButton(
+                                                      style: OutlinedButton
+                                                          .styleFrom(
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      8.0), // 圆角半径
+                                                        ),
+                                                      ),
+                                                      onPressed: () {
+                                                        Get.back(result: false);
+                                                      },
+                                                      child: const Text('取消'),
+                                                    ),
+                                                    ElevatedButton(
+                                                      style: OutlinedButton
+                                                          .styleFrom(
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      8.0), // 圆角半径
+                                                        ),
+                                                      ),
+                                                      onPressed: () async {
+                                                        Get.back(result: true);
+                                                        await bulkUpgradeHandler({
+                                                          "key": "sign_info",
+                                                          "value": {},
+                                                        });
+                                                      },
+                                                      child: const Text('确认'),
+                                                    ),
+                                                  ],
+                                                );
+                                              }),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
+                        );
+                      },
+                    ),
+                    PopupMenuItem<String>(
+                      child: Text(
+                        'PTPP',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
                         ),
-                      );
-                    },
-                  ),
-                  PopupMenuItem<String>(
-                    child: Text(
-                      'PTPP',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.secondary,
                       ),
+                      onTap: () async {
+                        await importFromPTPP();
+                      },
                     ),
-                    onTap: () async {
-                      await importFromPTPP();
-                    },
-                  ),
-                  PopupMenuItem<String>(
-                    child: Text(
-                      'CC 同步',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.secondary,
+                    PopupMenuItem<String>(
+                      child: Text(
+                        'CC 同步',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
                       ),
+                      onTap: () async {
+                        await importFromCookieCloud();
+                      },
                     ),
-                    onTap: () async {
-                      await importFromCookieCloud();
-                    },
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            child: Icon(
-              Icons.add_box_outlined,
-              size: 24,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
+              child: Icon(
+                Icons.add_box_outlined,
+                size: 24,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            )
+          ],
           const SizedBox(width: 20)
         ],
       );
