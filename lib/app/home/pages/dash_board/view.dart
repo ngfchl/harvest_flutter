@@ -56,7 +56,9 @@ class _DashBoardPageState extends State<DashBoardPage>
           body: GetBuilder<DashBoardController>(builder: (controller) {
             return _showAllInfo();
           }),
-          floatingActionButton: _buildBottomButtonBar(),
+          floatingActionButton: controller.userinfo?.isStaff == true
+              ? _buildBottomButtonBar()
+              : null,
           floatingActionButtonLocation:
               FloatingActionButtonLocation.miniCenterDocked,
         ),
@@ -437,7 +439,7 @@ class _DashBoardPageState extends State<DashBoardPage>
             ),
           ),
           if (!kIsWeb && Platform.isIOS) const SizedBox(height: 10),
-          const SizedBox(height: 50),
+          if (controller.userinfo?.isStaff == true) const SizedBox(height: 50),
         ],
       );
     });

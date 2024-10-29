@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:harvest/utils/storage.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../models/authinfo.dart';
 import '../../../../utils/date_time_utils.dart';
 import '../../../../utils/logger_helper.dart';
 import '../models/my_site.dart';
@@ -42,9 +43,11 @@ class DashBoardController extends GetxController {
   int days = 7;
   int maxDays = 0;
   int initCount = 0;
+  AuthInfo? userinfo;
 
   @override
   void onInit() {
+    userinfo = AuthInfo.fromJson(SPUtil.getLocalStorage('userinfo'));
     initData();
     super.onInit();
   }

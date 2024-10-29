@@ -138,7 +138,7 @@ class HomeController extends GetxController {
       const AggSearchPage(),
       if (userinfo?.isStaff == true) const MySitePage(),
       const DownloadPage(),
-      TaskPage(),
+      if (userinfo?.isStaff == true) TaskPage(),
       if (userinfo?.isStaff == true) SettingPage(),
       const SubscribePage(),
       if (userinfo?.isStaff == true) const MyRssPage(),
