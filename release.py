@@ -20,6 +20,9 @@ class VersionManager:
         self.current_version = self.read_version()
         if not sys.platform.startswith('win32'):
             self.calc_version()
+        else:
+            self.output_folder = self.output_folder.replace('/', '\\')
+
         self.tasks = ['apk', 'ios']
 
     def read_version(self):
@@ -158,7 +161,9 @@ class VersionManager:
                 except Exception as e:
                     print(f"Compilation failed: {e}")
                     raise e
-            subprocess.run(["open", self.output_folder])
+            subprocess.run(
+                ["explorer" if sys.platform.startswith("win32") else "open", self.output_folder]
+            )
 
 
 if __name__ == '__main__':
