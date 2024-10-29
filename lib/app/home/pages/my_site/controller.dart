@@ -120,9 +120,9 @@ class MySiteController extends GetxController {
     DateTime startTime = DateTime.now();
     Map webSiteListMap = SPUtil.getMap('$baseUrl - webSiteList');
     Map mySiteListMap = SPUtil.getMap('$baseUrl - mySiteList');
-    Logger.instance.d(
-        '共获取到站点配置缓存：${webSiteListMap['webSiteList'].length} 条，站点信息缓存：${mySiteListMap['mySiteList'].length} 条');
+
     if (webSiteListMap.isNotEmpty) {
+      Logger.instance.d('共获取到站点配置缓存：${webSiteListMap['webSiteList'].length} 条');
       List<WebSite> webSiteObjectList = webSiteListMap['webSiteList']
           .map((item) => WebSite.fromJson(item))
           .toList()
@@ -138,6 +138,7 @@ class MySiteController extends GetxController {
 
     if (mySiteListMap.isNotEmpty) {
       try {
+        Logger.instance.d('共获取站点信息缓存：${mySiteListMap['mySiteList'].length} 条');
         mySiteList = mySiteListMap['mySiteList']
             ?.map((item) => MySite.fromJson(item))
             .toList()
