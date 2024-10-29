@@ -240,10 +240,19 @@ class _MySitePagePageState extends State<MySitePage>
         children: [
           ElevatedButton.icon(
             onPressed: () async {
-              await controller.initData();
+              Future.microtask(() async {
+                Logger.instance.i('开始从数据库加载数据...');
+                controller.loadingFromServer = true;
+                // 模拟后台获取数据
+                await controller.getWebSiteListFromServer();
+                await controller.getSiteStatusFromServer();
+                controller.loadingFromServer = false;
+                Logger.instance.i('从数据库加载数据完成！');
+                controller.update(); // UI 更新
+              });
             },
             icon: const Icon(
-              Icons.refresh,
+              Icons.cloud_download_outlined,
               size: 20,
             ),
             style: ButtonStyle(
@@ -255,7 +264,7 @@ class _MySitePagePageState extends State<MySitePage>
                   const EdgeInsets.symmetric(horizontal: 5)),
               side: WidgetStateProperty.all(BorderSide.none),
             ),
-            label: const Text('刷新'),
+            label: const Text('加载'),
           ),
           ElevatedButton.icon(
             onPressed: () {
