@@ -407,7 +407,8 @@ openDownloaderListSheet(BuildContext context, SearchTorrentInfo info) {
                       return ListTile(
                         title: Text(
                           downloader.name,
-                          style: const TextStyle(color: Colors.black87),
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary),
                         ),
                         subtitle: Text(
                           '${downloader.protocol}://${downloader.host}:${downloader.port}',
