@@ -163,7 +163,11 @@ class AggSearchController extends GetxController {
       filteredResults.retainWhere(
           (element) => selectedCategories.contains(element.category));
     }
-
+    if (selectedTags.isNotEmpty) {
+      filteredResults.retainWhere((element) => selectedTags.any(
+            (item) => element.tags.contains(item),
+          ));
+    }
     if (selectedSaleStatusList.isNotEmpty) {
       filteredResults.retainWhere(
           (element) => selectedSaleStatusList.contains(element.saleStatus));
@@ -191,70 +195,83 @@ class AggSearchController extends GetxController {
       LoggerHelper.Logger.instance.d('重新加载站点列表');
       await initData();
     }
+    try {
+      String baseUrl = SPUtil.getLocalStorage('server');
+      final wsUrl =
+          Uri.parse('${baseUrl.replaceFirst('http', 'ws')}/api/ws/search');
+      channel = WebSocketChannel.connect(wsUrl);
 
-    String baseUrl = SPUtil.getLocalStorage('server');
-    final wsUrl =
-        Uri.parse('${baseUrl.replaceFirst('http', 'ws')}/api/ws/search');
-    channel = WebSocketChannel.connect(wsUrl);
-
-    await channel.ready;
-    channel.sink.add(json.encode({
-      "key": searchKeyController.text,
-      "max_count": sites.length == mySiteMap.length ? maxCount : sites.length,
-      "sites": sites,
-    }));
-    channel.stream.listen((message) {
-      CommonResponse response =
-          CommonResponse.fromJson(json.decode(message), (p0) => p0);
-      LoggerHelper.Logger.instance.i(response.msg);
-      if (response.code == 0) {
-        List<SearchTorrentInfo> torrentInfoList =
-            List<Map<String, dynamic>>.from(response.data)
-                .map((jsonItem) => SearchTorrentInfo.fromJson(jsonItem))
-                .toList();
-        // 写入种子列表
-        searchResults.addAll(torrentInfoList);
-        hrResultList
-            .addAll(torrentInfoList.where((element) => element.hr).toList());
-        succeedResolution.addAll(torrentInfoList
-            .map((item) => resolutionKeyList
-                .firstWhereOrNull((MetaDataItem resolution) =>
-                    item.title
-                        .toLowerCase()
-                        .contains(resolution.value.toLowerCase()) ||
-                    item.subtitle
-                        .toLowerCase()
-                        .contains(resolution.value.toLowerCase()))
-                ?.value)
-            .whereType<String>() // 将结果转换为 List<String>
-            .toList());
-        succeedResolution = succeedResolution.toSet().toList();
-        LoggerHelper.Logger.instance.d(succeedResolution);
-        // 获取种子分类，并去重
-        succeedCategories
-            .addAll(torrentInfoList.map((e) => e.category).toList());
-        succeedCategories = succeedCategories.toSet().toList();
-        saleStatusList
-            .addAll(torrentInfoList.map((e) => e.saleStatus).toList());
-        saleStatusList = saleStatusList.toSet().toList();
-        // 写入有数据的站点
-        if (torrentInfoList.isNotEmpty) {
-          succeedSiteList.add(torrentInfoList[0].siteId);
-          searchMsg.insert(0, {"success": true, "msg": response.msg});
-          filterResults();
+      await channel.ready;
+      channel.sink.add(json.encode({
+        "key": searchKeyController.text,
+        "max_count": sites.length == mySiteMap.length ? maxCount : sites.length,
+        "sites": sites,
+      }));
+      channel.stream.listen((message) {
+        CommonResponse response =
+            CommonResponse.fromJson(json.decode(message), (p0) => p0);
+        LoggerHelper.Logger.instance.i(response.msg);
+        if (response.code == 0) {
+          List<SearchTorrentInfo> torrentInfoList =
+              List<Map<String, dynamic>>.from(response.data)
+                  .map((jsonItem) => SearchTorrentInfo.fromJson(jsonItem))
+                  .toList();
+          // 写入种子列表
+          searchResults.addAll(torrentInfoList);
+          hrResultList
+              .addAll(torrentInfoList.where((element) => element.hr).toList());
+          succeedTags.addAll(torrentInfoList.expand((element) => element.tags));
+          if (succeedTags.isNotEmpty) {
+            succeedTags = succeedTags.toSet().toList();
+            succeedTags.sort();
+            LoggerHelper.Logger.instance.d(succeedTags);
+          }
+          succeedResolution.addAll(torrentInfoList
+              .map((item) => resolutionKeyList
+                  .firstWhereOrNull((MetaDataItem resolution) =>
+                      item.title
+                          .toLowerCase()
+                          .contains(resolution.value.toLowerCase()) ||
+                      item.subtitle
+                          .toLowerCase()
+                          .contains(resolution.value.toLowerCase()))
+                  ?.value)
+              .whereType<String>() // 将结果转换为 List<String>
+              .toList());
+          succeedResolution = succeedResolution.toSet().toList();
+          LoggerHelper.Logger.instance.d(succeedResolution);
+          // 获取种子分类，并去重
+          succeedCategories
+              .addAll(torrentInfoList.map((e) => e.category).toList());
+          succeedCategories = succeedCategories.toSet().toList();
+          saleStatusList
+              .addAll(torrentInfoList.map((e) => e.saleStatus).toList());
+          saleStatusList = saleStatusList.toSet().toList();
+          // 写入有数据的站点
+          if (torrentInfoList.isNotEmpty) {
+            succeedSiteList.add(torrentInfoList[0].siteId);
+            searchMsg.insert(0, {"success": true, "msg": response.msg});
+            filterResults();
+          }
+          update();
+        } else {
+          searchMsg.add({"success": false, "msg": response.msg});
+          update();
         }
-        update();
-      } else {
-        searchMsg.add({"success": false, "msg": response.msg});
-        update();
-      }
-    }, onError: (err) {
-      LoggerHelper.Logger.instance.e('搜索出错啦： ${err.toString()}');
+      }, onError: (err) {
+        LoggerHelper.Logger.instance.e('搜索出错啦： ${err.toString()}');
+        searchMsg.add({"success": false, "msg": '搜索出错啦：$err'});
+        cancelSearch();
+      }, onDone: () {
+        LoggerHelper.Logger.instance.e('搜索完成啦！');
+        cancelSearch();
+      });
+    } catch (e, trace) {
+      LoggerHelper.Logger.instance.e(e);
+      LoggerHelper.Logger.instance.d(trace);
+      searchMsg.add({"success": false, "msg": '搜索出错啦：$e'});
       cancelSearch();
-    }, onDone: () {
-      LoggerHelper.Logger.instance.e('搜索完成啦！');
-      cancelSearch();
-    });
+    }
   }
 
   void initSearchResult() {

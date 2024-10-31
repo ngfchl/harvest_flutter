@@ -846,6 +846,15 @@ class _AggSearchPageState extends State<AggSearchPage>
                         controller.filterResults();
                         controller.update();
                       }),
+                if (controller.succeedTags.isNotEmpty)
+                  FilterItem(
+                      name: '标签',
+                      value: controller.succeedTags,
+                      selected: controller.selectedTags,
+                      onUpdate: () {
+                        controller.filterResults();
+                        controller.update();
+                      }),
                 if (controller.hrResultList.isNotEmpty)
                   CustomCard(
                     child: SwitchListTile(
