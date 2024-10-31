@@ -277,6 +277,8 @@ class AggSearchController extends GetxController {
   void initSearchResult() {
     searchResults.clear();
     searchMsg.clear();
+    succeedTags.clear();
+    succeedResolution.clear();
     succeedCategories.clear();
     selectedSiteList.clear();
     succeedSiteList.clear();
