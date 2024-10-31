@@ -22,8 +22,10 @@ import '../../../utils/storage.dart';
 import '../../routes/app_pages.dart';
 import '../pages/download/download_controller.dart';
 import '../pages/models/AuthPeriod.dart';
+import '../pages/my_site/controller.dart';
 import '../pages/setting/setting.dart';
 import '../pages/ssh/view.dart';
+import '../pages/user/view.dart';
 
 class HomeController extends GetxController {
   int initPage = 0;
@@ -140,6 +142,7 @@ class HomeController extends GetxController {
       const DownloadPage(),
       if (userinfo?.isStaff == true) TaskPage(),
       if (userinfo?.isStaff == true) SettingPage(),
+      UserWidget(),
       const SubscribePage(),
       if (userinfo?.isStaff == true) const MyRssPage(),
       const SubscribeHistoryPage(),
@@ -170,11 +173,16 @@ class HomeController extends GetxController {
           icon: Icon(Icons.task, size: 18),
           label: Text('计划任务'),
         ),
-      if (userinfo?.isStaff == true)
+      if (userinfo?.isStaff == true) ...[
         const NavigationRailDestination(
           icon: Icon(Icons.settings, size: 18),
           label: Text('系统设置'),
         ),
+      ],
+      const NavigationRailDestination(
+        icon: Icon(Icons.man, size: 18),
+        label: Text('用户管理'),
+      ),
       const NavigationRailDestination(
         icon: Icon(Icons.subscriptions_outlined, size: 18),
         label: Text('订阅管理'),
@@ -211,6 +219,7 @@ class HomeController extends GetxController {
     dioUtil.dio?.close();
     Get.delete<DownloadController>();
     Get.delete<HomeController>();
+    Get.delete<MySiteController>();
     Get.offAllNamed(Routes.LOGIN);
   }
 
@@ -219,7 +228,8 @@ class HomeController extends GetxController {
     if (res.code == 0) {
       updateLogState = res.data;
     } else {
-      Get.snackbar('更新日志', '获取更新日志失败！${res.msg}', colorText: Colors.red);
+      Logger.instance.e(res.msg);
+      Get.snackbar('更新日志', '获取更新日志失败！', colorText: Colors.red);
     }
     Logger.instance.d(updateLogState?.localLogs);
   }
