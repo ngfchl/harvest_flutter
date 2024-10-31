@@ -4,6 +4,7 @@ class Api {
   static const String USER_INFO = "auth/userinfo";
   static const String UPDATE_LOG = "auth/update/log";
   static const String AUTH_INFO = "auth/auth_info";
+  static const String AUTH_USER = "auth/user";
 
   // 我的站点列表增删改查
   static const String WEBSITE_LIST = "mysite/website";
