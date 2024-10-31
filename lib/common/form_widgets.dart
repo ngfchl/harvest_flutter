@@ -49,6 +49,7 @@ class CustomTextField extends StatelessWidget {
   final int? maxLines;
   final int? maxLength;
   final bool autofocus;
+  final bool readOnly;
   final Function(String)? onChanged;
   final Function()? onTap;
 
@@ -67,6 +68,7 @@ class CustomTextField extends StatelessWidget {
     this.onTap,
     this.maxLength,
     this.autofocus = false,
+    this.readOnly = false,
   });
 
   @override
@@ -80,6 +82,7 @@ class CustomTextField extends StatelessWidget {
         maxLength: maxLength,
         onTap: onTap,
         maxLines: maxLines,
+        readOnly: readOnly,
         inputFormatters: inputFormatters,
         style: const TextStyle(fontSize: 13),
         decoration: InputDecoration(
