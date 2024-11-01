@@ -23,35 +23,43 @@ class UserWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: GetBuilder<UserController>(builder: (controller) {
-        return Column(
-          children: [
-            GFStickyHeader(
-              stickyContent: AppBar(
-                title: Text(
-                  "用户管理",
-                  style: TextStyle(
-                      fontSize: 18,
-                      color: Theme.of(context).colorScheme.primary),
-                ),
-                actions: [
-                  if (controller.userinfo?.isStaff == true ||
-                      controller.userinfo?.isStaff == true)
-                    IconButton(
-                      icon: Icon(
-                        Icons.add,
-                        size: 20,
-                        color: Theme.of(context).colorScheme.primary,
+        return controller.isLoading
+            ? const Center(child: GFLoader())
+            : Column(
+                children: [
+                  GFStickyHeader(
+                    stickyContent: AppBar(
+                      title: Text(
+                        "用户管理",
+                        style: TextStyle(
+                            fontSize: 18,
+                            color: Theme.of(context).colorScheme.primary),
                       ),
-                      onPressed: () async {
-                        _showEditBottomSheet(context: context);
-                      },
+                      actions: [
+                        IconButton(
+                          icon: Icon(
+                            Icons.refresh,
+                            size: 20,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          onPressed: () => controller.getUserListFromServer(),
+                        ),
+                        if (controller.userinfo?.isStaff == true ||
+                            controller.userinfo?.isStaff == true)
+                          IconButton(
+                            icon: Icon(
+                              Icons.add,
+                              size: 20,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                            onPressed: () async {
+                              _showEditBottomSheet(context: context);
+                            },
+                          ),
+                        // const SizedBox(width: 20)
+                      ],
                     ),
-                  // const SizedBox(width: 20)
-                ],
-              ),
-              content: controller.isLoading
-                  ? const Center(child: GFLoader())
-                  : SingleChildScrollView(
+                    content: SingleChildScrollView(
                       child: ListView.builder(
                           physics: const ScrollPhysics(),
                           shrinkWrap: true,
@@ -192,9 +200,9 @@ class UserWidget extends StatelessWidget {
                             );
                           }),
                     ),
-            ),
-          ],
-        );
+                  ),
+                ],
+              );
       }),
     );
   }

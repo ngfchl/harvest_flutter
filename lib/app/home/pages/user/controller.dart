@@ -13,6 +13,7 @@ class UserController extends GetxController {
   AuthInfo? userinfo;
 
   getUserListFromServer() async {
+    Logger.instance.i('从服务器拉取用户列表');
     CommonResponse response = await getUserModelListApi();
     if (response.code == 0) {
       if (userinfo?.isSuperUser == true) {
@@ -30,6 +31,7 @@ class UserController extends GetxController {
     } else {
       Get.snackbar('用户列表获取失败', "用户列表获取失败");
     }
+    Logger.instance.i('从服务器拉取用户列表完成');
     update();
   }
 
