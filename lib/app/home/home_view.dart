@@ -238,123 +238,250 @@ class HomeView extends GetView<HomeController> {
           ],
           if (controller.userinfo?.isStaff == true) ...[
             InkWell(
-              onTap: () {
+              onTap: () async {
                 if (controller.updateLogState == null) {
-                  controller.initUpdateLogState();
+                  await controller.initUpdateLogState();
                   Get.snackbar('请稍后', '更新日志获取中，请稍后...',
                       colorText: Theme.of(context).colorScheme.primary);
-                  return;
                 }
-                controller.update();
-                Get.defaultDialog(
-                    title: "Docker更新日志",
-                    content: SizedBox(
+                Get.bottomSheet(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5.0), // 圆角半径
+                  ),
+                  GetBuilder<HomeController>(builder: (controller) {
+                    List<Tab> tabs = [
+                      if (controller.updateLogState != null)
+                        const Tab(text: '更新日志'),
+                      const Tab(text: '手动更新'),
+                    ];
+                    return SizedBox(
                       height: 300,
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: controller.updateLogState!.updateNotes
-                              .map((note) => CustomCard(
-                                    width: double.infinity,
-                                    color: controller.updateLogState?.localLogs
-                                                .hex ==
-                                            note.hex
-                                        ? Colors.green
-                                        : Theme.of(context).colorScheme.surface,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 4),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        controller.updateLogState?.localLogs
-                                                    .hex ==
-                                                note.hex
-                                            ? Icon(
-                                                Icons.check,
-                                                size: 24,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .onSurface
-                                                    .withOpacity(0.8),
-                                              )
-                                            : const SizedBox(),
-                                        Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.end,
-                                            children: [
-                                              Text(
-                                                note.data.trimRight(),
-                                                style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: controller
-                                                                    .updateLogState
-                                                                    ?.update ==
-                                                                true &&
-                                                            note.date.compareTo(
-                                                                    controller
-                                                                        .updateLogState!
-                                                                        .localLogs
-                                                                        .date) >
-                                                                0
-                                                        ? Colors.red
-                                                        : Theme.of(context)
-                                                            .colorScheme
-                                                            .primary,
-                                                    fontWeight:
-                                                        FontWeight.bold),
+                      child: DefaultTabController(
+                        length: tabs.length,
+                        child: Scaffold(
+                          appBar: TabBar(tabs: tabs),
+                          body: TabBarView(
+                            children: [
+                              if (controller.updateLogState != null)
+                                SizedBox(
+                                  height: 300,
+                                  child: Column(
+                                    children: [
+                                      Expanded(
+                                        child: SingleChildScrollView(
+                                          child: Column(
+                                            children:
+                                                controller
+                                                    .updateLogState!.updateNotes
+                                                    .map((note) => CustomCard(
+                                                          width:
+                                                              double.infinity,
+                                                          color: controller
+                                                                      .updateLogState
+                                                                      ?.localLogs
+                                                                      .hex ==
+                                                                  note.hex
+                                                              ? Colors.green
+                                                              : Theme.of(
+                                                                      context)
+                                                                  .colorScheme
+                                                                  .surface,
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                                  horizontal: 8,
+                                                                  vertical: 4),
+                                                          child: Row(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .spaceBetween,
+                                                            children: [
+                                                              controller
+                                                                          .updateLogState
+                                                                          ?.localLogs
+                                                                          .hex ==
+                                                                      note.hex
+                                                                  ? Icon(
+                                                                      Icons
+                                                                          .check,
+                                                                      size: 24,
+                                                                      color: Theme.of(
+                                                                              context)
+                                                                          .colorScheme
+                                                                          .onSurface
+                                                                          .withOpacity(
+                                                                              0.8),
+                                                                    )
+                                                                  : const SizedBox(),
+                                                              Column(
+                                                                  crossAxisAlignment:
+                                                                      CrossAxisAlignment
+                                                                          .end,
+                                                                  children: [
+                                                                    Text(
+                                                                      note.data
+                                                                          .trimRight(),
+                                                                      style: TextStyle(
+                                                                          fontSize:
+                                                                              12,
+                                                                          color: controller.updateLogState?.update == true && note.date.compareTo(controller.updateLogState!.localLogs.date) > 0
+                                                                              ? Colors.red
+                                                                              : Theme.of(context).colorScheme.primary,
+                                                                          fontWeight: FontWeight.bold),
+                                                                    ),
+                                                                    Text(
+                                                                      note.date,
+                                                                      style: TextStyle(
+                                                                          fontSize:
+                                                                              10,
+                                                                          color: Theme.of(context)
+                                                                              .colorScheme
+                                                                              .onSurface
+                                                                              .withOpacity(0.8)),
+                                                                      textAlign:
+                                                                          TextAlign
+                                                                              .right,
+                                                                    ),
+                                                                  ]),
+                                                            ],
+                                                          ),
+                                                        ))
+                                                    .toList(),
+                                          ),
+                                        ),
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        children: [
+                                          if (controller
+                                                  .updateLogState!.update ==
+                                              true)
+                                            ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                foregroundColor: Colors.white,
+                                                backgroundColor: Colors.blue,
+                                                // 按钮文字颜色
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          18.0), // 圆角半径
+                                                ),
                                               ),
-                                              Text(
-                                                note.date,
-                                                style: TextStyle(
-                                                    fontSize: 10,
-                                                    color: Theme.of(context)
+                                              onPressed: () async {
+                                                final res = await controller
+                                                    .doDockerUpdate();
+                                                Get.back();
+                                                Get.snackbar(
+                                                    '更新通知', '${res.msg}',
+                                                    colorText: Theme.of(context)
                                                         .colorScheme
-                                                        .onSurface
-                                                        .withOpacity(0.8)),
-                                                textAlign: TextAlign.right,
+                                                        .primary);
+                                              },
+                                              child: const Text('更新'),
+                                            ),
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              foregroundColor: Colors.white,
+                                              backgroundColor: Colors.red,
+                                              // 按钮文字颜色
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        18.0), // 圆角半径
                                               ),
-                                            ]),
-                                      ],
+                                            ),
+                                            onPressed: () {
+                                              Get.back();
+                                            },
+                                            child: const Text('取消'),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8)
+                                    ],
+                                  ),
+                                ),
+                              SizedBox(
+                                height: 300,
+                                child: Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        foregroundColor: Colors.white,
+                                        backgroundColor: Colors.blue,
+                                        // 按钮文字颜色
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                              18.0), // 圆角半径
+                                        ),
+                                      ),
+                                      onPressed: () async {
+                                        final res =
+                                            await controller.doDockerUpdate();
+                                        Get.back();
+                                        Get.snackbar('更新通知', '${res.msg}',
+                                            colorText: Theme.of(context)
+                                                .colorScheme
+                                                .primary);
+                                      },
+                                      child: const Text('更新主服务'),
                                     ),
-                                  ))
-                              .toList(),
-                        ),
-                      ),
-                    ),
-                    confirm: controller.updateLogState!.update == true
-                        ? ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              backgroundColor: Colors.blue,
-                              // 按钮文字颜色
-                              shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(18.0), // 圆角半径
-                              ),
-                            ),
-                            onPressed: () async {
-                              final res = await controller.doDockerUpdate();
-                              Get.back();
-                              Get.snackbar('更新通知', '${res.msg}',
-                                  colorText:
-                                      Theme.of(context).colorScheme.primary);
-                            },
-                            child: const Text('更新'),
-                          )
-                        : null,
-                    cancel: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          backgroundColor: Colors.red,
-                          // 按钮文字颜色
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18.0), // 圆角半径
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        foregroundColor: Colors.white,
+                                        backgroundColor: Colors.blue,
+                                        // 按钮文字颜色
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                              18.0), // 圆角半径
+                                        ),
+                                      ),
+                                      onPressed: () async {
+                                        final res =
+                                            await controller.doWebUIUpdate();
+                                        Get.back();
+                                        Get.snackbar('更新通知', '${res.msg}',
+                                            colorText: Theme.of(context)
+                                                .colorScheme
+                                                .primary);
+                                      },
+                                      child: const Text('更新WebUI'),
+                                    ),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        foregroundColor: Colors.white,
+                                        backgroundColor: Colors.blue,
+                                        // 按钮文字颜色
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                              18.0), // 圆角半径
+                                        ),
+                                      ),
+                                      onPressed: () async {
+                                        final res =
+                                            await controller.doSitesUpdate();
+                                        Get.back();
+                                        Get.snackbar('更新通知', '${res.msg}',
+                                            colorText: Theme.of(context)
+                                                .colorScheme
+                                                .primary);
+                                      },
+                                      child: const Text('更新站点配置'),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            ],
                           ),
                         ),
-                        onPressed: () {
-                          Get.back();
-                        },
-                        child: const Text('取消')));
+                      ),
+                    );
+                  }),
+                );
               },
               child: Icon(Icons.upload,
                   size: 24,

@@ -232,10 +232,23 @@ class HomeController extends GetxController {
       Get.snackbar('更新日志', '获取更新日志失败！', colorText: Colors.red);
     }
     Logger.instance.d(updateLogState?.localLogs);
+    update();
   }
 
   Future<CommonResponse> doDockerUpdate() async {
     return await doDockerUpdateApi();
+  }
+
+  Future<CommonResponse> doWebUIUpdate() async {
+    return await doDockerUpdateApi(upgradeTag: "upgrade_webui");
+  }
+
+  Future<CommonResponse> doSitesUpdate() async {
+    return await doDockerUpdateApi(upgradeTag: "upgrade_sites");
+  }
+
+  Future<CommonResponse> doDjangoUpdate() async {
+    return await doDockerUpdateApi(upgradeTag: "upgrade_django");
   }
 
   Future<void> changePage(int index) async {
