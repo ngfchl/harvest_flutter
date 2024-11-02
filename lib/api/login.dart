@@ -45,13 +45,15 @@ Future<CommonResponse> getGitUpdateLog() async {
   }
 }
 
-Future<CommonResponse> doDockerUpdateApi() async {
-  final response = await DioUtil().get(Api.DOCKER_UPDATE);
+Future<CommonResponse> doDockerUpdateApi(
+    {String upgradeTag = "upgrade_all"}) async {
+  final response =
+      await DioUtil().get("${Api.DOCKER_UPDATE}?upgrade_tag=$upgradeTag");
   if (response.statusCode == 200) {
     return CommonResponse.fromJson(response.data, (p0) => null);
   } else {
     String msg = '获取Docker更新日志失败: ${response.statusCode}';
     // GFToast.showToast(msg, context);
-    return CommonResponse(data: null, code: -1, msg: msg);
+    return CommonResponse.error(msg: msg);
   }
 }
