@@ -511,12 +511,21 @@ class _MySitePagePageState extends State<MySitePage>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             if (nextLevel != null) ...[
+                              Text("下一等级：${nextLevel.level}",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  )),
                               if (status.uploaded <
-                                  FileSizeConvert.parseToByte(
-                                          nextLevel.downloaded) *
-                                      nextLevel.ratio)
+                                      FileSizeConvert.parseToByte(
+                                          nextLevel.uploaded) ||
+                                  status.uploaded <
+                                      FileSizeConvert.parseToByte(
+                                              nextLevel.downloaded) *
+                                          nextLevel.ratio)
                                 Text(
-                                    '上传量：${filesize(status.uploaded)}/${FileSizeConvert.parseToFileSize((FileSizeConvert.parseToByte(nextLevel.downloaded) * nextLevel.ratio).toInt())}',
+                                    '上传量：${filesize(status.uploaded)}/${FileSizeConvert.parseToByte(nextLevel.uploaded) > 0 ? nextLevel.uploaded : FileSizeConvert.parseToFileSize((FileSizeConvert.parseToByte(nextLevel.downloaded) * nextLevel.ratio).toInt())}',
                                     style: TextStyle(
                                       fontSize: 10,
                                       color:
@@ -601,6 +610,7 @@ class _MySitePagePageState extends State<MySitePage>
                             ...rights
                                 .where((el) =>
                                     el.rights.trim() != '无' &&
+                                    !el.rights.trim().startsWith('同') &&
                                     !el.rights.trim().contains('同上'))
                                 .map((LevelInfo item) => PopupMenuItem<String>(
                                       child: Text(item.rights,
