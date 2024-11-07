@@ -284,4 +284,10 @@ class SshController extends GetxController {
     await execute(command);
     update();
   }
+
+  startContainer(String name) async {
+    String command = 'docker start $name';
+    await execute(command);
+    update();
+  }
 }

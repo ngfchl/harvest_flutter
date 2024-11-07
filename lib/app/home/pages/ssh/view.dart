@@ -5,8 +5,8 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/form_widgets.dart';
+import 'package:harvest/utils/platform.dart';
 
-import '../../../../models/common_response.dart';
 import '../../../../utils/logger_helper.dart';
 import 'controller.dart';
 import 'models.dart';
@@ -72,11 +72,8 @@ class SshWidget extends StatelessWidget {
                                 itemBuilder: (context, index) {
                                   DockerContainer container =
                                       controller.containerList[index];
-                                  bool isRunning = container.status!
-                                      .toLowerCase()
-                                      .startsWith('up');
-                                  return buildContainerCard(container,
-                                      isRunning, controller, context);
+
+                                  return buildContainerCard(container, context);
                                 });
                           })),
                   CustomCard(
@@ -201,193 +198,213 @@ class SshWidget extends StatelessWidget {
     });
   }
 
-  Widget buildContainerCard(DockerContainer container, bool isRunning,
-      SshController controller, BuildContext context) {
-    return CustomCard(
-      padding: const EdgeInsets.all(8),
-      child: Slidable(
-        key: ValueKey('${container.id}_${container.name}'),
-        startActionPane: ActionPane(
-          motion: const ScrollMotion(),
-          extentRatio: 1 / 3,
-          children: [
-            SlidableAction(
-              flex: 1,
-              borderRadius: const BorderRadius.all(Radius.circular(8)),
-              onPressed: (context) async {
-                CommonResponse res =
-                    await controller.stopContainer(container.name.toString());
-                if (res.code == 0) {
-                  Get.snackbar('通知', res.msg.toString(),
-                      colorText: Theme.of(context).colorScheme.primary);
-                } else {
-                  Get.snackbar('通知', res.msg.toString(),
-                      colorText: Theme.of(context).colorScheme.error);
-                }
-              },
-              backgroundColor: const Color(0xFF0A9D96),
-              foregroundColor: Colors.white,
-              icon: Icons.stop_circle_outlined,
-              label: '停止',
-            ),
-            SlidableAction(
-              flex: 1,
-              borderRadius: const BorderRadius.all(Radius.circular(8)),
-              onPressed: (context) =>
-                  controller.restartContainer(container.name.toString()),
-              backgroundColor: const Color(0xFF0392CF),
-              foregroundColor: Colors.white,
-              // icon: Icons.edit,
-              label: '重启',
-              icon: Icons.refresh_outlined,
-            ),
-            container.hasNew
-                ? SlidableAction(
-                    flex: 1,
-                    borderRadius: const BorderRadius.all(Radius.circular(8)),
-                    onPressed: (context) =>
-                        controller.getNewImage(container.image.toString()),
-                    backgroundColor: const Color(0xFF0392CF),
-                    foregroundColor: Colors.white,
-                    // icon: Icons.edit,
-                    label: '下载',
-                    icon: Icons.download_outlined,
-                  )
-                : SlidableAction(
-                    flex: 1,
-                    borderRadius: const BorderRadius.all(Radius.circular(8)),
-                    onPressed: (context) =>
-                        controller.checkNewImage(container.image.toString()),
-                    backgroundColor: const Color(0xFF0392CF),
-                    foregroundColor: Colors.white,
-                    // icon: Icons.edit,
-                    label: '检查',
-                    icon: Icons.check_outlined,
-                  ),
-          ],
-        ),
-        endActionPane: ActionPane(
-          motion: const ScrollMotion(),
-          extentRatio: 0.25,
-          children: [
-            SlidableAction(
-              flex: 1,
-              borderRadius: const BorderRadius.all(Radius.circular(8)),
-              onPressed: (context) async {
-                Get.defaultDialog(
-                  title: '重建容器',
-                  middleText: '本操作会删除旧容器并使用原来的配置重建容器，具有一定的风险性，请谨慎操作',
-                  middleTextStyle:
-                      TextStyle(color: Theme.of(context).colorScheme.error),
-                  onConfirm: () {
-                    controller.rebuildContainer(
-                        container.name.toString(), container.image.toString());
-                    Get.back();
-                  },
-                  onCancel: () => Get.back(),
-                  textCancel: '取消',
-                  textConfirm: '继续',
-                );
-              },
-              backgroundColor: const Color(0xFFFE4A49),
-              foregroundColor: Colors.white,
-              icon: Icons.upload_outlined,
-              label: '重建',
-            ),
-            SlidableAction(
-              flex: 1,
-              borderRadius: const BorderRadius.all(Radius.circular(8)),
-              onPressed: (context) async {
-                String newCommand =
-                    await controller.generateNewContainerCommand(
-                        container.name.toString(), container.image.toString());
-                Clipboard.setData(ClipboardData(text: newCommand)).then((_) {
-                  // 可选：在复制后显示消息
-                  Logger.instance.i('重建命令已复制到剪切板');
-                });
-              },
-              backgroundColor: const Color(0xFF069556),
-              foregroundColor: Colors.white,
-              icon: Icons.copy_outlined,
-              label: '复制',
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SizedBox(
-                        width: 240,
-                        child: Row(
-                          children: [
-                            if (container.hasNew)
-                              const Icon(
-                                Icons.arrow_circle_up_outlined,
-                                size: 13,
-                                color: Colors.green,
-                              ),
-                            Expanded(
-                              child: EllipsisText(
-                                text: container.name.toString(),
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                                ellipsis: '...',
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Text(
-                        container.status!.toString(),
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: isRunning
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context).colorScheme.error,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      EllipsisText(
-                        text: container.image.toString(),
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        ellipsis: '...',
-                      ),
-                      const SizedBox(
-                        width: 5,
-                      ),
-                      if (container.hasNew)
-                        ElevatedButton(
-                            onPressed: () => controller
-                                .getNewImage(container.image.toString()),
-                            child: const Text(
-                              '下载镜像',
-                              style: TextStyle(fontSize: 11),
-                            )),
-                    ],
-                  ),
-                ],
+  Widget buildContainerCard(DockerContainer container, BuildContext context) {
+    bool isRunning = container.status!.toLowerCase().startsWith('up');
+    return GetBuilder<SshController>(builder: (controller) {
+      var l = container.image.toString().split('/');
+      var imageText;
+      switch (l.length) {
+        case 1:
+        case 2:
+          imageText = container.image.toString();
+          break;
+        case 3:
+          imageText = l.sublist(l.length - 2).join('/');
+      }
+      return CustomCard(
+        padding: const EdgeInsets.all(8),
+        child: Slidable(
+          key: ValueKey('${container.id}_${container.name}'),
+          // direction: Axis.vertical,
+          startActionPane: ActionPane(
+            motion: const ScrollMotion(),
+            extentRatio: PlatformTool.isPhone() ? 1 / 2 : 1 / 3,
+            children: [
+              isRunning
+                  ? SlidableAction(
+                      flex: 1,
+                      borderRadius: const BorderRadius.all(Radius.circular(8)),
+                      onPressed: (context) =>
+                          controller.stopContainer(container.name.toString()),
+                      backgroundColor: const Color(0xFF0A9D96),
+                      foregroundColor: Colors.white,
+                      // icon: Icons.stop_circle_outlined,
+                      label: '停止',
+                    )
+                  : SlidableAction(
+                      flex: 1,
+                      borderRadius: const BorderRadius.all(Radius.circular(8)),
+                      onPressed: (context) =>
+                          controller.startContainer(container.name.toString()),
+                      backgroundColor: const Color(0xFF0A9D96),
+                      foregroundColor: Colors.white,
+                      // icon: Icons.stop_circle_outlined,
+                      label: '开始',
+                    ),
+              SlidableAction(
+                flex: 1,
+                borderRadius: const BorderRadius.all(Radius.circular(8)),
+                onPressed: (context) =>
+                    controller.restartContainer(container.name.toString()),
+                backgroundColor: const Color(0xFF0392CF),
+                foregroundColor: Colors.white,
+                label: '重启',
+                // icon: Icons.refresh_outlined,
               ),
+              // container.hasNew
+              //     ? SlidableAction(
+              //         flex: 1,
+              //         borderRadius: const BorderRadius.all(Radius.circular(8)),
+              //         onPressed: (context) =>
+              //             controller.getNewImage(container.image.toString()),
+              //         backgroundColor: const Color(0xFF064370),
+              //         foregroundColor: Colors.white,
+              //         label: '下载',
+              //         // icon: Icons.download_outlined,
+              //       )
+              //     : SlidableAction(
+              //         flex: 1,
+              //         borderRadius: const BorderRadius.all(Radius.circular(8)),
+              //         onPressed: (context) =>
+              //             controller.checkNewImage(container.image.toString()),
+              //         backgroundColor: const Color(0xFF0392CF),
+              //         foregroundColor: Colors.white,
+              //         label: '检查',
+              //         // icon: Icons.check_outlined,
+              //       ),
+            ],
+          ),
+          endActionPane: ActionPane(
+            motion: const ScrollMotion(),
+            extentRatio: PlatformTool.isPhone() ? 1 / 2 : 1 / 3,
+            children: [
+              SlidableAction(
+                flex: 1,
+                borderRadius: const BorderRadius.all(Radius.circular(8)),
+                onPressed: (context) async {
+                  Get.defaultDialog(
+                    title: '重建容器',
+                    middleText: '本操作会删除旧容器并使用原来的配置重建容器，具有一定的风险性，请谨慎操作',
+                    middleTextStyle:
+                        TextStyle(color: Theme.of(context).colorScheme.error),
+                    onConfirm: () {
+                      controller.rebuildContainer(container.name.toString(),
+                          container.image.toString());
+                      Get.back();
+                    },
+                    onCancel: () => Get.back(),
+                    textCancel: '取消',
+                    textConfirm: '继续',
+                  );
+                },
+                backgroundColor: const Color(0xFFFE4A49),
+                foregroundColor: Colors.white,
+                // icon: Icons.upload_outlined,
+                label: '重建',
+              ),
+              SlidableAction(
+                flex: 1,
+                borderRadius: const BorderRadius.all(Radius.circular(8)),
+                onPressed: (context) async {
+                  String newCommand =
+                      await controller.generateNewContainerCommand(
+                          container.name.toString(),
+                          container.image.toString());
+                  Clipboard.setData(ClipboardData(text: newCommand)).then((_) {
+                    // 可选：在复制后显示消息
+                    Logger.instance.i('重建命令已复制到剪切板');
+                  });
+                },
+                backgroundColor: const Color(0xFF069556),
+                foregroundColor: Colors.white,
+                // icon: Icons.copy_outlined,
+                label: '复制',
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(
+                            width: 240,
+                            child: Row(
+                              children: [
+                                if (container.hasNew)
+                                  const Icon(
+                                    Icons.arrow_circle_up_outlined,
+                                    size: 13,
+                                    color: Colors.green,
+                                  ),
+                                Expanded(
+                                  child: EllipsisText(
+                                    text: container.name.toString(),
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                    ),
+                                    ellipsis: '...',
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Text(
+                            container.status!.toString(),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: isRunning
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context).colorScheme.error,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(
+                            width: 200,
+                            child: EllipsisText(
+                              text: imageText,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              ellipsis: '...',
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          if (container.hasNew)
+                            ElevatedButton(
+                                onPressed: () => controller
+                                    .getNewImage(container.image.toString()),
+                                child: const Text(
+                                  '下载镜像',
+                                  style: TextStyle(fontSize: 11),
+                                )),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 }
