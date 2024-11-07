@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/form_widgets.dart';
 
+import '../../../../models/common_response.dart';
 import '../../../../utils/logger_helper.dart';
 import 'controller.dart';
 import 'models.dart';
@@ -73,233 +75,12 @@ class SshWidget extends StatelessWidget {
                                   bool isRunning = container.status!
                                       .toLowerCase()
                                       .startsWith('up');
-                                  return CustomCard(
-                                      key: ValueKey('${container.id}'),
-                                      padding: const EdgeInsets.all(12),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceAround,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    SizedBox(
-                                                      width: 240,
-                                                      child: Row(
-                                                        children: [
-                                                          if (container.hasNew)
-                                                            const Icon(
-                                                              Icons
-                                                                  .arrow_circle_up_outlined,
-                                                              size: 13,
-                                                              color:
-                                                                  Colors.green,
-                                                            ),
-                                                          Expanded(
-                                                            child: EllipsisText(
-                                                              text: container
-                                                                  .name
-                                                                  .toString(),
-                                                              style:
-                                                                  const TextStyle(
-                                                                      fontSize:
-                                                                          13),
-                                                              ellipsis: '...',
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    isRunning
-                                                        ? CustomTextTag(
-                                                            labelText: container
-                                                                .status!
-                                                                .toString())
-                                                        : CustomTextTag(
-                                                            labelText: container
-                                                                .status!
-                                                                .toString(),
-                                                            backgroundColor:
-                                                                Colors
-                                                                    .redAccent,
-                                                          ),
-                                                  ],
-                                                ),
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    EllipsisText(
-                                                      text: container.image
-                                                          .toString(),
-                                                      style: const TextStyle(
-                                                          fontSize: 11),
-                                                      ellipsis: '...',
-                                                    ),
-                                                    const SizedBox(
-                                                      width: 5,
-                                                    ),
-                                                    if (container.hasNew)
-                                                      ElevatedButton(
-                                                          onPressed: () =>
-                                                              controller
-                                                                  .getNewImage(
-                                                                      container
-                                                                          .image
-                                                                          .toString()),
-                                                          child: const Text(
-                                                            '下载镜像',
-                                                            style: TextStyle(
-                                                                fontSize: 11),
-                                                          )),
-                                                    ElevatedButton(
-                                                        onPressed: () => controller
-                                                            .checkNewImage(
-                                                                container.image
-                                                                    .toString()),
-                                                        child: const Text(
-                                                          '检查更新',
-                                                          style: TextStyle(
-                                                              fontSize: 11),
-                                                        )),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                left: 16.0),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceAround,
-                                              children: [
-                                                IconButton(
-                                                  constraints:
-                                                      const BoxConstraints(
-                                                    maxHeight: 28,
-                                                    maxWidth: 28,
-                                                  ),
-                                                  padding:
-                                                      const EdgeInsets.all(5),
-                                                  onPressed: () async {
-                                                    await controller
-                                                        .stopContainer(container
-                                                            .name
-                                                            .toString());
-                                                  },
-                                                  icon: const Icon(
-                                                    Icons.stop_circle_outlined,
-                                                    size: 13,
-                                                  ),
-                                                ),
-                                                IconButton(
-                                                  constraints:
-                                                      const BoxConstraints(
-                                                    maxHeight: 28,
-                                                    maxWidth: 28,
-                                                  ),
-                                                  padding:
-                                                      const EdgeInsets.all(5),
-                                                  onPressed: () => controller
-                                                      .restartContainer(
-                                                          container.name
-                                                              .toString()),
-                                                  icon: const Icon(
-                                                    Icons.refresh_outlined,
-                                                    size: 13,
-                                                  ),
-                                                ),
-                                                IconButton(
-                                                  padding:
-                                                      const EdgeInsets.all(5),
-                                                  constraints:
-                                                      const BoxConstraints(
-                                                    maxHeight: 28,
-                                                    maxWidth: 28,
-                                                  ),
-                                                  onPressed: () {
-                                                    Get.defaultDialog(
-                                                      title: '重建容器',
-                                                      middleText:
-                                                          '本操作会删除旧容器并使用原来的配置重建容器，具有一定的风险性，请谨慎操作',
-                                                      middleTextStyle:
-                                                          TextStyle(
-                                                              color: Theme.of(
-                                                                      context)
-                                                                  .colorScheme
-                                                                  .error),
-                                                      onConfirm: () {
-                                                        controller
-                                                            .rebuildContainer(
-                                                                container.name
-                                                                    .toString(),
-                                                                container.image
-                                                                    .toString());
-                                                        Get.back();
-                                                      },
-                                                      onCancel: () =>
-                                                          Get.back(),
-                                                      textCancel: '取消',
-                                                      textConfirm: '继续',
-                                                    );
-                                                  },
-                                                  icon: const Icon(
-                                                    Icons.upload_outlined,
-                                                    size: 13,
-                                                  ),
-                                                ),
-                                                IconButton(
-                                                  padding:
-                                                      const EdgeInsets.all(5),
-                                                  constraints:
-                                                      const BoxConstraints(
-                                                    maxHeight: 28,
-                                                    maxWidth: 28,
-                                                  ),
-                                                  onPressed: () async {
-                                                    String newCommand =
-                                                        await controller
-                                                            .generateNewContainerCommand(
-                                                                container
-                                                                    .name
-                                                                    .toString(),
-                                                                container.image
-                                                                    .toString());
-                                                    Clipboard.setData(
-                                                            ClipboardData(
-                                                                text:
-                                                                    newCommand))
-                                                        .then((_) {
-                                                      // 可选：在复制后显示消息
-                                                      Logger.instance
-                                                          .i('文本已复制到剪切板');
-                                                    });
-                                                  },
-                                                  icon: const Icon(
-                                                    Icons.copy_outlined,
-                                                    size: 13,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          )
-                                        ],
-                                      ));
+                                  return buildContainerCard(container,
+                                      isRunning, controller, context);
                                 });
                           })),
                   CustomCard(
-                      height: MediaQuery.of(context).size.height * 0.2,
+                      height: MediaQuery.of(context).size.height * 0.3,
                       child: ListView.builder(
                           itemCount: controller.results.length,
                           itemBuilder: (context, index) {
@@ -418,5 +199,195 @@ class SshWidget extends StatelessWidget {
               ),
       );
     });
+  }
+
+  Widget buildContainerCard(DockerContainer container, bool isRunning,
+      SshController controller, BuildContext context) {
+    return CustomCard(
+      padding: const EdgeInsets.all(8),
+      child: Slidable(
+        key: ValueKey('${container.id}_${container.name}'),
+        startActionPane: ActionPane(
+          motion: const ScrollMotion(),
+          extentRatio: 1 / 3,
+          children: [
+            SlidableAction(
+              flex: 1,
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              onPressed: (context) async {
+                CommonResponse res =
+                    await controller.stopContainer(container.name.toString());
+                if (res.code == 0) {
+                  Get.snackbar('通知', res.msg.toString(),
+                      colorText: Theme.of(context).colorScheme.primary);
+                } else {
+                  Get.snackbar('通知', res.msg.toString(),
+                      colorText: Theme.of(context).colorScheme.error);
+                }
+              },
+              backgroundColor: const Color(0xFF0A9D96),
+              foregroundColor: Colors.white,
+              icon: Icons.stop_circle_outlined,
+              label: '停止',
+            ),
+            SlidableAction(
+              flex: 1,
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              onPressed: (context) =>
+                  controller.restartContainer(container.name.toString()),
+              backgroundColor: const Color(0xFF0392CF),
+              foregroundColor: Colors.white,
+              // icon: Icons.edit,
+              label: '重启',
+              icon: Icons.refresh_outlined,
+            ),
+            container.hasNew
+                ? SlidableAction(
+                    flex: 1,
+                    borderRadius: const BorderRadius.all(Radius.circular(8)),
+                    onPressed: (context) =>
+                        controller.getNewImage(container.image.toString()),
+                    backgroundColor: const Color(0xFF0392CF),
+                    foregroundColor: Colors.white,
+                    // icon: Icons.edit,
+                    label: '下载',
+                    icon: Icons.download_outlined,
+                  )
+                : SlidableAction(
+                    flex: 1,
+                    borderRadius: const BorderRadius.all(Radius.circular(8)),
+                    onPressed: (context) =>
+                        controller.checkNewImage(container.image.toString()),
+                    backgroundColor: const Color(0xFF0392CF),
+                    foregroundColor: Colors.white,
+                    // icon: Icons.edit,
+                    label: '检查',
+                    icon: Icons.check_outlined,
+                  ),
+          ],
+        ),
+        endActionPane: ActionPane(
+          motion: const ScrollMotion(),
+          extentRatio: 0.25,
+          children: [
+            SlidableAction(
+              flex: 1,
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              onPressed: (context) async {
+                Get.defaultDialog(
+                  title: '重建容器',
+                  middleText: '本操作会删除旧容器并使用原来的配置重建容器，具有一定的风险性，请谨慎操作',
+                  middleTextStyle:
+                      TextStyle(color: Theme.of(context).colorScheme.error),
+                  onConfirm: () {
+                    controller.rebuildContainer(
+                        container.name.toString(), container.image.toString());
+                    Get.back();
+                  },
+                  onCancel: () => Get.back(),
+                  textCancel: '取消',
+                  textConfirm: '继续',
+                );
+              },
+              backgroundColor: const Color(0xFFFE4A49),
+              foregroundColor: Colors.white,
+              icon: Icons.upload_outlined,
+              label: '重建',
+            ),
+            SlidableAction(
+              flex: 1,
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              onPressed: (context) async {
+                String newCommand =
+                    await controller.generateNewContainerCommand(
+                        container.name.toString(), container.image.toString());
+                Clipboard.setData(ClipboardData(text: newCommand)).then((_) {
+                  // 可选：在复制后显示消息
+                  Logger.instance.i('重建命令已复制到剪切板');
+                });
+              },
+              backgroundColor: const Color(0xFF069556),
+              foregroundColor: Colors.white,
+              icon: Icons.copy_outlined,
+              label: '复制',
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SizedBox(
+                        width: 240,
+                        child: Row(
+                          children: [
+                            if (container.hasNew)
+                              const Icon(
+                                Icons.arrow_circle_up_outlined,
+                                size: 13,
+                                color: Colors.green,
+                              ),
+                            Expanded(
+                              child: EllipsisText(
+                                text: container.name.toString(),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                                ellipsis: '...',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Text(
+                        container.status!.toString(),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isRunning
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      EllipsisText(
+                        text: container.image.toString(),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        ellipsis: '...',
+                      ),
+                      const SizedBox(
+                        width: 5,
+                      ),
+                      if (container.hasNew)
+                        ElevatedButton(
+                            onPressed: () => controller
+                                .getNewImage(container.image.toString()),
+                            child: const Text(
+                              '下载镜像',
+                              style: TextStyle(fontSize: 11),
+                            )),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -195,7 +195,7 @@ class SshController extends GetxController {
     }
     List<String> parts = name.split('/');
     name = '${parts[parts.length - 2]}/${parts[parts.length - 1]}';
-    results.add('镜像名称：$name:$tag');
+    Logger.instance.d('镜像名称：$name:$tag');
     update();
 
     String command = 'curl ';
@@ -205,7 +205,7 @@ class SshController extends GetxController {
     command +=
         """-s https://hub.docker.com/v2/repositories/$name/tags/$tag/ | grep '"digest"' | sed 's/.*"digest":"\\([^"]*\\)".*/\\1/'""";
 
-    results.add(command);
+    Logger.instance.d(command);
     return await run(command);
   }
 
@@ -214,10 +214,10 @@ class SshController extends GetxController {
     results.add('检查更新：$image');
     update();
     String localImageDigest = await getLocalImageDigest(image);
-    results.add('当前镜像digest：$localImageDigest');
+    // results.add('当前镜像digest：$localImageDigest');
 
     String remoteImageDigest = await getRemoteImageDigest(image);
-    results.add('远程镜像digest：$remoteImageDigest');
+    // results.add('远程镜像digest：$remoteImageDigest');
     update();
     results.add(
         '$image 有更新：${localImageDigest.toLowerCase() != remoteImageDigest.toLowerCase()}');
@@ -273,7 +273,9 @@ class SshController extends GetxController {
         'docker pull $image && docker stop $name && docker rm -f $name && $newCommand';
     command = addProxy(command);
     await execute(command);
+
     await getContainerList();
+
     update();
   }
 
