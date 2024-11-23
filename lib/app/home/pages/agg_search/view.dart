@@ -104,15 +104,16 @@ class _AggSearchPageState extends State<AggSearchPage>
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 6),
                         ),
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.language,
                           size: 14,
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.onPrimary,
                         ),
                         label: Text(
                           '站点 ${controller.maxCount}',
-                          style: const TextStyle(
-                              color: Colors.white, fontSize: 12),
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              fontSize: 12),
                         ),
                       ),
                       const SizedBox(
@@ -142,14 +143,19 @@ class _AggSearchPageState extends State<AggSearchPage>
                                 ? const GFLoader(
                                     size: 14,
                                   )
-                                : const Icon(
+                                : Icon(
                                     Icons.search,
                                     size: 14,
-                                    color: Colors.white,
+                                    color:
+                                        Theme.of(context).colorScheme.onPrimary,
                                   ),
-                            label: Text(controller.isLoading ? '取消' : '搜索',
-                                style: const TextStyle(
-                                    color: Colors.white, fontSize: 12)));
+                            label: Text(
+                              controller.isLoading ? '取消' : '搜索',
+                              style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                  fontSize: 12),
+                            ));
                       }),
                     ],
                   ),
@@ -217,9 +223,10 @@ class _AggSearchPageState extends State<AggSearchPage>
             onPressed: () {
               controller.initSearchResult();
             },
-            icon: const Icon(
+            icon: Icon(
               Icons.remove_circle_outline,
               size: 16,
+              color: Theme.of(context).colorScheme.onSecondary,
             ),
             style: ButtonStyle(
               shape: WidgetStateProperty.all<RoundedRectangleBorder>(
@@ -229,36 +236,46 @@ class _AggSearchPageState extends State<AggSearchPage>
               padding: WidgetStateProperty.all(
                   const EdgeInsets.symmetric(horizontal: 8)),
               side: WidgetStateProperty.all(BorderSide.none),
+              backgroundColor: WidgetStateProperty.all(
+                  Theme.of(context).colorScheme.secondary),
             ),
-            label: const Text('清除'),
+            label: Text(
+              '清除',
+              style:
+                  TextStyle(color: Theme.of(context).colorScheme.onSecondary),
+            ),
           ),
           ElevatedButton.icon(
             onPressed: () {
               _openSortSheet();
             },
-            icon: const Icon(
+            icon: Icon(
               Icons.sort_by_alpha_sharp,
               size: 16,
+              color: Theme.of(context).colorScheme.onSecondary,
             ),
             style: ButtonStyle(
-              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5.0)),
-              ),
-              padding: WidgetStateProperty.all(
-                  const EdgeInsets.symmetric(horizontal: 8)),
-              side: WidgetStateProperty.all(BorderSide.none),
+                shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                  RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5.0)),
+                ),
+                padding: WidgetStateProperty.all(
+                    const EdgeInsets.symmetric(horizontal: 8)),
+                side: WidgetStateProperty.all(BorderSide.none),
+                backgroundColor: WidgetStateProperty.all(
+                    Theme.of(context).colorScheme.secondary)),
+            label: Text(
+              '排序',
+              style:
+                  TextStyle(color: Theme.of(context).colorScheme.onSecondary),
             ),
-            label: const Text('排序'),
           ),
           ElevatedButton.icon(
             onPressed: () {
               _openFilterSheet();
             },
-            icon: const Icon(
-              Icons.filter_tilt_shift,
-              size: 16,
-            ),
+            icon: Icon(Icons.filter_tilt_shift,
+                size: 16, color: Theme.of(context).colorScheme.onSecondary),
             style: ButtonStyle(
               shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                 RoundedRectangleBorder(
@@ -267,8 +284,14 @@ class _AggSearchPageState extends State<AggSearchPage>
               padding: WidgetStateProperty.all(
                   const EdgeInsets.symmetric(horizontal: 8)),
               side: WidgetStateProperty.all(BorderSide.none),
+              backgroundColor: WidgetStateProperty.all(
+                  Theme.of(context).colorScheme.secondary),
             ),
-            label: const Text('筛选'),
+            label: Text(
+              '筛选',
+              style:
+                  TextStyle(color: Theme.of(context).colorScheme.onSecondary),
+            ),
           ),
         ],
       ),
@@ -374,8 +397,11 @@ class _AggSearchPageState extends State<AggSearchPage>
                         ),
                         CustomTextTag(
                           labelText: website.name.toString(),
-                          backgroundColor:
-                              Colors.teal.shade500.withOpacity(0.7),
+                          backgroundColor: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withOpacity(0.7),
+                          labelColor: Theme.of(context).colorScheme.onPrimary,
                         ),
                       ]),
                 ),
@@ -600,7 +626,8 @@ class _AggSearchPageState extends State<AggSearchPage>
                         ),
                         child: Text(
                           '${controller.sites.isEmpty ? '全选' : '清除'} ${canSearchList.length}',
-                          style: const TextStyle(color: Colors.white),
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary),
                         ));
                   }),
                   GetBuilder<AggSearchController>(builder: (controller) {
@@ -614,9 +641,10 @@ class _AggSearchPageState extends State<AggSearchPage>
                             borderRadius: BorderRadius.circular(8.0), // 圆角半径
                           ),
                         ),
-                        child: const Text(
+                        child: Text(
                           '随机',
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary),
                         ));
                   }),
                   GetBuilder<AggSearchController>(builder: (controller) {
@@ -637,15 +665,19 @@ class _AggSearchPageState extends State<AggSearchPage>
                           },
                         ),
                         ElevatedButton(
-                            onPressed: () => controller.saveDefaultSites(),
-                            style: OutlinedButton.styleFrom(
-                              backgroundColor: Colors.amber,
-                              shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(8.0), // 圆角半径
-                              ),
+                          onPressed: () => controller.saveDefaultSites(),
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: Colors.amber,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0), // 圆角半径
                             ),
-                            child: Text('默认${controller.maxCount}')),
+                          ),
+                          child: Text(
+                            '默认${controller.maxCount}',
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.onPrimary),
+                          ),
+                        ),
                         InkWell(
                           child: const Icon(Icons.add),
                           onTap: () {
@@ -702,13 +734,19 @@ class _AggSearchPageState extends State<AggSearchPage>
                             return const SizedBox.shrink();
                           }
                           return FilterChip(
-                            label: Text(capitalize(mySite.nickname)),
+                            label: Text(
+                              capitalize(mySite.nickname),
+                              style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                  fontSize: 12),
+                            ),
                             selected: controller.sites.contains(mySite.id),
                             labelPadding: EdgeInsets.zero,
                             backgroundColor: Theme.of(context)
                                 .colorScheme
                                 .primary
-                                .withOpacity(0.7),
+                                .withOpacity(0.8),
                             labelStyle: const TextStyle(
                                 fontSize: 12, color: Colors.white),
                             selectedColor: Colors.green,
@@ -764,7 +802,8 @@ class _AggSearchPageState extends State<AggSearchPage>
               dense: true,
               title: Text(
                 item.name,
-                style: const TextStyle(fontSize: 13),
+                style: TextStyle(
+                    fontSize: 13, color: Theme.of(context).colorScheme.primary),
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8.0),
@@ -772,12 +811,18 @@ class _AggSearchPageState extends State<AggSearchPage>
               ),
               selectedColor: Colors.amber,
               selected: controller.sortKey == item.value,
-              leading: controller.sortReversed
-                  ? const Icon(Icons.trending_up)
-                  : const Icon(Icons.trending_down),
-              trailing: controller.sortKey == item.value
-                  ? const Icon(Icons.check_box_outlined)
-                  : const Icon(Icons.check_box_outline_blank_rounded),
+              leading: Icon(
+                controller.sortReversed
+                    ? Icons.trending_up
+                    : Icons.trending_down,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              trailing: Icon(
+                controller.sortKey == item.value
+                    ? Icons.check_box_outlined
+                    : Icons.check_box_outline_blank_rounded,
+                color: Theme.of(context).colorScheme.primary,
+              ),
               onTap: () {
                 if (controller.sortKey == item.value) {
                   controller.sortReversed = !controller.sortReversed;
@@ -808,7 +853,11 @@ class _AggSearchPageState extends State<AggSearchPage>
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
                       '种子筛选',
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontSize:
+                            Theme.of(context).textTheme.titleMedium?.fontSize,
+                      ),
                     )),
                 if (controller.succeedSiteList.isNotEmpty)
                   FilterItem(
@@ -858,9 +907,11 @@ class _AggSearchPageState extends State<AggSearchPage>
                 if (controller.hrResultList.isNotEmpty)
                   CustomCard(
                     child: SwitchListTile(
-                      title: const Text(
+                      title: Text(
                         '排除 HR',
-                        style: TextStyle(fontSize: 12, color: Colors.black54),
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.primary),
                       ),
                       onChanged: (val) {
                         controller.hrKey = val;
