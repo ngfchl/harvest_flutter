@@ -235,7 +235,10 @@ class FilterItem extends StatelessWidget {
               // contentPadding: const EdgeInsets.all(0),
               title: Text(
                 name,
-                style: const TextStyle(fontSize: 12, color: Colors.black54),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
             ),
           ),
@@ -247,11 +250,14 @@ class FilterItem extends StatelessWidget {
               children: value
                   .map(
                     (e) => FilterChip(
-                      label: e.toString().isNotEmpty
-                          ? Text(e.toString())
-                          : const Text('无'),
+                      label: Text(
+                        e.toString().isNotEmpty ? e.toString() : "无",
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                      ),
                       selected: selected.contains(e.toString()),
-                      backgroundColor: Colors.blue.shade500,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                       labelStyle:
                           const TextStyle(fontSize: 12, color: Colors.white),
                       selectedColor: Colors.green,
