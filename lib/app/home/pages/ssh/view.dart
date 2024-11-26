@@ -78,17 +78,25 @@ class SshWidget extends StatelessWidget {
                           })),
                   CustomCard(
                       height: MediaQuery.of(context).size.height * 0.3,
+                      color: Theme.of(context).colorScheme.surface,
                       child: ListView.builder(
-                          itemCount: controller.results.length,
+                          itemCount: controller.logList.length,
+                          controller: controller.scrollController,
                           itemBuilder: (context, index) {
-                            String res = controller.results[index];
+                            String res = controller.logList[index];
                             return Container(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 12),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 2),
                                 width: MediaQuery.of(context).size.width,
                                 child: SelectableText(
                                   res.toString().trim(),
-                                  style: const TextStyle(fontSize: 11),
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      letterSpacing: 1.5,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withOpacity(0.8)),
                                 ));
                           })),
                 ],

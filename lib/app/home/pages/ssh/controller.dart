@@ -21,7 +21,7 @@ class SshController extends GetxController {
       TextEditingController(text: '192.168.1.1');
   TextEditingController portController = TextEditingController(text: '22');
   TextEditingController proxyController = TextEditingController(text: '');
-  List<String> results = ['SSHClient欢迎你！'];
+  List<String> logList = ['SSHClient欢迎你！'];
   List<DockerContainer> containerList = [];
 
   // 使用StreamController来管理下载状态的流
@@ -30,6 +30,8 @@ class SshController extends GetxController {
 
   Stream<List<DockerContainer>> get containerStream =>
       containerStreamController.stream;
+
+  ScrollController scrollController = ScrollController();
 
   @override
   void onInit() {
@@ -68,12 +70,26 @@ class SshController extends GetxController {
         await getContainerList();
       }
       Logger.instance.i(msg);
-      results.add(msg);
+      updateLogs(msg);
     } catch (e, trace) {
       Logger.instance.e(e);
       Logger.instance.e(trace);
     }
     update();
+  }
+
+  void updateLogs(String msg) {
+    logList.add(msg);
+    scrollController.animateTo(
+      scrollController.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 100),
+      curve: Curves.easeOut,
+    );
+    scrollController.animateTo(
+      scrollController.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 100),
+      curve: Curves.easeOut,
+    );
   }
 
   disconnect() {
@@ -94,23 +110,25 @@ class SshController extends GetxController {
 
     String newCommand = await run(command);
     Logger.instance.i(newCommand);
-    results.add(newCommand);
+    updateLogs(newCommand);
     update();
     return newCommand;
   }
 
   Future<String> run(String command) async {
-    final res = await client.run(command);
+    command = addProxy(command);
+    final res = await client.run(". /etc/profile; $command");
     return utf8.decode(res);
   }
 
   execute(String command) async {
-    SSHSession session = await client.execute(command);
+    command = addProxy(command);
+    SSHSession session = await client.execute(". /etc/profile; $command");
     // 监听 stdout
     session.stdout.listen((data) {
       final output = utf8.decode(data);
       Logger.instance.i('Output: $output');
-      results.add(output);
+      updateLogs(output);
 
       update();
     });
@@ -119,7 +137,7 @@ class SshController extends GetxController {
     session.stderr.listen((data) {
       final errorOutput = utf8.decode(data);
       Logger.instance.i('Error: $errorOutput');
-      results.add(errorOutput);
+      updateLogs(errorOutput);
 
       update();
     });
@@ -127,17 +145,16 @@ class SshController extends GetxController {
   }
 
   clear() {
-    results.clear();
-    results = ['日志已清除，SSHClient欢迎你！'];
+    logList.clear();
+    logList = ['日志已清除，SSHClient欢迎你！'];
     update();
   }
 
   getContainerList() async {
     Logger.instance.i('开始获取容器列表');
     String command =
-        'docker ps -a --format "{{.ID}} {{.Image}} {{.Names}} {{.Status}}"';
-    clear();
-    results.add('开始获取容器列表');
+        '. /etc/profile; docker ps -a --format "{{.ID}} {{.Image}} {{.Names}} {{.Status}}"';
+    logList.add('开始获取容器列表');
     update();
     SSHSession session = await client.execute(command);
     final output = await session.stdout.map(utf8.decode).join();
@@ -163,8 +180,7 @@ class SshController extends GetxController {
 
   void restartContainer(String? name) async {
     Logger.instance.i('正在重启容器：$name');
-    clear();
-    results.add('正在重启容器：$name');
+    logList.add('正在重启容器：$name');
     update();
     String command = 'docker restart $name';
     await execute(command);
@@ -210,18 +226,20 @@ class SshController extends GetxController {
   }
 
   Future<bool> checkNewImage(String image) async {
-    clear();
-    results.add('检查更新：$image');
+    logList.add('检查更新：$image');
     update();
     String localImageDigest = await getLocalImageDigest(image);
     // results.add('当前镜像digest：$localImageDigest');
 
     String remoteImageDigest = await getRemoteImageDigest(image);
     // results.add('远程镜像digest：$remoteImageDigest');
+    bool flag = localImageDigest.isNotEmpty &&
+        remoteImageDigest.isNotEmpty &&
+        localImageDigest.toLowerCase() != remoteImageDigest.toLowerCase();
+    updateLogs('$image 有更新：$flag');
     update();
-    results.add(
-        '$image 有更新：${localImageDigest.toLowerCase() != remoteImageDigest.toLowerCase()}');
-    return localImageDigest.toLowerCase() != remoteImageDigest.toLowerCase();
+
+    return flag;
   }
 
   Future<void> fetchStatusForItem(DockerContainer item) async {
@@ -235,12 +253,13 @@ class SshController extends GetxController {
   }
 
   checkAllImageUpdate() async {
-    results.add('开始检查镜像是否有更新');
+    logList.add('开始检查镜像是否有更新');
     List<Future<void>> futures = [];
     for (DockerContainer item in containerList) {
       if (!item.hasNew) {
         Future<void> fetchStatus = fetchStatusForItem(item);
         futures.add(fetchStatus);
+        update();
       }
     }
     await Future.wait(futures);
@@ -256,9 +275,7 @@ class SshController extends GetxController {
 
   void getNewImage(String? image) async {
     String command = 'docker pull $image';
-    command = addProxy(command);
-    clear();
-    results.add('正在更新镜像：$image');
+    logList.add('正在更新镜像：$image');
     update();
     await execute(command);
     update();
@@ -271,7 +288,6 @@ class SshController extends GetxController {
 
     String command =
         'docker pull $image && docker stop $name && docker rm -f $name && $newCommand';
-    command = addProxy(command);
     await execute(command);
 
     await getContainerList();
