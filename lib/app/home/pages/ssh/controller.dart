@@ -13,6 +13,10 @@ class SshController extends GetxController {
   bool connected = false;
   bool remember = false;
   bool haveNewImage = false;
+  Timer? periodicTimer;
+  Timer? fiveMinutesTimer;
+  bool isTimerActive = true; // 使用 RxBool 控制定时器是否激活
+
   late SSHClient client;
   TextEditingController usernameController =
       TextEditingController(text: 'root');
@@ -23,6 +27,7 @@ class SshController extends GetxController {
   TextEditingController proxyController = TextEditingController(text: '');
   List<String> logList = ['SSHClient欢迎你！'];
   List<DockerContainer> containerList = [];
+  String? server = SPUtil.getString('server');
 
   // 使用StreamController来管理下载状态的流
   final StreamController<List<DockerContainer>> containerStreamController =
@@ -35,15 +40,23 @@ class SshController extends GetxController {
 
   @override
   void onInit() {
-    String? serverDomain =
-        SPUtil.getString('serverDomain', defaultValue: '192.168.1.1');
+    String? hostname = SPUtil.getString('$server-SSH_CLIENT_HOSTNAME',
+        defaultValue: '192.168.1.1');
     String? password =
-        SPUtil.getString('SSH_CLIENT_PASSWORD', defaultValue: '');
-    String? proxy = SPUtil.getString('SSH_CLIENT_PROXY', defaultValue: '');
-    hostController.text = serverDomain!;
+        SPUtil.getString('$server-SSH_CLIENT_PASSWORD', defaultValue: '');
+    String? port =
+        SPUtil.getString('$server-SSH_CLIENT_PORT', defaultValue: '');
+    String? username =
+        SPUtil.getString('$server-SSH_CLIENT_USERNAME', defaultValue: '');
+    String? proxy =
+        SPUtil.getString('$server-SSH_CLIENT_PROXY', defaultValue: '');
+    hostController.text = hostname!;
     passwordController.text = password!;
     proxyController.text = proxy!;
-    remember = SPUtil.getBool('SSH_CLIENT_REMEMBER', defaultValue: false)!;
+    usernameController.text = username!;
+    portController.text = port!;
+    remember =
+        SPUtil.getBool('$server-SSH_CLIENT_REMEMBER', defaultValue: false)!;
     super.onInit();
   }
 
@@ -56,17 +69,23 @@ class SshController extends GetxController {
         onPasswordRequest: () => passwordController.text,
       );
       if (remember) {
-        SPUtil.setLocalStorage('SSH_CLIENT_PASSWORD', passwordController.text);
-        SPUtil.setLocalStorage('SSH_CLIENT_PROXY', proxyController.text);
-        SPUtil.setBool('SSH_CLIENT_REMEMBER', remember);
+        SPUtil.setLocalStorage(
+            '$server-SSH_CLIENT_USERNAME', usernameController.text);
+        SPUtil.setLocalStorage(
+            '$server-SSH_CLIENT_HOSTNAME', hostController.text);
+        SPUtil.setLocalStorage(
+            '$server-SSH_CLIENT_PASSWORD', passwordController.text);
+        SPUtil.setLocalStorage('$server-SSH_CLIENT_PORT', portController.text);
+        SPUtil.setLocalStorage(
+            '$server-SSH_CLIENT_PROXY', proxyController.text);
+        SPUtil.setBool('$server-SSH_CLIENT_REMEMBER', remember);
       }
-      Logger.instance.i(await run('whoami'));
       String msg;
       if (client.isClosed) {
         msg = 'SSH 连接到 ${hostController.text} 失败！';
       } else {
         connected = !client.isClosed;
-        msg = 'SSH 连接到 ${hostController.text}';
+        msg = 'SSH 连接到 ${hostController.text} 用户：${await run('whoami')}';
         await getContainerList();
       }
       Logger.instance.i(msg);
@@ -79,22 +98,20 @@ class SshController extends GetxController {
   }
 
   void updateLogs(String msg) {
-    logList.add(msg);
-    scrollController.animateTo(
-      scrollController.position.maxScrollExtent,
-      duration: const Duration(milliseconds: 100),
-      curve: Curves.easeOut,
-    );
-    scrollController.animateTo(
-      scrollController.position.maxScrollExtent,
-      duration: const Duration(milliseconds: 100),
-      curve: Curves.easeOut,
-    );
+    logList.add("${DateTime.now()} - $msg");
+    if (logList.length > 12) {
+      scrollController.animateTo(
+        scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 100),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   disconnect() {
     client.close();
     connected = false;
+    cancelPeriodicTimer();
     update();
   }
 
@@ -105,7 +122,7 @@ class SshController extends GetxController {
         "{{range \$index, \$value := .Config.Env}}--env {{\$value}} {{end}} "
         "{{range \$index, \$value := .HostConfig.PortBindings}}-p {{(index \$value 0).HostPort}}:{{(index \$value 0).HostPort}} "
         "{{end}} {{range \$index, \$value := .Mounts}}-v {{\$value.Source}}:{{\$value.Destination}} {{end}} "
-        "{{range \$network, \$details := .NetworkSettings.Networks}}--network {{\$network}} {{if \$details.IPAddress}}--ip {{\$details.IPAddress}} {{end}} {{end}} "
+        "{{range \$network, \$details := .NetworkSettings.Networks}}--network {{\$network}} {{if and \$details.IPAddress (ne \$network \"host\") (ne \$network \"bridge\")}}--ip {{\$details.IPAddress}} {{end}} {{end}} "
         " $image' $name";
 
     String newCommand = await run(command);
@@ -154,7 +171,7 @@ class SshController extends GetxController {
     Logger.instance.i('开始获取容器列表');
     String command =
         '. /etc/profile; docker ps -a --format "{{.ID}} {{.Image}} {{.Names}} {{.Status}}"';
-    logList.add('开始获取容器列表');
+    updateLogs('开始获取容器列表');
     update();
     SSHSession session = await client.execute(command);
     final output = await session.stdout.map(utf8.decode).join();
@@ -174,16 +191,19 @@ class SshController extends GetxController {
         .map((e) => DockerContainer.fromJson(e))
         .toList();
     await checkAllImageUpdate();
+    startPeriodicTimer();
+
     Logger.instance.i('Output: $containerList'); // 期望输出 Docker 容器列表
     update();
   }
 
   void restartContainer(String? name) async {
     Logger.instance.i('正在重启容器：$name');
-    logList.add('正在重启容器：$name');
+    updateLogs('正在重启容器：$name');
     update();
     String command = 'docker restart $name';
     await execute(command);
+    await Future.delayed(const Duration(seconds: 3));
     await getContainerList();
     update();
   }
@@ -192,9 +212,9 @@ class SshController extends GetxController {
     // String command = "docker inspect --format='{{.Created}}' $image";
     String command =
         """docker inspect --format='{{with index .RepoDigests 0}}{{if .}}{{index (split . "@") 1}}{{end}}{{end}}' $image""";
-    String createdTime = await run(command);
-    Logger.instance.d(createdTime);
-    return createdTime;
+    String digest = await run(command);
+    Logger.instance.d(digest);
+    return digest;
   }
 
   getRemoteImageDigest(String image) async {
@@ -225,8 +245,76 @@ class SshController extends GetxController {
     return await run(command);
   }
 
+  Future<void> fetchStatsForItem(
+      DockerContainer item, Map<String, ContainerStats> idToMap) async {
+    try {
+      item.stats = idToMap[item.id];
+      containerStreamController.sink.add([item]);
+      update();
+    } catch (e) {
+      Logger.instance.e('${item.image} 检查更新失败: $e');
+    }
+  }
+
+  void startPeriodicTimer() {
+    cancelPeriodicTimer();
+    timerToStop();
+    // 设置定时器，每隔一定时间刷新下载器数据
+    periodicTimer =
+        Timer.periodic(const Duration(seconds: 10), (Timer t) async {
+      // 在定时器触发时获取最新的下载器数据
+      await checkAllContainerStats();
+    });
+    isTimerActive = true;
+    update();
+  }
+
+  void timerToStop() {
+    fiveMinutesTimer = Timer(const Duration(minutes: 10), () {
+      // 定时器触发后执行的操作，这里可以取消periodicTimer、关闭资源等
+      cancelPeriodicTimer();
+      // 你可以在这里添加其他需要在定时器触发后执行的逻辑
+    });
+  }
+
+  // 取消定时器
+  void cancelPeriodicTimer() {
+    if (periodicTimer != null && periodicTimer?.isActive == true) {
+      periodicTimer?.cancel();
+    }
+    if (fiveMinutesTimer != null && fiveMinutesTimer?.isActive == true) {
+      fiveMinutesTimer?.cancel();
+    }
+    isTimerActive = false;
+    update();
+  }
+
+  checkAllContainerStats() async {
+    List<String?> nameList = containerList.map((el) => el.name).toList();
+    updateLogs('刷新容器运行状态');
+    String command =
+        '. /etc/profile; docker stats ${nameList.join(" ")} --no-stream --format "{{json .}}"';
+    final res = await run(command);
+    List<ContainerStats> statsList = res
+        .trim()
+        .split("\n")
+        .map((el) => ContainerStats.fromJson(json.decode(el)))
+        .toList();
+    Map<String, ContainerStats> idToMap = {
+      for (var stats in statsList) stats.id: stats
+    };
+    List<Future<void>> futures = [];
+
+    for (DockerContainer item in containerList) {
+      Future<void> fetchStatus = fetchStatsForItem(item, idToMap);
+      futures.add(fetchStatus);
+      update();
+    }
+    await Future.wait(futures);
+  }
+
   Future<bool> checkNewImage(String image) async {
-    logList.add('检查更新：$image');
+    updateLogs('检查更新：$image');
     update();
     String localImageDigest = await getLocalImageDigest(image);
     // results.add('当前镜像digest：$localImageDigest');
@@ -253,8 +341,9 @@ class SshController extends GetxController {
   }
 
   checkAllImageUpdate() async {
-    logList.add('开始检查镜像是否有更新');
+    updateLogs('开始检查镜像是否有更新');
     List<Future<void>> futures = [];
+
     for (DockerContainer item in containerList) {
       if (!item.hasNew) {
         Future<void> fetchStatus = fetchStatusForItem(item);
@@ -275,7 +364,7 @@ class SshController extends GetxController {
 
   void getNewImage(String? image) async {
     String command = 'docker pull $image';
-    logList.add('正在更新镜像：$image');
+    updateLogs('正在更新镜像：$image');
     update();
     await execute(command);
     update();
@@ -289,7 +378,7 @@ class SshController extends GetxController {
     String command =
         'docker pull $image && docker stop $name && docker rm -f $name && $newCommand';
     await execute(command);
-
+    await Future.delayed(const Duration(seconds: 3));
     await getContainerList();
 
     update();
@@ -305,5 +394,12 @@ class SshController extends GetxController {
     String command = 'docker start $name';
     await execute(command);
     update();
+  }
+
+  @override
+  void dispose() {
+    disconnect();
+    cancelPeriodicTimer();
+    super.dispose();
   }
 }

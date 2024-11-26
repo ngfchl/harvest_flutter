@@ -27,16 +27,21 @@ class SshWidget extends StatelessWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: TextField(
-                      controller: commandController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: '请输入命令',
+                    child: SizedBox(
+                      height: 28,
+                      child: TextField(
+                        controller: commandController,
+                        decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: '请输入命令',
+                            labelStyle: TextStyle(fontSize: 14)),
                       ),
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                    height: 40,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
@@ -44,22 +49,49 @@ class SshWidget extends StatelessWidget {
                             onPressed: () async {
                               await controller.execute(commandController.text);
                             },
-                            child: const Text('发送')),
+                            child: Text(
+                              '发送',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            )),
                         ElevatedButton(
-                            onPressed: () {
-                              controller.clear();
-                            },
-                            child: const Text('清除')),
+                          onPressed: () {
+                            controller.clear();
+                          },
+                          child: Text(
+                            '清除',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ),
                         ElevatedButton(
-                            onPressed: () {
-                              controller.getContainerList();
-                            },
-                            child: const Text('刷新')),
+                          onPressed: () {
+                            controller.getContainerList();
+                          },
+                          child: Text(
+                            '刷新',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ),
                         ElevatedButton(
-                            onPressed: () {
-                              controller.disconnect();
-                            },
-                            child: const Text('断开')),
+                          onPressed: () {
+                            controller.disconnect();
+                          },
+                          child: Text(
+                            '断开',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -219,6 +251,7 @@ class SshWidget extends StatelessWidget {
         case 3:
           imageText = l.sublist(l.length - 2).join('/');
       }
+      ContainerStats? stats = container.stats;
       return CustomCard(
         padding: const EdgeInsets.all(8),
         child: Slidable(
@@ -332,82 +365,109 @@ class SshWidget extends StatelessWidget {
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
               children: [
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(
-                            width: 240,
-                            child: Row(
-                              children: [
-                                if (container.hasNew)
-                                  const Icon(
-                                    Icons.arrow_circle_up_outlined,
-                                    size: 13,
-                                    color: Colors.green,
-                                  ),
-                                Expanded(
-                                  child: EllipsisText(
-                                    text: container.name.toString(),
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              SizedBox(
+                                width: 240,
+                                child: Row(
+                                  children: [
+                                    if (container.hasNew)
+                                      const Icon(
+                                        Icons.arrow_circle_up_outlined,
+                                        size: 13,
+                                        color: Colors.green,
+                                      ),
+                                    Expanded(
+                                      child: EllipsisText(
+                                        text: container.name.toString(),
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                        ),
+                                        ellipsis: '...',
+                                      ),
                                     ),
-                                    ellipsis: '...',
-                                  ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ),
-                          Text(
-                            container.status!.toString(),
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: isRunning
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(context).colorScheme.error,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          SizedBox(
-                            width: 200,
-                            child: EllipsisText(
-                              text: imageText,
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Theme.of(context).colorScheme.primary,
                               ),
-                              ellipsis: '...',
-                            ),
+                              Text(
+                                container.status!.toString(),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: isRunning
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Theme.of(context).colorScheme.error,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(
-                            width: 5,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              SizedBox(
+                                width: 200,
+                                child: EllipsisText(
+                                  text: imageText,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
+                                  ellipsis: '...',
+                                ),
+                              ),
+                              const SizedBox(
+                                width: 5,
+                              ),
+                              if (container.hasNew)
+                                ElevatedButton(
+                                    onPressed: () => controller.getNewImage(
+                                        container.image.toString()),
+                                    child: const Text(
+                                      '下载镜像',
+                                      style: TextStyle(fontSize: 11),
+                                    )),
+                            ],
                           ),
-                          if (container.hasNew)
-                            ElevatedButton(
-                                onPressed: () => controller
-                                    .getNewImage(container.image.toString()),
-                                child: const Text(
-                                  '下载镜像',
-                                  style: TextStyle(fontSize: 11),
-                                )),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
+                if (stats != null)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("CPU: ${stats.cPUPerc}",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.primary,
+                          )),
+                      Text("Mem: ${stats.memUsage} ${stats.memPerc}",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.primary,
+                          )),
+                      Text("BlockIO: ${stats.blockIO}",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.primary,
+                          )),
+                    ],
+                  )
               ],
             ),
           ),
