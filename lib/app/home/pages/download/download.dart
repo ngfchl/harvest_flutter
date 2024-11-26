@@ -879,7 +879,8 @@ class _DownloadPageState extends State<DownloadPage>
   }
 
   void _showEditBottomSheet({Downloader? downloader}) async {
-    final nameController = TextEditingController(text: downloader?.name ?? '');
+    final nameController =
+        TextEditingController(text: downloader?.name ?? 'QBittorrent');
     final categoryController =
         TextEditingController(text: downloader?.category ?? 'Qb');
     final usernameController =
