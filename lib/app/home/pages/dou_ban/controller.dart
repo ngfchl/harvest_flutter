@@ -16,6 +16,7 @@ class DouBanController extends GetxController {
   List<TopMovieInfo> douBanTop250 = [];
   List<HotMediaInfo> douBanMovieHot = [];
   List<HotMediaInfo> douBanTvHot = [];
+  List<RankMovie> rankMovieList = [];
   List<int> top250PageNumList = [0, 25, 50, 75, 100, 125, 150, 175, 200, 225];
   List<String> douBanMovieTags = [
     '热门',
@@ -37,8 +38,42 @@ class DouBanController extends GetxController {
     '日本动画',
     '纪录片'
   ];
+
+  Map<String, int> typeMap = {
+    "TOP250": 0,
+    "剧情": 11,
+    "喜剧": 24,
+    "动作": 5,
+    "爱情": 13,
+    "科幻": 17,
+    "动画": 25,
+    "悬疑": 10,
+    "惊悚": 19,
+    "恐怖": 20,
+    "纪录片": 1,
+    "短片": 23,
+    "情色": 6,
+    "音乐": 14,
+    "歌舞": 7,
+    "家庭": 28,
+    "儿童": 8,
+    "传记": 2,
+    "历史": 4,
+    "战争": 22,
+    "犯罪": 3,
+    "西部": 27,
+    "奇幻": 16,
+    "冒险": 15,
+    "灾难": 12,
+    "武侠": 29,
+    "古装": 30,
+    "运动": 18,
+    "黑色电影": 31
+  };
+
   String selectMovieTag = '热门';
   String selectTvTag = '热门';
+  String selectTypeTag = 'TOP250';
   int initPage = 0;
   bool isLoading = false;
 
@@ -49,7 +84,7 @@ class DouBanController extends GetxController {
   }
 
   initData() async {
-    await getDouBanTop250();
+    await getRankListByType(selectTypeTag)();
     await getDouBanMovieHot(selectMovieTag);
     await getDouBanTvHot(selectTvTag);
     // await getDouBanMovieTags();
@@ -67,9 +102,19 @@ class DouBanController extends GetxController {
     update();
   }
 
-  getDouBanTop250() async {
-    douBanTop250.clear();
-    await getDouBanTop250Api();
+  getRankListByType(String type) async {
+    int? typeId = typeMap[type];
+    if (typeId == null || typeId == 0) {
+      await getDouBanTop250Api();
+      return;
+    }
+    isLoading = true;
+    update();
+    rankMovieList = await douBanHelper.getTypeRank(typeId);
+    initPage = 0;
+    isLoading = false;
+    update();
+    Logger.instance.d(rankMovieList);
   }
 
   getDouBanTop250Api() async {
@@ -123,7 +168,6 @@ class DouBanController extends GetxController {
     Logger.instance.i(homeController.initPage);
     Logger.instance.i(homeController.pageController.page);
   }
-
 
   @override
   void onClose() {

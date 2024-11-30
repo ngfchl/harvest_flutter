@@ -271,16 +271,62 @@ class _DouBanPageState extends State<DouBanPage>
               Column(
                 children: [
                   CustomCard(
-                    child: Tooltip(
-                      message: '点击刷新TOP250',
-                      child: ListTile(
-                        dense: true,
-                        title: const Text(
-                          '豆瓣TOP250',
-                          textAlign: TextAlign.center,
-                        ),
-                        onTap: () => controller.getDouBanTop250(),
-                      ),
+                    width: double.infinity,
+                    child: Column(
+                      children: [
+                        // Tooltip(
+                        //   message: '点击刷新TOP250',
+                        //   child: ListTile(
+                        //     dense: true,
+                        //     title: const Text(
+                        //       '豆瓣TOP250',
+                        //       textAlign: TextAlign.center,
+                        //     ),
+                        //     onTap: () => controller.getDouBanTop250(),
+                        //   ),
+                        // ),
+                        SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Wrap(
+                              spacing: 8,
+                              children: [
+                                // FilterChip(
+                                //   labelPadding: EdgeInsets.zero,
+                                //   label: const Text(
+                                //     'TOP250',
+                                //     style: TextStyle(fontSize: 12),
+                                //   ),
+                                //   selected:
+                                //       controller.selectTypeTag == 'TOP250',
+                                //   onSelected: (bool value) {
+                                //     if (value == true) {
+                                //       controller.selectTypeTag = 'TOP250';
+                                //       controller.getRankListByType(
+                                //           controller.selectTypeTag);
+                                //     }
+                                //   },
+                                // ),
+                                ...controller.typeMap.entries
+                                    .map((e) => FilterChip(
+                                          labelPadding: EdgeInsets.zero,
+                                          label: Text(
+                                            e.key,
+                                            style:
+                                                const TextStyle(fontSize: 12),
+                                          ),
+                                          selected:
+                                              controller.selectTypeTag == e.key,
+                                          onSelected: (bool value) {
+                                            if (value == true) {
+                                              controller.selectTypeTag = e.key;
+                                              controller.getRankListByType(
+                                                  controller.selectTypeTag);
+                                            }
+                                          },
+                                        ))
+                              ],
+                            )),
+                      ],
                     ),
                   ),
                   Expanded(
@@ -289,208 +335,443 @@ class _DouBanPageState extends State<DouBanPage>
                       child: Stack(
                         children: [
                           EasyRefresh(
-                            onRefresh: () {
+                            onRefresh: () async {
                               controller.initPage = 0;
-                              controller.getDouBanTop250Api();
+                              await controller
+                                  .getRankListByType(controller.selectTypeTag);
                             },
-                            onLoad: () => controller.getDouBanTop250Api(),
+                            onLoad: () async {
+                              if (controller.selectTypeTag == "TOP250") {
+                                await controller.getRankListByType(
+                                    controller.selectTypeTag);
+                              }
+                            },
                             child: SingleChildScrollView(
-                              child: Wrap(
-                                children: controller.douBanTop250
-                                    .map((e) => InkWell(
-                                          onTap: () async {
-                                            _buildOperateDialog(e);
-                                          },
-                                          onLongPress: () {
-                                            Logger.instance.i('WebView');
-                                            Get.toNamed(Routes.WEBVIEW,
-                                                arguments: {
-                                                  'url': e.douBanUrl,
-                                                });
-                                          },
-                                          child: CustomCard(
-                                            padding: const EdgeInsets.all(8),
-                                            child: Row(
-                                              children: [
-                                                Stack(
-                                                  children: [
-                                                    ClipRRect(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              5.0),
-                                                      child: CachedNetworkImage(
-                                                        imageUrl:
-                                                            '$cacheServer${e.poster}',
-                                                        placeholder: (context,
-                                                                url) =>
-                                                            const Center(
-                                                                child:
-                                                                    CircularProgressIndicator()),
-                                                        errorWidget: (context,
-                                                                url, error) =>
-                                                            Image.asset(
-                                                                'assets/images/logo.png'),
-                                                        width: 100,
-                                                        height: 150,
-                                                        fit: BoxFit.fitWidth,
-                                                      ),
-                                                    ),
-                                                    Positioned(
-                                                      top: 2,
-                                                      right: 2,
-                                                      child: Container(
-                                                        color: Colors.black38,
-                                                        width: 100,
-                                                        child: Text(
-                                                          e.rank,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          style:
-                                                              const TextStyle(
-                                                                  color: Colors
-                                                                      .white,
-                                                                  fontSize: 12),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Positioned(
-                                                      bottom: 2,
-                                                      child: Container(
-                                                        color: Colors.black38,
-                                                        width: 100,
-                                                        child: Text(
-                                                          e.title,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          style:
-                                                              const TextStyle(
-                                                                  color: Colors
-                                                                      .white,
-                                                                  fontSize: 12),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                Expanded(
-                                                    child: Padding(
+                              child: controller.selectTypeTag == "TOP250"
+                                  ? Wrap(
+                                      children: controller.douBanTop250
+                                          .map((e) => InkWell(
+                                                onTap: () async {
+                                                  _buildOperateDialog(e);
+                                                },
+                                                onLongPress: () {
+                                                  Logger.instance.i('WebView');
+                                                  Get.toNamed(Routes.WEBVIEW,
+                                                      arguments: {
+                                                        'url': e.douBanUrl,
+                                                      });
+                                                },
+                                                child: CustomCard(
                                                   padding:
-                                                      const EdgeInsets.only(
-                                                          left: 12),
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
+                                                      const EdgeInsets.all(8),
+                                                  child: Row(
                                                     children: [
-                                                      GFTypography(
-                                                        text: e.subtitle
-                                                            .toString(),
-                                                        type: GFTypographyType
-                                                            .typo5,
-                                                        dividerHeight: 0,
-                                                        textColor:
-                                                            Theme.of(context)
-                                                                .colorScheme
-                                                                .primary,
-                                                      ),
-                                                      Tooltip(
-                                                        message:
-                                                            e.cast.toString(),
-                                                        triggerMode:
-                                                            TooltipTriggerMode
-                                                                .tap,
-                                                        margin: const EdgeInsets
-                                                            .symmetric(
-                                                            horizontal: 36),
-                                                        child: Text(
-                                                          e.cast,
-                                                          style:
-                                                              const TextStyle(
-                                                                  fontSize: 13),
-                                                          maxLines: 2,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                        ),
-                                                      ),
-                                                      Tooltip(
-                                                        message:
-                                                            e.desc.toString(),
-                                                        triggerMode:
-                                                            TooltipTriggerMode
-                                                                .tap,
-                                                        margin: const EdgeInsets
-                                                            .symmetric(
-                                                            horizontal: 36),
-                                                        child: Text(
-                                                          '${e.desc}',
-                                                          style:
-                                                              const TextStyle(
-                                                                  fontSize: 13),
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                        ),
-                                                      ),
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
+                                                      Stack(
                                                         children: [
-                                                          Tooltip(
-                                                            message:
-                                                                '评分：${e.ratingNum}',
-                                                            child: RatingBar
-                                                                .readOnly(
-                                                              initialRating:
-                                                                  double.parse(e
-                                                                          .ratingNum) /
-                                                                      2,
-                                                              filledIcon:
-                                                                  Icons.star,
-                                                              emptyIcon: Icons
-                                                                  .star_border,
-                                                              emptyColor: Colors
-                                                                  .redAccent,
-                                                              filledColor: Theme
-                                                                      .of(context)
-                                                                  .colorScheme
-                                                                  .primary,
-                                                              halfFilledColor:
-                                                                  Colors
-                                                                      .amberAccent,
-                                                              halfFilledIcon:
-                                                                  Icons
-                                                                      .star_half,
-                                                              maxRating: 5,
-                                                              size: 18,
+                                                          ClipRRect(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        5.0),
+                                                            child:
+                                                                CachedNetworkImage(
+                                                              imageUrl:
+                                                                  '$cacheServer${e.poster}',
+                                                              placeholder: (context,
+                                                                      url) =>
+                                                                  const Center(
+                                                                      child:
+                                                                          CircularProgressIndicator()),
+                                                              errorWidget: (context,
+                                                                      url,
+                                                                      error) =>
+                                                                  Image.asset(
+                                                                      'assets/images/logo.png'),
+                                                              width: 100,
+                                                              height: 150,
+                                                              fit: BoxFit
+                                                                  .fitWidth,
                                                             ),
                                                           ),
-                                                          Text(e.evaluateNum),
+                                                          Positioned(
+                                                            top: 0,
+                                                            right: 0,
+                                                            child: Center(
+                                                              child: Container(
+                                                                color: Theme.of(
+                                                                        context)
+                                                                    .colorScheme
+                                                                    .surface,
+                                                                width: 30,
+                                                                child: Text(
+                                                                  e.rank,
+                                                                  overflow:
+                                                                      TextOverflow
+                                                                          .ellipsis,
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .center,
+                                                                  style: TextStyle(
+                                                                      color: Theme.of(
+                                                                              context)
+                                                                          .colorScheme
+                                                                          .onSurface,
+                                                                      fontSize:
+                                                                          12),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Positioned(
+                                                            bottom: 0,
+                                                            child: Container(
+                                                              color: Theme.of(
+                                                                      context)
+                                                                  .colorScheme
+                                                                  .surface,
+                                                              width: 100,
+                                                              child: Text(
+                                                                e.title,
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .center,
+                                                                style: TextStyle(
+                                                                    color: Theme.of(
+                                                                            context)
+                                                                        .colorScheme
+                                                                        .onSurface,
+                                                                    fontSize:
+                                                                        12),
+                                                              ),
+                                                            ),
+                                                          ),
                                                         ],
                                                       ),
-                                                      GFTypography(
-                                                        text: e.quote,
-                                                        type: GFTypographyType
-                                                            .typo5,
-                                                        dividerHeight: 0,
-                                                        textColor:
-                                                            Theme.of(context)
-                                                                .colorScheme
-                                                                .secondary,
-                                                      ),
+                                                      Expanded(
+                                                          child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(left: 12),
+                                                        child: Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            GFTypography(
+                                                              text: e.subtitle
+                                                                  .toString(),
+                                                              type:
+                                                                  GFTypographyType
+                                                                      .typo5,
+                                                              dividerHeight: 0,
+                                                              textColor: Theme.of(
+                                                                      context)
+                                                                  .colorScheme
+                                                                  .primary,
+                                                            ),
+                                                            Tooltip(
+                                                              message: e.cast
+                                                                  .toString(),
+                                                              triggerMode:
+                                                                  TooltipTriggerMode
+                                                                      .tap,
+                                                              margin:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          36),
+                                                              child: Text(
+                                                                e.cast,
+                                                                style:
+                                                                    const TextStyle(
+                                                                        fontSize:
+                                                                            13),
+                                                                maxLines: 2,
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                              ),
+                                                            ),
+                                                            Tooltip(
+                                                              message: e.desc
+                                                                  .toString(),
+                                                              triggerMode:
+                                                                  TooltipTriggerMode
+                                                                      .tap,
+                                                              margin:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          36),
+                                                              child: Text(
+                                                                '${e.desc}',
+                                                                style:
+                                                                    const TextStyle(
+                                                                        fontSize:
+                                                                            13),
+                                                                maxLines: 1,
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                              ),
+                                                            ),
+                                                            Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .spaceBetween,
+                                                              children: [
+                                                                Tooltip(
+                                                                  message:
+                                                                      '评分：${e.ratingNum}',
+                                                                  child: RatingBar
+                                                                      .readOnly(
+                                                                    initialRating:
+                                                                        double.parse(e.ratingNum) /
+                                                                            2,
+                                                                    filledIcon:
+                                                                        Icons
+                                                                            .star,
+                                                                    emptyIcon: Icons
+                                                                        .star_border,
+                                                                    emptyColor:
+                                                                        Colors
+                                                                            .redAccent,
+                                                                    filledColor: Theme.of(
+                                                                            context)
+                                                                        .colorScheme
+                                                                        .primary,
+                                                                    halfFilledColor:
+                                                                        Colors
+                                                                            .amberAccent,
+                                                                    halfFilledIcon:
+                                                                        Icons
+                                                                            .star_half,
+                                                                    maxRating:
+                                                                        5,
+                                                                    size: 18,
+                                                                  ),
+                                                                ),
+                                                                Text(e
+                                                                    .evaluateNum),
+                                                              ],
+                                                            ),
+                                                            GFTypography(
+                                                              text: e.quote,
+                                                              type:
+                                                                  GFTypographyType
+                                                                      .typo5,
+                                                              dividerHeight: 0,
+                                                              textColor: Theme.of(
+                                                                      context)
+                                                                  .colorScheme
+                                                                  .secondary,
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ))
                                                     ],
                                                   ),
-                                                ))
-                                              ],
-                                            ),
-                                          ),
-                                        ))
-                                    .toList(),
-                              ),
+                                                ),
+                                              ))
+                                          .toList())
+                                  : Wrap(
+                                      children: controller.rankMovieList
+                                          .map((e) => InkWell(
+                                                onTap: () async {
+                                                  _buildOperateDialog(e);
+                                                },
+                                                onLongPress: () {
+                                                  Logger.instance.i('WebView');
+                                                  Get.toNamed(Routes.WEBVIEW,
+                                                      arguments: {
+                                                        'url': e.douBanUrl,
+                                                      });
+                                                },
+                                                child: CustomCard(
+                                                  padding:
+                                                      const EdgeInsets.all(8),
+                                                  child: Row(
+                                                    children: [
+                                                      Stack(
+                                                        children: [
+                                                          ClipRRect(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        5.0),
+                                                            child:
+                                                                CachedNetworkImage(
+                                                              imageUrl:
+                                                                  '$cacheServer${e.poster}',
+                                                              placeholder: (context,
+                                                                      url) =>
+                                                                  const Center(
+                                                                      child:
+                                                                          CircularProgressIndicator()),
+                                                              errorWidget: (context,
+                                                                      url,
+                                                                      error) =>
+                                                                  Image.asset(
+                                                                      'assets/images/logo.png'),
+                                                              width: 100,
+                                                              height: 150,
+                                                              fit: BoxFit
+                                                                  .fitWidth,
+                                                            ),
+                                                          ),
+                                                          Positioned(
+                                                            top: 0,
+                                                            right: 0,
+                                                            child: Container(
+                                                              color: Theme.of(
+                                                                      context)
+                                                                  .colorScheme
+                                                                  .surface,
+                                                              width: 20,
+                                                              child: Text(
+                                                                e.rank
+                                                                    .toString(),
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .center,
+                                                                style: TextStyle(
+                                                                    color: Theme.of(
+                                                                            context)
+                                                                        .colorScheme
+                                                                        .onSurface,
+                                                                    fontSize:
+                                                                        12),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Positioned(
+                                                            bottom: 0,
+                                                            child: Container(
+                                                              color: Theme.of(
+                                                                      context)
+                                                                  .colorScheme
+                                                                  .surface,
+                                                              width: 100,
+                                                              child: Text(
+                                                                e.title,
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .center,
+                                                                style: TextStyle(
+                                                                    color: Theme.of(
+                                                                            context)
+                                                                        .colorScheme
+                                                                        .onSurface,
+                                                                    fontSize:
+                                                                        12),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      Expanded(
+                                                          child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(left: 12),
+                                                        child: Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            GFTypography(
+                                                              text: e.title
+                                                                  .toString(),
+                                                              type:
+                                                                  GFTypographyType
+                                                                      .typo5,
+                                                              dividerHeight: 0,
+                                                              textColor: Theme.of(
+                                                                      context)
+                                                                  .colorScheme
+                                                                  .primary,
+                                                            ),
+                                                            Tooltip(
+                                                              message: e.actors
+                                                                  .toString(),
+                                                              triggerMode:
+                                                                  TooltipTriggerMode
+                                                                      .tap,
+                                                              margin:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          36),
+                                                              child: Text(
+                                                                e.actors
+                                                                    .toString(),
+                                                                style:
+                                                                    const TextStyle(
+                                                                        fontSize:
+                                                                            13),
+                                                                maxLines: 2,
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                              ),
+                                                            ),
+                                                            Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .spaceBetween,
+                                                              children: [
+                                                                Tooltip(
+                                                                  message:
+                                                                      '评分：${e.rating.first}',
+                                                                  child: RatingBar
+                                                                      .readOnly(
+                                                                    initialRating:
+                                                                        double.parse(e.rating.first) /
+                                                                            2,
+                                                                    filledIcon:
+                                                                        Icons
+                                                                            .star,
+                                                                    emptyIcon: Icons
+                                                                        .star_border,
+                                                                    emptyColor:
+                                                                        Colors
+                                                                            .redAccent,
+                                                                    filledColor: Theme.of(
+                                                                            context)
+                                                                        .colorScheme
+                                                                        .primary,
+                                                                    halfFilledColor:
+                                                                        Colors
+                                                                            .amberAccent,
+                                                                    halfFilledIcon:
+                                                                        Icons
+                                                                            .star_half,
+                                                                    maxRating:
+                                                                        5,
+                                                                    size: 18,
+                                                                  ),
+                                                                ),
+                                                                Text(e.voteCount
+                                                                    .toString()),
+                                                              ],
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ))
+                                                    ],
+                                                  ),
+                                                ),
+                                              ))
+                                          .toList()),
                             ),
                           ),
                           if (controller.isLoading == true)
@@ -509,7 +790,6 @@ class _DouBanPageState extends State<DouBanPage>
   }
 
   Future<dynamic> _buildOperateDialog(mediaInfo) async {
-    Logger.instance.i(mediaInfo.douBanUrl);
     VideoDetail videoDetail =
         await controller.getVideoDetail(mediaInfo.douBanUrl);
     Get.bottomSheet(
@@ -825,42 +1105,5 @@ class _DouBanPageState extends State<DouBanPage>
       Logger.instance.i('WebView');
       Get.toNamed(Routes.WEBVIEW, arguments: {'url': url});
     }
-  }
-
-  _buildBottomButtonBar() {
-    return CustomCard(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          Tooltip(
-            message: '刷新TOP250',
-            child: IconButton(
-              icon: const Icon(Icons.topic_outlined, size: 20),
-              onPressed: () async {
-                await controller.getDouBanTop250();
-              },
-            ),
-          ),
-          Tooltip(
-            message: '刷新热门电影',
-            child: IconButton(
-              icon: const Icon(Icons.movie_creation_outlined, size: 20),
-              onPressed: () async {
-                await controller.getDouBanMovieHot(controller.selectMovieTag);
-              },
-            ),
-          ),
-          Tooltip(
-            message: '刷新热门电视剧',
-            child: IconButton(
-              icon: const Icon(Icons.live_tv, size: 20),
-              onPressed: () async {
-                await controller.getDouBanTvHot(controller.selectTvTag);
-              },
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
