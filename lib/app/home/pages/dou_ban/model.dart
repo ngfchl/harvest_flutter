@@ -211,3 +211,84 @@ class VideoDetail {
     );
   }
 }
+
+class RankMovie {
+  final int rank;
+  final String douBanUrl;
+  final String poster;
+  final String title;
+  final List<String> actors;
+  final List<String> rating;
+  final bool isPlayable;
+  final String id;
+  final List<String> types;
+  final List<String> regions;
+  final String releaseDate;
+  final int actorCount;
+  final int voteCount;
+  final String score;
+  final bool isWatched;
+
+  RankMovie({
+    required this.rating,
+    required this.rank,
+    required this.poster,
+    required this.isPlayable,
+    required this.id,
+    required this.types,
+    required this.regions,
+    required this.title,
+    required this.douBanUrl,
+    required this.releaseDate,
+    required this.actorCount,
+    required this.voteCount,
+    required this.score,
+    required this.actors,
+    required this.isWatched,
+  });
+
+  // From JSON constructor
+  factory RankMovie.fromJson(Map<String, dynamic> json) {
+    return RankMovie(
+      rating: List<String>.from(json['rating']),
+      rank: json['rank'],
+      poster: json['cover_url'],
+      isPlayable: json['is_playable'],
+      id: json['id'],
+      types: List<String>.from(json['types'] ?? []),
+      regions: List<String>.from(json['regions'] ?? []),
+      title: json['title'],
+      douBanUrl: json['url'],
+      releaseDate: json['release_date'],
+      actorCount: json['actor_count'],
+      voteCount: json['vote_count'],
+      score: json['score'],
+      actors: List<String>.from(json['actors'] ?? []),
+      isWatched: json['is_watched'],
+    );
+  }
+
+  // To JSON method (optional)
+  Map<String, dynamic> toJson() {
+    return {
+      'rating': rating,
+      'rank': rank,
+      'cover_url': poster,
+      'is_playable': isPlayable,
+      'id': id,
+      'types': types,
+      'regions': regions,
+      'title': title,
+      'url': douBanUrl,
+      'release_date': releaseDate,
+      'actor_count': actorCount,
+      'vote_count': voteCount,
+      'score': score,
+      'actors': actors,
+      'is_watched': isWatched,
+    };
+  }
+
+  @override
+  String toString() => "$title - $id";
+}
