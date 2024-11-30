@@ -134,8 +134,44 @@ class SPUtil {
 
   /// 根据key获取Map类型
   static Map getMap(String key) {
-    String jsonStr = _preferences.getString(key) ?? "{}";
+    String jsonStr = _preferences.getString(key) ?? "";
     return jsonStr.isEmpty ? {} : json.decode(jsonStr);
+  }
+
+  ///@title 存入带过期时间的数据，缓存过期时间的实现
+  ///@description
+  ///@updateTime 2024-11-30 19:32
+  static Future<void> setCache(
+      String key, Map<String, dynamic> data, int expireDuration) async {
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final cacheData = {
+      'data': data,
+      'expireAt': timestamp + expireDuration * 1000,
+    };
+    await _preferences.setString(key, jsonEncode(cacheData));
+  }
+
+  ///@title 获取缓存
+  ///@description
+  ///@updateTime  2024-11-30 19:32
+  static Future<Map<String, dynamic>> getCache(String key) async {
+    final jsonString = _preferences.getString(key);
+    if (jsonString == null || jsonString.isEmpty) return {};
+
+    final cacheData = jsonDecode(jsonString) as Map<String, dynamic>;
+
+    final expireAt = cacheData['expireAt'];
+
+    // Check if the data is expired
+    if (DateTime.now().millisecondsSinceEpoch.compareTo(expireAt ?? 0) > 0 ||
+        !cacheData.containsKey('data')) {
+      // Remove expired data
+      await _preferences.remove(key);
+      return {};
+    } else {
+      final data = cacheData['data'] as Map<String, dynamic>;
+      return data;
+    }
   }
 
   /// 判断是否是json字符串
