@@ -984,7 +984,7 @@ class TrPage extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         SizedBox(
-                          width: 220,
+                          width: 235,
                           child: Tooltip(
                             message: torrentInfo.name,
                             child: Text(
@@ -1012,125 +1012,135 @@ class TrPage extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(Icons.upload,
-                                    size: 12,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface),
-                                Text(filesize(torrentInfo.rateUpload),
-                                    style: TextStyle(
-                                        fontSize: 10,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface))
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Icon(Icons.cloud_upload,
-                                    size: 12,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface),
-                                Text(filesize(torrentInfo.uploadedEver),
-                                    style: TextStyle(
-                                        fontSize: 10,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface))
-                              ],
-                            ),
-                          ],
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(Icons.download,
-                                    size: 12,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface),
-                                Text(filesize(torrentInfo.rateDownload),
-                                    style: TextStyle(
-                                        fontSize: 10,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface))
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Icon(Icons.cloud_download,
-                                    size: 12,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface),
-                                Text(filesize(torrentInfo.downloadedEver),
-                                    style: TextStyle(
-                                        fontSize: 10,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface))
-                              ],
-                            ),
-                          ],
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.timer,
-                                  size: 12,
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface,
-                                ),
-                                EllipsisText(
-                                  text: formatDuration(torrentInfo.activityDate)
-                                      .toString(),
-                                  style: TextStyle(
-                                      fontSize: 10,
+                        SizedBox(
+                          width: 80,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.upload,
+                                      size: 12,
                                       color: Theme.of(context)
                                           .colorScheme
                                           .onSurface),
-                                  maxLines: 1,
-                                  ellipsis: '...',
-                                )
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.timer,
-                                  size: 12,
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface,
-                                ),
-                                EllipsisText(
-                                  text: DateFormat('yyyy-MM-dd HH:mm:ss')
-                                      .format(
-                                          DateTime.fromMillisecondsSinceEpoch(
-                                              torrentInfo.addedDate * 1000))
-                                      .toString(),
-                                  style: TextStyle(
-                                      fontSize: 10,
+                                  Text(filesize(torrentInfo.rateUpload),
+                                      style: TextStyle(
+                                          fontSize: 10,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface))
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Icon(Icons.cloud_upload,
+                                      size: 12,
                                       color: Theme.of(context)
                                           .colorScheme
                                           .onSurface),
-                                  maxLines: 1,
-                                  ellipsis: '...',
-                                )
-                              ],
-                            ),
-                          ],
+                                  Text(filesize(torrentInfo.uploadedEver),
+                                      style: TextStyle(
+                                          fontSize: 10,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface))
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(
+                          width: 70,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.download,
+                                      size: 12,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface),
+                                  Text(filesize(torrentInfo.rateDownload),
+                                      style: TextStyle(
+                                          fontSize: 10,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface))
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Icon(Icons.cloud_download,
+                                      size: 12,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface),
+                                  Text(filesize(torrentInfo.downloadedEver),
+                                      style: TextStyle(
+                                          fontSize: 10,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface))
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(
+                          width: 128,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.timer,
+                                    size: 12,
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
+                                  ),
+                                  EllipsisText(
+                                    text:
+                                        formatDuration(torrentInfo.activityDate)
+                                            .toString(),
+                                    style: TextStyle(
+                                        fontSize: 10,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface),
+                                    maxLines: 1,
+                                    ellipsis: '...',
+                                  )
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.timer,
+                                    size: 12,
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
+                                  ),
+                                  EllipsisText(
+                                    text: DateFormat('yyyy-MM-dd HH:mm:ss')
+                                        .format(
+                                            DateTime.fromMillisecondsSinceEpoch(
+                                                torrentInfo.addedDate * 1000))
+                                        .toString(),
+                                    style: TextStyle(
+                                        fontSize: 10,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface),
+                                    maxLines: 1,
+                                    ellipsis: '...',
+                                  )
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),

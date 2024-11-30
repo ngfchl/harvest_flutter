@@ -1129,7 +1129,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       SizedBox(
-                        width: 220,
+                        width: 255,
                         child: Tooltip(
                           message: torrentInfo.name!,
                           child: Text(
@@ -1155,104 +1155,114 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.upload,
-                                size: 12,
-                              ),
-                              Text(filesize(torrentInfo.upSpeed),
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                  ))
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.cloud_upload,
-                                size: 12,
-                              ),
-                              Text(filesize(torrentInfo.uploaded),
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                  ))
-                            ],
-                          ),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.download,
-                                size: 12,
-                              ),
-                              Text(filesize(torrentInfo.dlSpeed),
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                  ))
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.cloud_download,
-                                size: 12,
-                              ),
-                              Text(filesize(torrentInfo.downloaded),
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                  ))
-                            ],
-                          ),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.timer,
-                                size: 12,
-                              ),
-                              EllipsisText(
-                                text: formatDuration(torrentInfo.timeActive!)
-                                    .toString(),
-                                style: const TextStyle(
-                                  fontSize: 10,
+                      SizedBox(
+                        width: 80,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.upload,
+                                  size: 12,
                                 ),
-                                maxLines: 1,
-                                ellipsis: '...',
-                              )
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.timer,
-                                size: 12,
-                              ),
-                              EllipsisText(
-                                text: DateFormat('yyyy-MM-dd HH:mm:ss')
-                                    .format(DateTime.fromMillisecondsSinceEpoch(
-                                        torrentInfo.addedOn! * 1000))
-                                    .toString(),
-                                style: const TextStyle(
-                                  fontSize: 10,
+                                Text(filesize(torrentInfo.upSpeed),
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                    ))
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.cloud_upload,
+                                  size: 12,
                                 ),
-                                maxLines: 1,
-                                ellipsis: '...',
-                              )
-                            ],
-                          ),
-                        ],
+                                Text(filesize(torrentInfo.uploaded),
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                    ))
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        width: 70,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.download,
+                                  size: 12,
+                                ),
+                                Text(filesize(torrentInfo.dlSpeed),
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                    ))
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.cloud_download,
+                                  size: 12,
+                                ),
+                                Text(filesize(torrentInfo.downloaded),
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                    ))
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        width: 128,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.timer,
+                                  size: 12,
+                                ),
+                                EllipsisText(
+                                  text: formatDuration(torrentInfo.timeActive!)
+                                      .toString(),
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                  ),
+                                  maxLines: 1,
+                                  ellipsis: '...',
+                                )
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.timer,
+                                  size: 12,
+                                ),
+                                EllipsisText(
+                                  text: DateFormat('yyyy-MM-dd HH:mm:ss')
+                                      .format(
+                                          DateTime.fromMillisecondsSinceEpoch(
+                                              torrentInfo.addedOn! * 1000))
+                                      .toString(),
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                  ),
+                                  maxLines: 1,
+                                  ellipsis: '...',
+                                )
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
