@@ -84,11 +84,9 @@ class DouBanController extends GetxController {
   }
 
   initData() async {
-    await getRankListByType(selectTypeTag)();
+    await getRankListByType(selectTypeTag);
     await getDouBanMovieHot(selectMovieTag);
     await getDouBanTvHot(selectTvTag);
-    // await getDouBanMovieTags();
-    // await getDouBanVideoTags();
     update();
   }
 

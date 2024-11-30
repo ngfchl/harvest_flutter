@@ -38,8 +38,10 @@ class DouBanHelper {
       Logger.instance.d(data);
       await SPUtil.setCache(key, data, 60 * 60 * 24 * 7);
     }
-    List<TopMovieInfo> topMovieInfoList =
-        data[key].map((info) => TopMovieInfo.fromJson(info)).toList();
+    List<TopMovieInfo> topMovieInfoList = data[key]
+        .map((info) => TopMovieInfo.fromJson(info))
+        .toList()
+        .cast<TopMovieInfo>();
     return topMovieInfoList;
   }
 
