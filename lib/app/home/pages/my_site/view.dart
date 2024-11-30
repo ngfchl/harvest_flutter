@@ -680,123 +680,133 @@ class _MySitePagePageState extends State<MySitePage>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          textBaseline: TextBaseline.ideographic,
-                          children: [
-                            const Icon(
-                              Icons.upload_outlined,
-                              color: Colors.green,
-                              size: 14,
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              '${filesize(status.uploaded)} (${status.seed})',
-                              style: const TextStyle(
-                                fontSize: 12,
+                    SizedBox(
+                      width: 120,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            textBaseline: TextBaseline.ideographic,
+                            children: [
+                              const Icon(
+                                Icons.upload_outlined,
+                                color: Colors.green,
+                                size: 14,
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.download_outlined,
-                              color: Colors.red,
-                              size: 14,
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              '${filesize(status.downloaded)} (${status.leech})',
-                              style: const TextStyle(
-                                fontSize: 12,
+                              const SizedBox(width: 2),
+                              Text(
+                                '${filesize(status.uploaded)} (${status.seed})',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.download_outlined,
+                                color: Colors.red,
+                                size: 14,
+                              ),
+                              const SizedBox(width: 2),
+                              Text(
+                                '${filesize(status.downloaded)} (${status.leech})',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.ios_share,
-                              color:
-                                  status.ratio > 1 ? null : Colors.deepOrange,
-                              size: 14,
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              formatNumber(status.ratio),
-                              style: TextStyle(
-                                fontSize: 12,
+                    SizedBox(
+                      width: 90,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.ios_share,
                                 color:
                                     status.ratio > 1 ? null : Colors.deepOrange,
+                                size: 14,
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.cloud_upload_outlined,
-                              size: 14,
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              filesize(status.seedVolume),
-                              style: const TextStyle(
-                                fontSize: 12,
+                              const SizedBox(width: 2),
+                              Text(
+                                formatNumber(status.ratio),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: status.ratio > 1
+                                      ? null
+                                      : Colors.deepOrange,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.cloud_upload_outlined,
+                                size: 14,
+                              ),
+                              const SizedBox(width: 2),
+                              Text(
+                                filesize(status.seedVolume),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          textBaseline: TextBaseline.ideographic,
-                          children: [
-                            const Icon(
-                              Icons.timer_outlined,
-                              size: 14,
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              formatNumber(status.bonusHour),
-                              // '(${  status.siteSpFull != null && status.siteSpFull! > 0 ? ((status.statusBonusHour! / status.siteSpFull!) * 100).toStringAsFixed(2) : '0'}%)',
-                              style: const TextStyle(
-                                fontSize: 12,
+                    SizedBox(
+                      width: 110,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            textBaseline: TextBaseline.ideographic,
+                            children: [
+                              const Icon(
+                                Icons.timer_outlined,
+                                size: 14,
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          textBaseline: TextBaseline.ideographic,
-                          children: [
-                            const Icon(
-                              Icons.score,
-                              size: 14,
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              '${formatNumber(status.myBonus)}(${formatNumber(status.myScore)})',
-                              style: const TextStyle(
-                                fontSize: 12,
+                              const SizedBox(width: 2),
+                              Text(
+                                formatNumber(status.bonusHour),
+                                // '(${  status.siteSpFull != null && status.siteSpFull! > 0 ? ((status.statusBonusHour! / status.siteSpFull!) * 100).toStringAsFixed(2) : '0'}%)',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            textBaseline: TextBaseline.ideographic,
+                            children: [
+                              const Icon(
+                                Icons.score,
+                                size: 14,
+                              ),
+                              const SizedBox(width: 2),
+                              Text(
+                                '${formatNumber(status.myBonus, fixed: 0)}(${formatNumber(status.myScore, fixed: 0)})',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -816,7 +826,7 @@ class _MySitePagePageState extends State<MySitePage>
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           Text(
-                            'HR: ${status.myHr.replaceAll('区', '').replaceAll('专', '')}',
+                            'HR: ${status.myHr.replaceAll('区', '').replaceAll('专', '').replaceAll('H&R', '').trim()}',
                             textAlign: TextAlign.right,
                             style: const TextStyle(
                               color: Colors.red,
@@ -830,7 +840,6 @@ class _MySitePagePageState extends State<MySitePage>
               ],
             ),
           ),
-        // siteOperateButtonBar(website, mySite)
       ]),
     );
   }
@@ -922,111 +931,6 @@ class _MySitePagePageState extends State<MySitePage>
         size: 36,
         color: signed == true ? Colors.green : Colors.amber,
       ),
-    );
-  }
-
-  OverflowBar siteOperateButtonBar(WebSite website, MySite mySite) {
-    String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    bool signed = mySite.getSignMaxKey() == today;
-
-    return OverflowBar(
-      alignment: MainAxisAlignment.spaceAround,
-      children: [
-        if (website.signIn && mySite.signIn)
-          SizedBox(
-              width: 68,
-              height: 26,
-              child: GFButton(
-                onPressed: () {
-                  signed
-                      ? _showSignHistory(mySite)
-                      : signIn(mySite.id).then((res) {
-                          if (res.code == 0) {
-                            Get.snackbar(
-                                '签到成功', '${mySite.nickname} 签到信息：${res.msg}',
-                                colorText:
-                                    Theme.of(context).colorScheme.primary);
-                            controller.initFlag = false;
-                            controller.getSiteStatusFromServer();
-                          } else {
-                            Get.snackbar('签到失败',
-                                '${mySite.nickname} 签到任务执行出错啦：${res.msg}',
-                                colorText:
-                                    Theme.of(context).colorScheme.primary);
-                          }
-                        });
-                },
-                icon: Icon(
-                  signed ? Icons.check : Icons.pan_tool_alt,
-                  size: 12,
-                ),
-                text: '签到',
-                size: GFSize.SMALL,
-                color: signed ? Colors.teal : Colors.blue,
-              )),
-        SizedBox(
-          width: 68,
-          height: 26,
-          child: GFButton(
-            onPressed: () {
-              getNewestStatus(mySite.id).then((res) {
-                if (res.code == 0) {
-                  Get.snackbar('站点数据刷新成功', '${mySite.nickname} 数据刷新：${res.msg}',
-                      colorText: Theme.of(context).colorScheme.primary);
-                  controller.initFlag = false;
-                  controller.getSiteStatusFromServer();
-                } else {
-                  Get.snackbar(
-                      '站点数据刷新失败', '${mySite.nickname} 数据刷新出错啦：${res.msg}',
-                      colorText: Theme.of(context).colorScheme.primary);
-                }
-              });
-            },
-            icon: const Icon(
-              Icons.update,
-              size: 12,
-              color: Colors.white,
-            ),
-            text: '更新',
-            size: GFSize.SMALL,
-            color: GFColors.PRIMARY,
-          ),
-        ),
-        SizedBox(
-          width: 68,
-          height: 26,
-          child: GFButton(
-            onPressed: () {
-              _showStatusHistory(mySite);
-            },
-            icon: const Icon(
-              Icons.bar_chart,
-              size: 12,
-              color: Colors.white,
-            ),
-            text: '历史',
-            size: GFSize.SMALL,
-            color: Colors.orange,
-          ),
-        ),
-        SizedBox(
-          width: 68,
-          height: 26,
-          child: GFButton(
-            onPressed: () async {
-              await _showEditBottomSheet(mySite: mySite);
-            },
-            icon: const Icon(
-              Icons.edit,
-              size: 12,
-              color: Colors.white,
-            ),
-            text: '修改',
-            size: GFSize.SMALL,
-            color: Colors.redAccent,
-          ),
-        ),
-      ],
     );
   }
 
