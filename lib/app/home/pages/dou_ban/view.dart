@@ -1060,7 +1060,7 @@ class _DouBanPageState extends State<DouBanPage>
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 ElevatedButton.icon(
-                  onPressed: () => controller.goSearchPage(mediaInfo),
+                  onPressed: () => controller.goSearchPage(videoDetail),
                   icon: Icon(
                     Icons.search,
                     color: Theme.of(context).colorScheme.onSurface,
