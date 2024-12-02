@@ -1,14 +1,16 @@
 class CommonResponse<T> {
   int? code = 0;
+  bool? succeed = false;
   String? msg = '';
   T? data;
 
-  CommonResponse({this.code, this.msg, this.data});
+  CommonResponse({this.code, this.msg, this.data, this.succeed});
 
   CommonResponse.fromJson(
       Map<String, dynamic> json, T Function(dynamic) fromJsonT) {
     code = json['code'];
     msg = json['msg'];
+    succeed = json['succeed'];
     data = fromJsonT(json['data']);
   }
 
@@ -16,6 +18,7 @@ class CommonResponse<T> {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['code'] = this.code;
     data['msg'] = this.msg;
+    data['succeed'] = this.succeed;
     data['data'] = toJsonT(this.data as T);
     return data;
   }
@@ -25,11 +28,13 @@ class CommonResponse<T> {
     this.data,
   }) {
     code = 0;
+    succeed = true;
     this.msg = msg ?? '';
   }
 
   CommonResponse.error({String? msg}) {
     code = -1;
+    succeed = false;
     this.msg = msg ?? '';
     data = null;
   }
