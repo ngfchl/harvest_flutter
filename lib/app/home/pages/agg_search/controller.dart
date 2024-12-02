@@ -1,8 +1,9 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:harvest/app/home/pages/dou_ban/douban_api.dart';
 import 'package:harvest/common/meta_item.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:harvest/utils/logger_helper.dart' as LoggerHelper;
@@ -12,6 +13,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import '../../../../models/download.dart';
 import '../../../../utils/storage.dart';
 import '../../../torrent/torrent_controller.dart';
+import '../dou_ban/model.dart';
 import '../download/download_controller.dart';
 import '../models/my_site.dart';
 import '../my_site/controller.dart';
@@ -19,7 +21,8 @@ import 'douban_search.dart';
 import 'models/douban.dart';
 import 'models/torrent_info.dart';
 
-class AggSearchController extends GetxController {
+class AggSearchController extends GetxController
+    with GetSingleTickerProviderStateMixin {
   MySiteController mySiteController = Get.find();
   DownloadController downloadController = Get.put(DownloadController(false));
   late WebSocketChannel channel;
@@ -46,7 +49,10 @@ class AggSearchController extends GetxController {
   bool isLoading = false;
   bool isDownloaderLoading = false;
   Map<String, MySite> mySiteMap = <String, MySite>{};
-
+  List<Tab> tabs = [
+    const Tab(text: '豆瓣搜索'),
+    const Tab(text: '资源搜索'),
+  ];
   List<MetaDataItem> sortKeyList = [
     {'name': '发布时间', 'value': 'published'},
     {'name': '大小', 'value': 'size'},
@@ -74,6 +80,8 @@ class AggSearchController extends GetxController {
   List<String> selectedSaleStatusList = [];
   bool hrKey = false;
 
+  late TabController tabController;
+
   @override
   void onInit() async {
     filterKeyList.insertAll(0, [
@@ -81,6 +89,7 @@ class AggSearchController extends GetxController {
       {'name': '免费', 'value': saleStatusList},
       {'name': '分类', 'value': succeedCategories},
     ]);
+    tabController = TabController(length: 2, vsync: this);
     await initData();
     super.onInit();
   }
@@ -194,12 +203,31 @@ class AggSearchController extends GetxController {
     }
     DouBanSearchHelper helper = DouBanSearchHelper();
     isLoading = true;
+    tabController.animateTo(0);
     update();
-    showDouBanResults = await helper.doSearch(
+    var response = await helper.doSearch(
       q: searchKeyController.text,
     );
-    showResults.clear();
+    showDouBanResults = response.data!;
+    LoggerHelper.Logger.instance.d(showDouBanResults);
+    showDouBanResults.sort((a, b) => b.target.year.compareTo(a.target.year));
+    // showResults.clear();
     isLoading = false;
+    update();
+  }
+
+  getSubjectInfo(String subject) async {
+    isLoading = true;
+    update();
+    DouBanHelper helper = DouBanHelper();
+    VideoDetail detail = await helper.getSubjectInfo(subject);
+    String searchKey = detail.title;
+    if (detail.imdb.isNotEmpty) {
+      searchKey = "${detail.imdb}||$searchKey";
+    }
+    searchKeyController.text = searchKey;
+    isLoading = false;
+    await doWebsocketSearch();
     update();
   }
 
@@ -208,7 +236,7 @@ class AggSearchController extends GetxController {
     isLoading = true;
     // 清空搜索记录
     initSearchResult();
-
+    tabController.animateTo(1);
     // 初始化站点数据
     if (mySiteMap.isEmpty) {
       LoggerHelper.Logger.instance.d('重新加载站点列表');
