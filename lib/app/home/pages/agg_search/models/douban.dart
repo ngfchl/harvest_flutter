@@ -36,7 +36,7 @@ class SearchTarget {
   final String title;
   final String uri;
   final String coverUrl;
-  final String? year;
+  final String year;
   final String cardSubtitle;
   final String id;
 
