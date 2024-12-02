@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:custom_rating_bar/custom_rating_bar.dart';
 import 'package:filesize/filesize.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +24,7 @@ import '../../../routes/app_pages.dart';
 import '../models/my_site.dart';
 import 'controller.dart';
 import 'download_form.dart';
+import 'models/douban.dart';
 
 class AggSearchPage extends StatefulWidget {
   const AggSearchPage({super.key});
@@ -51,164 +53,201 @@ class _AggSearchPageState extends State<AggSearchPage>
         failedCount =
             controller.searchMsg.where((element) => !element['success']).length;
         // controller.update();
-        return SafeArea(
-          child: Scaffold(
-            body: Column(
-              children: [
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: controller.searchKeyController,
-                          decoration: InputDecoration(
-                            isDense: true,
-                            hintText: '请输入搜索关键字',
-                            hintStyle: const TextStyle(fontSize: 14),
-                            contentPadding: const EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 5),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                              // 不绘制边框
-                              borderRadius: BorderRadius.circular(0.0),
-                              // 确保角落没有圆角
-                              gapPadding: 0.0, // 移除边框与hintText之间的间距
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                  width: 1.0, color: Colors.black),
-                              // 仅在聚焦时绘制底部边框
-                              borderRadius: BorderRadius.circular(0.0),
-                            ),
-                          ),
-                          onSubmitted: (value) {
-                            controller.doWebsocketSearch();
-                          },
-                        ),
-                      ),
-                      const SizedBox(
-                        width: 5,
-                      ),
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          _openSiteSheet();
-                        },
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor: Colors.lightGreen,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0), // 圆角半径
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
-                        ),
-                        icon: Icon(
-                          Icons.language,
-                          size: 14,
-                          color: Theme.of(context).colorScheme.onPrimary,
-                        ),
-                        label: Text(
-                          '站点 ${controller.maxCount}',
-                          style: TextStyle(
-                              color: Theme.of(context).colorScheme.onPrimary,
-                              fontSize: 12),
-                        ),
-                      ),
-                      const SizedBox(
-                        width: 5,
-                      ),
-                      GetBuilder<AggSearchController>(builder: (controller) {
-                        return ElevatedButton.icon(
-                            onPressed: () async {
-                              // 在这里执行搜索操作
-                              if (controller.isLoading) {
-                                await controller.cancelSearch();
-                              } else {
-                                controller.doWebsocketSearch();
-                              }
-                            },
-                            style: OutlinedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(8.0), // 圆角半径
+        return GetBuilder<AggSearchController>(builder: (controller) {
+          return SafeArea(
+            child: Scaffold(
+              body: Column(
+                children: [
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: controller.searchKeyController,
+                                decoration: InputDecoration(
+                                  isDense: true,
+                                  hintText: '请输入搜索关键字',
+                                  hintStyle: const TextStyle(fontSize: 14),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 5),
+                                  border: OutlineInputBorder(
+                                    borderSide: BorderSide.none,
+                                    // 不绘制边框
+                                    borderRadius: BorderRadius.circular(0.0),
+                                    // 确保角落没有圆角
+                                    gapPadding: 0.0, // 移除边框与hintText之间的间距
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                        width: 1.0, color: Colors.black),
+                                    // 仅在聚焦时绘制底部边框
+                                    borderRadius: BorderRadius.circular(0.0),
+                                  ),
+                                ),
+                                onSubmitted: (value) {
+                                  controller.doWebsocketSearch();
+                                },
                               ),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 6),
                             ),
-                            autofocus: true,
-                            icon: controller.isLoading
-                                ? const GFLoader(
-                                    size: 14,
-                                  )
-                                : Icon(
-                                    Icons.search,
-                                    size: 14,
+                            const SizedBox(
+                              width: 5,
+                            ),
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                _openSiteSheet();
+                              },
+                              style: OutlinedButton.styleFrom(
+                                backgroundColor: Colors.lightGreen,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(8.0), // 圆角半径
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 6),
+                              ),
+                              icon: Icon(
+                                Icons.language,
+                                size: 14,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
+                              label: Text(
+                                '站点 ${controller.maxCount}',
+                                style: TextStyle(
                                     color:
                                         Theme.of(context).colorScheme.onPrimary,
-                                  ),
-                            label: Text(
-                              controller.isLoading ? '取消' : '搜索',
-                              style: TextStyle(
-                                  color:
-                                      Theme.of(context).colorScheme.onPrimary,
-                                  fontSize: 12),
-                            ));
-                      }),
-                    ],
-                  ),
-                ),
-                if (controller.searchMsg.isNotEmpty)
-                  GFAccordion(
-                    titleChild: Text(
-                        '失败$failedCount个站点，$succeedCount个站点共${controller.searchResults.length}个种子，筛选结果：${controller.showResults.length}个',
-                        style: const TextStyle(
-                            fontSize: 12, color: Colors.black87)),
-                    titlePadding: EdgeInsets.zero,
-                    contentChild: SizedBox(
-                      height: 100,
-                      child: Column(
-                        children: [
-                          Expanded(
-                            child: ListView.builder(
-                              itemCount: controller.searchMsg.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                String info =
-                                    controller.searchMsg[index]['msg'];
-                                return Text(info,
-                                    style: const TextStyle(
-                                        fontSize: 12, color: Colors.black87));
-                              },
+                                    fontSize: 12),
+                              ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(
+                              width: 5,
+                            ),
+                            GetBuilder<AggSearchController>(
+                                builder: (controller) {
+                              return ElevatedButton.icon(
+                                  onPressed: () async {
+                                    // 在这里执行搜索操作
+                                    if (controller.isLoading) {
+                                      await controller.cancelSearch();
+                                    } else {
+                                      controller.doWebsocketSearch();
+                                    }
+                                  },
+                                  style: OutlinedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(8.0), // 圆角半径
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 6),
+                                  ),
+                                  autofocus: true,
+                                  icon: controller.isLoading
+                                      ? const GFLoader(
+                                          size: 14,
+                                        )
+                                      : Icon(
+                                          Icons.search,
+                                          size: 14,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onPrimary,
+                                        ),
+                                  label: Text(
+                                    controller.isLoading ? '取消' : '搜索',
+                                    style: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary,
+                                        fontSize: 12),
+                                  ));
+                            }),
+                          ],
+                        ),
+                        FullWidthButton(
+                            text: "来自豆瓣",
+                            onPressed: () async {
+                              await controller.doDouBanSearch();
+                            }),
+                      ],
+                    ),
+                  ),
+                  if (controller.searchMsg.isNotEmpty)
+                    GFAccordion(
+                      titleChild: Text(
+                          '失败$failedCount个站点，$succeedCount个站点共${controller.searchResults.length}个种子，筛选结果：${controller.showResults.length}个',
+                          style: const TextStyle(
+                              fontSize: 12, color: Colors.black87)),
+                      titlePadding: EdgeInsets.zero,
+                      contentChild: SizedBox(
+                        height: 100,
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: ListView.builder(
+                                itemCount: controller.searchMsg.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  String info =
+                                      controller.searchMsg[index]['msg'];
+                                  return Text(info,
+                                      style: const TextStyle(
+                                          fontSize: 12, color: Colors.black87));
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                GetBuilder<AggSearchController>(builder: (controller) {
-                  return Expanded(
-                    child: ListView.builder(
-                      itemCount: controller.showResults.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        SearchTorrentInfo info = controller.showResults[index];
-                        return showTorrentInfo(info);
-                      },
-                    ),
-                  );
-                }),
-                if (!kIsWeb && Platform.isIOS) const SizedBox(height: 10),
-                const SizedBox(height: 50),
-              ],
+                  if (controller.searchResults.isNotEmpty)
+                    GetBuilder<AggSearchController>(builder: (controller) {
+                      return Expanded(
+                        child: ListView.builder(
+                          itemCount: controller.showResults.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            SearchTorrentInfo info =
+                                controller.showResults[index];
+                            return showTorrentInfo(info);
+                          },
+                        ),
+                      );
+                    }),
+                  if (controller.showDouBanResults.isNotEmpty)
+                    GetBuilder<AggSearchController>(builder: (controller) {
+                      return Expanded(
+                        child: Stack(
+                          children: [
+                            ListView.builder(
+                              itemCount: controller.showDouBanResults.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                DouBanSearchResult info =
+                                    controller.showDouBanResults[index];
+                                return showDouBanSearchInfo(info);
+                              },
+                            ),
+                            if (controller.isLoading)
+                              const Center(child: CircularProgressIndicator()),
+                          ],
+                        ),
+                      );
+                    }),
+                  if (!kIsWeb && Platform.isIOS) const SizedBox(height: 10),
+                  const SizedBox(height: 50),
+                ],
+              ),
+              floatingActionButtonLocation:
+                  FloatingActionButtonLocation.centerDocked,
+              floatingActionButton: controller.searchResults.isNotEmpty
+                  ? _buildBottomButtonBar()
+                  : null,
             ),
-            floatingActionButtonLocation:
-                FloatingActionButtonLocation.centerDocked,
-            floatingActionButton: controller.searchResults.isNotEmpty
-                ? _buildBottomButtonBar()
-                : null,
-          ),
-        );
+          );
+        });
       },
     );
   }
@@ -928,5 +967,143 @@ class _AggSearchPageState extends State<AggSearchPage>
         ),
       ),
     ));
+  }
+
+  Widget showDouBanSearchInfo(DouBanSearchResult info) {
+    String cacheServer = 'https://images.weserv.nl/?url=';
+    return InkWell(
+      child: CustomCard(
+          child: Column(
+        children: [
+          GFListTile(
+            padding: EdgeInsets.zero,
+            avatar: InkWell(
+              onTap: () {
+                Get.defaultDialog(
+                    title: '海报预览',
+                    content: InkWell(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: CachedNetworkImage(
+                        imageUrl: "$cacheServer${info.target.coverUrl}",
+                        errorWidget: (context, url, error) => const Image(
+                            image: AssetImage('assets/images/logo.png')),
+                        fit: BoxFit.fitWidth,
+                      ),
+                    ));
+              },
+              child: SizedBox(
+                width: 55,
+                child: Stack(
+                    alignment: AlignmentDirectional.bottomCenter,
+                    children: [
+                      CachedNetworkImage(
+                        imageUrl: "$cacheServer${info.target.coverUrl}",
+                        errorWidget: (context, url, error) => const Image(
+                            image: AssetImage('assets/images/logo.png'),
+                            fit: BoxFit.fitWidth),
+                        fit: BoxFit.fitWidth,
+                      ),
+                      CustomTextTag(
+                        labelText: info.targetType,
+                        backgroundColor: Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withOpacity(0.7),
+                        labelColor: Theme.of(context).colorScheme.onPrimary,
+                      ),
+                    ]),
+              ),
+            ),
+            title: EllipsisText(
+              text: info.target.title,
+              ellipsis: "...",
+              maxLines: 1,
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            subTitle: Padding(
+              padding: const EdgeInsets.only(top: 5.0),
+              child: EllipsisText(
+                text: info.target.year ?? '',
+                ellipsis: "...",
+                maxLines: 1,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
+              ),
+            ),
+            description: Padding(
+              padding: const EdgeInsets.only(top: 5.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.timer,
+                        color: Theme.of(context).colorScheme.primary,
+                        size: 12,
+                      ),
+                      const SizedBox(
+                        width: 2,
+                      ),
+                      Text(
+                        info.target.cardSubtitle,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Row(
+                        children: [
+                          Tooltip(
+                            message: '评分：${info.target.rating.value}',
+                            child: RatingBar.readOnly(
+                              initialRating: info.target.rating.value / 2,
+                              filledIcon: Icons.star,
+                              emptyIcon: Icons.star_border,
+                              emptyColor: Colors.redAccent,
+                              filledColor:
+                                  Theme.of(context).colorScheme.primary,
+                              halfFilledColor: Colors.amberAccent,
+                              halfFilledIcon: Icons.star_half,
+                              maxRating: info.target.rating.max ~/ 2,
+                              size: 18,
+                            ),
+                          ),
+                          Text(
+                            info.target.rating.value.toString(),
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.secondary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            "(${info.target.rating.count.toString()}评分)",
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.secondary,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      )),
+    );
   }
 }

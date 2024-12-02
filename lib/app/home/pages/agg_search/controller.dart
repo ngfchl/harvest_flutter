@@ -15,6 +15,8 @@ import '../../../torrent/torrent_controller.dart';
 import '../download/download_controller.dart';
 import '../models/my_site.dart';
 import '../my_site/controller.dart';
+import 'douban_search.dart';
+import 'models/douban.dart';
 import 'models/torrent_info.dart';
 
 class AggSearchController extends GetxController {
@@ -28,6 +30,7 @@ class AggSearchController extends GetxController {
   int maxCount = 0;
   List<SearchTorrentInfo> searchResults = <SearchTorrentInfo>[];
   List<SearchTorrentInfo> showResults = <SearchTorrentInfo>[];
+  List<DouBanSearchResult> showDouBanResults = <DouBanSearchResult>[];
   List<Map<String, dynamic>> searchMsg = <Map<String, dynamic>>[];
   List<String> succeedSearchResults = <String>[];
   List<String> succeedCategories = <String>[];
@@ -181,6 +184,22 @@ class AggSearchController extends GetxController {
   cancelSearch() {
     isLoading = false;
     channel.sink.close(status.goingAway);
+    update();
+  }
+
+  doDouBanSearch() async {
+    if (searchKeyController.text.isEmpty) {
+      LoggerHelper.Logger.instance.d("搜索关键字不能为空");
+      return;
+    }
+    DouBanSearchHelper helper = DouBanSearchHelper();
+    isLoading = true;
+    update();
+    showDouBanResults = await helper.doSearch(
+      q: searchKeyController.text,
+    );
+    showResults.clear();
+    isLoading = false;
     update();
   }
 
