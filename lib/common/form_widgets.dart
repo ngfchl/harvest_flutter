@@ -227,10 +227,11 @@ class FullWidthButton extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8.0), // 圆角半径
               ),
+              backgroundColor: backgroundColor ?? Colors.orange,
             ),
             child: Text(
               text,
-              style: TextStyle(color: Theme.of(context).colorScheme.primary),
+              style: TextStyle(color: labelColor ?? Colors.white70),
             ),
           ),
         ),
