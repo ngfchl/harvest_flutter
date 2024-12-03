@@ -15,34 +15,6 @@ class WebSocketLoggingWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      child: Icon(
-        Icons.waves_sharp,
-        size: 20,
-        color: Theme.of(context).colorScheme.primary,
-      ),
-      onTap: () {
-        _showLoggingDialog(context);
-      },
-    );
-  }
-
-  void _showLoggingDialog(context) async {
-    await Get.bottomSheet(
-      isScrollControlled: true,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-      enableDrag: true,
-      SizedBox(
-        height: MediaQuery.of(context).size.height * 0.9,
-        child: generateLogView(context),
-      ),
-    ).whenComplete(() {
-      // Get.delete<WebSocketLoggingController>(); // 释放控制器
-      controller.stopFetchLog();
-    });
-  }
-
-  Widget generateLogView(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("实时日志"),
