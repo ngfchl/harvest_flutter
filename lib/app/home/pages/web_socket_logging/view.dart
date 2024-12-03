@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 
@@ -36,7 +37,8 @@ class WebSocketLoggingWidget extends StatelessWidget {
         child: generateLogView(context),
       ),
     ).whenComplete(() {
-      Get.delete<WebSocketLoggingController>(); // 释放控制器
+      // Get.delete<WebSocketLoggingController>(); // 释放控制器
+      controller.stopFetchLog();
     });
   }
 
@@ -64,6 +66,45 @@ class WebSocketLoggingWidget extends StatelessWidget {
             );
           }),
           GetBuilder<WebSocketLoggingController>(builder: (controller) {
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CustomPopup(
+                  showArrow: false,
+                  backgroundColor: Theme.of(context).colorScheme.surface,
+                  barrierColor: Colors.transparent,
+                  content: SizedBox(
+                    width: 100,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ...controller.levelList.entries.map(
+                          (l) => PopupMenuItem<String>(
+                            child: Text(
+                              l.key.toUpperCase(),
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.secondary,
+                              ),
+                            ),
+                            onTap: () async {
+                              controller.changeLogLevel(l.value);
+                            },
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.event_note,
+                    size: 24,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(width: 10),
+              ],
+            );
+          }),
+          GetBuilder<WebSocketLoggingController>(builder: (controller) {
             return controller.isLoading
                 ? Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -72,7 +113,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
                         icon: Icon(Icons.cancel_outlined,
                             color: Theme.of(context).colorScheme.primary),
                         onPressed: () {
-                          controller.cancelSearch();
+                          controller.stopFetchLog();
                           controller.update();
                         },
                       ),
@@ -93,10 +134,10 @@ class WebSocketLoggingWidget extends StatelessWidget {
         color: Theme.of(context).colorScheme.surface,
         child: GetBuilder<WebSocketLoggingController>(builder: (controller) {
           return ListView.builder(
-              itemCount: controller.logList.length,
+              itemCount: controller.showLogList.length,
               controller: controller.scrollController,
               itemBuilder: (context, index) {
-                String res = controller.logList[index];
+                String res = controller.showLogList[index];
                 return Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 2),

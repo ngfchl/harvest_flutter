@@ -10,11 +10,48 @@ import '../../../../utils/storage.dart';
 
 class WebSocketLoggingController extends GetxController {
   List<String> logList = [];
+  List<String> showLogList = [];
   String url = 'ws/logging';
   bool isLoading = false;
   bool wrapText = true;
   late WebSocketChannel channel;
   ScrollController scrollController = ScrollController();
+  int filterLevel = 0;
+  Map<String, int> levelList = {
+    'ALL': 0,
+    'DEBUG': 1,
+    'INFO': 2,
+    'WARNING': 3,
+    'ERROR': 4,
+    'CRITICAL': 5,
+  };
+
+  changeLogLevel(int level) {
+    filterLevel = level;
+    // todo 后端返回日志格式需要处理
+    // filterLogs();
+    update();
+  }
+
+  filterLogs() {
+    switch (filterLevel) {
+      case 0:
+        showLogList = logList;
+        break;
+      default:
+        showLogList = logList.where((line) {
+          // 提取日志行的开头部分
+          String logPrefix = line.split(' ').first;
+          int? logLevel = levelList[logPrefix];
+          if (logLevel == null) {
+            print('Unknown log level: $logPrefix');
+            return true;
+          }
+          return logLevel >= filterLevel;
+        }).toList();
+    }
+    update();
+  }
 
   fetchingLogList() async {
     // 打开加载状态
@@ -39,7 +76,7 @@ class WebSocketLoggingController extends GetxController {
         Logger.instance.d(logList);
       }, onError: (err) {
         Logger.instance.e('读取日志出错啦： ${err.toString()}');
-        cancelSearch();
+        stopFetchLog();
       }, onDone: () {
         Logger.instance.e('日志读取完成啦！');
         // cancelSearch();
@@ -47,11 +84,11 @@ class WebSocketLoggingController extends GetxController {
     } catch (e, trace) {
       Logger.instance.e(e);
       Logger.instance.d(trace);
-      cancelSearch();
+      stopFetchLog();
     }
   }
 
-  void updateLogs(dynamic msg) {
+  void updateLogs(dynamic msg)async {
     String type = msg.runtimeType.toString();
     Logger.instance.d(type);
     switch (type) {
@@ -62,20 +99,27 @@ class WebSocketLoggingController extends GetxController {
         logList.addAll(List<String>.from(msg));
         break;
     }
-
-    if (logList.length > 12) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+    filterLogs();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (scrollController.hasClients) {
         scrollController.animateTo(
           scrollController.position.maxScrollExtent,
           duration: const Duration(milliseconds: 100),
           curve: Curves.easeOut,
         );
-      });
-    }
+        await Future.delayed(const Duration(seconds: 2));
+        scrollController.animateTo(
+          scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 100),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+
     update();
   }
 
-  cancelSearch() {
+  stopFetchLog() {
     isLoading = false;
     channel.sink.close();
     update();
@@ -84,8 +128,7 @@ class WebSocketLoggingController extends GetxController {
   @override
   void onInit() async {
     logList = [];
-    Future.delayed(const Duration(seconds: 2));
-    update();
+    updateLogs("开始打印日志");
     await fetchingLogList();
     super.onInit();
   }
@@ -98,14 +141,15 @@ class WebSocketLoggingController extends GetxController {
 
   @override
   void dispose() {
-    cancelSearch();
+    stopFetchLog();
+    scrollController.dispose();
     super.dispose();
   }
 
   @override
   void onClose() {
     logList.clear();
-    cancelSearch();
+    stopFetchLog();
     super.onClose();
   }
 }
