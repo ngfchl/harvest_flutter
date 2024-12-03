@@ -81,6 +81,7 @@ class AggSearchController extends GetxController
   bool hrKey = false;
 
   late TabController tabController;
+  late VideoDetail selectVideoDetail;
 
   @override
   void onInit() async {
@@ -203,7 +204,7 @@ class AggSearchController extends GetxController
     }
     DouBanSearchHelper helper = DouBanSearchHelper();
     isLoading = true;
-    tabController.animateTo(0);
+    changeTab(0);
     update();
     var response = await helper.doSearch(
       q: searchKeyController.text,
@@ -220,14 +221,23 @@ class AggSearchController extends GetxController
     isLoading = true;
     update();
     DouBanHelper helper = DouBanHelper();
-    VideoDetail detail = await helper.getSubjectInfo(subject);
-    String searchKey = detail.title;
-    if (detail.imdb.isNotEmpty) {
-      searchKey = "${detail.imdb}||$searchKey";
+    selectVideoDetail = await helper.getSubjectInfo(subject);
+    isLoading = false;
+    update();
+  }
+
+  goSearchPage(String subject) async {
+    await getSubjectInfo(subject);
+    String searchKey = selectVideoDetail.title;
+    if (selectVideoDetail.imdb.isNotEmpty) {
+      searchKey = "${selectVideoDetail.imdb}||$searchKey";
     }
     searchKeyController.text = searchKey;
-    isLoading = false;
     await doWebsocketSearch();
+  }
+
+  changeTab(int index) {
+    tabController.animateTo(index);
     update();
   }
 
@@ -236,7 +246,7 @@ class AggSearchController extends GetxController
     isLoading = true;
     // 清空搜索记录
     initSearchResult();
-    tabController.animateTo(1);
+    changeTab(1);
     // 初始化站点数据
     if (mySiteMap.isEmpty) {
       LoggerHelper.Logger.instance.d('重新加载站点列表');

@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
 import 'package:flutter_popup/flutter_popup.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:harvest/app/home/pages/agg_search/models/torrent_info.dart';
@@ -20,6 +21,7 @@ import '../../../../common/card_view.dart';
 import '../../../../common/form_widgets.dart';
 import '../../../../common/utils.dart';
 import '../../../../utils/logger_helper.dart' as LoggerHelper;
+import '../../../../utils/logger_helper.dart';
 import '../../../../utils/string_utils.dart';
 import '../../../routes/app_pages.dart';
 import '../models/my_site.dart';
@@ -37,6 +39,7 @@ class AggSearchPage extends StatefulWidget {
 class _AggSearchPageState extends State<AggSearchPage>
     with AutomaticKeepAliveClientMixin {
   final controller = Get.put(AggSearchController());
+  String cacheServer = 'https://images.weserv.nl/?url=';
 
   @override
   bool get wantKeepAlive => true;
@@ -62,11 +65,13 @@ class _AggSearchPageState extends State<AggSearchPage>
               child: Scaffold(
                 floatingActionButtonLocation:
                     FloatingActionButtonLocation.centerDocked,
-                floatingActionButton: controller.searchResults.isNotEmpty
+                floatingActionButton: controller.searchResults.isNotEmpty &&
+                        controller.tabController.index == 1
                     ? _buildBottomButtonBar()
                     : null,
                 appBar: TabBar(
                     controller: controller.tabController,
+                    onTap: (int index) => controller.changeTab(index),
                     tabs: controller.tabs),
                 body: Column(
                   children: [
@@ -183,15 +188,21 @@ class _AggSearchPageState extends State<AggSearchPage>
                                     color:
                                         Theme.of(context).colorScheme.primary,
                                     child: controller.isLoading
-                                        ? GFLoader(
-                                            size: 14,
-                                            loaderColorOne: Theme.of(context)
-                                                .colorScheme
-                                                .onPrimary,
+                                        ? InkWell(
+                                            onTap: () =>
+                                                controller.cancelSearch(),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(8),
+                                              child: CircularProgressIndicator(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onPrimary,
+                                              ),
+                                            ),
                                           )
                                         : Icon(
                                             Icons.search,
-                                            size: 14,
+                                            size: 28,
                                             color: Theme.of(context)
                                                 .colorScheme
                                                 .onPrimary,
@@ -256,7 +267,8 @@ class _AggSearchPageState extends State<AggSearchPage>
                           ]),
                     ),
                     if (!kIsWeb && Platform.isIOS) const SizedBox(height: 10),
-                    const SizedBox(height: 50),
+                    if (controller.tabController.index == 1)
+                      const SizedBox(height: 50),
                   ],
                 ),
               ),
@@ -423,6 +435,8 @@ class _AggSearchPageState extends State<AggSearchPage>
                         onTap: () => Navigator.of(context).pop(),
                         child: CachedNetworkImage(
                           imageUrl: imgUrl,
+                          placeholder: (context, url) =>
+                              const Center(child: CircularProgressIndicator()),
                           errorWidget: (context, url, error) => const Image(
                               image: AssetImage('assets/images/logo.png')),
                           fit: BoxFit.fitWidth,
@@ -440,6 +454,8 @@ class _AggSearchPageState extends State<AggSearchPage>
                       children: [
                         CachedNetworkImage(
                           imageUrl: imgUrl,
+                          placeholder: (context, url) =>
+                              const Center(child: CircularProgressIndicator()),
                           errorWidget: (context, url, error) => const Image(
                               image: AssetImage('assets/images/logo.png'),
                               fit: BoxFit.fitWidth),
@@ -984,143 +1000,497 @@ class _AggSearchPageState extends State<AggSearchPage>
     ));
   }
 
-  Widget showDouBanSearchInfo(DouBanSearchResult info) {
-    String cacheServer = 'https://images.weserv.nl/?url=';
-    return InkWell(
-      onTap: () async {
-        await controller.getSubjectInfo(info.target.id);
-      },
-      child: CustomCard(
-          child: Column(
-        children: [
-          GFListTile(
-            padding: EdgeInsets.zero,
-            avatar: InkWell(
-              onTap: () {
-                Get.defaultDialog(
-                    title: '海报预览',
-                    content: InkWell(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: CachedNetworkImage(
-                        imageUrl: "$cacheServer${info.target.coverUrl}",
-                        errorWidget: (context, url, error) => const Image(
-                            image: AssetImage('assets/images/logo.png')),
-                        fit: BoxFit.fitWidth,
-                      ),
-                    ));
-              },
-              child: SizedBox(
-                width: 55,
-                child: Stack(
-                    alignment: AlignmentDirectional.bottomCenter,
-                    children: [
-                      CachedNetworkImage(
-                        imageUrl: "$cacheServer${info.target.coverUrl}",
-                        errorWidget: (context, url, error) => const Image(
-                            image: AssetImage('assets/images/logo.png'),
-                            fit: BoxFit.fitWidth),
-                        fit: BoxFit.fitWidth,
-                      ),
-                      CustomTextTag(
-                        labelText: info.typeName,
-                        backgroundColor: Theme.of(context)
-                            .colorScheme
-                            .primary
-                            .withOpacity(0.7),
-                        labelColor: Theme.of(context).colorScheme.onPrimary,
-                      ),
-                    ]),
-              ),
-            ),
-            title: EllipsisText(
-              text: info.target.title,
-              ellipsis: "...",
-              maxLines: 1,
-              style: TextStyle(
-                fontSize: 13,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-            subTitle: Padding(
-              padding: const EdgeInsets.only(top: 5.0),
-              child: EllipsisText(
-                text: info.target.year ?? '',
-                ellipsis: "...",
-                maxLines: 1,
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Theme.of(context).colorScheme.secondary,
-                ),
-              ),
-            ),
-            description: Padding(
-              padding: const EdgeInsets.only(top: 5.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Future<dynamic> _buildOperateDialog(DouBanSearchResult mediaInfo) async {
+    await controller.getSubjectInfo(mediaInfo.target.id);
+    Get.bottomSheet(
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(2),
+            topRight: Radius.circular(2),
+          ),
+        ),
+        isScrollControlled: true,
+        enableDrag: true,
+        GetBuilder<AggSearchController>(builder: (controller) {
+      return CustomCard(
+        height: MediaQuery.of(context).size.height * 0.7,
+        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView(
                 children: [
                   Row(
                     children: [
-                      Icon(
-                        Icons.timer,
-                        color: Theme.of(context).colorScheme.primary,
-                        size: 12,
+                      InkWell(
+                        onTap: () {
+                          Get.defaultDialog(
+                              title: '海报预览',
+                              content: InkWell(
+                                onTap: () => Navigator.of(context).pop(),
+                                child: CachedNetworkImage(
+                                  imageUrl:
+                                      '$cacheServer${mediaInfo.target.coverUrl}',
+                                  errorWidget: (context, url, error) =>
+                                      const Image(
+                                          image: AssetImage(
+                                              'assets/images/logo.png')),
+                                  fit: BoxFit.fitWidth,
+                                ),
+                              ));
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8.0),
+                          child: CachedNetworkImage(
+                            imageUrl:
+                                '$cacheServer${mediaInfo.target.coverUrl}',
+                            placeholder: (context, url) => const Center(
+                                child: CircularProgressIndicator()),
+                            errorWidget: (context, url, error) =>
+                                Image.asset('assets/images/logo.png'),
+                            width: 120,
+                            height: 180,
+                            fit: BoxFit.fitWidth,
+                          ),
+                        ),
                       ),
-                      const SizedBox(
-                        width: 2,
+                      Expanded(
+                          child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${controller.selectVideoDetail.title}${controller.selectVideoDetail.year}',
+                              style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w700),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              '${controller.selectVideoDetail.director.map((e) => e.name).join('/')}/${controller.selectVideoDetail.genres}/${controller.selectVideoDetail.releaseDate}/${controller.selectVideoDetail.duration}',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                            ),
+                            // Text(
+                            //   controller.selectVideoDetail.writer.map((e) => e.name).join(' / '),
+                            //   overflow: TextOverflow.ellipsis,
+                            // ),
+                            // Text(
+                            //   controller.selectVideoDetail.actors.map((e) => e.name).join(' / '),
+                            //   overflow: TextOverflow.ellipsis,
+                            // ),
+                            if (controller.selectVideoDetail.alias != null)
+                              Text(
+                                controller.selectVideoDetail.alias!.join(' / '),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 2,
+                              ),
+                            Text(
+                                controller.selectVideoDetail.region.toString()),
+                            // Text(controller.selectVideoDetail.language.toString()),
+                            // Text(controller.selectVideoDetail.season.toString()),
+                            // Text(controller.selectVideoDetail.episode.toString()),
+                            controller.selectVideoDetail.rate != null &&
+                                    controller
+                                        .selectVideoDetail.rate!.isNotEmpty
+                                ? Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      RatingBar.readOnly(
+                                        initialRating: double.parse(controller
+                                                .selectVideoDetail.rate!) /
+                                            2,
+                                        filledIcon: Icons.star,
+                                        emptyIcon: Icons.star_border,
+                                        emptyColor: Colors.redAccent,
+                                        filledColor: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                        halfFilledColor: Colors.amberAccent,
+                                        halfFilledIcon: Icons.star_half,
+                                        maxRating: 5,
+                                        size: 18,
+                                      ),
+                                      Text(
+                                        '${controller.selectVideoDetail.evaluate} 人评价',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.blue,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : const Text(
+                                    '暂无评分',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.blue,
+                                    ),
+                                  ),
+                            Text('iMdb: ${controller.selectVideoDetail.imdb}'),
+                          ],
+                        ),
+                      ))
+                    ],
+                  ),
+                  SizedBox(
+                    height: 178,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Wrap(
+                        alignment: WrapAlignment.spaceAround,
+                        children: [
+                          ...controller.selectVideoDetail.pictures!
+                              .map((imgUrl) => CustomCard(
+                                    child: InkWell(
+                                      onTap: () {
+                                        Get.defaultDialog(
+                                            content: InkWell(
+                                          onTap: () =>
+                                              Navigator.of(context).pop(),
+                                          child: CachedNetworkImage(
+                                            imageUrl: '$cacheServer$imgUrl',
+                                            errorWidget: (context, url,
+                                                    error) =>
+                                                const Image(
+                                                    image: AssetImage(
+                                                        'assets/images/logo.png')),
+                                            fit: BoxFit.fitWidth,
+                                          ),
+                                        ));
+                                      },
+                                      child: ClipRRect(
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                        child: CachedNetworkImage(
+                                          imageUrl: '$cacheServer$imgUrl',
+                                          placeholder: (context, url) =>
+                                              const Center(
+                                                  child:
+                                                      CircularProgressIndicator()),
+                                          height: 160,
+                                          fit: BoxFit.fitWidth,
+                                        ),
+                                      ),
+                                    ),
+                                  ))
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 160,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          ...controller.selectVideoDetail.celebrities
+                              .map((worker) => CustomCard(
+                                    width: 100,
+                                    child: Column(
+                                      children: [
+                                        Expanded(
+                                          child: InkWell(
+                                            onTap: () {
+                                              Get.defaultDialog(
+                                                  title: '海报预览',
+                                                  content: InkWell(
+                                                    onTap: () =>
+                                                        Navigator.of(context)
+                                                            .pop(),
+                                                    child: CachedNetworkImage(
+                                                      imageUrl:
+                                                          '$cacheServer${worker.imgUrl}',
+                                                      errorWidget: (context,
+                                                              url, error) =>
+                                                          const Image(
+                                                              image: AssetImage(
+                                                                  'assets/images/logo.png')),
+                                                      fit: BoxFit.fitWidth,
+                                                    ),
+                                                  ));
+                                            },
+                                            child: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(8.0),
+                                              child: CachedNetworkImage(
+                                                imageUrl:
+                                                    '$cacheServer${worker.imgUrl}',
+                                                placeholder: (context, url) =>
+                                                    const Center(
+                                                        child:
+                                                            CircularProgressIndicator()),
+                                                width: 100,
+                                                height: 150,
+                                                fit: BoxFit.fitWidth,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        Text(
+                                          worker.name,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                        Text(
+                                          worker.role!,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ))
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Text(
+                        controller.selectVideoDetail.hadSeen,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.green,
+                        ),
                       ),
                       Text(
-                        info.target.cardSubtitle,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontSize: 10,
+                        controller.selectVideoDetail.wantLook,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.blue,
                         ),
                       ),
                     ],
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Row(
-                        children: [
-                          Tooltip(
-                            message: '评分：${info.target.rating.value}',
-                            child: RatingBar.readOnly(
-                              initialRating: info.target.rating.value / 2,
-                              filledIcon: Icons.star,
-                              emptyIcon: Icons.star_border,
-                              emptyColor: Colors.redAccent,
-                              filledColor:
-                                  Theme.of(context).colorScheme.primary,
-                              halfFilledColor: Colors.amberAccent,
-                              halfFilledIcon: Icons.star_half,
-                              maxRating: info.target.rating.max ~/ 2,
-                              size: 18,
-                            ),
-                          ),
-                          Text(
-                            info.target.rating.value.toString(),
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.secondary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Text(
-                            "(${info.target.rating.count.toString()}评分)",
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.secondary,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                  const SizedBox(height: 8),
+                  ...controller.selectVideoDetail.summary.map((e) => Text(e)),
+                  const SizedBox(height: 8),
                 ],
               ),
             ),
-          ),
-        ],
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    Get.back();
+                    controller.goSearchPage(mediaInfo.target.id);
+                  },
+                  icon: Icon(
+                    Icons.search,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  label: const Text('搜索'),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    await _openMediaInfoDetail(mediaInfo);
+                  },
+                  icon: Icon(
+                    Icons.info_outline,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  label: const Text('详情'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }));
+  }
+
+  Future<void> _openMediaInfoDetail(DouBanSearchResult mediaInfo) async {
+    String url = mediaInfo.target.uri;
+
+    if (!Platform.isIOS && !Platform.isAndroid) {
+      Logger.instance.i('Explorer');
+      if (!await launchUrl(Uri.parse(url),
+          mode: LaunchMode.externalApplication)) {
+        Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
+            colorText: Theme.of(context).colorScheme.primary);
+      }
+    } else {
+      Logger.instance.i('WebView');
+      Get.toNamed(Routes.WEBVIEW, arguments: {'url': url});
+    }
+  }
+
+  Widget showDouBanSearchInfo(DouBanSearchResult info) {
+    return InkWell(
+      onTap: () async {
+        _buildOperateDialog(info);
+      },
+      onDoubleTap: () async {
+        if (!await launchUrl(Uri.parse(info.target.uri))) {
+          throw Exception('Could not launch');
+        }
+      },
+      onLongPress: () async {
+        await controller.getSubjectInfo(info.target.id);
+      },
+      child: CustomCard(
+          child: Slidable(
+        key: ValueKey('${info.target.title}_${info.target.id}'),
+        startActionPane: ActionPane(
+          motion: const ScrollMotion(),
+          extentRatio: 0.25,
+          children: [
+            SlidableAction(
+              flex: 1,
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              onPressed: (context) async {
+                _buildOperateDialog(info);
+              },
+              backgroundColor: const Color(0xFF0392CF),
+              foregroundColor: Colors.white,
+              // icon: Icons.edit,
+              label: '详情',
+            ),
+          ],
+        ),
+        endActionPane: ActionPane(
+          motion: const ScrollMotion(),
+          extentRatio: 0.25,
+          children: [
+            SlidableAction(
+              flex: 1,
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              onPressed: (context) async {
+                await controller.goSearchPage(info.target.id);
+              },
+              backgroundColor: const Color(0xFFFE4A49),
+              foregroundColor: Colors.white,
+              // icon: Icons.delete,
+              label: '搜索',
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            GFListTile(
+              padding: EdgeInsets.zero,
+              avatar: InkWell(
+                onTap: () {
+                  Get.defaultDialog(
+                      title: '海报预览',
+                      content: InkWell(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: CachedNetworkImage(
+                          imageUrl: "$cacheServer${info.target.coverUrl}",
+                          placeholder: (context, url) =>
+                              const Center(child: CircularProgressIndicator()),
+                          errorWidget: (context, url, error) => const Image(
+                              image: AssetImage('assets/images/logo.png')),
+                          fit: BoxFit.fitWidth,
+                        ),
+                      ));
+                },
+                child: SizedBox(
+                  width: 55,
+                  child: Stack(
+                      alignment: AlignmentDirectional.bottomCenter,
+                      children: [
+                        CachedNetworkImage(
+                          imageUrl: "$cacheServer${info.target.coverUrl}",
+                          placeholder: (context, url) =>
+                              const Center(child: CircularProgressIndicator()),
+                          errorWidget: (context, url, error) => const Image(
+                              image: AssetImage('assets/images/logo.png'),
+                              fit: BoxFit.fitWidth),
+                          fit: BoxFit.fitWidth,
+                        ),
+                        CustomTextTag(
+                          labelText: info.typeName,
+                          backgroundColor: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withOpacity(0.7),
+                          labelColor: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                      ]),
+                ),
+              ),
+              title: EllipsisText(
+                text: "${info.target.title}[${info.target.year ?? ''}]",
+                ellipsis: "...",
+                maxLines: 1,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              subTitle: info.target.rating.count > 0
+                  ? Padding(
+                      padding: const EdgeInsets.only(top: 5.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Tooltip(
+                                message: '评分：${info.target.rating.value}',
+                                child: RatingBar.readOnly(
+                                  initialRating: info.target.rating.value / 2,
+                                  filledIcon: Icons.star,
+                                  emptyIcon: Icons.star_border,
+                                  emptyColor: Colors.redAccent,
+                                  filledColor:
+                                      Theme.of(context).colorScheme.primary,
+                                  halfFilledColor: Colors.amberAccent,
+                                  halfFilledIcon: Icons.star_half,
+                                  maxRating: info.target.rating.max ~/ 2,
+                                  size: 18,
+                                ),
+                              ),
+                              Text(
+                                info.target.rating.value.toString(),
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.secondary,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text(
+                                "(${info.target.rating.count.toString()}评分)",
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.secondary,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    )
+                  : null,
+              description: Padding(
+                padding: const EdgeInsets.only(top: 5.0),
+                child: Text(
+                  info.target.cardSubtitle,
+                  maxLines: 3,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontSize: 10,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+          ],
+        ),
       )),
     );
   }
