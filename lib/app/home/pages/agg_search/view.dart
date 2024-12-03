@@ -6,6 +6,7 @@ import 'package:filesize/filesize.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
+import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:harvest/app/home/pages/agg_search/models/torrent_info.dart';
@@ -100,40 +101,18 @@ class _AggSearchPageState extends State<AggSearchPage>
                                       borderRadius: BorderRadius.circular(0.0),
                                     ),
                                   ),
-                                  onSubmitted: (value) {
-                                    controller.doWebsocketSearch();
+                                  onSubmitted: (value) async {
+                                    if (controller.tabController.index == 0) {
+                                      if (controller
+                                          .searchKeyController.text.isEmpty) {
+                                        Get.snackbar("提示", "搜索关键字不能为空！");
+                                        return;
+                                      }
+                                      await controller.doDouBanSearch();
+                                    } else {
+                                      await controller.doWebsocketSearch();
+                                    }
                                   },
-                                ),
-                              ),
-                              const SizedBox(
-                                width: 5,
-                              ),
-                              ElevatedButton.icon(
-                                onPressed: () {
-                                  _openSiteSheet();
-                                },
-                                style: OutlinedButton.styleFrom(
-                                  backgroundColor: Colors.lightGreen,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(8.0), // 圆角半径
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 6),
-                                ),
-                                icon: Icon(
-                                  Icons.language,
-                                  size: 14,
-                                  color:
-                                      Theme.of(context).colorScheme.onPrimary,
-                                ),
-                                label: Text(
-                                  '站点 ${controller.maxCount}',
-                                  style: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimary,
-                                      fontSize: 12),
                                 ),
                               ),
                               const SizedBox(
@@ -141,28 +120,74 @@ class _AggSearchPageState extends State<AggSearchPage>
                               ),
                               GetBuilder<AggSearchController>(
                                   builder: (controller) {
-                                return ElevatedButton.icon(
-                                    onPressed: () async {
-                                      // 在这里执行搜索操作
-                                      if (controller.isLoading) {
-                                        await controller.cancelSearch();
-                                      } else {
-                                        controller.doWebsocketSearch();
-                                      }
-                                    },
-                                    style: OutlinedButton.styleFrom(
-                                      backgroundColor: Colors.blue,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(8.0), // 圆角半径
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16, vertical: 6),
+                                return CustomPopup(
+                                  showArrow: false,
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.surface,
+                                  barrierColor: Colors.transparent,
+                                  content: SizedBox(
+                                    width: 100,
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        PopupMenuItem<String>(
+                                          child: Text(
+                                            '来自豆瓣',
+                                            style: TextStyle(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .secondary,
+                                            ),
+                                          ),
+                                          onTap: () async {
+                                            await controller.doDouBanSearch();
+                                          },
+                                        ),
+                                        PopupMenuItem<String>(
+                                          child: Text(
+                                            '搜索资源',
+                                            style: TextStyle(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .secondary,
+                                            ),
+                                          ),
+                                          onTap: () async {
+                                            // 在这里执行搜索操作
+                                            if (controller.isLoading) {
+                                              await controller.cancelSearch();
+                                            } else {
+                                              controller.doWebsocketSearch();
+                                            }
+                                          },
+                                        ),
+                                        PopupMenuItem<String>(
+                                          child: Text(
+                                            '站点[◉${controller.maxCount}]',
+                                            style: TextStyle(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .secondary,
+                                            ),
+                                          ),
+                                          onTap: () async {
+                                            _openSiteSheet();
+                                          },
+                                        ),
+                                      ],
                                     ),
-                                    autofocus: true,
-                                    icon: controller.isLoading
-                                        ? const GFLoader(
+                                  ),
+                                  child: Container(
+                                    width: 36,
+                                    height: 36,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                    child: controller.isLoading
+                                        ? GFLoader(
                                             size: 14,
+                                            loaderColorOne: Theme.of(context)
+                                                .colorScheme
+                                                .onPrimary,
                                           )
                                         : Icon(
                                             Icons.search,
@@ -171,28 +196,10 @@ class _AggSearchPageState extends State<AggSearchPage>
                                                 .colorScheme
                                                 .onPrimary,
                                           ),
-                                    label: Text(
-                                      controller.isLoading ? '取消' : '搜索',
-                                      style: TextStyle(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onPrimary,
-                                          fontSize: 12),
-                                    ));
+                                  ),
+                                );
                               }),
                             ],
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 5.0),
-                            child: FullWidthButton(
-                                text: "来自豆瓣",
-                                backgroundColor:
-                                    Theme.of(context).colorScheme.surface,
-                                labelColor:
-                                    Theme.of(context).colorScheme.onSurface,
-                                onPressed: () async {
-                                  await controller.doDouBanSearch();
-                                }),
                           ),
                         ],
                       ),
