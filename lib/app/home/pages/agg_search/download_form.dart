@@ -28,7 +28,8 @@ class DownloadForm extends StatelessWidget {
   final TextEditingController cookieController = TextEditingController();
   final TextEditingController categoryController = TextEditingController();
   final TextEditingController renameController = TextEditingController();
-  final TextEditingController upLimitController = TextEditingController();
+  final TextEditingController upLimitController =
+      TextEditingController(text: '150');
   final TextEditingController dlLimitController =
       TextEditingController(text: '150');
   final TextEditingController ratioLimitController =

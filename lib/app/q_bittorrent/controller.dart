@@ -162,7 +162,7 @@ class QBittorrentController extends GetxController {
     mainDataSubscription = client.sync
         .subscribeMainData(interval: Duration(seconds: subInterval))
         .listen((event) {
-      allTorrents = event.torrents!.values.toList();
+      allTorrents = event.torrents?.values.toList() ?? [];
       serverState = event.serverState;
       statusList.add(event.serverState!);
       trackers = {' All': [], ' 红种': []};
