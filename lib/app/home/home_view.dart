@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
-import 'package:harvest/app/home/pages/web_socket_logging/controller.dart';
 import 'package:harvest/app/home/pages/web_socket_logging/view.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/form_widgets.dart';
@@ -226,30 +225,6 @@ class HomeView extends GetView<HomeController> {
     });
   }
 
-  Widget realTimeLogging(context) {
-    return InkWell(
-      child: Icon(
-        Icons.waves_sharp,
-        size: 20,
-        color: Theme.of(context).colorScheme.primary,
-      ),
-      onTap: () async {
-        Get.bottomSheet(
-          isScrollControlled: true,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-          enableDrag: true,
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.9,
-            child: WebSocketLoggingWidget(),
-          ),
-        ).whenComplete(() {
-          Get.delete<WebSocketLoggingController>();
-        });
-      },
-    );
-  }
-
   Widget _actionButtonList(context) {
     return GetBuilder<HomeController>(builder: (controller) {
       return Row(
@@ -258,7 +233,7 @@ class HomeView extends GetView<HomeController> {
         children: [
           const LoggingView(),
           const SizedBox(width: 15),
-          realTimeLogging(context),
+          const WebSocketLoggingWidget(),
           const SizedBox(width: 15),
           if (controller.userinfo?.isStaff == true) ...[
             const CustomUAWidget(),

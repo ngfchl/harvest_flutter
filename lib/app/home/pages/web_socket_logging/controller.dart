@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_floating/floating/floating.dart';
+import 'package:flutter_floating/floating/listener/event_listener.dart';
 import 'package:get/get.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -15,7 +17,7 @@ class WebSocketLoggingController extends GetxController {
   bool isLoading = false;
   bool wrapText = true;
   late WebSocketChannel channel;
-  ScrollController scrollController = ScrollController();
+  ScrollController? scrollController;
   int filterLevel = 0;
   Map<String, int> levelList = {
     'ALL': 0,
@@ -25,6 +27,40 @@ class WebSocketLoggingController extends GetxController {
     'ERROR': 4,
     'CRITICAL': 5,
   };
+
+  GlobalKey inTimeAPILogFloatingKey =
+      GlobalKey(debugLabel: "inTimeAPILogFloatingWindows");
+
+  late Floating floating;
+  var oneListener = FloatingEventListener();
+
+  @override
+  void onInit() async {
+    Logger.instance.d(scrollController);
+
+    scrollController = ScrollController();
+    update();
+
+    oneListener
+      ..openListener = () async {
+        Logger.instance.d('显示试试 API 日志');
+        scrollController ??= ScrollController();
+        update();
+        await fetchingLogList();
+      }
+      ..hideFloatingListener = () {
+        // scrollController?.dispose();
+        // scrollController = null;
+      }
+      ..closeListener = () {
+        exit();
+      };
+
+    logList = [];
+    updateLogs("开始打印日志");
+    await fetchingLogList();
+    super.onInit();
+  }
 
   changeLogLevel(int level) {
     filterLevel = level;
@@ -61,6 +97,7 @@ class WebSocketLoggingController extends GetxController {
       String baseUrl = SPUtil.getLocalStorage('server');
       final wsUrl =
           Uri.parse('${baseUrl.replaceFirst('http', 'ws')}/api/ws/logging');
+
       channel = WebSocketChannel.connect(wsUrl);
       await channel.ready;
       channel.sink.add(json.encode({"limit": 1024, "interval": 1}));
@@ -73,7 +110,6 @@ class WebSocketLoggingController extends GetxController {
         } else {
           updateLogs(response.msg.toString());
         }
-        Logger.instance.d(logList);
       }, onError: (err) {
         Logger.instance.e('读取日志出错啦： ${err.toString()}');
         stopFetchLog();
@@ -88,9 +124,10 @@ class WebSocketLoggingController extends GetxController {
     }
   }
 
-  void updateLogs(dynamic msg)async {
+  void updateLogs(dynamic msg) async {
     String type = msg.runtimeType.toString();
     Logger.instance.d(type);
+    Logger.instance.d(msg);
     switch (type) {
       case "String":
         logList.add(msg);
@@ -101,18 +138,22 @@ class WebSocketLoggingController extends GetxController {
     }
     filterLogs();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (scrollController.hasClients) {
-        scrollController.animateTo(
-          scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 100),
-          curve: Curves.easeOut,
-        );
-        await Future.delayed(const Duration(seconds: 2));
-        scrollController.animateTo(
-          scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 100),
-          curve: Curves.easeOut,
-        );
+      try {
+        if (scrollController?.hasClients ?? false) {
+          scrollController?.animateTo(
+            scrollController!.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 100),
+            curve: Curves.easeOut,
+          );
+          await Future.delayed(const Duration(seconds: 2));
+          scrollController?.animateTo(
+            scrollController!.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 100),
+            curve: Curves.easeOut,
+          );
+        }
+      } catch (e) {
+        Logger.instance.e(e.toString());
       }
     });
 
@@ -125,12 +166,9 @@ class WebSocketLoggingController extends GetxController {
     update();
   }
 
-  @override
-  void onInit() async {
-    logList = [];
-    updateLogs("开始打印日志");
-    await fetchingLogList();
-    super.onInit();
+  exit() {
+    stopFetchLog();
+    logList.clear();
   }
 
   @override
@@ -141,15 +179,16 @@ class WebSocketLoggingController extends GetxController {
 
   @override
   void dispose() {
-    stopFetchLog();
-    scrollController.dispose();
+    // scrollController?.dispose();
+    // scrollController = null;
     super.dispose();
   }
 
   @override
   void onClose() {
-    logList.clear();
-    stopFetchLog();
+    scrollController?.dispose();
+    scrollController = null;
+    exit();
     super.onClose();
   }
 }
