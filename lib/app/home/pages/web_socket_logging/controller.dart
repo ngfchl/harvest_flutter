@@ -136,6 +136,9 @@ class WebSocketLoggingController extends GetxController {
         logList.addAll(List<String>.from(msg));
         break;
     }
+    if (logList.length > 300) {
+      logList = logList.sublist(logList.length - 300);
+    }
     filterLogs();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
