@@ -511,12 +511,15 @@ class _MySitePagePageState extends State<MySitePage>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             if (nextLevel != null) ...[
-                              Text("下一等级：${nextLevel.level}",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                  )),
+                              PopupMenuItem<String>(
+                                height: 13,
+                                child: Text("下一等级：${nextLevel.level}",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                    )),
+                              ),
                               if (status.uploaded <
                                       FileSizeConvert.parseToByte(
                                           nextLevel.uploaded) ||
@@ -524,88 +527,115 @@ class _MySitePagePageState extends State<MySitePage>
                                       FileSizeConvert.parseToByte(
                                               nextLevel.downloaded) *
                                           nextLevel.ratio)
-                                Text(
-                                    '上传量：${filesize(status.uploaded)}/${FileSizeConvert.parseToByte(nextLevel.uploaded) > 0 ? nextLevel.uploaded : FileSizeConvert.parseToFileSize((FileSizeConvert.parseToByte(nextLevel.downloaded) * nextLevel.ratio).toInt())}',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color:
-                                          Theme.of(context).colorScheme.error,
-                                    )),
-                              if (status.downloaded
-                                      .toString()
-                                      .compareTo(nextLevel.downloaded) <
-                                  0)
-                                Text(
-                                    '下载量：${filesize(status.downloaded)}/${nextLevel.downloaded}',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color:
-                                          Theme.of(context).colorScheme.error,
-                                    )),
-                              if ((int.tryParse(calcWeeksDays(mySite.timeJoin)
-                                          .split('周')
-                                          .first) ??
-                                      0) <
-                                  nextLevel.days)
-                                Text(
-                                    '注册时间：${calcWeeksDays(mySite.timeJoin)}/${nextLevel.days}周 - ${calcWeeksDays(mySite.timeJoin).compareTo('${nextLevel.days}周')}',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color:
-                                          Theme.of(context).colorScheme.error,
-                                    )),
+                                PopupMenuItem<String>(
+                                  height: 13,
+                                  child: Text(
+                                      '上传量：${filesize(status.uploaded)}/${FileSizeConvert.parseToByte(nextLevel.uploaded) > 0 ? nextLevel.uploaded : FileSizeConvert.parseToFileSize((FileSizeConvert.parseToByte(nextLevel.downloaded) * nextLevel.ratio).toInt())}',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color:
+                                            Theme.of(context).colorScheme.error,
+                                      )),
+                                ),
+                              if (status.downloaded <
+                                  FileSizeConvert.parseToByte(
+                                      nextLevel.downloaded))
+                                PopupMenuItem<String>(
+                                  height: 13,
+                                  child: Text(
+                                      '下载量：${filesize(status.downloaded)}/${filesize(FileSizeConvert.parseToByte(nextLevel.downloaded))}',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color:
+                                            Theme.of(context).colorScheme.error,
+                                      )),
+                                ),
                               if (status.uploaded / status.downloaded <
                                   nextLevel.ratio)
-                                Text(
-                                    '分享率：${(status.uploaded / status.downloaded).toStringAsFixed(2)}/${nextLevel.ratio}',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color:
-                                          Theme.of(context).colorScheme.error,
-                                    )),
+                                PopupMenuItem<String>(
+                                  height: 13,
+                                  child: Text(
+                                      '分享率：${(status.uploaded / status.downloaded).toStringAsFixed(2)}/${nextLevel.ratio}',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color:
+                                            Theme.of(context).colorScheme.error,
+                                      )),
+                                ),
                               if (nextLevel.torrents > 0)
-                                Text('需发种数量：${nextLevel.torrents}',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color:
-                                          Theme.of(context).colorScheme.error,
-                                    )),
+                                PopupMenuItem<String>(
+                                  height: 13,
+                                  child: Text('需发种数量：${nextLevel.torrents}',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color:
+                                            Theme.of(context).colorScheme.error,
+                                      )),
+                                ),
                               if (nextLevel.score > 0 &&
                                   status.myScore < nextLevel.score)
-                                Text(
-                                    '做种积分：${status.myScore}/${nextLevel.score}',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color:
-                                          Theme.of(context).colorScheme.error,
-                                    )),
+                                PopupMenuItem<String>(
+                                  height: 13,
+                                  child: Text(
+                                      '做种积分：${status.myScore}/${nextLevel.score}',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color:
+                                            Theme.of(context).colorScheme.error,
+                                      )),
+                                ),
                               if (nextLevel.bonus > 0 &&
                                   status.myBonus < nextLevel.bonus)
-                                Text('魔力值：${status.myBonus}/${nextLevel.bonus}',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color:
-                                          Theme.of(context).colorScheme.error,
-                                    )),
+                                PopupMenuItem<String>(
+                                  height: 13,
+                                  child: Text(
+                                      '魔力值：${status.myBonus}/${nextLevel.bonus}',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color:
+                                            Theme.of(context).colorScheme.error,
+                                      )),
+                                ),
+                              if (nextLevel.days > 0)
+                                PopupMenuItem<String>(
+                                  height: 13,
+                                  child: Text(
+                                      '升级日期：${DateFormat('yyyy-MM-dd').format(DateTime.parse(mySite.timeJoin).add(Duration(days: nextLevel.days * 7)))}',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color:
+                                            Theme.of(context).colorScheme.error,
+                                      )),
+                                ),
                               if (nextLevel.keepAccount)
-                                Text('保留账号：${nextLevel.keepAccount}',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color:
-                                          Theme.of(context).colorScheme.error,
-                                    )),
+                                PopupMenuItem<String>(
+                                  height: 13,
+                                  child: Text('保留账号：${nextLevel.keepAccount}',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color:
+                                            Theme.of(context).colorScheme.error,
+                                      )),
+                                ),
                               if (nextLevel.graduation)
-                                Text('毕业：${nextLevel.graduation}',
+                                PopupMenuItem<String>(
+                                  height: 13,
+                                  child: Text('毕业：${nextLevel.graduation}',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color:
+                                            Theme.of(context).colorScheme.error,
+                                      )),
+                                ),
+                              PopupMenuItem<String>(
+                                height: 13,
+                                child: Text('即将获得：${nextLevel.rights}',
                                     style: TextStyle(
                                       fontSize: 10,
                                       color:
                                           Theme.of(context).colorScheme.error,
                                     )),
-                              Text('即将获得：${nextLevel.rights}',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: Theme.of(context).colorScheme.error,
-                                  )),
+                              ),
                             ],
                             ...rights
                                 .where((el) =>
@@ -613,6 +643,7 @@ class _MySitePagePageState extends State<MySitePage>
                                     !el.rights.trim().startsWith('同') &&
                                     !el.rights.trim().contains('同上'))
                                 .map((LevelInfo item) => PopupMenuItem<String>(
+                                      height: 13,
                                       child: Text(item.rights,
                                           style: TextStyle(
                                             fontSize: 10,
