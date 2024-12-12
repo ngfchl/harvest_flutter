@@ -359,7 +359,7 @@ class _MySitePagePageState extends State<MySitePage>
             ),
           ),
           subtitle: Text(
-            '这个站点有问题啊？删了吧',
+            '没有找到这个站点的配置文件，请清理站点配置缓存后重新加载数据！',
             style: TextStyle(
               color: Colors.red.shade200,
               fontSize: 10,
@@ -398,6 +398,10 @@ class _MySitePagePageState extends State<MySitePage>
           .firstWhereOrNull((item) => item.levelId == level.levelId + 1);
     }
 
+    int nextLevelToDownloadedByte =
+        FileSizeConvert.parseToByte(nextLevel?.downloaded ?? "0");
+    int nextLevelToUploadedByte =
+        FileSizeConvert.parseToByte(nextLevel?.uploaded ?? "0");
     return CustomCard(
       key: Key("${mySite.id}-${mySite.site}"),
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -520,30 +524,25 @@ class _MySitePagePageState extends State<MySitePage>
                                           Theme.of(context).colorScheme.primary,
                                     )),
                               ),
-                              if (status.uploaded <
-                                      FileSizeConvert.parseToByte(
-                                          nextLevel.uploaded) ||
+                              if (status.uploaded < nextLevelToUploadedByte ||
                                   status.uploaded <
-                                      FileSizeConvert.parseToByte(
-                                              nextLevel.downloaded) *
+                                      nextLevelToDownloadedByte *
                                           nextLevel.ratio)
                                 PopupMenuItem<String>(
                                   height: 13,
                                   child: Text(
-                                      '上传量：${filesize(status.uploaded)}/${FileSizeConvert.parseToByte(nextLevel.uploaded) > 0 ? nextLevel.uploaded : FileSizeConvert.parseToFileSize((FileSizeConvert.parseToByte(nextLevel.downloaded) * nextLevel.ratio).toInt())}',
+                                      '上传量：${filesize(status.uploaded)}/${nextLevelToUploadedByte > 0 ? nextLevel.uploaded : FileSizeConvert.parseToFileSize((nextLevelToDownloadedByte * nextLevel.ratio).toInt())}',
                                       style: TextStyle(
                                         fontSize: 10,
                                         color:
                                             Theme.of(context).colorScheme.error,
                                       )),
                                 ),
-                              if (status.downloaded <
-                                  FileSizeConvert.parseToByte(
-                                      nextLevel.downloaded))
+                              if (status.downloaded < nextLevelToDownloadedByte)
                                 PopupMenuItem<String>(
                                   height: 13,
                                   child: Text(
-                                      '下载量：${filesize(status.downloaded)}/${filesize(FileSizeConvert.parseToByte(nextLevel.downloaded))}',
+                                      '下载量：${filesize(status.downloaded)}/${filesize(nextLevelToDownloadedByte)}',
                                       style: TextStyle(
                                         fontSize: 10,
                                         color:
@@ -669,7 +668,7 @@ class _MySitePagePageState extends State<MySitePage>
           ),
           subtitle: status == null
               ? Text(
-                  '站点失联啦？',
+                  '新站点，还没有数据哦',
                   style: TextStyle(
                     color: Colors.red.shade200,
                     fontSize: 10,
