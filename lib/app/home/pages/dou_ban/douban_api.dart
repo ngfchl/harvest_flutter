@@ -354,7 +354,7 @@ class DouBanHelper {
     String tag = '热门',
     int pageLimit = 100,
   }) async {
-    String key = "DouBanHotMovie-$tag";
+    String key = "DouBanHot-$category-$tag";
     Map<String, dynamic> data = await SPUtil.getCache(key);
     if (data.isEmpty) {
       String url = 'j/search_subjects';
