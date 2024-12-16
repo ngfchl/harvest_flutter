@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:harvest/models/common_response.dart';
+import 'package:harvest/utils/logger_helper.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../../api/option.dart';
@@ -31,6 +32,7 @@ class SettingController extends GetxController {
     {'name': 'SSDForm', 'value': 'ssdforum'},
     {'name': 'CookieCloud', 'value': 'cookie_cloud'},
     {'name': 'FileList', 'value': 'FileList'},
+    {'name': 'TMDB配置', 'value': 'tmdb_api_auth'},
   ];
   List<SelectOption> optionChoice = [];
   Map<String, String> optionMap = {};
@@ -55,6 +57,12 @@ class SettingController extends GetxController {
     final res = await getOptionListApi();
     if (res.code == 0) {
       optionList = res.data;
+      var filter = optionList.where((item) => item.name == 'tmdb_api_auth');
+      Logger.instance.d(filter.first.toJson());
+      if (filter.isNotEmpty) {
+        SPUtil.setCache(
+            '${server}_option_tmdb_api', filter.first.toJson(), 3600 * 24 * 30);
+      }
     } else {
       Get.snackbar('获取配置列表出错', res.msg.toString());
     }

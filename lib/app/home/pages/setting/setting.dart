@@ -207,8 +207,122 @@ class SettingPage extends StatelessWidget {
       'FileList': _fileListForm,
       'notice_category_enable': _noticeCategoryEnableForm,
       'notice_content_item': _noticeContentItem,
+      'tmdb_api_auth': _tmdbApiAuthForm,
     };
     return optionForms;
+  }
+
+  Widget _tmdbApiAuthForm(Option? option, context) {
+    TextEditingController proxyController =
+        TextEditingController(text: option?.value.proxy ?? '');
+    TextEditingController apiKeyController =
+        TextEditingController(text: option?.value.apiKey ?? '');
+    TextEditingController secretController =
+        TextEditingController(text: option?.value.secretKey ?? '');
+    final isActive = (option == null ? true : option.isActive).obs;
+    final isEdit = (option == null).obs;
+    return Obx(() {
+      return CustomCard(
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ListTile(
+                title: const Text('TMDB配置'),
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                leading: option != null
+                    ? IconButton(
+                        onPressed: () async {
+                          option?.isActive = !option!.isActive;
+                          await controller.saveOption(option!);
+                        },
+                        icon: option!.isActive
+                            ? const Icon(Icons.check, color: Colors.green)
+                            : const Icon(Icons.clear, color: Colors.red))
+                    : const SizedBox.shrink(),
+                trailing: ExpandIcon(
+                  isExpanded: isEdit.value,
+                  onPressed: (value) {
+                    isEdit.value = !isEdit.value;
+                  },
+                  expandedColor: Colors.teal,
+                )),
+            if (isEdit.value)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    CustomTextField(
+                      autofocus: true,
+                      controller: apiKeyController,
+                      labelText: 'API密钥',
+                    ),
+                    CustomTextField(
+                        controller: secretController, labelText: '访问令牌'),
+                    CustomTextField(
+                        controller: proxyController, labelText: '代理地址'),
+                    SwitchListTile(
+                        dense: true,
+                        contentPadding:
+                            const EdgeInsets.symmetric(horizontal: 8),
+                        title: const Text('TMDB开关'),
+                        value: isActive.value,
+                        onChanged: (value) {
+                          isActive.value = value;
+                        }),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FullWidthButton(
+                              text: '保存',
+                              onPressed: () async {
+                                if (option == null) {
+                                  option = Option(
+                                    id: 0,
+                                    name: 'tmdb_api_auth',
+                                    isActive: isActive.value,
+                                    value: OptionValue(
+                                      appId: proxyController.text,
+                                      apiKey: apiKeyController.text,
+                                      secretKey: secretController.text,
+                                    ),
+                                  );
+                                } else {
+                                  option?.isActive = isActive.value;
+                                  option?.value = OptionValue(
+                                    appId: proxyController.text,
+                                    apiKey: apiKeyController.text,
+                                    secretKey: secretController.text,
+                                  );
+                                }
+                                final res =
+                                    await controller.saveOption(option!);
+                                if (res.code == 0) {
+                                  Get.back();
+                                  Get.snackbar('配置保存成功',
+                                      '${controller.optionMap['tmdb_api_auth']} 配置：${res.msg}',
+                                      colorText: Theme.of(context)
+                                          .colorScheme
+                                          .primary);
+                                  isEdit.value = false;
+                                } else {
+                                  Get.snackbar('配置保存失败',
+                                      '${controller.optionMap['tmdb_api_auth']} 配置出错啦：${res.msg}',
+                                      colorText:
+                                          Theme.of(context).colorScheme.error);
+                                }
+                              }),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _noticeCategoryEnableForm(Option? option, context) {
