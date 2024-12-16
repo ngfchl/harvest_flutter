@@ -1,12 +1,16 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_floating/floating/floating.dart';
 import 'package:get/get.dart';
 import 'package:harvest/app/home/pages/dou_ban/douban_api.dart';
 import 'package:harvest/common/meta_item.dart';
 import 'package:harvest/models/common_response.dart';
-import 'package:harvest/utils/logger_helper.dart' as LoggerHelper;
+import 'package:harvest/utils/logger_helper.dart' as logger_helper;
+import 'package:tmdb_api/tmdb_api.dart';
 import 'package:web_socket_channel/status.dart' as status;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -16,8 +20,10 @@ import '../../../torrent/torrent_controller.dart';
 import '../dou_ban/model.dart';
 import '../download/download_controller.dart';
 import '../models/my_site.dart';
+import '../models/option.dart';
 import '../my_site/controller.dart';
 import 'douban_search.dart';
+import 'models.dart';
 import 'models/douban.dart';
 import 'models/torrent_info.dart';
 
@@ -48,9 +54,10 @@ class AggSearchController extends GetxController
   bool sortReversed = false;
   bool isLoading = false;
   bool isDownloaderLoading = false;
+  Floating? floating;
   Map<String, MySite> mySiteMap = <String, MySite>{};
   List<Tab> tabs = [
-    const Tab(text: '豆瓣搜索'),
+    const Tab(text: '影视查询'),
     const Tab(text: '资源搜索'),
   ];
   List<MetaDataItem> sortKeyList = [
@@ -79,9 +86,12 @@ class AggSearchController extends GetxController
   List<String> saleStatusList = [];
   List<String> selectedSaleStatusList = [];
   bool hrKey = false;
-
+  TMDB? tmdbClient;
+  Option? option;
+  SearchResults? results;
   late TabController tabController;
   late VideoDetail selectVideoDetail;
+  String baseUrl = SPUtil.getLocalStorage('server');
 
   @override
   void onInit() async {
@@ -91,8 +101,106 @@ class AggSearchController extends GetxController
       {'name': '分类', 'value': succeedCategories},
     ]);
     tabController = TabController(length: 2, vsync: this);
+    // 初始化 tmdb 客户端
+    await initTmdbClient();
+    logger_helper.Logger.instance.d(tmdbClient);
+
     await initData();
     super.onInit();
+  }
+
+  initTmdbClient() async {
+    // // 创建自定义 Dio 实例
+    Map<String, dynamic> map =
+        await SPUtil.getCache('${baseUrl}_option_tmdb_api');
+    logger_helper.Logger.instance.d(map);
+    if (map.isEmpty) {
+      logger_helper.Logger.instance.e('从缓存获取 TMDB 配置失败！');
+      return;
+    }
+    option = Option.fromJson(map);
+    if (option?.isActive != true) {
+      logger_helper.Logger.instance.e('TMDB 配置已禁用！');
+      return;
+    }
+    Dio? dio;
+    if (option?.value.proxy?.isNotEmpty == true) {
+      dio = Dio();
+
+      // 配置代理
+      (dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
+        final httpClient = HttpClient();
+
+        httpClient.findProxy = (uri) {
+          // 设置代理地址，例如 http://127.0.0.1:8888
+          return "PROXY ${option?.value.proxy}";
+        };
+        httpClient.badCertificateCallback =
+            (cert, host, port) => true; // 忽略 HTTPS 证书错误（开发调试时使用）
+
+        return httpClient;
+      };
+    }
+
+    tmdbClient = TMDB(
+      ApiKeys(option!.value.apiKey!, option!.value.secretKey!),
+      defaultLanguage: 'zh-CN',
+      dio: dio,
+    );
+    logger_helper.Logger.instance.d(tmdbClient);
+
+    update();
+  }
+
+  searchTMDB() async {
+    if (searchKeyController.text.isEmpty) {
+      return;
+    }
+    logger_helper.Logger.instance.d(searchKeyController.text);
+    Map map = await tmdbClient!.v3.search.queryMulti(searchKeyController.text);
+    results = SearchResults.fromJson(map as Map<String, dynamic>);
+    results?.results.sort((a, b) => b.voteAverage.compareTo(a.voteAverage));
+    logger_helper.Logger.instance.d(results?.results);
+    update();
+  }
+
+  getTMDBMovieDetail(int id) async {
+    var res = await tmdbClient!.v3.movies.getDetails(id);
+    logger_helper.Logger.instance.d(res);
+    return MovieDetail.fromJson(res as Map<String, dynamic>);
+  }
+
+  getTMDBTVDetail(int id) async {
+    var res = await tmdbClient!.v3.tv.getDetails(id);
+    logger_helper.Logger.instance.d(res);
+    return TvShowDetail.fromJson(res as Map<String, dynamic>);
+  }
+
+  getTMDBDetail(info) {
+    if (info.mediaType == 'movie') {
+      return getTMDBMovieDetail(info.id);
+    } else {
+      return getTMDBTVDetail(info.id);
+    }
+  }
+
+  doTMDBSearch(info) async {
+    String searchKey;
+    String? imdbId;
+    if (info.runtimeType == MediaItem) {
+      var detail = await getTMDBDetail(info);
+      searchKey = detail.title;
+      imdbId = detail.imdbId;
+    } else {
+      searchKey = info.title;
+      imdbId = info.imdbId;
+    }
+
+    if (imdbId?.isNotEmpty == true) {
+      searchKey = "$imdbId||$searchKey";
+    }
+    searchKeyController.text = searchKey;
+    await doWebsocketSearch();
   }
 
   initData() async {
@@ -106,7 +214,10 @@ class AggSearchController extends GetxController
     mySiteMap = {
       for (var mysite in mySiteController.mySiteList) mysite.site: mysite
     };
-    await downloadController.getDownloaderListFromServer();
+    if (downloadController.dataList.isEmpty) {
+      await downloadController.getDownloaderListFromServer();
+    }
+
     update();
   }
 
@@ -199,7 +310,7 @@ class AggSearchController extends GetxController
 
   doDouBanSearch() async {
     if (searchKeyController.text.isEmpty) {
-      LoggerHelper.Logger.instance.d("搜索关键字不能为空");
+      logger_helper.Logger.instance.d("搜索关键字不能为空");
       return;
     }
     DouBanSearchHelper helper = DouBanSearchHelper();
@@ -210,8 +321,9 @@ class AggSearchController extends GetxController
       q: searchKeyController.text,
     );
     showDouBanResults = response.data!;
-    LoggerHelper.Logger.instance.d(showDouBanResults);
-    showDouBanResults.sort((a, b) => b.target.year.compareTo(a.target.year));
+    logger_helper.Logger.instance.d(showDouBanResults);
+    showDouBanResults
+        .sort((a, b) => b.target.rating.value.compareTo(a.target.rating.value));
     // showResults.clear();
     isLoading = false;
     update();
@@ -249,11 +361,10 @@ class AggSearchController extends GetxController
     changeTab(1);
     // 初始化站点数据
     if (mySiteMap.isEmpty) {
-      LoggerHelper.Logger.instance.d('重新加载站点列表');
+      logger_helper.Logger.instance.d('重新加载站点列表');
       await initData();
     }
     try {
-      String baseUrl = SPUtil.getLocalStorage('server');
       final wsUrl =
           Uri.parse('${baseUrl.replaceFirst('http', 'ws')}/api/ws/search');
       channel = WebSocketChannel.connect(wsUrl);
@@ -267,7 +378,7 @@ class AggSearchController extends GetxController
       channel.stream.listen((message) {
         CommonResponse response =
             CommonResponse.fromJson(json.decode(message), (p0) => p0);
-        LoggerHelper.Logger.instance.i(response.msg);
+        logger_helper.Logger.instance.i(response.msg);
         if (response.code == 0) {
           List<SearchTorrentInfo> torrentInfoList =
               List<Map<String, dynamic>>.from(response.data)
@@ -281,7 +392,7 @@ class AggSearchController extends GetxController
           if (succeedTags.isNotEmpty) {
             succeedTags = succeedTags.toSet().toList();
             succeedTags.sort();
-            LoggerHelper.Logger.instance.d(succeedTags);
+            logger_helper.Logger.instance.d(succeedTags);
           }
           succeedResolution.addAll(torrentInfoList
               .map((item) => resolutionKeyList
@@ -296,7 +407,7 @@ class AggSearchController extends GetxController
               .whereType<String>() // 将结果转换为 List<String>
               .toList());
           succeedResolution = succeedResolution.toSet().toList();
-          LoggerHelper.Logger.instance.d(succeedResolution);
+          logger_helper.Logger.instance.d(succeedResolution);
           // 获取种子分类，并去重
           succeedCategories
               .addAll(torrentInfoList.map((e) => e.category).toList());
@@ -316,16 +427,16 @@ class AggSearchController extends GetxController
           update();
         }
       }, onError: (err) {
-        LoggerHelper.Logger.instance.e('搜索出错啦： ${err.toString()}');
+        logger_helper.Logger.instance.e('搜索出错啦： ${err.toString()}');
         searchMsg.add({"success": false, "msg": '搜索出错啦：$err'});
         cancelSearch();
       }, onDone: () {
-        LoggerHelper.Logger.instance.e('搜索完成啦！');
+        logger_helper.Logger.instance.e('搜索完成啦！');
         cancelSearch();
       });
     } catch (e, trace) {
-      LoggerHelper.Logger.instance.e(e);
-      LoggerHelper.Logger.instance.d(trace);
+      logger_helper.Logger.instance.e(e);
+      logger_helper.Logger.instance.d(trace);
       searchMsg.add({"success": false, "msg": '搜索出错啦：$e'});
       cancelSearch();
     }
@@ -382,8 +493,8 @@ class AggSearchController extends GetxController
 
       return torrentController.categoryList;
     } catch (e, trace) {
-      LoggerHelper.Logger.instance.e(e);
-      LoggerHelper.Logger.instance.e(trace);
+      logger_helper.Logger.instance.e(e);
+      logger_helper.Logger.instance.e(trace);
       isDownloaderLoading = false;
       return {};
     }

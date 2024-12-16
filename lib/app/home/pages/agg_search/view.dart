@@ -27,6 +27,7 @@ import '../../../routes/app_pages.dart';
 import '../models/my_site.dart';
 import 'controller.dart';
 import 'download_form.dart';
+import 'models.dart';
 import 'models/douban.dart';
 
 class AggSearchPage extends StatefulWidget {
@@ -113,7 +114,11 @@ class _AggSearchPageState extends State<AggSearchPage>
                                         Get.snackbar("提示", "搜索关键字不能为空！");
                                         return;
                                       }
-                                      await controller.doDouBanSearch();
+                                      if (controller.tmdbClient != null) {
+                                        await controller.searchTMDB();
+                                      } else {
+                                        await controller.doDouBanSearch();
+                                      }
                                     } else {
                                       await controller.doWebsocketSearch();
                                     }
@@ -135,6 +140,20 @@ class _AggSearchPageState extends State<AggSearchPage>
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
+                                        // if (controller.tmdbClient != null)
+                                        PopupMenuItem<String>(
+                                          child: Text(
+                                            'T M D B',
+                                            style: TextStyle(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .secondary,
+                                            ),
+                                          ),
+                                          onTap: () async {
+                                            await controller.searchTMDB();
+                                          },
+                                        ),
                                         PopupMenuItem<String>(
                                           child: Text(
                                             '来自豆瓣',
@@ -146,6 +165,35 @@ class _AggSearchPageState extends State<AggSearchPage>
                                           ),
                                           onTap: () async {
                                             await controller.doDouBanSearch();
+                                          },
+                                        ),
+                                        PopupMenuItem<String>(
+                                          child: Text(
+                                            '清理tmdb',
+                                            style: TextStyle(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .secondary,
+                                            ),
+                                          ),
+                                          onTap: () async {
+                                            controller.results?.results.clear();
+                                            controller.update();
+                                          },
+                                        ),
+                                        PopupMenuItem<String>(
+                                          child: Text(
+                                            '清理豆瓣',
+                                            style: TextStyle(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .secondary,
+                                            ),
+                                          ),
+                                          onTap: () async {
+                                            controller.showDouBanResults
+                                                .clear();
+                                            controller.update();
                                           },
                                         ),
                                         PopupMenuItem<String>(
@@ -248,13 +296,33 @@ class _AggSearchPageState extends State<AggSearchPage>
                       child: TabBarView(
                           controller: controller.tabController,
                           children: [
-                            ListView.builder(
-                              itemCount: controller.showDouBanResults.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                DouBanSearchResult info =
-                                    controller.showDouBanResults[index];
-                                return showDouBanSearchInfo(info);
-                              },
+                            Column(
+                              children: [
+                                if (controller.results != null &&
+                                    controller.results?.results.isNotEmpty ==
+                                        true)
+                                  Expanded(
+                                    child: ListView.builder(
+                                        itemCount:
+                                            controller.results?.results.length,
+                                        itemBuilder: (context, int index) =>
+                                            mediaItemCard(controller
+                                                .results?.results[index])),
+                                  ),
+                                if (controller.showDouBanResults.isNotEmpty)
+                                  Expanded(
+                                    child: ListView.builder(
+                                      itemCount:
+                                          controller.showDouBanResults.length,
+                                      itemBuilder:
+                                          (BuildContext context, int index) {
+                                        DouBanSearchResult info =
+                                            controller.showDouBanResults[index];
+                                        return showDouBanSearchInfo(info);
+                                      },
+                                    ),
+                                  ),
+                              ],
                             ),
                             ListView.builder(
                               itemCount: controller.showResults.length,
@@ -370,6 +438,210 @@ class _AggSearchPageState extends State<AggSearchPage>
     super.dispose();
   }
 
+  Widget mediaItemCard(MediaItem media) {
+    String urlPrefix = 'https://media.themoviedb.org/t/p/w94_and_h141_bestv2';
+    String posterPath = '$urlPrefix${media.posterPath}';
+    bool isMovie = media.mediaType == 'movie';
+    return CustomCard(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      child: Slidable(
+        key: ValueKey('${media.title}_${media.id}'),
+        startActionPane: ActionPane(
+          motion: const ScrollMotion(),
+          extentRatio: 0.25,
+          children: [
+            SlidableAction(
+              flex: 1,
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              onPressed: (context) async {
+                _showTMDBDetail(media);
+              },
+              backgroundColor: const Color(0xFF0392CF),
+              foregroundColor: Colors.white,
+              // icon: Icons.edit,
+              label: '详情',
+            ),
+          ],
+        ),
+        endActionPane: ActionPane(
+          motion: const ScrollMotion(),
+          extentRatio: 0.25,
+          children: [
+            SlidableAction(
+              flex: 1,
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              onPressed: (context) async {
+                await controller.doTMDBSearch(media);
+              },
+              backgroundColor: const Color(0xFFFE4A49),
+              foregroundColor: Colors.white,
+              // icon: Icons.delete,
+              label: '搜索',
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            InkWell(
+              onTap: () {
+                Get.defaultDialog(
+                    title: '海报预览',
+                    content: InkWell(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(5),
+                        child: CachedNetworkImage(
+                          imageUrl: posterPath,
+                          placeholder: (context, url) =>
+                              const Center(child: CircularProgressIndicator()),
+                          errorWidget: (context, url, error) => const Image(
+                              image: AssetImage('assets/images/logo.png')),
+                          fit: BoxFit.fitWidth,
+                        ),
+                      ),
+                    ));
+              },
+              child: SizedBox(
+                width: 55,
+                child: Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(5),
+                      child: CachedNetworkImage(
+                        imageUrl: posterPath,
+                        errorWidget: (context, url, error) =>
+                            const SizedBox.shrink(),
+                        progressIndicatorBuilder:
+                            (context, url, downloadProgress) => Center(
+                                child: CircularProgressIndicator(
+                                    value: downloadProgress.progress)),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      left: 0,
+                      child: CustomTextTag(
+                        labelText: isMovie ? '电影' : '电视剧',
+                        // icon: Icon(
+                        //   isMovie ? Icons.movie_outlined : Icons.tv_outlined,
+                        //   size: 9,
+                        //   color: Colors.white70,
+                        // ),
+                        backgroundColor: Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withOpacity(0.7),
+                        labelColor: Theme.of(context).colorScheme.onPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Expanded(
+              child: Column(
+                children: [
+                  ListTile(
+                    dense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                    title: EllipsisText(
+                      text: media.title,
+                      ellipsis: "...",
+                      maxLines: 1,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    subtitle: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          media.releaseDate,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        media.voteCount == 0
+                            ? const Text(
+                                '暂无评分',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.blue,
+                                ),
+                              )
+                            : Row(
+                                children: [
+                                  Tooltip(
+                                    message: '评分：${media.voteAverage}',
+                                    child: RatingBar.readOnly(
+                                      initialRating: media.voteAverage / 2,
+                                      filledIcon: Icons.star,
+                                      emptyIcon: Icons.star_border,
+                                      emptyColor: Colors.redAccent,
+                                      filledColor:
+                                          Theme.of(context).colorScheme.primary,
+                                      halfFilledColor: Colors.amberAccent,
+                                      halfFilledIcon: Icons.star_half,
+                                      maxRating: 5,
+                                      size: 18,
+                                    ),
+                                  ),
+                                  Text(
+                                    media.voteAverage.toString(),
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .secondary,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  Text(
+                                    "(${media.voteCount}评分)",
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .secondary,
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      ],
+                    ),
+                    // trailing: const Icon(Icons.tv_outlined),
+                    onTap: () async {
+                      _showTMDBDetail(media);
+                    },
+                    onLongPress: () async {
+                      await controller.doTMDBSearch(media);
+                    },
+                  ),
+                  Container(
+                    alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: EllipsisText(
+                      text: media.overview.trim(),
+                      maxLines: 2,
+                      ellipsis: '...',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget showTorrentInfo(SearchTorrentInfo info) {
     WebSite? website = controller.mySiteController.webSiteList[info.siteId];
     MySite? mySite = controller.mySiteMap[info.siteId];
@@ -433,17 +705,20 @@ class _AggSearchPageState extends State<AggSearchPage>
                       title: '海报预览',
                       content: InkWell(
                         onTap: () => Navigator.of(context).pop(),
-                        child: CachedNetworkImage(
-                          imageUrl: imgUrl,
-                          placeholder: (context, url) =>
-                              const Center(child: CircularProgressIndicator()),
-                          errorWidget: (context, url, error) => const Image(
-                              image: AssetImage('assets/images/logo.png')),
-                          fit: BoxFit.fitWidth,
-                          httpHeaders: {
-                            "user-agent": mySite.userAgent.toString(),
-                            "Cookie": mySite.cookie.toString(),
-                          },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(5),
+                          child: CachedNetworkImage(
+                            imageUrl: imgUrl,
+                            placeholder: (context, url) => const Center(
+                                child: CircularProgressIndicator()),
+                            errorWidget: (context, url, error) => const Image(
+                                image: AssetImage('assets/images/logo.png')),
+                            fit: BoxFit.fitWidth,
+                            httpHeaders: {
+                              "user-agent": mySite.userAgent.toString(),
+                              "Cookie": mySite.cookie.toString(),
+                            },
+                          ),
                         ),
                       ));
                 },
@@ -452,18 +727,21 @@ class _AggSearchPageState extends State<AggSearchPage>
                   child: Stack(
                       alignment: AlignmentDirectional.bottomCenter,
                       children: [
-                        CachedNetworkImage(
-                          imageUrl: imgUrl,
-                          placeholder: (context, url) =>
-                              const Center(child: CircularProgressIndicator()),
-                          errorWidget: (context, url, error) => const Image(
-                              image: AssetImage('assets/images/logo.png'),
-                              fit: BoxFit.fitWidth),
-                          fit: BoxFit.fitWidth,
-                          httpHeaders: {
-                            "user-agent": mySite.userAgent.toString(),
-                            "Cookie": mySite.cookie.toString(),
-                          },
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(5),
+                          child: CachedNetworkImage(
+                            imageUrl: imgUrl,
+                            placeholder: (context, url) => const Center(
+                                child: CircularProgressIndicator()),
+                            errorWidget: (context, url, error) => const Image(
+                                image: AssetImage('assets/images/logo.png'),
+                                fit: BoxFit.fitWidth),
+                            fit: BoxFit.fitWidth,
+                            httpHeaders: {
+                              "user-agent": mySite.userAgent.toString(),
+                              "Cookie": mySite.cookie.toString(),
+                            },
+                          ),
                         ),
                         CustomTextTag(
                           labelText: website.name.toString(),
@@ -1028,29 +1306,35 @@ class _AggSearchPageState extends State<AggSearchPage>
                               title: '海报预览',
                               content: InkWell(
                                 onTap: () => Navigator.of(context).pop(),
-                                child: CachedNetworkImage(
-                                  imageUrl:
-                                      '$cacheServer${mediaInfo.target.coverUrl}',
-                                  errorWidget: (context, url, error) =>
-                                      const Image(
-                                          image: AssetImage(
-                                              'assets/images/logo.png')),
-                                  fit: BoxFit.fitWidth,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(5),
+                                  child: CachedNetworkImage(
+                                    imageUrl:
+                                        '$cacheServer${mediaInfo.target.coverUrl}',
+                                    errorWidget: (context, url, error) =>
+                                        const Image(
+                                            image: AssetImage(
+                                                'assets/images/logo.png')),
+                                    fit: BoxFit.fitWidth,
+                                  ),
                                 ),
                               ));
                         },
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(8.0),
-                          child: CachedNetworkImage(
-                            imageUrl:
-                                '$cacheServer${mediaInfo.target.coverUrl}',
-                            placeholder: (context, url) => const Center(
-                                child: CircularProgressIndicator()),
-                            errorWidget: (context, url, error) =>
-                                Image.asset('assets/images/logo.png'),
-                            width: 120,
-                            height: 180,
-                            fit: BoxFit.fitWidth,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(5),
+                            child: CachedNetworkImage(
+                              imageUrl:
+                                  '$cacheServer${mediaInfo.target.coverUrl}',
+                              placeholder: (context, url) => const Center(
+                                  child: CircularProgressIndicator()),
+                              errorWidget: (context, url, error) =>
+                                  Image.asset('assets/images/logo.png'),
+                              width: 120,
+                              height: 180,
+                              fit: BoxFit.fitWidth,
+                            ),
                           ),
                         ),
                       ),
@@ -1152,20 +1436,24 @@ class _AggSearchPageState extends State<AggSearchPage>
                                             content: InkWell(
                                           onTap: () =>
                                               Navigator.of(context).pop(),
-                                          child: CachedNetworkImage(
-                                            imageUrl: '$cacheServer$imgUrl',
-                                            errorWidget: (context, url,
-                                                    error) =>
-                                                const Image(
-                                                    image: AssetImage(
-                                                        'assets/images/logo.png')),
-                                            fit: BoxFit.fitWidth,
+                                          child: ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(5),
+                                            child: CachedNetworkImage(
+                                              imageUrl: '$cacheServer$imgUrl',
+                                              errorWidget: (context, url,
+                                                      error) =>
+                                                  const Image(
+                                                      image: AssetImage(
+                                                          'assets/images/logo.png')),
+                                              fit: BoxFit.fitWidth,
+                                            ),
                                           ),
                                         ));
                                       },
                                       child: ClipRRect(
                                         borderRadius:
-                                            BorderRadius.circular(8.0),
+                                            BorderRadius.circular(5.0),
                                         child: CachedNetworkImage(
                                           imageUrl: '$cacheServer$imgUrl',
                                           placeholder: (context, url) =>
@@ -1202,21 +1490,26 @@ class _AggSearchPageState extends State<AggSearchPage>
                                                     onTap: () =>
                                                         Navigator.of(context)
                                                             .pop(),
-                                                    child: CachedNetworkImage(
-                                                      imageUrl:
-                                                          '$cacheServer${worker.imgUrl}',
-                                                      errorWidget: (context,
-                                                              url, error) =>
-                                                          const Image(
-                                                              image: AssetImage(
-                                                                  'assets/images/logo.png')),
-                                                      fit: BoxFit.fitWidth,
+                                                    child: ClipRRect(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              5),
+                                                      child: CachedNetworkImage(
+                                                        imageUrl:
+                                                            '$cacheServer${worker.imgUrl}',
+                                                        errorWidget: (context,
+                                                                url, error) =>
+                                                            const Image(
+                                                                image: AssetImage(
+                                                                    'assets/images/logo.png')),
+                                                        fit: BoxFit.fitWidth,
+                                                      ),
                                                     ),
                                                   ));
                                             },
                                             child: ClipRRect(
                                               borderRadius:
-                                                  BorderRadius.circular(8.0),
+                                                  BorderRadius.circular(5),
                                               child: CachedNetworkImage(
                                                 imageUrl:
                                                     '$cacheServer${worker.imgUrl}',
@@ -1329,7 +1622,7 @@ class _AggSearchPageState extends State<AggSearchPage>
   Widget showDouBanSearchInfo(DouBanSearchResult info) {
     return InkWell(
       onTap: () async {
-        _buildOperateDialog(info);
+        await _buildOperateDialog(info);
       },
       onDoubleTap: () async {
         if (!await launchUrl(Uri.parse(info.target.uri))) {
@@ -1350,7 +1643,7 @@ class _AggSearchPageState extends State<AggSearchPage>
               flex: 1,
               borderRadius: const BorderRadius.all(Radius.circular(8)),
               onPressed: (context) async {
-                _buildOperateDialog(info);
+                await _buildOperateDialog(info);
               },
               backgroundColor: const Color(0xFF0392CF),
               foregroundColor: Colors.white,
@@ -1386,13 +1679,16 @@ class _AggSearchPageState extends State<AggSearchPage>
                       title: '海报预览',
                       content: InkWell(
                         onTap: () => Navigator.of(context).pop(),
-                        child: CachedNetworkImage(
-                          imageUrl: "$cacheServer${info.target.coverUrl}",
-                          placeholder: (context, url) =>
-                              const Center(child: CircularProgressIndicator()),
-                          errorWidget: (context, url, error) => const Image(
-                              image: AssetImage('assets/images/logo.png')),
-                          fit: BoxFit.fitWidth,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(5),
+                          child: CachedNetworkImage(
+                            imageUrl: "$cacheServer${info.target.coverUrl}",
+                            placeholder: (context, url) => const Center(
+                                child: CircularProgressIndicator()),
+                            errorWidget: (context, url, error) => const Image(
+                                image: AssetImage('assets/images/logo.png')),
+                            fit: BoxFit.fitWidth,
+                          ),
                         ),
                       ));
                 },
@@ -1401,14 +1697,17 @@ class _AggSearchPageState extends State<AggSearchPage>
                   child: Stack(
                       alignment: AlignmentDirectional.bottomCenter,
                       children: [
-                        CachedNetworkImage(
-                          imageUrl: "$cacheServer${info.target.coverUrl}",
-                          placeholder: (context, url) =>
-                              const Center(child: CircularProgressIndicator()),
-                          errorWidget: (context, url, error) => const Image(
-                              image: AssetImage('assets/images/logo.png'),
-                              fit: BoxFit.fitWidth),
-                          fit: BoxFit.fitWidth,
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(5),
+                          child: CachedNetworkImage(
+                            imageUrl: "$cacheServer${info.target.coverUrl}",
+                            placeholder: (context, url) => const Center(
+                                child: CircularProgressIndicator()),
+                            errorWidget: (context, url, error) => const Image(
+                                image: AssetImage('assets/images/logo.png'),
+                                fit: BoxFit.fitWidth),
+                            fit: BoxFit.fitWidth,
+                          ),
                         ),
                         CustomTextTag(
                           labelText: info.typeName,
@@ -1475,7 +1774,13 @@ class _AggSearchPageState extends State<AggSearchPage>
                         ],
                       ),
                     )
-                  : null,
+                  : Text(
+                      "暂无评分",
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
+                        fontSize: 10,
+                      ),
+                    ),
               description: Padding(
                 padding: const EdgeInsets.only(top: 5.0),
                 child: Text(
@@ -1492,6 +1797,196 @@ class _AggSearchPageState extends State<AggSearchPage>
           ],
         ),
       )),
+    );
+  }
+
+  void _showTMDBDetail(info) async {
+    var mediaInfo = await controller.getTMDBDetail(info);
+    bool isMovie = info.mediaType == 'movie';
+    String urlPrefix = 'https://media.themoviedb.org/t/p/w94_and_h141_bestv2';
+    String posterPath = '$urlPrefix${mediaInfo.posterPath}';
+    LoggerHelper.Logger.instance.d(mediaInfo);
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height * 0.5;
+    Get.bottomSheet(
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(2),
+          topRight: Radius.circular(2),
+        ),
+      ),
+      isScrollControlled: true,
+      enableDrag: true,
+      GetBuilder<AggSearchController>(builder: (controller) {
+        return CustomCard(
+            height: height,
+            width: width,
+            child: Column(
+              children: [
+                Expanded(
+                  child: ListView(
+                    children: [
+                      Row(
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              Get.defaultDialog(
+                                  title: '海报预览',
+                                  content: InkWell(
+                                    onTap: () => Navigator.of(context).pop(),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(5),
+                                      child: CachedNetworkImage(
+                                        imageUrl: posterPath,
+                                        errorWidget: (context, url, error) =>
+                                            const Image(
+                                                image: AssetImage(
+                                                    'assets/images/logo.png')),
+                                        fit: BoxFit.fitWidth,
+                                      ),
+                                    ),
+                                  ));
+                            },
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8.0),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(5),
+                                child: CachedNetworkImage(
+                                  imageUrl: posterPath,
+                                  placeholder: (context, url) => const Center(
+                                      child: CircularProgressIndicator()),
+                                  errorWidget: (context, url, error) =>
+                                      Image.asset('assets/images/logo.png'),
+                                  width: 120,
+                                  height: 180,
+                                  fit: BoxFit.fitWidth,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                              child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${mediaInfo.title}${mediaInfo.releaseDate}',
+                                  style: TextStyle(
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                // Text(
+                                //   '${mediaInfo.director.map((e) => e.name).join('/')}/${mediaInfo.genres}/${mediaInfo.releaseDate}/${mediaInfo.duration}',
+                                //   overflow: TextOverflow.ellipsis,
+                                //   maxLines: 2,
+                                // ),
+                                // Text(
+                                //   mediaInfo.writer.map((e) => e.name).join(' / '),
+                                //   overflow: TextOverflow.ellipsis,
+                                // ),
+                                // Text(
+                                //   mediaInfo.actors.map((e) => e.name).join(' / '),
+                                //   overflow: TextOverflow.ellipsis,
+                                // ),
+                                if (mediaInfo.genres.isNotEmpty)
+                                  SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Wrap(
+                                      children: [
+                                        ...mediaInfo.genres.map<CustomTextTag>(
+                                            (Genre item) => CustomTextTag(
+                                                  labelText: item.name,
+                                                )),
+                                      ],
+                                    ),
+                                  ),
+
+                                // Text(mediaInfo.region.toString()),
+                                // Text(mediaInfo.language.toString()),
+                                // Text(mediaInfo.season.toString()),
+                                // Text(mediaInfo.episode.toString()),
+                                mediaInfo.voteCount > 0
+                                    ? Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          RatingBar.readOnly(
+                                            initialRating:
+                                                mediaInfo.voteAverage / 2,
+                                            filledIcon: Icons.star,
+                                            emptyIcon: Icons.star_border,
+                                            emptyColor: Colors.redAccent,
+                                            filledColor: Theme.of(context)
+                                                .colorScheme
+                                                .primary,
+                                            halfFilledColor: Colors.amberAccent,
+                                            halfFilledIcon: Icons.star_half,
+                                            maxRating: 5,
+                                            size: 18,
+                                          ),
+                                          Text(
+                                            '${mediaInfo.voteCount} 人评价',
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.blue,
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    : const Text(
+                                        '暂无评分',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.blue,
+                                        ),
+                                      ),
+                                if (mediaInfo.imdbId != null)
+                                  Text('iMdb: ${mediaInfo.imdbId}'),
+                              ],
+                            ),
+                          ))
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(mediaInfo.overview),
+                      const SizedBox(height: 8),
+                    ],
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        Get.back();
+                        controller.doTMDBSearch(mediaInfo);
+                      },
+                      icon: Icon(
+                        Icons.search,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                      label: const Text('搜索'),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        await _openMediaInfoDetail(mediaInfo);
+                      },
+                      icon: Icon(
+                        Icons.info_outline,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                      label: const Text('详情'),
+                    ),
+                  ],
+                ),
+              ],
+            ));
+      }),
     );
   }
 }
