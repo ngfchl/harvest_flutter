@@ -1,4 +1,6 @@
-class Movie {
+import '../../../../utils/logger_helper.dart';
+
+class MediaItem {
   final int id;
   final String title;
   final String originalTitle;
@@ -11,11 +13,12 @@ class Movie {
   final double voteAverage;
   final int voteCount;
   final String releaseDate;
-  final bool adult;
-  final bool video;
   final List<int> genreIds;
+  final bool adult;
+  final bool? video; // Movie 特有属性
+  final List<String>? originCountry; // TvShow 特有属性
 
-  Movie({
+  MediaItem({
     required this.id,
     required this.title,
     required this.originalTitle,
@@ -28,85 +31,52 @@ class Movie {
     required this.voteAverage,
     required this.voteCount,
     required this.releaseDate,
-    required this.adult,
-    required this.video,
-    required this.genreIds,
-  });
-
-  factory Movie.fromJson(Map<String, dynamic> json) {
-    return Movie(
-      id: json['id'],
-      title: json['title'] ?? '',
-      originalTitle: json['original_title'] ?? '',
-      overview: json['overview'] ?? '',
-      posterPath: json['poster_path'] ?? '',
-      backdropPath: json['backdrop_path'] ?? '',
-      mediaType: json['media_type'] ?? '',
-      originalLanguage: json['original_language'] ?? '',
-      popularity: (json['popularity'] as num?)?.toDouble() ?? 0.0,
-      voteAverage: (json['vote_average'] as num?)?.toDouble() ?? 0.0,
-      voteCount: json['vote_count'] ?? 0,
-      releaseDate: json['release_date'] ?? '',
-      adult: json['adult'] ?? false,
-      video: json['video'] ?? false,
-      genreIds: List<int>.from(json['genre_ids'] ?? []),
-    );
-  }
-}
-
-class TvShow {
-  final int id;
-  final String title;
-  final String originalName;
-  final String overview;
-  final String posterPath;
-  final String backdropPath;
-  final String mediaType;
-  final String originalLanguage;
-  final double popularity;
-  final double voteAverage;
-  final int voteCount;
-  final String firstAirDate;
-  final List<String> originCountry;
-  final List<int> genreIds;
-  final bool adult;
-
-  TvShow({
-    required this.id,
-    required this.title,
-    required this.originalName,
-    required this.overview,
-    required this.posterPath,
-    required this.backdropPath,
-    required this.mediaType,
-    required this.originalLanguage,
-    required this.popularity,
-    required this.voteAverage,
-    required this.voteCount,
-    required this.firstAirDate,
-    required this.originCountry,
     required this.genreIds,
     required this.adult,
+    this.video, // 可选属性
+    this.originCountry, // 可选属性
   });
 
-  factory TvShow.fromJson(Map<String, dynamic> json) {
-    return TvShow(
-      id: json['id'],
-      title: json['name'] ?? '',
-      originalName: json['original_name'] ?? '',
-      overview: json['overview'] ?? '',
-      posterPath: json['poster_path'] ?? '',
-      backdropPath: json['backdrop_path'] ?? '',
-      mediaType: json['media_type'] ?? '',
-      originalLanguage: json['original_language'] ?? '',
-      popularity: (json['popularity'] as num?)?.toDouble() ?? 0.0,
-      voteAverage: (json['vote_average'] as num?)?.toDouble() ?? 0.0,
-      voteCount: json['vote_count'] ?? 0,
-      firstAirDate: json['first_air_date'] ?? '',
-      originCountry: List<String>.from(json['origin_country'] ?? []),
-      genreIds: List<int>.from(json['genre_ids'] ?? []),
-      adult: json['adult'] ?? false,
-    );
+  factory MediaItem.fromJson(Map<String, dynamic> json) {
+    if (json['media_type'] == 'movie') {
+      return MediaItem(
+        id: json['id'],
+        title: json['title'] ?? '',
+        originalTitle: json['original_title'] ?? '',
+        overview: json['overview'] ?? '',
+        posterPath: json['poster_path'] ?? '',
+        backdropPath: json['backdrop_path'] ?? '',
+        mediaType: json['media_type'] ?? '',
+        originalLanguage: json['original_language'] ?? '',
+        popularity: (json['popularity'] as num?)?.toDouble() ?? 0.0,
+        voteAverage: (json['vote_average'] as num?)?.toDouble() ?? 0.0,
+        voteCount: json['vote_count'] ?? 0,
+        releaseDate: json['release_date'] ?? '',
+        genreIds: List<int>.from(json['genre_ids'] ?? []),
+        adult: json['adult'] ?? false,
+        video: json['video'] ?? false,
+      );
+    } else if (json['media_type'] == 'tv') {
+      return MediaItem(
+        id: json['id'],
+        title: json['name'] ?? '',
+        originalTitle: json['original_name'] ?? '',
+        overview: json['overview'] ?? '',
+        posterPath: json['poster_path'] ?? '',
+        backdropPath: json['backdrop_path'] ?? '',
+        mediaType: json['media_type'] ?? '',
+        originalLanguage: json['original_language'] ?? '',
+        popularity: (json['popularity'] as num?)?.toDouble() ?? 0.0,
+        voteAverage: (json['vote_average'] as num?)?.toDouble() ?? 0.0,
+        voteCount: json['vote_count'] ?? 0,
+        releaseDate: json['first_air_date'] ?? '',
+        genreIds: List<int>.from(json['genre_ids'] ?? []),
+        adult: json['adult'] ?? false,
+        originCountry: List<String>.from(json['origin_country'] ?? []),
+      );
+    } else {
+      throw ArgumentError('Unsupported media type: ${json['media_type']}');
+    }
   }
 }
 
@@ -127,15 +97,16 @@ class SearchResults {
     final List<dynamic> resultsList = json['results'] ?? [];
     final List<dynamic> parsedResults = resultsList
         .map((item) {
-          if (item['media_type'] == 'movie') {
-            return Movie.fromJson(item);
-          } else if (item['media_type'] == 'tv') {
-            return TvShow.fromJson(item);
-          } else {
+          try {
+            return MediaItem.fromJson(item);
+          } catch (e, trace) {
+            // 记录异常信息
+            Logger.instance.e('Error parsing MediaItem: $e');
+            Logger.instance.d('Error parsing MediaItem: $trace');
             return null;
           }
         })
-        .where((element) => element != null)
+        .whereType<MediaItem>()
         .toList();
 
     return SearchResults(
@@ -152,10 +123,12 @@ class TvShowDetail {
   final String? backdropPath;
   final List<dynamic> createdBy;
   final List<dynamic> episodeRunTime;
-  final String? firstAirDate;
+  final String? releaseDate;
   final List<Genre> genres;
   final String? homepage;
   final int id;
+  String? imdbId;
+  String mediaType = 'tv';
   final bool inProduction;
   final List<dynamic> languages;
   final String? lastAirDate;
@@ -167,7 +140,7 @@ class TvShowDetail {
   final int numberOfSeasons;
   final List<String> originCountry;
   final String originalLanguage;
-  final String originalName;
+  final String originalTitle;
   final String overview;
   final double popularity;
   final String? posterPath;
@@ -186,10 +159,12 @@ class TvShowDetail {
     this.backdropPath,
     required this.createdBy,
     required this.episodeRunTime,
-    this.firstAirDate,
+    required this.releaseDate,
     required this.genres,
     this.homepage,
     required this.id,
+    this.imdbId,
+    required this.mediaType,
     required this.inProduction,
     required this.languages,
     this.lastAirDate,
@@ -201,7 +176,7 @@ class TvShowDetail {
     required this.numberOfSeasons,
     required this.originCountry,
     required this.originalLanguage,
-    required this.originalName,
+    required this.originalTitle,
     required this.overview,
     required this.popularity,
     this.posterPath,
@@ -222,10 +197,12 @@ class TvShowDetail {
       backdropPath: json['backdrop_path'],
       createdBy: List<dynamic>.from(json['created_by']),
       episodeRunTime: List<dynamic>.from(json['episode_run_time']),
-      firstAirDate: json['first_air_date'],
+      releaseDate: json['first_air_date'],
       genres: List<Genre>.from(json['genres'].map((x) => Genre.fromJson(x))),
       homepage: json['homepage'],
       id: json['id'],
+      imdbId: json['imdb_id'],
+      mediaType: 'tv',
       inProduction: json['in_production'],
       languages: List<dynamic>.from(json['languages']),
       lastAirDate: json['last_air_date'],
@@ -240,7 +217,7 @@ class TvShowDetail {
       numberOfSeasons: json['number_of_seasons'],
       originCountry: List<String>.from(json['origin_country']),
       originalLanguage: json['original_language'],
-      originalName: json['original_name'],
+      originalTitle: json['original_name'],
       overview: json['overview'],
       popularity: json['popularity'].toDouble(),
       posterPath: json['poster_path'],
@@ -420,7 +397,7 @@ class Season {
       id: json['id'],
       name: json['name'],
       overview: json['overview'],
-      posterPath: json['poster_path'],
+      posterPath: json['poster_path'] ?? '',
       seasonNumber: json['season_number'],
       voteAverage: json['vote_average'].toDouble(),
     );
@@ -436,6 +413,7 @@ class MovieDetail {
   final String homepage;
   final int id;
   final String imdbId;
+  final String mediaType = 'movie';
   final List<String> originCountry;
   final String originalLanguage;
   final String originalTitle;
@@ -482,6 +460,7 @@ class MovieDetail {
     required this.video,
     required this.voteAverage,
     required this.voteCount,
+    required String mediaType,
   });
 
   factory MovieDetail.fromJson(Map<String, dynamic> json) {
@@ -496,6 +475,7 @@ class MovieDetail {
       homepage: json['homepage'],
       id: json['id'],
       imdbId: json['imdb_id'],
+      mediaType: 'movie',
       originCountry: List<String>.from(json['origin_country']),
       originalLanguage: json['original_language'],
       originalTitle: json['original_title'],
