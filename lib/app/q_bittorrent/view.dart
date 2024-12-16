@@ -665,7 +665,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                         controller: searchKey,
                         labelText: '筛选',
                         onChanged: (String value) {
-                          searchKey.text = value;
+                          // searchKey.text = value;
                           controller.update();
                         },
                       ),
