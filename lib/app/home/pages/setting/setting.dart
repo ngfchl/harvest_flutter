@@ -283,7 +283,7 @@ class SettingPage extends StatelessWidget {
                                     name: 'tmdb_api_auth',
                                     isActive: isActive.value,
                                     value: OptionValue(
-                                      appId: proxyController.text,
+                                      proxy: proxyController.text,
                                       apiKey: apiKeyController.text,
                                       secretKey: secretController.text,
                                     ),
@@ -291,7 +291,7 @@ class SettingPage extends StatelessWidget {
                                 } else {
                                   option?.isActive = isActive.value;
                                   option?.value = OptionValue(
-                                    appId: proxyController.text,
+                                    proxy: proxyController.text,
                                     apiKey: apiKeyController.text,
                                     secretKey: secretController.text,
                                   );
