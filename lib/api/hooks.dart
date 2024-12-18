@@ -14,11 +14,11 @@ Future<CommonResponse<List<T>>> fetchDataList<T>(
         .toList();
     String msg = '成功获取到${dataList.length}条数据';
     // Logger.instance.i(msg);
-    return CommonResponse<List<T>>(data: dataList, code: 0, msg: msg);
+    return CommonResponse<List<T>>.success(data: dataList, msg: msg);
   } else {
     String msg = '获取数据列表失败: ${response.statusCode}';
     // GFToast.showToast(msg, context);
-    return CommonResponse<List<T>>(data: null, code: -1, msg: msg);
+    return CommonResponse<List<T>>.error(msg: msg);
   }
 }
 
@@ -30,14 +30,28 @@ Future<CommonResponse<List?>> fetchBasicList<T>(String apiEndpoint,
     if (response.data['data'] != null) {
       final dataList = response.data['data'] as List;
       String msg = '成功获取到${dataList.length}条数据';
-      return CommonResponse<List>(data: dataList, code: 0, msg: msg);
+      return CommonResponse<List>.success(data: dataList, msg: msg);
     } else {
       return CommonResponse.fromJson(response.data, (p0) => null);
     }
   } else {
     String msg = '获取数据列表失败: ${response.statusCode}';
     // GFToast.showToast(msg, context);
-    return CommonResponse<List<T>>(data: null, code: -1, msg: msg);
+    return CommonResponse<List<T>>.error(msg: msg);
+  }
+}
+
+Future<CommonResponse> fetchBasicData<T>(String apiEndpoint,
+    {Map<String, dynamic>? queryParameters}) async {
+  final response =
+      await DioUtil().get(apiEndpoint, queryParameters: queryParameters);
+  if (response.statusCode == 200) {
+    return CommonResponse.fromJson(
+        response.data, (p0) => p0 as Map<String, dynamic>);
+  } else {
+    String msg = '获取数据列表失败: ${response.statusCode}';
+    // GFToast.showToast(msg, context);
+    return CommonResponse.error(msg: msg);
   }
 }
 
@@ -49,11 +63,11 @@ Future<CommonResponse> editData<T>(
       return CommonResponse.fromJson(response.data, (p0) => null);
     } else {
       String msg = '编辑数据失败: ${response.statusCode}';
-      return CommonResponse(data: null, code: -1, msg: msg);
+      return CommonResponse.error(msg: msg);
     }
   } catch (e) {
     String msg = '请求失败: $e';
-    return CommonResponse(data: null, code: -1, msg: msg);
+    return CommonResponse.error(msg: msg);
   }
 }
 
@@ -64,12 +78,12 @@ Future<CommonResponse> addData(String apiUrl, Map<String, dynamic> data) async {
       return CommonResponse.fromJson(response.data, (p0) => null);
     } else {
       String msg = '保存数据失败: ${response.statusCode}';
-      return CommonResponse(data: null, code: -1, msg: msg);
+      return CommonResponse.error(msg: msg);
     }
   } catch (e) {
     String msg = '请求失败: $e';
     Logger.instance.e(msg);
-    return CommonResponse(data: null, code: -1, msg: msg);
+    return CommonResponse.error(msg: msg);
   }
 }
 
@@ -80,6 +94,6 @@ Future<CommonResponse> removeData(String apiUrl) async {
   } else {
     String msg = '数据删除失败: ${response.statusCode}';
     // GFToast.showToast(msg, context);
-    return CommonResponse(data: null, code: -1, msg: msg);
+    return CommonResponse.error(msg: msg);
   }
 }
