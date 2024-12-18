@@ -41,6 +41,6 @@ class CommonResponse<T> {
 
   @override
   String toString() {
-    return 'Code: $code, Msg: $msg, Data: $data';
+    return 'Code: $code, Msg: $msg, Succeed: $succeed, Data: $data';
   }
 }
