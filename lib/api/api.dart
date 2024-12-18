@@ -93,20 +93,20 @@ class Api {
   static const String DOUBAN_HOT = "option/douban/hot";
 
   // tmdb API
-  static const String TMDB_SEARCH = "/api/tmdb/tmdb/search";
-  static const String TMDB_PERSON = "/api/tmdb/tmdb/person/{query}";
-  static const String TMDB_MOVIE_INFO = "/api/tmdb/tmdb/movie/{query}";
-  static const String TMDB_TV_INFO = "/api/tmdb/tmdb/tv/{query}";
-  static const String TMDB_SEASON = "/api/tmdb/tmdb/season/{tv_id}/{season_id}";
+  static const String TMDB_SEARCH = "/tmdb/search";
+  static const String TMDB_PERSON = "/tmdb/person/";
+  static const String TMDB_MOVIE_INFO = "/tmdb/movie/";
+  static const String TMDB_TV_INFO = "/tmdb/tv/";
+  static const String TMDB_SEASON = "/tmdb/season/{tv_id}/{season_id}";
   static const String TMDB_EPISODE =
-      "/api/tmdb/tmdb/episode/{tv_id}/{season_id}/{episode_id}";
-  static const String TMDB_ON_THE_AIR = "/api/tmdb/tmdb/on_the_air/tvs";
-  static const String TMDB_AIRING_TODAY = "/api/tmdb/tmdb/airing_today/tvs";
-  static const String TMDB_UPCOMING = "/api/tmdb/tmdb/upcoming/movies";
-  static const String TMDB_POPULAR_TVS = "/api/tmdb/tmdb/popular/tvs";
-  static const String TMDB_POPULAR_MOVIES = "/api/tmdb/tmdb/popular/movies";
-  static const String TMDB_TOP_TVS = "/api/tmdb/tmdb/top_rated/tvs";
-  static const String TMDB_TOP_MOVIES = "/api/tmdb/tmdb/top_rated/movies";
-  static const String TMDB_LATEST_MOVIES = "/api/tmdb/tmdb/latest/movies";
-  static const String TMDB_LATEST_TV = "/api/tmdb/tmdb/latest/tv";
+      "/tmdb/episode/{tv_id}/{season_id}/{episode_id}";
+  static const String TMDB_ON_THE_AIR = "/tmdb/on_the_air/tvs";
+  static const String TMDB_AIRING_TODAY = "/tmdb/airing_today/tvs";
+  static const String TMDB_UPCOMING = "/tmdb/upcoming/movies";
+  static const String TMDB_POPULAR_TVS = "/tmdb/popular/tvs";
+  static const String TMDB_POPULAR_MOVIES = "/tmdb/popular/movies";
+  static const String TMDB_TOP_TVS = "/tmdb/top_rated/tvs";
+  static const String TMDB_TOP_MOVIES = "/tmdb/top_rated/movies";
+  static const String TMDB_LATEST_MOVIES = "/tmdb/latest/movies";
+  static const String TMDB_LATEST_TV = "/tmdb/latest/tv";
 }
