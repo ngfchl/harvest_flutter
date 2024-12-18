@@ -1,16 +1,14 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:dio/io.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_floating/floating/floating.dart';
 import 'package:get/get.dart';
+import 'package:harvest/api/tmdb.dart' as tmdb;
 import 'package:harvest/app/home/pages/dou_ban/douban_api.dart';
 import 'package:harvest/common/meta_item.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:harvest/utils/logger_helper.dart' as logger_helper;
-import 'package:tmdb_api/tmdb_api.dart';
 import 'package:web_socket_channel/status.dart' as status;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -86,9 +84,8 @@ class AggSearchController extends GetxController
   List<String> saleStatusList = [];
   List<String> selectedSaleStatusList = [];
   bool hrKey = false;
-  TMDB? tmdbClient;
   Option? option;
-  SearchResults? results;
+  List<MediaItem> results = [];
   late TabController tabController;
   late VideoDetail selectVideoDetail;
   String baseUrl = SPUtil.getLocalStorage('server');
@@ -101,79 +98,50 @@ class AggSearchController extends GetxController
       {'name': '分类', 'value': succeedCategories},
     ]);
     tabController = TabController(length: 2, vsync: this);
-    // 初始化 tmdb 客户端
-    await initTmdbClient();
-    logger_helper.Logger.instance.d(tmdbClient);
-
     await initData();
     super.onInit();
   }
 
-  initTmdbClient() async {
-    // // 创建自定义 Dio 实例
-    Map<String, dynamic> map =
-        await SPUtil.getCache('${baseUrl}_option_tmdb_api');
-    logger_helper.Logger.instance.d(map);
-    if (map.isEmpty) {
-      logger_helper.Logger.instance.e('从缓存获取 TMDB 配置失败！');
-      return;
-    }
-    option = Option.fromJson(map);
-    if (option?.isActive != true) {
-      logger_helper.Logger.instance.e('TMDB 配置已禁用！');
-      return;
-    }
-    Dio? dio;
-    if (option?.value.proxy?.isNotEmpty == true) {
-      dio = Dio();
-
-      // 配置代理
-      (dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
-        final httpClient = HttpClient();
-
-        httpClient.findProxy = (uri) {
-          // 设置代理地址，例如 http://127.0.0.1:8888
-          return "PROXY ${option?.value.proxy}";
-        };
-        httpClient.badCertificateCallback =
-            (cert, host, port) => true; // 忽略 HTTPS 证书错误（开发调试时使用）
-
-        return httpClient;
-      };
-    }
-
-    tmdbClient = TMDB(
-      ApiKeys(option!.value.apiKey!, option!.value.secretKey!),
-      defaultLanguage: 'zh-CN',
-      dio: dio,
-    );
-    logger_helper.Logger.instance.d(tmdbClient);
-
-    update();
-  }
-
   searchTMDB() async {
     if (searchKeyController.text.isEmpty) {
-      return;
+      return CommonResponse.error(msg: "搜索关键字不能为空！");
     }
-    logger_helper.Logger.instance.d(searchKeyController.text);
-    Map map = await tmdbClient!.v3.search.queryMulti(searchKeyController.text);
-    results = SearchResults.fromJson(map as Map<String, dynamic>);
-    results?.results.sort((a, b) => b.voteAverage.compareTo(a.voteAverage));
-    logger_helper.Logger.instance.d(results?.results);
+    isLoading = true;
     update();
+    logger_helper.Logger.instance.d(searchKeyController.text);
+    CommonResponse response =
+        await tmdb.getTMDBSearchApi(searchKeyController.text);
+    if (response.succeed != true) {
+      return response;
+    }
+    results = response.data
+        .map((item) {
+          try {
+            return MediaItem.fromJson(item);
+          } catch (e, trace) {
+            return null;
+          }
+        })
+        .whereType<MediaItem>()
+        .toList();
+    logger_helper.Logger.instance.d(results);
+    results.sort((a, b) => (b.voteAverage ?? 0).compareTo(a.voteAverage ?? 0));
+    logger_helper.Logger.instance.d(results);
+    isLoading = false;
+    update();
+    return response;
   }
 
   getTMDBMovieDetail(int id) async {
-    var res = await tmdbClient!.v3.movies.getDetails(id);
+    var res = await tmdb.getTMDBMovieInfoApi(id);
     logger_helper.Logger.instance.d(res);
-    return MovieDetail.fromJson(res as Map<String, dynamic>);
+    return MovieDetail.fromJson(res.data as Map<String, dynamic>);
   }
 
   getTMDBTVDetail(int id) async {
-    var res = await tmdbClient!.v3.tv.getDetails(id);
+    var res = await tmdb.getTMDBTvInfoApi(id);
     logger_helper.Logger.instance.d(res);
-    return TvShowDetail.fromJson(res as Map<String, dynamic>);
+    return TvShowDetail.fromJson(res.data as Map<String, dynamic>);
   }
 
   getTMDBDetail(info) {

@@ -13,6 +13,7 @@ import 'package:getwidget/getwidget.dart';
 import 'package:harvest/app/home/pages/agg_search/models/torrent_info.dart';
 import 'package:harvest/app/home/pages/models/website.dart';
 import 'package:harvest/common/meta_item.dart';
+import 'package:harvest/models/common_response.dart';
 import 'package:intl/intl.dart';
 import 'package:random_color/random_color.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -114,9 +115,17 @@ class _AggSearchPageState extends State<AggSearchPage>
                                         Get.snackbar("提示", "搜索关键字不能为空！");
                                         return;
                                       }
-                                      if (controller.tmdbClient != null) {
-                                        await controller.searchTMDB();
-                                      } else {
+
+                                      CommonResponse response =
+                                          await controller.searchTMDB();
+                                      if (response.succeed != true) {
+                                        Get.snackbar(
+                                          '警告',
+                                          '${response.msg!}，从豆瓣获取信息...',
+                                          colorText: Theme.of(context)
+                                              .colorScheme
+                                              .error,
+                                        );
                                         await controller.doDouBanSearch();
                                       }
                                     } else {
@@ -177,7 +186,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                             ),
                                           ),
                                           onTap: () async {
-                                            controller.results?.results.clear();
+                                            controller.results.clear();
                                             controller.update();
                                           },
                                         ),
@@ -298,16 +307,13 @@ class _AggSearchPageState extends State<AggSearchPage>
                           children: [
                             Column(
                               children: [
-                                if (controller.results != null &&
-                                    controller.results?.results.isNotEmpty ==
-                                        true)
+                                if (controller.results.isNotEmpty)
                                   Expanded(
                                     child: ListView.builder(
-                                        itemCount:
-                                            controller.results?.results.length,
+                                        itemCount: controller.results.length,
                                         itemBuilder: (context, int index) =>
-                                            mediaItemCard(controller
-                                                .results?.results[index])),
+                                            mediaItemCard(
+                                                controller.results[index])),
                                   ),
                                 if (controller.showDouBanResults.isNotEmpty)
                                   Expanded(
@@ -564,7 +570,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                             color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
-                        media.voteCount == 0
+                        media.voteCount == 0 || media.voteAverage == null
                             ? const Text(
                                 '暂无评分',
                                 style: TextStyle(
@@ -577,7 +583,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                   Tooltip(
                                     message: '评分：${media.voteAverage}',
                                     child: RatingBar.readOnly(
-                                      initialRating: media.voteAverage / 2,
+                                      initialRating: media.voteAverage! / 2,
                                       filledIcon: Icons.star,
                                       emptyIcon: Icons.star_border,
                                       emptyColor: Colors.redAccent,

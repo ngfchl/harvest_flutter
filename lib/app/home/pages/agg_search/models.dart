@@ -10,8 +10,8 @@ class MediaItem {
   final String mediaType;
   final String originalLanguage;
   final double popularity;
-  final double voteAverage;
-  final int voteCount;
+  final double? voteAverage;
+  final int? voteCount;
   final String releaseDate;
   final List<int> genreIds;
   final bool adult;
@@ -296,7 +296,7 @@ class LastEpisodeToAir {
       voteCount: json['vote_count'],
       airDate: json['air_date'],
       episodeNumber: json['episode_number'],
-      episodeType: json['episode_type'],
+      episodeType: json['episode_type'] ?? '',
       productionCode: json['production_code'],
       runtime: json['runtime'],
       seasonNumber: json['season_number'],
@@ -399,7 +399,7 @@ class Season {
       overview: json['overview'],
       posterPath: json['poster_path'] ?? '',
       seasonNumber: json['season_number'],
-      voteAverage: json['vote_average'].toDouble(),
+      voteAverage: json['vote_average'] ?? 0,
     );
   }
 }
@@ -474,9 +474,9 @@ class MovieDetail {
       genres: (json['genres'] as List).map((e) => Genre.fromJson(e)).toList(),
       homepage: json['homepage'],
       id: json['id'],
-      imdbId: json['imdb_id'],
+      imdbId: json['imdb_id'] ?? '',
       mediaType: 'movie',
-      originCountry: List<String>.from(json['origin_country']),
+      originCountry: List<String>.from(json['origin_country'] ?? []),
       originalLanguage: json['original_language'],
       originalTitle: json['original_title'],
       overview: json['overview'],
@@ -544,5 +544,198 @@ class SpokenLanguage {
       iso6391: json['iso_639_1'],
       name: json['name'],
     );
+  }
+}
+
+class Person {
+  final int id;
+  final String? posterPath;
+  final bool adult;
+  final double popularity;
+  final String? backdropPath;
+  final double? voteAverage;
+  final String? overview;
+  final String? firstAirDate;
+  final List<String>? originCountry;
+  final List<int>? genreIds;
+  final String? originalLanguage;
+  final int? voteCount;
+  final String name;
+  final String originalName;
+  final String mediaType;
+  final String profilePath;
+  final List<KnownFor> knownFor;
+  final String knownForDepartment;
+  final int gender;
+
+  Person({
+    required this.id,
+    this.posterPath,
+    required this.adult,
+    required this.popularity,
+    this.backdropPath,
+    this.voteAverage,
+    this.overview,
+    this.firstAirDate,
+    this.originCountry,
+    this.genreIds,
+    this.originalLanguage,
+    this.voteCount,
+    required this.name,
+    required this.originalName,
+    required this.mediaType,
+    required this.profilePath,
+    required this.knownFor,
+    required this.knownForDepartment,
+    required this.gender,
+  });
+
+  factory Person.fromJson(Map<String, dynamic> json) {
+    return Person(
+      id: json['id'],
+      posterPath: json['poster_path'],
+      adult: json['adult'],
+      popularity: json['popularity'].toDouble(),
+      backdropPath: json['backdrop_path'],
+      voteAverage: json['vote_average']?.toDouble(),
+      overview: json['overview'],
+      firstAirDate: json['first_air_date'],
+      originCountry: json['origin_country'] != null
+          ? List<String>.from(json['origin_country'])
+          : null,
+      genreIds:
+          json['genre_ids'] != null ? List<int>.from(json['genre_ids']) : null,
+      originalLanguage: json['original_language'],
+      voteCount: json['vote_count'],
+      name: json['name'],
+      originalName: json['original_name'],
+      mediaType: json['media_type'],
+      profilePath: json['profile_path'],
+      knownFor: json['known_for'] != null
+          ? List<KnownFor>.from(
+              json['known_for'].map((x) => KnownFor.fromJson(x)))
+          : [],
+      knownForDepartment: json['known_for_department'],
+      gender: json['gender'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['poster_path'] = posterPath;
+    data['adult'] = adult;
+    data['popularity'] = popularity;
+    data['backdrop_path'] = backdropPath;
+    data['vote_average'] = voteAverage;
+    data['overview'] = overview;
+    data['first_air_date'] = firstAirDate;
+    data['origin_country'] = originCountry;
+    data['genre_ids'] = genreIds;
+    data['original_language'] = originalLanguage;
+    data['vote_count'] = voteCount;
+    data['name'] = name;
+    data['original_name'] = originalName;
+    data['media_type'] = mediaType;
+    data['profile_path'] = profilePath;
+    data['known_for'] = knownFor.map((x) => x.toJson()).toList();
+    data['known_for_department'] = knownForDepartment;
+    data['gender'] = gender;
+    return data;
+  }
+}
+
+class KnownFor {
+  final int id;
+  final String? posterPath;
+  final bool adult;
+  final double popularity;
+  final String? backdropPath;
+  final double voteAverage;
+  final String overview;
+  final String? firstAirDate;
+  final List<String>? originCountry;
+  final List<int> genreIds;
+  final String originalLanguage;
+  final int voteCount;
+  final String? name;
+  final String? originalName;
+  final String mediaType;
+  final String? releaseDate;
+  final String? originalTitle;
+  final String? title;
+  final bool video;
+
+  KnownFor({
+    required this.id,
+    this.posterPath,
+    required this.adult,
+    required this.popularity,
+    this.backdropPath,
+    required this.voteAverage,
+    required this.overview,
+    this.firstAirDate,
+    this.originCountry,
+    required this.genreIds,
+    required this.originalLanguage,
+    required this.voteCount,
+    this.name,
+    this.originalName,
+    required this.mediaType,
+    this.releaseDate,
+    this.originalTitle,
+    this.title,
+    required this.video,
+  });
+
+  factory KnownFor.fromJson(Map<String, dynamic> json) {
+    return KnownFor(
+      id: json['id'],
+      posterPath: json['poster_path'],
+      adult: json['adult'],
+      popularity: json['popularity'].toDouble(),
+      backdropPath: json['backdrop_path'],
+      voteAverage: json['vote_average']?.toDouble() ?? 0.0,
+      overview: json['overview'] ?? '',
+      firstAirDate: json['first_air_date'],
+      originCountry: json['origin_country'] != null
+          ? List<String>.from(json['origin_country'])
+          : null,
+      genreIds:
+          json['genre_ids'] != null ? List<int>.from(json['genre_ids']) : [],
+      originalLanguage: json['original_language'] ?? '',
+      voteCount: json['vote_count'] ?? 0,
+      name: json['name'],
+      originalName: json['original_name'],
+      mediaType: json['media_type'],
+      releaseDate: json['release_date'],
+      originalTitle: json['original_title'],
+      title: json['title'],
+      video: json['video'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['poster_path'] = posterPath;
+    data['adult'] = adult;
+    data['popularity'] = popularity;
+    data['backdrop_path'] = backdropPath;
+    data['vote_average'] = voteAverage;
+    data['overview'] = overview;
+    data['first_air_date'] = firstAirDate;
+    data['origin_country'] = originCountry;
+    data['genre_ids'] = genreIds;
+    data['original_language'] = originalLanguage;
+    data['vote_count'] = voteCount;
+    data['name'] = name;
+    data['original_name'] = originalName;
+    data['media_type'] = mediaType;
+    data['release_date'] = releaseDate;
+    data['original_title'] = originalTitle;
+    data['title'] = title;
+    data['video'] = video;
+    return data;
   }
 }
