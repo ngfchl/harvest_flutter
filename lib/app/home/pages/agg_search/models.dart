@@ -522,7 +522,7 @@ class BelongsToCollection {
       id: json['id'],
       name: json['name'],
       posterPath: json['poster_path'],
-      backdropPath: json['backdrop_path'],
+      backdropPath: json['backdrop_path'] ?? '',
     );
   }
 }

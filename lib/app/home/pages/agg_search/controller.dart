@@ -112,6 +112,8 @@ class AggSearchController extends GetxController
     CommonResponse response =
         await tmdb.getTMDBSearchApi(searchKeyController.text);
     if (response.succeed != true) {
+      isLoading = false;
+      update();
       return response;
     }
     results = response.data
