@@ -274,7 +274,7 @@ class AggSearchController extends GetxController
 
   cancelSearch() {
     isLoading = false;
-    channel.sink.close(status.goingAway);
+    channel.sink.close(status.normalClosure);
     update();
   }
 
