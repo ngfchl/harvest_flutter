@@ -41,7 +41,7 @@ Future<CommonResponse> getGitUpdateLog() async {
   } else {
     String msg = '获取Docker更新日志失败: ${response.statusCode}';
     // GFToast.showToast(msg, context);
-    return CommonResponse(data: null, code: -1, msg: msg);
+    return CommonResponse.error(msg: msg);
   }
 }
 

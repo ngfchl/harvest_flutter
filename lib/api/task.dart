@@ -18,11 +18,11 @@ Future<CommonResponse> getTaskList() async {
     } catch (e, trace) {
       Logger.instance.e(trace);
       String msg = 'Model解析出错啦！';
-      return CommonResponse(data: null, code: -1, msg: msg);
+      return CommonResponse.error(msg: msg);
     }
   } else {
     String msg = '获取主页状态失败: ${response.statusCode}';
-    return CommonResponse(data: null, code: -1, msg: msg);
+    return CommonResponse.error(msg: msg);
   }
 }
 
@@ -40,15 +40,15 @@ Future<CommonResponse> getCrontabList() async {
         return result;
       });
       String msg = '共有${dataList.length}个Crontab';
-      return CommonResponse(data: dataList, code: 0, msg: msg);
+      return CommonResponse.success(data: dataList, msg: msg);
     } catch (e, trace) {
       Logger.instance.w(trace);
       String msg = 'Model解析出错啦！';
-      return CommonResponse(data: null, code: -1, msg: msg);
+      return CommonResponse.error(msg: msg);
     }
   } else {
     String msg = '获取主页状态失败: ${response.statusCode}';
-    return CommonResponse(data: null, code: -1, msg: msg);
+    return CommonResponse.error(msg: msg);
   }
 }
 
@@ -61,7 +61,7 @@ Future<CommonResponse> execRemoteTask(Schedule schedule) async {
   } else {
     String msg = '计划任务手动执行失败: ${response.statusCode}';
     // GFToast.showToast(msg, context);
-    return CommonResponse(data: null, code: -1, msg: msg);
+    return CommonResponse.error(msg: msg);
   }
 }
 

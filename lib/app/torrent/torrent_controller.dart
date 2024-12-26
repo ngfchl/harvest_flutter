@@ -863,14 +863,10 @@ class TorrentController extends GetxController {
   Future getQbSpeed(Downloader downloader) async {
     try {
       TransferInfo res = await client.transfer.getGlobalTransferInfo();
-      return CommonResponse(data: res, code: 0);
+      return CommonResponse.success(data: res);
     } catch (e, trace) {
       LoggerHelper.Logger.instance.e(trace);
-      return CommonResponse(
-        code: -1,
-        data: null,
-        msg: '${downloader.name} 获取实时信息失败！',
-      );
+      return CommonResponse.error(msg: '${downloader.name} 获取实时信息失败！');
     }
   }
 
@@ -894,11 +890,10 @@ class TorrentController extends GetxController {
   Future getTrSpeed(Downloader downloader) async {
     var res = await client.v1.session.sessionStats();
     if (res['result'] == "success") {
-      return CommonResponse(
-          data: TransmissionStats.fromJson(res["arguments"]), code: 0);
+      return CommonResponse.success(
+          data: TransmissionStats.fromJson(res["arguments"]));
     }
-    return CommonResponse(
-      code: -1,
+    return CommonResponse.error(
       data: res,
       msg: '${downloader.name} 获取实时信息失败！',
     );

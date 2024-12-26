@@ -44,10 +44,10 @@ importBaseSubTag() async {
       return CommonResponse.fromJson(response.data, (p0) => null);
     } else {
       String msg = '订阅标签 导入失败！: ${response.statusCode}';
-      return CommonResponse(data: null, code: -1, msg: msg);
+      return CommonResponse.error(msg: msg);
     }
   } catch (e, trace) {
     String msg = '订阅标签 导入失败！: $e';
-    return CommonResponse(data: null, code: -1, msg: msg);
+    return CommonResponse.error(msg: msg);
   }
 }

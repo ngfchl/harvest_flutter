@@ -42,7 +42,7 @@ Future<CommonResponse> getWebSiteList() async {
     });
     String msg = '工具共支持${dataList.length}个站点';
     Logger.instance.i(msg);
-    return CommonResponse(data: dataList, code: 0, msg: msg);
+    return CommonResponse.success(data: dataList, msg: msg);
   }
   return response;
 }
@@ -57,7 +57,7 @@ signIn(int? mySiteId) async {
     return CommonResponse.fromJson(response.data, (p0) => null);
   } else {
     String msg = '签到失败！: ${response.statusCode}';
-    return CommonResponse(data: null, code: -1, msg: msg);
+    return CommonResponse.error(msg: msg);
   }
 }
 
@@ -71,7 +71,7 @@ repeatSite(int? mySiteId) async {
     return CommonResponse.fromJson(response.data, (p0) => null);
   } else {
     String msg = '辅种失败！: ${response.statusCode}';
-    return CommonResponse(data: null, code: -1, msg: msg);
+    return CommonResponse.error(msg: msg);
   }
 }
 
@@ -85,7 +85,7 @@ importFromPTPPApi() async {
     return CommonResponse.fromJson(response.data, (p0) => null);
   } else {
     String msg = 'PTPP 导入失败！: ${response.statusCode}';
-    return CommonResponse(data: null, code: -1, msg: msg);
+    return CommonResponse.error(msg: msg);
   }
 }
 
@@ -99,7 +99,7 @@ importFromCookieCloudApi() async {
     return CommonResponse.fromJson(response.data, (p0) => null);
   } else {
     String msg = 'CookieCloud 同步失败！: ${response.statusCode}';
-    return CommonResponse(data: null, code: -1, msg: msg);
+    return CommonResponse.error(msg: msg);
   }
 }
 
@@ -113,7 +113,7 @@ getNewestStatus(int? mySiteId) async {
     return CommonResponse.fromJson(response.data, (p0) => null);
   } else {
     String msg = '站点刷新数据失败！: ${response.statusCode}';
-    return CommonResponse(data: null, code: -1, msg: msg);
+    return CommonResponse.error(msg: msg);
   }
 }
 
@@ -144,7 +144,7 @@ bulkUpgrade(Map<String, dynamic> data) async {
     return CommonResponse.fromJson(response.data, (p0) => null);
   } else {
     String msg = '站点刷新数据失败！: ${response.statusCode}';
-    return CommonResponse(data: null, code: -1, msg: msg);
+    return CommonResponse.error(msg: msg);
   }
 }
 
@@ -157,7 +157,7 @@ signInAll() async {
     return CommonResponse.fromJson(response.data, (p0) => null);
   } else {
     String msg = '签到失败！: ${response.statusCode}';
-    return CommonResponse(data: null, code: -1, msg: msg);
+    return CommonResponse.error(msg: msg);
   }
 }
 
@@ -171,6 +171,6 @@ getNewestStatusAll() async {
     return CommonResponse.fromJson(response.data, (p0) => null);
   } else {
     String msg = '站点刷新数据失败！: ${response.statusCode}';
-    return CommonResponse(data: null, code: -1, msg: msg);
+    return CommonResponse.error(msg: msg);
   }
 }
