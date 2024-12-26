@@ -87,8 +87,10 @@ Future<CommonResponse> addData(String apiUrl, Map<String, dynamic> data) async {
   }
 }
 
-Future<CommonResponse> removeData(String apiUrl) async {
-  final response = await DioUtil().delete(apiUrl);
+Future<CommonResponse> removeData(String apiUrl,
+    {Map<String, dynamic>? queryParameters}) async {
+  final response =
+      await DioUtil().delete(apiUrl, queryParameters: queryParameters);
   if (response.statusCode == 200) {
     return CommonResponse.fromJson(response.data, (p0) => null);
   } else {
