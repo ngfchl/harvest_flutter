@@ -100,6 +100,7 @@ class TransmissionStats {
     required this.pausedTorrentCount,
     required this.torrentCount,
     required this.uploadSpeed,
+    this.speedLimitSettings,
   });
 
   factory TransmissionStats.fromJson(Map<String, dynamic> json) {
@@ -107,6 +108,8 @@ class TransmissionStats {
       activeTorrentCount: json['activeTorrentCount'],
       cumulativeStats: CumulativeStats.fromJson(json['cumulative-stats']),
       currentStats: CurrentStats.fromJson(json['current-stats']),
+      speedLimitSettings:
+          SpeedLimitSettings.fromJson(json['speed-limit-settings']),
       downloadSpeed: json['downloadSpeed'],
       pausedTorrentCount: json['pausedTorrentCount'],
       torrentCount: json['torrentCount'],
