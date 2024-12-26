@@ -46,7 +46,20 @@ class Api {
   static const String DOWNLOADER_PATHS = "option/paths";
 
   // 下载器分类列表
-  static const String DOWNLOADER_CATEGORIES = "option/downloaders/categories";
+  static const String DOWNLOADER_TORRENTS = "ws/downloader";
+  static const String DOWNLOADER_STATUS = "ws/downloader/speed/";
+  static const String DOWNLOADER_MAIN = "option/downloaders/main/";
+  static const String DOWNLOADER_TAGS = "option/downloaders/tags/";
+  static const String DOWNLOADER_SET_TAGS = "option/downloaders/tags/set/";
+  static const String DOWNLOADER_CATEGORY = "option/downloaders/category/";
+  static const String DOWNLOADER_SET_CATEGORY =
+      "option/downloaders/category/set/";
+  static const String DOWNLOADER_CONTROL = "option/downloaders/control/";
+  static const String DOWNLOADER_PUSH_TORRENT = "option/push_torrent";
+  static const String DOWNLOADER_PREFERENCES =
+      "option/downloaders/preferences/";
+  static const String DOWNLOADER_TORRENT_DETAIL =
+      "option/downloaders/torrent/detail/";
 
   // 下载器种子文件夹列表
 
