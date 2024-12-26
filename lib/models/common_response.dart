@@ -1,10 +1,15 @@
 class CommonResponse<T> {
-  int? code = 0;
-  bool? succeed = false;
-  String? msg = '';
+  int code = 0;
+  bool succeed = false;
+  String msg = '';
   T? data;
 
-  CommonResponse({this.code, this.msg, this.data, this.succeed});
+  CommonResponse({
+    required this.code,
+    required this.msg,
+    this.data,
+    required this.succeed,
+  });
 
   CommonResponse.fromJson(
       Map<String, dynamic> json, T Function(dynamic) fromJsonT) {
@@ -32,11 +37,10 @@ class CommonResponse<T> {
     this.msg = msg ?? '';
   }
 
-  CommonResponse.error({String? msg}) {
+  CommonResponse.error({String? msg, this.data}) {
     code = -1;
     succeed = false;
     this.msg = msg ?? '';
-    data = null;
   }
 
   @override
