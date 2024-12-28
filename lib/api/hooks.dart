@@ -47,7 +47,7 @@ Future<CommonResponse> fetchBasicData<T>(String apiEndpoint,
       await DioUtil().get(apiEndpoint, queryParameters: queryParameters);
   if (response.statusCode == 200) {
     return CommonResponse.fromJson(
-        response.data, (p0) => p0 as Map<String, dynamic>);
+        response.data, (p0) => p0 != null ? p0 as Map<String, dynamic> : p0);
   } else {
     String msg = '获取数据列表失败: ${response.statusCode}';
     // GFToast.showToast(msg, context);
