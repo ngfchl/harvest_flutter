@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart'; // ignore: depend_on_referenced_packages
 import 'package:path_provider/path_provider.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
@@ -35,6 +36,7 @@ class DownloadController extends GetxController {
   bool isDurationValid = true;
   bool realTimeState = true;
   bool isLoading = false;
+  bool isTorrentsLoading = false;
   late WebSocketChannel channel;
   late WebSocketChannel torrentsChannel;
   String baseUrl = SPUtil.getLocalStorage('server');
@@ -110,10 +112,41 @@ class DownloadController extends GetxController {
 
   TorrentState? torrentState;
   TorrentFilter torrentFilter = TorrentFilter.all;
-  String? category;
-  String selectedTracker = ' All';
-  TorrentSort? sortKey = TorrentSort.name;
+  String? category = '全部';
+  String selectedTracker = '全部';
+  dynamic sortKey = 'name';
   String searchKey = '';
+  TextEditingController searchController = TextEditingController();
+
+  List<MetaDataItem> trSortOptions = [
+    {'name': '名称', 'value': 'name'},
+    {'name': 'ID', 'value': 'id'},
+    {'name': '状态', 'value': 'status'},
+    {'name': '总大小', 'value': 'totalSize'},
+    {'name': '队列位置', 'value': 'queuePosition'},
+    {'name': '完成日期', 'value': 'doneDate'},
+    {'name': '完成百分比', 'value': 'percentDone'},
+    {'name': '已上传', 'value': 'uploadedEver'},
+    {'name': '已下载', 'value': 'downloaded'},
+    {'name': '下载速度', 'value': 'rateDownload'},
+    {'name': '上传速度', 'value': 'rateUpload'},
+    {'name': '校验进度', 'value': 'recheckProgress'},
+    {'name': '活动日期', 'value': 'activityDate'},
+  ].map((e) => MetaDataItem.fromJson(e)).toList();
+  List<MetaDataItem> trStatus = [
+    {"name": "全部", "value": null},
+    {"name": "红种", "value": 99},
+    {"name": "下载中", "value": 4},
+    // {"name": "活动中", "value": 100},
+    {"name": "做种中", "value": 6},
+    {"name": "已停止", "value": 0},
+    {"name": "校验中", "value": 2},
+    {"name": "校验队列", "value": 1},
+    {"name": "排队下载", "value": 3},
+    {"name": "排队上传", "value": 5},
+  ].map((e) => MetaDataItem.fromJson(e)).toList();
+  int? trTorrentState;
+  bool sortReversed = false;
 
   // 使用StreamController来管理下载状态的流
   final StreamController<List<Downloader>> _downloadStreamController =
@@ -280,7 +313,7 @@ class DownloadController extends GetxController {
             .speedLimitUpEnabled());
 
     TransmissionStats stats = TransmissionStats.fromJson(res["arguments"]);
-    stats.speedLimitSettings = SpeedLimitSettings.fromJson(res1["arguments"]);
+    downloader.prefs = TransmissionConfig.fromJson(res1["arguments"]);
     if (res['result'] == "success") {
       return CommonResponse.success(data: stats);
     }
@@ -324,11 +357,11 @@ class DownloadController extends GetxController {
           update();
         }
       }, onError: (err) {
-        logger_helper.Logger.instance.e('搜索出错啦： ${err.toString()}');
+        logger_helper.Logger.instance.e('获取下载器状态出错啦： ${err.toString()}');
         // searchMsg.add({"success": false, "msg": '搜索出错啦：$err'});
         stopFetchStatus();
       }, onDone: () {
-        logger_helper.Logger.instance.e('搜索完成啦！');
+        logger_helper.Logger.instance.e('获取下载器状态结束啦！');
         stopFetchStatus();
       });
     } catch (e, trace) {
@@ -386,28 +419,143 @@ class DownloadController extends GetxController {
     });
   }
 
-  filterTorrents() {
+  filterTrTorrents() {
+    isTorrentsLoading = false;
     showTorrents = torrents;
-    if (torrentState != null) {
-      showTorrents = showTorrents
-          .where((torrent) => torrent.state == torrentState)
-          .toList();
+    update();
+    logger_helper.Logger.instance.d(showTorrents.length);
+    filterTorrentsByCategory();
+    logger_helper.Logger.instance.d(showTorrents.length);
+    filterTorrentsByState();
+    logger_helper.Logger.instance.d(showTorrents.length);
+    filterTorrentsBySearchKey();
+    logger_helper.Logger.instance.d(showTorrents.length);
+    filterTorrentsByTracker();
+    sortTrTorrents();
+    update();
+    logger_helper.Logger.instance.i(showTorrents.length);
+  }
+
+  sortTrTorrents() {
+    switch (sortKey) {
+      case 'name':
+        showTorrents.sort((a, b) => a.name.compareTo(b.name));
+      case 'id':
+        showTorrents.sort((a, b) => a.id.compareTo(b.id));
+      case 'status':
+        showTorrents.sort((a, b) => a.status.compareTo(b.status));
+      // case 'addedOn':
+      //   torrents
+      //       .sort(( a, b) => a.addedOn.compareTo(b.addedOn));
+      case 'totalSize':
+        showTorrents.sort((a, b) => a.totalSize.compareTo(b.totalSize));
+      case 'queuePosition':
+        showTorrents.sort((a, b) =>
+            a.queuePosition.toString().compareTo(b.queuePosition.toString()));
+      case 'doneDate':
+        showTorrents.sort((a, b) => a.doneDate.compareTo(b.doneDate));
+      case 'percentDone':
+        showTorrents.sort((a, b) => a.percentDone.compareTo(b.percentDone));
+      case 'uploadedEver':
+        showTorrents.sort((a, b) => a.uploadedEver.compareTo(b.uploadedEver));
+      case 'downloaded':
+        showTorrents
+            .sort((a, b) => a.downloadedEver.compareTo(b.downloadedEver));
+      case 'rateDownload':
+        showTorrents.sort((a, b) => a.rateDownload.compareTo(b.rateDownload));
+      case 'rateUpload':
+        showTorrents.sort((a, b) => a.rateUpload.compareTo(b.rateUpload));
+      case 'recheckProgress':
+        showTorrents
+            .sort((a, b) => a.recheckProgress.compareTo(b.recheckProgress));
+      case 'activityDate':
+        showTorrents.sort((a, b) => a.activityDate.compareTo(b.activityDate));
+      default:
+        Get.snackbar('出错啦！', '未知排序规则：$sortKey');
     }
-    if (category != null) {
-      showTorrents = showTorrents
-          .where((torrent) => torrent.category == category)
-          .toList();
+
+    if (sortReversed) {
+      logger_helper.Logger.instance.d('反转序列！');
+      showTorrents = showTorrents.reversed.toList();
     }
-    if (selectedTracker == ' 红种') {
-      showTorrents =
-          showTorrents.where((torrent) => torrent.tracker!.isEmpty).toList();
-    } else if (selectedTracker != ' All') {
+    update();
+  }
+
+  void filterTorrentsByCategory() {
+    logger_helper.Logger.instance.i(category);
+    if (category != null && category != '全部') {
+      showTorrents = showTorrents.where((torrent) {
+        return torrent.downloadDir.contains(category);
+      }).toList();
+    }
+  }
+
+  filterTorrentsByState() {
+    if (trTorrentState == null) {
+      return;
+    }
+    switch (trTorrentState) {
+      case 99:
+        showTorrents =
+            showTorrents.where((torrent) => torrent.error > 0).toList();
+        break;
+      case 100:
+        showTorrents = showTorrents
+            .where(
+                (torrent) => torrent.rateUpload > 0 || torrent.rateDownload > 0)
+            .toList();
+        break;
+      default:
+        showTorrents = showTorrents
+            .where((torrent) => torrent.status == trTorrentState)
+            .toList();
+        break;
+    }
+  }
+
+  filterTorrentsBySearchKey() {
+    // logger_helper.Logger.instance.d('搜索关键字：${searchKey.value}');
+
+    if (searchKey.isNotEmpty) {
       showTorrents = showTorrents
           .where((torrent) =>
-              trackers[selectedTracker] != null &&
-              trackers[selectedTracker]!.contains(torrent.hash))
+              torrent.name.toLowerCase().contains(searchKey.toLowerCase()) ||
+              torrent.errorString
+                  .toLowerCase()
+                  .contains(searchKey.toLowerCase()) ||
+              torrent.hashString
+                  .toLowerCase()
+                  .contains(searchKey.toLowerCase()))
           .toList();
     }
+  }
+
+  filterTorrentsByTracker() {
+    logger_helper.Logger.instance.i(selectedTracker);
+
+    if (selectedTracker.isNotEmpty && selectedTracker != '全部') {
+      showTorrents = showTorrents
+          .where((torrent) =>
+              torrent.trackerStats.isNotEmpty &&
+              torrent.trackerStats.first?.announce
+                      .toLowerCase()
+                      .contains(selectedTracker.toString().toLowerCase()) ==
+                  true)
+          .toList();
+    }
+    // logger_helper.Logger.instance.i(showTorrents.length);
+  }
+
+  filterTorrents(bool isQb) {
+    searchKey = searchController.text;
+    isTorrentsLoading = false;
+    isQb ? filterQbTorrents() : filterTrTorrents();
+    update();
+  }
+
+  filterQbTorrents() {
+    showTorrents = torrents;
+
     if (searchKey.isNotEmpty) {
       showTorrents = showTorrents
           .where((torrent) =>
@@ -418,7 +566,44 @@ class DownloadController extends GetxController {
               torrent.hash!.toLowerCase().contains(searchKey.toLowerCase()))
           .toList();
     }
+    // logger_helper.Logger.instance.d(showTorrents.length);
+
+    if (torrentState != null) {
+      showTorrents = showTorrents
+          .where((torrent) => torrent.state == torrentState)
+          .toList();
+    }
+    // logger_helper.Logger.instance.d(showTorrents.length);
+
+    if (category != null && category != '全部') {
+      showTorrents = showTorrents
+          .where((torrent) => torrent.category == category)
+          .toList();
+    }
+    // logger_helper.Logger.instance.d(showTorrents.length);
+
+    if (selectedTracker == '红种') {
+      showTorrents =
+          showTorrents.where((torrent) => torrent.tracker!.isEmpty).toList();
+    } else if (selectedTracker != '全部') {
+      showTorrents = showTorrents
+          .where((torrent) =>
+              trackers[selectedTracker] != null &&
+              trackers[selectedTracker]!.contains(torrent.hash))
+          .toList();
+    }
+
+    // logger_helper.Logger.instance.d(showTorrents.length);
+
+    sortQbTorrents();
     update();
+  }
+
+  sortQbTorrents() {
+    if (sortReversed) {
+      logger_helper.Logger.instance.d('反转序列！');
+      showTorrents = showTorrents.reversed.toList();
+    }
   }
 
   Future<CommonResponse> controlTorrents({
@@ -456,7 +641,8 @@ class DownloadController extends GetxController {
     // 打开加载状态
     try {
       bool isQb = downloader.category == 'Qb';
-
+      isTorrentsLoading = true;
+      update();
       final wsUrl = Uri.parse(
           '${baseUrl.replaceFirst('http', 'ws')}/api/${Api.DOWNLOADER_TORRENTS}');
       torrentsChannel = WebSocketChannel.connect(wsUrl);
@@ -464,12 +650,16 @@ class DownloadController extends GetxController {
       // 使用缓存
       String key = 'Downloader-$baseUrl:${downloader.name}-${downloader.id}';
       dynamic data = await SPUtil.getCache(key);
-      if (data != null && data.isNotEmpty) {
+
+      if (data[key] != null && data[key].isNotEmpty) {
+        data = data[key];
         if (isQb) {
           parseQbMainData(data);
         } else {
           torrents = data.map((item) => TrTorrent.fromJson(item)).toList();
+          filterTrTorrents();
         }
+        update();
       }
 
       int rid = 0;
@@ -484,15 +674,15 @@ class DownloadController extends GetxController {
         CommonResponse response =
             CommonResponse.fromJson(json.decode(message), (p0) => p0);
         if (response.code == 0) {
-          // LoggerHelper.Logger.instance.d(response.data[0]);
+          // logger_helper.Logger.instance.d(response.data[0]);
+          await SPUtil.setCache(key, {key: response.data}, 3600 * 24 * 3);
           if (isQb) {
-            await SPUtil.setCache(key, response.data, 3600 * 24 * 3);
             parseQbMainData(response.data);
-
             // rid += 1;
           } else {
             torrents =
                 response.data.map((item) => TrTorrent.fromJson(item)).toList();
+            filterTrTorrents();
           }
           update();
         } else {
@@ -519,7 +709,7 @@ class DownloadController extends GetxController {
     qBCategoryMap = {
       '全部': const Category(name: '全部'),
       '未分类': const Category(name: '', savePath: ''),
-      ...{
+      if (data['categories'] != null) ...{
         for (var entry in data['categories'].entries)
           entry.key: Category.fromJson(entry.value as Map<String, dynamic>)
       }
@@ -527,17 +717,23 @@ class DownloadController extends GetxController {
 
     trackers = {
       '全部': [],
-      ...mergeTrackers(Map<String, List<dynamic>>.from(data['trackers']))
+      if (data['trackers'] != null)
+        ...mergeTrackers(Map<String, List<dynamic>>.from(data['trackers']))
     };
-    // LoggerHelper.Logger.instance.d(trackers);
-    tags = ["全部", ...List<String>.from(data['tags'] ?? [])];
+    // logger_helper.Logger.instance.d(trackers);
+    tags = [
+      "全部",
+      if (data['tags'] != null) ...List<String>.from(data['tags'] ?? [])
+    ];
     torrents = data['torrents'].entries.map((entry) {
       var torrent = Map<String, dynamic>.from(entry.value); // 复制原始数据
       torrent['hash'] = entry.key; // 添加 hash 属性
       return TorrentInfo.fromJson(torrent);
     }).toList();
-    logger_helper.Logger.instance.d(torrents[0].toJson());
-
+    isTorrentsLoading = false;
+    // logger_helper.Logger.instance.d(torrents.length);
+    filterQbTorrents();
+    // logger_helper.Logger.instance.d(showTorrents.length);
     update();
   }
 
@@ -555,9 +751,12 @@ class DownloadController extends GetxController {
       logger_helper.Logger.instance.i(item);
       if (item != null) {
         if (item.category == 'Qb') {
-          item.status.add(TransferInfo.fromJson(status[key]));
+          item.status.add(TransferInfo.fromJson(status[key]["info"]));
+          item.prefs = Preferences.fromJson(status[key]['prefs']);
         } else {
-          TransmissionStats stats = TransmissionStats.fromJson(status[key]);
+          TransmissionStats stats =
+              TransmissionStats.fromJson(status[key]["info"]);
+          item.prefs = TransmissionConfig.fromJson(status[key]['prefs']);
           item.status.add(stats);
         }
         logger_helper.Logger.instance.i(item.status);
@@ -608,7 +807,7 @@ class DownloadController extends GetxController {
 
   Future<CommonResponse> testConnect(Downloader downloader) async {
     try {
-      // LoggerHelper.Logger.instance.i(downloader.name);
+      // logger_helper.Logger.instance.i(downloader.name);
       if (downloader.category.toLowerCase() == 'qb') {
         await getQbInstance(downloader);
         return CommonResponse.success(msg: '${downloader.name} 连接成功!');
@@ -656,5 +855,9 @@ class DownloadController extends GetxController {
 
   reseedDownloader(int downloaderId) async {
     return await repeatSingleDownloader(downloaderId);
+  }
+
+  toggleSpeedLimit(Downloader downloader, bool state) async {
+    return await toggleSpeedLimitApi(downloader.id!, state);
   }
 }

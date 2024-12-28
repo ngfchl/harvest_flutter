@@ -493,17 +493,17 @@ class _DownloadPageState extends State<DownloadPage>
                         width: 8,
                       ),
                       const SizedBox(width: 8),
-                      if (res.speedLimitSettings?.speedLimitUpEnabled == true)
+                      if (downloader.prefs.speedLimitUpEnabled == true)
                         Text(
-                          '上传限速：${filesize(res.speedLimitSettings!.speedLimitUp * 1024)}/s',
+                          '上传限速：${filesize(downloader.prefs.speedLimitUp * 1024)}/s',
                           style: const TextStyle(
                             fontSize: 10,
                           ),
                         ),
                       const SizedBox(width: 8),
-                      if (res.speedLimitSettings?.speedLimitDownEnabled == true)
+                      if (downloader.prefs.speedLimitDownEnabled == true)
                         Text(
-                          '下载限速：${filesize(res.speedLimitSettings!.speedLimitDown * 1024)}/s',
+                          '下载限速：${filesize(downloader.prefs.speedLimitDown * 1024)}/s',
                           style: const TextStyle(
                             fontSize: 10,
                           ),
@@ -522,6 +522,7 @@ class _DownloadPageState extends State<DownloadPage>
 
   Widget buildDownloaderCard(Downloader downloader) {
     RxBool connectState = true.obs;
+    bool isQb = downloader.category == 'Qb';
     if (downloader.isActive) {
       controller.testConnect(downloader).then((res) {
         connectState.value = res.succeed;
@@ -682,10 +683,10 @@ class _DownloadPageState extends State<DownloadPage>
                   type: GFButtonType.transparent,
                   onPressed: () {
                     controller.testConnect(downloader).then((res) {
-                      connectState.value = res.data;
+                      connectState.value = res.succeed;
                       Get.snackbar(
                         '下载器连接测试',
-                        res.msg!,
+                        res.msg,
                         colorText: res.code == 0
                             ? Theme.of(context).colorScheme.primary
                             : Theme.of(context).colorScheme.error,
@@ -720,20 +721,27 @@ class _DownloadPageState extends State<DownloadPage>
                           size: 18,
                           color: Theme.of(context).colorScheme.primary,
                         )),
-                    IconButton(
-                        onPressed: () {},
-                        icon: Icon(
-                          Icons.nordic_walking_sharp,
-                          size: 18,
-                          color: Theme.of(context).colorScheme.primary,
-                        )),
-                    IconButton(
-                        onPressed: () {},
-                        icon: Icon(
-                          Icons.electric_bolt_outlined,
-                          size: 18,
-                          color: Theme.of(context).colorScheme.primary,
-                        )),
+                    (downloader.status.isNotEmpty &&
+                            (isQb
+                                ? downloader.status.last?.useAltSpeedLimits ==
+                                    true
+                                : downloader.prefs.altSpeedEnabled == true))
+                        ? IconButton(
+                            onPressed: () =>
+                                controller.toggleSpeedLimit(downloader, false),
+                            icon: Icon(
+                              Icons.nordic_walking_sharp,
+                              size: 18,
+                              color: Theme.of(context).colorScheme.error,
+                            ))
+                        : IconButton(
+                            onPressed: () =>
+                                controller.toggleSpeedLimit(downloader, true),
+                            icon: Icon(
+                              Icons.electric_bolt_outlined,
+                              size: 18,
+                              color: Theme.of(context).colorScheme.primary,
+                            )),
                     IconButton(
                         onPressed: () {},
                         icon: Icon(
@@ -1126,7 +1134,7 @@ class _DownloadPageState extends State<DownloadPage>
                       Navigator.of(context).pop();
                       Get.snackbar(
                         '保存成功！',
-                        response.msg!,
+                        response.msg,
                         snackPosition: SnackPosition.TOP,
                         colorText: Theme.of(context).colorScheme.primary,
                         duration: const Duration(seconds: 3),
@@ -1136,7 +1144,7 @@ class _DownloadPageState extends State<DownloadPage>
                     } else {
                       Get.snackbar(
                         '保存出错啦！',
-                        response.msg!,
+                        response.msg,
                         snackPosition: SnackPosition.TOP,
                         colorText: Theme.of(context).colorScheme.error,
                         duration: const Duration(seconds: 3),
@@ -1182,14 +1190,14 @@ class _DownloadPageState extends State<DownloadPage>
                 children: [
                   Text(
                       '${downloader.name} (${controller.torrents.isNotEmpty ? controller.torrents.length : 'loading'})'),
-                  if (controller.torrents.isEmpty)
-                    const SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                    )
+                  // if (controller.torrents.isEmpty)
+                  //   const SizedBox(
+                  //     height: 24,
+                  //     width: 24,
+                  //     child: Center(
+                  //       child: CircularProgressIndicator(),
+                  //     ),
+                  //   )
                 ],
               ),
               actions: [
@@ -1206,28 +1214,105 @@ class _DownloadPageState extends State<DownloadPage>
             body: CustomCard(
                 child: Column(
               children: [
-                TextField(
-                  controller: searchKey,
-                  onChanged: (String value) {},
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: GetBuilder<DownloadController>(builder: (controller) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: controller.searchController,
+                            textAlignVertical: TextAlignVertical.center,
+                            decoration: InputDecoration(
+                              isDense: true,
+                              hintText: '请输入搜索关键字',
+                              hintStyle: const TextStyle(fontSize: 14),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 5, horizontal: 5),
+                              border: OutlineInputBorder(
+                                borderSide: BorderSide.none,
+                                // 不绘制边框
+                                borderRadius: BorderRadius.circular(0.0),
+                                // 确保角落没有圆角
+                                gapPadding: 0.0, // 移除边框与hintText之间的间距
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide.none,
+                                // 仅在聚焦时绘制底部边框
+                                borderRadius: BorderRadius.circular(0.0),
+                              ),
+                              suffixIcon: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(5.0),
+                                    child: Text(
+                                        '计数：${controller.showTorrents.length}',
+                                        style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.orange)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            onChanged: (value) =>
+                                controller.filterTorrents(isQb),
+                          ),
+                        ),
+                        if (controller.searchKey.isNotEmpty)
+                          IconButton(
+                              onPressed: () {
+                                if (controller
+                                    .searchController.text.isNotEmpty) {
+                                  controller.searchController.text = controller
+                                      .searchController.text
+                                      .substring(
+                                          0,
+                                          controller.searchController.text
+                                                  .length -
+                                              1);
+                                  controller.searchKey =
+                                      controller.searchController.text;
+                                  controller.filterTorrents(isQb);
+                                }
+                              },
+                              icon: const Icon(
+                                Icons.backspace_outlined,
+                                size: 18,
+                              ))
+                      ],
+                    );
+                  }),
                 ),
                 Expanded(
-                  child: controller.torrents.isEmpty
+                  child: controller.isTorrentsLoading
                       ? const Center(
                           child: CircularProgressIndicator(),
                         )
-                      : ListView.builder(
-                          itemCount: controller.torrents.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            if (isQb) {
-                              TorrentInfo torrent = controller.torrents[index];
-                              return _showQbTorrent(
-                                  downloader, torrent, context);
-                            } else {
-                              TrTorrent torrent = controller.torrents[index];
-                              return _showTrTorrent(
-                                  downloader, torrent, context);
-                            }
-                          }),
+                      : controller.showTorrents.isEmpty
+                          ? Center(
+                              child: Text(
+                              '暂无数据',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ))
+                          : ListView.builder(
+                              itemCount: controller.showTorrents.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                if (isQb) {
+                                  TorrentInfo torrent =
+                                      controller.showTorrents[index];
+                                  return _showQbTorrent(
+                                      downloader, torrent, context);
+                                } else {
+                                  TrTorrent torrent =
+                                      controller.showTorrents[index];
+                                  return _showTrTorrent(
+                                      downloader, torrent, context);
+                                }
+                              }),
                 )
               ],
             )),
@@ -1587,7 +1672,38 @@ class _DownloadPageState extends State<DownloadPage>
             children: [
               SlidableAction(
                 onPressed: (context) async {
-                  // await _removeTorrent(torrentInfo);
+                  RxBool deleteFiles = false.obs;
+                  Get.defaultDialog(
+                    title: '确认',
+                    middleText: '您确定要执行这个操作吗？',
+                    content: Obx(() {
+                      return SwitchListTile(
+                          title: const Text('是否删除种子文件？'),
+                          value: deleteFiles.value,
+                          onChanged: (value) {
+                            deleteFiles.value = value;
+                          });
+                    }),
+                    actions: [
+                      ElevatedButton(
+                        onPressed: () {
+                          Get.back(result: false);
+                        },
+                        child: const Text('取消'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () async {
+                          Get.back(result: true);
+                          await controller.controlTorrents(
+                              downloader: downloader,
+                              command: 'delete',
+                              deleteFiles: deleteFiles.value,
+                              hashes: [torrentInfo.hashString]);
+                        },
+                        child: const Text('确认'),
+                      ),
+                    ],
+                  );
                 },
                 flex: 2,
                 backgroundColor: const Color(0xFFFE4A49),
@@ -1612,10 +1728,11 @@ class _DownloadPageState extends State<DownloadPage>
                       ElevatedButton(
                         onPressed: () async {
                           Get.back(result: true);
-                          // await controller.controlTorrents(
-                          //     command:
-                          //     torrentInfo.status == 0 ? 'resume' : 'pause',
-                          //     hashes: [torrentInfo.hashString]);
+                          await controller.controlTorrents(
+                              downloader: downloader,
+                              command:
+                                  torrentInfo.status == 0 ? 'resume' : 'pause',
+                              hashes: [torrentInfo.hashString]);
                         },
                         child: const Text('确认'),
                       ),
@@ -1656,10 +1773,11 @@ class _DownloadPageState extends State<DownloadPage>
                       ElevatedButton(
                         onPressed: () async {
                           Get.back(result: true);
-                          // await controller.controlTorrents(
-                          //   command: 'recheck',
-                          //   hashes: [torrentInfo.hashString],
-                          // );
+                          await controller.controlTorrents(
+                            downloader: downloader,
+                            command: 'recheck',
+                            hashes: [torrentInfo.hashString],
+                          );
                         },
                         child: const Text('确认'),
                       ),
@@ -1687,9 +1805,10 @@ class _DownloadPageState extends State<DownloadPage>
                       ElevatedButton(
                         onPressed: () async {
                           Get.back(result: true);
-                          // await controller.controlTorrents(
-                          //     command: 'reannounce',
-                          //     hashes: [torrentInfo.hashString]);
+                          await controller.controlTorrents(
+                              downloader: downloader,
+                              command: 'reannounce',
+                              hashes: [torrentInfo.hashString]);
                         },
                         child: const Text('确认'),
                       ),
@@ -1720,34 +1839,41 @@ class _DownloadPageState extends State<DownloadPage>
                   children: [
                     Row(
                       children: [
-                        if (torrentInfo.trackerStats.isNotEmpty)
-                          Row(children: [
-                            const Icon(
-                              Icons.link,
-                              size: 10,
-                            ),
-                            // Text(
-                            //   controller
-                            //       .trackerToWebSiteMap[controller
-                            //       .trackerToWebSiteMap.keys
-                            //       .firstWhereOrNull((String element) =>
-                            //       element.contains(Uri.parse(
-                            //           torrentInfo.trackerStats
-                            //               .first!.announce)
-                            //           .host))]
-                            //       ?.name ??
-                            //       Uri.parse(torrentInfo
-                            //           .trackerStats.first!.announce)
-                            //           .host,
-                            //   style: TextStyle(
-                            //       fontSize: 10,
-                            //       color:
-                            //       Theme.of(context).colorScheme.onSurface),
-                            //   overflow: TextOverflow.ellipsis,
-                            //   maxLines: 1,
-                            // ),
-                            const SizedBox(width: 10),
-                          ]),
+                        torrentInfo.error <= 0
+                            ? CustomTextTag(
+                                labelText: controller
+                                        .trackerToWebSiteMap[controller
+                                            .trackerToWebSiteMap.keys
+                                            .firstWhereOrNull(
+                                                (String element) =>
+                                                    element.contains(Uri.parse(
+                                                            torrentInfo
+                                                                .trackerStats
+                                                                .first!
+                                                                .announce)
+                                                        .host))]
+                                        ?.name ??
+                                    Uri.parse(torrentInfo
+                                            .trackerStats.first!.announce)
+                                        .host,
+                                icon: const Icon(Icons.file_upload_outlined,
+                                    size: 10, color: Colors.white),
+                              )
+                            : CustomTextTag(
+                                labelText: Uri.parse(torrentInfo.magnetLink)
+                                            .queryParametersAll["tr"]
+                                            ?.first !=
+                                        null
+                                    ? Uri.parse(
+                                            Uri.parse(torrentInfo.magnetLink)
+                                                .queryParametersAll["tr"]!
+                                                .first)
+                                        .host
+                                    : "未知",
+                                icon: const Icon(Icons.link_off,
+                                    size: 10, color: Colors.white),
+                                backgroundColor: Colors.red,
+                              ),
                         Expanded(
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1760,24 +1886,24 @@ class _DownloadPageState extends State<DownloadPage>
                                         .colorScheme
                                         .onSurface),
                               ),
-                              // SizedBox(
-                              //   height: 12,
-                              //   child: Text(
-                              //     controller.trStatus
-                              //         .firstWhere(
-                              //             (element) =>
-                              //         element.value ==
-                              //             torrentInfo.status,
-                              //         orElse: () => MetaDataItem(
-                              //             name: "未知状态", value: null))
-                              //         .name,
-                              //     style: TextStyle(
-                              //         fontSize: 10,
-                              //         color: Theme.of(context)
-                              //             .colorScheme
-                              //             .onSurface),
-                              //   ),
-                              // ),
+                              SizedBox(
+                                height: 12,
+                                child: Text(
+                                  controller.trStatus
+                                      .firstWhere(
+                                          (element) =>
+                                              element.value ==
+                                              torrentInfo.status,
+                                          orElse: () => MetaDataItem(
+                                              name: "未知状态", value: null))
+                                      .name,
+                                  style: TextStyle(
+                                      fontSize: 10,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface),
+                                ),
+                              ),
                             ],
                           ),
                         ),
