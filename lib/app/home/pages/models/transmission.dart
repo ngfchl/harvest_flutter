@@ -55,12 +55,14 @@ class SpeedLimitSettings {
   bool speedLimitDownEnabled;
   int speedLimitUp;
   bool speedLimitUpEnabled;
+  bool altSpeedEnabled;
 
   SpeedLimitSettings({
     required this.speedLimitDown,
     required this.speedLimitDownEnabled,
     required this.speedLimitUp,
     required this.speedLimitUpEnabled,
+    required this.altSpeedEnabled,
   });
 
   factory SpeedLimitSettings.fromJson(Map<String, dynamic> json) {
@@ -69,6 +71,7 @@ class SpeedLimitSettings {
       speedLimitDownEnabled: json['speed-limit-down-enabled'],
       speedLimitUp: json['speed-limit-up'],
       speedLimitUpEnabled: json['speed-limit-up-enabled'],
+      altSpeedEnabled: json['alt-speed-enabled'],
     );
   }
 
@@ -78,6 +81,7 @@ class SpeedLimitSettings {
       'speed-limit-down-enabled': speedLimitDownEnabled,
       'speed-limit-up': speedLimitUp,
       'speed-limit-up-enabled': speedLimitUpEnabled,
+      'alt-speed-enabled': altSpeedEnabled,
     };
   }
 }
