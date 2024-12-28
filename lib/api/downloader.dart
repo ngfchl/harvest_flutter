@@ -65,6 +65,16 @@ Future<CommonResponse> getMainData(int downloaderId) async {
   return response;
 }
 
+//*///@title 获取下载器全量数据
+///@description
+///@updateTime
+Future<CommonResponse> toggleSpeedLimitApi(int downloaderId, bool state) async {
+  final response = await fetchBasicData(
+      '${Api.DOWNLOADER_TOGGLE_SPEED_LIMIT_ENABLE}$downloaderId',
+      queryParameters: {"state": state});
+  return response;
+}
+
 //*///@title 获取下载器种子详情
 ///@description
 ///@updateTime
