@@ -11,6 +11,7 @@ class Downloader {
   bool isActive;
   bool brush;
   List<dynamic> status;
+  dynamic prefs;
 
   Downloader({
     this.id,
@@ -25,6 +26,7 @@ class Downloader {
     required this.isActive,
     required this.brush,
     required this.status,
+    this.prefs = const {},
   });
 
   factory Downloader.fromJson(Map<String, dynamic> json) {
@@ -41,6 +43,7 @@ class Downloader {
       isActive: json['is_active'],
       brush: json['brush'],
       status: [],
+      prefs: {},
     );
   }
 
