@@ -47,7 +47,9 @@ class Api {
 
   // 下载器分类列表
   static const String DOWNLOADER_TORRENTS = "ws/downloader";
-  static const String DOWNLOADER_STATUS = "ws/downloader/speed/";
+  static const String DOWNLOADER_STATUS = "ws/downloader/speed";
+  static const String DOWNLOADER_TOGGLE_SPEED_LIMIT_ENABLE =
+      "/option/downloaders/toggle_speed_limit/";
   static const String DOWNLOADER_MAIN = "option/downloaders/main/";
   static const String DOWNLOADER_TAGS = "option/downloaders/tags/";
   static const String DOWNLOADER_SET_TAGS = "option/downloaders/tags/set/";
