@@ -96,14 +96,14 @@ class _DownloadPageState extends State<DownloadPage>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            IconButton(
-              icon: Icon(
-                controller.isTimerActive ? Icons.pause : Icons.play_arrow,
-                size: 20,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              onPressed: () => controller.toggleRealTimeState(),
-            ),
+            // IconButton(
+            //   icon: Icon(
+            //     controller.isTimerActive ? Icons.pause : Icons.play_arrow,
+            //     size: 20,
+            //     color: Theme.of(context).colorScheme.primary,
+            //   ),
+            //   onPressed: () => controller.toggleRealTimeState(),
+            // ),
             IconButton(
               icon: Icon(
                 controller.isLoading ? Icons.pause : Icons.play_arrow,
@@ -1182,140 +1182,147 @@ class _DownloadPageState extends State<DownloadPage>
           isScrollControlled: true,
           GetBuilder<DownloadController>(builder: (controller) {
         return SizedBox(
-          height: MediaQuery.of(context).size.height,
+          height: MediaQuery.of(context).size.height * 0.92,
           width: MediaQuery.of(context).size.width,
-          child: Scaffold(
-            appBar: AppBar(
-              title: Row(
-                children: [
-                  Text(
-                      '${downloader.name} (${controller.torrents.isNotEmpty ? controller.torrents.length : 'loading'})'),
-                  // if (controller.torrents.isEmpty)
-                  //   const SizedBox(
-                  //     height: 24,
-                  //     width: 24,
-                  //     child: Center(
-                  //       child: CircularProgressIndicator(),
-                  //     ),
-                  //   )
+          child: SafeArea(
+            child: Scaffold(
+              resizeToAvoidBottomInset: false,
+              appBar: AppBar(
+                title: Row(
+                  children: [
+                    Text(
+                        '${downloader.name} (${controller.torrents.isNotEmpty ? controller.torrents.length : 'loading'})'),
+                    // if (controller.torrents.isEmpty)
+                    //   const SizedBox(
+                    //     height: 24,
+                    //     width: 24,
+                    //     child: Center(
+                    //       child: CircularProgressIndicator(),
+                    //     ),
+                    //   )
+                  ],
+                ),
+                actions: [
+                  IconButton(
+                      onPressed: () {}, icon: const Icon(Icons.speed_outlined)),
+                  IconButton(
+                      onPressed: () async {
+                        await controller.stopFetchTorrents();
+                        Get.back();
+                      },
+                      icon: const Icon(Icons.exit_to_app_outlined))
                 ],
               ),
-              actions: [
-                IconButton(
-                    onPressed: () {}, icon: const Icon(Icons.speed_outlined)),
-                IconButton(
-                    onPressed: () async {
-                      await controller.stopFetchTorrents();
-                      Get.back();
-                    },
-                    icon: const Icon(Icons.exit_to_app_outlined))
-              ],
-            ),
-            body: CustomCard(
-                child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: GetBuilder<DownloadController>(builder: (controller) {
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: controller.searchController,
-                            textAlignVertical: TextAlignVertical.center,
-                            decoration: InputDecoration(
-                              isDense: true,
-                              hintText: '请输入搜索关键字',
-                              hintStyle: const TextStyle(fontSize: 14),
-                              contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 5, horizontal: 5),
-                              border: OutlineInputBorder(
-                                borderSide: BorderSide.none,
-                                // 不绘制边框
-                                borderRadius: BorderRadius.circular(0.0),
-                                // 确保角落没有圆角
-                                gapPadding: 0.0, // 移除边框与hintText之间的间距
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide.none,
-                                // 仅在聚焦时绘制底部边框
-                                borderRadius: BorderRadius.circular(0.0),
-                              ),
-                              suffixIcon: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(5.0),
-                                    child: Text(
-                                        '计数：${controller.showTorrents.length}',
-                                        style: const TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.orange)),
+              body: CustomCard(
+                  child: Column(
+                children: [
+                  Expanded(
+                    child: controller.isTorrentsLoading
+                        ? const Center(
+                            child: CircularProgressIndicator(),
+                          )
+                        : controller.showTorrents.isEmpty
+                            ? Center(
+                                child: Text(
+                                '暂无数据',
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ))
+                            : ListView.builder(
+                                itemCount: controller.showTorrents.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  if (isQb) {
+                                    TorrentInfo torrent =
+                                        controller.showTorrents[index];
+                                    return _showQbTorrent(
+                                        downloader, torrent, context);
+                                  } else {
+                                    TrTorrent torrent =
+                                        controller.showTorrents[index];
+                                    return _showTrTorrent(
+                                        downloader, torrent, context);
+                                  }
+                                }),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 5),
+                    child:
+                        GetBuilder<DownloadController>(builder: (controller) {
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 28,
+                              child: TextField(
+                                controller: controller.searchController,
+                                textAlignVertical: TextAlignVertical.center,
+                                decoration: InputDecoration(
+                                  isDense: true,
+                                  hintText: '请输入搜索关键字',
+                                  hintStyle: const TextStyle(fontSize: 14),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 5, horizontal: 5),
+                                  border: OutlineInputBorder(
+                                    borderSide: BorderSide.none,
+                                    // 不绘制边框
+                                    borderRadius: BorderRadius.circular(0.0),
+                                    // 确保角落没有圆角
+                                    gapPadding: 0.0, // 移除边框与hintText之间的间距
                                   ),
-                                ],
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: BorderSide.none,
+                                    // 仅在聚焦时绘制底部边框
+                                    borderRadius: BorderRadius.circular(0.0),
+                                  ),
+                                  suffixIcon: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.all(5.0),
+                                        child: Text(
+                                            '计数：${controller.showTorrents.length}',
+                                            style: const TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.orange)),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                onChanged: (value) =>
+                                    controller.filterTorrents(isQb),
                               ),
                             ),
-                            onChanged: (value) =>
-                                controller.filterTorrents(isQb),
                           ),
-                        ),
-                        if (controller.searchKey.isNotEmpty)
-                          IconButton(
-                              onPressed: () {
-                                if (controller
-                                    .searchController.text.isNotEmpty) {
-                                  controller.searchController.text = controller
-                                      .searchController.text
-                                      .substring(
-                                          0,
-                                          controller.searchController.text
-                                                  .length -
-                                              1);
-                                  controller.searchKey =
-                                      controller.searchController.text;
-                                  controller.filterTorrents(isQb);
-                                }
-                              },
-                              icon: const Icon(
-                                Icons.backspace_outlined,
-                                size: 18,
-                              ))
-                      ],
-                    );
-                  }),
-                ),
-                Expanded(
-                  child: controller.isTorrentsLoading
-                      ? const Center(
-                          child: CircularProgressIndicator(),
-                        )
-                      : controller.showTorrents.isEmpty
-                          ? Center(
-                              child: Text(
-                              '暂无数据',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                            ))
-                          : ListView.builder(
-                              itemCount: controller.showTorrents.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                if (isQb) {
-                                  TorrentInfo torrent =
-                                      controller.showTorrents[index];
-                                  return _showQbTorrent(
-                                      downloader, torrent, context);
-                                } else {
-                                  TrTorrent torrent =
-                                      controller.showTorrents[index];
-                                  return _showTrTorrent(
-                                      downloader, torrent, context);
-                                }
-                              }),
-                )
-              ],
-            )),
+                          if (controller.searchKey.isNotEmpty)
+                            IconButton(
+                                onPressed: () {
+                                  if (controller
+                                      .searchController.text.isNotEmpty) {
+                                    controller.searchController.text =
+                                        controller.searchController.text
+                                            .substring(
+                                                0,
+                                                controller.searchController.text
+                                                        .length -
+                                                    1);
+                                    controller.searchKey =
+                                        controller.searchController.text;
+                                    controller.filterTorrents(isQb);
+                                  }
+                                },
+                                icon: const Icon(
+                                  Icons.backspace_outlined,
+                                  size: 18,
+                                ))
+                        ],
+                      );
+                    }),
+                  ),
+                ],
+              )),
+            ),
           ),
         );
       })).whenComplete(() => controller.stopFetchTorrents());

@@ -34,7 +34,7 @@ class DownloadController extends GetxController {
   Timer? periodicTimer;
   Timer? fiveMinutesTimer;
   bool isDurationValid = true;
-  bool realTimeState = true;
+  bool realTimeState = false;
   bool isLoading = false;
   bool isTorrentsLoading = false;
   late WebSocketChannel channel;
@@ -332,6 +332,7 @@ class DownloadController extends GetxController {
   getDownloaderStatus() async {
     // 打开加载状态
     isLoading = true;
+    update();
     try {
       final wsUrl = Uri.parse(
           '${baseUrl.replaceFirst('http', 'ws')}/api/${Api.DOWNLOADER_STATUS}');
@@ -759,7 +760,8 @@ class DownloadController extends GetxController {
           item.prefs = TransmissionConfig.fromJson(status[key]['prefs']);
           item.status.add(stats);
         }
-        logger_helper.Logger.instance.i(item.status);
+        logger_helper.Logger.instance
+            .i('下载器${item.name}状态：${item.status.length}');
 
         if (item.status.length > 30) {
           item.status.removeAt(0);
@@ -781,6 +783,8 @@ class DownloadController extends GetxController {
     await torrentsChannel.sink.close(status.normalClosure);
     await torrentsChannel.sink.done;
     torrents.clear();
+    searchController.text = '';
+    searchKey = '';
     update();
   }
 
