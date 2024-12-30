@@ -51,65 +51,65 @@ class CurrentStats {
 }
 
 class TransmissionConfig {
-  final int altSpeedDown;
-  final bool altSpeedEnabled;
-  final int altSpeedTimeBegin;
-  final int altSpeedTimeDay;
-  final bool altSpeedTimeEnabled;
-  final int altSpeedTimeEnd;
-  final int altSpeedUp;
-  final bool antiBruteForceEnabled;
-  final int antiBruteForceThreshold;
-  final bool blocklistEnabled;
-  final int blocklistSize;
-  final String blocklistUrl;
-  final int cacheSizeMb;
-  final String configDir;
-  final String defaultTrackers;
-  final bool dhtEnabled;
-  final String downloadDir;
-  final int downloadDirFreeSpace;
-  final bool downloadQueueEnabled;
-  final int downloadQueueSize;
-  final String encryption;
-  final int idleSeedingLimit;
-  final bool idleSeedingLimitEnabled;
-  final String incompleteDir;
-  final bool incompleteDirEnabled;
-  final bool lpdEnabled;
-  final int peerLimitGlobal;
-  final int peerLimitPerTorrent;
-  final int peerPort;
-  final bool peerPortRandomOnStart;
-  final bool pexEnabled;
-  final bool portForwardingEnabled;
-  final bool queueStalledEnabled;
-  final int queueStalledMinutes;
-  final bool renamePartialFiles;
-  final int rpcVersion;
-  final int rpcVersionMinimum;
-  final String rpcVersionSemver;
-  final bool scriptTorrentAddedEnabled;
-  final String scriptTorrentAddedFilename;
-  final bool scriptTorrentDoneEnabled;
-  final String scriptTorrentDoneFilename;
-  final bool scriptTorrentDoneSeedingEnabled;
-  final String scriptTorrentDoneSeedingFilename;
-  final bool seedQueueEnabled;
-  final int seedQueueSize;
-  final double seedRatioLimit;
-  final bool seedRatioLimited;
-  final String sessionId;
-  final int speedLimitDown;
-  final bool speedLimitDownEnabled;
-  final int speedLimitUp;
-  final bool speedLimitUpEnabled;
-  final bool startAddedTorrents;
-  final bool tcpEnabled;
-  final bool trashOriginalTorrentFiles;
-  final Map<String, dynamic> units;
-  final bool utpEnabled;
-  final String version;
+  int altSpeedDown;
+  bool altSpeedEnabled;
+  int altSpeedTimeBegin;
+  int altSpeedTimeDay;
+  bool altSpeedTimeEnabled;
+  int altSpeedTimeEnd;
+  int altSpeedUp;
+  bool antiBruteForceEnabled;
+  int antiBruteForceThreshold;
+  bool blocklistEnabled;
+  int blocklistSize;
+  String blocklistUrl;
+  int cacheSizeMb;
+  String configDir;
+  String defaultTrackers;
+  bool dhtEnabled;
+  String downloadDir;
+  int downloadDirFreeSpace;
+  bool downloadQueueEnabled;
+  int downloadQueueSize;
+  String encryption;
+  int idleSeedingLimit;
+  bool idleSeedingLimitEnabled;
+  String incompleteDir;
+  bool incompleteDirEnabled;
+  bool lpdEnabled;
+  int peerLimitGlobal;
+  int peerLimitPerTorrent;
+  int peerPort;
+  bool peerPortRandomOnStart;
+  bool pexEnabled;
+  bool portForwardingEnabled;
+  bool queueStalledEnabled;
+  int queueStalledMinutes;
+  bool renamePartialFiles;
+  int rpcVersion;
+  int rpcVersionMinimum;
+  String rpcVersionSemver;
+  bool scriptTorrentAddedEnabled;
+  String scriptTorrentAddedFilename;
+  bool scriptTorrentDoneEnabled;
+  String scriptTorrentDoneFilename;
+  bool scriptTorrentDoneSeedingEnabled;
+  String scriptTorrentDoneSeedingFilename;
+  bool seedQueueEnabled;
+  int seedQueueSize;
+  double seedRatioLimit;
+  bool seedRatioLimited;
+  String sessionId;
+  int speedLimitDown;
+  bool speedLimitDownEnabled;
+  int speedLimitUp;
+  bool speedLimitUpEnabled;
+  bool startAddedTorrents;
+  bool tcpEnabled;
+  bool trashOriginalTorrentFiles;
+  Map<String, dynamic> units;
+  bool utpEnabled;
+  String version;
 
   TransmissionConfig({
     required this.altSpeedDown,
@@ -489,5 +489,25 @@ class TrFreeSpace {
     data['path'] = path;
     data['size-bytes'] = sizeBytes;
     return data;
+  }
+}
+
+class TransmissionUtils {
+  /// 给定一个整数（altSpeedTimeDay），返回一个包含启用限时限速的星期列表
+  static List<int> getEnabledDaysFromAltSpeedTimeDay(int altSpeedTimeDay) {
+    List<int> daysOfWeekMask = [1, 2, 4, 8, 16, 32, 64];
+    List<int> enabledDays = [];
+    for (int i = 0; i < daysOfWeekMask.length; i++) {
+      int mask = 1 << i;
+      if ((altSpeedTimeDay & mask) != 0) {
+        enabledDays.add(daysOfWeekMask[i]);
+      }
+    }
+    return enabledDays;
+  }
+
+  /// 给定一个星期列表，返回对应的 altSpeedTimeDay 整数值
+  static int getAltSpeedTimeDayFromEnabledDays(List<int> enabledDays) {
+    return enabledDays.reduce((a, b) => a + b);
   }
 }
