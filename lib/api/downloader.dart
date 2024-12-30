@@ -65,7 +65,26 @@ Future<CommonResponse> getMainData(int downloaderId) async {
   return response;
 }
 
-//*///@title 获取下载器全量数据
+//*///@title 获取下载器配置信息
+///@description
+///@updateTime
+Future<CommonResponse> getPrefsApi(int downloaderId) async {
+  final response =
+      await fetchBasicData('${Api.DOWNLOADER_PREFERENCES}$downloaderId');
+  return response;
+}
+
+//*///@title 更新下载器配置信息
+///@description
+///@updateTime
+Future<CommonResponse> setPrefsApi(
+    int downloaderId, Map<String, dynamic> prefs) async {
+  final response =
+      await editData('${Api.DOWNLOADER_PREFERENCES}$downloaderId', prefs);
+  return response;
+}
+
+//*///@title 切换下载器限速模式
 ///@description
 ///@updateTime
 Future<CommonResponse> toggleSpeedLimitApi(int downloaderId, bool state) async {
