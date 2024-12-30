@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart'; // ignore: depend_on_referenced_packages
 import 'package:path_provider/path_provider.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
@@ -28,7 +28,7 @@ class DownloadController extends GetxController {
   Map<String, Downloader> dataMap = {};
   List<String> pathList = <String>[];
   bool isTimerActive = true; // 使用 RxBool 控制定时器是否激活
-  double duration = 3.14;
+  double duration = 1.5;
   double timerDuration = 3.14;
   int interval = 3;
   Timer? periodicTimer;
@@ -164,16 +164,34 @@ class DownloadController extends GetxController {
     isTimerActive = realTimeState;
     duration = SPUtil.getDouble('duration', defaultValue: 3.14)!;
     timerDuration = SPUtil.getDouble('timerDuration', defaultValue: 3.14)!;
+    downloadStream.listen((downloaders) {
+      for (var downloader in downloaders) {
+        // 查找 dataList 中 id 相同的元素
+        int index =
+            dataList.indexWhere((element) => element.id == downloader.id);
+
+        if (index != -1) {
+          // 如果找到了，替换为新的 downloader
+          dataList[index] = downloader;
+        } else {
+          // 如果没有找到，可以选择添加到 dataList 中
+          dataList.add(downloader);
+        }
+      }
+      dataMap = {
+        for (var item in dataList)
+          "${item.name}-${item.id}-${item.category}": item
+      };
+      update();
+    });
     await getDownloaderListFromServer();
-    await getDownloaderStatus();
-    dataMap = {
-      for (var item in dataList)
-        "${item.name}-${item.id}-${item.category}": item
-    };
+
     trackerToWebSiteMap = mySiteController.buildTrackerToWebSite();
 
     if (realTimeState) {
       logger_helper.Logger.instance.d('调用刷新 init');
+      await getDownloaderStatus();
+
       // refreshDownloadStatus();
       // 设置定时器，每隔一定时间刷新下载器数据
       // startPeriodicTimer();
@@ -231,11 +249,11 @@ class DownloadController extends GetxController {
       if (item.status.length > 30) {
         item.status.removeAt(0);
       }
-
       _downloadStreamController.sink.add([item]);
       update();
-    } catch (e) {
+    } catch (e, trace) {
       logger_helper.Logger.instance.e('Error fetching download status: $e');
+      logger_helper.Logger.instance.e('Error fetching download status: $trace');
     }
   }
 
@@ -252,23 +270,17 @@ class DownloadController extends GetxController {
     await Future.wait(futures);
   }
 
-  getDownloaderListFromServer() {
-    getDownloaderListApi().then((value) {
-      if (value.code == 0) {
-        dataList = value.data;
-        isLoaded = true;
-        _downloadStreamController.add(dataList.toList());
-      } else {
-        Get.snackbar('', value.msg.toString());
-      }
-    }).catchError((e) {
-      Get.snackbar('', e.toString());
-    });
-    // 发送最新的下载列表到流中
-    if (realTimeState) {
-      logger_helper.Logger.instance.d('调用刷新 list');
-
-      refreshDownloadStatus();
+  getDownloaderListFromServer() async {
+    isLoaded = false;
+    update();
+    CommonResponse response = await getDownloaderListApi();
+    if (response.succeed) {
+      dataList.clear();
+      dataList = response.data;
+      isLoaded = true;
+      _downloadStreamController.sink.add(dataList.toList());
+    } else {
+      Get.snackbar('出错啦', response.msg);
     }
     update();
   }
@@ -347,7 +359,7 @@ class DownloadController extends GetxController {
         CommonResponse response =
             CommonResponse.fromJson(json.decode(message), (p0) => p0);
         if (response.code == 0) {
-          logger_helper.Logger.instance.d(response.data[0]);
+          logger_helper.Logger.instance.d(response.data);
           Future<void> fetchStatus = fetchItemStatus(response.data);
           futures.add(fetchStatus);
           await Future.wait(futures);
@@ -862,6 +874,15 @@ class DownloadController extends GetxController {
   }
 
   toggleSpeedLimit(Downloader downloader, bool state) async {
-    return await toggleSpeedLimitApi(downloader.id!, state);
+    CommonResponse response = await toggleSpeedLimitApi(downloader.id!, state);
+    if (response.succeed) {
+      // await stopFetchStatus();
+      // await getDownloaderStatus();
+      Get.snackbar('提示', response.msg);
+      getDownloaderListFromServer();
+      update();
+      return;
+    }
+    Get.snackbar('出错啦！', response.msg, colorText: Colors.red);
   }
 }

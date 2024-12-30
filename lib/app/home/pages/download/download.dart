@@ -143,9 +143,9 @@ class _DownloadPageState extends State<DownloadPage>
                                   controller.realTimeState = value;
                                   await SPUtil.setBool('realTimeState', value);
                                   if (value == false) {
-                                    controller.cancelPeriodicTimer();
+                                    await controller.stopFetchStatus();
                                   } else {
-                                    controller.startPeriodicTimer();
+                                    await controller.getDownloaderStatus();
                                   }
                                   controller.update();
                                 },
@@ -164,17 +164,19 @@ class _DownloadPageState extends State<DownloadPage>
                                     InkWell(
                                       child: const Icon(Icons.remove),
                                       onTap: () {
-                                        if (controller.duration.toInt() > 3) {
+                                        if (controller.duration.toInt() > 1) {
                                           controller.duration--;
                                           SPUtil.setDouble(
                                               'duration', controller.duration);
+                                          controller.stopFetchStatus();
+                                          controller.getDownloaderStatus();
                                           controller.update();
                                         }
                                       },
                                     ),
                                     Expanded(
                                       child: Slider(
-                                          min: 3,
+                                          min: 1,
                                           max: 15,
                                           divisions: 12,
                                           label: controller.duration.toString(),
@@ -298,7 +300,14 @@ class _DownloadPageState extends State<DownloadPage>
       );
     }
     if (downloader.status.isEmpty) {
-      return const GFLoader();
+      return GFLoader(
+        type: GFLoaderType.square,
+        loaderstrokeWidth: 2,
+        loaderColorOne: Theme.of(context).colorScheme.primary,
+        loaderColorTwo: Theme.of(context).colorScheme.primary,
+        loaderColorThree: Theme.of(context).colorScheme.primary,
+        size: 16,
+      );
     }
     double chartHeight = 80;
     var tooltipBehavior = TooltipBehavior(
