@@ -1,3 +1,6 @@
+import 'package:harvest/app/home/pages/models/transmission.dart';
+import 'package:qbittorrent_api/qbittorrent_api.dart';
+
 class Downloader {
   int? id;
   String name;
@@ -42,8 +45,23 @@ class Downloader {
       torrentPath: json['torrent_path'],
       isActive: json['is_active'],
       brush: json['brush'],
-      status: [],
-      prefs: {},
+      status: json['status'] != null && json['status'].isNotEmpty
+          ? (json['category'] == 'Qb'
+              ? json['status']
+                  .map<TransferInfo>(
+                      (e) => TransferInfo.fromJson(e as Map<String, dynamic>))
+                  .toList()
+              : json['status']
+                  .map<TransmissionStats>((e) =>
+                      TransmissionStats.fromJson(e as Map<String, dynamic>))
+                  .toList())
+          : {},
+      prefs: json['prefs'] != null && json['prefs'].isNotEmpty
+          ? (json['category'] == 'Qb'
+              ? Preferences.fromJson(json['prefs'] as Map<String, dynamic>)
+              : TransmissionConfig.fromJson(
+                  json['prefs'] as Map<String, dynamic>))
+          : {},
     );
   }
 
