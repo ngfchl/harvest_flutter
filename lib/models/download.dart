@@ -55,7 +55,7 @@ class Downloader {
                   .map<TransmissionStats>((e) =>
                       TransmissionStats.fromJson(e as Map<String, dynamic>))
                   .toList())
-          : {},
+          : [],
       prefs: json['prefs'] != null && json['prefs'].isNotEmpty
           ? (json['category'] == 'Qb'
               ? Preferences.fromJson(json['prefs'] as Map<String, dynamic>)
