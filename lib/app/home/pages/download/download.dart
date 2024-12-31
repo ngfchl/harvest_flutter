@@ -2192,19 +2192,24 @@ class _DownloadPageState extends State<DownloadPage>
                     CustomCard(
                       child: Column(
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('添加种子时'),
-                              DropdownButton(items: const [
-                                DropdownMenuItem(
-                                    value: 'subfloder', child: Text('子文件夹')),
-                                DropdownMenuItem(
-                                    value: 'subfloder', child: Text('原始')),
-                                DropdownMenuItem(
-                                    value: 'subfloder', child: Text('不创建子文件夹')),
-                              ], onChanged: (value) {}),
-                            ],
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('添加种子时'),
+                                DropdownButton(items: const [
+                                  DropdownMenuItem(
+                                      value: 'subfloder', child: Text('子文件夹')),
+                                  DropdownMenuItem(
+                                      value: 'subfloder', child: Text('原始')),
+                                  DropdownMenuItem(
+                                      value: 'subfloder',
+                                      child: Text('不创建子文件夹')),
+                                ], onChanged: (value) {}),
+                              ],
+                            ),
                           ),
                           CheckboxListTile(
                             dense: true,
@@ -2212,19 +2217,24 @@ class _DownloadPageState extends State<DownloadPage>
                             onChanged: (value) {},
                             title: const Text('不要开始自动下载'),
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('种子停止条件'),
-                              DropdownButton(items: const [
-                                DropdownMenuItem(
-                                    value: 'subfloder', child: Text('无')),
-                                DropdownMenuItem(
-                                    value: 'subfloder', child: Text('已收到元数据')),
-                                DropdownMenuItem(
-                                    value: 'subfloder', child: Text('选种的文件')),
-                              ], onChanged: (value) {}),
-                            ],
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('种子停止条件'),
+                                DropdownButton(items: const [
+                                  DropdownMenuItem(
+                                      value: 'subfloder', child: Text('无')),
+                                  DropdownMenuItem(
+                                      value: 'subfloder',
+                                      child: Text('已收到元数据')),
+                                  DropdownMenuItem(
+                                      value: 'subfloder', child: Text('选种的文件')),
+                                ], onChanged: (value) {}),
+                              ],
+                            ),
                           ),
                           CheckboxListTile(
                             dense: true,
@@ -2235,72 +2245,90 @@ class _DownloadPageState extends State<DownloadPage>
                         ],
                       ),
                     ),
-                    CheckboxListTile(
-                      dense: true,
-                      value: false,
-                      onChanged: (value) {},
-                      title: const Text('为所有文件预分配磁盘空间'),
-                    ),
-                    CheckboxListTile(
-                      dense: true,
-                      value: false,
-                      onChanged: (value) {},
-                      title: const Text('为不完整的文件添加扩展名 .!qB'),
+                    CustomCard(
+                      child: Column(
+                        children: [
+                          CheckboxListTile(
+                            dense: true,
+                            value: false,
+                            onChanged: (value) {},
+                            title: const Text('为所有文件预分配磁盘空间'),
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: false,
+                            onChanged: (value) {},
+                            title: const Text('为不完整的文件添加扩展名 .!qB'),
+                          ),
+                        ],
+                      ),
                     ),
                     CustomCard(
                         child: Column(
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('默认 Torrent 管理模式'),
-                            DropdownButton(items: const [
-                              DropdownMenuItem(
-                                  value: 'subfloder', child: Text('手动')),
-                              DropdownMenuItem(
-                                  value: 'subfloder', child: Text('自动')),
-                            ], onChanged: (value) {}),
-                          ],
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('默认 Torrent 管理模式'),
+                              DropdownButton(items: const [
+                                DropdownMenuItem(
+                                    value: 'subfloder', child: Text('手动')),
+                                DropdownMenuItem(
+                                    value: 'subfloder', child: Text('自动')),
+                              ], onChanged: (value) {}),
+                            ],
+                          ),
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('当 Torrent 分类修改时'),
-                            DropdownButton(items: const [
-                              DropdownMenuItem(
-                                  value: 'subfloder', child: Text('重新定位')),
-                              DropdownMenuItem(
-                                  value: 'subfloder', child: Text('切换手动')),
-                            ], onChanged: (value) {}),
-                          ],
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('当 Torrent 分类修改时'),
+                              DropdownButton(items: const [
+                                DropdownMenuItem(
+                                    value: 'subfloder', child: Text('重新定位')),
+                                DropdownMenuItem(
+                                    value: 'subfloder', child: Text('切换手动')),
+                              ], onChanged: (value) {}),
+                            ],
+                          ),
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('当默认保存路径修改时'),
-                            DropdownButton(items: const [
-                              DropdownMenuItem(
-                                  value: 'subfloder',
-                                  child: Text('重新定位受影响的种子')),
-                              DropdownMenuItem(
-                                  value: 'subfloder',
-                                  child: Text('切换受影响的种子为手动')),
-                            ], onChanged: (value) {}),
-                          ],
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('当默认保存路径修改时'),
+                              DropdownButton(items: const [
+                                DropdownMenuItem(
+                                    value: 'subfloder',
+                                    child: Text('重新定位受影响的种子')),
+                                DropdownMenuItem(
+                                    value: 'subfloder',
+                                    child: Text('切换受影响的种子为手动')),
+                              ], onChanged: (value) {}),
+                            ],
+                          ),
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('当分类保存路径修改时'),
-                            DropdownButton(items: const [
-                              DropdownMenuItem(
-                                  value: 'subfloder',
-                                  child: Text('重新定位受影响的种子')),
-                              DropdownMenuItem(
-                                  value: 'subfloder',
-                                  child: Text('切换受影响的种子为手动')),
-                            ], onChanged: (value) {}),
-                          ],
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('当分类保存路径修改时'),
+                              DropdownButton(items: const [
+                                DropdownMenuItem(
+                                    value: 'subfloder',
+                                    child: Text('重新定位受影响的种子')),
+                                DropdownMenuItem(
+                                    value: 'subfloder',
+                                    child: Text('切换受影响的种子为手动')),
+                              ], onChanged: (value) {}),
+                            ],
+                          ),
                         ),
                         CustomTextField(
                             controller: TextEditingController(
@@ -2356,17 +2384,20 @@ class _DownloadPageState extends State<DownloadPage>
                 ),
                 ListView(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('下载连接协议'),
-                        DropdownButton(items: const [
-                          DropdownMenuItem(
-                              value: 'tcp utp', child: Text('TCP 和 UTP')),
-                          DropdownMenuItem(value: 'tcp', child: Text('TCP')),
-                          DropdownMenuItem(value: 'utp', child: Text('UTP')),
-                        ], onChanged: (value) {}),
-                      ],
+                    CustomCard(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('下载连接协议'),
+                          DropdownButton(items: const [
+                            DropdownMenuItem(
+                                value: 'tcp utp', child: Text('TCP 和 UTP')),
+                            DropdownMenuItem(value: 'tcp', child: Text('TCP')),
+                            DropdownMenuItem(value: 'utp', child: Text('UTP')),
+                          ], onChanged: (value) {}),
+                        ],
+                      ),
                     ),
                     CustomCard(
                       child: Column(
@@ -2535,7 +2566,6 @@ class _DownloadPageState extends State<DownloadPage>
                 ),
                 ListView(
                   children: [
-                    const Text('Bittorrent'),
                     CustomCard(
                       child: Column(
                         children: [
@@ -2557,19 +2587,23 @@ class _DownloadPageState extends State<DownloadPage>
                             onChanged: (value) {},
                             title: const Text('启用本地用户发现以找到更多用户'),
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('加密模式'),
-                              DropdownButton(items: const [
-                                DropdownMenuItem(
-                                    value: 'tcp utp', child: Text('允许加密')),
-                                DropdownMenuItem(
-                                    value: 'tcp', child: Text('强制加密')),
-                                DropdownMenuItem(
-                                    value: 'utp', child: Text('禁用加密')),
-                              ], onChanged: (value) {}),
-                            ],
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('加密模式'),
+                                DropdownButton(items: const [
+                                  DropdownMenuItem(
+                                      value: 'tcp utp', child: Text('允许加密')),
+                                  DropdownMenuItem(
+                                      value: 'tcp', child: Text('强制加密')),
+                                  DropdownMenuItem(
+                                      value: 'utp', child: Text('禁用加密')),
+                                ], onChanged: (value) {}),
+                              ],
+                            ),
                           ),
                           CheckboxListTile(
                             dense: true,
@@ -2580,11 +2614,13 @@ class _DownloadPageState extends State<DownloadPage>
                         ],
                       ),
                     ),
-                    CustomTextField(
-                      controller: TextEditingController(
-                        text: 'prefs.altSpeedTimeEnd.toString()',
+                    CustomCard(
+                      child: CustomTextField(
+                        controller: TextEditingController(
+                          text: 'prefs.altSpeedTimeEnd.toString()',
+                        ),
+                        labelText: '最大活跃检查种子数',
                       ),
-                      labelText: '最大活跃检查种子数',
                     ),
                     CustomCard(
                         child: Column(
@@ -2638,22 +2674,664 @@ class _DownloadPageState extends State<DownloadPage>
                           labelText: 'Torrent 非活动计时器',
                         ),
                       ],
-                    ))
+                    )),
                   ],
                 ),
                 ListView(
                   children: [
-                    const Text('RSS'),
+                    CustomCard(
+                        child: Column(
+                      children: [
+                        const Text('RSS'),
+                        CheckboxListTile(
+                          dense: true,
+                          value: prefs.upnp,
+                          onChanged: (value) {},
+                          title: const Text('启用获取 RSS 订阅'),
+                        ),
+                        CustomTextField(
+                          controller: TextEditingController(
+                            text: '',
+                          ),
+                          labelText: 'RSS 订阅源更新间隔(分钟)',
+                        ),
+                        CustomTextField(
+                          controller: TextEditingController(
+                            text: '',
+                          ),
+                          labelText: '每个订阅源文章数目最大值(个)',
+                        ),
+                        CustomTextField(
+                          controller: TextEditingController(
+                            text: '',
+                          ),
+                          labelText: '最大活动的 torrent 数',
+                        ),
+                      ],
+                    )),
+                    CustomCard(
+                        child: Column(children: [
+                      CheckboxListTile(
+                        dense: true,
+                        value: prefs.upnp,
+                        onChanged: (value) {},
+                        title: const Text('启用 RSS Torrent 自动下载'),
+                      ),
+                    ])),
+                    CustomCard(
+                      child: Column(
+                        children: [
+                          CheckboxListTile(
+                            dense: true,
+                            value: prefs.upnp,
+                            onChanged: (value) {},
+                            title: const Text('下载 REPACK/PROPER 版剧集'),
+                          ),
+                          CustomTextField(
+                            controller: TextEditingController(
+                              text: '',
+                            ),
+                            maxLines: 5,
+                            labelText: '过滤器',
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
                 ListView(
                   children: [
-                    const Text('WEBUI'),
+                    CustomCard(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('用户界面语言'),
+                            DropdownButton(items: const [
+                              DropdownMenuItem(
+                                  value: 'zh_CN', child: Text(' 简体中文')),
+                              DropdownMenuItem(
+                                  value: 'en_US', child: Text('English')),
+                            ], onChanged: (value) {}),
+                          ],
+                        ),
+                      ),
+                    ),
+                    CustomCard(
+                      child: CheckboxListTile(
+                        dense: true,
+                        value: prefs.upnp,
+                        onChanged: (value) {},
+                        title: const Text('记录性能警报'),
+                      ),
+                    ),
+                    CustomCard(
+                        child: Column(children: [
+                      CustomTextField(
+                        controller: TextEditingController(
+                          text: '',
+                        ),
+                        labelText: 'IP 地址',
+                      ),
+                      CustomTextField(
+                        controller: TextEditingController(
+                          text: '',
+                        ),
+                        labelText: '端口',
+                      ),
+                      CheckboxListTile(
+                        dense: true,
+                        value: prefs.upnp,
+                        onChanged: (value) {},
+                        title: const Text('使用我的路由器的 UPnP / NAT-PMP 功能来转发端口'),
+                      ),
+                      CheckboxListTile(
+                        dense: true,
+                        value: prefs.upnp,
+                        onChanged: (value) {},
+                        title: const Text('使用 HTTPS 而不是 HTTP'),
+                      ),
+                      CustomTextField(
+                        controller: TextEditingController(
+                          text: '',
+                        ),
+                        labelText: '证书',
+                      ),
+                      CustomTextField(
+                        controller: TextEditingController(
+                          text: '',
+                        ),
+                        labelText: '密钥',
+                      ),
+                    ])),
+                    CustomCard(
+                        child: Column(children: [
+                      CustomTextField(
+                        controller: TextEditingController(
+                          text: '',
+                        ),
+                        labelText: '用户名',
+                      ),
+                      CustomTextField(
+                        controller: TextEditingController(
+                          text: '',
+                        ),
+                        labelText: '密码',
+                      ),
+                      CheckboxListTile(
+                        dense: true,
+                        value: prefs.upnp,
+                        onChanged: (value) {},
+                        title: const Text('对本地主机上的客户端跳过身份验证'),
+                      ),
+                      CheckboxListTile(
+                        dense: true,
+                        value: prefs.upnp,
+                        onChanged: (value) {},
+                        title: const Text('对 IP 子网白名单中的客户端跳过身份验证'),
+                      ),
+                      CustomTextField(
+                        controller: TextEditingController(
+                          text: '',
+                        ),
+                        maxLines: 5,
+                        labelText: '对 IP 子网白名单中的客户端跳过身份验证',
+                      ),
+                      CustomTextField(
+                        controller: TextEditingController(
+                          text: '',
+                        ),
+                        labelText: '连续失败后禁止客户端(次)',
+                      ),
+                      CustomTextField(
+                        controller: TextEditingController(
+                          text: '',
+                        ),
+                        labelText: '连续失败后禁止时长(秒)',
+                      ),
+                      CustomTextField(
+                        controller: TextEditingController(
+                          text: '',
+                        ),
+                        labelText: '会话超时时间(秒)',
+                      ),
+                    ])),
+                    CustomCard(
+                      child: Column(children: [
+                        CheckboxListTile(
+                          dense: true,
+                          value: prefs.upnp,
+                          onChanged: (value) {},
+                          title: const Text('使用备用 Web UI'),
+                        ),
+                        CustomTextField(
+                          controller: TextEditingController(
+                            text: '',
+                          ),
+                          labelText: '备用 Web UI 路径',
+                        ),
+                      ]),
+                    ),
+                    CustomCard(
+                      child: Column(children: [
+                        CheckboxListTile(
+                          dense: true,
+                          value: prefs.upnp,
+                          onChanged: (value) {},
+                          title: const Text('启用 “点击劫持” 保护'),
+                        ),
+                        CheckboxListTile(
+                          dense: true,
+                          value: prefs.upnp,
+                          onChanged: (value) {},
+                          title: const Text('启用跨站请求伪造 (CSRF) 保护'),
+                        ),
+                        CheckboxListTile(
+                          dense: true,
+                          value: prefs.upnp,
+                          onChanged: (value) {},
+                          title: const Text('启用 cookie 安全标志（需要 HTTPS）'),
+                        ),
+                        CheckboxListTile(
+                          dense: true,
+                          value: prefs.upnp,
+                          onChanged: (value) {},
+                          title: const Text('启用 Host header 属性验证'),
+                        ),
+                        CustomTextField(
+                          controller: TextEditingController(
+                            text: '',
+                          ),
+                          labelText: '服务器域名',
+                        ),
+                      ]),
+                    ),
+                    CustomCard(
+                      child: Column(children: [
+                        CheckboxListTile(
+                          dense: true,
+                          value: prefs.upnp,
+                          onChanged: (value) {},
+                          title: const Text('添加自定义 HTTP 头字段'),
+                        ),
+                        CustomTextField(
+                          controller: TextEditingController(
+                            text: '',
+                          ),
+                          maxLines: 5,
+                          labelText: 'HTTP 头字段（每行一个）',
+                        ),
+                      ]),
+                    ),
+                    CustomCard(
+                      child: Column(children: [
+                        CheckboxListTile(
+                          dense: true,
+                          value: prefs.upnp,
+                          onChanged: (value) {},
+                          title: const Text('启用反向代理支持'),
+                        ),
+                        CustomTextField(
+                          controller: TextEditingController(
+                            text: '',
+                          ),
+                          labelText: '受信任的代理列表',
+                        ),
+                      ]),
+                    ),
+                    CustomCard(
+                      child: Column(children: [
+                        CheckboxListTile(
+                          dense: true,
+                          value: prefs.upnp,
+                          onChanged: (value) {},
+                          title: const Text('更新我的动态域名'),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('域名提供商'),
+                              DropdownButton(items: const [
+                                DropdownMenuItem(
+                                    value: 'zh_CN', child: Text('DynDNS')),
+                                DropdownMenuItem(
+                                    value: 'en_US', child: Text('NO-IP')),
+                              ], onChanged: (value) {}),
+                            ],
+                          ),
+                        ),
+                        CustomTextField(
+                          controller: TextEditingController(
+                            text: '',
+                          ),
+                          labelText: '域名',
+                        ),
+                        CustomTextField(
+                          controller: TextEditingController(
+                            text: '',
+                          ),
+                          labelText: '用户名',
+                        ),
+                        CustomTextField(
+                          controller: TextEditingController(
+                            text: '',
+                          ),
+                          labelText: '密码',
+                        ),
+                      ]),
+                    ),
                   ],
                 ),
                 ListView(
                   children: [
-                    const Text('高级'),
+                    CustomCard(
+                      child: Column(children: [
+                        const Text('qBittorrent 相关'),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('恢复数据存储类型（需要重新启动）'),
+                              DropdownButton(items: const [
+                                DropdownMenuItem(
+                                    value: 'zh_CN', child: Text('快速恢复文件')),
+                                DropdownMenuItem(
+                                    value: 'en_US', child: Text('SQLite 数据库')),
+                              ], onChanged: (value) {}),
+                            ],
+                          ),
+                        ),
+                        CustomTextField(
+                          controller: TextEditingController(
+                            text: '',
+                          ),
+                          labelText: '物理内存使用上限（仅 libtorrent >= 2.0 时应用）（MiB）',
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('网络接口'),
+                              DropdownButton(items: const [
+                                DropdownMenuItem(
+                                    value: 'zh_CN', child: Text('快速恢复文件')),
+                                DropdownMenuItem(
+                                    value: 'en_US', child: Text('SQLite 数据库')),
+                              ], onChanged: (value) {}),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('绑定到的可选 IP 地址'),
+                              DropdownButton(items: const [
+                                DropdownMenuItem(
+                                    value: 'zh_CN', child: Text('快速恢复文件')),
+                                DropdownMenuItem(
+                                    value: 'en_US', child: Text('SQLite 数据库')),
+                              ], onChanged: (value) {}),
+                            ],
+                          ),
+                        ),
+                        CustomTextField(
+                          controller: TextEditingController(
+                            text: '',
+                          ),
+                          labelText: '保存恢复数据间隔（分钟）',
+                        ),
+                        CheckboxListTile(
+                          dense: true,
+                          value: prefs.upnp,
+                          onChanged: (value) {},
+                          title: const Text('解析用户所在国家'),
+                        ),
+                        CheckboxListTile(
+                          dense: true,
+                          value: prefs.upnp,
+                          onChanged: (value) {},
+                          title: const Text('当 IP 或端口更改时，重新通知所有 trackers'),
+                        ),
+                        CheckboxListTile(
+                          dense: true,
+                          value: prefs.upnp,
+                          onChanged: (value) {},
+                          title: const Text('启用内置 Tracker'),
+                        ),
+                        CustomTextField(
+                          controller: TextEditingController(
+                            text: '',
+                          ),
+                          labelText: '内置 tracker 端口',
+                        ),
+                        CheckboxListTile(
+                          dense: true,
+                          value: prefs.upnp,
+                          onChanged: (value) {},
+                          title: const Text('对嵌入的 tracker 启用端口转发'),
+                        ),
+                      ]),
+                    ),
+                    CustomCard(
+                      child: Column(
+                        children: [
+                          const Text('libtorrent 相关'),
+                          CustomTextField(
+                            controller: TextEditingController(
+                              text: '',
+                            ),
+                            labelText: '异步 I/O 线程数',
+                          ),
+                          CustomTextField(
+                            controller: TextEditingController(
+                              text: '',
+                            ),
+                            labelText: '散列线程（需要 libtorrent> = 2.0）',
+                          ),
+                          CustomTextField(
+                            controller: TextEditingController(
+                              text: '',
+                            ),
+                            labelText: '文件池大小',
+                          ),
+                          CustomTextField(
+                            controller: TextEditingController(
+                              text: '',
+                            ),
+                            labelText: '校验时内存使用扩增量(MiB)',
+                          ),
+                          CustomTextField(
+                            controller: TextEditingController(
+                              text: '',
+                            ),
+                            labelText: '磁盘缓存（需要 libtorrent < 2.0）(MiB)',
+                          ),
+                          CustomTextField(
+                            controller: TextEditingController(
+                              text: '',
+                            ),
+                            labelText: '磁盘缓存过期时间间隔（要求 libtorrent < 2.0）(秒)',
+                          ),
+                          CustomTextField(
+                            controller: TextEditingController(
+                              text: '',
+                            ),
+                            labelText: '磁盘队列大小（KiB）',
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: prefs.upnp,
+                            onChanged: (value) {},
+                            title: const Text('合并读写（需要 libtorrent<2.0）'),
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: prefs.upnp,
+                            onChanged: (value) {},
+                            title: const Text('启用相连文件块下载模式'),
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: prefs.upnp,
+                            onChanged: (value) {},
+                            title: const Text('发送分块上传建议'),
+                          ),
+                          CustomTextField(
+                            controller: TextEditingController(
+                              text: '',
+                            ),
+                            labelText: '发送缓冲区上限（KiB）',
+                          ),
+                          CustomTextField(
+                            controller: TextEditingController(
+                              text: '',
+                            ),
+                            labelText: '发送缓冲区下限（KiB）',
+                          ),
+                          CustomTextField(
+                            controller: TextEditingController(
+                              text: '',
+                            ),
+                            labelText: '发送缓冲区增长系数（%）',
+                          ),
+                          CustomTextField(
+                            controller: TextEditingController(
+                              text: '',
+                            ),
+                            labelText: '每秒传出连接数： (?)	',
+                          ),
+                          CustomTextField(
+                            controller: TextEditingController(
+                              text: '',
+                            ),
+                            labelText: 'Socket backlog 大小',
+                          ),
+                          CustomTextField(
+                            controller: TextEditingController(
+                              text: '',
+                            ),
+                            labelText: '传出端口 (下限) [0: 禁用]',
+                          ),
+                          CustomTextField(
+                            controller: TextEditingController(
+                              text: '',
+                            ),
+                            labelText: '传出端口 (上限) [0: 禁用]',
+                          ),
+                          CustomTextField(
+                            controller: TextEditingController(
+                              text: '',
+                            ),
+                            labelText: 'UPnP 租期 [0：永久]',
+                          ),
+                          CustomTextField(
+                            controller: TextEditingController(
+                              text: '',
+                            ),
+                            labelText: '与 peers 连接的服务类型（ToS）',
+                          ),
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('μTP-TCP 混合模式策略'),
+                                DropdownButton(items: const [
+                                  DropdownMenuItem(
+                                      value: 'zh_CN', child: Text('DynDNS')),
+                                  DropdownMenuItem(
+                                      value: 'en_US', child: Text('NO-IP')),
+                                ], onChanged: (value) {}),
+                              ],
+                            ),
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: prefs.upnp,
+                            onChanged: (value) {},
+                            title: const Text('支持国际化域名（IDN）'),
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: prefs.upnp,
+                            onChanged: (value) {},
+                            title: const Text('允许来自同一 IP 地址的多个连接'),
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: prefs.upnp,
+                            onChanged: (value) {},
+                            title: const Text('验证 HTTPS tracker 证书'),
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: prefs.upnp,
+                            onChanged: (value) {},
+                            title: const Text('服务器端请求伪造（SSRF）攻击缓解'),
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: prefs.upnp,
+                            onChanged: (value) {},
+                            title: const Text('禁止连接到特权端口上的 Peer'),
+                          ),
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('上传窗口策略'),
+                                DropdownButton(items: const [
+                                  DropdownMenuItem(
+                                      value: 'zh_CN', child: Text('DynDNS')),
+                                  DropdownMenuItem(
+                                      value: 'en_US', child: Text('NO-IP')),
+                                ], onChanged: (value) {}),
+                              ],
+                            ),
+                          ),
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('上传连接策略'),
+                                DropdownButton(items: const [
+                                  DropdownMenuItem(
+                                      value: 'zh_CN', child: Text('DynDNS')),
+                                  DropdownMenuItem(
+                                      value: 'en_US', child: Text('NO-IP')),
+                                ], onChanged: (value) {}),
+                              ],
+                            ),
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: prefs.upnp,
+                            onChanged: (value) {},
+                            title: const Text('总是向同级的所有 Tracker 汇报'),
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: prefs.upnp,
+                            onChanged: (value) {},
+                            title: const Text('总是向所有等级的 Tracker 汇报'),
+                          ),
+                          CustomTextField(
+                            controller: TextEditingController(
+                              text: '',
+                            ),
+                            labelText: 'IP 地址已报告给 Trackers (需要重启)',
+                          ),
+                          CustomTextField(
+                            controller: TextEditingController(
+                              text: '',
+                            ),
+                            labelText: '最大并行 HTTP 发布',
+                          ),
+                          CustomTextField(
+                            controller: TextEditingController(
+                              text: '',
+                            ),
+                            labelText: '停止 tracker 超时',
+                          ),
+                          CustomTextField(
+                            controller: TextEditingController(
+                              text: '',
+                            ),
+                            labelText: 'Peer 进出阈值百分比',
+                          ),
+                          CustomTextField(
+                            controller: TextEditingController(
+                              text: '',
+                            ),
+                            labelText: 'Peer 进出断开间隔',
+                          ),
+                          CustomTextField(
+                            controller: TextEditingController(
+                              text: '',
+                            ),
+                            labelText: '单一 peer 的最大未完成请求',
+                          ),
+                          CustomTextField(
+                            controller: TextEditingController(
+                              text: '',
+                            ),
+                            labelText: '与 peers 连接的服务类型（ToS）',
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ]),
