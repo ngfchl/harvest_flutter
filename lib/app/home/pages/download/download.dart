@@ -1220,6 +1220,12 @@ class _DownloadPageState extends State<DownloadPage>
                 actions: [
                   IconButton(
                       onPressed: () async {
+                        await controller.clearFilterOption();
+                        controller.filterTorrents(isQb);
+                      },
+                      icon: const Icon(Icons.clear_all)),
+                  IconButton(
+                      onPressed: () async {
                         await controller.stopFetchTorrents();
                         Get.back();
                       },
@@ -2074,7 +2080,7 @@ class _DownloadPageState extends State<DownloadPage>
                             SPUtil.setLocalStorage(
                                 '${downloader.host}:${downloader.port}-sortKey',
                                 controller.sortKey.toString());
-                            controller.update();
+                            controller.sortTrTorrents();
                           },
                         );
                       });
@@ -2239,14 +2245,12 @@ class _DownloadPageState extends State<DownloadPage>
                         titleTextStyle: TextStyle(
                             color: Theme.of(context).colorScheme.primary),
                         style: ListTileStyle.list,
-                        selected:
-                            controller.torrentFilter == qb.TorrentFilter.active,
+                        selected: controller.torrentState == '活动中',
                         selectedColor: Theme.of(context).colorScheme.error,
                         onTap: () {
                           Get.back();
-                          controller.torrentState = null;
-                          controller.torrentFilter = qb.TorrentFilter.active;
-                          controller.update();
+                          controller.torrentState = '活动中';
+                          controller.filterTrTorrents();
                         },
                       ),
                       ...controller.trStatus.map((state) {
@@ -2268,7 +2272,7 @@ class _DownloadPageState extends State<DownloadPage>
                           onTap: () {
                             Get.back();
                             controller.torrentState = state.value;
-                            controller.update();
+                            controller.filterTrTorrents();
                           },
                         );
                       }),
@@ -2348,7 +2352,7 @@ class _DownloadPageState extends State<DownloadPage>
                                   Get.back();
                                   // controller.torrentState = null;
                                   controller.selectedTracker = key;
-                                  controller.update();
+                                  controller.filterTrTorrents();
                                 },
                               );
                             });
@@ -2467,7 +2471,9 @@ class _DownloadPageState extends State<DownloadPage>
     return GetBuilder<DownloadController>(builder: (controller) {
       List<qb.ServerState> serverStatus =
           controller.serverStatus.whereType<qb.ServerState>().toList();
-
+      controller.sortKey = SPUtil.getLocalStorage(
+              '${downloader.host}:${downloader.port}-sortKey') ??
+          'name';
       qb.ServerState state = serverStatus.first;
       TextEditingController searchKeyController = TextEditingController();
       return GFDrawer(
@@ -2634,7 +2640,7 @@ class _DownloadPageState extends State<DownloadPage>
                                   SPUtil.setLocalStorage(
                                       '${downloader.host}:${downloader.port}-sortKey',
                                       controller.sortKey.toString());
-                                  controller.update();
+                                  controller.sortQbTorrents();
                                 },
                               );
                             });
@@ -2698,8 +2704,7 @@ class _DownloadPageState extends State<DownloadPage>
                                     Theme.of(context).colorScheme.error,
                                 onTap: () {
                                   Get.back();
-                                  controller.torrentFilter =
-                                      qb.TorrentFilter.all;
+                                  controller.torrentFilter = 0;
                                   controller.selectedCategory =
                                       category?.savePath != null
                                           ? category?.name!
@@ -2820,10 +2825,8 @@ class _DownloadPageState extends State<DownloadPage>
                                   Theme.of(context).colorScheme.error,
                               onTap: () {
                                 Get.back();
-                                controller.torrentState = null;
-                                controller.torrentFilter =
-                                    qb.TorrentFilter.active;
-                                controller.update();
+                                controller.torrentState = '活动中';
+                                controller.filterQbTorrents();
                               },
                             ),
                             ...controller.qBitStatus.map((state) {
@@ -2848,9 +2851,7 @@ class _DownloadPageState extends State<DownloadPage>
                                 onTap: () {
                                   Get.back();
                                   controller.torrentState = state.value;
-                                  controller.torrentFilter =
-                                      qb.TorrentFilter.all;
-                                  controller.update();
+                                  controller.filterQbTorrents();
                                 },
                               );
                             }),
@@ -2933,11 +2934,8 @@ class _DownloadPageState extends State<DownloadPage>
                                           Theme.of(context).colorScheme.error,
                                       onTap: () {
                                         Get.back();
-                                        // controller.torrentState = null;
-                                        controller.torrentFilter =
-                                            qb.TorrentFilter.all;
                                         controller.selectedTracker = key;
-                                        controller.update();
+                                        controller.filterQbTorrents();
                                       },
                                     );
                                   });
@@ -7412,7 +7410,7 @@ class _DownloadPageState extends State<DownloadPage>
 
   void _openTrTorrentInfoDetail(
       Downloader downloader, TrTorrent torrentInfo, context) async {
-    logger_helper.Logger.instance.i(torrentInfo.files);
+    logger_helper.Logger.instance.i(controller.trackers);
 
     Get.bottomSheet(
       shape: const RoundedRectangleBorder(

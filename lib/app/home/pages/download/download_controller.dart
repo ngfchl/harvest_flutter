@@ -48,63 +48,63 @@ class DownloadController extends GetxController {
 
   List<MetaDataItem> qBitStatus = [
     {"name": "全部", "value": null},
-    {"name": "下载中", "value": TorrentState.downloading},
-    {"name": "下载暂停", "value": TorrentState.pausedDL},
-    {"name": "上传中", "value": TorrentState.uploading},
-    {"name": "做种中", "value": TorrentState.stalledUP},
-    {"name": "等待下载", "value": TorrentState.stalledDL},
-    {"name": "移动中", "value": TorrentState.moving},
-    {"name": "上传暂停", "value": TorrentState.pausedUP},
-    {"name": "队列下载中", "value": TorrentState.queuedDL},
-    {"name": "队列上传中", "value": TorrentState.queuedUP},
-    // {"name": "分配中", "value": TorrentState.allocating},
-    {"name": "检查下载", "value": TorrentState.checkingDL},
-    // {"name": "检查恢复数据", "value": TorrentState.checkingResumeData},
-    {"name": "检查上传", "value": TorrentState.checkingUP},
-    {"name": "强制下载", "value": TorrentState.forcedDL},
-    // {"name": "强制元数据下载", "value": TorrentState.forcedMetaDL},
-    {"name": "强制上传", "value": TorrentState.forcedUP},
-    // {"name": "元数据下载中", "value": TorrentState.metaDL},
-    {"name": "缺失文件", "value": TorrentState.missingFiles},
+    {"name": "下载中", "value": 'downloading'},
+    {"name": "下载暂停", "value": 'pausedDL'},
+    {"name": "上传中", "value": 'uploading'},
+    {"name": "做种中", "value": 'stalledUP'},
+    {"name": "等待下载", "value": 'stalledDL'},
+    {"name": "移动中", "value": 'moving'},
+    {"name": "上传暂停", "value": 'pausedUP'},
+    {"name": "队列下载中", "value": 'queuedDL'},
+    {"name": "队列上传中", "value": 'queuedUP'},
+    // {"name": "分配中", "value": 'allocating'},
+    {"name": "检查下载", "value": 'checkingDL'},
+    // {"name": "检查恢复数据", "value": 'checkingResumeData'},
+    {"name": "检查上传", "value": 'checkingUP'},
+    {"name": "强制下载", "value": 'forcedDL'},
+    // {"name": "强制元数据下载", "value": 'forcedMetaDL'},
+    {"name": "强制上传", "value": 'forcedUP'},
+    // {"name": "元数据下载中", "value": 'metaDL'},
+    {"name": "缺失文件", "value": 'missingFiles'},
 
-    // {"name": "未知状态", "value": TorrentState.unknown},
-    {"name": "错误", "value": TorrentState.error},
+    // {"name": "未知状态", "value": unknown},
+    {"name": "错误", "value": 'error'},
   ].map((e) => MetaDataItem.fromJson(e)).toList();
   List<MetaDataItem> qbSortOptions = [
     {"name": "无", "value": null},
-    {'name': '名称', 'value': TorrentSort.name},
-    {'name': '类别', 'value': TorrentSort.category},
-    {'name': '大小', 'value': TorrentSort.size},
-    {'name': '添加时间', 'value': TorrentSort.addedOn},
-    // {'name': '总大小', 'value': TorrentSort.totalSize},
-    {'name': '完成时间', 'value': TorrentSort.completionOn},
-    {'name': '状态', 'value': TorrentSort.state},
-    {'name': 'Tracker', 'value': TorrentSort.tracker},
-    {'name': '进度', 'value': TorrentSort.progress},
-    {'name': '保存路径', 'value': TorrentSort.savePath},
-    {'name': '已上传', 'value': TorrentSort.uploaded},
-    {'name': '已下载', 'value': TorrentSort.downloaded},
-    {'name': '下载速度', 'value': TorrentSort.dlSpeed},
-    {'name': '上传速度', 'value': TorrentSort.upSpeed},
-    {'name': '最后活动时间', 'value': TorrentSort.lastActivity},
-    {'name': '活跃时间', 'value': TorrentSort.timeActive},
-    {'name': '完成数', 'value': TorrentSort.completed},
-    {'name': 'Leechs 数量', 'value': TorrentSort.numLeechs},
-    {'name': 'Seeds 数量', 'value': TorrentSort.numSeeds},
-    {'name': '未完成数', 'value': TorrentSort.numIncomplete},
-    {'name': '已完成数', 'value': TorrentSort.numComplete},
-    {'name': '优先级', 'value': TorrentSort.priority},
-    {'name': '已查看完成', 'value': TorrentSort.seenComplete},
+    {'name': '名称', 'value': 'name'},
+    {'name': '类别', 'value': 'category'},
+    {'name': '大小', 'value': 'size'},
+    {'name': '添加时间', 'value': 'addedOn'},
+    // {'name': '总大小', 'value': 'totalSize'},
+    {'name': '完成时间', 'value': 'completionOn'},
+    {'name': '状态', 'value': 'state'},
+    {'name': 'Tracker', 'value': 'tracker'},
+    {'name': '进度', 'value': 'progress'},
+    {'name': '保存路径', 'value': 'savePath'},
+    {'name': '已上传', 'value': 'uploaded'},
+    {'name': '已下载', 'value': 'downloaded'},
+    {'name': '下载速度', 'value': 'dlSpeed'},
+    {'name': '上传速度', 'value': 'upSpeed'},
+    {'name': '最后活动时间', 'value': 'lastActivity'},
+    {'name': '活跃时间', 'value': 'timeActive'},
+    {'name': '完成数', 'value': 'completed'},
+    {'name': 'Leechs 数量', 'value': 'numLeechs'},
+    {'name': 'Seeds 数量', 'value': 'numSeeds'},
+    {'name': '未完成数', 'value': 'numIncomplete'},
+    {'name': '已完成数', 'value': 'numComplete'},
+    {'name': '优先级', 'value': 'priority'},
+    {'name': '已查看完成', 'value': 'seenComplete'},
   ].map((e) => MetaDataItem.fromJson(e)).toList();
 
   List<MetaDataItem> qbTrackerStatus = [
-    {'name': '禁用', 'value': TrackerStatus.disabled},
-    {'name': '未联系', 'value': TrackerStatus.notContacted},
-    {'name': '未工作', 'value': TrackerStatus.notWorking},
-    {'name': '错误', 'value': TrackerStatus.trackerError},
-    {'name': '不可达', 'value': TrackerStatus.unreachable},
-    {'name': '更新中', 'value': TrackerStatus.updating},
-    {'name': '工作中', 'value': TrackerStatus.working},
+    {'name': '禁用', 'value': 'disabled'},
+    {'name': '未联系', 'value': 'notContacted'},
+    {'name': '未工作', 'value': 'notWorking'},
+    {'name': '错误', 'value': 'trackerError'},
+    {'name': '不可达', 'value': 'unreachable'},
+    {'name': '更新中', 'value': 'updating'},
+    {'name': '工作中', 'value': 'working'},
   ].map((e) => MetaDataItem.fromJson(e)).toList();
   Map<String, WebSite> trackerToWebSiteMap = {};
   Map<String, Category?> categoryMap = {};
@@ -113,12 +113,12 @@ class DownloadController extends GetxController {
   List<String> errors = ['全部'];
   List<dynamic> serverStatus = [];
   String selectedTag = '全部';
+  int torrentFilter = 0;
   String selectedError = '全部';
-  dynamic torrentState;
-  TorrentFilter torrentFilter = TorrentFilter.all;
+  dynamic torrentState = '全部';
   String? selectedCategory = '全部';
   String selectedTracker = '全部';
-  dynamic sortKey = 'name';
+  String sortKey = 'name';
   String searchKey = '';
   TextEditingController searchController = TextEditingController();
 
@@ -445,15 +445,15 @@ class DownloadController extends GetxController {
     update();
     logger_helper.Logger.instance.d(showTorrents.length);
     filterTorrentsByCategory();
-    logger_helper.Logger.instance.d(showTorrents.length);
+    // logger_helper.Logger.instance.d(showTorrents.length);
     filterTorrentsByState();
-    logger_helper.Logger.instance.d(showTorrents.length);
+    // logger_helper.Logger.instance.d(showTorrents.length);
     filterTorrentsByError();
-    logger_helper.Logger.instance.d(showTorrents.length);
+    // logger_helper.Logger.instance.d(showTorrents.length);
     filterTorrentsByLabel();
-    logger_helper.Logger.instance.d(showTorrents.length);
+    // logger_helper.Logger.instance.d(showTorrents.length);
     filterTorrentsBySearchKey();
-    logger_helper.Logger.instance.d(showTorrents.length);
+    // logger_helper.Logger.instance.d(showTorrents.length);
     filterTorrentsByTracker();
     sortTrTorrents();
     update();
@@ -602,15 +602,17 @@ class DownloadController extends GetxController {
       showTorrents = showTorrents
           .where((torrent) =>
               torrent.name!.toLowerCase().contains(searchKey.toLowerCase()) ||
-              torrent.selectedCategory!
+              torrent.category
                   .toLowerCase()
                   .contains(searchKey.toLowerCase()) ||
-              torrent.hash!.toLowerCase().contains(searchKey.toLowerCase()))
+              torrent.infohashV1
+                  .toLowerCase()
+                  .contains(searchKey.toLowerCase()))
           .toList();
     }
     // logger_helper.Logger.instance.d(showTorrents.length);
 
-    if (torrentState != null) {
+    if (torrentState != null && torrentState != '全部') {
       showTorrents = showTorrents
           .where((torrent) => torrent.state == torrentState)
           .toList();
@@ -631,21 +633,67 @@ class DownloadController extends GetxController {
       showTorrents = showTorrents
           .where((torrent) =>
               trackers[selectedTracker] != null &&
-              trackers[selectedTracker]!.contains(torrent.hash))
+              trackers[selectedTracker]!.contains(torrent.infohashV1))
           .toList();
     }
 
-    // logger_helper.Logger.instance.d(showTorrents.length);
+    logger_helper.Logger.instance.d(showTorrents.length);
 
     sortQbTorrents();
     update();
   }
 
   sortQbTorrents() {
+    switch (sortKey) {
+      case 'addedOn':
+        showTorrents.sort((a, b) => a.addedOn.compareTo(b.addedOn));
+      case 'amountLeft':
+        showTorrents.sort((a, b) => a.amountLeft.compareTo(b.amountLeft));
+      case 'name':
+        showTorrents.sort((a, b) => a.name.compareTo(b.name));
+      case 'contentPath':
+        showTorrents.sort((a, b) => a.contentPath.compareTo(b.contentPath));
+      case 'category':
+        torrents.sort((a, b) => a.category.compareTo(b.category));
+      case 'seenComplete':
+        torrents.sort((a, b) => a.seenComplete.compareTo(b.seenComplete));
+      case 'size':
+        showTorrents.sort((a, b) => a.size.compareTo(b.size));
+      case 'numComplete':
+        showTorrents.sort((a, b) =>
+            a.numComplete.toString().compareTo(b.numComplete.toString()));
+      case 'state':
+        showTorrents
+            .sort((a, b) => a.state.toString().compareTo(b.state.toString()));
+      case 'lastActivity':
+        showTorrents.sort((a, b) => a.lastActivity.compareTo(b.lastActivity));
+      case 'progress':
+        showTorrents.sort((a, b) => a.progress.compareTo(b.progress));
+      case 'ratio':
+        showTorrents.sort((a, b) => a.ratio.compareTo(b.ratio));
+      case 'seedingTime':
+        showTorrents.sort((a, b) => a.seedingTime.compareTo(b.seedingTime));
+      case 'downloaded':
+        showTorrents
+            .sort((a, b) => a.downloadedEver.compareTo(b.downloadedEver));
+      case 'upSpeed':
+        showTorrents.sort((a, b) => a.rateDownload.compareTo(b.rateDownload));
+      case 'rateUpload':
+        showTorrents.sort((a, b) => a.rateUpload.compareTo(b.rateUpload));
+      case 'dlSpeed':
+        showTorrents
+            .sort((a, b) => a.recheckProgress.compareTo(b.recheckProgress));
+      case 'numComplete':
+        showTorrents.sort((a, b) => a.numComplete.compareTo(b.activityDate));
+      default:
+        Get.snackbar('出错啦！', '未知排序规则：$sortKey');
+    }
     if (sortReversed) {
       logger_helper.Logger.instance.d('反转序列！');
       showTorrents = showTorrents.reversed.toList();
     }
+
+    update();
   }
 
   Future<CommonResponse> controlTorrents({
@@ -670,9 +718,9 @@ class DownloadController extends GetxController {
       'delete_files': deleteFiles,
       'enable': enable,
       'limit': limit,
-      'ratioLimit': ratioLimit,
-      'seedingTimeLimit': seedingTimeLimit,
-      'inactiveSeedingTimeLimit': inactiveSeedingTimeLimit,
+      'ratioLimit': ratioLimit.ratio,
+      'seedingTimeLimit': seedingTimeLimit.ratio,
+      'inactiveSeedingTimeLimit': inactiveSeedingTimeLimit.ratio,
     });
     // Get.snackbar(response.succeed ? '成功啦！' : '出错啦！', response.msg);
     update();
@@ -753,6 +801,7 @@ class DownloadController extends GetxController {
         data['torrents'].map((item) => TrTorrent.fromJson(item)).toList();
     tags.addAll(
         torrents.expand<String>((item) => item.labels).toSet().toList());
+
     errors.addAll(torrents
         .map<String>((item) => item.errorString)
         .toSet()
@@ -768,7 +817,21 @@ class DownloadController extends GetxController {
           savePath: dir,
         ),
     };
-    serverStatus.clear();
+    trackers = {'全部': []};
+    // 遍历 torrents，构建 trackerHashes 数据
+    for (var torrent in torrents) {
+      if (torrent.trackerStats.isEmpty) continue;
+
+      final String host = Uri.parse(torrent.trackerStats.first.announce).host;
+
+      // 如果 tracker 映射到的网站存在，则更新 trackerHashes
+      if (trackerToWebSiteMap.containsKey(host)) {
+        final website = trackerToWebSiteMap[host]!;
+        trackers.putIfAbsent(website.name, () => []).add(torrent.hashString);
+      }
+    }
+
+    // serverStatus.clear();
     TransmissionStats state = TransmissionStats.fromJson(data['status']);
     serverStatus.add(state);
 
@@ -803,7 +866,6 @@ class DownloadController extends GetxController {
       return QbittorrentTorrentInfo.fromJson(torrent);
     }).toList();
     isTorrentsLoading = false;
-    serverStatus.clear();
     ServerState state = ServerState.fromJson(data['server_state']);
     serverStatus.add(state);
     filterQbTorrents();
@@ -851,13 +913,22 @@ class DownloadController extends GetxController {
     }
   }
 
+  clearFilterOption() {
+    serverStatus.clear();
+    trackers.clear();
+    searchController.text = '';
+    searchKey = '';
+    selectedTag = '全部';
+    selectedError = '全部';
+    selectedCategory = '全部';
+    selectedTracker = '全部';
+  }
+
   stopFetchTorrents() async {
     await torrentsChannel.sink.close(status.normalClosure);
     await torrentsChannel.sink.done;
     torrents.clear();
-    serverStatus.clear();
-    searchController.text = '';
-    searchKey = '';
+    clearFilterOption();
     update();
   }
 
