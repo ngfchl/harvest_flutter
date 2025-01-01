@@ -6590,7 +6590,7 @@ class _DownloadPageState extends State<DownloadPage>
 
   void _openQbTorrentInfoDetail(Downloader downloader,
       QbittorrentTorrentInfo torrentInfo, context) async {
-    logger_helper.Logger.instance.d(torrentInfo.infohashV1);
+    logger_helper.Logger.instance.d(torrentInfo.toJson());
     CommonResponse response = await controller.getDownloaderTorrentDetailInfo(
         downloader, torrentInfo.infohashV1);
     if (!response.succeed) {
@@ -7223,11 +7223,14 @@ class _DownloadPageState extends State<DownloadPage>
                                                         ? Colors.green
                                                         : Colors.red,
                                                     labelText: controller
-                                                        .qbTrackerStatus
-                                                        .firstWhere((element) =>
-                                                            element.value ==
-                                                            e.status)
-                                                        .name),
+                                                            .qbTrackerStatus
+                                                            .firstWhereOrNull(
+                                                                (element) =>
+                                                                    element
+                                                                        .value ==
+                                                                    e.status)
+                                                            ?.name ??
+                                                        '未知'),
                                                 if (e.msg != null &&
                                                     e.msg!.isNotEmpty)
                                                   CustomTextTag(
@@ -7410,7 +7413,13 @@ class _DownloadPageState extends State<DownloadPage>
 
   void _openTrTorrentInfoDetail(
       Downloader downloader, TrTorrent torrentInfo, context) async {
-    logger_helper.Logger.instance.i(controller.trackers);
+    CommonResponse response = await controller.getDownloaderTorrentDetailInfo(
+        downloader, torrentInfo.hashString);
+    if (!response.succeed) {
+      Get.snackbar('获取种子详情失败', response.msg);
+      return;
+    }
+    torrentInfo = TrTorrent.fromJson(response.data);
 
     Get.bottomSheet(
       shape: const RoundedRectangleBorder(
@@ -7428,16 +7437,7 @@ class _DownloadPageState extends State<DownloadPage>
           var repeatTorrents = controller.torrents
               .where((element) => element.name == torrentInfo.name)
               .map((e) => MetaDataItem.fromJson({
-                    "name": controller
-                            .trackerToWebSiteMap[controller.trackers.entries
-                                .firstWhere((entry) =>
-                                    entry.value.contains(e.hashString))
-                                .key]
-                            ?.name ??
-                        controller.trackers.entries
-                            .firstWhere(
-                                (entry) => entry.value.contains(e.hashString))
-                            .key,
+                    "name": controller.getTrMetaName(e.hashString),
                     "value": e,
                   }))
               .map((e) => Tooltip(

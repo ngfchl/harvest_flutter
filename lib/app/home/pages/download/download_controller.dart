@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart'; // ignore: depend_on_referenced_packages
 import 'package:harvest/app/home/pages/download/qbittorrent.dart';
@@ -532,6 +533,17 @@ class DownloadController extends GetxController {
     }
   }
 
+// 添加私有方法 `_getMetaName` 处理逻辑
+  String getTrMetaName(String hashString) {
+    // 查找第一个匹配的 tracker 键
+    final trackerKey = trackers.entries
+        .firstWhereOrNull((entry) => entry.value.contains(hashString))
+        ?.key;
+
+    // 根据 trackerKey 查找对应的 WebSite 名称
+    return trackerToWebSiteMap[trackerKey]?.name ?? trackerKey ?? '未知';
+  }
+
   filterTorrentsByState() {
     if (trTorrentState == null) {
       return;
@@ -739,9 +751,10 @@ class DownloadController extends GetxController {
       torrentsChannel = WebSocketChannel.connect(wsUrl);
       await torrentsChannel.ready;
       // 使用缓存
+      trackerToWebSiteMap = mySiteController.buildTrackerToWebSite();
       String key = 'Downloader-$baseUrl:${downloader.name}-${downloader.id}';
       dynamic data = await SPUtil.getCache(key);
-
+      logger_helper.Logger.instance.d(trackerToWebSiteMap);
       if (data[key] != null && data[key].isNotEmpty) {
         data = data[key];
         if (isQb) {
