@@ -2125,7 +2125,7 @@ class _DownloadPageState extends State<DownloadPage>
     });
   }
 
-  _showQbPrefs(Downloader downloader, context) {
+  _showQbPrefs(Downloader downloader, context) async {
     const List<Tab> tabs = [
       Tab(text: '下载'),
       Tab(text: '连接'),
@@ -2135,7 +2135,13 @@ class _DownloadPageState extends State<DownloadPage>
       Tab(text: 'WEBUI'),
       Tab(text: '高级'),
     ];
-    controller.currentPrefs = downloader.prefs as QbittorrentPreferences;
+    var response = await controller.getPrefs(downloader);
+    if (!response.succeed) {
+      Get.snackbar('出错啦！', '获取下载器设置失败',
+          colorText: Theme.of(context).colorScheme.error);
+      return;
+    }
+    controller.currentPrefs = QbittorrentPreferences.fromJson(response.data);
     controller.update();
     // QbittorrentPreferences prefs = downloader.prefs;
     RxBool autoTmmEnabled = RxBool(controller.currentPrefs.autoTmmEnabled);
@@ -2257,9 +2263,6 @@ class _DownloadPageState extends State<DownloadPage>
             text: controller.currentPrefs.alternativeWebuiPath);
     TextEditingController announceIpController =
         TextEditingController(text: controller.currentPrefs.announceIp);
-    TextEditingController autorunOnTorrentAddedProgramController =
-        TextEditingController(
-            text: controller.currentPrefs.autorunOnTorrentAddedProgram);
     TextEditingController autorunProgramController =
         TextEditingController(text: controller.currentPrefs.autorunProgram);
     TextEditingController bannedIPsController =
@@ -2347,9 +2350,9 @@ class _DownloadPageState extends State<DownloadPage>
     TextEditingController proxyPortController = TextEditingController(
         text: controller.currentPrefs.proxyPort.toString());
     TextEditingController altDlLimitController = TextEditingController(
-        text: (controller.currentPrefs.altDlLimit / 1024).toString());
+        text: (controller.currentPrefs.altDlLimit / 1024).toInt().toString());
     TextEditingController altUpLimitController = TextEditingController(
-        text: (controller.currentPrefs.altUpLimit / 1024).toString());
+        text: (controller.currentPrefs.altUpLimit / 1024).toInt().toString());
     TextEditingController asyncIoThreadsController = TextEditingController(
         text: controller.currentPrefs.asyncIoThreads.toString());
     TextEditingController checkingMemoryUseController = TextEditingController(
@@ -2364,7 +2367,8 @@ class _DownloadPageState extends State<DownloadPage>
     RxInt diskIoType = RxInt(controller.currentPrefs.diskIoType);
     RxInt diskIoWriteMode = RxInt(controller.currentPrefs.diskIoWriteMode);
     TextEditingController diskQueueSizeController = TextEditingController(
-        text: controller.currentPrefs.diskQueueSize.toString());
+        text:
+            (controller.currentPrefs.diskQueueSize / 1024).toInt().toString());
     TextEditingController embeddedTrackerPortController = TextEditingController(
         text: controller.currentPrefs.embeddedTrackerPort.toString());
     TextEditingController filePoolSizeController = TextEditingController(
@@ -2474,9 +2478,9 @@ class _DownloadPageState extends State<DownloadPage>
     TextEditingController stopTrackerTimeoutController = TextEditingController(
         text: controller.currentPrefs.stopTrackerTimeout.toString());
     TextEditingController upLimitController = TextEditingController(
-        text: (controller.currentPrefs.upLimit / 1024).toString());
+        text: (controller.currentPrefs.upLimit / 1024).toInt().toString());
     TextEditingController dlLimitController = TextEditingController(
-        text: (controller.currentPrefs.dlLimit / 1024).toString());
+        text: (controller.currentPrefs.dlLimit / 1024).toInt().toString());
     TextEditingController upnpLeaseDurationController = TextEditingController(
         text: controller.currentPrefs.upnpLeaseDuration.toString());
     TextEditingController webUiBanDurationController = TextEditingController(
@@ -2508,6 +2512,230 @@ class _DownloadPageState extends State<DownloadPage>
               appBar: AppBar(
                 title: const Text('配置选项'),
                 bottom: const TabBar(tabs: tabs, isScrollable: true),
+              ),
+              floatingActionButton: FloatingActionButton.extended(
+                onPressed: () async {
+                  QbittorrentPreferences prefs =
+                      controller.currentPrefs.copyWith(
+                    addTrackers: addTrackersController.text,
+                    addTrackersEnabled: addTrackersEnabled.value,
+                    altDlLimit: int.parse(altDlLimitController.text) * 1024,
+                    altUpLimit: int.parse(altUpLimitController.text) * 1024,
+                    alternativeWebuiEnabled: alternativeWebuiEnabled.value,
+                    alternativeWebuiPath: alternativeWebuiPathController.text,
+                    announceIp: announceIpController.text,
+                    announceToAllTiers: announceToAllTiers.value,
+                    announceToAllTrackers: announceToAllTrackers.value,
+                    anonymousMode: anonymousMode.value,
+                    asyncIoThreads: int.parse(asyncIoThreadsController.text),
+                    autoDeleteMode: autoDeleteMode.value,
+                    autoTmmEnabled: autoTmmEnabled.value,
+                    autorunProgram: autorunProgramController.text,
+                    bannedIps: bannedIPsController.text,
+                    bittorrentProtocol: bittorrentProtocol.value,
+                    blockPeersOnPrivilegedPorts:
+                        blockPeersOnPrivilegedPorts.value,
+                    bypassAuthSubnetWhitelist:
+                        bypassAuthSubnetWhitelistController.text,
+                    bypassAuthSubnetWhitelistEnabled:
+                        bypassAuthSubnetWhitelistEnabled.value,
+                    bypassLocalAuth: bypassLocalAuth.value,
+                    categoryChangedTmmEnabled: categoryChangedTmmEnabled.value,
+                    checkingMemoryUse:
+                        int.parse(checkingMemoryUseController.text),
+                    connectionSpeed: int.parse(connectionSpeedController.text),
+                    currentInterfaceAddress: currentInterfaceAddress.value,
+                    currentNetworkInterface: currentNetworkInterface.value,
+                    dht: dht.value,
+                    diskCache: int.parse(diskCacheController.text),
+                    diskCacheTtl: int.parse(diskCacheTtlController.text),
+                    diskIoReadMode: diskIoReadMode.value,
+                    diskIoType: diskIoType.value,
+                    diskIoWriteMode: diskIoWriteMode.value,
+                    diskQueueSize:
+                        int.parse(diskQueueSizeController.text) * 1024,
+                    dlLimit: int.parse(dlLimitController.text) * 1024,
+                    dontCountSlowTorrents: dontCountSlowTorrents.value,
+                    dyndnsDomain: dyndnsDomainController.text,
+                    dyndnsEnabled: dyndnsEnabled.value,
+                    dyndnsPassword: dyndnsPasswordController.text,
+                    dyndnsService: dyndnsService.value,
+                    dyndnsUsername: dyndnsUsernameController.text,
+                    embeddedTrackerPort:
+                        int.parse(embeddedTrackerPortController.text),
+                    embeddedTrackerPortForwarding:
+                        embeddedTrackerPortForwarding.value,
+                    enableCoalesceReadWrite: enableCoalesceReadWrite.value,
+                    enableEmbeddedTracker: enableEmbeddedTracker.value,
+                    enableMultiConnectionsFromSameIp:
+                        enableMultiConnectionsFromSameIp.value,
+                    enablePieceExtentAffinity: enablePieceExtentAffinity.value,
+                    enableUploadSuggestions: enableUploadSuggestions.value,
+                    encryption: encryption.value,
+                    excludedFileNamesEnabled: excludedFileNamesEnabled.value,
+                    exportDir: exportDirController.text,
+                    exportDirFin: exportDirFinController.text,
+                    filePoolSize: int.parse(filePoolSizeController.text),
+                    hashingThreads: int.parse(hashingThreadsController.text),
+                    idnSupportEnabled: idnSupportEnabled.value,
+                    incompleteFilesExt: incompleteFilesExt.value,
+                    ipFilterEnabled: ipFilterEnabled.value,
+                    ipFilterPath: ipFilterPathController.text,
+                    ipFilterTrackers: ipFilterTrackers.value,
+                    limitLanPeers: limitLanPeers.value,
+                    limitTcpOverhead: limitTcpOverhead.value,
+                    limitUtpRate: limitUtpRate.value,
+                    listenPort: int.parse(listenPortController.text),
+                    locale: locale.value,
+                    lsd: lsd.value,
+                    maxActiveCheckingTorrents:
+                        int.parse(maxActiveCheckingTorrentsController.text),
+                    maxActiveDownloads:
+                        int.parse(maxActiveDownloadsController.text),
+                    maxActiveTorrents:
+                        int.parse(maxActiveTorrentsController.text),
+                    maxActiveUploads:
+                        int.parse(maxActiveUploadsController.text),
+                    maxConnec: int.parse(maxConnecController.text),
+                    maxConnecPerTorrent:
+                        int.parse(maxConnecPerTorrentController.text),
+                    maxConcurrentHttpAnnounces:
+                        int.parse(maxConcurrentHttpAnnouncesController.text),
+                    maxRatio: double.parse(maxRatioController.text),
+                    maxRatioAct: maxRatioAct.value,
+                    maxRatioEnabled: maxRatioEnabled.value,
+                    maxSeedingTime: int.parse(maxSeedingTimeController.text),
+                    maxSeedingTimeEnabled: maxSeedingTimeEnabled.value,
+                    maxUploads: int.parse(maxUploadsController.text),
+                    maxUploadsPerTorrent:
+                        int.parse(maxUploadsPerTorrentController.text),
+                    memoryWorkingSetLimit:
+                        int.parse(memoryWorkingSetLimitController.text),
+                    outgoingPortsMax:
+                        int.parse(outgoingPortsMaxController.text),
+                    outgoingPortsMin:
+                        int.parse(outgoingPortsMinController.text),
+                    peerTos: int.parse(peerTosController.text),
+                    peerTurnover: int.parse(peerTurnoverController.text),
+                    peerTurnoverCutoff:
+                        int.parse(peerTurnoverCutoffController.text),
+                    peerTurnoverInterval:
+                        int.parse(peerTurnoverIntervalController.text),
+                    performanceWarning: performanceWarning.value,
+                    pex: pex.value,
+                    preallocateAll: preallocateAll.value,
+                    proxyAuthEnabled: proxyAuthEnabled.value,
+                    proxyHostnameLookup: proxyHostnameLookup.value,
+                    proxyIp: proxyIpController.text,
+                    proxyPassword: proxyPasswordController.text,
+                    proxyPeerConnections: proxyPeerConnections.value,
+                    proxyPort: int.parse(proxyPortController.text),
+                    proxyTorrentsOnly: proxyTorrentsOnly.value,
+                    proxyType: proxyType.value,
+                    proxyUsername: proxyUsernameController.text,
+                    queueingEnabled: queueingEnabled.value,
+                    randomPort: randomPort.value,
+                    reannounceWhenAddressChanged:
+                        reannounceWhenAddressChanged.value,
+                    recheckCompletedTorrents: recheckCompletedTorrents.value,
+                    refreshInterval: int.parse(refreshIntervalController.text),
+                    requestQueueSize:
+                        int.parse(requestQueueSizeController.text),
+                    resolvePeerCountries: resolvePeerCountries.value,
+                    resumeDataStorageType: resumeDataStorageType.value,
+                    rssAutoDownloadingEnabled: rssAutoDownloadingEnabled.value,
+                    rssDownloadRepackProperEpisodes:
+                        rssDownloadRepackProperEpisodes.value,
+                    rssMaxArticlesPerFeed:
+                        int.parse(rssMaxArticlesPerFeedController.text),
+                    rssProcessingEnabled: rssProcessingEnabled.value,
+                    rssRefreshInterval:
+                        int.parse(rssRefreshIntervalController.text),
+                    rssSmartEpisodeFilters:
+                        rssSmartEpisodeFiltersController.text,
+                    savePath: savePathController.text,
+                    savePathChangedTmmEnabled: savePathChangedTmmEnabled.value,
+                    saveResumeDataInterval:
+                        int.parse(saveResumeDataIntervalController.text),
+                    scheduleFromHour:
+                        int.parse(scheduleFromHourController.text),
+                    scheduleFromMin: int.parse(scheduleFromMinController.text),
+                    scheduleToHour: int.parse(scheduleToHourController.text),
+                    scheduleToMin: int.parse(scheduleToMinController.text),
+                    schedulerDays: schedulerDays.value,
+                    schedulerEnabled: schedulerEnabled.value,
+                    sendBufferLowWatermark:
+                        int.parse(sendBufferLowWatermarkController.text),
+                    sendBufferWatermark:
+                        int.parse(sendBufferWatermarkController.text),
+                    sendBufferWatermarkFactor:
+                        int.parse(sendBufferWatermarkFactorController.text),
+                    slowTorrentDlRateThreshold:
+                        int.parse(slowTorrentDlRateThresholdController.text),
+                    slowTorrentInactiveTimer:
+                        int.parse(slowTorrentInactiveTimerController.text),
+                    slowTorrentUlRateThreshold:
+                        int.parse(slowTorrentUlRateThresholdController.text),
+                    socketBacklogSize:
+                        int.parse(socketBacklogSizeController.text),
+                    ssrfMitigation: ssrfMitigation.value,
+                    startPausedEnabled: startPausedEnabled.value,
+                    stopTrackerTimeout:
+                        int.parse(stopTrackerTimeoutController.text),
+                    tempPath: tempPathController.text,
+                    tempPathEnabled: tempPathEnabled.value,
+                    torrentChangedTmmEnabled: torrentChangedTmmEnabled.value,
+                    torrentContentLayout: torrentContentLayoutController.text,
+                    torrentStopCondition: torrentStopCondition.value,
+                    upLimit: int.parse(upLimitController.text) * 1024,
+                    uploadChokingAlgorithm: uploadChokingAlgorithm.value,
+                    uploadSlotsBehavior: uploadSlotsBehavior.value,
+                    upnp: upnp.value,
+                    useCategoryPathsInManualMode:
+                        useCategoryPathsInManualMode.value,
+                    useHttps: useHttps.value,
+                    utpTcpMixedMode: utpTcpMixedMode.value,
+                    validateHttpsTrackerCertificate:
+                        validateHttpsTrackerCertificate.value,
+                    webUiAddress: webUiAddressController.text,
+                    webUiBanDuration:
+                        int.parse(webUiBanDurationController.text),
+                    webUiClickjackingProtectionEnabled:
+                        webUiClickjackingProtectionEnabled.value,
+                    webUiCsrfProtectionEnabled:
+                        webUiCsrfProtectionEnabled.value,
+                    webUiCustomHttpHeaders:
+                        webUiCustomHttpHeadersController.text,
+                    webUiDomainList: webUiDomainListController.text,
+                    webUiHostHeaderValidationEnabled:
+                        webUiHostHeaderValidationEnabled.value,
+                    webUiHttpsCertPath: webUiHttpsCertPathController.text,
+                    webUiHttpsKeyPath: webUiHttpsKeyPathController.text,
+                    webUiMaxAuthFailCount:
+                        int.parse(webUiMaxAuthFailCountController.text),
+                    webUiPort: int.parse(webUiPortController.text),
+                    webUiReverseProxiesList:
+                        webUiReverseProxiesListController.text,
+                    webUiReverseProxyEnabled: webUiReverseProxyEnabled.value,
+                    webUiSecureCookieEnabled: webUiSecureCookieEnabled.value,
+                    webUiSessionTimeout:
+                        int.parse(webUiSessionTimeoutController.text),
+                    webUiUpnp: webUiUpnp.value,
+                    webUiUseCustomHttpHeadersEnabled:
+                        webUiUseCustomHttpHeadersEnabled.value,
+                    webUiUsername: webUiUsernameController.text,
+                  );
+
+                  CommonResponse response =
+                      await controller.setPrefs(downloader, prefs);
+                  if (!response.succeed) {
+                    Get.snackbar('修改配置失败', response.msg);
+                  } else {
+                    controller.getDownloaderListFromServer();
+                  }
+                  Get.back();
+                },
+                label: const Text('保存'),
               ),
               body: TabBarView(children: [
                 ListView(
@@ -3699,10 +3927,10 @@ class _DownloadPageState extends State<DownloadPage>
                           controller: webUiUsernameController,
                           labelText: '用户名',
                         ),
-                        CustomTextField(
-                          controller: webUiPasswordController,
-                          labelText: '密码',
-                        ),
+                        // CustomTextField(
+                        //   controller: webUiPasswordController,
+                        //   labelText: '密码',
+                        // ),
                         CheckboxListTile(
                           dense: true,
                           value: bypassLocalAuth.value,
@@ -4477,46 +4705,65 @@ class _DownloadPageState extends State<DownloadPage>
     );
   }
 
-  _showTrPrefs(Downloader downloader, context) {
+  _showTrPrefs(Downloader downloader, context) async {
     const List<Tab> tabs = [
       Tab(text: '下载设置'),
       Tab(text: '网络设置'),
       Tab(text: '带宽设置'),
       Tab(text: '队列设置'),
     ];
-    TransmissionConfig prefs = downloader.prefs;
+    var response = await controller.getPrefs(downloader);
+    if (!response.succeed) {
+      Get.snackbar('出错啦！', '获取下载器设置失败',
+          colorText: Theme.of(context).colorScheme.error);
+      return;
+    }
+    controller.currentPrefs = TransmissionConfig.fromJson(response.data);
+    controller.update();
     // 限速开关
-    RxBool altSpeedEnabled = RxBool(prefs.altSpeedEnabled);
+    RxBool altSpeedEnabled = RxBool(controller.currentPrefs.altSpeedEnabled);
     // 自动按时间限速开关
-    RxBool altSpeedTimeEnabled = RxBool(prefs.altSpeedTimeEnabled);
+    RxBool altSpeedTimeEnabled =
+        RxBool(controller.currentPrefs.altSpeedTimeEnabled);
     // 黑名单开关
-    RxBool blocklistEnabled = RxBool(prefs.blocklistEnabled);
+    RxBool blocklistEnabled = RxBool(controller.currentPrefs.blocklistEnabled);
+    // RxBool startAddedTorrents =
+    //     RxBool(controller.currentPrefs.startAddedTorrents);
     // 分布式 HASH 表
-    RxBool dhtEnabled = RxBool(prefs.dhtEnabled);
+    RxBool dhtEnabled = RxBool(controller.currentPrefs.dhtEnabled);
     // 下载队列开关
-    RxBool downloadQueueEnabled = RxBool(prefs.downloadQueueEnabled);
+    RxBool downloadQueueEnabled =
+        RxBool(controller.currentPrefs.downloadQueueEnabled);
     // 种子超时无流量移出队列开关
-    RxBool idleSeedingLimitEnabled = RxBool(prefs.idleSeedingLimitEnabled);
+    RxBool idleSeedingLimitEnabled =
+        RxBool(controller.currentPrefs.idleSeedingLimitEnabled);
     // 临时目录开关
-    RxBool incompleteDirEnabled = RxBool(prefs.incompleteDirEnabled);
+    RxBool incompleteDirEnabled =
+        RxBool(controller.currentPrefs.incompleteDirEnabled);
     // 允许本地对等点发现
-    RxBool lpdEnabled = RxBool(prefs.lpdEnabled);
+    RxBool lpdEnabled = RxBool(controller.currentPrefs.lpdEnabled);
     // 端口转发开关
-    RxBool portForwardingEnabled = RxBool(prefs.portForwardingEnabled);
+    RxBool portForwardingEnabled =
+        RxBool(controller.currentPrefs.portForwardingEnabled);
     // PEX开关
-    RxBool pexEnabled = RxBool(prefs.pexEnabled);
-    RxBool peerPortRandomOnStart = RxBool(prefs.peerPortRandomOnStart);
+    RxBool pexEnabled = RxBool(controller.currentPrefs.pexEnabled);
+    RxBool peerPortRandomOnStart =
+        RxBool(controller.currentPrefs.peerPortRandomOnStart);
     // 队列等待开关
-    RxBool queueStalledEnabled = RxBool(prefs.queueStalledEnabled);
+    RxBool queueStalledEnabled =
+        RxBool(controller.currentPrefs.queueStalledEnabled);
     // 种子做种队列开关
-    RxBool seedQueueEnabled = RxBool(prefs.seedQueueEnabled);
+    RxBool seedQueueEnabled = RxBool(controller.currentPrefs.seedQueueEnabled);
     // 未完成种子添加 part
-    RxBool renamePartialFiles = RxBool(prefs.renamePartialFiles);
+    RxBool renamePartialFiles =
+        RxBool(controller.currentPrefs.renamePartialFiles);
     // 种子上传限速开关
-    RxBool speedLimitUpEnabled = RxBool(prefs.speedLimitUpEnabled);
-    RxBool seedRatioLimited = RxBool(prefs.seedRatioLimited);
+    RxBool speedLimitUpEnabled =
+        RxBool(controller.currentPrefs.speedLimitUpEnabled);
+    RxBool seedRatioLimited = RxBool(controller.currentPrefs.seedRatioLimited);
     // 种子下载限速开关
-    RxBool speedLimitDownEnabled = RxBool(prefs.speedLimitDownEnabled);
+    RxBool speedLimitDownEnabled =
+        RxBool(controller.currentPrefs.speedLimitDownEnabled);
     // 脚本种子添加开关
     // RxBool scriptTorrentAddedEnabled = RxBool(prefs.scriptTorrentAddedEnabled);
     // 脚本种子完成开关
@@ -4526,7 +4773,77 @@ class _DownloadPageState extends State<DownloadPage>
     // RxBool tcpEnabled = RxBool(prefs.tcpEnabled);
     // UTP开关
     // RxBool utpEnabled = RxBool(prefs.utpEnabled);
-    List<MetaDataItem> daysOfWeek = [
+
+    // int fields
+    TextEditingController seedRatioLimitController = TextEditingController(
+        text: controller.currentPrefs.seedRatioLimit.toString());
+    TextEditingController altSpeedDownController = TextEditingController(
+        text: controller.currentPrefs.altSpeedDown.toString());
+    TextEditingController altSpeedTimeBeginController = TextEditingController(
+        text: controller.currentPrefs.altSpeedTimeBegin.toString());
+    RxInt altSpeedTimeDay = RxInt(controller.currentPrefs.altSpeedTimeDay);
+    TextEditingController altSpeedTimeEndController = TextEditingController(
+        text: controller.currentPrefs.altSpeedTimeEnd.toString());
+    TextEditingController altSpeedUpController = TextEditingController(
+        text: controller.currentPrefs.altSpeedUp.toString());
+    RxInt blocklistSize = RxInt(controller.currentPrefs.blocklistSize);
+    TextEditingController cacheSizeMbController = TextEditingController(
+        text: controller.currentPrefs.cacheSizeMb.toString());
+    TextEditingController downloadDirFreeSpaceController =
+        TextEditingController(
+            text: controller.currentPrefs.downloadDirFreeSpace.toString());
+    TextEditingController downloadQueueSizeController = TextEditingController(
+        text: controller.currentPrefs.downloadQueueSize.toString());
+    TextEditingController idleSeedingLimitController = TextEditingController(
+        text: controller.currentPrefs.idleSeedingLimit.toString());
+    TextEditingController peerLimitGlobalController = TextEditingController(
+        text: controller.currentPrefs.peerLimitGlobal.toString());
+    TextEditingController peerLimitPerTorrentController = TextEditingController(
+        text: controller.currentPrefs.peerLimitPerTorrent.toString());
+    TextEditingController peerPortController = TextEditingController(
+        text: controller.currentPrefs.peerPort.toString());
+    TextEditingController queueStalledMinutesController = TextEditingController(
+        text: controller.currentPrefs.queueStalledMinutes.toString());
+    TextEditingController rpcVersionController = TextEditingController(
+        text: controller.currentPrefs.rpcVersion.toString());
+    TextEditingController rpcVersionMinimumController = TextEditingController(
+        text: controller.currentPrefs.rpcVersionMinimum.toString());
+    TextEditingController seedQueueSizeController = TextEditingController(
+        text: controller.currentPrefs.seedQueueSize.toString());
+    TextEditingController speedLimitDownController = TextEditingController(
+        text: controller.currentPrefs.speedLimitDown.toString());
+    TextEditingController speedLimitUpController = TextEditingController(
+        text: controller.currentPrefs.speedLimitUp.toString());
+
+// String fields
+    TextEditingController blocklistUrlController =
+        TextEditingController(text: controller.currentPrefs.blocklistUrl);
+    TextEditingController configDirController =
+        TextEditingController(text: controller.currentPrefs.configDir);
+    TextEditingController defaultTrackersController =
+        TextEditingController(text: controller.currentPrefs.defaultTrackers);
+    TextEditingController downloadDirController =
+        TextEditingController(text: controller.currentPrefs.downloadDir);
+    RxString encryption = RxString(controller.currentPrefs.encryption);
+    TextEditingController incompleteDirController =
+        TextEditingController(text: controller.currentPrefs.incompleteDir);
+    TextEditingController rpcVersionSemverController =
+        TextEditingController(text: controller.currentPrefs.rpcVersionSemver);
+    TextEditingController scriptTorrentAddedFilenameController =
+        TextEditingController(
+            text: controller.currentPrefs.scriptTorrentAddedFilename);
+    TextEditingController scriptTorrentDoneFilenameController =
+        TextEditingController(
+            text: controller.currentPrefs.scriptTorrentDoneFilename);
+    TextEditingController scriptTorrentDoneSeedingFilenameController =
+        TextEditingController(
+            text: controller.currentPrefs.scriptTorrentDoneSeedingFilename);
+    TextEditingController sessionIdController =
+        TextEditingController(text: controller.currentPrefs.sessionId);
+    TextEditingController versionController =
+        TextEditingController(text: controller.currentPrefs.version);
+
+    RxList<MetaDataItem> daysOfWeek = RxList([
       '星期天',
       '星期一',
       '星期二',
@@ -4537,11 +4854,11 @@ class _DownloadPageState extends State<DownloadPage>
     ]
         .asMap()
         .entries
-        .map((item) => MetaDataItem(name: item.value, value: item.key))
-        .toList();
-    List<int> daysOfWeekMask =
+        .map((item) => MetaDataItem(name: item.value, value: pow(2, item.key)))
+        .toList());
+    RxList<int> daysOfWeekMask = RxList(
         TransmissionUtils.getEnabledDaysFromAltSpeedTimeDay(
-            prefs.altSpeedTimeDay);
+            altSpeedTimeDay.value));
     Get.bottomSheet(
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
@@ -4565,215 +4882,390 @@ class _DownloadPageState extends State<DownloadPage>
               body: TabBarView(children: [
                 ListView(
                   children: [
-                    CustomTextField(
-                        controller: TextEditingController(
-                            text: prefs.downloadDir.toString()),
-                        labelText: '默认保存目录'),
-                    CheckboxListTile(
-                      value: renamePartialFiles.value,
-                      onChanged: (value) {
-                        prefs.renamePartialFiles = value!;
-                      },
-                      title: const Text('在未完成的文件名后加上 “.part” 后缀'),
-                    ),
-                    CheckboxListTile(
-                      value: incompleteDirEnabled.value,
-                      onChanged: (value) {
-                        prefs.incompleteDirEnabled = value!;
-                      },
-                      title: const Text('启用临时目录'),
-                    ),
-                    CustomTextField(
-                        controller: TextEditingController(
-                            text: prefs.incompleteDir.toString()),
-                        labelText: '临时目录'),
-                    CheckboxListTile(
-                      value: seedRatioLimited.value,
-                      onChanged: (value) {},
-                      title: const Text('默认分享率上限'),
-                    ),
-                    CustomTextField(
-                        controller: TextEditingController(
-                            text: prefs.seedRatioLimit.toString()),
-                        labelText: '默认分享率上限'),
-                    CheckboxListTile(
-                      value: idleSeedingLimitEnabled.value,
-                      onChanged: (value) {},
-                      title: const Text('默认停止无流量种子持续时间(分钟)'),
-                    ),
-                    CustomTextField(
-                        controller: TextEditingController(
-                            text: prefs.idleSeedingLimit.toString()),
-                        labelText: '默认停止无流量种子持续时间(分钟)'),
-                    CustomTextField(
-                        controller: TextEditingController(
-                            text: prefs.cacheSizeMb.toString()),
-                        labelText: '磁盘缓存大小（MB）'),
-                  ],
-                ),
-                ListView(
-                  children: [
-                    CustomTextField(
-                        controller: TextEditingController(
-                            text: prefs.peerPort.toString()),
-                        labelText: '连接端口号'),
-                    FullWidthButton(onPressed: () {}, text: '测试端口'),
-                    CheckboxListTile(
-                      value: peerPortRandomOnStart.value,
-                      onChanged: (value) {
-                        prefs.peerPortRandomOnStart = value!;
-                      },
-                      title: const Text('启用随机端口'),
-                    ),
-                    CheckboxListTile(
-                      value: portForwardingEnabled.value,
-                      onChanged: (value) {
-                        prefs.portForwardingEnabled = value!;
-                      },
-                      title: const Text('启用端口转发 (UPnP)'),
-                    ),
-                    CustomTextField(
-                        controller: TextEditingController(
-                            text: prefs.encryption.toString()),
-                        labelText: '加密'),
-                    CustomTextField(
-                        controller: TextEditingController(
-                            text: prefs.peerLimitGlobal.toString()),
-                        labelText: '全局最大链接数'),
-                    CustomTextField(
-                        controller: TextEditingController(
-                            text: prefs.peerLimitPerTorrent.toString()),
-                        labelText: '单种最大链接数'),
-                    CheckboxListTile(
-                      value: pexEnabled.value,
-                      onChanged: (value) {},
-                      title: const Text('启用本地用户交换'),
-                    ),
-                    CheckboxListTile(
-                      value: lpdEnabled.value,
-                      onChanged: (value) {},
-                      title: const Text('对等交换'),
-                    ),
-                    CheckboxListTile(
-                      value: dhtEnabled.value,
-                      onChanged: (value) {},
-                      title: const Text('启用分布式哈希表 (DHT)'),
-                    ),
-                    CheckboxListTile(
-                      value: blocklistEnabled.value,
-                      onChanged: (value) {},
-                      title: const Text('启用黑名单列表:'),
-                    ),
-                    CustomTextField(
-                        controller: TextEditingController(
-                            text: prefs.blocklistUrl.toString()),
-                        labelText: '黑名单列表'),
-                    ElevatedButton(
-                        onPressed: () {},
-                        child: Text(
-                            style: TextStyle(
-                              fontSize: 14,
-                            ),
-                            '更新黑名单【${prefs.blocklistSize}】'))
-                  ],
-                ),
-                ListView(
-                  children: [
-                    CheckboxListTile(
-                      value: speedLimitDownEnabled.value,
-                      onChanged: (value) {},
-                      title: const Text('最大下载速度 (KB/s):'),
-                    ),
-                    CustomTextField(
-                        controller: TextEditingController(
-                            text: prefs.speedLimitDown.toString()),
-                        labelText: '正常最大下载速度(KB/s)'),
-                    CustomTextField(
-                        controller: TextEditingController(
-                            text: prefs.altSpeedDown.toString()),
-                        labelText: '备用最大下载速度(KB/s)'),
-                    CheckboxListTile(
-                      value: speedLimitUpEnabled.value,
-                      onChanged: (value) {},
-                      title: const Text('最大上传速度 (KB/s):'),
-                    ),
-                    CustomTextField(
-                        controller: TextEditingController(
-                            text: prefs.speedLimitUp.toString()),
-                        labelText: '正常最大上传速度(KB/s)'),
-                    CustomTextField(
-                        controller: TextEditingController(
-                            text: prefs.altSpeedUp.toString()),
-                        labelText: '备用最大上传速度(KB/s)'),
-                    CheckboxListTile(
-                      value: altSpeedEnabled.value,
-                      onChanged: (value) {},
-                      title: const Text('启用备用带宽'),
-                    ),
-                    CheckboxListTile(
-                      value: altSpeedTimeEnabled.value,
-                      onChanged: (value) {},
-                      title: const Text('自动启用备用带宽设置 (时间段内)'),
-                    ),
-                    CustomTextField(
-                        controller: TextEditingController(
-                            text: prefs.altSpeedTimeBegin.toString()),
-                        labelText: '自动启用备用带宽设置开始时间'),
-                    CustomTextField(
-                        controller: TextEditingController(
-                            text: prefs.altSpeedTimeEnd.toString()),
-                        labelText: '自动启用备用带宽设置结束时间'),
-                    Text('${prefs.altSpeedTimeDay}'),
-                    Wrap(
-                      children: [
-                        ...daysOfWeek.map(
-                          (item) => CheckboxListTile(
-                            value: daysOfWeekMask.contains(item.value),
+                    Obx(() {
+                      return Column(
+                        children: [
+                          CustomTextField(
+                              controller: downloadDirController,
+                              labelText: '默认保存目录'),
+                          CheckboxListTile(
+                            value: renamePartialFiles.value,
                             onChanged: (value) {
-                              logger_helper.Logger.instance.d(value);
-                              if (value == true) {
-                                prefs.altSpeedTimeDay += int.parse(item.value);
-                              } else {
-                                prefs.altSpeedTimeDay -= int.parse(item.value);
-                              }
+                              renamePartialFiles.value = value == true;
                             },
-                            title: Text(item.name),
+                            title: const Text('在未完成的文件名后加上 “.part” 后缀'),
                           ),
-                        )
-                      ],
-                    )
+                          CheckboxListTile(
+                            value: incompleteDirEnabled.value,
+                            onChanged: (value) {
+                              incompleteDirEnabled.value = value == true;
+                            },
+                            title: const Text('启用临时目录'),
+                          ),
+                          if (incompleteDirEnabled.value)
+                            CustomTextField(
+                              controller: incompleteDirController,
+                              labelText: '临时目录',
+                            ),
+                          CheckboxListTile(
+                            value: seedRatioLimited.value,
+                            onChanged: (value) {
+                              seedRatioLimited.value = value == true;
+                            },
+                            title: const Text('默认分享率上限'),
+                          ),
+                          if (seedRatioLimited.value)
+                            CustomTextField(
+                                controller: seedRatioLimitController,
+                                labelText: '默认分享率上限'),
+                          CheckboxListTile(
+                            value: idleSeedingLimitEnabled.value,
+                            onChanged: (value) {
+                              idleSeedingLimitEnabled.value = value == true;
+                            },
+                            title: const Text('默认停止无流量种子'),
+                          ),
+                          if (idleSeedingLimitEnabled.value)
+                            CustomTextField(
+                                controller: idleSeedingLimitController,
+                                labelText: '默认停止无流量种子持续时间(分钟)'),
+                          CustomTextField(
+                              controller: cacheSizeMbController,
+                              labelText: '磁盘缓存大小（MB）'),
+                        ],
+                      );
+                    }),
                   ],
                 ),
-                ListView(children: [
-                  CheckboxListTile(
-                    value: downloadQueueEnabled.value,
-                    onChanged: (value) {},
-                    title: const Text('启用下载队列，最大同时下载数'),
-                  ),
-                  CustomTextField(
-                      controller: TextEditingController(
-                          text: prefs.downloadQueueSize.toString()),
-                      labelText: '启用下载队列，最大同时下载数'),
-                  CheckboxListTile(
-                    value: seedQueueEnabled.value,
-                    onChanged: (value) {},
-                    title: const Text('启用上传队列，最大同时上传数'),
-                  ),
-                  CustomTextField(
-                      controller: TextEditingController(
-                          text: prefs.seedQueueSize.toString()),
-                      labelText: '启用上传队列，最大同时上传数'),
-                  CheckboxListTile(
-                    value: queueStalledEnabled.value,
-                    onChanged: (value) {},
-                    title: const Text('种子超过该时间无流量，移出队列'),
-                  ),
-                  CustomTextField(
-                      controller: TextEditingController(
-                          text: prefs.queueStalledMinutes.toString()),
-                      labelText: '种子超过该时间无流量，移出队列(分钟)'),
-                ]),
+                ListView(
+                  children: [
+                    Obx(() {
+                      return Column(
+                        children: [
+                          CustomPortField(
+                              controller: peerPortController,
+                              labelText: '连接端口号'),
+                          FullWidthButton(onPressed: () {}, text: '测试端口'),
+                          CheckboxListTile(
+                            value: peerPortRandomOnStart.value,
+                            onChanged: (value) {
+                              peerPortRandomOnStart.value = value == true;
+                            },
+                            title: const Text('启用随机端口'),
+                          ),
+                          CheckboxListTile(
+                            value: portForwardingEnabled.value,
+                            onChanged: (value) {
+                              portForwardingEnabled.value = value == true;
+                            },
+                            title: const Text('启用端口转发 (UPnP)'),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('加密'),
+                                DropdownButton(
+                                    isDense: true,
+                                    value: encryption.value,
+                                    items: const [
+                                      DropdownMenuItem(
+                                          value: 'tolerated',
+                                          child: Text(
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                              ),
+                                              '允许加密')),
+                                      DropdownMenuItem(
+                                          value: 'preferred',
+                                          child: Text(
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                              ),
+                                              '优先加密')),
+                                      DropdownMenuItem(
+                                          value: 'required',
+                                          child: Text(
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                              ),
+                                              ' 强制加密')),
+                                    ],
+                                    onChanged: (value) {
+                                      encryption.value = value!;
+                                    }),
+                              ],
+                            ),
+                          ),
+                          CustomTextField(
+                              controller: peerLimitGlobalController,
+                              labelText: '全局最大链接数'),
+                          CustomTextField(
+                              controller: peerLimitPerTorrentController,
+                              labelText: '单种最大链接数'),
+                          CheckboxListTile(
+                            value: pexEnabled.value,
+                            onChanged: (value) {
+                              pexEnabled.value = value == true;
+                            },
+                            title: const Text('启用本地用户交换'),
+                          ),
+                          CheckboxListTile(
+                            value: lpdEnabled.value,
+                            onChanged: (value) {
+                              lpdEnabled.value = value == true;
+                            },
+                            title: const Text('对等交换'),
+                          ),
+                          CheckboxListTile(
+                            value: dhtEnabled.value,
+                            onChanged: (value) {
+                              dhtEnabled.value = value == true;
+                            },
+                            title: const Text('启用分布式哈希表 (DHT)'),
+                          ),
+                          CheckboxListTile(
+                            value: blocklistEnabled.value,
+                            onChanged: (value) {
+                              blocklistEnabled.value = value == true;
+                            },
+                            title: const Text('启用黑名单列表:'),
+                          ),
+                          if (blocklistEnabled.value)
+                            Column(
+                              children: [
+                                CustomTextField(
+                                    controller: blocklistUrlController,
+                                    labelText: '黑名单列表'),
+                                ElevatedButton(
+                                    onPressed: () {},
+                                    child: Text(
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                        ),
+                                        '更新黑名单【$blocklistSize】')),
+                              ],
+                            ),
+                        ],
+                      );
+                    })
+                  ],
+                ),
+                Obx(() {
+                  return ListView(
+                    children: [
+                      CheckboxListTile(
+                        value: speedLimitDownEnabled.value,
+                        onChanged: (value) {
+                          speedLimitDownEnabled.value = value == true;
+                        },
+                        title: const Text('最大下载速度 (KB/s):'),
+                      ),
+                      if (speedLimitDownEnabled.value)
+                        Column(
+                          children: [
+                            CustomNumberField(
+                                controller: speedLimitDownController,
+                                labelText: '正常最大下载速度(KB/s)'),
+                            CustomNumberField(
+                                controller: altSpeedDownController,
+                                labelText: '备用最大下载速度(KB/s)'),
+                          ],
+                        ),
+                      CheckboxListTile(
+                        value: speedLimitUpEnabled.value,
+                        onChanged: (value) {
+                          speedLimitUpEnabled.value = value == true;
+                        },
+                        title: const Text('最大上传速度 (KB/s):'),
+                      ),
+                      if (speedLimitUpEnabled.value)
+                        Column(
+                          children: [
+                            CustomNumberField(
+                                controller: speedLimitUpController,
+                                labelText: '正常最大上传速度(KB/s)'),
+                            CustomNumberField(
+                                controller: altSpeedUpController,
+                                labelText: '备用最大上传速度(KB/s)'),
+                          ],
+                        ),
+                      CheckboxListTile(
+                        value: altSpeedEnabled.value,
+                        onChanged: (value) {
+                          altSpeedEnabled.value = value == true;
+                        },
+                        title: const Text('启用备用带宽'),
+                      ),
+                      CheckboxListTile(
+                        value: altSpeedTimeEnabled.value,
+                        onChanged: (value) {
+                          altSpeedTimeEnabled.value = value == true;
+                        },
+                        title: const Text('自动启用备用带宽设置 (时间段内)'),
+                      ),
+                      if (altSpeedTimeEnabled.value)
+                        Obx(() {
+                          return Column(
+                            children: [
+                              CustomTextField(
+                                  controller: altSpeedTimeBeginController,
+                                  labelText: '自动启用备用带宽设置开始时间'),
+                              CustomTextField(
+                                  controller: altSpeedTimeEndController,
+                                  labelText: '自动启用备用带宽设置结束时间'),
+                              Text('${altSpeedTimeDay.value}'),
+                              Obx(() {
+                                return Wrap(
+                                  children: [
+                                    ...daysOfWeek.map(
+                                      (item) => CheckboxListTile(
+                                        value:
+                                            daysOfWeekMask.contains(item.value),
+                                        onChanged: (value) {
+                                          logger_helper.Logger.instance
+                                              .d(value);
+                                          if (value == true) {
+                                            altSpeedTimeDay.value =
+                                                (altSpeedTimeDay.value +
+                                                        item.value)
+                                                    .toInt();
+                                          } else {
+                                            altSpeedTimeDay.value =
+                                                (altSpeedTimeDay.value -
+                                                        item.value)
+                                                    .toInt();
+                                          }
+                                          daysOfWeekMask.value = TransmissionUtils
+                                              .getEnabledDaysFromAltSpeedTimeDay(
+                                                  altSpeedTimeDay.value);
+                                          logger_helper.Logger.instance
+                                              .d(daysOfWeekMask);
+                                        },
+                                        title: Text(item.name),
+                                      ),
+                                    )
+                                  ],
+                                );
+                              }),
+                            ],
+                          );
+                        })
+                    ],
+                  );
+                }),
+                Obx(() {
+                  return ListView(children: [
+                    CheckboxListTile(
+                      value: downloadQueueEnabled.value,
+                      onChanged: (value) {
+                        downloadQueueEnabled.value = value == true;
+                      },
+                      title: const Text('启用下载队列，最大同时下载数'),
+                    ),
+                    if (downloadQueueEnabled.value)
+                      CustomTextField(
+                          controller: downloadQueueSizeController,
+                          labelText: '启用下载队列，最大同时下载数'),
+                    CheckboxListTile(
+                      value: seedQueueEnabled.value,
+                      onChanged: (value) {
+                        seedQueueEnabled.value = value == true;
+                      },
+                      title: const Text('启用上传队列，最大同时上传数'),
+                    ),
+                    if (seedQueueEnabled.value)
+                      CustomTextField(
+                          controller: seedQueueSizeController,
+                          labelText: '启用上传队列，最大同时上传数'),
+                    CheckboxListTile(
+                      value: queueStalledEnabled.value,
+                      onChanged: (value) {
+                        queueStalledEnabled.value = value == true;
+                      },
+                      title: const Text('种子超过该时间无流量，移出队列'),
+                    ),
+                    if (queueStalledEnabled.value)
+                      CustomTextField(
+                          controller: queueStalledMinutesController,
+                          labelText: '种子超过该时间无流量，移出队列(分钟)'),
+                  ]);
+                }),
               ]),
+              floatingActionButton: FloatingActionButton(
+                onPressed: () async {
+                  TransmissionConfig prefs = controller.currentPrefs.copyWith(
+                    altSpeedDown: int.parse(altSpeedDownController.text),
+                    altSpeedEnabled: altSpeedEnabled.value,
+                    altSpeedTimeBegin:
+                        int.parse(altSpeedTimeBeginController.text),
+                    altSpeedTimeDay: altSpeedTimeDay.value,
+                    altSpeedTimeEnabled: altSpeedTimeEnabled.value,
+                    altSpeedTimeEnd: int.parse(altSpeedTimeEndController.text),
+                    altSpeedUp: int.parse(altSpeedUpController.text),
+                    blocklistEnabled: blocklistEnabled.value,
+                    blocklistUrl: blocklistUrlController.text,
+                    cacheSizeMb: int.parse(cacheSizeMbController.text),
+                    configDir: configDirController.text,
+                    defaultTrackers: defaultTrackersController.text,
+                    dhtEnabled: dhtEnabled.value,
+                    downloadDir: downloadDirController.text,
+                    downloadQueueEnabled: downloadQueueEnabled.value,
+                    downloadQueueSize:
+                        int.parse(downloadQueueSizeController.text),
+                    encryption: encryption.value,
+                    idleSeedingLimit:
+                        int.parse(idleSeedingLimitController.text),
+                    idleSeedingLimitEnabled: idleSeedingLimitEnabled.value,
+                    incompleteDir: incompleteDirController.text,
+                    incompleteDirEnabled: incompleteDirEnabled.value,
+                    lpdEnabled: lpdEnabled.value,
+                    peerLimitGlobal: int.parse(peerLimitGlobalController.text),
+                    peerLimitPerTorrent:
+                        int.parse(peerLimitPerTorrentController.text),
+                    peerPort: int.parse(peerPortController.text),
+                    peerPortRandomOnStart: peerPortRandomOnStart.value,
+                    pexEnabled: pexEnabled.value,
+                    portForwardingEnabled: portForwardingEnabled.value,
+                    queueStalledEnabled: queueStalledEnabled.value,
+                    queueStalledMinutes:
+                        int.parse(queueStalledMinutesController.text),
+                    renamePartialFiles: renamePartialFiles.value,
+                    // scriptTorrentAddedEnabled: scriptTorrentAddedEnabled.value,
+                    // scriptTorrentAddedFilename:
+                    //     scriptTorrentAddedFilenameController.text,
+                    // scriptTorrentDoneEnabled: scriptTorrentDoneEnabled.value,
+                    // scriptTorrentDoneFilename:
+                    //     scriptTorrentDoneFilenameController.text,
+                    // scriptTorrentDoneSeedingEnabled:
+                    //     scriptTorrentDoneSeedingEnabled.value,
+                    // scriptTorrentDoneSeedingFilename:
+                    //     scriptTorrentDoneSeedingFilenameController.text,
+                    seedQueueEnabled: seedQueueEnabled.value,
+                    seedQueueSize: int.parse(seedQueueSizeController.text),
+                    seedRatioLimit: double.parse(seedRatioLimitController.text),
+                    seedRatioLimited: seedRatioLimited.value,
+                    speedLimitDown: int.parse(speedLimitDownController.text),
+                    speedLimitDownEnabled: speedLimitDownEnabled.value,
+                    speedLimitUp: int.parse(speedLimitUpController.text),
+                    speedLimitUpEnabled: speedLimitUpEnabled.value,
+                    // startAddedTorrents: startAddedTorrents.value,
+                    // tcpEnabled: tcpEnabled.value,
+                    // trashOriginalTorrentFiles: trashOriginalTorrentFiles.value,
+                  );
+                  CommonResponse response =
+                      await controller.setPrefs(downloader, prefs);
+                  if (!response.succeed) {
+                    Get.snackbar('修改配置失败', response.msg);
+                  } else {
+                    controller.getDownloaderListFromServer();
+                  }
+                  Get.back();
+                },
+                child: const Icon(Icons.save_outlined),
+              ),
             ),
           );
         }),

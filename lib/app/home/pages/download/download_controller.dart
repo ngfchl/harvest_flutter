@@ -887,4 +887,12 @@ class DownloadController extends GetxController {
     }
     Get.snackbar('出错啦！', response.msg, colorText: Colors.red);
   }
+  getPrefs(Downloader downloader)async {
+    CommonResponse response = await getPrefsApi(downloader.id!);
+    return response;
+  }
+  setPrefs(Downloader downloader, dynamic prefs) async {
+    CommonResponse response = await setPrefsApi(downloader.id!, prefs.toJson());
+    return response;
+  }
 }
