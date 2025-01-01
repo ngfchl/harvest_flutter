@@ -111,11 +111,13 @@ class CustomTextField extends StatelessWidget {
 class CustomPortField extends StatelessWidget {
   final TextEditingController controller;
   final String labelText;
+  final bool readOnly;
 
   const CustomPortField({
     super.key,
     required this.controller,
     required this.labelText,
+    this.readOnly = false,
   });
 
   @override
@@ -123,6 +125,7 @@ class CustomPortField extends StatelessWidget {
     return CustomTextField(
       controller: controller,
       labelText: labelText,
+      readOnly: readOnly,
       inputFormatters: [
         FilteringTextInputFormatter.digitsOnly,
         TextInputFormatter.withFunction((oldValue, newValue) {
@@ -139,6 +142,32 @@ class CustomPortField extends StatelessWidget {
           return newValue;
         }),
         LengthLimitingTextInputFormatter(5), // 限制长度为5位数字
+      ],
+    );
+  }
+}
+
+class CustomNumberField extends StatelessWidget {
+  final TextEditingController controller;
+  final String labelText;
+  final bool readOnly;
+
+  const CustomNumberField({
+    super.key,
+    required this.controller,
+    required this.labelText,
+    this.readOnly = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomTextField(
+      controller: controller,
+      labelText: labelText,
+      readOnly: readOnly,
+      keyboardType: TextInputType.number,
+      inputFormatters: [
+        FilteringTextInputFormatter.digitsOnly,
       ],
     );
   }
