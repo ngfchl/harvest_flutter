@@ -81,7 +81,7 @@ class QbittorrentPreferences {
   int maxConcurrentHttpAnnounces;
   int maxConnec;
   int maxConnecPerTorrent;
-  int maxRatio;
+  double maxRatio;
   int maxRatioAct;
   bool maxRatioEnabled;
   int maxSeedingTime;
@@ -352,7 +352,6 @@ class QbittorrentPreferences {
   });
 
   factory QbittorrentPreferences.fromJson(Map<String, dynamic> json) {
-    print('torrent_stop_condition: ${json['torrent_stop_condition']}');
     return QbittorrentPreferences(
       addTrackers: json['add_trackers'] ?? '',
       addTrackersEnabled: json['add_trackers_enabled'] ?? false,
@@ -444,7 +443,7 @@ class QbittorrentPreferences {
       maxConcurrentHttpAnnounces: json['max_concurrent_http_announces'] ?? 0,
       maxConnec: json['max_connec'] ?? 0,
       maxConnecPerTorrent: json['max_connec_per_torrent'] ?? 0,
-      maxRatio: json['max_ratio'] ?? 0,
+      maxRatio: json['max_ratio'].toDouble() ?? 0.0,
       maxRatioAct: json['max_ratio_act'] ?? 0,
       maxRatioEnabled: json['max_ratio_enabled'] ?? false,
       maxSeedingTime: json['max_seeding_time'] ?? 0,
@@ -811,7 +810,7 @@ class QbittorrentPreferences {
     int? maxConcurrentHttpAnnounces,
     int? maxConnec,
     int? maxConnecPerTorrent,
-    int? maxRatio,
+    double? maxRatio,
     int? maxRatioAct,
     bool? maxRatioEnabled,
     int? maxSeedingTime,
