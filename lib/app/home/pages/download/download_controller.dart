@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart'; // ignore: depend_on_referenced_packages
+import 'package:harvest/app/home/pages/download/qbittorrent.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
 import 'package:transmission_api/transmission_api.dart' as tr;
@@ -147,6 +148,7 @@ class DownloadController extends GetxController {
   ].map((e) => MetaDataItem.fromJson(e)).toList();
   int? trTorrentState;
   bool sortReversed = false;
+  dynamic currentPrefs = false;
 
   // 使用StreamController来管理下载状态的流
   final StreamController<List<Downloader>> _downloadStreamController =
@@ -765,7 +767,7 @@ class DownloadController extends GetxController {
       if (item != null) {
         if (item.category == 'Qb') {
           item.status.add(TransferInfo.fromJson(status[key]["info"]));
-          item.prefs = Preferences.fromJson(status[key]['prefs']);
+          item.prefs = QbittorrentPreferences.fromJson(status[key]['prefs']);
         } else {
           TransmissionStats stats =
               TransmissionStats.fromJson(status[key]["info"]);

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:easy_refresh/easy_refresh.dart';
@@ -12,6 +13,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:harvest/app/home/pages/download/qb_file_tree_view.dart';
+import 'package:harvest/app/home/pages/download/qbittorrent.dart';
 import 'package:harvest/app/home/pages/download/tr_tree_file_view.dart';
 import 'package:intl/intl.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
@@ -1265,16 +1267,16 @@ class _DownloadPageState extends State<DownloadPage>
                         children: [
                           Expanded(
                             child: SizedBox(
-                              height: 28,
+                              height: 36,
                               child: TextField(
                                 controller: controller.searchController,
                                 textAlignVertical: TextAlignVertical.center,
                                 decoration: InputDecoration(
                                   isDense: true,
                                   hintText: '请输入搜索关键字',
-                                  hintStyle: const TextStyle(fontSize: 14),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 5, horizontal: 5),
+                                  hintStyle: const TextStyle(fontSize: 13),
+                                  // contentPadding: const EdgeInsets.symmetric(
+                                  //     vertical: 5, horizontal: 5),
                                   border: OutlineInputBorder(
                                     borderSide: BorderSide.none,
                                     // 不绘制边框
@@ -2133,39 +2135,357 @@ class _DownloadPageState extends State<DownloadPage>
       Tab(text: 'WEBUI'),
       Tab(text: '高级'),
     ];
-    Preferences prefs = downloader.prefs;
-    RxBool autoTmmEnabled = prefs.autoTmmEnabled!.obs;
-    RxBool addTrackersEnabled = prefs.addTrackersEnabled!.obs;
-    RxBool createSubfolderEnabled =
-        prefs.createSubfolderEnabled?.obs ?? false.obs;
-    RxBool startPausedEnabled = prefs.startPausedEnabled!.obs;
-    RxBool torrentChangedTmmEnabled = prefs.torrentChangedTmmEnabled!.obs;
-    RxBool savePathChangedTmmEnabled = prefs.savePathChangedTmmEnabled!.obs;
-    RxBool categoryChangedTmmEnabled = prefs.categoryChangedTmmEnabled!.obs;
-    RxBool tempPathEnabled = prefs.tempPathEnabled!.obs;
-    RxBool mailNotificationEnabled = prefs.mailNotificationEnabled!.obs;
-    RxBool mailNotificationSslEnabled = prefs.mailNotificationSslEnabled!.obs;
-    RxBool mailNotificationAuthEnabled = prefs.mailNotificationAuthEnabled!.obs;
-    RxBool autorunEnabled = prefs.autorunEnabled!.obs;
-    RxBool queueingEnabled = prefs.queueingEnabled!.obs;
-    RxBool maxRatioEnabled = prefs.maxRatioEnabled!.obs;
-    RxBool schedulerEnabled = prefs.schedulerEnabled!.obs;
-    RxBool proxyAuthEnabled = prefs.proxyAuthEnabled!.obs;
-    RxBool ipFilterEnabled = prefs.ipFilterEnabled!.obs;
-    RxBool webUiCsrfProtectionEnabled = prefs.webUiCsrfProtectionEnabled!.obs;
-    RxBool webUiClickjackingProtectionEnabled =
-        prefs.webUiClickjackingProtectionEnabled!.obs;
-    RxBool webUiSecureCookieEnabled = prefs.webUiSecureCookieEnabled!.obs;
-    RxBool webUiHostHeaderValidationEnabled =
-        prefs.webUiHostHeaderValidationEnabled!.obs;
+    controller.currentPrefs = downloader.prefs as QbittorrentPreferences;
+    controller.update();
+    // QbittorrentPreferences prefs = downloader.prefs;
+    RxBool autoTmmEnabled = RxBool(controller.currentPrefs.autoTmmEnabled);
+    RxBool addTrackersEnabled =
+        RxBool(controller.currentPrefs.addTrackersEnabled);
+    RxBool alternativeWebuiEnabled =
+        RxBool(controller.currentPrefs.alternativeWebuiEnabled);
+    RxBool anonymousMode = RxBool(controller.currentPrefs.anonymousMode);
     RxBool bypassAuthSubnetWhitelistEnabled =
-        prefs.bypassAuthSubnetWhitelistEnabled!.obs;
-    RxBool alternativeWebUiEnabled = prefs.alternativeWebUiEnabled!.obs;
-    RxBool dyndnsEnabled = prefs.dyndnsEnabled!.obs;
-    RxBool rssProcessingEnabled = prefs.rssProcessingEnabled!.obs;
-    RxBool rssAutoDownloadingEnabled = prefs.rssAutoDownloadingEnabled!.obs;
-    RxBool maxSeedingTimeEnabled = prefs.maxSeedingTimeEnabled!.obs;
+        RxBool(controller.currentPrefs.bypassAuthSubnetWhitelistEnabled);
+    RxBool bypassLocalAuth = RxBool(controller.currentPrefs.bypassLocalAuth);
+    RxBool categoryChangedTmmEnabled =
+        RxBool(controller.currentPrefs.categoryChangedTmmEnabled);
+    RxBool dht = RxBool(controller.currentPrefs.dht);
+    RxBool dontCountSlowTorrents =
+        RxBool(controller.currentPrefs.dontCountSlowTorrents);
+    RxBool dyndnsEnabled = RxBool(controller.currentPrefs.dyndnsEnabled);
+    RxBool embeddedTrackerPortForwarding =
+        RxBool(controller.currentPrefs.embeddedTrackerPortForwarding);
+    RxBool enableCoalesceReadWrite =
+        RxBool(controller.currentPrefs.enableCoalesceReadWrite);
+    RxBool enableEmbeddedTracker =
+        RxBool(controller.currentPrefs.enableEmbeddedTracker);
+    RxBool enableMultiConnectionsFromSameIp =
+        RxBool(controller.currentPrefs.enableMultiConnectionsFromSameIp);
+    RxBool enablePieceExtentAffinity =
+        RxBool(controller.currentPrefs.enablePieceExtentAffinity);
+    RxBool enableUploadSuggestions =
+        RxBool(controller.currentPrefs.enableUploadSuggestions);
+    RxBool excludedFileNamesEnabled =
+        RxBool(controller.currentPrefs.excludedFileNamesEnabled);
+    RxBool idnSupportEnabled =
+        RxBool(controller.currentPrefs.idnSupportEnabled);
+    RxBool incompleteFilesExt =
+        RxBool(controller.currentPrefs.incompleteFilesExt);
+    RxBool ipFilterEnabled = RxBool(controller.currentPrefs.ipFilterEnabled);
+    RxBool ipFilterTrackers = RxBool(controller.currentPrefs.ipFilterTrackers);
+    RxBool limitLanPeers = RxBool(controller.currentPrefs.limitLanPeers);
+    RxBool limitTcpOverhead = RxBool(controller.currentPrefs.limitTcpOverhead);
+    RxBool limitUtpRate = RxBool(controller.currentPrefs.limitUtpRate);
+    RxInt autoDeleteMode = RxInt(controller.currentPrefs.autoDeleteMode);
+    RxInt uploadChokingAlgorithm =
+        RxInt(controller.currentPrefs.uploadChokingAlgorithm);
+    RxInt uploadSlotsBehavior =
+        RxInt(controller.currentPrefs.uploadSlotsBehavior);
+    RxInt encryption = RxInt(controller.currentPrefs.encryption);
+    RxInt utpTcpMixedMode = RxInt(controller.currentPrefs.utpTcpMixedMode);
+    RxBool lsd = RxBool(controller.currentPrefs.lsd);
+    RxBool mailNotificationAuthEnabled =
+        RxBool(controller.currentPrefs.mailNotificationAuthEnabled);
+    RxBool mailNotificationEnabled =
+        RxBool(controller.currentPrefs.mailNotificationEnabled);
+    RxBool mailNotificationSslEnabled =
+        RxBool(controller.currentPrefs.mailNotificationSslEnabled);
+    RxBool maxRatioEnabled = RxBool(controller.currentPrefs.maxRatioEnabled);
+    RxBool maxSeedingTimeEnabled =
+        RxBool(controller.currentPrefs.maxSeedingTimeEnabled);
+    RxBool performanceWarning =
+        RxBool(controller.currentPrefs.performanceWarning);
+    RxBool pex = RxBool(controller.currentPrefs.pex);
+    RxBool preallocateAll = RxBool(controller.currentPrefs.preallocateAll);
+    RxBool proxyAuthEnabled = RxBool(controller.currentPrefs.proxyAuthEnabled);
+    RxBool proxyHostnameLookup =
+        RxBool(controller.currentPrefs.proxyHostnameLookup);
+    RxBool proxyPeerConnections =
+        RxBool(controller.currentPrefs.proxyPeerConnections);
+    RxBool proxyTorrentsOnly =
+        RxBool(controller.currentPrefs.proxyTorrentsOnly);
+    RxBool queueingEnabled = RxBool(controller.currentPrefs.queueingEnabled);
+    RxBool randomPort = RxBool(controller.currentPrefs.randomPort);
+    RxBool reannounceWhenAddressChanged =
+        RxBool(controller.currentPrefs.reannounceWhenAddressChanged);
+    RxBool recheckCompletedTorrents =
+        RxBool(controller.currentPrefs.recheckCompletedTorrents);
+    RxBool resolvePeerCountries =
+        RxBool(controller.currentPrefs.resolvePeerCountries);
+    RxBool rssAutoDownloadingEnabled =
+        RxBool(controller.currentPrefs.rssAutoDownloadingEnabled);
+    RxBool rssDownloadRepackProperEpisodes =
+        RxBool(controller.currentPrefs.rssDownloadRepackProperEpisodes);
+    RxBool rssProcessingEnabled =
+        RxBool(controller.currentPrefs.rssProcessingEnabled);
+    RxBool savePathChangedTmmEnabled =
+        RxBool(controller.currentPrefs.savePathChangedTmmEnabled);
+    RxBool schedulerEnabled = RxBool(controller.currentPrefs.schedulerEnabled);
+    RxBool ssrfMitigation = RxBool(controller.currentPrefs.ssrfMitigation);
+    RxBool startPausedEnabled =
+        RxBool(controller.currentPrefs.startPausedEnabled);
+    RxBool tempPathEnabled = RxBool(controller.currentPrefs.tempPathEnabled);
+    RxBool torrentChangedTmmEnabled =
+        RxBool(controller.currentPrefs.torrentChangedTmmEnabled);
+    RxBool upnp = RxBool(controller.currentPrefs.upnp);
+    RxBool useCategoryPathsInManualMode =
+        RxBool(controller.currentPrefs.useCategoryPathsInManualMode);
+    RxBool useHttps = RxBool(controller.currentPrefs.useHttps);
+    RxBool validateHttpsTrackerCertificate =
+        RxBool(controller.currentPrefs.validateHttpsTrackerCertificate);
+    RxBool webUiClickjackingProtectionEnabled =
+        RxBool(controller.currentPrefs.webUiClickjackingProtectionEnabled);
+    RxBool webUiCsrfProtectionEnabled =
+        RxBool(controller.currentPrefs.webUiCsrfProtectionEnabled);
+    RxBool webUiHostHeaderValidationEnabled =
+        RxBool(controller.currentPrefs.webUiHostHeaderValidationEnabled);
+    RxBool webUiReverseProxyEnabled =
+        RxBool(controller.currentPrefs.webUiReverseProxyEnabled);
+    RxBool webUiSecureCookieEnabled =
+        RxBool(controller.currentPrefs.webUiSecureCookieEnabled);
+    RxBool webUiUpnp = RxBool(controller.currentPrefs.webUiUpnp);
+    RxBool webUiUseCustomHttpHeadersEnabled =
+        RxBool(controller.currentPrefs.webUiUseCustomHttpHeadersEnabled);
 
+    TextEditingController bypassAuthSubnetWhitelistController =
+        TextEditingController(
+            text: controller.currentPrefs.bypassAuthSubnetWhitelist);
+    TextEditingController addTrackersController =
+        TextEditingController(text: controller.currentPrefs.addTrackers);
+    TextEditingController alternativeWebuiPathController =
+        TextEditingController(
+            text: controller.currentPrefs.alternativeWebuiPath);
+    TextEditingController announceIpController =
+        TextEditingController(text: controller.currentPrefs.announceIp);
+    TextEditingController autorunOnTorrentAddedProgramController =
+        TextEditingController(
+            text: controller.currentPrefs.autorunOnTorrentAddedProgram);
+    TextEditingController autorunProgramController =
+        TextEditingController(text: controller.currentPrefs.autorunProgram);
+    TextEditingController bannedIPsController =
+        TextEditingController(text: controller.currentPrefs.bannedIps);
+    RxString currentInterfaceAddress =
+        RxString(controller.currentPrefs.currentInterfaceAddress);
+    RxString currentNetworkInterface =
+        RxString(controller.currentPrefs.currentNetworkInterface);
+    TextEditingController dyndnsDomainController =
+        TextEditingController(text: controller.currentPrefs.dyndnsDomain);
+    TextEditingController dyndnsPasswordController =
+        TextEditingController(text: controller.currentPrefs.dyndnsPassword);
+    TextEditingController dyndnsUsernameController =
+        TextEditingController(text: controller.currentPrefs.dyndnsUsername);
+    TextEditingController exportDirController =
+        TextEditingController(text: controller.currentPrefs.exportDir);
+    RxBool exportDirFinEnable =
+        RxBool(controller.currentPrefs.exportDirFin.isNotEmpty);
+    RxBool exportDirEnable =
+        RxBool(controller.currentPrefs.exportDir.isNotEmpty);
+    TextEditingController exportDirFinController =
+        TextEditingController(text: controller.currentPrefs.exportDirFin);
+    TextEditingController ipFilterPathController =
+        TextEditingController(text: controller.currentPrefs.ipFilterPath);
+    TextEditingController mailNotificationEmailController =
+        TextEditingController(
+            text: controller.currentPrefs.mailNotificationEmail);
+    TextEditingController mailNotificationPasswordController =
+        TextEditingController(
+            text: controller.currentPrefs.mailNotificationPassword);
+    TextEditingController mailNotificationSenderController =
+        TextEditingController(
+            text: controller.currentPrefs.mailNotificationSender);
+    TextEditingController mailNotificationSmtpController =
+        TextEditingController(
+            text: controller.currentPrefs.mailNotificationSmtp);
+    TextEditingController mailNotificationUsernameController =
+        TextEditingController(
+            text: controller.currentPrefs.mailNotificationUsername);
+    TextEditingController proxyIpController =
+        TextEditingController(text: controller.currentPrefs.proxyIp);
+    TextEditingController proxyPasswordController =
+        TextEditingController(text: controller.currentPrefs.proxyPassword);
+    TextEditingController proxyUsernameController =
+        TextEditingController(text: controller.currentPrefs.proxyUsername);
+    TextEditingController rssSmartEpisodeFiltersController =
+        TextEditingController(
+            text: controller.currentPrefs.rssSmartEpisodeFilters);
+    TextEditingController savePathController =
+        TextEditingController(text: controller.currentPrefs.savePath);
+    TextEditingController tempPathController =
+        TextEditingController(text: controller.currentPrefs.tempPath);
+    TextEditingController torrentContentLayoutController =
+        TextEditingController(
+            text: controller.currentPrefs.torrentContentLayout);
+    RxString torrentStopCondition =
+        RxString(controller.currentPrefs.torrentStopCondition);
+    RxString resumeDataStorageType =
+        RxString(controller.currentPrefs.resumeDataStorageType);
+
+    TextEditingController webUiAddressController =
+        TextEditingController(text: controller.currentPrefs.webUiAddress);
+    TextEditingController webUiCustomHttpHeadersController =
+        TextEditingController(
+            text: controller.currentPrefs.webUiCustomHttpHeaders);
+    TextEditingController webUiDomainListController =
+        TextEditingController(text: controller.currentPrefs.webUiDomainList);
+    TextEditingController webUiHttpsCertPathController =
+        TextEditingController(text: controller.currentPrefs.webUiHttpsCertPath);
+    TextEditingController webUiHttpsKeyPathController =
+        TextEditingController(text: controller.currentPrefs.webUiHttpsKeyPath);
+    TextEditingController webUiReverseProxiesListController =
+        TextEditingController(
+            text: controller.currentPrefs.webUiReverseProxiesList);
+    TextEditingController webUiUsernameController =
+        TextEditingController(text: controller.currentPrefs.webUiUsername);
+    TextEditingController webUiPasswordController =
+        TextEditingController(text: '');
+    TextEditingController listenPortController = TextEditingController(
+        text: controller.currentPrefs.listenPort.toString());
+    RxInt bittorrentProtocol =
+        RxInt(controller.currentPrefs.bittorrentProtocol);
+    RxInt dyndnsService = RxInt(controller.currentPrefs.dyndnsService);
+    TextEditingController altDlLimitController = TextEditingController(
+        text: (controller.currentPrefs.altDlLimit / 1024).toString());
+    TextEditingController altUpLimitController = TextEditingController(
+        text: (controller.currentPrefs.altUpLimit / 1024).toString());
+    TextEditingController asyncIoThreadsController = TextEditingController(
+        text: controller.currentPrefs.asyncIoThreads.toString());
+    TextEditingController checkingMemoryUseController = TextEditingController(
+        text: controller.currentPrefs.checkingMemoryUse.toString());
+    TextEditingController connectionSpeedController = TextEditingController(
+        text: controller.currentPrefs.connectionSpeed.toString());
+    TextEditingController diskCacheController = TextEditingController(
+        text: controller.currentPrefs.diskCache.toString());
+    TextEditingController diskCacheTtlController = TextEditingController(
+        text: controller.currentPrefs.diskCacheTtl.toString());
+    RxInt diskIoReadMode = RxInt(controller.currentPrefs.diskIoReadMode);
+    RxInt diskIoType = RxInt(controller.currentPrefs.diskIoType);
+    RxInt diskIoWriteMode = RxInt(controller.currentPrefs.diskIoWriteMode);
+    TextEditingController diskQueueSizeController = TextEditingController(
+        text: controller.currentPrefs.diskQueueSize.toString());
+    TextEditingController embeddedTrackerPortController = TextEditingController(
+        text: controller.currentPrefs.embeddedTrackerPort.toString());
+    TextEditingController filePoolSizeController = TextEditingController(
+        text: controller.currentPrefs.filePoolSize.toString());
+    TextEditingController hashingThreadsController = TextEditingController(
+        text: controller.currentPrefs.hashingThreads.toString());
+    TextEditingController maxActiveCheckingTorrentsController =
+        TextEditingController(
+            text: controller.currentPrefs.maxActiveCheckingTorrents.toString());
+    TextEditingController maxActiveDownloadsController = TextEditingController(
+        text: controller.currentPrefs.maxActiveDownloads.toString());
+    TextEditingController maxActiveTorrentsController = TextEditingController(
+        text: controller.currentPrefs.maxActiveTorrents.toString());
+    TextEditingController maxActiveUploadsController = TextEditingController(
+        text: controller.currentPrefs.maxActiveUploads.toString());
+    TextEditingController maxConcurrentHttpAnnouncesController =
+        TextEditingController(
+            text:
+                controller.currentPrefs.maxConcurrentHttpAnnounces.toString());
+    TextEditingController maxConnecController = TextEditingController(
+        text: controller.currentPrefs.maxConnec.toString());
+    RxBool maxConnecEnabled = RxBool(controller.currentPrefs.maxConnec > 0);
+    RxString locale = RxString(controller.currentPrefs.locale);
+    RxBool maxConnecPerTorrentEnabled =
+        RxBool(controller.currentPrefs.maxConnecPerTorrent > 0);
+
+    TextEditingController maxConnecPerTorrentController = TextEditingController(
+        text: controller.currentPrefs.maxConnecPerTorrent.toString());
+    TextEditingController maxRatioController = TextEditingController(
+        text: controller.currentPrefs.maxRatio.toString());
+    RxInt maxRatioAct = RxInt(controller.currentPrefs.maxRatioAct);
+    TextEditingController maxSeedingTimeController = TextEditingController(
+        text: controller.currentPrefs.maxSeedingTime.toString());
+    TextEditingController maxUploadsController = TextEditingController(
+        text: controller.currentPrefs.maxUploads.toString());
+    RxBool maxUploadsEnabled = RxBool(controller.currentPrefs.maxUploads > 0);
+    RxBool announceToAllTrackers =
+        RxBool(controller.currentPrefs.announceToAllTrackers);
+    RxBool announceToAllTiers =
+        RxBool(controller.currentPrefs.announceToAllTiers);
+
+    RxBool blockPeersOnPrivilegedPorts =
+        RxBool(controller.currentPrefs.blockPeersOnPrivilegedPorts);
+    RxBool maxUploadsPerTorrentEnabled =
+        RxBool(controller.currentPrefs.maxUploadsPerTorrent > 0);
+    TextEditingController maxUploadsPerTorrentController =
+        TextEditingController(
+            text: controller.currentPrefs.maxUploadsPerTorrent.toString());
+    TextEditingController memoryWorkingSetLimitController =
+        TextEditingController(
+            text: controller.currentPrefs.memoryWorkingSetLimit.toString());
+    TextEditingController outgoingPortsMaxController = TextEditingController(
+        text: controller.currentPrefs.outgoingPortsMax.toString());
+    TextEditingController outgoingPortsMinController = TextEditingController(
+        text: controller.currentPrefs.outgoingPortsMin.toString());
+    TextEditingController peerTosController =
+        TextEditingController(text: controller.currentPrefs.peerTos.toString());
+    TextEditingController peerTurnoverController = TextEditingController(
+        text: controller.currentPrefs.peerTurnover.toString());
+    TextEditingController peerTurnoverCutoffController = TextEditingController(
+        text: controller.currentPrefs.peerTurnoverCutoff.toString());
+    TextEditingController peerTurnoverIntervalController =
+        TextEditingController(
+            text: controller.currentPrefs.peerTurnoverInterval.toString());
+    TextEditingController refreshIntervalController = TextEditingController(
+        text: controller.currentPrefs.refreshInterval.toString());
+    TextEditingController requestQueueSizeController = TextEditingController(
+        text: controller.currentPrefs.requestQueueSize.toString());
+    TextEditingController rssMaxArticlesPerFeedController =
+        TextEditingController(
+            text: controller.currentPrefs.rssMaxArticlesPerFeed.toString());
+    TextEditingController rssRefreshIntervalController = TextEditingController(
+        text: controller.currentPrefs.rssRefreshInterval.toString());
+    TextEditingController saveResumeDataIntervalController =
+        TextEditingController(
+            text: controller.currentPrefs.saveResumeDataInterval.toString());
+    TextEditingController scheduleFromHourController = TextEditingController(
+        text: controller.currentPrefs.scheduleFromHour.toString());
+    TextEditingController scheduleFromMinController = TextEditingController(
+        text: controller.currentPrefs.scheduleFromMin.toString());
+    TextEditingController scheduleToHourController = TextEditingController(
+        text: controller.currentPrefs.scheduleToHour.toString());
+    TextEditingController scheduleToMinController = TextEditingController(
+        text: controller.currentPrefs.scheduleToMin.toString());
+    RxInt schedulerDays = RxInt(controller.currentPrefs.schedulerDays);
+    TextEditingController sendBufferLowWatermarkController =
+        TextEditingController(
+            text: controller.currentPrefs.sendBufferLowWatermark.toString());
+    TextEditingController sendBufferWatermarkController = TextEditingController(
+        text: controller.currentPrefs.sendBufferWatermark.toString());
+    TextEditingController sendBufferWatermarkFactorController =
+        TextEditingController(
+            text: controller.currentPrefs.sendBufferWatermarkFactor.toString());
+    TextEditingController slowTorrentDlRateThresholdController =
+        TextEditingController(
+            text:
+                controller.currentPrefs.slowTorrentDlRateThreshold.toString());
+    TextEditingController slowTorrentInactiveTimerController =
+        TextEditingController(
+            text: controller.currentPrefs.slowTorrentInactiveTimer.toString());
+    TextEditingController slowTorrentUlRateThresholdController =
+        TextEditingController(
+            text:
+                controller.currentPrefs.slowTorrentUlRateThreshold.toString());
+    TextEditingController socketBacklogSizeController = TextEditingController(
+        text: controller.currentPrefs.socketBacklogSize.toString());
+    TextEditingController stopTrackerTimeoutController = TextEditingController(
+        text: controller.currentPrefs.stopTrackerTimeout.toString());
+    TextEditingController upLimitController = TextEditingController(
+        text: (controller.currentPrefs.upLimit / 1024).toString());
+    TextEditingController dlLimitController = TextEditingController(
+        text: (controller.currentPrefs.dlLimit / 1024).toString());
+    TextEditingController upnpLeaseDurationController = TextEditingController(
+        text: controller.currentPrefs.upnpLeaseDuration.toString());
+    TextEditingController webUiBanDurationController = TextEditingController(
+        text: controller.currentPrefs.webUiBanDuration.toString());
+    TextEditingController webUiMaxAuthFailCountController =
+        TextEditingController(
+            text: controller.currentPrefs.webUiMaxAuthFailCount.toString());
+    TextEditingController webUiPortController = TextEditingController(
+        text: controller.currentPrefs.webUiPort.toString());
+    TextEditingController webUiSessionTimeoutController = TextEditingController(
+        text: controller.currentPrefs.webUiSessionTimeout.toString());
+    logger_helper.Logger.instance.d(controller.currentPrefs.locale);
     Get.bottomSheet(
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
@@ -2189,1148 +2509,1813 @@ class _DownloadPageState extends State<DownloadPage>
               body: TabBarView(children: [
                 ListView(
                   children: [
-                    CustomCard(
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text('添加种子时'),
-                                DropdownButton(items: const [
-                                  DropdownMenuItem(
-                                      value: 'subfloder', child: Text('子文件夹')),
-                                  DropdownMenuItem(
-                                      value: 'subfloder', child: Text('原始')),
-                                  DropdownMenuItem(
-                                      value: 'subfloder',
-                                      child: Text('不创建子文件夹')),
-                                ], onChanged: (value) {}),
-                              ],
-                            ),
-                          ),
-                          CheckboxListTile(
-                            dense: true,
-                            value: false,
-                            onChanged: (value) {},
-                            title: const Text('不要开始自动下载'),
-                          ),
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text('种子停止条件'),
-                                DropdownButton(items: const [
-                                  DropdownMenuItem(
-                                      value: 'subfloder', child: Text('无')),
-                                  DropdownMenuItem(
-                                      value: 'subfloder',
-                                      child: Text('已收到元数据')),
-                                  DropdownMenuItem(
-                                      value: 'subfloder', child: Text('选种的文件')),
-                                ], onChanged: (value) {}),
-                              ],
-                            ),
-                          ),
-                          CheckboxListTile(
-                            dense: true,
-                            value: false,
-                            onChanged: (value) {},
-                            title: const Text('完成后删除.torrent文件'),
-                          ),
-                        ],
-                      ),
-                    ),
-                    CustomCard(
-                      child: Column(
-                        children: [
-                          CheckboxListTile(
-                            dense: true,
-                            value: false,
-                            onChanged: (value) {},
-                            title: const Text('为所有文件预分配磁盘空间'),
-                          ),
-                          CheckboxListTile(
-                            dense: true,
-                            value: false,
-                            onChanged: (value) {},
-                            title: const Text('为不完整的文件添加扩展名 .!qB'),
-                          ),
-                        ],
-                      ),
-                    ),
-                    CustomCard(
+                    Obx(() {
+                      return CustomCard(
                         child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('默认 Torrent 管理模式'),
-                              DropdownButton(items: const [
-                                DropdownMenuItem(
-                                    value: 'subfloder', child: Text('手动')),
-                                DropdownMenuItem(
-                                    value: 'subfloder', child: Text('自动')),
-                              ], onChanged: (value) {}),
-                            ],
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0, vertical: 8),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('添加种子时'),
+                                  DropdownButton(
+                                      isDense: true,
+                                      value:
+                                          torrentContentLayoutController.text,
+                                      items: const [
+                                        DropdownMenuItem(
+                                            value: 'Original',
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                '原始')),
+                                        DropdownMenuItem(
+                                            value: 'Subfolder',
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                '子文件夹')),
+                                        DropdownMenuItem(
+                                            value: 'NoSubfolder',
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                '不创建子文件夹')),
+                                      ],
+                                      onChanged: (value) {}),
+                                ],
+                              ),
+                            ),
+                            CheckboxListTile(
+                              dense: true,
+                              value: startPausedEnabled.value,
+                              onChanged: (value) {
+                                startPausedEnabled.value = value == true;
+                              },
+                              title: const Text('不要开始自动下载'),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0, vertical: 8),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('种子停止条件'),
+                                  DropdownButton<String>(
+                                      value: torrentStopCondition.value,
+                                      items: const [
+                                        DropdownMenuItem(
+                                          value: 'None',
+                                          child: Text(
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                              ),
+                                              '无'),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'MetadataReceived',
+                                          child: Text(
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                              ),
+                                              '已收到元数据'),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'FilesChecked',
+                                          child: Text(
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                              ),
+                                              '选种的文件'),
+                                        ),
+                                      ],
+                                      onChanged: (value) {
+                                        torrentStopCondition.value =
+                                            value ?? 'None';
+                                      }),
+                                ],
+                              ),
+                            ),
+                            CheckboxListTile(
+                              dense: true,
+                              value: autoDeleteMode.value == 1,
+                              onChanged: (value) {
+                                autoDeleteMode.value = value == true ? 1 : 0;
+                              },
+                              title: const Text('完成后删除.torrent文件'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                    Obx(() {
+                      return CustomCard(
+                        child: Column(
+                          children: [
+                            CheckboxListTile(
+                              dense: true,
+                              value: preallocateAll.value,
+                              onChanged: (value) {
+                                preallocateAll.value = value == true;
+                              },
+                              title: const Text('为所有文件预分配磁盘空间'),
+                            ),
+                            CheckboxListTile(
+                              dense: true,
+                              value: incompleteFilesExt.value,
+                              onChanged: (value) {
+                                incompleteFilesExt.value = value == true;
+                              },
+                              title: const Text('为不完整的文件添加扩展名 .!qB'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                    Obx(() {
+                      return CustomCard(
+                          child: Column(
+                        children: [
+                          CheckboxListTile(
+                            dense: true,
+                            value: autoTmmEnabled.value,
+                            onChanged: (value) {
+                              autoTmmEnabled.value = value == true;
+                            },
+                            title: const Text('Torrent 自动管理模式'),
                           ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('当 Torrent 分类修改时'),
-                              DropdownButton(items: const [
-                                DropdownMenuItem(
-                                    value: 'subfloder', child: Text('重新定位')),
-                                DropdownMenuItem(
-                                    value: 'subfloder', child: Text('切换手动')),
-                              ], onChanged: (value) {}),
-                            ],
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('当 Torrent 分类修改时'),
+                                DropdownButton(
+                                    isDense: true,
+                                    value: categoryChangedTmmEnabled.value,
+                                    items: const [
+                                      DropdownMenuItem(
+                                          value: true,
+                                          child: Text(
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                              ),
+                                              '重新定位')),
+                                      DropdownMenuItem(
+                                          value: false,
+                                          child: Text(
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                              ),
+                                              '切换手动')),
+                                    ],
+                                    onChanged: (value) {
+                                      savePathChangedTmmEnabled.value =
+                                          value == true;
+                                    }),
+                              ],
+                            ),
                           ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('当默认保存路径修改时'),
-                              DropdownButton(items: const [
-                                DropdownMenuItem(
-                                    value: 'subfloder',
-                                    child: Text('重新定位受影响的种子')),
-                                DropdownMenuItem(
-                                    value: 'subfloder',
-                                    child: Text('切换受影响的种子为手动')),
-                              ], onChanged: (value) {}),
-                            ],
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('当默认保存路径修改时'),
+                                DropdownButton(
+                                    isDense: true,
+                                    value: savePathChangedTmmEnabled.value,
+                                    items: const [
+                                      DropdownMenuItem(
+                                          value: true,
+                                          child: Text(
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                              ),
+                                              '重新定位受影响的种子')),
+                                      DropdownMenuItem(
+                                          value: false,
+                                          child: Text(
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                              ),
+                                              '切换受影响的种子为手动')),
+                                    ],
+                                    onChanged: (value) {
+                                      savePathChangedTmmEnabled.value =
+                                          value == true;
+                                    }),
+                              ],
+                            ),
                           ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('当分类保存路径修改时'),
-                              DropdownButton(items: const [
-                                DropdownMenuItem(
-                                    value: 'subfloder',
-                                    child: Text('重新定位受影响的种子')),
-                                DropdownMenuItem(
-                                    value: 'subfloder',
-                                    child: Text('切换受影响的种子为手动')),
-                              ], onChanged: (value) {}),
-                            ],
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('当分类保存路径修改时'),
+                                DropdownButton(
+                                    isDense: true,
+                                    value: torrentChangedTmmEnabled.value,
+                                    items: const [
+                                      DropdownMenuItem(
+                                          value: true,
+                                          child: Text(
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                              ),
+                                              '重新定位受影响的种子')),
+                                      DropdownMenuItem(
+                                          value: false,
+                                          child: Text(
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                              ),
+                                              '切换受影响的种子为手动')),
+                                    ],
+                                    onChanged: (value) {
+                                      torrentChangedTmmEnabled.value == true;
+                                    }),
+                              ],
+                            ),
                           ),
-                        ),
-                        CustomTextField(
-                            controller: TextEditingController(
-                                text: prefs.savePath.toString()),
-                            labelText: '默认保存目录'),
-                        CheckboxListTile(
-                          dense: true,
-                          value: false,
-                          onChanged: (value) {},
-                          title: const Text('保存未完成的 torrent 到'),
-                        ),
-                        CustomTextField(
-                            controller: TextEditingController(
-                                text:
-                                    '${prefs.savePath.toString()}/incomplete'),
-                            labelText: '默认保存目录'),
-                        CheckboxListTile(
-                          dense: true,
-                          value: false,
-                          onChanged: (value) {},
-                          title: const Text('保存未完成的 torrent 到'),
-                        ),
-                        CustomTextField(
-                            controller: TextEditingController(
-                                text:
-                                    '${prefs.savePath.toString()}/incomplete'),
-                            labelText: '默认保存目录'),
-                        CheckboxListTile(
-                          dense: true,
-                          value: false,
-                          onChanged: (value) {},
-                          title: const Text('保存未完成的 torrent 到'),
-                        ),
-                        CustomTextField(
-                            controller: TextEditingController(
-                                text:
-                                    '${prefs.savePath.toString()}/incomplete'),
-                            labelText: '未完成目录'),
-                        CheckboxListTile(
-                          dense: true,
-                          value: false,
-                          onChanged: (value) {},
-                          title: const Text('复制下载完成的 .torrent 文件到'),
-                        ),
-                        CustomTextField(
-                            controller: TextEditingController(
-                                text:
-                                    '${prefs.savePath.toString()}/incomplete'),
-                            labelText: '复制下载完成的 .torrent 文件到'),
-                      ],
-                    )),
+                          CustomTextField(
+                            controller: savePathController,
+                            labelText: '默认保存路径',
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: tempPathEnabled.value,
+                            onChanged: (value) {
+                              tempPathEnabled.value = value == true;
+                            },
+                            title: const Text('保存未完成的 torrent 到'),
+                          ),
+                          if (tempPathEnabled.value)
+                            CustomTextField(
+                              controller: tempPathController,
+                              labelText: '保存未完成的 torrent 到',
+                            ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: exportDirEnable.value,
+                            onChanged: (value) {
+                              exportDirEnable.value = value == true;
+                            },
+                            title: const Text('复制 .torrent 文件到：'),
+                          ),
+                          if (exportDirEnable.value)
+                            CustomTextField(
+                              controller: exportDirController,
+                              labelText: '复制 .torrent 文件到：',
+                            ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: exportDirFinEnable.value,
+                            onChanged: (value) {
+                              exportDirFinEnable.value = value == true;
+                            },
+                            title: const Text('复制下载完成的 .torrent 文件到'),
+                          ),
+                          if (exportDirFinEnable.value)
+                            CustomTextField(
+                              controller: exportDirFinController,
+                              labelText: '复制下载完成的 .torrent 文件到',
+                            ),
+                        ],
+                      ));
+                    }),
                   ],
                 ),
                 ListView(
                   children: [
                     CustomCard(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 8),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text('下载连接协议'),
-                          DropdownButton(items: const [
-                            DropdownMenuItem(
-                                value: 'tcp utp', child: Text('TCP 和 UTP')),
-                            DropdownMenuItem(value: 'tcp', child: Text('TCP')),
-                            DropdownMenuItem(value: 'utp', child: Text('UTP')),
-                          ], onChanged: (value) {}),
-                        ],
-                      ),
-                    ),
-                    CustomCard(
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: CustomTextField(
-                                    controller: TextEditingController(
-                                      text: '${prefs.embeddedTrackerPort}',
-                                    ),
-                                    labelText: '用于传入连接的端口'),
-                              ),
-                              ElevatedButton(
-                                  onPressed: () {}, child: const Text('随机'))
-                            ],
-                          ),
-                          CheckboxListTile(
-                            dense: true,
-                            value: prefs.upnp,
-                            onChanged: (value) {},
-                            title:
-                                const Text('使用我的路由器的 UPnP / NAT-PMP 功能来转发端口'),
-                          ),
-                          CheckboxListTile(
-                            dense: true,
-                            value: prefs.randomPort,
-                            onChanged: (value) {},
-                            title: const Text('使用随机端口'),
-                          ),
-                        ],
-                      ),
-                    ),
-                    CustomCard(
-                      child: Column(
-                        children: [
-                          CheckboxListTile(
-                            dense: true,
-                            value: false,
-                            onChanged: (value) {},
-                            title: const Text('全局最大连接数'),
-                          ),
-                          CustomTextField(
-                              controller: TextEditingController(
-                                text: prefs.savePath.toString(),
-                              ),
-                              labelText: '全局最大连接数'),
-                          CheckboxListTile(
-                            dense: true,
-                            value: false,
-                            onChanged: (value) {},
-                            title: const Text('每 torrent 最大连接数'),
-                          ),
-                          CustomTextField(
-                              controller: TextEditingController(
-                                text: prefs.maxConnecPerTorrent.toString(),
-                              ),
-                              labelText: '每 torrent 最大连接数'),
-                          CheckboxListTile(
-                            dense: true,
-                            value: false,
-                            onChanged: (value) {},
-                            title: const Text('全局上传窗口数上限'),
-                          ),
-                          CustomTextField(
-                              controller: TextEditingController(
-                                text: prefs.maxConnec.toString(),
-                              ),
-                              labelText: '全局上传窗口数上限'),
-                          CheckboxListTile(
-                            dense: true,
-                            value: false,
-                            onChanged: (value) {},
-                            title: const Text('每个 torrent 上传窗口数上限'),
-                          ),
-                          CustomTextField(
-                              controller: TextEditingController(
-                                text: prefs.savePath.toString(),
-                              ),
-                              labelText: '每个 torrent 上传窗口数上限'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                ListView(
-                  children: [
-                    CustomCard(
-                      child: Column(
-                        children: [
-                          const Text('全局速度限制'),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '${prefs.embeddedTrackerPort}',
-                            ),
-                            labelText: '上传',
-                          ),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '${prefs.embeddedTrackerPort}',
-                            ),
-                            labelText: '下载',
-                          ),
-                        ],
-                      ),
-                    ),
-                    CustomCard(
-                      child: Column(
-                        children: [
-                          const Text('备用速度限制'),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '${prefs.embeddedTrackerPort}',
-                            ),
-                            labelText: '上传',
-                          ),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '${prefs.embeddedTrackerPort}',
-                            ),
-                            labelText: '下载',
-                          ),
-                          CheckboxListTile(
-                            dense: true,
-                            value: prefs.upnp,
-                            onChanged: (value) {},
-                            title: const Text('计划备用速度限制的启用时间'),
-                          ),
-                          CustomTextField(
-                              controller: TextEditingController(
-                                text: '',
-                              ),
-                              labelText: '自动启用备用带宽设置开始时间'),
-                          CustomTextField(
-                              controller: TextEditingController(
-                                text: 'prefs.altSpeedTimeEnd.toString()',
-                              ),
-                              labelText: '自动启用备用带宽设置结束时间'),
-                        ],
-                      ),
-                    ),
-                    CustomCard(
-                        child: Column(
-                      children: [
-                        CheckboxListTile(
-                          dense: true,
-                          value: prefs.upnp,
-                          onChanged: (value) {},
-                          title: const Text('对 µTP 协议进行速度限制'),
-                        ),
-                        CheckboxListTile(
-                          dense: true,
-                          value: prefs.upnp,
-                          onChanged: (value) {},
-                          title: const Text('对传送总开销进行速度限制'),
-                        ),
-                        CheckboxListTile(
-                          dense: true,
-                          value: prefs.upnp,
-                          onChanged: (value) {},
-                          title: const Text('对本地网络用户进行速度限制'),
-                        ),
-                      ],
-                    )),
-                  ],
-                ),
-                ListView(
-                  children: [
-                    CustomCard(
-                      child: Column(
-                        children: [
-                          CheckboxListTile(
-                            dense: true,
-                            value: prefs.upnp,
-                            onChanged: (value) {},
-                            title: const Text('启用 DHT (去中心化网络) 以找到更多用户'),
-                          ),
-                          CheckboxListTile(
-                            dense: true,
-                            value: prefs.upnp,
-                            onChanged: (value) {},
-                            title: const Text('启用用户交换 (PeX) 以找到更多用户'),
-                          ),
-                          CheckboxListTile(
-                            dense: true,
-                            value: prefs.upnp,
-                            onChanged: (value) {},
-                            title: const Text('启用本地用户发现以找到更多用户'),
-                          ),
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text('加密模式'),
-                                DropdownButton(items: const [
-                                  DropdownMenuItem(
-                                      value: 'tcp utp', child: Text('允许加密')),
-                                  DropdownMenuItem(
-                                      value: 'tcp', child: Text('强制加密')),
-                                  DropdownMenuItem(
-                                      value: 'utp', child: Text('禁用加密')),
-                                ], onChanged: (value) {}),
+                          DropdownButton(
+                              isDense: true,
+                              value: bittorrentProtocol.value,
+                              items: const [
+                                DropdownMenuItem(
+                                    value: 0,
+                                    child: Text(
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                        ),
+                                        'TCP和UTP')),
+                                DropdownMenuItem(
+                                    value: 1,
+                                    child: Text(
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                        ),
+                                        'TCP')),
+                                DropdownMenuItem(
+                                    value: 2,
+                                    child: Text(
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                        ),
+                                        'UTP')),
                               ],
+                              onChanged: (value) {
+                                bittorrentProtocol.value = value!;
+                              }),
+                        ],
+                      ),
+                    ),
+                    Obx(() {
+                      return CustomCard(
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: CustomPortField(
+                                        readOnly: randomPort.value,
+                                        controller: listenPortController,
+                                        labelText: '用于传入连接的端口'),
+                                  ),
+                                  GFButton(
+                                      // size: GFSize.SMALL,
+                                      shape: GFButtonShape.square,
+                                      onPressed: () {
+                                        listenPortController.text =
+                                            (10000 + Random().nextInt(55535))
+                                                .toString();
+                                      },
+                                      child: const Text('随机'))
+                                ],
+                              ),
                             ),
+                            CheckboxListTile(
+                              dense: true,
+                              value: upnp.value,
+                              onChanged: (value) {
+                                upnp.value = value == true;
+                              },
+                              title:
+                                  const Text('使用我的路由器的 UPnP / NAT-PMP 功能来转发端口'),
+                            ),
+                            CheckboxListTile(
+                              dense: true,
+                              value: randomPort.value,
+                              onChanged: (value) {
+                                randomPort.value = value == true;
+                              },
+                              title: const Text('使用随机端口'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                    Obx(() {
+                      return CustomCard(
+                        child: Column(
+                          children: [
+                            CheckboxListTile(
+                              dense: true,
+                              value: maxConnecEnabled.value,
+                              onChanged: (value) {
+                                maxConnecEnabled.value = value == true;
+                              },
+                              title: const Text(
+                                '全局最大连接数',
+                              ),
+                            ),
+                            if (maxConnecEnabled.value)
+                              CustomNumberField(
+                                readOnly: maxConnecEnabled.value,
+                                controller: maxConnecController,
+                                labelText: '全局最大连接数',
+                              ),
+                            CheckboxListTile(
+                              dense: true,
+                              value: maxConnecPerTorrentEnabled.value,
+                              onChanged: (value) {
+                                maxConnecPerTorrentEnabled.value =
+                                    value == true;
+                              },
+                              title: const Text('每 torrent 最大连接数'),
+                            ),
+                            if (maxConnecPerTorrentEnabled.value)
+                              CustomTextField(
+                                  readOnly: maxConnecPerTorrentEnabled.value,
+                                  controller: TextEditingController(
+                                    text: controller
+                                        .currentPrefs.maxConnecPerTorrent
+                                        .toString(),
+                                  ),
+                                  labelText: '每 torrent 最大连接数'),
+                            CheckboxListTile(
+                              dense: true,
+                              value: maxUploadsEnabled.value,
+                              onChanged: (value) {
+                                maxUploadsEnabled.value = value == true;
+                              },
+                              title: const Text('全局上传窗口数上限'),
+                            ),
+                            if (maxUploadsEnabled.value)
+                              CustomTextField(
+                                  controller: maxUploadsController,
+                                  labelText: '全局上传窗口数上限'),
+                            CheckboxListTile(
+                              dense: true,
+                              value: maxUploadsPerTorrentEnabled.value,
+                              onChanged: (value) {
+                                maxUploadsPerTorrentEnabled.value =
+                                    value == true;
+                              },
+                              title: const Text('每个 torrent 上传窗口数上限'),
+                            ),
+                            if (maxUploadsPerTorrentEnabled.value)
+                              CustomTextField(
+                                  controller: maxUploadsPerTorrentController,
+                                  labelText: '每个 torrent 上传窗口数上限'),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+                ListView(
+                  children: [
+                    CustomCard(
+                      child: Column(
+                        children: [
+                          const Text('全局速度限制(0 为无限制)'),
+                          CustomTextField(
+                            controller: upLimitController,
+                            labelText: '上传(KiB/s)',
                           ),
-                          CheckboxListTile(
-                            dense: true,
-                            value: prefs.upnp,
-                            onChanged: (value) {},
-                            title: const Text('启用匿名模式'),
+                          CustomTextField(
+                            controller: dlLimitController,
+                            labelText: '下载(KiB/s)',
                           ),
                         ],
                       ),
                     ),
+                    Obx(() {
+                      return CustomCard(
+                        child: Column(
+                          children: [
+                            const Text('备用速度限制(0 为无限制)'),
+                            CustomTextField(
+                              controller: altUpLimitController,
+                              labelText: '上传(KiB/s)',
+                            ),
+                            CustomTextField(
+                              controller: altDlLimitController,
+                              labelText: '下载(KiB/s)',
+                            ),
+                            CheckboxListTile(
+                              dense: true,
+                              value: schedulerEnabled.value,
+                              onChanged: (value) {
+                                schedulerEnabled.value = value == true;
+                              },
+                              title: const Text('计划备用速度限制的启用时间'),
+                            ),
+                            if (schedulerEnabled.value)
+                              Column(
+                                children: [
+                                  CustomTextField(
+                                      controller: scheduleFromHourController,
+                                      labelText: '自动启用备用带宽设置开始时间(小时)'),
+                                  CustomTextField(
+                                      controller: scheduleFromMinController,
+                                      labelText: '自动启用备用带宽设置开始时间(分钟)'),
+                                  CustomTextField(
+                                      controller: scheduleToHourController,
+                                      labelText: '自动启用备用带宽设置结束时间(小时)'),
+                                  CustomTextField(
+                                      controller: scheduleToMinController,
+                                      labelText: '自动启用备用带宽设置结束时间(分钟)'),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16),
+                                    child: Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: DropdownButton(
+                                          isDense: true,
+                                          value: schedulerDays.value,
+                                          items: const [
+                                            DropdownMenuItem(
+                                                value: 0,
+                                                child: Text(
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                    ),
+                                                    '每天')),
+                                            DropdownMenuItem(
+                                                value: 1,
+                                                child: Text(
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                    ),
+                                                    '工作日')),
+                                            DropdownMenuItem(
+                                                value: 2,
+                                                child: Text(
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                    ),
+                                                    '周末')),
+                                            DropdownMenuItem(
+                                                value: 3,
+                                                child: Text(
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                    ),
+                                                    '周一')),
+                                            DropdownMenuItem(
+                                                value: 4,
+                                                child: Text(
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                    ),
+                                                    '周二')),
+                                            DropdownMenuItem(
+                                                value: 5,
+                                                child: Text(
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                    ),
+                                                    '周三')),
+                                            DropdownMenuItem(
+                                                value: 6,
+                                                child: Text(
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                    ),
+                                                    '周四')),
+                                            DropdownMenuItem(
+                                                value: 7,
+                                                child: Text(
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                    ),
+                                                    '周五')),
+                                            DropdownMenuItem(
+                                                value: 8,
+                                                child: Text(
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                    ),
+                                                    '周六')),
+                                            DropdownMenuItem(
+                                                value: 9,
+                                                child: Text(
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                    ),
+                                                    '周日')),
+                                          ],
+                                          onChanged: (value) {
+                                            schedulerDays.value = value!;
+                                          }),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                          ],
+                        ),
+                      );
+                    }),
+                    Obx(() {
+                      return CustomCard(
+                          child: Column(
+                        children: [
+                          CheckboxListTile(
+                            dense: true,
+                            value: limitUtpRate.value,
+                            onChanged: (value) {
+                              limitUtpRate.value = value == true;
+                            },
+                            title: const Text('对 µTP 协议进行速度限制'),
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: limitTcpOverhead.value,
+                            onChanged: (value) {
+                              limitTcpOverhead.value = value == true;
+                            },
+                            title: const Text('对传送总开销进行速度限制'),
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: limitLanPeers.value,
+                            onChanged: (value) {
+                              limitLanPeers.value = value == true;
+                            },
+                            title: const Text('对本地网络用户进行速度限制'),
+                          ),
+                        ],
+                      ));
+                    }),
+                  ],
+                ),
+                ListView(
+                  children: [
+                    Obx(() {
+                      return CustomCard(
+                        child: Column(
+                          children: [
+                            CheckboxListTile(
+                              dense: true,
+                              value: dht.value,
+                              onChanged: (value) {
+                                dht.value = value == true;
+                              },
+                              title: const Text('启用 DHT (去中心化网络) 以找到更多用户'),
+                            ),
+                            CheckboxListTile(
+                              dense: true,
+                              value: pex.value,
+                              onChanged: (value) {
+                                pex.value = value == true;
+                              },
+                              title: const Text('启用用户交换 (PeX) 以找到更多用户'),
+                            ),
+                            CheckboxListTile(
+                              dense: true,
+                              value: lsd.value,
+                              onChanged: (value) {
+                                lsd.value = value == true;
+                              },
+                              title: const Text('启用本地用户发现以找到更多用户'),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0, vertical: 8),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('加密模式'),
+                                  DropdownButton(
+                                      isDense: true,
+                                      value: encryption.value,
+                                      items: const [
+                                        DropdownMenuItem(
+                                            value: 0,
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                '允许加密')),
+                                        DropdownMenuItem(
+                                            value: 1,
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                '强制加密')),
+                                        DropdownMenuItem(
+                                            value: 2,
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                '禁用加密')),
+                                      ],
+                                      onChanged: (value) {
+                                        encryption.value = value!;
+                                      }),
+                                ],
+                              ),
+                            ),
+                            CheckboxListTile(
+                              dense: true,
+                              value: anonymousMode.value,
+                              onChanged: (value) {
+                                anonymousMode.value = value == true;
+                              },
+                              title: const Text('启用匿名模式'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
                     CustomCard(
                       child: CustomTextField(
-                        controller: TextEditingController(
-                          text: 'prefs.altSpeedTimeEnd.toString()',
-                        ),
+                        controller: maxActiveCheckingTorrentsController,
                         labelText: '最大活跃检查种子数',
                       ),
                     ),
-                    CustomCard(
-                        child: Column(
-                      children: [
-                        CheckboxListTile(
-                          dense: true,
-                          value: prefs.upnp,
-                          onChanged: (value) {},
-                          title: const Text('Torrent 排队'),
-                        ),
-                        CustomTextField(
-                          controller: TextEditingController(
-                            text: 'prefs.altSpeedTimeEnd.toString()',
-                          ),
-                          labelText: '最大活动的下载数',
-                        ),
-                        CustomTextField(
-                          controller: TextEditingController(
-                            text: 'prefs.altSpeedTimeEnd.toString()',
-                          ),
-                          labelText: '最大活动的上传数',
-                        ),
-                        CustomTextField(
-                          controller: TextEditingController(
-                            text: 'prefs.altSpeedTimeEnd.toString()',
-                          ),
-                          labelText: '最大活动的 torrent 数',
-                        ),
-                        CheckboxListTile(
-                          dense: true,
-                          value: prefs.upnp,
-                          onChanged: (value) {},
-                          title: const Text('慢速 torrent 不计入限制内'),
-                        ),
-                        CustomTextField(
-                          controller: TextEditingController(
-                            text: 'prefs.altSpeedTimeEnd.toString()',
-                          ),
-                          labelText: '下载速度阈值',
-                        ),
-                        CustomTextField(
-                          controller: TextEditingController(
-                            text: 'prefs.altSpeedTimeEnd.toString()',
-                          ),
-                          labelText: '上传速度阈值',
-                        ),
-                        CustomTextField(
-                          controller: TextEditingController(
-                            text: 'prefs.altSpeedTimeEnd.toString()',
-                          ),
-                          labelText: 'Torrent 非活动计时器',
-                        ),
-                      ],
-                    )),
-                  ],
-                ),
-                ListView(
-                  children: [
-                    CustomCard(
-                        child: Column(
-                      children: [
-                        const Text('RSS'),
-                        CheckboxListTile(
-                          dense: true,
-                          value: prefs.upnp,
-                          onChanged: (value) {},
-                          title: const Text('启用获取 RSS 订阅'),
-                        ),
-                        CustomTextField(
-                          controller: TextEditingController(
-                            text: '',
-                          ),
-                          labelText: 'RSS 订阅源更新间隔(分钟)',
-                        ),
-                        CustomTextField(
-                          controller: TextEditingController(
-                            text: '',
-                          ),
-                          labelText: '每个订阅源文章数目最大值(个)',
-                        ),
-                        CustomTextField(
-                          controller: TextEditingController(
-                            text: '',
-                          ),
-                          labelText: '最大活动的 torrent 数',
-                        ),
-                      ],
-                    )),
-                    CustomCard(
-                        child: Column(children: [
-                      CheckboxListTile(
-                        dense: true,
-                        value: prefs.upnp,
-                        onChanged: (value) {},
-                        title: const Text('启用 RSS Torrent 自动下载'),
-                      ),
-                    ])),
-                    CustomCard(
-                      child: Column(
+                    Obx(() {
+                      return CustomCard(
+                          child: Column(
                         children: [
                           CheckboxListTile(
                             dense: true,
-                            value: prefs.upnp,
-                            onChanged: (value) {},
-                            title: const Text('下载 REPACK/PROPER 版剧集'),
+                            value: queueingEnabled.value,
+                            onChanged: (value) {
+                              queueingEnabled.value = value == true;
+                            },
+                            title: const Text('Torrent 排队'),
                           ),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '',
+                          if (queueingEnabled.value)
+                            Column(
+                              children: [
+                                CustomTextField(
+                                  controller: maxActiveDownloadsController,
+                                  labelText: '最大活动的下载数',
+                                ),
+                                CustomPortField(
+                                  controller: maxActiveUploadsController,
+                                  labelText: '最大活动的上传数',
+                                ),
+                                CustomTextField(
+                                  controller: maxActiveTorrentsController,
+                                  labelText: '最大活动的 torrent 数',
+                                ),
+                                CheckboxListTile(
+                                  dense: true,
+                                  value: dontCountSlowTorrents.value,
+                                  onChanged: (value) {
+                                    dontCountSlowTorrents.value = value == true;
+                                  },
+                                  title: const Text('慢速 torrent 不计入限制内'),
+                                ),
+                                if (dontCountSlowTorrents.value)
+                                  Column(
+                                    children: [
+                                      CustomTextField(
+                                        controller:
+                                            slowTorrentDlRateThresholdController,
+                                        labelText: '下载速度阈值',
+                                      ),
+                                      CustomTextField(
+                                        controller:
+                                            slowTorrentUlRateThresholdController,
+                                        labelText: '上传速度阈值',
+                                      ),
+                                      CustomTextField(
+                                        controller:
+                                            slowTorrentInactiveTimerController,
+                                        labelText: 'Torrent 非活动计时器',
+                                      ),
+                                    ],
+                                  ),
+                              ],
                             ),
-                            maxLines: 5,
-                            labelText: '过滤器',
-                          ),
                         ],
-                      ),
+                      ));
+                    }),
+                    Obx(() {
+                      return CustomCard(
+                          child: Column(
+                        children: [
+                          const Text('做种限制'),
+                          CheckboxListTile(
+                            dense: true,
+                            value: maxRatioEnabled.value,
+                            onChanged: (value) {
+                              maxRatioEnabled.value = value == true;
+                            },
+                            title: const Text('当分享率达到'),
+                          ),
+                          if (maxRatioEnabled.value)
+                            CustomNumberField(
+                              controller: maxRatioController,
+                              labelText: '当分享率达到',
+                            ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: maxSeedingTimeEnabled.value,
+                            onChanged: (value) {
+                              maxSeedingTimeEnabled.value = value == true;
+                            },
+                            title: const Text('当做种时间达到'),
+                          ),
+                          if (maxSeedingTimeEnabled.value)
+                            CustomNumberField(
+                              controller: TextEditingController(
+                                text: controller.currentPrefs.maxSeedingTime
+                                    .toString(),
+                              ),
+                              labelText: '当做种时间达到',
+                            ),
+                          if (maxSeedingTimeEnabled.value ||
+                              maxRatioEnabled.value)
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text('达到做种限制时的操作'),
+                                    DropdownButton(
+                                        isDense: true,
+                                        value: maxRatioAct.value,
+                                        items: const [
+                                          DropdownMenuItem(
+                                              value: 0,
+                                              child: Text(
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                  ),
+                                                  '暂停 torrent')),
+                                          DropdownMenuItem(
+                                              value: 1,
+                                              child: Text(
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                  ),
+                                                  '删除 torrent')),
+                                          DropdownMenuItem(
+                                              value: 2,
+                                              child: Text(
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                  ),
+                                                  '删除 torrent 及所属文件')),
+                                          DropdownMenuItem(
+                                              value: 3,
+                                              child: Text(
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                  ),
+                                                  '为 torrent 启用超级做种')),
+                                        ],
+                                        onChanged: (value) {}),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
+                      ));
+                    }),
+                    Obx(() {
+                      return CustomCard(
+                        child: Column(
+                          children: [
+                            CheckboxListTile(
+                              dense: true,
+                              value: addTrackersEnabled.value,
+                              onChanged: (value) {
+                                addTrackersEnabled.value = value == true;
+                              },
+                              title: const Text('自动添加tracker到新的 torrent'),
+                            ),
+                            if (addTrackersEnabled.value)
+                              CustomTextField(
+                                controller: addTrackersController,
+                                maxLines: 5,
+                                labelText: '自动添加以下tracker到新的 torrent',
+                              ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+                ListView(
+                  children: [
+                    Obx(() {
+                      return CustomCard(
+                          child: Column(
+                        children: [
+                          const Text('RSS'),
+                          CheckboxListTile(
+                            dense: true,
+                            value: rssProcessingEnabled.value,
+                            onChanged: (value) {
+                              rssProcessingEnabled.value = value == true;
+                            },
+                            title: const Text('启用获取 RSS 订阅'),
+                          ),
+                          if (rssProcessingEnabled.value)
+                            Column(
+                              children: [
+                                CustomTextField(
+                                  controller: rssRefreshIntervalController,
+                                  labelText: 'RSS 订阅源更新间隔(分钟)',
+                                ),
+                                CustomTextField(
+                                  controller: rssMaxArticlesPerFeedController,
+                                  labelText: '每个订阅源文章数目最大值(个)',
+                                ),
+                              ],
+                            ),
+                        ],
+                      ));
+                    }),
+                    Obx(() {
+                      return CustomCard(
+                          child: Column(children: [
+                        CheckboxListTile(
+                          dense: true,
+                          value: rssAutoDownloadingEnabled.value,
+                          onChanged: (value) {
+                            rssAutoDownloadingEnabled.value = value == true;
+                          },
+                          title: const Text('启用 RSS Torrent 自动下载'),
+                        ),
+                      ]));
+                    }),
+                    CustomCard(
+                      child: Obx(() {
+                        return Column(
+                          children: [
+                            const Text('RSS 智能剧集过滤器'),
+                            CheckboxListTile(
+                              dense: true,
+                              value: rssDownloadRepackProperEpisodes.value,
+                              onChanged: (value) {
+                                rssDownloadRepackProperEpisodes.value =
+                                    value == true;
+                              },
+                              title: const Text('下载 REPACK/PROPER 版剧集'),
+                            ),
+                            if (rssDownloadRepackProperEpisodes.value)
+                              CustomTextField(
+                                controller: rssSmartEpisodeFiltersController,
+                                maxLines: 5,
+                                labelText: '过滤器',
+                              ),
+                          ],
+                        );
+                      }),
                     ),
                   ],
                 ),
                 ListView(
                   children: [
-                    CustomCard(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('用户界面语言'),
-                            DropdownButton(items: const [
-                              DropdownMenuItem(
-                                  value: 'zh_CN', child: Text(' 简体中文')),
-                              DropdownMenuItem(
-                                  value: 'en_US', child: Text('English')),
-                            ], onChanged: (value) {}),
-                          ],
-                        ),
-                      ),
-                    ),
-                    CustomCard(
-                      child: CheckboxListTile(
-                        dense: true,
-                        value: prefs.upnp,
-                        onChanged: (value) {},
-                        title: const Text('记录性能警报'),
-                      ),
-                    ),
-                    CustomCard(
-                        child: Column(children: [
-                      CustomTextField(
-                        controller: TextEditingController(
-                          text: '',
-                        ),
-                        labelText: 'IP 地址',
-                      ),
-                      CustomTextField(
-                        controller: TextEditingController(
-                          text: '',
-                        ),
-                        labelText: '端口',
-                      ),
-                      CheckboxListTile(
-                        dense: true,
-                        value: prefs.upnp,
-                        onChanged: (value) {},
-                        title: const Text('使用我的路由器的 UPnP / NAT-PMP 功能来转发端口'),
-                      ),
-                      CheckboxListTile(
-                        dense: true,
-                        value: prefs.upnp,
-                        onChanged: (value) {},
-                        title: const Text('使用 HTTPS 而不是 HTTP'),
-                      ),
-                      CustomTextField(
-                        controller: TextEditingController(
-                          text: '',
-                        ),
-                        labelText: '证书',
-                      ),
-                      CustomTextField(
-                        controller: TextEditingController(
-                          text: '',
-                        ),
-                        labelText: '密钥',
-                      ),
-                    ])),
-                    CustomCard(
-                        child: Column(children: [
-                      CustomTextField(
-                        controller: TextEditingController(
-                          text: '',
-                        ),
-                        labelText: '用户名',
-                      ),
-                      CustomTextField(
-                        controller: TextEditingController(
-                          text: '',
-                        ),
-                        labelText: '密码',
-                      ),
-                      CheckboxListTile(
-                        dense: true,
-                        value: prefs.upnp,
-                        onChanged: (value) {},
-                        title: const Text('对本地主机上的客户端跳过身份验证'),
-                      ),
-                      CheckboxListTile(
-                        dense: true,
-                        value: prefs.upnp,
-                        onChanged: (value) {},
-                        title: const Text('对 IP 子网白名单中的客户端跳过身份验证'),
-                      ),
-                      CustomTextField(
-                        controller: TextEditingController(
-                          text: '',
-                        ),
-                        maxLines: 5,
-                        labelText: '对 IP 子网白名单中的客户端跳过身份验证',
-                      ),
-                      CustomTextField(
-                        controller: TextEditingController(
-                          text: '',
-                        ),
-                        labelText: '连续失败后禁止客户端(次)',
-                      ),
-                      CustomTextField(
-                        controller: TextEditingController(
-                          text: '',
-                        ),
-                        labelText: '连续失败后禁止时长(秒)',
-                      ),
-                      CustomTextField(
-                        controller: TextEditingController(
-                          text: '',
-                        ),
-                        labelText: '会话超时时间(秒)',
-                      ),
-                    ])),
-                    CustomCard(
-                      child: Column(children: [
-                        CheckboxListTile(
-                          dense: true,
-                          value: prefs.upnp,
-                          onChanged: (value) {},
-                          title: const Text('使用备用 Web UI'),
-                        ),
-                        CustomTextField(
-                          controller: TextEditingController(
-                            text: '',
-                          ),
-                          labelText: '备用 Web UI 路径',
-                        ),
-                      ]),
-                    ),
-                    CustomCard(
-                      child: Column(children: [
-                        CheckboxListTile(
-                          dense: true,
-                          value: prefs.upnp,
-                          onChanged: (value) {},
-                          title: const Text('启用 “点击劫持” 保护'),
-                        ),
-                        CheckboxListTile(
-                          dense: true,
-                          value: prefs.upnp,
-                          onChanged: (value) {},
-                          title: const Text('启用跨站请求伪造 (CSRF) 保护'),
-                        ),
-                        CheckboxListTile(
-                          dense: true,
-                          value: prefs.upnp,
-                          onChanged: (value) {},
-                          title: const Text('启用 cookie 安全标志（需要 HTTPS）'),
-                        ),
-                        CheckboxListTile(
-                          dense: true,
-                          value: prefs.upnp,
-                          onChanged: (value) {},
-                          title: const Text('启用 Host header 属性验证'),
-                        ),
-                        CustomTextField(
-                          controller: TextEditingController(
-                            text: '',
-                          ),
-                          labelText: '服务器域名',
-                        ),
-                      ]),
-                    ),
-                    CustomCard(
-                      child: Column(children: [
-                        CheckboxListTile(
-                          dense: true,
-                          value: prefs.upnp,
-                          onChanged: (value) {},
-                          title: const Text('添加自定义 HTTP 头字段'),
-                        ),
-                        CustomTextField(
-                          controller: TextEditingController(
-                            text: '',
-                          ),
-                          maxLines: 5,
-                          labelText: 'HTTP 头字段（每行一个）',
-                        ),
-                      ]),
-                    ),
-                    CustomCard(
-                      child: Column(children: [
-                        CheckboxListTile(
-                          dense: true,
-                          value: prefs.upnp,
-                          onChanged: (value) {},
-                          title: const Text('启用反向代理支持'),
-                        ),
-                        CustomTextField(
-                          controller: TextEditingController(
-                            text: '',
-                          ),
-                          labelText: '受信任的代理列表',
-                        ),
-                      ]),
-                    ),
-                    CustomCard(
-                      child: Column(children: [
-                        CheckboxListTile(
-                          dense: true,
-                          value: prefs.upnp,
-                          onChanged: (value) {},
-                          title: const Text('更新我的动态域名'),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    if (locale.value == 'en')
+                      CustomCard(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0, vertical: 8),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text('域名提供商'),
-                              DropdownButton(items: const [
-                                DropdownMenuItem(
-                                    value: 'zh_CN', child: Text('DynDNS')),
-                                DropdownMenuItem(
-                                    value: 'en_US', child: Text('NO-IP')),
-                              ], onChanged: (value) {}),
+                              const Text('用户界面语言'),
+                              DropdownButton(
+                                  isDense: true,
+                                  value: locale.value,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                  ),
+                                  items: const [
+                                    DropdownMenuItem(
+                                        value: 'zh_CN', child: Text('简体中文')),
+                                    DropdownMenuItem(
+                                        value: 'en', child: Text('English')),
+                                  ],
+                                  onChanged: (value) {
+                                    locale.value = value!;
+                                  }),
                             ],
                           ),
                         ),
+                      ),
+                    CustomCard(
+                      child: Obx(() {
+                        return CheckboxListTile(
+                          dense: true,
+                          value: performanceWarning.value,
+                          onChanged: (value) {
+                            performanceWarning.value = value == true;
+                          },
+                          title: const Text('记录性能警报'),
+                        );
+                      }),
+                    ),
+                    CustomCard(child: Obx(() {
+                      return Column(children: [
                         CustomTextField(
-                          controller: TextEditingController(
-                            text: '',
-                          ),
-                          labelText: '域名',
+                          controller: webUiAddressController,
+                          labelText: 'IP 地址',
                         ),
                         CustomTextField(
-                          controller: TextEditingController(
-                            text: '',
+                          controller: webUiPortController,
+                          labelText: '端口',
+                        ),
+                        CheckboxListTile(
+                          dense: true,
+                          value: webUiUpnp.value,
+                          onChanged: (value) {
+                            webUiUpnp.value = value == true;
+                          },
+                          title: const Text('使用我的路由器的 UPnP / NAT-PMP 功能来转发端口'),
+                        ),
+                        CheckboxListTile(
+                          dense: true,
+                          value: useHttps.value,
+                          onChanged: (value) {
+                            useHttps.value = value == true;
+                          },
+                          title: const Text('使用 HTTPS 而不是 HTTP'),
+                        ),
+                        if (useHttps.value)
+                          Column(
+                            children: [
+                              CustomTextField(
+                                controller: webUiHttpsCertPathController,
+                                labelText: '证书',
+                              ),
+                              CustomTextField(
+                                controller: webUiHttpsKeyPathController,
+                                labelText: '密钥',
+                              ),
+                            ],
                           ),
+                      ]);
+                    })),
+                    CustomCard(child: Obx(() {
+                      return Column(children: [
+                        CustomTextField(
+                          controller: webUiUsernameController,
                           labelText: '用户名',
                         ),
                         CustomTextField(
-                          controller: TextEditingController(
-                            text: '',
-                          ),
+                          controller: webUiPasswordController,
                           labelText: '密码',
                         ),
-                      ]),
+                        CheckboxListTile(
+                          dense: true,
+                          value: bypassLocalAuth.value,
+                          onChanged: (value) {
+                            bypassLocalAuth.value = value == true;
+                          },
+                          title: const Text('对本地主机上的客户端跳过身份验证'),
+                        ),
+                        CheckboxListTile(
+                          dense: true,
+                          value: bypassAuthSubnetWhitelistEnabled.value,
+                          onChanged: (value) {
+                            bypassAuthSubnetWhitelistEnabled.value =
+                                value == true;
+                          },
+                          title: const Text('对 IP 子网白名单中的客户端跳过身份验证'),
+                        ),
+                        if (bypassAuthSubnetWhitelistEnabled.value)
+                          CustomTextField(
+                            controller: bypassAuthSubnetWhitelistController,
+                            maxLines: 5,
+                            labelText: '对 IP 子网白名单中的客户端跳过身份验证',
+                          ),
+                        CustomTextField(
+                          controller: webUiMaxAuthFailCountController,
+                          labelText: '连续失败后禁止客户端(次)',
+                        ),
+                        CustomTextField(
+                          controller: webUiBanDurationController,
+                          labelText: '连续失败后禁止时长(秒)',
+                        ),
+                        CustomTextField(
+                          controller: webUiSessionTimeoutController,
+                          labelText: '会话超时时间(秒)',
+                        ),
+                      ]);
+                    })),
+                    CustomCard(
+                      child: Obx(() {
+                        return Column(children: [
+                          CheckboxListTile(
+                            dense: true,
+                            value: alternativeWebuiEnabled.value,
+                            onChanged: (value) {
+                              alternativeWebuiEnabled.value = value == true;
+                            },
+                            title: const Text('使用备用 Web UI'),
+                          ),
+                          if (alternativeWebuiEnabled.value)
+                            CustomTextField(
+                              controller: alternativeWebuiPathController,
+                              labelText: '备用 Web UI 路径',
+                            ),
+                        ]);
+                      }),
+                    ),
+                    CustomCard(
+                      child: Obx(() {
+                        return Column(children: [
+                          CheckboxListTile(
+                            dense: true,
+                            value: webUiClickjackingProtectionEnabled.value,
+                            onChanged: (value) {
+                              webUiClickjackingProtectionEnabled.value =
+                                  value == true;
+                            },
+                            title: const Text('启用 “点击劫持” 保护'),
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: webUiCsrfProtectionEnabled.value,
+                            onChanged: (value) {
+                              webUiCsrfProtectionEnabled.value = value == true;
+                            },
+                            title: const Text('启用跨站请求伪造 (CSRF) 保护'),
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: webUiSecureCookieEnabled.value,
+                            enabled: useHttps.value,
+                            onChanged: (value) {
+                              webUiSecureCookieEnabled.value = value == true;
+                            },
+                            title: const Text('启用 cookie 安全标志（需要 HTTPS）'),
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: webUiHostHeaderValidationEnabled.value,
+                            onChanged: (value) {
+                              webUiHostHeaderValidationEnabled.value =
+                                  value == true;
+                            },
+                            title: const Text('启用 Host header 属性验证'),
+                          ),
+                          if (webUiHostHeaderValidationEnabled.value)
+                            CustomTextField(
+                              controller: TextEditingController(
+                                text: controller.currentPrefs.webUiDomainList,
+                              ),
+                              labelText: '服务器域名',
+                            ),
+                        ]);
+                      }),
+                    ),
+                    CustomCard(
+                      child: Obx(() {
+                        return Column(children: [
+                          CheckboxListTile(
+                            dense: true,
+                            value: webUiUseCustomHttpHeadersEnabled.value,
+                            onChanged: (value) {
+                              webUiUseCustomHttpHeadersEnabled.value =
+                                  value == true;
+                            },
+                            title: const Text('添加自定义 HTTP 头字段'),
+                          ),
+                          if (webUiUseCustomHttpHeadersEnabled.value)
+                            CustomTextField(
+                              controller: webUiCustomHttpHeadersController,
+                              maxLines: 5,
+                              labelText: 'HTTP 头字段（每行一个）',
+                            ),
+                        ]);
+                      }),
+                    ),
+                    CustomCard(
+                      child: Obx(() {
+                        return Column(children: [
+                          CheckboxListTile(
+                            dense: true,
+                            value: webUiReverseProxyEnabled.value,
+                            onChanged: (value) {
+                              webUiReverseProxyEnabled.value = value == true;
+                            },
+                            title: const Text('启用反向代理支持'),
+                          ),
+                          if (webUiReverseProxyEnabled.value)
+                            CustomTextField(
+                              controller: webUiReverseProxiesListController,
+                              labelText: '受信任的代理列表',
+                            ),
+                        ]);
+                      }),
+                    ),
+                    CustomCard(
+                      child: Obx(() {
+                        return Column(children: [
+                          CheckboxListTile(
+                            dense: true,
+                            value: dyndnsEnabled.value,
+                            onChanged: (value) {
+                              dyndnsEnabled.value = value == true;
+                            },
+                            title: const Text('更新我的动态域名'),
+                          ),
+                          if (dyndnsEnabled.value)
+                            Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16.0),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text('域名提供商'),
+                                      DropdownButton(
+                                          isDense: true,
+                                          value: dyndnsService.value,
+                                          items: const [
+                                            DropdownMenuItem(
+                                                value: 0,
+                                                child: Text(
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                    ),
+                                                    'DynDNS')),
+                                            DropdownMenuItem(
+                                                value: 1,
+                                                child: Text(
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                    ),
+                                                    'NO-IP')),
+                                          ],
+                                          onChanged: (value) {
+                                            dyndnsService.value = value!;
+                                          }),
+                                    ],
+                                  ),
+                                ),
+                                CustomTextField(
+                                  controller: dyndnsDomainController,
+                                  labelText: '域名',
+                                ),
+                                CustomTextField(
+                                  controller: dyndnsUsernameController,
+                                  labelText: '用户名',
+                                ),
+                                CustomTextField(
+                                  controller: dyndnsPasswordController,
+                                  labelText: '密码',
+                                ),
+                              ],
+                            ),
+                        ]);
+                      }),
                     ),
                   ],
                 ),
                 ListView(
                   children: [
                     CustomCard(
-                      child: Column(children: [
-                        const Text('qBittorrent 相关'),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('恢复数据存储类型（需要重新启动）'),
-                              DropdownButton(items: const [
-                                DropdownMenuItem(
-                                    value: 'zh_CN', child: Text('快速恢复文件')),
-                                DropdownMenuItem(
-                                    value: 'en_US', child: Text('SQLite 数据库')),
-                              ], onChanged: (value) {}),
-                            ],
+                      child: Obx(() {
+                        return Column(children: [
+                          const Text('qBittorrent 相关'),
+                          if (resumeDataStorageType.value.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0, vertical: 8),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('恢复数据存储类型（需要重新启动）'),
+                                  DropdownButton(
+                                      isDense: true,
+                                      value: resumeDataStorageType.value,
+                                      items: const [
+                                        DropdownMenuItem(
+                                            value: 'Legacy',
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                '快速恢复文件')),
+                                        DropdownMenuItem(
+                                            value: 'SQLite',
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                'SQLite 数据库')),
+                                      ],
+                                      onChanged: (value) {
+                                        resumeDataStorageType.value = value!;
+                                      }),
+                                ],
+                              ),
+                            ),
+                          CustomTextField(
+                            controller: memoryWorkingSetLimitController,
+                            labelText: '物理内存使用上限（仅 libtorrent >= 2.0 时应用）（MiB）',
                           ),
-                        ),
-                        CustomTextField(
-                          controller: TextEditingController(
-                            text: '',
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('网络接口'),
+                                DropdownButton(
+                                    isDense: true,
+                                    value: currentNetworkInterface.value,
+                                    items: const [
+                                      DropdownMenuItem(
+                                          value: '',
+                                          child: Text(
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                              ),
+                                              '任意接口')),
+                                    ],
+                                    onChanged: (value) {
+                                      currentNetworkInterface.value = value!;
+                                    }),
+                              ],
+                            ),
                           ),
-                          labelText: '物理内存使用上限（仅 libtorrent >= 2.0 时应用）（MiB）',
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('网络接口'),
-                              DropdownButton(items: const [
-                                DropdownMenuItem(
-                                    value: 'zh_CN', child: Text('快速恢复文件')),
-                                DropdownMenuItem(
-                                    value: 'en_US', child: Text('SQLite 数据库')),
-                              ], onChanged: (value) {}),
-                            ],
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('绑定到的可选 IP 地址'),
+                                DropdownButton(
+                                    isDense: true,
+                                    value: currentInterfaceAddress.value,
+                                    items: const [
+                                      DropdownMenuItem(
+                                          value: '',
+                                          child: Text(
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                              ),
+                                              '所有地址')),
+                                    ],
+                                    onChanged: (value) {
+                                      currentInterfaceAddress.value = value!;
+                                    }),
+                              ],
+                            ),
                           ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('绑定到的可选 IP 地址'),
-                              DropdownButton(items: const [
-                                DropdownMenuItem(
-                                    value: 'zh_CN', child: Text('快速恢复文件')),
-                                DropdownMenuItem(
-                                    value: 'en_US', child: Text('SQLite 数据库')),
-                              ], onChanged: (value) {}),
-                            ],
+                          CustomTextField(
+                            controller: saveResumeDataIntervalController,
+                            labelText: '保存恢复数据间隔（分钟）',
                           ),
-                        ),
-                        CustomTextField(
-                          controller: TextEditingController(
-                            text: '',
+                          CheckboxListTile(
+                            dense: true,
+                            value: recheckCompletedTorrents.value,
+                            onChanged: (value) {
+                              recheckCompletedTorrents.value = value == true;
+                            },
+                            title: const Text('完成后重新校验 Torrent'),
                           ),
-                          labelText: '保存恢复数据间隔（分钟）',
-                        ),
-                        CheckboxListTile(
-                          dense: true,
-                          value: prefs.upnp,
-                          onChanged: (value) {},
-                          title: const Text('解析用户所在国家'),
-                        ),
-                        CheckboxListTile(
-                          dense: true,
-                          value: prefs.upnp,
-                          onChanged: (value) {},
-                          title: const Text('当 IP 或端口更改时，重新通知所有 trackers'),
-                        ),
-                        CheckboxListTile(
-                          dense: true,
-                          value: prefs.upnp,
-                          onChanged: (value) {},
-                          title: const Text('启用内置 Tracker'),
-                        ),
-                        CustomTextField(
-                          controller: TextEditingController(
-                            text: '',
+                          CustomTextField(
+                            controller: refreshIntervalController,
+                            labelText: '刷新间隔（毫秒）',
                           ),
-                          labelText: '内置 tracker 端口',
-                        ),
-                        CheckboxListTile(
-                          dense: true,
-                          value: prefs.upnp,
-                          onChanged: (value) {},
-                          title: const Text('对嵌入的 tracker 启用端口转发'),
-                        ),
-                      ]),
+                          CheckboxListTile(
+                            dense: true,
+                            value: resolvePeerCountries.value,
+                            onChanged: (value) {
+                              resolvePeerCountries.value = value == true;
+                            },
+                            title: const Text('解析用户所在国家'),
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: reannounceWhenAddressChanged.value,
+                            onChanged: (value) {
+                              reannounceWhenAddressChanged.value =
+                                  value == true;
+                            },
+                            title: const Text('当 IP 或端口更改时，重新通知所有 trackers'),
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: enableEmbeddedTracker.value,
+                            onChanged: (value) {
+                              enableEmbeddedTracker.value = value == true;
+                            },
+                            title: const Text('启用内置 Tracker'),
+                          ),
+                          CustomTextField(
+                            controller: embeddedTrackerPortController,
+                            labelText: '内置 tracker 端口',
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: embeddedTrackerPortForwarding.value,
+                            onChanged: (value) {
+                              embeddedTrackerPortForwarding.value =
+                                  value == true;
+                            },
+                            title: const Text('对嵌入的 tracker 启用端口转发'),
+                          ),
+                        ]);
+                      }),
                     ),
                     CustomCard(
-                      child: Column(
-                        children: [
-                          const Text('libtorrent 相关'),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '',
+                      child: Obx(() {
+                        return Column(
+                          children: [
+                            const Text('libtorrent 相关'),
+                            CustomTextField(
+                              controller: asyncIoThreadsController,
+                              labelText: '异步 I/O 线程数',
                             ),
-                            labelText: '异步 I/O 线程数',
-                          ),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '',
+                            CustomTextField(
+                              controller: hashingThreadsController,
+                              labelText: '散列线程',
                             ),
-                            labelText: '散列线程（需要 libtorrent> = 2.0）',
-                          ),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '',
+                            CustomTextField(
+                              controller: filePoolSizeController,
+                              labelText: '文件池大小',
                             ),
-                            labelText: '文件池大小',
-                          ),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '',
+                            CustomTextField(
+                              controller: checkingMemoryUseController,
+                              labelText: '校验时内存使用扩增量(MiB)',
                             ),
-                            labelText: '校验时内存使用扩增量(MiB)',
-                          ),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '',
+                            CustomTextField(
+                              controller: diskCacheController,
+                              labelText: '磁盘缓存(MiB)',
                             ),
-                            labelText: '磁盘缓存（需要 libtorrent < 2.0）(MiB)',
-                          ),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '',
+                            CustomTextField(
+                              controller: diskCacheTtlController,
+                              labelText: '磁盘缓存过期时间间隔',
                             ),
-                            labelText: '磁盘缓存过期时间间隔（要求 libtorrent < 2.0）(秒)',
-                          ),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '',
+                            CustomTextField(
+                              controller: diskQueueSizeController,
+                              labelText: '磁盘队列大小（KiB）',
                             ),
-                            labelText: '磁盘队列大小（KiB）',
-                          ),
-                          CheckboxListTile(
-                            dense: true,
-                            value: prefs.upnp,
-                            onChanged: (value) {},
-                            title: const Text('合并读写（需要 libtorrent<2.0）'),
-                          ),
-                          CheckboxListTile(
-                            dense: true,
-                            value: prefs.upnp,
-                            onChanged: (value) {},
-                            title: const Text('启用相连文件块下载模式'),
-                          ),
-                          CheckboxListTile(
-                            dense: true,
-                            value: prefs.upnp,
-                            onChanged: (value) {},
-                            title: const Text('发送分块上传建议'),
-                          ),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '',
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0, vertical: 8),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('磁盘 IO 类型（需要重启）'),
+                                  DropdownButton(
+                                      isDense: true,
+                                      value: diskIoType.value,
+                                      items: const [
+                                        DropdownMenuItem(
+                                            value: 0,
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                ' 默认')),
+                                        DropdownMenuItem(
+                                            value: 1,
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                '内存映射文件')),
+                                        DropdownMenuItem(
+                                            value: 2,
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                '遵循 POSIX')),
+                                      ],
+                                      onChanged: (value) {
+                                        diskIoType.value = value!;
+                                      }),
+                                ],
+                              ),
                             ),
-                            labelText: '发送缓冲区上限（KiB）',
-                          ),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '',
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0, vertical: 8),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('磁盘 IO 读取模式'),
+                                  DropdownButton(
+                                      isDense: true,
+                                      value: diskIoReadMode.value,
+                                      items: const [
+                                        DropdownMenuItem(
+                                            value: 0,
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                '禁用操作系统缓存')),
+                                        DropdownMenuItem(
+                                            value: 1,
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                '启用操作系统缓存')),
+                                      ],
+                                      onChanged: (value) {
+                                        diskIoReadMode.value = value!;
+                                      }),
+                                ],
+                              ),
                             ),
-                            labelText: '发送缓冲区下限（KiB）',
-                          ),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '',
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0, vertical: 8),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('磁盘 IO 写入模式'),
+                                  DropdownButton(
+                                      isDense: true,
+                                      value: diskIoWriteMode.value,
+                                      items: const [
+                                        DropdownMenuItem(
+                                            value: 0,
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                '禁用操作系统缓存')),
+                                        DropdownMenuItem(
+                                            value: 1,
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                '启用操作系统缓存')),
+                                        DropdownMenuItem(
+                                            value: 2,
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                '连续写入')),
+                                      ],
+                                      onChanged: (value) {
+                                        diskIoWriteMode.value = value!;
+                                      }),
+                                ],
+                              ),
                             ),
-                            labelText: '发送缓冲区增长系数（%）',
-                          ),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '',
+                            CheckboxListTile(
+                              dense: true,
+                              value: enableCoalesceReadWrite.value,
+                              onChanged: (value) {
+                                enableCoalesceReadWrite.value = value!;
+                              },
+                              title: const Text('合并读写'),
                             ),
-                            labelText: '每秒传出连接数： (?)	',
-                          ),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '',
+                            CheckboxListTile(
+                              dense: true,
+                              value: enablePieceExtentAffinity.value,
+                              onChanged: (value) {
+                                enablePieceExtentAffinity.value = value == true;
+                              },
+                              title: const Text('启用相连文件块下载模式'),
                             ),
-                            labelText: 'Socket backlog 大小',
-                          ),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '',
+                            CheckboxListTile(
+                              dense: true,
+                              value: enableUploadSuggestions.value,
+                              onChanged: (value) {
+                                enableUploadSuggestions.value = value!;
+                              },
+                              title: const Text('发送分块上传建议'),
                             ),
-                            labelText: '传出端口 (下限) [0: 禁用]',
-                          ),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '',
+                            CustomTextField(
+                              controller: sendBufferWatermarkController,
+                              labelText: '发送缓冲区上限（KiB）',
                             ),
-                            labelText: '传出端口 (上限) [0: 禁用]',
-                          ),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '',
+                            CustomTextField(
+                              controller: sendBufferLowWatermarkController,
+                              labelText: '发送缓冲区下限（KiB）',
                             ),
-                            labelText: 'UPnP 租期 [0：永久]',
-                          ),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '',
+                            CustomTextField(
+                              controller: sendBufferWatermarkFactorController,
+                              labelText: '发送缓冲区增长系数（%）',
                             ),
-                            labelText: '与 peers 连接的服务类型（ToS）',
-                          ),
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text('μTP-TCP 混合模式策略'),
-                                DropdownButton(items: const [
-                                  DropdownMenuItem(
-                                      value: 'zh_CN', child: Text('DynDNS')),
-                                  DropdownMenuItem(
-                                      value: 'en_US', child: Text('NO-IP')),
-                                ], onChanged: (value) {}),
-                              ],
+                            CustomTextField(
+                              controller: connectionSpeedController,
+                              labelText: '每秒传出连接数： (?)	',
                             ),
-                          ),
-                          CheckboxListTile(
-                            dense: true,
-                            value: prefs.upnp,
-                            onChanged: (value) {},
-                            title: const Text('支持国际化域名（IDN）'),
-                          ),
-                          CheckboxListTile(
-                            dense: true,
-                            value: prefs.upnp,
-                            onChanged: (value) {},
-                            title: const Text('允许来自同一 IP 地址的多个连接'),
-                          ),
-                          CheckboxListTile(
-                            dense: true,
-                            value: prefs.upnp,
-                            onChanged: (value) {},
-                            title: const Text('验证 HTTPS tracker 证书'),
-                          ),
-                          CheckboxListTile(
-                            dense: true,
-                            value: prefs.upnp,
-                            onChanged: (value) {},
-                            title: const Text('服务器端请求伪造（SSRF）攻击缓解'),
-                          ),
-                          CheckboxListTile(
-                            dense: true,
-                            value: prefs.upnp,
-                            onChanged: (value) {},
-                            title: const Text('禁止连接到特权端口上的 Peer'),
-                          ),
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text('上传窗口策略'),
-                                DropdownButton(items: const [
-                                  DropdownMenuItem(
-                                      value: 'zh_CN', child: Text('DynDNS')),
-                                  DropdownMenuItem(
-                                      value: 'en_US', child: Text('NO-IP')),
-                                ], onChanged: (value) {}),
-                              ],
+                            CustomTextField(
+                              controller: socketBacklogSizeController,
+                              labelText: 'Socket backlog 大小',
                             ),
-                          ),
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text('上传连接策略'),
-                                DropdownButton(items: const [
-                                  DropdownMenuItem(
-                                      value: 'zh_CN', child: Text('DynDNS')),
-                                  DropdownMenuItem(
-                                      value: 'en_US', child: Text('NO-IP')),
-                                ], onChanged: (value) {}),
-                              ],
+                            CustomTextField(
+                              controller: outgoingPortsMinController,
+                              labelText: '传出端口 (下限) [0: 禁用]',
                             ),
-                          ),
-                          CheckboxListTile(
-                            dense: true,
-                            value: prefs.upnp,
-                            onChanged: (value) {},
-                            title: const Text('总是向同级的所有 Tracker 汇报'),
-                          ),
-                          CheckboxListTile(
-                            dense: true,
-                            value: prefs.upnp,
-                            onChanged: (value) {},
-                            title: const Text('总是向所有等级的 Tracker 汇报'),
-                          ),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '',
+                            CustomTextField(
+                              controller: outgoingPortsMaxController,
+                              labelText: '传出端口 (上限) [0: 禁用]',
                             ),
-                            labelText: 'IP 地址已报告给 Trackers (需要重启)',
-                          ),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '',
+                            CustomTextField(
+                              controller: upnpLeaseDurationController,
+                              labelText: 'UPnP 租期 [0：永久]',
                             ),
-                            labelText: '最大并行 HTTP 发布',
-                          ),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '',
+                            CustomTextField(
+                              controller: peerTosController,
+                              labelText: '与 peers 连接的服务类型（ToS）',
                             ),
-                            labelText: '停止 tracker 超时',
-                          ),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '',
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0, vertical: 8),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('μTP-TCP 混合模式策略'),
+                                  DropdownButton(
+                                      isDense: true,
+                                      value: utpTcpMixedMode.value,
+                                      items: const [
+                                        DropdownMenuItem(
+                                            value: 0,
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                '优先使用TCP')),
+                                        DropdownMenuItem(
+                                            value: 1,
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                '按用户比重')),
+                                      ],
+                                      onChanged: (value) {
+                                        utpTcpMixedMode.value = value!;
+                                      }),
+                                ],
+                              ),
                             ),
-                            labelText: 'Peer 进出阈值百分比',
-                          ),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '',
+                            CheckboxListTile(
+                              dense: true,
+                              value: idnSupportEnabled.value,
+                              onChanged: (value) {
+                                idnSupportEnabled.value = value!;
+                              },
+                              title: const Text('支持国际化域名（IDN）'),
                             ),
-                            labelText: 'Peer 进出断开间隔',
-                          ),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '',
+                            CheckboxListTile(
+                              dense: true,
+                              value: enableMultiConnectionsFromSameIp.value,
+                              onChanged: (value) {
+                                enableMultiConnectionsFromSameIp.value =
+                                    value == true;
+                              },
+                              title: const Text('允许来自同一 IP 地址的多个连接'),
                             ),
-                            labelText: '单一 peer 的最大未完成请求',
-                          ),
-                          CustomTextField(
-                            controller: TextEditingController(
-                              text: '',
+                            CheckboxListTile(
+                              dense: true,
+                              value: validateHttpsTrackerCertificate.value,
+                              onChanged: (value) {
+                                validateHttpsTrackerCertificate.value =
+                                    value == true;
+                              },
+                              title: const Text('验证 HTTPS tracker 证书'),
                             ),
-                            labelText: '与 peers 连接的服务类型（ToS）',
-                          ),
-                        ],
-                      ),
+                            CheckboxListTile(
+                              dense: true,
+                              value: ssrfMitigation.value,
+                              onChanged: (value) {
+                                ssrfMitigation.value = value == true;
+                              },
+                              title: const Text('服务器端请求伪造（SSRF）攻击缓解'),
+                            ),
+                            CheckboxListTile(
+                              dense: true,
+                              value: blockPeersOnPrivilegedPorts.value,
+                              onChanged: (value) {
+                                blockPeersOnPrivilegedPorts.value =
+                                    value == true;
+                              },
+                              title: const Text('禁止连接到特权端口上的 Peer'),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0, vertical: 8),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('上传窗口策略'),
+                                  DropdownButton(
+                                      isDense: true,
+                                      value: uploadSlotsBehavior.value,
+                                      items: const [
+                                        DropdownMenuItem(
+                                            value: 0,
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                ' 固定窗口数')),
+                                        DropdownMenuItem(
+                                            value: 1,
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                '基于上传速度')),
+                                      ],
+                                      onChanged: (value) {
+                                        uploadSlotsBehavior.value = value!;
+                                      }),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0, vertical: 8),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('上传连接策略'),
+                                  DropdownButton(
+                                      isDense: true,
+                                      value: uploadChokingAlgorithm.value,
+                                      items: const [
+                                        DropdownMenuItem(
+                                            value: 0,
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                '轮流上传')),
+                                        DropdownMenuItem(
+                                            value: 1,
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                '最快上传')),
+                                        DropdownMenuItem(
+                                            value: 2,
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                ' 反吸血')),
+                                      ],
+                                      onChanged: (value) {
+                                        uploadChokingAlgorithm.value = value!;
+                                      }),
+                                ],
+                              ),
+                            ),
+                            CheckboxListTile(
+                              dense: true,
+                              value: announceToAllTrackers.value,
+                              onChanged: (value) {
+                                announceToAllTrackers.value = value == true;
+                              },
+                              title: const Text('总是向同级的所有 Tracker 汇报'),
+                            ),
+                            CheckboxListTile(
+                              dense: true,
+                              value: announceToAllTiers.value,
+                              onChanged: (value) {
+                                announceToAllTiers.value = value == true;
+                              },
+                              title: const Text('总是向所有等级的 Tracker 汇报'),
+                            ),
+                            CustomTextField(
+                              controller: announceIpController,
+                              labelText: 'IP 地址已报告给 Trackers (需要重启)',
+                            ),
+                            CustomTextField(
+                              controller: maxConcurrentHttpAnnouncesController,
+                              labelText: '最大并行 HTTP 发布',
+                            ),
+                            CustomTextField(
+                              controller: stopTrackerTimeoutController,
+                              labelText: '停止 tracker 超时',
+                            ),
+                            CustomTextField(
+                              controller: peerTurnoverController,
+                              labelText: 'Peer 进出断开百分比',
+                            ),
+                            CustomTextField(
+                              controller: peerTurnoverCutoffController,
+                              labelText: 'Peer 进出阈值百分比',
+                            ),
+                            CustomTextField(
+                              controller: peerTurnoverIntervalController,
+                              labelText: 'Peer 进出断开间隔',
+                            ),
+                            CustomTextField(
+                              controller: requestQueueSizeController,
+                              labelText: '单一 peer 的最大未完成请求',
+                            ),
+                          ],
+                        );
+                      }),
                     ),
                   ],
                 ),
@@ -3535,7 +4520,11 @@ class _DownloadPageState extends State<DownloadPage>
                         labelText: '黑名单列表'),
                     ElevatedButton(
                         onPressed: () {},
-                        child: Text('更新黑名单【${prefs.blocklistSize}】'))
+                        child: Text(
+                            style: TextStyle(
+                              fontSize: 14,
+                            ),
+                            '更新黑名单【${prefs.blocklistSize}】'))
                   ],
                 ),
                 ListView(
@@ -5187,7 +6176,12 @@ class _DownloadPageState extends State<DownloadPage>
                   TransmissionTreeView(torrentInfo.files),
                   ListView(
                     children: [
-                      Center(child: Text('Tracker数量：${repeatTorrents.length}')),
+                      Center(
+                          child: Text(
+                              style: TextStyle(
+                                fontSize: 14,
+                              ),
+                              'Tracker数量：${repeatTorrents.length}')),
                       if (repeatTorrents.isNotEmpty)
                         Padding(
                             padding: const EdgeInsets.all(12),
