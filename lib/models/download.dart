@@ -50,8 +50,8 @@ class Downloader {
       status: json['status'] != null && json['status'].isNotEmpty
           ? (json['category'] == 'Qb'
               ? json['status']
-                  .map<TransferInfo>(
-                      (e) => TransferInfo.fromJson(e as Map<String, dynamic>))
+                  .map<ServerState>(
+                      (e) => ServerState.fromJson(e as Map<String, dynamic>))
                   .toList()
               : json['status']
                   .map<TransmissionStats>((e) =>

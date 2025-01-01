@@ -1,3 +1,158 @@
+class QbittorrentTorrentInfo {
+  final int addedOn;
+  final int amountLeft;
+  final bool autoTmm;
+  final int availability;
+  final String category;
+  final int completed;
+  final int completionOn;
+  final String contentPath;
+  final int dlLimit;
+  final int dlSpeed;
+  final String downloadPath;
+  final int downloaded;
+  final int downloadedSession;
+  final int eta;
+  final bool firstLastPiecePriority;
+  final bool forceStart;
+  final String infohashV1;
+  final String infohashV2;
+  final int lastActivity;
+  final String magnetUri;
+  final double maxRatio;
+  final int maxSeedingTime;
+  final String name;
+  final int numComplete;
+  final int numIncomplete;
+  final int numLeechs;
+  final int numSeeds;
+  final int priority;
+  final double progress;
+  final double ratio;
+  final double ratioLimit;
+  final String savePath;
+  final int seedingTime;
+  final int seedingTimeLimit;
+  final int seenComplete;
+  final bool sequentialDownload;
+  final int size;
+  final String state;
+  final bool superSeeding;
+  final String tags;
+  final int timeActive;
+  final int totalSize;
+  final String tracker;
+  final int trackersCount;
+  final int upLimit;
+  final int uploaded;
+  final int uploadedSession;
+  final int upSpeed;
+
+  QbittorrentTorrentInfo({
+    required this.addedOn,
+    required this.amountLeft,
+    required this.autoTmm,
+    required this.availability,
+    required this.category,
+    required this.completed,
+    required this.completionOn,
+    required this.contentPath,
+    required this.dlLimit,
+    required this.dlSpeed,
+    required this.downloadPath,
+    required this.downloaded,
+    required this.downloadedSession,
+    required this.eta,
+    required this.firstLastPiecePriority,
+    required this.forceStart,
+    required this.infohashV1,
+    required this.infohashV2,
+    required this.lastActivity,
+    required this.magnetUri,
+    required this.maxRatio,
+    required this.maxSeedingTime,
+    required this.name,
+    required this.numComplete,
+    required this.numIncomplete,
+    required this.numLeechs,
+    required this.numSeeds,
+    required this.priority,
+    required this.progress,
+    required this.ratio,
+    required this.ratioLimit,
+    required this.savePath,
+    required this.seedingTime,
+    required this.seedingTimeLimit,
+    required this.seenComplete,
+    required this.sequentialDownload,
+    required this.size,
+    required this.state,
+    required this.superSeeding,
+    required this.tags,
+    required this.timeActive,
+    required this.totalSize,
+    required this.tracker,
+    required this.trackersCount,
+    required this.upLimit,
+    required this.uploaded,
+    required this.uploadedSession,
+    required this.upSpeed,
+  });
+
+  factory QbittorrentTorrentInfo.fromJson(Map<String, dynamic> json) {
+    return QbittorrentTorrentInfo(
+      addedOn: json['added_on'] ?? 0,
+      amountLeft: json['amount_left'] ?? 0,
+      autoTmm: json['auto_tmm'] ?? false,
+      availability: (json['availability'] as num?)?.toInt() ?? -1,
+      category: json['category'] ?? '',
+      completed: json['completed'] ?? 0,
+      completionOn: json['completion_on'] ?? 0,
+      contentPath: json['content_path'] ?? '',
+      dlLimit: json['dl_limit'] ?? 0,
+      dlSpeed: json['dlspeed'] ?? 0,
+      downloadPath: json['download_path'] ?? '',
+      downloaded: json['downloaded'] ?? 0,
+      downloadedSession: json['downloaded_session'] ?? 0,
+      eta: json['eta'] ?? 0,
+      firstLastPiecePriority: json['f_l_piece_prio'] ?? false,
+      forceStart: json['force_start'] ?? false,
+      infohashV1: json['infohash_v1'] ?? '',
+      infohashV2: json['infohash_v2'] ?? '',
+      lastActivity: json['last_activity'] ?? 0,
+      magnetUri: json['magnet_uri'] ?? '',
+      maxRatio: (json['max_ratio'] as num?)?.toDouble() ?? -1.0,
+      maxSeedingTime: json['max_seeding_time'] ?? -1,
+      name: json['name'] ?? '',
+      numComplete: json['num_complete'] ?? 0,
+      numIncomplete: json['num_incomplete'] ?? 0,
+      numLeechs: json['num_leechs'] ?? 0,
+      numSeeds: json['num_seeds'] ?? 0,
+      priority: json['priority'] ?? 0,
+      progress: (json['progress'] as num?)?.toDouble() ?? 0.0,
+      ratio: (json['ratio'] as num?)?.toDouble() ?? 0.0,
+      ratioLimit: (json['ratio_limit'] as num?)?.toDouble() ?? -2.0,
+      savePath: json['save_path'] ?? '',
+      seedingTime: json['seeding_time'] ?? 0,
+      seedingTimeLimit: json['seeding_time_limit'] ?? -2,
+      seenComplete: json['seen_complete'] ?? 0,
+      sequentialDownload: json['seq_dl'] ?? false,
+      size: json['size'] ?? 0,
+      state: json['state'] ?? '',
+      superSeeding: json['super_seeding'] ?? false,
+      tags: json['tags'] ?? '',
+      timeActive: json['time_active'] ?? 0,
+      totalSize: json['total_size'] ?? 0,
+      tracker: json['tracker'] ?? '',
+      trackersCount: json['trackers_count'] ?? 0,
+      upLimit: json['up_limit'] ?? 0,
+      uploaded: json['uploaded'] ?? 0,
+      uploadedSession: json['uploaded_session'] ?? 0,
+      upSpeed: json['upspeed'] ?? 0,
+    );
+  }
+}
+
 class QbittorrentPreferences {
   String addTrackers;
   bool addTrackersEnabled;
