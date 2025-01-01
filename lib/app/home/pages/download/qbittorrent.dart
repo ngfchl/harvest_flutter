@@ -15,6 +15,7 @@ class QbittorrentTorrentInfo {
   final int eta;
   final bool firstLastPiecePriority;
   final bool forceStart;
+  final String hash;
   final String infohashV1;
   final String infohashV2;
   final int lastActivity;
@@ -65,6 +66,7 @@ class QbittorrentTorrentInfo {
     required this.eta,
     required this.firstLastPiecePriority,
     required this.forceStart,
+    required this.hash,
     required this.infohashV1,
     required this.infohashV2,
     required this.lastActivity,
@@ -117,7 +119,8 @@ class QbittorrentTorrentInfo {
       eta: json['eta'] ?? 0,
       firstLastPiecePriority: json['f_l_piece_prio'] ?? false,
       forceStart: json['force_start'] ?? false,
-      infohashV1: json['infohash_v1'] ?? '',
+      hash: json['hash'] ?? '',
+      infohashV1: json['hash'] ?? json['infohash_v1'],
       infohashV2: json['infohash_v2'] ?? '',
       lastActivity: json['last_activity'] ?? 0,
       magnetUri: json['magnet_uri'] ?? '',
@@ -150,6 +153,60 @@ class QbittorrentTorrentInfo {
       uploadedSession: json['uploaded_session'] ?? 0,
       upSpeed: json['upspeed'] ?? 0,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'added_on': addedOn,
+      'amount_left': amountLeft,
+      'auto_tmm': autoTmm,
+      'availability': availability,
+      'category': category,
+      'completed': completed,
+      'completion_on': completionOn,
+      'content_path': contentPath,
+      'dl_limit': dlLimit,
+      'dlspeed': dlSpeed,
+      'download_path': downloadPath,
+      'downloaded': downloaded,
+      'downloaded_session': downloadedSession,
+      'eta': eta,
+      'f_l_piece_prio': firstLastPiecePriority,
+      'force_start': forceStart,
+      'hash': hash,
+      'infohash_v1': infohashV1,
+      'infohash_v2': infohashV2,
+      'last_activity': lastActivity,
+      'magnet_uri': magnetUri,
+      'max_ratio': maxRatio,
+      'max_seeding_time': maxSeedingTime,
+      'name': name,
+      'num_complete': numComplete,
+      'num_incomplete': numIncomplete,
+      'num_leechs': numLeechs,
+      'num_seeds': numSeeds,
+      'priority': priority,
+      'progress': progress,
+      'ratio': ratio,
+      'ratio_limit': ratioLimit,
+      'save_path': savePath,
+      'seeding_time': seedingTime,
+      'seeding_time_limit': seedingTimeLimit,
+      'seen_complete': seenComplete,
+      'seq_dl': sequentialDownload,
+      'size': size,
+      'state': state,
+      'super_seeding': superSeeding,
+      'tags': tags,
+      'time_active': timeActive,
+      'total_size': totalSize,
+      'tracker': tracker,
+      'trackers_count': trackersCount,
+      'up_limit': upLimit,
+      'uploaded': uploaded,
+      'uploaded_session': uploadedSession,
+      'upspeed': upSpeed,
+    };
   }
 }
 
