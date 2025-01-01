@@ -10,6 +10,7 @@ class TrTorrent {
   num downloadedEver;
   int error;
   String errorString;
+  List<String> labels;
   List<FileStats> fileStats;
   List<TorrentFile> files;
   String hashString;
@@ -85,6 +86,7 @@ class TrTorrent {
     required this.uploadLimited,
     required this.uploadRatio,
     required this.uploadedEver,
+    required this.labels,
   });
 
   factory TrTorrent.fromJson(Map<String, dynamic> json) {
@@ -136,6 +138,9 @@ class TrTorrent {
               ?.map((v) => TrackerStats.fromJson(v))
               .toList() ??
           [],
+      labels: (json['labels'] as List<dynamic>?) != null
+          ? List<String>.from(json['labels'].map((v) => v.toString()))
+          : [],
       uploadLimit: json['uploadLimit'] ?? 0,
       uploadLimited: json['uploadLimited'] ?? false,
       uploadRatio: json['uploadRatio'] ?? 0,
