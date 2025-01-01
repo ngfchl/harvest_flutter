@@ -3807,56 +3807,56 @@ class _DownloadPageState extends State<DownloadPage>
                             controller: memoryWorkingSetLimitController,
                             labelText: '物理内存使用上限（仅 libtorrent >= 2.0 时应用）（MiB）',
                           ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16.0, vertical: 8),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text('网络接口'),
-                                DropdownButton(
-                                    isDense: true,
-                                    value: currentNetworkInterface.value,
-                                    items: const [
-                                      DropdownMenuItem(
-                                          value: '',
-                                          child: Text(
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                              ),
-                                              '任意接口')),
-                                    ],
-                                    onChanged: (value) {
-                                      currentNetworkInterface.value = value!;
-                                    }),
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16.0, vertical: 8),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text('绑定到的可选 IP 地址'),
-                                DropdownButton(
-                                    isDense: true,
-                                    value: currentInterfaceAddress.value,
-                                    items: const [
-                                      DropdownMenuItem(
-                                          value: '',
-                                          child: Text(
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                              ),
-                                              '所有地址')),
-                                    ],
-                                    onChanged: (value) {
-                                      currentInterfaceAddress.value = value!;
-                                    }),
-                              ],
-                            ),
-                          ),
+                          // Padding(
+                          //   padding: const EdgeInsets.symmetric(
+                          //       horizontal: 16.0, vertical: 8),
+                          //   child: Row(
+                          //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          //     children: [
+                          //       const Text('网络接口'),
+                          //       DropdownButton(
+                          //           isDense: true,
+                          //           value: currentNetworkInterface.value,
+                          //           items: const [
+                          //             DropdownMenuItem(
+                          //                 value: '',
+                          //                 child: Text(
+                          //                     style: TextStyle(
+                          //                       fontSize: 14,
+                          //                     ),
+                          //                     '任意接口')),
+                          //           ],
+                          //           onChanged: (value) {
+                          //             currentNetworkInterface.value = value!;
+                          //           }),
+                          //     ],
+                          //   ),
+                          // ),
+                          // Padding(
+                          //   padding: const EdgeInsets.symmetric(
+                          //       horizontal: 16.0, vertical: 8),
+                          //   child: Row(
+                          //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          //     children: [
+                          //       const Text('绑定到的可选 IP 地址'),
+                          //       DropdownButton(
+                          //           isDense: true,
+                          //           value: currentInterfaceAddress.value,
+                          //           items: const [
+                          //             DropdownMenuItem(
+                          //                 value: '',
+                          //                 child: Text(
+                          //                     style: TextStyle(
+                          //                       fontSize: 14,
+                          //                     ),
+                          //                     '所有地址')),
+                          //           ],
+                          //           onChanged: (value) {
+                          //             currentInterfaceAddress.value = value!;
+                          //           }),
+                          //     ],
+                          //   ),
+                          // ),
                           CustomTextField(
                             controller: saveResumeDataIntervalController,
                             labelText: '保存恢复数据间隔（分钟）',
