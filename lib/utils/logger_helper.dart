@@ -64,7 +64,7 @@ class DateTimePrinter extends logger.PrettyPrinter {
     var log = ['[$level] [${event.time}] ${event.message}'];
     if (event.error != null) {
       log = [
-        '[$event.level] [${timeStr}] ${messageStr} \n  ${errorStr} \n ${stackTraceStr}'
+        '[$event.level] [$timeStr] $messageStr \n  $errorStr \n $stackTraceStr'
       ];
     }
     return _formatAndPrint(

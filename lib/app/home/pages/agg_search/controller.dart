@@ -120,7 +120,7 @@ class AggSearchController extends GetxController
         .map((item) {
           try {
             return MediaItem.fromJson(item);
-          } catch (e, trace) {
+          } catch (e) {
             return null;
           }
         })

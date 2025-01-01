@@ -405,7 +405,7 @@ class _LoginPageState extends State<LoginPage> {
                                     Theme.of(context).colorScheme.primary);
                             controller.testRes = true;
                           } else {
-                            Get.snackbar('连接状态', '${flag.msg}',
+                            Get.snackbar('连接状态', flag.msg,
                                 colorText: Theme.of(context).colorScheme.error);
                           }
                           controller.isLoading = false;

@@ -376,7 +376,7 @@ class HomeView extends GetView<HomeController> {
                                                     .doDockerUpdate();
                                                 Get.back();
                                                 Get.snackbar(
-                                                    '更新通知', '${res.msg}',
+                                                    '更新通知', res.msg,
                                                     colorText: Theme.of(context)
                                                         .colorScheme
                                                         .primary);
@@ -426,7 +426,7 @@ class HomeView extends GetView<HomeController> {
                                         final res =
                                             await controller.doDockerUpdate();
                                         Get.back();
-                                        Get.snackbar('更新通知', '${res.msg}',
+                                        Get.snackbar('更新通知', res.msg,
                                             colorText: Theme.of(context)
                                                 .colorScheme
                                                 .primary);
@@ -447,7 +447,7 @@ class HomeView extends GetView<HomeController> {
                                         final res =
                                             await controller.doWebUIUpdate();
                                         Get.back();
-                                        Get.snackbar('更新通知', '${res.msg}',
+                                        Get.snackbar('更新通知', res.msg,
                                             colorText: Theme.of(context)
                                                 .colorScheme
                                                 .primary);
@@ -468,7 +468,7 @@ class HomeView extends GetView<HomeController> {
                                         final res =
                                             await controller.doSitesUpdate();
                                         Get.back();
-                                        Get.snackbar('更新通知', '${res.msg}',
+                                        Get.snackbar('更新通知', res.msg,
                                             colorText: Theme.of(context)
                                                 .colorScheme
                                                 .primary);

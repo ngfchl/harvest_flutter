@@ -242,7 +242,7 @@ class SshWidget extends StatelessWidget {
     bool isRunning = container.status.toLowerCase().startsWith('up');
     return GetBuilder<SshController>(builder: (controller) {
       var l = container.image.toString().split('/');
-      var imageText;
+      String imageText = '';
       switch (l.length) {
         case 1:
         case 2:
