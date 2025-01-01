@@ -1,6 +1,8 @@
 import 'package:harvest/app/home/pages/models/transmission.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
 
+import '../app/home/pages/download/qbittorrent.dart';
+
 class Downloader {
   int? id;
   String name;
@@ -58,7 +60,8 @@ class Downloader {
           : [],
       prefs: json['prefs'] != null && json['prefs'].isNotEmpty
           ? (json['category'] == 'Qb'
-              ? Preferences.fromJson(json['prefs'] as Map<String, dynamic>)
+              ? QbittorrentPreferences.fromJson(
+                  json['prefs'] as Map<String, dynamic>)
               : TransmissionConfig.fromJson(
                   json['prefs'] as Map<String, dynamic>))
           : {},
