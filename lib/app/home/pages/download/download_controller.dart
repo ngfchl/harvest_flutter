@@ -110,6 +110,7 @@ class DownloadController extends GetxController {
   Map<String, Category?> qBCategoryMap = {};
   Map<String, List<String>> trackers = {};
   List<String> tags = [];
+  List<dynamic> serverStatus = [];
 
   TorrentState? torrentState;
   TorrentFilter torrentFilter = TorrentFilter.all;
@@ -159,6 +160,8 @@ class DownloadController extends GetxController {
       _downloadStreamController.stream;
 
   Map<int, dynamic> speedInfo = {};
+
+  bool toggleSpeedLimitLoading = false;
 
   @override
   void onInit() async {
@@ -743,9 +746,12 @@ class DownloadController extends GetxController {
     torrents = data['torrents'].entries.map((entry) {
       var torrent = Map<String, dynamic>.from(entry.value); // 复制原始数据
       torrent['hash'] = entry.key; // 添加 hash 属性
-      return TorrentInfo.fromJson(torrent);
+      return QbittorrentTorrentInfo.fromJson(torrent);
     }).toList();
     isTorrentsLoading = false;
+    ServerState state = ServerState.fromJson(data['server_state']);
+    serverStatus.add(state);
+    serverStatus = serverStatus.whereType<ServerState>().toList();
     // logger_helper.Logger.instance.d(torrents.length);
     filterQbTorrents();
     // logger_helper.Logger.instance.d(showTorrents.length);
@@ -766,7 +772,7 @@ class DownloadController extends GetxController {
       logger_helper.Logger.instance.i(item);
       if (item != null) {
         if (item.category == 'Qb') {
-          item.status.add(TransferInfo.fromJson(status[key]["info"]));
+          item.status.add(ServerState.fromJson(status[key]["info"]));
           item.prefs = QbittorrentPreferences.fromJson(status[key]['prefs']);
         } else {
           TransmissionStats stats =
@@ -797,6 +803,7 @@ class DownloadController extends GetxController {
     await torrentsChannel.sink.close(status.normalClosure);
     await torrentsChannel.sink.done;
     torrents.clear();
+    serverStatus.clear();
     searchController.text = '';
     searchKey = '';
     update();
@@ -876,7 +883,10 @@ class DownloadController extends GetxController {
   }
 
   toggleSpeedLimit(Downloader downloader, bool state) async {
+    toggleSpeedLimitLoading = true;
+    update();
     CommonResponse response = await toggleSpeedLimitApi(downloader.id!, state);
+    toggleSpeedLimitLoading = false;
     if (response.succeed) {
       // await stopFetchStatus();
       // await getDownloaderStatus();
@@ -887,12 +897,28 @@ class DownloadController extends GetxController {
     }
     Get.snackbar('出错啦！', response.msg, colorText: Colors.red);
   }
-  getPrefs(Downloader downloader)async {
+
+  getPrefs(Downloader downloader) async {
     CommonResponse response = await getPrefsApi(downloader.id!);
     return response;
   }
+
   setPrefs(Downloader downloader, dynamic prefs) async {
     CommonResponse response = await setPrefsApi(downloader.id!, prefs.toJson());
+    return response;
+  }
+
+  // todo 批量更换 tracker
+  replaceTrackers({required String site, required String newTracker}) async {
+    CommonResponse response =
+        CommonResponse(code: 0, msg: 'msg', succeed: true);
+    return response;
+  }
+
+  // todo 移除红种
+  removeErrorTracker() async {
+    CommonResponse response =
+        CommonResponse(code: 0, msg: 'msg', succeed: true);
     return response;
   }
 }

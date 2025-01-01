@@ -16,7 +16,7 @@ import 'package:harvest/app/home/pages/download/qb_file_tree_view.dart';
 import 'package:harvest/app/home/pages/download/qbittorrent.dart';
 import 'package:harvest/app/home/pages/download/tr_tree_file_view.dart';
 import 'package:intl/intl.dart';
-import 'package:qbittorrent_api/qbittorrent_api.dart';
+import 'package:qbittorrent_api/qbittorrent_api.dart' as qb;
 import 'package:random_color/random_color.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -29,6 +29,7 @@ import '../../../../utils/date_time_utils.dart';
 import '../../../../utils/logger_helper.dart' as logger_helper;
 import '../../../../utils/storage.dart';
 import '../../../torrent/models/transmission_base_torrent.dart';
+import '../agg_search/download_form.dart';
 import '../models/transmission.dart';
 import 'download_controller.dart';
 
@@ -335,11 +336,12 @@ class _DownloadPageState extends State<DownloadPage>
       },
     );
     if (downloader.category.toLowerCase() == 'qb') {
-      List<TransferInfo> dataSource = downloader.status.cast<TransferInfo>();
+      List<qb.ServerState> dataSource =
+          downloader.status.cast<qb.ServerState>();
       chartSeriesController?.updateDataSource(
         addedDataIndexes: <int>[dataSource.length - 1],
       );
-      TransferInfo res = downloader.status.last;
+      qb.ServerState res = downloader.status.last;
 
       return SizedBox(
         height: chartHeight,
@@ -369,7 +371,7 @@ class _DownloadPageState extends State<DownloadPage>
                           },
                           majorTickLines: const MajorTickLines(size: 0)),
                       series: [
-                        AreaSeries<TransferInfo, int>(
+                        AreaSeries<qb.ServerState, int>(
                           onRendererCreated:
                               (ChartSeriesController controller) {
                             chartSeriesController = controller;
@@ -377,14 +379,14 @@ class _DownloadPageState extends State<DownloadPage>
                           animationDuration: 0,
                           dataSource: dataSource,
                           enableTooltip: true,
-                          xValueMapper: (TransferInfo sales, index) => index,
-                          yValueMapper: (TransferInfo sales, _) =>
+                          xValueMapper: (qb.ServerState sales, index) => index,
+                          yValueMapper: (qb.ServerState sales, _) =>
                               sales.dlInfoSpeed,
                           color: Colors.red.withOpacity(0.5),
                           name: '下载速度',
                           borderWidth: 1,
                         ),
-                        AreaSeries<TransferInfo, int>(
+                        AreaSeries<qb.ServerState, int>(
                           onRendererCreated:
                               (ChartSeriesController controller) {
                             chartSeriesController = controller;
@@ -392,8 +394,8 @@ class _DownloadPageState extends State<DownloadPage>
                           animationDuration: 0,
                           dataSource: dataSource,
                           enableTooltip: true,
-                          xValueMapper: (TransferInfo sales, index) => index,
-                          yValueMapper: (TransferInfo sales, _) =>
+                          xValueMapper: (qb.ServerState sales, index) => index,
+                          yValueMapper: (qb.ServerState sales, _) =>
                               sales.upInfoSpeed,
                           color: Colors.blue.withOpacity(0.9),
                           name: '上传速度',
@@ -778,7 +780,7 @@ class _DownloadPageState extends State<DownloadPage>
       return const GFLoader();
     }
     if (downloader.category == 'Qb') {
-      TransferInfo res = downloader.status.last;
+      qb.ServerState res = downloader.status.last;
 
       return Row(
         children: [
@@ -1216,16 +1218,268 @@ class _DownloadPageState extends State<DownloadPage>
                   ],
                 ),
                 actions: [
-                  IconButton(
-                      onPressed: () {}, icon: const Icon(Icons.speed_outlined)),
+                  if (controller.serverStatus.isNotEmpty)
+                    Text(
+                      filesize(controller.serverStatus.last.freeSpaceOnDisk),
+                      style: const TextStyle(color: Colors.red),
+                    ),
                   IconButton(
                       onPressed: () async {
                         await controller.stopFetchTorrents();
                         Get.back();
                       },
-                      icon: const Icon(Icons.exit_to_app_outlined))
+                      icon: const Icon(Icons.exit_to_app_outlined)),
+                  CustomPopup(
+                      showArrow: false,
+                      backgroundColor: Theme.of(context).colorScheme.surface,
+                      barrierColor: Colors.transparent,
+                      content: SizedBox(
+                        width: 120,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            PopupMenuItem<String>(
+                              child: Center(
+                                child: Text(
+                                  '清除红种',
+                                  style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
+                                ),
+                              ),
+                              onTap: () async {
+                                CommonResponse res =
+                                    await controller.removeErrorTracker();
+                                Get.snackbar('清理红种', res.msg,
+                                    colorText: res.code == 0
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Theme.of(context).colorScheme.error);
+                                controller.update();
+                              },
+                            ),
+                            // PopupMenuItem<String>(
+                            //   child: Center(
+                            //     child: Text(
+                            //       '切换限速',
+                            //       style: TextStyle(
+                            //         color:
+                            //             Theme.of(context).colorScheme.primary,
+                            //       ),
+                            //     ),
+                            //   ),
+                            //   onTap: () async {
+                            //     await controller.toggleSpeedLimit();
+                            //   },
+                            // ),
+                            PopupMenuItem<String>(
+                              child: Center(
+                                  child: Text(
+                                '替换Tracker',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              )),
+                              onTap: () {
+                                TextEditingController keyController =
+                                    TextEditingController(text: '');
+                                TextEditingController valueController =
+                                    TextEditingController(text: '');
+                                List<String> sites = controller.trackers.keys
+                                    .where((e) => e != ' All' && e != ' 红种')
+                                    .toList();
+                                sites.sort((a, b) =>
+                                    a.toLowerCase().compareTo(b.toLowerCase()));
+                                Get.bottomSheet(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.circular(5.0), // 圆角半径
+                                  ),
+                                  SizedBox(
+                                    height: 240,
+                                    // width: 240,
+                                    child: Scaffold(
+                                      body: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        children: [
+                                          CustomPickerField(
+                                            controller: keyController,
+                                            labelText: '要替换的站点',
+                                            data: sites,
+                                            // onChanged: (p, position) {
+                                            //   keyController.text = selectOptions[p]!;
+                                            // },
+                                          ),
+                                          CustomTextField(
+                                              controller: valueController,
+                                              labelText: "替换为"),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceAround,
+                                            children: [
+                                              ElevatedButton(
+                                                style: OutlinedButton.styleFrom(
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8.0), // 圆角半径
+                                                  ),
+                                                ),
+                                                onPressed: () {
+                                                  Get.back(result: false);
+                                                },
+                                                child: const Text('取消'),
+                                              ),
+                                              Stack(
+                                                children: [
+                                                  ElevatedButton(
+                                                    style: OutlinedButton
+                                                        .styleFrom(
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(
+                                                                    8.0), // 圆角半径
+                                                      ),
+                                                    ),
+                                                    onPressed: () async {
+                                                      CommonResponse res =
+                                                          await controller
+                                                              .replaceTrackers(
+                                                                  site:
+                                                                      keyController
+                                                                          .text,
+                                                                  newTracker:
+                                                                      valueController
+                                                                          .text);
+
+                                                      if (res.code == 0) {
+                                                        Get.back(result: true);
+                                                      }
+                                                      Get.snackbar(
+                                                          'Tracker替换ing',
+                                                          res.msg,
+                                                          colorText: res.code ==
+                                                                  0
+                                                              ? Theme.of(
+                                                                      context)
+                                                                  .colorScheme
+                                                                  .primary
+                                                              : Theme.of(
+                                                                      context)
+                                                                  .colorScheme
+                                                                  .error);
+                                                    },
+                                                    child: const Text('确认'),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            PopupMenuItem<String>(
+                              child: Center(
+                                child: Text(
+                                  '添加种子',
+                                  style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.secondary,
+                                  ),
+                                ),
+                              ),
+                              onTap: () async {
+                                Get.bottomSheet(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5.0)),
+                                  enableDrag: true,
+                                  CustomCard(
+                                    height: 400,
+                                    padding: const EdgeInsets.all(12),
+                                    child: Column(children: [
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: GFTypography(
+                                          text: '添加种子',
+                                          icon: const Icon(Icons.add),
+                                          dividerWidth: 108,
+                                          textColor: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                          dividerColor: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: DownloadForm(
+                                          categories: controller
+                                              .qBCategoryMap.values
+                                              .fold({}, (map, element) {
+                                            map[element!.name!] =
+                                                element.savePath ?? '';
+                                            return map;
+                                          }),
+                                          downloader: downloader,
+                                          info: null,
+                                        ),
+                                      ),
+                                    ]),
+                                  ),
+                                );
+                              },
+                            ),
+                            // PopupMenuItem<String>(
+                            //   child: Text(
+                            //     'CC 同步',
+                            //     style: TextStyle(
+                            //       color: Theme.of(context).colorScheme.secondary,
+                            //     ),
+                            //   ),
+                            //   onTap: () async {
+                            //     await importFromCookieCloud();
+                            //   },
+                            // ),
+                            // PopupMenuItem<String>(
+                            //   child: Text(
+                            //     '清除缓存',
+                            //     style: TextStyle(
+                            //       color: Theme.of(context).colorScheme.secondary,
+                            //     ),
+                            //   ),
+                            //   onTap: () async {
+                            //     CommonResponse res = await clearMyCacheApi();
+                            //     Get.snackbar(
+                            //       '清除缓存',
+                            //       '清除缓存：${res.msg}',colorText: Theme.of(context).colorScheme.primary
+                            //     );
+                            //   },
+                            // ),
+                          ],
+                        ),
+                      ),
+                      child: const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Icon(
+                          Icons.add,
+                          size: 18,
+                        ),
+                      )),
                 ],
               ),
+              drawer: GetBuilder<DownloadController>(builder: (controller) {
+                return isQb
+                    ? _buildQbDrawer(downloader, context)
+                    : _buildTrDrawer(downloader, context);
+              }),
+              drawerEdgeDragWidth: 100,
               body: CustomCard(
                   child: Column(
                 children: [
@@ -1246,7 +1500,7 @@ class _DownloadPageState extends State<DownloadPage>
                                 itemCount: controller.showTorrents.length,
                                 itemBuilder: (BuildContext context, int index) {
                                   if (isQb) {
-                                    TorrentInfo torrent =
+                                    QbittorrentTorrentInfo torrent =
                                         controller.showTorrents[index];
                                     return _showQbTorrent(
                                         downloader, torrent, context);
@@ -1352,7 +1606,8 @@ class _DownloadPageState extends State<DownloadPage>
     }
   }
 
-  _showQbTorrent(Downloader downloader, TorrentInfo torrentInfo, context) {
+  _showQbTorrent(
+      Downloader downloader, QbittorrentTorrentInfo torrentInfo, context) {
     RxBool paused = torrentInfo.state.toString().contains('pause').obs;
 
     return CustomCard(
@@ -1378,7 +1633,7 @@ class _DownloadPageState extends State<DownloadPage>
                 onPressed: (context) async {
                   await controller.controlTorrents(
                     command: paused.value ? 'resume' : 'pause',
-                    hashes: [torrentInfo.hash!],
+                    hashes: [torrentInfo.infohashV1],
                     downloader: downloader,
                   );
                 },
@@ -1422,7 +1677,7 @@ class _DownloadPageState extends State<DownloadPage>
                           Get.back(result: true);
                           await controller.controlTorrents(
                             command: 'recheck',
-                            hashes: [torrentInfo.hash!],
+                            hashes: [torrentInfo.infohashV1],
                             downloader: downloader,
                           );
                         },
@@ -1441,17 +1696,17 @@ class _DownloadPageState extends State<DownloadPage>
                   await controller.controlTorrents(
                     downloader: downloader,
                     command: 'AutoManagement',
-                    hashes: [torrentInfo.hash!],
-                    enable: !torrentInfo.autoTmm!,
+                    hashes: [torrentInfo.infohashV1],
+                    enable: !torrentInfo.autoTmm,
                   );
                 },
                 flex: 2,
-                backgroundColor: torrentInfo.autoTmm!
+                backgroundColor: torrentInfo.autoTmm
                     ? Colors.lightBlue
                     : Colors.deepOrangeAccent,
                 foregroundColor: Colors.white,
-                icon: torrentInfo.autoTmm! ? Icons.auto_awesome : Icons.man,
-                label: torrentInfo.autoTmm! ? '自动' : '手动',
+                icon: torrentInfo.autoTmm ? Icons.auto_awesome : Icons.man,
+                label: torrentInfo.autoTmm ? '自动' : '手动',
               ),
             ],
           ),
@@ -1468,27 +1723,27 @@ class _DownloadPageState extends State<DownloadPage>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      torrentInfo.tracker!.isNotEmpty
+                      torrentInfo.tracker.isNotEmpty
                           ? CustomTextTag(
                               labelText: controller.trackers.entries
                                       .firstWhereOrNull((entry) => entry.value
-                                          .contains(torrentInfo.hash))
+                                          .contains(torrentInfo.infohashV1))
                                       ?.key ??
-                                  Uri.parse(torrentInfo.tracker!).host,
+                                  Uri.parse(torrentInfo.tracker).host,
                               icon: const Icon(Icons.file_upload_outlined,
                                   size: 10, color: Colors.white),
                             )
                           : CustomTextTag(
                               labelText: controller.trackers.entries
                                       .firstWhereOrNull((entry) => entry.value
-                                          .contains(torrentInfo.hash))
+                                          .contains(torrentInfo.infohashV1))
                                       ?.key ??
-                                  (Uri.parse(torrentInfo.magnetUri!)
+                                  (Uri.parse(torrentInfo.magnetUri)
                                               .queryParametersAll["tr"]
                                               ?.first !=
                                           null
                                       ? Uri.parse(
-                                              Uri.parse(torrentInfo.magnetUri!)
+                                              Uri.parse(torrentInfo.magnetUri)
                                                   .queryParametersAll["tr"]!
                                                   .first)
                                           .host
@@ -1500,10 +1755,10 @@ class _DownloadPageState extends State<DownloadPage>
                       Text(
                         controller.qBitStatus
                             .firstWhere(
-                                (element) =>
-                                    element.value == torrentInfo.state!,
+                                (element) => element.value == torrentInfo.state,
                                 orElse: () => MetaDataItem(
-                                    name: "未知状态", value: TorrentState.unknown))
+                                    name: "未知状态",
+                                    value: qb.TorrentState.unknown))
                             .name,
                         style: const TextStyle(
                           fontSize: 10,
@@ -1523,9 +1778,9 @@ class _DownloadPageState extends State<DownloadPage>
                       SizedBox(
                         width: 255,
                         child: Tooltip(
-                          message: torrentInfo.name!,
+                          message: torrentInfo.name,
                           child: Text(
-                            torrentInfo.name!,
+                            torrentInfo.name,
                             style: const TextStyle(
                               fontSize: 11,
                             ),
@@ -1535,8 +1790,8 @@ class _DownloadPageState extends State<DownloadPage>
                         ),
                       ),
                       Text(
-                        torrentInfo.category!.isNotEmpty
-                            ? torrentInfo.category!
+                        torrentInfo.category.isNotEmpty
+                            ? torrentInfo.category
                             : '未分类',
                         style: const TextStyle(
                           fontSize: 10,
@@ -1623,7 +1878,7 @@ class _DownloadPageState extends State<DownloadPage>
                                   size: 12,
                                 ),
                                 EllipsisText(
-                                  text: formatDuration(torrentInfo.timeActive!)
+                                  text: formatDuration(torrentInfo.timeActive)
                                       .toString(),
                                   style: const TextStyle(
                                     fontSize: 10,
@@ -1643,7 +1898,7 @@ class _DownloadPageState extends State<DownloadPage>
                                   text: DateFormat('yyyy-MM-dd HH:mm:ss')
                                       .format(
                                           DateTime.fromMillisecondsSinceEpoch(
-                                              torrentInfo.addedOn! * 1000))
+                                              torrentInfo.addedOn * 1000))
                                       .toString(),
                                   style: const TextStyle(
                                     fontSize: 10,
@@ -1660,10 +1915,10 @@ class _DownloadPageState extends State<DownloadPage>
                   ),
                   GFProgressBar(
                       margin: EdgeInsets.zero,
-                      percentage: torrentInfo.progress!,
+                      percentage: torrentInfo.progress,
                       progressHeadType: GFProgressHeadType.square,
                       trailing: Text(
-                        '${(torrentInfo.progress! * 100).toStringAsFixed(2)}%',
+                        '${(torrentInfo.progress * 100).toStringAsFixed(2)}%',
                         style: const TextStyle(
                           fontSize: 10,
                         ),
@@ -1678,6 +1933,432 @@ class _DownloadPageState extends State<DownloadPage>
         );
       }),
     );
+  }
+
+  Widget _buildQbDrawer(Downloader downloader, context) {
+    return GetBuilder<DownloadController>(builder: (controller) {
+      qb.ServerState state = controller.serverStatus.first;
+      TextEditingController searchKeyController = TextEditingController();
+      return GFDrawer(
+        child: Column(
+          children: <Widget>[
+            // GFDrawerHeader(
+            //   centerAlign: true,
+            // currentAccountPicture: GFAvatar(
+            //   radius: 80.0,
+            //   backgroundImage: AssetImage(
+            //       'assets/images/${downloader.category.toLowerCase()}.png'),
+            // ),
+            //   child: Column(
+            //     mainAxisAlignment: MainAxisAlignment.center,
+            //     crossAxisAlignment: CrossAxisAlignment.center,
+            //     children: [
+            //       Text(
+            //           '${downloader.protocol}://${downloader.host}:${downloader.port}'),
+            //     ],
+            //   ),
+            // ),
+            SizedBox(
+              height: 80,
+              child: Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/images/${downloader.category.toLowerCase()}.png',
+                      width: 20,
+                      height: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                        '${downloader.protocol}://${downloader.host}:${downloader.port}'),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 80,
+              child: SfCartesianChart(
+                plotAreaBorderWidth: 0,
+                tooltipBehavior: TooltipBehavior(
+                  enable: true,
+                  shared: true,
+                  decimalPlaces: 1,
+                  builder: (dynamic data, dynamic point, dynamic series,
+                      int pointIndex, int seriesIndex) {
+                    // Logger.instance.d(data);
+                    return Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        border: Border.all(width: 1),
+                      ),
+                      child: Text(
+                        '${series.name}: ${filesize(point.y)}',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    );
+                  },
+                ),
+                primaryXAxis: const CategoryAxis(
+                    isVisible: false,
+                    majorGridLines: MajorGridLines(width: 0),
+                    edgeLabelPlacement: EdgeLabelPlacement.shift),
+                primaryYAxis: NumericAxis(
+                    axisLine: const AxisLine(width: 0),
+                    axisLabelFormatter: (AxisLabelRenderDetails details) {
+                      return ChartAxisLabel(
+                        filesize(details.value),
+                        const TextStyle(
+                          fontSize: 10,
+                        ),
+                      );
+                    },
+                    majorTickLines: const MajorTickLines(size: 0)),
+                series: [
+                  AreaSeries<qb.ServerState, int>(
+                    animationDuration: 0,
+                    dataSource: controller.serverStatus as List<qb.ServerState>,
+                    enableTooltip: true,
+                    xValueMapper: (qb.ServerState sales, index) => index,
+                    yValueMapper: (qb.ServerState sales, _) =>
+                        sales.dlInfoSpeed,
+                    color: Colors.red.withOpacity(0.5),
+                    name: '下载速度',
+                    borderWidth: 1,
+                  ),
+                  AreaSeries<qb.ServerState, int>(
+                    animationDuration: 0,
+                    dataSource: controller.serverStatus as List<qb.ServerState>,
+                    enableTooltip: true,
+                    xValueMapper: (qb.ServerState sales, index) => index,
+                    yValueMapper: (qb.ServerState sales, _) =>
+                        sales.upInfoSpeed,
+                    color: Colors.blue.withOpacity(0.9),
+                    name: '上传速度',
+                    borderWidth: 1,
+                    borderDrawMode: BorderDrawMode.all,
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView(
+                children: [
+                  GFAccordion(
+                    titleChild: GFTypography(
+                      text: '种子排序',
+                      type: GFTypographyType.typo6,
+                      icon: const Icon(
+                        Icons.sort_by_alpha,
+                        size: 18,
+                      ),
+                      dividerWidth: 108,
+                      textColor: Theme.of(context).colorScheme.onSurface,
+                      dividerColor: Theme.of(context).colorScheme.onSurface,
+                    ),
+                    titlePadding: EdgeInsets.zero,
+                    contentChild: SizedBox(
+                      height: 200,
+                      child:
+                          GetBuilder<DownloadController>(builder: (controller) {
+                        return ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: controller.qbSortOptions.length,
+                            itemBuilder: (context, index) {
+                              MetaDataItem item =
+                                  controller.qbSortOptions[index];
+                              bool isSelected =
+                                  controller.sortKey == item.value;
+                              return ListTile(
+                                dense: true,
+                                title: Text(
+                                  item.name,
+                                ),
+                                style: ListTileStyle.list,
+                                trailing: Icon(
+                                  isSelected
+                                      ? Icons.check_box
+                                      : Icons.check_box_outline_blank,
+                                ),
+                                selected: isSelected,
+                                selectedColor:
+                                    Theme.of(context).colorScheme.primary,
+                                selectedTileColor: Colors.amber,
+                                onTap: () {
+                                  Get.back();
+                                  controller.sortReversed =
+                                      controller.sortKey == item.value
+                                          ? !controller.sortReversed
+                                          : false;
+                                  controller.sortKey = item.value;
+                                  SPUtil.setLocalStorage(
+                                      '${downloader.host}:${downloader.port}-sortKey',
+                                      controller.sortKey.toString());
+                                  controller.update();
+                                },
+                              );
+                            });
+                      }),
+                    ),
+                  ),
+                  GFAccordion(
+                    titleChild: GFTypography(
+                      text: '种子分类',
+                      type: GFTypographyType.typo6,
+                      icon: const Icon(
+                        Icons.category,
+                        size: 18,
+                      ),
+                      dividerWidth: 108,
+                      textColor: Theme.of(context).colorScheme.onSurface,
+                      dividerColor: Theme.of(context).colorScheme.onSurface,
+                    ),
+                    titlePadding: EdgeInsets.zero,
+                    contentChild: SizedBox(
+                      height: 200,
+                      child:
+                          GetBuilder<DownloadController>(builder: (controller) {
+                        return ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: controller.qBCategoryMap.length,
+                            itemBuilder: (context, index) {
+                              String c =
+                                  controller.qBCategoryMap.keys.toList()[index];
+                              qb.Category? category = controller
+                                  .qBCategoryMap.values
+                                  .toList()[index];
+                              int count = 0;
+                              if (category?.savePath == null) {
+                                count = controller.torrents.length;
+                              } else {
+                                count = controller.torrents
+                                    .where((torrent) =>
+                                        torrent.category == category?.name)
+                                    .toList()
+                                    .length;
+                              }
+                              bool selected = controller.category ==
+                                  (category?.savePath != null
+                                      ? category?.name!
+                                      : null);
+                              return ListTile(
+                                dense: true,
+                                title: Text(
+                                  '$c($count)',
+                                ),
+                                selected: selected,
+                                selectedColor:
+                                    Theme.of(context).colorScheme.primary,
+                                onTap: () {
+                                  Get.back();
+                                  controller.torrentFilter =
+                                      qb.TorrentFilter.all;
+                                  controller.category =
+                                      category?.savePath != null
+                                          ? category?.name!
+                                          : null;
+                                  controller.filterQbTorrents();
+                                },
+                              );
+                            });
+                      }),
+                    ),
+                  ),
+                  GFAccordion(
+                    titleChild: GFTypography(
+                      text: '种子状态',
+                      type: GFTypographyType.typo6,
+                      icon: const Icon(
+                        Icons.info,
+                        size: 18,
+                      ),
+                      dividerWidth: 108,
+                      textColor: Theme.of(context).colorScheme.onSurface,
+                      dividerColor: Theme.of(context).colorScheme.onSurface,
+                    ),
+                    titlePadding: EdgeInsets.zero,
+                    contentChild: SizedBox(
+                      height: 200,
+                      child:
+                          GetBuilder<DownloadController>(builder: (controller) {
+                        return ListView(
+                          shrinkWrap: true,
+                          children: [
+                            ListTile(
+                              dense: true,
+                              title: Text(
+                                '活动中(${controller.torrents.where((torrent) => [
+                                      qb.TorrentState.downloading,
+                                      qb.TorrentState.uploading,
+                                      // TorrentState.checkingUP,
+                                      qb.TorrentState.forcedUP,
+                                      qb.TorrentState.moving,
+                                      // TorrentState.checkingDL,
+                                    ].contains(torrent.state)).toList().length})',
+                              ),
+                              style: ListTileStyle.list,
+                              selected: controller.torrentFilter ==
+                                  qb.TorrentFilter.active,
+                              selectedColor:
+                                  Theme.of(context).colorScheme.primary,
+                              onTap: () {
+                                Get.back();
+                                controller.torrentState = null;
+                                controller.torrentFilter =
+                                    qb.TorrentFilter.active;
+                                controller.update();
+                              },
+                            ),
+                            ...controller.qBitStatus.map((state) {
+                              final torrentsMatchingState = controller.torrents
+                                  .where((torrent) => state.value != null
+                                      ? torrent.state == state.value
+                                      : true)
+                                  .toList();
+                              return ListTile(
+                                dense: true,
+                                title: Text(
+                                  '${state.name}(${torrentsMatchingState.length})',
+                                ),
+                                style: ListTileStyle.list,
+                                selected:
+                                    controller.torrentState == state.value,
+                                selectedColor:
+                                    Theme.of(context).colorScheme.primary,
+                                onTap: () {
+                                  Get.back();
+                                  controller.torrentState = state.value;
+                                  controller.torrentFilter =
+                                      qb.TorrentFilter.all;
+                                  controller.update();
+                                },
+                              );
+                            }),
+                          ],
+                        );
+                      }),
+                    ),
+                  ),
+                  GFAccordion(
+                    titleChild: GFTypography(
+                      text: '站点筛选',
+                      type: GFTypographyType.typo6,
+                      icon: const Icon(
+                        Icons.language,
+                        size: 18,
+                      ),
+                      dividerWidth: 108,
+                      textColor: Theme.of(context).colorScheme.onSurface,
+                      dividerColor: Theme.of(context).colorScheme.onSurface,
+                    ),
+                    titlePadding: EdgeInsets.zero,
+                    contentChild: SizedBox(
+                      height: 300,
+                      child: Column(
+                        children: [
+                          CustomTextField(
+                            controller: searchKeyController,
+                            labelText: '筛选',
+                            onChanged: (String value) {
+                              // searchKey.text = value;
+                              controller.update();
+                            },
+                          ),
+                          Expanded(
+                            child: GetBuilder<DownloadController>(
+                                builder: (controller) {
+                              List<String> keys = controller.trackers.keys
+                                  .where((element) => element
+                                      .toLowerCase()
+                                      .contains(searchKeyController.text
+                                          .toLowerCase()))
+                                  .toList();
+                              keys.sort((a, b) =>
+                                  a.toLowerCase().compareTo(b.toLowerCase()));
+                              return ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: keys.length,
+                                  itemBuilder: (context, index) {
+                                    String? key = keys[index];
+                                    List<String>? hashList;
+                                    if (key == ' 红种') {
+                                      hashList = controller.torrents
+                                          .where((element) =>
+                                              element.tracker?.isEmpty == true)
+                                          .map((e) => e.hash.toString())
+                                          .toList();
+                                    } else {
+                                      hashList = controller.trackers[key];
+                                    }
+                                    return ListTile(
+                                      dense: true,
+                                      title: Text(
+                                        '${key.trim()}(${key == ' All' ? controller.torrents.length : hashList?.length})',
+                                      ),
+                                      style: ListTileStyle.list,
+                                      selected:
+                                          controller.selectedTracker == key,
+                                      selectedColor:
+                                          Theme.of(context).colorScheme.primary,
+                                      onTap: () {
+                                        Get.back();
+                                        // controller.torrentState = null;
+                                        controller.torrentFilter =
+                                            qb.TorrentFilter.all;
+                                        controller.selectedTracker = key;
+                                        controller.update();
+                                      },
+                                    );
+                                  });
+                            }),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            ListTile(
+              dense: true,
+              contentPadding: const EdgeInsets.all(0),
+              // title: Center(
+              //     child: Text(
+              //   '上传下载数据',
+              //   style: TextStyle(
+              //       color: Theme.of(context).colorScheme.primary),
+              // )),
+              subtitle: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  CustomTextTag(
+                      icon: const Icon(
+                        Icons.upload_outlined,
+                        color: Colors.green,
+                        size: 14,
+                      ),
+                      backgroundColor: Colors.transparent,
+                      labelColor: Colors.green,
+                      labelText:
+                          '${filesize(state.alltimeUl)}[${filesize(state.upInfoData)}]'),
+                  CustomTextTag(
+                      icon: const Icon(
+                        Icons.download_outlined,
+                        color: Colors.red,
+                        size: 14,
+                      ),
+                      backgroundColor: Colors.transparent,
+                      labelColor: Colors.red,
+                      labelText:
+                          '${filesize(state.alltimeDl)}[${filesize(state.dlInfoData)}]'),
+                ],
+              ),
+            )
+          ],
+        ),
+      );
+    });
   }
 
   _showTrTorrent(Downloader downloader, TrTorrent torrentInfo, context) {
@@ -2125,6 +2806,8 @@ class _DownloadPageState extends State<DownloadPage>
     });
   }
 
+  _buildTrDrawer(downloader, context) {}
+
   _showQbPrefs(Downloader downloader, context) async {
     const List<Tab> tabs = [
       Tab(text: '下载'),
@@ -2190,12 +2873,12 @@ class _DownloadPageState extends State<DownloadPage>
     RxInt encryption = RxInt(controller.currentPrefs.encryption);
     RxInt utpTcpMixedMode = RxInt(controller.currentPrefs.utpTcpMixedMode);
     RxBool lsd = RxBool(controller.currentPrefs.lsd);
-    RxBool mailNotificationAuthEnabled =
-        RxBool(controller.currentPrefs.mailNotificationAuthEnabled);
-    RxBool mailNotificationEnabled =
-        RxBool(controller.currentPrefs.mailNotificationEnabled);
-    RxBool mailNotificationSslEnabled =
-        RxBool(controller.currentPrefs.mailNotificationSslEnabled);
+    // RxBool mailNotificationAuthEnabled =
+    //     RxBool(controller.currentPrefs.mailNotificationAuthEnabled);
+    // RxBool mailNotificationEnabled =
+    //     RxBool(controller.currentPrefs.mailNotificationEnabled);
+    // RxBool mailNotificationSslEnabled =
+    //     RxBool(controller.currentPrefs.mailNotificationSslEnabled);
     RxBool maxRatioEnabled = RxBool(controller.currentPrefs.maxRatioEnabled);
     RxBool maxSeedingTimeEnabled =
         RxBool(controller.currentPrefs.maxSeedingTimeEnabled);
@@ -2287,21 +2970,21 @@ class _DownloadPageState extends State<DownloadPage>
         TextEditingController(text: controller.currentPrefs.exportDirFin);
     TextEditingController ipFilterPathController =
         TextEditingController(text: controller.currentPrefs.ipFilterPath);
-    TextEditingController mailNotificationEmailController =
-        TextEditingController(
-            text: controller.currentPrefs.mailNotificationEmail);
-    TextEditingController mailNotificationPasswordController =
-        TextEditingController(
-            text: controller.currentPrefs.mailNotificationPassword);
-    TextEditingController mailNotificationSenderController =
-        TextEditingController(
-            text: controller.currentPrefs.mailNotificationSender);
-    TextEditingController mailNotificationSmtpController =
-        TextEditingController(
-            text: controller.currentPrefs.mailNotificationSmtp);
-    TextEditingController mailNotificationUsernameController =
-        TextEditingController(
-            text: controller.currentPrefs.mailNotificationUsername);
+    // TextEditingController mailNotificationEmailController =
+    //     TextEditingController(
+    //         text: controller.currentPrefs.mailNotificationEmail);
+    // TextEditingController mailNotificationPasswordController =
+    //     TextEditingController(
+    //         text: controller.currentPrefs.mailNotificationPassword);
+    // TextEditingController mailNotificationSenderController =
+    //     TextEditingController(
+    //         text: controller.currentPrefs.mailNotificationSender);
+    // TextEditingController mailNotificationSmtpController =
+    //     TextEditingController(
+    //         text: controller.currentPrefs.mailNotificationSmtp);
+    // TextEditingController mailNotificationUsernameController =
+    //     TextEditingController(
+    //         text: controller.currentPrefs.mailNotificationUsername);
     TextEditingController proxyIpController =
         TextEditingController(text: controller.currentPrefs.proxyIp);
     TextEditingController proxyPasswordController =
@@ -2340,8 +3023,8 @@ class _DownloadPageState extends State<DownloadPage>
             text: controller.currentPrefs.webUiReverseProxiesList);
     TextEditingController webUiUsernameController =
         TextEditingController(text: controller.currentPrefs.webUiUsername);
-    TextEditingController webUiPasswordController =
-        TextEditingController(text: '');
+    // TextEditingController webUiPasswordController =
+    //     TextEditingController(text: '');
     TextEditingController listenPortController = TextEditingController(
         text: controller.currentPrefs.listenPort.toString());
     RxInt bittorrentProtocol =
@@ -4789,9 +5472,9 @@ class _DownloadPageState extends State<DownloadPage>
     RxInt blocklistSize = RxInt(controller.currentPrefs.blocklistSize);
     TextEditingController cacheSizeMbController = TextEditingController(
         text: controller.currentPrefs.cacheSizeMb.toString());
-    TextEditingController downloadDirFreeSpaceController =
-        TextEditingController(
-            text: controller.currentPrefs.downloadDirFreeSpace.toString());
+    // TextEditingController downloadDirFreeSpaceController =
+    //     TextEditingController(
+    //         text: controller.currentPrefs.downloadDirFreeSpace.toString());
     TextEditingController downloadQueueSizeController = TextEditingController(
         text: controller.currentPrefs.downloadQueueSize.toString());
     TextEditingController idleSeedingLimitController = TextEditingController(
@@ -4804,10 +5487,10 @@ class _DownloadPageState extends State<DownloadPage>
         text: controller.currentPrefs.peerPort.toString());
     TextEditingController queueStalledMinutesController = TextEditingController(
         text: controller.currentPrefs.queueStalledMinutes.toString());
-    TextEditingController rpcVersionController = TextEditingController(
-        text: controller.currentPrefs.rpcVersion.toString());
-    TextEditingController rpcVersionMinimumController = TextEditingController(
-        text: controller.currentPrefs.rpcVersionMinimum.toString());
+    // TextEditingController rpcVersionController = TextEditingController(
+    //     text: controller.currentPrefs.rpcVersion.toString());
+    // TextEditingController rpcVersionMinimumController = TextEditingController(
+    //     text: controller.currentPrefs.rpcVersionMinimum.toString());
     TextEditingController seedQueueSizeController = TextEditingController(
         text: controller.currentPrefs.seedQueueSize.toString());
     TextEditingController speedLimitDownController = TextEditingController(
@@ -4827,21 +5510,21 @@ class _DownloadPageState extends State<DownloadPage>
     RxString encryption = RxString(controller.currentPrefs.encryption);
     TextEditingController incompleteDirController =
         TextEditingController(text: controller.currentPrefs.incompleteDir);
-    TextEditingController rpcVersionSemverController =
-        TextEditingController(text: controller.currentPrefs.rpcVersionSemver);
-    TextEditingController scriptTorrentAddedFilenameController =
-        TextEditingController(
-            text: controller.currentPrefs.scriptTorrentAddedFilename);
-    TextEditingController scriptTorrentDoneFilenameController =
-        TextEditingController(
-            text: controller.currentPrefs.scriptTorrentDoneFilename);
-    TextEditingController scriptTorrentDoneSeedingFilenameController =
-        TextEditingController(
-            text: controller.currentPrefs.scriptTorrentDoneSeedingFilename);
-    TextEditingController sessionIdController =
-        TextEditingController(text: controller.currentPrefs.sessionId);
-    TextEditingController versionController =
-        TextEditingController(text: controller.currentPrefs.version);
+    // TextEditingController rpcVersionSemverController =
+    //     TextEditingController(text: controller.currentPrefs.rpcVersionSemver);
+    // TextEditingController scriptTorrentAddedFilenameController =
+    //     TextEditingController(
+    //         text: controller.currentPrefs.scriptTorrentAddedFilename);
+    // TextEditingController scriptTorrentDoneFilenameController =
+    //     TextEditingController(
+    //         text: controller.currentPrefs.scriptTorrentDoneFilename);
+    // TextEditingController scriptTorrentDoneSeedingFilenameController =
+    //     TextEditingController(
+    //         text: controller.currentPrefs.scriptTorrentDoneSeedingFilename);
+    // TextEditingController sessionIdController =
+    //     TextEditingController(text: controller.currentPrefs.sessionId);
+    // TextEditingController versionController =
+    //     TextEditingController(text: controller.currentPrefs.version);
 
     RxList<MetaDataItem> daysOfWeek = RxList([
       '星期天',
@@ -5273,23 +5956,23 @@ class _DownloadPageState extends State<DownloadPage>
     );
   }
 
-  void _openQbTorrentInfoDetail(
-      Downloader downloader, TorrentInfo torrentInfo, context) async {
-    if (torrentInfo.hash == null) {
-      Get.snackbar('错误', '无法获取torrent信息: ${torrentInfo.hash}',
+  void _openQbTorrentInfoDetail(Downloader downloader,
+      QbittorrentTorrentInfo torrentInfo, context) async {
+    if (torrentInfo.infohashV1 == null) {
+      Get.snackbar('错误', '无法获取torrent信息: ${torrentInfo.infohashV1}',
           colorText: Theme.of(context).colorScheme.error);
       return;
     }
-    logger_helper.Logger.instance.d(torrentInfo.hash);
+    logger_helper.Logger.instance.d(torrentInfo.infohashV1);
     CommonResponse response = await controller.getDownloaderTorrentDetailInfo(
-        downloader, torrentInfo.hash!);
+        downloader, torrentInfo.infohashV1);
     // TorrentProperties properties =
     //     TorrentProperties.fromJson(response.data['properties']);
-    List<TorrentContents> contents = response.data['files']
-        .map<TorrentContents>((item) => TorrentContents.fromJson(item))
+    List<qb.TorrentContents> contents = response.data['files']
+        .map<qb.TorrentContents>((item) => qb.TorrentContents.fromJson(item))
         .toList();
-    List<Tracker> trackers = response.data['trackers']
-        .map<Tracker>((item) => Tracker.fromJson(item))
+    List<qb.Tracker> trackers = response.data['trackers']
+        .map<qb.Tracker>((item) => qb.Tracker.fromJson(item))
         .toList();
     Get.bottomSheet(
       shape: const RoundedRectangleBorder(
@@ -5365,9 +6048,9 @@ class _DownloadPageState extends State<DownloadPage>
                             child: ListTile(
                               dense: true,
                               title: Tooltip(
-                                message: torrentInfo.name!,
+                                message: torrentInfo.name,
                                 child: Text(
-                                  torrentInfo.name!,
+                                  torrentInfo.name,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
@@ -5377,7 +6060,7 @@ class _DownloadPageState extends State<DownloadPage>
                               ),
                               subtitle: GFProgressBar(
                                 margin: EdgeInsets.zero,
-                                percentage: torrentInfo.progress!,
+                                percentage: torrentInfo.progress,
                                 lineHeight: 12,
                                 progressHeadType: GFProgressHeadType.square,
                                 progressBarColor: GFColors.SUCCESS,
@@ -5386,7 +6069,7 @@ class _DownloadPageState extends State<DownloadPage>
                                       MainAxisAlignment.spaceAround,
                                   children: [
                                     Text(
-                                      '${torrentInfo.progress! * 100}%',
+                                      '${torrentInfo.progress * 100}%',
                                       style: const TextStyle(
                                           fontSize: 8, color: Colors.white),
                                     ),
@@ -5396,7 +6079,7 @@ class _DownloadPageState extends State<DownloadPage>
                               trailing: torrentInfo.state
                                           .toString()
                                           .contains('pause') ||
-                                      torrentInfo.tracker?.isEmpty == true
+                                      torrentInfo.tracker.isEmpty == true
                                   ? const Icon(Icons.pause, color: Colors.red)
                                   : const Icon(
                                       Icons.cloud_upload_outlined,
@@ -5409,15 +6092,15 @@ class _DownloadPageState extends State<DownloadPage>
                             child: ListTile(
                               dense: true,
                               title: Text(
-                                torrentInfo.category!.isNotEmpty
-                                    ? torrentInfo.category!
+                                torrentInfo.category.isNotEmpty
+                                    ? torrentInfo.category
                                     : '未分类',
                                 style: const TextStyle(fontSize: 12),
                               ),
                               subtitle: Tooltip(
-                                message: torrentInfo.contentPath!,
+                                message: torrentInfo.contentPath,
                                 child: Text(
-                                  torrentInfo.contentPath!,
+                                  torrentInfo.contentPath,
                                   style: const TextStyle(
                                       overflow: TextOverflow.ellipsis),
                                 ),
@@ -5508,8 +6191,8 @@ class _DownloadPageState extends State<DownloadPage>
                                   text: '复制哈希',
                                   color: GFColors.SECONDARY,
                                   onPressed: () async {
-                                    Clipboard.setData(
-                                        ClipboardData(text: torrentInfo.hash!));
+                                    Clipboard.setData(ClipboardData(
+                                        text: torrentInfo.infohashV1));
                                     Get.snackbar('复制种子HASH', '种子HASH复制成功！',
                                         colorText: Theme.of(context)
                                             .colorScheme
@@ -5524,7 +6207,7 @@ class _DownloadPageState extends State<DownloadPage>
                                 GFButton(
                                   text: '自动管理',
                                   padding: EdgeInsets.zero,
-                                  color: torrentInfo.autoTmm!
+                                  color: torrentInfo.autoTmm
                                       ? GFColors.SUCCESS
                                       : GFColors.DANGER,
                                   onPressed: () async {
@@ -5535,7 +6218,7 @@ class _DownloadPageState extends State<DownloadPage>
                                     //     enable: !torrentInfo.autoTmm!);
                                     controller.update();
                                   },
-                                  icon: torrentInfo.autoTmm!
+                                  icon: torrentInfo.autoTmm
                                       ? const Icon(
                                           Icons.hdr_auto_outlined,
                                           color: Colors.white,
@@ -5549,7 +6232,7 @@ class _DownloadPageState extends State<DownloadPage>
                                 ),
                                 GFButton(
                                   text: '超级做种',
-                                  color: torrentInfo.superSeeding!
+                                  color: torrentInfo.superSeeding
                                       ? GFColors.SUCCESS
                                       : GFColors.DANGER,
                                   onPressed: () async {
@@ -5559,7 +6242,7 @@ class _DownloadPageState extends State<DownloadPage>
                                     //     hashes: [torrentInfo.hash!],
                                     //     enable: !torrentInfo.superSeeding!);
                                   },
-                                  icon: torrentInfo.superSeeding!
+                                  icon: torrentInfo.superSeeding
                                       ? const Icon(
                                           Icons.supervisor_account_rounded,
                                           color: Colors.white,
@@ -5573,7 +6256,7 @@ class _DownloadPageState extends State<DownloadPage>
                                 ),
                                 GFButton(
                                   text: '强制开始',
-                                  color: torrentInfo.forceStart!
+                                  color: torrentInfo.forceStart
                                       ? GFColors.SUCCESS
                                       : GFColors.DANGER,
                                   onPressed: () async {
@@ -5583,7 +6266,7 @@ class _DownloadPageState extends State<DownloadPage>
                                     //     hashes: [torrentInfo.hash!],
                                     //     enable: !torrentInfo.forceStart!);
                                   },
-                                  icon: torrentInfo.forceStart!
+                                  icon: torrentInfo.forceStart
                                       ? const Icon(
                                           Icons.double_arrow_outlined,
                                           color: Colors.white,
@@ -5619,8 +6302,7 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        formatDuration(
-                                            torrentInfo.seedingTime!),
+                                        formatDuration(torrentInfo.seedingTime),
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 12),
                                       ),
@@ -5645,10 +6327,10 @@ class _DownloadPageState extends State<DownloadPage>
                                             .firstWhere(
                                               (element) =>
                                                   element.value ==
-                                                  torrentInfo.state!,
+                                                  torrentInfo.state,
                                               orElse: () => MetaDataItem(
                                                 name: "未知状态",
-                                                value: TorrentState.unknown,
+                                                value: qb.TorrentState.unknown,
                                               ),
                                             )
                                             .name,
@@ -5672,7 +6354,7 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        filesize(torrentInfo.size!),
+                                        filesize(torrentInfo.size),
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
                                       ),
@@ -5815,7 +6497,7 @@ class _DownloadPageState extends State<DownloadPage>
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  ...trackers.map((Tracker e) => Padding(
+                                  ...trackers.map((qb.Tracker e) => Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Column(
                                           children: [
@@ -5904,7 +6586,7 @@ class _DownloadPageState extends State<DownloadPage>
                                               children: [
                                                 CustomTextTag(
                                                     backgroundColor: e.status ==
-                                                            TrackerStatus
+                                                            qb.TrackerStatus
                                                                 .working
                                                         ? Colors.green
                                                         : Colors.red,
@@ -6397,7 +7079,7 @@ class _DownloadPageState extends State<DownloadPage>
                                 //                   torrentInfo.state!,
                                 //               orElse: () => MetaDataItem(
                                 //                 name: "未知状态",
-                                //                 value: TorrentState.unknown,
+                                //                 value: qb.TorrentState.unknown,
                                 //               ),
                                 //             )
                                 //             .name,
