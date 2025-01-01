@@ -2319,6 +2319,7 @@ class _DownloadPageState extends State<DownloadPage>
         RxString(controller.currentPrefs.torrentStopCondition);
     RxString resumeDataStorageType =
         RxString(controller.currentPrefs.resumeDataStorageType);
+    RxInt proxyType = RxInt(controller.currentPrefs.proxyType);
 
     TextEditingController webUiAddressController =
         TextEditingController(text: controller.currentPrefs.webUiAddress);
@@ -2343,6 +2344,8 @@ class _DownloadPageState extends State<DownloadPage>
     RxInt bittorrentProtocol =
         RxInt(controller.currentPrefs.bittorrentProtocol);
     RxInt dyndnsService = RxInt(controller.currentPrefs.dyndnsService);
+    TextEditingController proxyPortController = TextEditingController(
+        text: controller.currentPrefs.proxyPort.toString());
     TextEditingController altDlLimitController = TextEditingController(
         text: (controller.currentPrefs.altDlLimit / 1024).toString());
     TextEditingController altUpLimitController = TextEditingController(
@@ -2952,6 +2955,153 @@ class _DownloadPageState extends State<DownloadPage>
                         ),
                       );
                     }),
+                    Obx(() {
+                      return CustomCard(
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('代理类型'),
+                                DropdownButton(
+                                    isDense: true,
+                                    value: proxyType.value,
+                                    items: const [
+                                      DropdownMenuItem(
+                                          value: 0,
+                                          child: Text(
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                              ),
+                                              'None')),
+                                      // DropdownMenuItem(
+                                      //     value: 1,
+                                      //     child: Text(
+                                      //         style: TextStyle(
+                                      //           fontSize: 14,
+                                      //         ),
+                                      //         'SOCKS4')),
+                                      DropdownMenuItem(
+                                          value: 2,
+                                          child: Text(
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                              ),
+                                              'SOCKS5')),
+                                      DropdownMenuItem(
+                                          value: 3,
+                                          child: Text(
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                              ),
+                                              'HTTP')),
+                                    ],
+                                    onChanged: (value) {
+                                      proxyType.value = value!;
+                                    }),
+                              ],
+                            ),
+                            if (proxyType.value != 0)
+                              Column(
+                                children: [
+                                  CustomTextField(
+                                    controller: proxyIpController,
+                                    labelText: '主机',
+                                  ),
+                                  CustomPortField(
+                                    controller: proxyPortController,
+                                    labelText: '端口',
+                                  ),
+                                  CheckboxListTile(
+                                    dense: true,
+                                    value: proxyPeerConnections.value,
+                                    onChanged: (value) {
+                                      proxyPeerConnections.value =
+                                          value == true;
+                                    },
+                                    title: const Text('使用代理服务器进行用户连接'),
+                                  ),
+                                  CheckboxListTile(
+                                    dense: true,
+                                    value: proxyTorrentsOnly.value,
+                                    onChanged: (value) {
+                                      proxyTorrentsOnly.value = value == true;
+                                    },
+                                    title: const Text(
+                                        'Use proxy only for torrents'),
+                                  ),
+                                  CheckboxListTile(
+                                    dense: true,
+                                    value: proxyHostnameLookup.value,
+                                    onChanged: (value) {
+                                      proxyHostnameLookup.value = value == true;
+                                    },
+                                    title: const Text('使用代理进行主机名查询'),
+                                  ),
+                                  CheckboxListTile(
+                                    dense: true,
+                                    value: proxyAuthEnabled.value,
+                                    onChanged: (value) {
+                                      proxyAuthEnabled.value = value == true;
+                                    },
+                                    title: const Text('验证'),
+                                  ),
+                                  if (proxyAuthEnabled.value)
+                                    Column(
+                                      children: [
+                                        CustomTextField(
+                                            controller: proxyUsernameController,
+                                            labelText: '用户名'),
+                                        CustomTextField(
+                                            controller: proxyPasswordController,
+                                            labelText: '密码'),
+                                      ],
+                                    ),
+                                ],
+                              )
+                          ],
+                        ),
+                      );
+                    }),
+                    CustomCard(
+                      child: Obx(() {
+                        return Column(
+                          children: [
+                            const Text('IP 过滤'),
+                            CheckboxListTile(
+                              dense: true,
+                              value: ipFilterEnabled.value,
+                              onChanged: (value) {
+                                ipFilterEnabled.value = value == true;
+                              },
+                              title: const Text('开启过滤规则'),
+                            ),
+                            if (ipFilterEnabled.value)
+                              Column(
+                                children: [
+                                  CustomTextField(
+                                    controller: ipFilterPathController,
+                                    labelText: '过滤规则路径',
+                                  ),
+                                  CheckboxListTile(
+                                    dense: true,
+                                    value: ipFilterTrackers.value,
+                                    onChanged: (value) {
+                                      ipFilterTrackers.value = value == true;
+                                    },
+                                    title: const Text('开启过滤规则'),
+                                  ),
+                                  CustomTextField(
+                                    controller: bannedIPsController,
+                                    maxLines: 5,
+                                    labelText: '手动屏蔽 IP 地址',
+                                  ),
+                                ],
+                              ),
+                          ],
+                        );
+                      }),
+                    ),
                   ],
                 ),
                 ListView(
