@@ -922,6 +922,7 @@ class DownloadController extends GetxController {
     selectedError = '全部';
     selectedCategory = '全部';
     selectedTracker = '全部';
+    torrentState = null;
   }
 
   stopFetchTorrents() async {
