@@ -107,14 +107,16 @@ class DownloadController extends GetxController {
     {'name': '工作中', 'value': TrackerStatus.working},
   ].map((e) => MetaDataItem.fromJson(e)).toList();
   Map<String, WebSite> trackerToWebSiteMap = {};
-  Map<String, Category?> qBCategoryMap = {};
+  Map<String, Category?> categoryMap = {};
   Map<String, List<String>> trackers = {};
-  List<String> tags = [];
+  List<String> tags = ['全部'];
+  List<String> errors = ['全部'];
   List<dynamic> serverStatus = [];
-
-  TorrentState? torrentState;
+  String selectedTag = '全部';
+  String selectedError = '全部';
+  dynamic torrentState;
   TorrentFilter torrentFilter = TorrentFilter.all;
-  String? category = '全部';
+  String? selectedCategory = '全部';
   String selectedTracker = '全部';
   dynamic sortKey = 'name';
   String searchKey = '';
@@ -396,7 +398,7 @@ class DownloadController extends GetxController {
       return response;
     }
 
-    qBCategoryMap.addAll({
+    categoryMap.addAll({
       for (var entry in response.data['categories'].entries)
         entry.key: Category.fromJson(entry.value as Map<String, dynamic>)
     });
@@ -431,7 +433,7 @@ class DownloadController extends GetxController {
     if (!response.succeed) {
       return response;
     }
-    qBCategoryMap.addAll({
+    categoryMap.addAll({
       for (var item in response.data)
         (item)['name']!: Category.fromJson(item as Map<String, dynamic>)
     });
@@ -445,6 +447,10 @@ class DownloadController extends GetxController {
     filterTorrentsByCategory();
     logger_helper.Logger.instance.d(showTorrents.length);
     filterTorrentsByState();
+    logger_helper.Logger.instance.d(showTorrents.length);
+    filterTorrentsByError();
+    logger_helper.Logger.instance.d(showTorrents.length);
+    filterTorrentsByLabel();
     logger_helper.Logger.instance.d(showTorrents.length);
     filterTorrentsBySearchKey();
     logger_helper.Logger.instance.d(showTorrents.length);
@@ -500,10 +506,28 @@ class DownloadController extends GetxController {
   }
 
   void filterTorrentsByCategory() {
-    logger_helper.Logger.instance.i(category);
-    if (category != null && category != '全部') {
+    logger_helper.Logger.instance.i(selectedCategory);
+    if (selectedCategory != null && selectedCategory != '全部') {
       showTorrents = showTorrents.where((torrent) {
-        return torrent.downloadDir.contains(category);
+        return torrent.downloadDir.contains(selectedCategory);
+      }).toList();
+    }
+  }
+
+  void filterTorrentsByError() {
+    logger_helper.Logger.instance.i(selectedCategory);
+    if (selectedError.isNotEmpty && selectedError != '全部') {
+      showTorrents = showTorrents.where((torrent) {
+        return torrent.errorString.contains(selectedError);
+      }).toList();
+    }
+  }
+
+  void filterTorrentsByLabel() {
+    logger_helper.Logger.instance.i(selectedTag);
+    if (selectedTag.isNotEmpty && selectedTag != '全部') {
+      showTorrents = showTorrents.where((torrent) {
+        return torrent.errorString.contains(selectedTag);
       }).toList();
     }
   }
@@ -578,7 +602,7 @@ class DownloadController extends GetxController {
       showTorrents = showTorrents
           .where((torrent) =>
               torrent.name!.toLowerCase().contains(searchKey.toLowerCase()) ||
-              torrent.category!
+              torrent.selectedCategory!
                   .toLowerCase()
                   .contains(searchKey.toLowerCase()) ||
               torrent.hash!.toLowerCase().contains(searchKey.toLowerCase()))
@@ -593,9 +617,9 @@ class DownloadController extends GetxController {
     }
     // logger_helper.Logger.instance.d(showTorrents.length);
 
-    if (category != null && category != '全部') {
+    if (selectedCategory != null && selectedCategory != '全部') {
       showTorrents = showTorrents
-          .where((torrent) => torrent.category == category)
+          .where((torrent) => torrent.category == selectedCategory)
           .toList();
     }
     // logger_helper.Logger.instance.d(showTorrents.length);
@@ -660,6 +684,7 @@ class DownloadController extends GetxController {
     try {
       bool isQb = downloader.category == 'Qb';
       isTorrentsLoading = true;
+      serverStatus.clear();
       update();
       final wsUrl = Uri.parse(
           '${baseUrl.replaceFirst('http', 'ws')}/api/${Api.DOWNLOADER_TORRENTS}');
@@ -674,8 +699,7 @@ class DownloadController extends GetxController {
         if (isQb) {
           parseQbMainData(data);
         } else {
-          torrents = data.map((item) => TrTorrent.fromJson(item)).toList();
-          filterTrTorrents();
+          parseTrData(data);
         }
         update();
       }
@@ -698,9 +722,7 @@ class DownloadController extends GetxController {
             parseQbMainData(response.data);
             // rid += 1;
           } else {
-            torrents =
-                response.data.map((item) => TrTorrent.fromJson(item)).toList();
-            filterTrTorrents();
+            parseTrData(response.data);
           }
           update();
         } else {
@@ -723,10 +745,42 @@ class DownloadController extends GetxController {
     }
   }
 
+  parseTrData(data) {
+    if (data.runtimeType == List ||
+        data['torrents'] == null ||
+        data['status'].isEmpty) return;
+    torrents =
+        data['torrents'].map((item) => TrTorrent.fromJson(item)).toList();
+    tags.addAll(
+        torrents.expand<String>((item) => item.labels).toSet().toList());
+    errors.addAll(torrents
+        .map<String>((item) => item.errorString)
+        .toSet()
+        .where((el) => el.isNotEmpty)
+        .toList());
+    categoryMap = {
+      '全部': const Category(name: '全部', savePath: null),
+      for (var dir in torrents
+          .map((e) => e.downloadDir.replaceAll(RegExp(r'\/$'), '').toString())
+          .toSet())
+        dir.split('/').last: Category(
+          name: dir.split('/').last,
+          savePath: dir,
+        ),
+    };
+    serverStatus.clear();
+    TransmissionStats state = TransmissionStats.fromJson(data['status']);
+    serverStatus.add(state);
+
+    filterTrTorrents();
+
+    update();
+  }
+
   void parseQbMainData(data) {
-    qBCategoryMap = {
+    categoryMap = {
       '全部': const Category(name: '全部'),
-      '未分类': const Category(name: '', savePath: ''),
+      '未分类': const Category(name: '未分类', savePath: ''),
       if (data['categories'] != null) ...{
         for (var entry in data['categories'].entries)
           entry.key: Category.fromJson(entry.value as Map<String, dynamic>)
@@ -749,12 +803,10 @@ class DownloadController extends GetxController {
       return QbittorrentTorrentInfo.fromJson(torrent);
     }).toList();
     isTorrentsLoading = false;
+    serverStatus.clear();
     ServerState state = ServerState.fromJson(data['server_state']);
     serverStatus.add(state);
-    serverStatus = serverStatus.whereType<ServerState>().toList();
-    // logger_helper.Logger.instance.d(torrents.length);
     filterQbTorrents();
-    // logger_helper.Logger.instance.d(showTorrents.length);
     update();
   }
 

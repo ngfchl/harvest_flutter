@@ -1012,7 +1012,7 @@ class _DownloadPageState extends State<DownloadPage>
               child: GFTypography(
                 text: downloader != null ? '编辑下载器：${downloader.name}' : '添加下载器',
                 icon: const Icon(Icons.add),
-                dividerWidth: 128,
+                dividerWidth: 0,
                 textColor: Theme.of(context).colorScheme.onSurface,
                 dividerColor: Theme.of(context).colorScheme.onSurface,
               ),
@@ -1218,11 +1218,6 @@ class _DownloadPageState extends State<DownloadPage>
                   ],
                 ),
                 actions: [
-                  if (controller.serverStatus.isNotEmpty)
-                    Text(
-                      filesize(controller.serverStatus.last.freeSpaceOnDisk),
-                      style: const TextStyle(color: Colors.red),
-                    ),
                   IconButton(
                       onPressed: () async {
                         await controller.stopFetchTorrents();
@@ -1409,7 +1404,7 @@ class _DownloadPageState extends State<DownloadPage>
                                         child: GFTypography(
                                           text: '添加种子',
                                           icon: const Icon(Icons.add),
-                                          dividerWidth: 108,
+                                          dividerWidth: 0,
                                           textColor: Theme.of(context)
                                               .colorScheme
                                               .onSurface,
@@ -1421,7 +1416,7 @@ class _DownloadPageState extends State<DownloadPage>
                                       Expanded(
                                         child: DownloadForm(
                                           categories: controller
-                                              .qBCategoryMap.values
+                                              .categoryMap.values
                                               .fold({}, (map, element) {
                                             map[element!.name!] =
                                                 element.savePath ?? '';
@@ -1935,9 +1930,545 @@ class _DownloadPageState extends State<DownloadPage>
     );
   }
 
+  Widget _buildTrDrawer(downloader, context) {
+    List<TransmissionStats> serverStatus =
+        controller.serverStatus.whereType<TransmissionStats>().toList();
+
+    TransmissionStats state = serverStatus.last;
+    TextEditingController searchKeyController = TextEditingController();
+    return GFDrawer(
+        child: Column(
+      children: <Widget>[
+        SizedBox(
+          height: 80,
+          child: Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/images/${downloader.category.toLowerCase()}.png',
+                  width: 20,
+                  height: 20,
+                ),
+                const SizedBox(width: 10),
+                Text(
+                    '${downloader.protocol}://${downloader.host}:${downloader.port}'),
+              ],
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 80,
+          child: SfCartesianChart(
+            plotAreaBorderWidth: 0,
+            tooltipBehavior: TooltipBehavior(
+              enable: true,
+              shared: true,
+              decimalPlaces: 1,
+              builder: (dynamic data, dynamic point, dynamic series,
+                  int pointIndex, int seriesIndex) {
+                // Logger.instance.d(data);
+                return Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    border: Border.all(width: 1),
+                  ),
+                  child: Text(
+                    '${series.name}: ${filesize(point.y)}',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                );
+              },
+            ),
+            primaryXAxis: const CategoryAxis(
+                isVisible: false,
+                majorGridLines: MajorGridLines(width: 0),
+                edgeLabelPlacement: EdgeLabelPlacement.shift),
+            primaryYAxis: NumericAxis(
+                axisLine: const AxisLine(width: 0),
+                axisLabelFormatter: (AxisLabelRenderDetails details) {
+                  return ChartAxisLabel(
+                    filesize(details.value),
+                    const TextStyle(
+                      fontSize: 10,
+                    ),
+                  );
+                },
+                majorTickLines: const MajorTickLines(size: 0)),
+            series: [
+              AreaSeries<TransmissionStats, int>(
+                animationDuration: 0,
+                dataSource: serverStatus,
+                enableTooltip: true,
+                xValueMapper: (TransmissionStats sales, index) => index,
+                yValueMapper: (TransmissionStats sales, _) =>
+                    sales.downloadSpeed,
+                color: Colors.red.withOpacity(0.5),
+                name: '下载速度',
+                borderWidth: 1,
+              ),
+              AreaSeries<TransmissionStats, int>(
+                animationDuration: 0,
+                dataSource: serverStatus,
+                enableTooltip: true,
+                xValueMapper: (TransmissionStats sales, index) => index,
+                yValueMapper: (TransmissionStats sales, _) => sales.uploadSpeed,
+                color: Colors.blue.withOpacity(0.9),
+                name: '上传速度',
+                borderWidth: 1,
+                borderDrawMode: BorderDrawMode.all,
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+            child: ListView(
+          children: [
+            GFAccordion(
+              titleChild: GFTypography(
+                text: '种子排序【${controller.sortKey}】',
+                type: GFTypographyType.typo6,
+                icon: Icon(
+                  Icons.sort_by_alpha,
+                  size: 18,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                dividerWidth: 0,
+                textColor: Theme.of(context).colorScheme.primary,
+                dividerColor: Theme.of(context).colorScheme.primary,
+              ),
+              collapsedTitleBackgroundColor:
+                  Theme.of(context).colorScheme.surface,
+              expandedTitleBackgroundColor:
+                  Theme.of(context).colorScheme.surface,
+              contentBackgroundColor: Theme.of(context).colorScheme.surface,
+              titlePadding: EdgeInsets.zero,
+              contentChild: SizedBox(
+                height: 200,
+                child: GetBuilder<DownloadController>(builder: (controller) {
+                  return ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: controller.trSortOptions.length,
+                      itemBuilder: (context, index) {
+                        MetaDataItem item = controller.trSortOptions[index];
+                        bool isSelected = controller.sortKey == item.value;
+                        return ListTile(
+                          dense: true,
+                          title: Text(
+                            item.name,
+                          ),
+                          style: ListTileStyle.list,
+                          titleTextStyle: TextStyle(
+                              color: Theme.of(context).colorScheme.primary),
+                          selected: isSelected,
+                          selectedColor: Theme.of(context).colorScheme.error,
+                          selectedTileColor: Colors.amber,
+                          onTap: () {
+                            Get.back();
+                            controller.sortReversed =
+                                controller.sortKey == item.value
+                                    ? !controller.sortReversed
+                                    : false;
+                            controller.sortKey = item.value;
+                            SPUtil.setLocalStorage(
+                                '${downloader.host}:${downloader.port}-sortKey',
+                                controller.sortKey.toString());
+                            controller.update();
+                          },
+                        );
+                      });
+                }),
+              ),
+            ),
+            GFAccordion(
+              titleChild: GFTypography(
+                text: '种子分类【${controller.selectedCategory}】',
+                type: GFTypographyType.typo6,
+                icon: Icon(
+                  Icons.category,
+                  size: 18,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                dividerWidth: 0,
+                textColor: Theme.of(context).colorScheme.primary,
+                dividerColor: Theme.of(context).colorScheme.primary,
+              ),
+              collapsedTitleBackgroundColor:
+                  Theme.of(context).colorScheme.surface,
+              expandedTitleBackgroundColor:
+                  Theme.of(context).colorScheme.surface,
+              contentBackgroundColor: Theme.of(context).colorScheme.surface,
+              titlePadding: EdgeInsets.zero,
+              contentChild: SizedBox(
+                height: 200,
+                child: GetBuilder<DownloadController>(builder: (controller) {
+                  return ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: controller.categoryMap.length,
+                      itemBuilder: (context, index) {
+                        String c = controller.categoryMap.keys.toList()[index];
+                        qb.Category? category =
+                            controller.categoryMap.values.toList()[index];
+                        int count = 0;
+                        if (category?.savePath == null) {
+                          count = controller.torrents.length;
+                        } else {
+                          count = controller.torrents
+                              .where((torrent) =>
+                                  torrent.downloadDir == category?.savePath)
+                              .toList()
+                              .length;
+                        }
+                        bool selected = controller.selectedCategory ==
+                            (category?.savePath != null
+                                ? category?.name!
+                                : null);
+                        return ListTile(
+                          dense: true,
+                          title: Text(
+                            '$c($count)',
+                          ),
+                          titleTextStyle: TextStyle(
+                              color: Theme.of(context).colorScheme.primary),
+                          selected: selected,
+                          selectedColor: Theme.of(context).colorScheme.error,
+                          onTap: () {
+                            Get.back();
+                            controller.selectedCategory =
+                                category?.savePath != null
+                                    ? category?.name!
+                                    : null;
+                            controller.filterTrTorrents();
+                          },
+                        );
+                      });
+                }),
+              ),
+            ),
+            GFAccordion(
+              titleChild: GFTypography(
+                text: '种子标签【${controller.selectedTag}】',
+                type: GFTypographyType.typo6,
+                icon: Icon(
+                  Icons.category,
+                  size: 18,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                dividerWidth: 0,
+                textColor: Theme.of(context).colorScheme.primary,
+                dividerColor: Theme.of(context).colorScheme.primary,
+              ),
+              collapsedTitleBackgroundColor:
+                  Theme.of(context).colorScheme.surface,
+              expandedTitleBackgroundColor:
+                  Theme.of(context).colorScheme.surface,
+              contentBackgroundColor: Theme.of(context).colorScheme.surface,
+              titlePadding: EdgeInsets.zero,
+              contentChild: SizedBox(
+                height: 200,
+                child: GetBuilder<DownloadController>(builder: (controller) {
+                  return ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: controller.tags.length,
+                      itemBuilder: (context, index) {
+                        String tag = controller.tags[index];
+                        int count = 0;
+                        if (tag == '全部') {
+                          count = controller.torrents.length;
+                        } else {
+                          count = controller.torrents
+                              .where((torrent) => torrent.labels.contains(tag))
+                              .toList()
+                              .length;
+                        }
+                        bool selected = controller.selectedTag == tag;
+                        return ListTile(
+                          dense: true,
+                          title: Text(
+                            '$tag($count)',
+                          ),
+                          titleTextStyle: TextStyle(
+                              color: Theme.of(context).colorScheme.primary),
+                          selected: selected,
+                          selectedColor: Theme.of(context).colorScheme.error,
+                          onTap: () {
+                            Get.back();
+                            controller.selectedTag = tag;
+                            controller.filterTrTorrents();
+                          },
+                        );
+                      });
+                }),
+              ),
+            ),
+            GFAccordion(
+              titleChild: GFTypography(
+                text: '种子状态【${controller.torrentState}】',
+                type: GFTypographyType.typo6,
+                icon: Icon(
+                  Icons.info,
+                  size: 18,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                dividerWidth: 0,
+                textColor: Theme.of(context).colorScheme.primary,
+                dividerColor: Theme.of(context).colorScheme.primary,
+              ),
+              collapsedTitleBackgroundColor:
+                  Theme.of(context).colorScheme.surface,
+              expandedTitleBackgroundColor:
+                  Theme.of(context).colorScheme.surface,
+              contentBackgroundColor: Theme.of(context).colorScheme.surface,
+              titlePadding: EdgeInsets.zero,
+              contentChild: SizedBox(
+                height: 200,
+                child: GetBuilder<DownloadController>(builder: (controller) {
+                  return ListView(
+                    shrinkWrap: true,
+                    children: [
+                      ListTile(
+                        dense: true,
+                        title: Text(
+                          '活动中(${controller.torrents.where((torrent) => [
+                                2,
+                                4,
+                                6,
+                              ].contains(torrent.status)).toList().length})',
+                        ),
+                        titleTextStyle: TextStyle(
+                            color: Theme.of(context).colorScheme.primary),
+                        style: ListTileStyle.list,
+                        selected:
+                            controller.torrentFilter == qb.TorrentFilter.active,
+                        selectedColor: Theme.of(context).colorScheme.error,
+                        onTap: () {
+                          Get.back();
+                          controller.torrentState = null;
+                          controller.torrentFilter = qb.TorrentFilter.active;
+                          controller.update();
+                        },
+                      ),
+                      ...controller.trStatus.map((state) {
+                        final torrentsMatchingState = controller.torrents
+                            .where((torrent) => state.value != null
+                                ? torrent.status == state.value
+                                : true)
+                            .toList();
+                        return ListTile(
+                          dense: true,
+                          title: Text(
+                            '${state.name}(${torrentsMatchingState.length})',
+                          ),
+                          titleTextStyle: TextStyle(
+                              color: Theme.of(context).colorScheme.primary),
+                          style: ListTileStyle.list,
+                          selected: controller.torrentState == state.value,
+                          selectedColor: Theme.of(context).colorScheme.error,
+                          onTap: () {
+                            Get.back();
+                            controller.torrentState = state.value;
+                            controller.update();
+                          },
+                        );
+                      }),
+                    ],
+                  );
+                }),
+              ),
+            ),
+            GFAccordion(
+              titleChild: GFTypography(
+                text: '站点筛选【${controller.selectedTracker}】',
+                type: GFTypographyType.typo6,
+                icon: Icon(
+                  Icons.language,
+                  size: 18,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                dividerWidth: 0,
+                textColor: Theme.of(context).colorScheme.primary,
+                dividerColor: Theme.of(context).colorScheme.primary,
+              ),
+              collapsedTitleBackgroundColor:
+                  Theme.of(context).colorScheme.surface,
+              expandedTitleBackgroundColor:
+                  Theme.of(context).colorScheme.surface,
+              contentBackgroundColor: Theme.of(context).colorScheme.surface,
+              titlePadding: EdgeInsets.zero,
+              contentChild: SizedBox(
+                height: 300,
+                child: Column(
+                  children: [
+                    CustomTextField(
+                      controller: searchKeyController,
+                      labelText: '筛选',
+                      onChanged: (String value) {
+                        // searchKey.text = value;
+                        controller.update();
+                      },
+                    ),
+                    Expanded(
+                      child:
+                          GetBuilder<DownloadController>(builder: (controller) {
+                        List<String> keys = controller.trackers.keys
+                            .where((element) => element.toLowerCase().contains(
+                                searchKeyController.text.toLowerCase()))
+                            .toList();
+                        keys.sort((a, b) =>
+                            a.toLowerCase().compareTo(b.toLowerCase()));
+                        return ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: keys.length,
+                            itemBuilder: (context, index) {
+                              String? key = keys[index];
+                              List<String>? hashList;
+                              if (key == ' 红种') {
+                                hashList = controller.torrents
+                                    .where((element) =>
+                                        element.tracker?.isEmpty == true)
+                                    .map((e) => e.hash.toString())
+                                    .toList();
+                              } else {
+                                hashList = controller.trackers[key];
+                              }
+                              return ListTile(
+                                dense: true,
+                                title: Text(
+                                  '${key.trim()}(${key == ' All' ? controller.torrents.length : hashList?.length})',
+                                ),
+                                titleTextStyle: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                                style: ListTileStyle.list,
+                                selected: controller.selectedTracker == key,
+                                selectedColor:
+                                    Theme.of(context).colorScheme.error,
+                                onTap: () {
+                                  Get.back();
+                                  // controller.torrentState = null;
+                                  controller.selectedTracker = key;
+                                  controller.update();
+                                },
+                              );
+                            });
+                      }),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            GFAccordion(
+              titleChild: GFTypography(
+                text: '错误信息【${controller.selectedError}】',
+                type: GFTypographyType.typo6,
+                icon: Icon(
+                  Icons.warning,
+                  size: 18,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+                dividerWidth: 0,
+                textColor: Theme.of(context).colorScheme.primary,
+                dividerColor: Theme.of(context).colorScheme.primary,
+              ),
+              collapsedTitleBackgroundColor:
+                  Theme.of(context).colorScheme.surface,
+              expandedTitleBackgroundColor:
+                  Theme.of(context).colorScheme.surface,
+              contentBackgroundColor: Theme.of(context).colorScheme.surface,
+              titlePadding: EdgeInsets.zero,
+              contentChild: SizedBox(
+                height: 200,
+                child: GetBuilder<DownloadController>(builder: (controller) {
+                  return ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: controller.errors.length,
+                      itemBuilder: (context, index) {
+                        String error = controller.errors[index];
+                        int count = 0;
+                        if (error == '全部') {
+                          count = controller.torrents
+                              .where((item) => item.error > 0)
+                              .length;
+                        } else {
+                          count = controller.torrents
+                              .where((torrent) =>
+                                  torrent.errorString.contains(error))
+                              .toList()
+                              .length;
+                        }
+                        bool selected = controller.selectedError == error;
+                        return ListTile(
+                          dense: true,
+                          title: Text(
+                            '$error($count)',
+                          ),
+                          titleTextStyle: TextStyle(
+                              color: Theme.of(context).colorScheme.primary),
+                          selected: selected,
+                          selectedColor: Theme.of(context).colorScheme.error,
+                          onTap: () {
+                            Get.back();
+                            controller.selectedError = error;
+                            controller.filterTrTorrents();
+                          },
+                        );
+                      });
+                }),
+              ),
+            ),
+          ],
+        )),
+        ListTile(
+          dense: true,
+          contentPadding: const EdgeInsets.all(0),
+          titleTextStyle:
+              TextStyle(color: Theme.of(context).colorScheme.primary),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              CustomTextTag(
+                  icon: const Icon(
+                    Icons.upload_outlined,
+                    color: Colors.green,
+                    size: 14,
+                  ),
+                  backgroundColor: Colors.transparent,
+                  labelColor: Colors.red,
+                  labelText: filesize(downloader.prefs.downloadDirFreeSpace)),
+              CustomTextTag(
+                  icon: const Icon(
+                    Icons.upload_outlined,
+                    color: Colors.green,
+                    size: 14,
+                  ),
+                  backgroundColor: Colors.transparent,
+                  labelColor: Colors.green,
+                  labelText:
+                      '${filesize(state.uploadSpeed)}[${filesize(state.currentStats.uploadedBytes)}]'),
+              CustomTextTag(
+                  icon: const Icon(
+                    Icons.download_outlined,
+                    color: Colors.red,
+                    size: 14,
+                  ),
+                  backgroundColor: Colors.transparent,
+                  labelColor: Colors.red,
+                  labelText:
+                      '${filesize(state.downloadSpeed)}[${filesize(state.currentStats.downloadedBytes)}]'),
+            ],
+          ),
+        )
+      ],
+    ));
+  }
+
   Widget _buildQbDrawer(Downloader downloader, context) {
     return GetBuilder<DownloadController>(builder: (controller) {
-      qb.ServerState state = controller.serverStatus.first;
+      List<qb.ServerState> serverStatus =
+          controller.serverStatus.whereType<qb.ServerState>().toList();
+
+      qb.ServerState state = serverStatus.first;
       TextEditingController searchKeyController = TextEditingController();
       return GFDrawer(
         child: Column(
@@ -2018,7 +2549,7 @@ class _DownloadPageState extends State<DownloadPage>
                 series: [
                   AreaSeries<qb.ServerState, int>(
                     animationDuration: 0,
-                    dataSource: controller.serverStatus as List<qb.ServerState>,
+                    dataSource: serverStatus,
                     enableTooltip: true,
                     xValueMapper: (qb.ServerState sales, index) => index,
                     yValueMapper: (qb.ServerState sales, _) =>
@@ -2029,7 +2560,7 @@ class _DownloadPageState extends State<DownloadPage>
                   ),
                   AreaSeries<qb.ServerState, int>(
                     animationDuration: 0,
-                    dataSource: controller.serverStatus as List<qb.ServerState>,
+                    dataSource: serverStatus,
                     enableTooltip: true,
                     xValueMapper: (qb.ServerState sales, index) => index,
                     yValueMapper: (qb.ServerState sales, _) =>
@@ -2047,16 +2578,23 @@ class _DownloadPageState extends State<DownloadPage>
                 children: [
                   GFAccordion(
                     titleChild: GFTypography(
-                      text: '种子排序',
+                      text: '种子排序【${controller.sortKey}】',
                       type: GFTypographyType.typo6,
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.sort_by_alpha,
                         size: 18,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
-                      dividerWidth: 108,
-                      textColor: Theme.of(context).colorScheme.onSurface,
-                      dividerColor: Theme.of(context).colorScheme.onSurface,
+                      dividerWidth: 0,
+                      textColor: Theme.of(context).colorScheme.primary,
+                      dividerColor: Theme.of(context).colorScheme.primary,
                     ),
+                    collapsedTitleBackgroundColor:
+                        Theme.of(context).colorScheme.surface,
+                    expandedTitleBackgroundColor:
+                        Theme.of(context).colorScheme.surface,
+                    contentBackgroundColor:
+                        Theme.of(context).colorScheme.surface,
                     titlePadding: EdgeInsets.zero,
                     contentChild: SizedBox(
                       height: 200,
@@ -2072,18 +2610,19 @@ class _DownloadPageState extends State<DownloadPage>
                                   controller.sortKey == item.value;
                               return ListTile(
                                 dense: true,
-                                title: Text(
-                                  item.name,
-                                ),
+                                title: Text(item.name),
+                                titleTextStyle: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
                                 style: ListTileStyle.list,
-                                trailing: Icon(
-                                  isSelected
-                                      ? Icons.check_box
-                                      : Icons.check_box_outline_blank,
-                                ),
+                                // trailing: Icon(
+                                //   isSelected
+                                //       ? Icons.check_box
+                                //       : Icons.check_box_outline_blank,
+                                // ),
                                 selected: isSelected,
                                 selectedColor:
-                                    Theme.of(context).colorScheme.primary,
+                                    Theme.of(context).colorScheme.error,
                                 selectedTileColor: Colors.amber,
                                 onTap: () {
                                   Get.back();
@@ -2104,16 +2643,23 @@ class _DownloadPageState extends State<DownloadPage>
                   ),
                   GFAccordion(
                     titleChild: GFTypography(
-                      text: '种子分类',
+                      text: '种子分类【${controller.selectedCategory}】',
                       type: GFTypographyType.typo6,
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.category,
                         size: 18,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
-                      dividerWidth: 108,
-                      textColor: Theme.of(context).colorScheme.onSurface,
-                      dividerColor: Theme.of(context).colorScheme.onSurface,
+                      dividerWidth: 0,
+                      textColor: Theme.of(context).colorScheme.primary,
+                      dividerColor: Theme.of(context).colorScheme.primary,
                     ),
+                    collapsedTitleBackgroundColor:
+                        Theme.of(context).colorScheme.surface,
+                    expandedTitleBackgroundColor:
+                        Theme.of(context).colorScheme.surface,
+                    contentBackgroundColor:
+                        Theme.of(context).colorScheme.surface,
                     titlePadding: EdgeInsets.zero,
                     contentChild: SizedBox(
                       height: 200,
@@ -2121,13 +2667,12 @@ class _DownloadPageState extends State<DownloadPage>
                           GetBuilder<DownloadController>(builder: (controller) {
                         return ListView.builder(
                             shrinkWrap: true,
-                            itemCount: controller.qBCategoryMap.length,
+                            itemCount: controller.categoryMap.length,
                             itemBuilder: (context, index) {
                               String c =
-                                  controller.qBCategoryMap.keys.toList()[index];
-                              qb.Category? category = controller
-                                  .qBCategoryMap.values
-                                  .toList()[index];
+                                  controller.categoryMap.keys.toList()[index];
+                              qb.Category? category =
+                                  controller.categoryMap.values.toList()[index];
                               int count = 0;
                               if (category?.savePath == null) {
                                 count = controller.torrents.length;
@@ -2138,23 +2683,24 @@ class _DownloadPageState extends State<DownloadPage>
                                     .toList()
                                     .length;
                               }
-                              bool selected = controller.category ==
+                              bool selected = controller.selectedCategory ==
                                   (category?.savePath != null
                                       ? category?.name!
                                       : null);
                               return ListTile(
                                 dense: true,
-                                title: Text(
-                                  '$c($count)',
-                                ),
+                                title: Text('$c($count)'),
+                                titleTextStyle: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
                                 selected: selected,
                                 selectedColor:
-                                    Theme.of(context).colorScheme.primary,
+                                    Theme.of(context).colorScheme.error,
                                 onTap: () {
                                   Get.back();
                                   controller.torrentFilter =
                                       qb.TorrentFilter.all;
-                                  controller.category =
+                                  controller.selectedCategory =
                                       category?.savePath != null
                                           ? category?.name!
                                           : null;
@@ -2167,16 +2713,84 @@ class _DownloadPageState extends State<DownloadPage>
                   ),
                   GFAccordion(
                     titleChild: GFTypography(
-                      text: '种子状态',
+                      text: '种子标签【${controller.selectedTag}】',
                       type: GFTypographyType.typo6,
-                      icon: const Icon(
+                      icon: Icon(
+                        Icons.category,
+                        size: 18,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      dividerWidth: 0,
+                      textColor: Theme.of(context).colorScheme.primary,
+                      dividerColor: Theme.of(context).colorScheme.primary,
+                    ),
+                    collapsedTitleBackgroundColor:
+                        Theme.of(context).colorScheme.surface,
+                    expandedTitleBackgroundColor:
+                        Theme.of(context).colorScheme.surface,
+                    contentBackgroundColor:
+                        Theme.of(context).colorScheme.surface,
+                    titlePadding: EdgeInsets.zero,
+                    contentChild: SizedBox(
+                      height: 200,
+                      child:
+                          GetBuilder<DownloadController>(builder: (controller) {
+                        return ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: controller.tags.length,
+                            itemBuilder: (context, index) {
+                              String tag = controller.tags[index];
+                              int count = 0;
+                              if (tag == '全部') {
+                                count = controller.torrents.length;
+                              } else {
+                                count = controller.torrents
+                                    .where(
+                                        (torrent) => torrent.tags.contains(tag))
+                                    .toList()
+                                    .length;
+                              }
+                              bool selected = controller.selectedTag == tag;
+                              return ListTile(
+                                dense: true,
+                                title: Text(
+                                  '$tag($count)',
+                                ),
+                                titleTextStyle: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                                selected: selected,
+                                selectedColor:
+                                    Theme.of(context).colorScheme.error,
+                                onTap: () {
+                                  Get.back();
+                                  controller.selectedTag = tag;
+                                  controller.filterQbTorrents();
+                                },
+                              );
+                            });
+                      }),
+                    ),
+                  ),
+                  GFAccordion(
+                    titleChild: GFTypography(
+                      text: '种子状态【${controller.torrentState}】',
+                      type: GFTypographyType.typo6,
+                      icon: Icon(
                         Icons.info,
                         size: 18,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
-                      dividerWidth: 108,
-                      textColor: Theme.of(context).colorScheme.onSurface,
-                      dividerColor: Theme.of(context).colorScheme.onSurface,
+                      dividerWidth: 0,
+                      textColor: Theme.of(context).colorScheme.primary,
+                      dividerColor: Theme.of(context).colorScheme.primary,
                     ),
+                    collapsedTitleBackgroundColor:
+                        Theme.of(context).colorScheme.surface,
+                    expandedTitleBackgroundColor:
+                        Theme.of(context).colorScheme.surface,
+                    contentBackgroundColor:
+                        Theme.of(context).colorScheme.surface,
                     titlePadding: EdgeInsets.zero,
                     contentChild: SizedBox(
                       height: 200,
@@ -2197,11 +2811,13 @@ class _DownloadPageState extends State<DownloadPage>
                                       // TorrentState.checkingDL,
                                     ].contains(torrent.state)).toList().length})',
                               ),
+                              titleTextStyle: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary),
                               style: ListTileStyle.list,
                               selected: controller.torrentFilter ==
                                   qb.TorrentFilter.active,
                               selectedColor:
-                                  Theme.of(context).colorScheme.primary,
+                                  Theme.of(context).colorScheme.error,
                               onTap: () {
                                 Get.back();
                                 controller.torrentState = null;
@@ -2221,11 +2837,14 @@ class _DownloadPageState extends State<DownloadPage>
                                 title: Text(
                                   '${state.name}(${torrentsMatchingState.length})',
                                 ),
+                                titleTextStyle: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
                                 style: ListTileStyle.list,
                                 selected:
                                     controller.torrentState == state.value,
                                 selectedColor:
-                                    Theme.of(context).colorScheme.primary,
+                                    Theme.of(context).colorScheme.error,
                                 onTap: () {
                                   Get.back();
                                   controller.torrentState = state.value;
@@ -2242,16 +2861,23 @@ class _DownloadPageState extends State<DownloadPage>
                   ),
                   GFAccordion(
                     titleChild: GFTypography(
-                      text: '站点筛选',
+                      text: '站点筛选【${controller.selectedTracker}】',
                       type: GFTypographyType.typo6,
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.language,
                         size: 18,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
-                      dividerWidth: 108,
-                      textColor: Theme.of(context).colorScheme.onSurface,
-                      dividerColor: Theme.of(context).colorScheme.onSurface,
+                      dividerWidth: 0,
+                      textColor: Theme.of(context).colorScheme.primary,
+                      dividerColor: Theme.of(context).colorScheme.primary,
                     ),
+                    collapsedTitleBackgroundColor:
+                        Theme.of(context).colorScheme.surface,
+                    expandedTitleBackgroundColor:
+                        Theme.of(context).colorScheme.surface,
+                    contentBackgroundColor:
+                        Theme.of(context).colorScheme.surface,
                     titlePadding: EdgeInsets.zero,
                     contentChild: SizedBox(
                       height: 300,
@@ -2296,11 +2922,15 @@ class _DownloadPageState extends State<DownloadPage>
                                       title: Text(
                                         '${key.trim()}(${key == ' All' ? controller.torrents.length : hashList?.length})',
                                       ),
+                                      titleTextStyle: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary),
                                       style: ListTileStyle.list,
                                       selected:
                                           controller.selectedTracker == key,
                                       selectedColor:
-                                          Theme.of(context).colorScheme.primary,
+                                          Theme.of(context).colorScheme.error,
                                       onTap: () {
                                         Get.back();
                                         // controller.torrentState = null;
@@ -2320,18 +2950,24 @@ class _DownloadPageState extends State<DownloadPage>
                 ],
               ),
             ),
+
             ListTile(
               dense: true,
               contentPadding: const EdgeInsets.all(0),
-              // title: Center(
-              //     child: Text(
-              //   '上传下载数据',
-              //   style: TextStyle(
-              //       color: Theme.of(context).colorScheme.primary),
-              // )),
-              subtitle: Row(
+              titleTextStyle:
+                  TextStyle(color: Theme.of(context).colorScheme.primary),
+              title: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
+                  CustomTextTag(
+                      icon: const Icon(
+                        Icons.sd_storage,
+                        color: Colors.green,
+                        size: 14,
+                      ),
+                      backgroundColor: Colors.transparent,
+                      labelColor: Colors.green,
+                      labelText: filesize(state.freeSpaceOnDisk)),
                   CustomTextTag(
                       icon: const Icon(
                         Icons.upload_outlined,
@@ -2805,8 +3441,6 @@ class _DownloadPageState extends State<DownloadPage>
       );
     });
   }
-
-  _buildTrDrawer(downloader, context) {}
 
   _showQbPrefs(Downloader downloader, context) async {
     const List<Tab> tabs = [
@@ -5958,14 +6592,13 @@ class _DownloadPageState extends State<DownloadPage>
 
   void _openQbTorrentInfoDetail(Downloader downloader,
       QbittorrentTorrentInfo torrentInfo, context) async {
-    if (torrentInfo.infohashV1 == null) {
-      Get.snackbar('错误', '无法获取torrent信息: ${torrentInfo.infohashV1}',
-          colorText: Theme.of(context).colorScheme.error);
-      return;
-    }
     logger_helper.Logger.instance.d(torrentInfo.infohashV1);
     CommonResponse response = await controller.getDownloaderTorrentDetailInfo(
         downloader, torrentInfo.infohashV1);
+    if (!response.succeed) {
+      Get.snackbar('获取种子详情失败', response.msg);
+      return;
+    }
     // TorrentProperties properties =
     //     TorrentProperties.fromJson(response.data['properties']);
     List<qb.TorrentContents> contents = response.data['files']
@@ -5995,7 +6628,8 @@ class _DownloadPageState extends State<DownloadPage>
                   (element) => element.contentPath == torrentInfo.contentPath)
               .map((e) => MetaDataItem.fromJson({
                     "name": controller.trackers.entries
-                        .firstWhere((entry) => entry.value.contains(e.hash))
+                        .firstWhere(
+                            (entry) => entry.value.contains(e.infohashV1))
                         .key,
                     "value": e,
                   }))
@@ -6114,7 +6748,7 @@ class _DownloadPageState extends State<DownloadPage>
                                 content: SingleChildScrollView(
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
-                                    children: controller.qBCategoryMap.values
+                                    children: controller.categoryMap.values
                                         .map((value) => PopupMenuItem(
                                               child: ListTile(
                                                 title: Text(value!.name!),
@@ -6158,7 +6792,7 @@ class _DownloadPageState extends State<DownloadPage>
                                             Get.back(result: true);
                                             // await controller.controlTorrents(
                                             //     command: 'recheck',
-                                            //     hashes: [torrentInfo.hash!]);
+                                            //     hashes: [torrentInfo.infohashV1!]);
                                             controller.update();
                                           },
                                           child: const Text('确认'),
@@ -6179,7 +6813,7 @@ class _DownloadPageState extends State<DownloadPage>
                                     Get.back();
                                     // await controller.controlTorrents(
                                     //     command: 'reannounce',
-                                    //     hashes: [torrentInfo.hash!]);
+                                    //     hashes: [torrentInfo.infohashV1!]);
                                   },
                                   icon: const Icon(
                                     Icons.campaign,
@@ -6214,7 +6848,7 @@ class _DownloadPageState extends State<DownloadPage>
                                     Get.back();
                                     // await controller.controlTorrents(
                                     //     command: 'AutoManagement',
-                                    //     hashes: [torrentInfo.hash!],
+                                    //     hashes: [torrentInfo.infohashV1!],
                                     //     enable: !torrentInfo.autoTmm!);
                                     controller.update();
                                   },
@@ -6239,7 +6873,7 @@ class _DownloadPageState extends State<DownloadPage>
                                     Get.back();
                                     // await controller.controlTorrents(
                                     //     command: 'SuperSeeding',
-                                    //     hashes: [torrentInfo.hash!],
+                                    //     hashes: [torrentInfo.infohashV1!],
                                     //     enable: !torrentInfo.superSeeding!);
                                   },
                                   icon: torrentInfo.superSeeding
@@ -6263,7 +6897,7 @@ class _DownloadPageState extends State<DownloadPage>
                                     Get.back();
                                     // await controller.controlTorrents(
                                     //     command: 'ForceStart',
-                                    //     hashes: [torrentInfo.hash!],
+                                    //     hashes: [torrentInfo.infohashV1!],
                                     //     enable: !torrentInfo.forceStart!);
                                   },
                                   icon: torrentInfo.forceStart
@@ -6459,7 +7093,7 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        '${torrentInfo.ratio?.toStringAsFixed(2)}',
+                                        torrentInfo.ratio.toStringAsFixed(2),
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
                                       ),
@@ -6689,7 +7323,7 @@ class _DownloadPageState extends State<DownloadPage>
                           //   labelText: 'Seq DL: ${torrentInfo.seqDl}',
                           // ),
                           // CustomTextTag(
-                          //   labelText: 'HASH: ${torrentInfo.hash!}',
+                          //   labelText: 'HASH: ${torrentInfo.infohashV1!}',
                           // ),
                           // Row(
                           //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -7502,7 +8136,7 @@ class _DownloadPageState extends State<DownloadPage>
                     children: [
                       Center(
                           child: Text(
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 14,
                               ),
                               'Tracker数量：${repeatTorrents.length}')),
