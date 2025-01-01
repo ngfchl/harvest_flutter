@@ -121,7 +121,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                       if (response.succeed != true) {
                                         Get.snackbar(
                                           '警告',
-                                          '${response.msg!}，从豆瓣获取信息...',
+                                          '${response.msg}，从豆瓣获取信息...',
                                           colorText: Theme.of(context)
                                               .colorScheme
                                               .error,
@@ -1732,7 +1732,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                 ),
               ),
               title: EllipsisText(
-                text: "${info.target.title}[${info.target.year ?? ''}]",
+                text: "${info.target.title}[${info.target.year}]",
                 ellipsis: "...",
                 maxLines: 1,
                 style: TextStyle(
