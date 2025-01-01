@@ -43,6 +43,21 @@ class TrTorrent {
   num uploadRatio;
   num uploadedEver;
 
+  // 新添加的字段
+  int? eta;
+  int? etaIdle;
+  int? fileCount;
+  String? group;
+  bool? honorsSessionLimits;
+  bool? isPrivate;
+  int? maxConnectedPeers;
+  int? metadataPercentComplete;
+  int? pieceCount;
+  int? pieceSize;
+  String? primaryMimeType;
+  String? torrentFile;
+  String? trackerList;
+
   TrTorrent({
     required this.activityDate,
     required this.addedDate,
@@ -87,6 +102,19 @@ class TrTorrent {
     required this.uploadRatio,
     required this.uploadedEver,
     required this.labels,
+    this.eta,
+    this.etaIdle,
+    this.fileCount,
+    this.group,
+    this.honorsSessionLimits,
+    this.isPrivate,
+    this.maxConnectedPeers,
+    this.metadataPercentComplete,
+    this.pieceCount,
+    this.pieceSize,
+    this.primaryMimeType,
+    this.torrentFile,
+    this.trackerList,
   });
 
   factory TrTorrent.fromJson(Map<String, dynamic> json) {
@@ -145,6 +173,19 @@ class TrTorrent {
       uploadLimited: json['uploadLimited'] ?? false,
       uploadRatio: json['uploadRatio'] ?? 0,
       uploadedEver: json['uploadedEver'] ?? 0,
+      eta: json['eta'] as int?,
+      etaIdle: json['etaIdle'] as int?,
+      fileCount: json['file-count'] as int?,
+      group: json['group'] as String?,
+      honorsSessionLimits: json['honorsSessionLimits'] as bool?,
+      isPrivate: json['isPrivate'] as bool?,
+      maxConnectedPeers: json['maxConnectedPeers'] as int?,
+      metadataPercentComplete: json['metadataPercentComplete'] as int?,
+      pieceCount: json['pieceCount'] as int?,
+      pieceSize: json['pieceSize'] as int?,
+      primaryMimeType: json['primary-mime-type'] as String?,
+      torrentFile: json['torrentFile'] as String?,
+      trackerList: json['trackerList'] as String?,
     );
   }
 }
