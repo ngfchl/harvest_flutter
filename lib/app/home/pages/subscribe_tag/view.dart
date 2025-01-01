@@ -318,10 +318,10 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
       Logger.instance.i(res.msg);
       if (res.code == 0) {
         Get.back();
-        Get.snackbar('标签保存成功！', res.msg!,
+        Get.snackbar('标签保存成功！', res.msg,
             colorText: Theme.of(context).colorScheme.primary);
       } else {
-        Get.snackbar('标签保存失败！', res.msg!,
+        Get.snackbar('标签保存失败！', res.msg,
             colorText: Theme.of(context).colorScheme.error);
       }
     } finally {}

@@ -209,7 +209,7 @@ class MySiteController extends GetxController {
     if (response.code == 0) {
       Get.snackbar(
         '保存成功！',
-        response.msg!,
+        response.msg,
         snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.green.shade400,
         duration: const Duration(seconds: 3),
@@ -220,7 +220,7 @@ class MySiteController extends GetxController {
     } else {
       Get.snackbar(
         '保存出错啦！',
-        response.msg!,
+        response.msg,
         snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red.shade400,
         duration: const Duration(seconds: 3),

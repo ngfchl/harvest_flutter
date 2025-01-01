@@ -556,10 +556,10 @@ class _SubscribePageState extends State<SubscribePage> {
       Logger.instance.i(res.msg);
       if (res.code == 0) {
         Get.back();
-        Get.snackbar('保存成功！', res.msg!,
+        Get.snackbar('保存成功！', res.msg,
             colorText: Theme.of(context).colorScheme.primary);
       } else {
-        Get.snackbar('保存失败！', res.msg!,
+        Get.snackbar('保存失败！', res.msg,
             colorText: Theme.of(context).colorScheme.error);
       }
     } finally {}
@@ -686,10 +686,10 @@ class EditDialogController extends GetxController {
       Logger.instance.i(res.msg);
       if (res.code == 0) {
         Get.back();
-        Get.snackbar('保存成功！', res.msg!,
+        Get.snackbar('保存成功！', res.msg,
             colorText: Theme.of(context).colorScheme.primary);
       } else {
-        Get.snackbar('保存失败！', res.msg!,
+        Get.snackbar('保存失败！', res.msg,
             colorText: Theme.of(context).colorScheme.error);
       }
     } finally {}

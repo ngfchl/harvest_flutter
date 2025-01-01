@@ -239,7 +239,7 @@ class SshWidget extends StatelessWidget {
   }
 
   Widget buildContainerCard(DockerContainer container, BuildContext context) {
-    bool isRunning = container.status!.toLowerCase().startsWith('up');
+    bool isRunning = container.status.toLowerCase().startsWith('up');
     return GetBuilder<SshController>(builder: (controller) {
       var l = container.image.toString().split('/');
       var imageText;
@@ -404,7 +404,7 @@ class SshWidget extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                container.status!.toString(),
+                                container.status.toString(),
                                 style: TextStyle(
                                   fontSize: 11,
                                   color: isRunning

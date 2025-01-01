@@ -535,7 +535,7 @@ class TrPage extends StatelessWidget {
                         onTap: () async {
                           CommonResponse res =
                               await controller.removeErrorTracker();
-                          Get.snackbar('清理红种', res.msg!,
+                          Get.snackbar('清理红种', res.msg,
                               colorText: res.code == 0
                                   ? Theme.of(context).colorScheme.primary
                                   : Theme.of(context).colorScheme.error);
@@ -556,11 +556,11 @@ class TrPage extends StatelessWidget {
                           CommonResponse res =
                               await controller.toggleSpeedLimit();
                           if (res.code == 0) {
-                            Get.snackbar('限速切换成功', res.msg!,
+                            Get.snackbar('限速切换成功', res.msg,
                                 colorText:
                                     Theme.of(context).colorScheme.primary);
                           } else {
-                            Get.snackbar('限速切换失败', res.msg!,
+                            Get.snackbar('限速切换失败', res.msg,
                                 colorText: Theme.of(context).colorScheme.error);
                           }
                         },
@@ -651,7 +651,7 @@ class TrPage extends StatelessWidget {
                                                   Get.back(result: true);
                                                 }
                                                 Get.snackbar(
-                                                    'Tracker替换ing', res.msg!,
+                                                    'Tracker替换ing', res.msg,
                                                     colorText: res.code == 0
                                                         ? Theme.of(context)
                                                             .colorScheme

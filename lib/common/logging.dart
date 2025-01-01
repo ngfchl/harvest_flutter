@@ -32,7 +32,7 @@ class LoggingView extends StatelessWidget {
   }
 
   void _showLoggingDialog(BuildContext context) {
-    final controller = Get.put(LoggingController());
+    Get.put(LoggingController());
 
     final GlobalKey webViewKey = GlobalKey();
     List<Tab> tabs = const [

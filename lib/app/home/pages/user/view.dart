@@ -425,7 +425,7 @@ class UserWidget extends StatelessWidget {
                       Get.back();
                       Get.snackbar(
                         '保存成功！',
-                        response.msg!,
+                        response.msg,
                         snackPosition: SnackPosition.TOP,
                         colorText: Theme.of(context).colorScheme.primary,
                         duration: const Duration(seconds: 3),
@@ -439,7 +439,7 @@ class UserWidget extends StatelessWidget {
                     } else {
                       Get.snackbar(
                         '保存出错啦！',
-                        response.msg!,
+                        response.msg,
                         snackPosition: SnackPosition.TOP,
                         colorText: Theme.of(context).colorScheme.error,
                         duration: const Duration(seconds: 3),

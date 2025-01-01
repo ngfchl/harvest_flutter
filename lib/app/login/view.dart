@@ -240,7 +240,7 @@ class _LoginPageState extends State<LoginPage> {
                             res.code == 0 ? '登录成功！' : '登录失败',
                             res.code == 0
                                 ? '登录成功！欢迎回来，${controller.selectedServer?.username}'
-                                : res.msg!,
+                                : res.msg,
                             colorText: res.code == 0
                                 ? Theme.of(context).colorScheme.primary
                                 : Theme.of(context).colorScheme.error,
@@ -469,7 +469,7 @@ class _LoginPageState extends State<LoginPage> {
                               Logger.instance.i(result);
                               if (result.code == 0) {
                                 Get.snackbar(server.id == 0 ? '保存结果' : '更新结果',
-                                    result.msg!,
+                                    result.msg,
                                     snackPosition: SnackPosition.BOTTOM,
                                     duration: const Duration(seconds: 3),
                                     colorText: server.id == 0
