@@ -469,9 +469,8 @@ class DownloadController extends GetxController {
         showTorrents.sort((a, b) => a.id.compareTo(b.id));
       case 'status':
         showTorrents.sort((a, b) => a.status.compareTo(b.status));
-      // case 'addedOn':
-      //   torrents
-      //       .sort(( a, b) => a.addedOn.compareTo(b.addedOn));
+      case 'addedDate':
+        torrents.sort((a, b) => a.addedDate.compareTo(b.addedDate));
       case 'totalSize':
         showTorrents.sort((a, b) => a.totalSize.compareTo(b.totalSize));
       case 'queuePosition':
@@ -630,6 +629,12 @@ class DownloadController extends GetxController {
           .toList();
     }
     // logger_helper.Logger.instance.d(showTorrents.length);
+    if (selectedTag != '全部') {
+      showTorrents = showTorrents
+          .where((torrent) => torrent.tags.contains(selectedTag))
+          .toList();
+    }
+    // logger_helper.Logger.instance.d(showTorrents.length);
 
     if (selectedCategory != null && selectedCategory != '全部') {
       showTorrents = showTorrents
@@ -745,6 +750,10 @@ class DownloadController extends GetxController {
       bool isQb = downloader.category == 'Qb';
       isTorrentsLoading = true;
       serverStatus.clear();
+      sortKey = SPUtil.getString(
+              '${downloader.host}:${downloader.port}-sortKey',
+              defaultValue: 'name') ??
+          'name';
       update();
       final wsUrl = Uri.parse(
           '${baseUrl.replaceFirst('http', 'ws')}/api/${Api.DOWNLOADER_TORRENTS}');
