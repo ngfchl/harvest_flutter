@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 import 'package:harvest/models/common_response.dart';
-import 'package:harvest/utils/logger_helper.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../../api/option.dart';
@@ -58,7 +57,6 @@ class SettingController extends GetxController {
     if (res.code == 0) {
       optionList = res.data;
       var filter = optionList.where((item) => item.name == 'tmdb_api_auth');
-      Logger.instance.d(filter.first.toJson());
       if (filter.isNotEmpty) {
         SPUtil.setCache(
             '${server}_option_tmdb_api', filter.first.toJson(), 3600 * 24 * 30);
