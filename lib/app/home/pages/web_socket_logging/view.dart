@@ -15,8 +15,6 @@ class WebSocketLoggingWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final WebSocketLoggingController controller =
-        Get.put(WebSocketLoggingController());
     return InkWell(
       child: Icon(
         Icons.waves_sharp,
@@ -24,6 +22,8 @@ class WebSocketLoggingWidget extends StatelessWidget {
         color: Theme.of(context).colorScheme.primary,
       ),
       onTap: () {
+        final WebSocketLoggingController controller =
+            Get.put(WebSocketLoggingController());
         double width = MediaQuery.of(context).size.width * 0.75;
         double height = MediaQuery.of(context).size.height * 0.5;
         if (GetPlatform.isDesktop) {
