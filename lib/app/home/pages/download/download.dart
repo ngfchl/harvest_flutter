@@ -1187,9 +1187,7 @@ class _DownloadPageState extends State<DownloadPage>
 
   void _showTorrents(Downloader downloader) async {
     try {
-      if (downloader.prefs == null ||
-          downloader.prefs!.isEmpty ||
-          downloader.status.isEmpty) {
+      if (downloader.prefs == null || downloader.status.isEmpty) {
         Get.snackbar(
           '提示',
           '下载器连接失败啦，请检查配置信息！',
