@@ -1187,6 +1187,17 @@ class _DownloadPageState extends State<DownloadPage>
 
   void _showTorrents(Downloader downloader) async {
     try {
+      if (downloader.prefs == null ||
+          downloader.prefs!.isEmpty ||
+          downloader.status.isEmpty) {
+        Get.snackbar(
+          '提示',
+          '下载器连接失败啦，请检查配置信息！',
+          snackPosition: SnackPosition.TOP,
+          colorText: Theme.of(context).colorScheme.error,
+        );
+        return;
+      }
       controller.getDownloaderTorrents(downloader);
       bool isQb = downloader.category == 'Qb';
 
