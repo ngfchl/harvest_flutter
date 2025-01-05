@@ -511,8 +511,9 @@ class TrController extends GetxController {
     }
     try {
       for (String infoHash in hashes) {
-        await client.torrent
-            .torrentSet(TorrentSetArgs().trackerReplace(['']), ids: infoHash);
+        await client.torrent.torrentSet(
+            TorrentSetArgs().trackerReplace([newTracker]),
+            ids: infoHash);
       }
     } catch (e, trace) {
       LoggerHelper.Logger.instance.e(e);
