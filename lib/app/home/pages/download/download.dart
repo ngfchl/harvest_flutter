@@ -1358,6 +1358,8 @@ class _DownloadPageState extends State<DownloadPage>
                                                       CommonResponse res =
                                                           await controller
                                                               .replaceTrackers(
+                                                                  downloader:
+                                                                      downloader,
                                                                   site:
                                                                       keyController
                                                                           .text,
@@ -1619,6 +1621,7 @@ class _DownloadPageState extends State<DownloadPage>
   _showQbTorrent(
       Downloader downloader, QbittorrentTorrentInfo torrentInfo, context) {
     RxBool paused = torrentInfo.state.toString().contains('pause').obs;
+    RxBool autoTmm = torrentInfo.autoTmm.obs;
 
     return CustomCard(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
@@ -1641,7 +1644,7 @@ class _DownloadPageState extends State<DownloadPage>
               ),
               SlidableAction(
                 onPressed: (context) async {
-                  await controller.controlTorrents(
+                  await controller.controlQbTorrents(
                     command: paused.value ? 'resume' : 'pause',
                     hashes: [torrentInfo.infohashV1],
                     downloader: downloader,
@@ -1685,7 +1688,7 @@ class _DownloadPageState extends State<DownloadPage>
                       ElevatedButton(
                         onPressed: () async {
                           Get.back(result: true);
-                          await controller.controlTorrents(
+                          await controller.controlQbTorrents(
                             command: 'recheck',
                             hashes: [torrentInfo.infohashV1],
                             downloader: downloader,
@@ -1703,20 +1706,20 @@ class _DownloadPageState extends State<DownloadPage>
               ),
               SlidableAction(
                 onPressed: (context) async {
-                  await controller.controlTorrents(
+                  await controller.controlQbTorrents(
                     downloader: downloader,
-                    command: 'AutoManagement',
+                    command: 'set_auto_management',
                     hashes: [torrentInfo.infohashV1],
-                    enable: !torrentInfo.autoTmm,
+                    enable: !autoTmm.value,
                   );
                 },
                 flex: 2,
-                backgroundColor: torrentInfo.autoTmm
-                    ? Colors.lightBlue
-                    : Colors.deepOrangeAccent,
+                backgroundColor: autoTmm.value
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.error,
                 foregroundColor: Colors.white,
-                icon: torrentInfo.autoTmm ? Icons.auto_awesome : Icons.man,
-                label: torrentInfo.autoTmm ? '自动' : '手动',
+                icon: autoTmm.value ? Icons.auto_awesome : Icons.man,
+                label: autoTmm.value ? '自动' : '手动',
               ),
             ],
           ),
@@ -1942,6 +1945,86 @@ class _DownloadPageState extends State<DownloadPage>
           ),
         );
       }),
+    );
+  }
+
+  replaceTrackers(
+      {required Downloader downloader,
+      required String site,
+      required String newTracker}) {
+    TextEditingController keyController = TextEditingController(text: '');
+    TextEditingController valueController = TextEditingController(text: '');
+    List<String> sites = controller.trackers.keys
+        .where((e) => e != ' All' && e != ' 红种')
+        .toList();
+    sites.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    Get.bottomSheet(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(5.0), // 圆角半径
+      ),
+      SizedBox(
+        height: 240,
+        // width: 240,
+        child: Scaffold(
+          body: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              CustomPickerField(
+                controller: keyController,
+                labelText: '要替换的站点',
+                data: sites,
+                // onChanged: (p, position) {
+                //   keyController.text = selectOptions[p]!;
+                // },
+              ),
+              CustomTextField(controller: valueController, labelText: "替换为"),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  ElevatedButton(
+                    style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0), // 圆角半径
+                      ),
+                    ),
+                    onPressed: () {
+                      Get.back(result: false);
+                    },
+                    child: const Text('取消'),
+                  ),
+                  Stack(
+                    children: [
+                      ElevatedButton(
+                        style: OutlinedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0), // 圆角半径
+                          ),
+                        ),
+                        onPressed: () async {
+                          CommonResponse res = await controller.replaceTrackers(
+                            downloader: downloader,
+                            site: keyController.text,
+                            newTracker: valueController.text,
+                          );
+
+                          if (res.code == 0) {
+                            Get.back(result: true);
+                          }
+                          Get.snackbar('Tracker替换ing', res.msg,
+                              colorText: res.succeed
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context).colorScheme.error);
+                        },
+                        child: const Text('确认'),
+                      ),
+                    ],
+                  ),
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -2694,7 +2777,10 @@ class _DownloadPageState extends State<DownloadPage>
                               } else {
                                 count = controller.torrents
                                     .where((torrent) =>
-                                        torrent.category == category?.name)
+                                        torrent.category ==
+                                        (category?.name != '未分类'
+                                            ? category?.name
+                                            : ''))
                                     .toList()
                                     .length;
                               }
@@ -3006,6 +3092,12 @@ class _DownloadPageState extends State<DownloadPage>
 
   _showTrTorrent(Downloader downloader, TrTorrent torrentInfo, context) {
     return GetBuilder<DownloadController>(builder: (controller) {
+      String tracker =
+          Uri.parse(torrentInfo.magnetLink).queryParametersAll["tr"]?.first ??
+              (torrentInfo.trackerStats.isNotEmpty
+                  ? torrentInfo.trackerStats.first.announce
+                  : '');
+      String? host = Uri.parse(tracker).host;
       return CustomCard(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         margin: const EdgeInsets.all(2.5),
@@ -3038,11 +3130,11 @@ class _DownloadPageState extends State<DownloadPage>
                       ElevatedButton(
                         onPressed: () async {
                           Get.back(result: true);
-                          await controller.controlTorrents(
+                          await controller.controlTrTorrents(
                               downloader: downloader,
-                              command: 'delete',
-                              deleteFiles: deleteFiles.value,
-                              hashes: [torrentInfo.hashString]);
+                              command: 'remove_torrent',
+                              enable: deleteFiles.value,
+                              ids: [torrentInfo.hashString]);
                         },
                         child: const Text('确认'),
                       ),
@@ -3072,11 +3164,12 @@ class _DownloadPageState extends State<DownloadPage>
                       ElevatedButton(
                         onPressed: () async {
                           Get.back(result: true);
-                          await controller.controlTorrents(
+                          await controller.controlTrTorrents(
                               downloader: downloader,
-                              command:
-                                  torrentInfo.status == 0 ? 'resume' : 'pause',
-                              hashes: [torrentInfo.hashString]);
+                              command: torrentInfo.status == 0
+                                  ? 'start_torrent'
+                                  : 'stop_torrent',
+                              ids: [torrentInfo.hashString]);
                         },
                         child: const Text('确认'),
                       ),
@@ -3117,10 +3210,10 @@ class _DownloadPageState extends State<DownloadPage>
                       ElevatedButton(
                         onPressed: () async {
                           Get.back(result: true);
-                          await controller.controlTorrents(
+                          await controller.controlTrTorrents(
                             downloader: downloader,
-                            command: 'recheck',
-                            hashes: [torrentInfo.hashString],
+                            command: 'verify_torrent',
+                            ids: [torrentInfo.hashString],
                           );
                         },
                         child: const Text('确认'),
@@ -3149,10 +3242,10 @@ class _DownloadPageState extends State<DownloadPage>
                       ElevatedButton(
                         onPressed: () async {
                           Get.back(result: true);
-                          await controller.controlTorrents(
+                          await controller.controlTrTorrents(
                               downloader: downloader,
-                              command: 'reannounce',
-                              hashes: [torrentInfo.hashString]);
+                              command: 'reannounce_torrent',
+                              ids: [torrentInfo.hashString]);
                         },
                         child: const Text('确认'),
                       ),
@@ -3185,21 +3278,11 @@ class _DownloadPageState extends State<DownloadPage>
                       children: [
                         torrentInfo.error <= 0
                             ? CustomTextTag(
-                                labelText: controller
-                                        .trackerToWebSiteMap[controller
-                                            .trackerToWebSiteMap.keys
-                                            .firstWhereOrNull(
-                                                (String element) =>
-                                                    element.contains(Uri.parse(
-                                                            torrentInfo
-                                                                .trackerStats
-                                                                .first!
-                                                                .announce)
-                                                        .host))]
-                                        ?.name ??
-                                    Uri.parse(torrentInfo
-                                            .trackerStats.first!.announce)
-                                        .host,
+                                labelText: host == null
+                                    ? '未知'
+                                    : (controller
+                                            .trackerToWebSiteMap[host]?.name ??
+                                        host),
                                 icon: const Icon(Icons.file_upload_outlined,
                                     size: 10, color: Colors.white),
                               )
@@ -6601,13 +6684,11 @@ class _DownloadPageState extends State<DownloadPage>
       QbittorrentTorrentInfo torrentInfo, context) async {
     logger_helper.Logger.instance.d(torrentInfo.toJson());
     CommonResponse response = await controller.getDownloaderTorrentDetailInfo(
-        downloader, torrentInfo.infohashV1);
+        downloader, torrentInfo.infohashV1, true);
     if (!response.succeed) {
       Get.snackbar('获取种子详情失败', response.msg);
       return;
     }
-    // TorrentProperties properties =
-    //     TorrentProperties.fromJson(response.data['properties']);
     List<qb.TorrentContents> contents = response.data['files']
         .map<qb.TorrentContents>((item) => qb.TorrentContents.fromJson(item))
         .toList();
@@ -6631,8 +6712,8 @@ class _DownloadPageState extends State<DownloadPage>
               .where((element) => element.url!.startsWith('http'))
               .toList();
           var repeatTorrents = controller.torrents
-              .where(
-                  (element) => element.contentPath == torrentInfo.contentPath)
+              .where((element) =>
+                  element.contentPath == controller.selectedTorrent.contentPath)
               .map((e) => MetaDataItem.fromJson({
                     "name": controller.trackers.entries
                         .firstWhere(
@@ -6689,9 +6770,9 @@ class _DownloadPageState extends State<DownloadPage>
                             child: ListTile(
                               dense: true,
                               title: Tooltip(
-                                message: torrentInfo.name,
+                                message: controller.selectedTorrent.name,
                                 child: Text(
-                                  torrentInfo.name,
+                                  controller.selectedTorrent.name,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
@@ -6701,7 +6782,7 @@ class _DownloadPageState extends State<DownloadPage>
                               ),
                               subtitle: GFProgressBar(
                                 margin: EdgeInsets.zero,
-                                percentage: torrentInfo.progress,
+                                percentage: controller.selectedTorrent.progress,
                                 lineHeight: 12,
                                 progressHeadType: GFProgressHeadType.square,
                                 progressBarColor: GFColors.SUCCESS,
@@ -6710,17 +6791,19 @@ class _DownloadPageState extends State<DownloadPage>
                                       MainAxisAlignment.spaceAround,
                                   children: [
                                     Text(
-                                      '${torrentInfo.progress * 100}%',
+                                      '${controller.selectedTorrent.progress * 100}%',
                                       style: const TextStyle(
                                           fontSize: 8, color: Colors.white),
                                     ),
                                   ],
                                 ),
                               ),
-                              trailing: torrentInfo.state
+                              trailing: controller.selectedTorrent.state
                                           .toString()
                                           .contains('pause') ||
-                                      torrentInfo.tracker.isEmpty == true
+                                      controller.selectedTorrent.tracker
+                                              .isEmpty ==
+                                          true
                                   ? const Icon(Icons.pause, color: Colors.red)
                                   : const Icon(
                                       Icons.cloud_upload_outlined,
@@ -6733,15 +6816,15 @@ class _DownloadPageState extends State<DownloadPage>
                             child: ListTile(
                               dense: true,
                               title: Text(
-                                torrentInfo.category.isNotEmpty
-                                    ? torrentInfo.category
+                                controller.selectedTorrent.category.isNotEmpty
+                                    ? controller.selectedTorrent.category
                                     : '未分类',
                                 style: const TextStyle(fontSize: 12),
                               ),
                               subtitle: Tooltip(
-                                message: torrentInfo.contentPath,
+                                message: controller.selectedTorrent.contentPath,
                                 child: Text(
-                                  torrentInfo.contentPath,
+                                  controller.selectedTorrent.contentPath,
                                   style: const TextStyle(
                                       overflow: TextOverflow.ellipsis),
                                 ),
@@ -6752,18 +6835,51 @@ class _DownloadPageState extends State<DownloadPage>
                                 backgroundColor:
                                     Theme.of(context).colorScheme.surface,
                                 barrierColor: Colors.transparent,
-                                content: SingleChildScrollView(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: controller.categoryMap.values
-                                        .map((value) => PopupMenuItem(
-                                              child: ListTile(
-                                                title: Text(value!.name!),
-                                                subtitle: Text(
-                                                    value.savePath.toString()),
-                                              ),
-                                            ))
-                                        .toList(),
+                                content: SizedBox(
+                                  width: 200,
+                                  child: SingleChildScrollView(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: controller.categoryMap.values
+                                          .where(
+                                              (item) => item?.savePath != null)
+                                          .map((value) => PopupMenuItem(
+                                                child: ListTile(
+                                                  dense: true,
+                                                  title: Text(value!.name!),
+                                                  subtitle: Text(value.savePath
+                                                      .toString()),
+                                                  selected: value.name ==
+                                                          controller
+                                                              .selectedTorrent
+                                                              .category ||
+                                                      (controller.selectedTorrent
+                                                                  .category ==
+                                                              '' &&
+                                                          value.name == '未分类'),
+                                                  selectedColor: Colors.amber,
+                                                  onTap: () async {
+                                                    Get.back();
+
+                                                    await controller
+                                                        .controlQbTorrents(
+                                                      downloader: downloader,
+                                                      command: 'set_category',
+                                                      hashes: [
+                                                        controller
+                                                            .selectedTorrent
+                                                            .hash
+                                                      ],
+                                                      category:
+                                                          value.name != '未分类'
+                                                              ? value.name!
+                                                              : '',
+                                                    );
+                                                  },
+                                                ),
+                                              ))
+                                          .toList(),
+                                    ),
                                   ),
                                 ),
                                 child: const Icon(
@@ -6771,6 +6887,65 @@ class _DownloadPageState extends State<DownloadPage>
                               ),
                             ),
                           ),
+                          if (controller.selectedTorrent.tags.isNotEmpty)
+                            CustomCard(
+                              child: ListTile(
+                                dense: true,
+                                title: Text(
+                                  controller.selectedTorrent.tags,
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                                leading: const Icon(Icons.category_outlined),
+                                trailing: CustomPopup(
+                                  showArrow: false,
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.surface,
+                                  barrierColor: Colors.transparent,
+                                  content: SizedBox(
+                                    width: 200,
+                                    child: SingleChildScrollView(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: controller.tags
+                                            .where((item) => item != '全部')
+                                            .map((value) => PopupMenuItem(
+                                                  child: CheckboxListTile(
+                                                    dense: true,
+                                                    title: Text(value),
+                                                    value: controller
+                                                        .selectedTorrent.tags
+                                                        .contains(value),
+                                                    selected: controller
+                                                        .selectedTorrent.tags
+                                                        .contains(value),
+                                                    onChanged: (v) async {
+                                                      Get.back();
+
+                                                      await controller
+                                                          .controlQbTorrents(
+                                                        downloader: downloader,
+                                                        command: v == true
+                                                            ? 'add_tags'
+                                                            : 'remove_tags',
+                                                        hashes: [
+                                                          controller
+                                                              .selectedTorrent
+                                                              .hash
+                                                        ],
+                                                        tag: value,
+                                                      );
+                                                    },
+                                                  ),
+                                                ))
+                                            .toList(),
+                                      ),
+                                    ),
+                                  ),
+                                  child: const Icon(
+                                      Icons.swap_horizontal_circle_outlined),
+                                ),
+                              ),
+                            ),
 
                           CustomCard(
                             width: double.infinity,
@@ -6796,11 +6971,15 @@ class _DownloadPageState extends State<DownloadPage>
                                         ),
                                         ElevatedButton(
                                           onPressed: () async {
+                                            // 重新校验种子
                                             Get.back(result: true);
-                                            // await controller.controlTorrents(
-                                            //     command: 'recheck',
-                                            //     hashes: [torrentInfo.infohashV1!]);
-                                            controller.update();
+                                            await controller.controlQbTorrents(
+                                                downloader: downloader,
+                                                command: 'recheck',
+                                                hashes: [
+                                                  controller.selectedTorrent
+                                                      .infohashV1
+                                                ]);
                                           },
                                           child: const Text('确认'),
                                         ),
@@ -6817,10 +6996,12 @@ class _DownloadPageState extends State<DownloadPage>
                                   text: '强制汇报',
                                   color: GFColors.SUCCESS,
                                   onPressed: () async {
-                                    Get.back();
-                                    // await controller.controlTorrents(
-                                    //     command: 'reannounce',
-                                    //     hashes: [torrentInfo.infohashV1!]);
+                                    await controller.controlQbTorrents(
+                                        downloader: downloader,
+                                        command: 'reannounce',
+                                        hashes: [
+                                          controller.selectedTorrent.infohashV1
+                                        ]);
                                   },
                                   icon: const Icon(
                                     Icons.campaign,
@@ -6833,7 +7014,8 @@ class _DownloadPageState extends State<DownloadPage>
                                   color: GFColors.SECONDARY,
                                   onPressed: () async {
                                     Clipboard.setData(ClipboardData(
-                                        text: torrentInfo.infohashV1));
+                                        text: controller
+                                            .selectedTorrent.infohashV1));
                                     Get.snackbar('复制种子HASH', '种子HASH复制成功！',
                                         colorText: Theme.of(context)
                                             .colorScheme
@@ -6848,18 +7030,20 @@ class _DownloadPageState extends State<DownloadPage>
                                 GFButton(
                                   text: '自动管理',
                                   padding: EdgeInsets.zero,
-                                  color: torrentInfo.autoTmm
+                                  color: controller.selectedTorrent.autoTmm
                                       ? GFColors.SUCCESS
                                       : GFColors.DANGER,
                                   onPressed: () async {
-                                    Get.back();
-                                    // await controller.controlTorrents(
-                                    //     command: 'AutoManagement',
-                                    //     hashes: [torrentInfo.infohashV1!],
-                                    //     enable: !torrentInfo.autoTmm!);
-                                    controller.update();
+                                    await controller.controlQbTorrents(
+                                        downloader: downloader,
+                                        command: 'set_auto_management',
+                                        hashes: [
+                                          controller.selectedTorrent.infohashV1
+                                        ],
+                                        enable: !controller
+                                            .selectedTorrent.autoTmm);
                                   },
-                                  icon: torrentInfo.autoTmm
+                                  icon: controller.selectedTorrent.autoTmm
                                       ? const Icon(
                                           Icons.hdr_auto_outlined,
                                           color: Colors.white,
@@ -6873,17 +7057,20 @@ class _DownloadPageState extends State<DownloadPage>
                                 ),
                                 GFButton(
                                   text: '超级做种',
-                                  color: torrentInfo.superSeeding
+                                  color: controller.selectedTorrent.superSeeding
                                       ? GFColors.SUCCESS
                                       : GFColors.DANGER,
                                   onPressed: () async {
-                                    Get.back();
-                                    // await controller.controlTorrents(
-                                    //     command: 'SuperSeeding',
-                                    //     hashes: [torrentInfo.infohashV1!],
-                                    //     enable: !torrentInfo.superSeeding!);
+                                    await controller.controlQbTorrents(
+                                        downloader: downloader,
+                                        command: 'set_super_seeding',
+                                        hashes: [
+                                          controller.selectedTorrent.infohashV1
+                                        ],
+                                        enable: !controller
+                                            .selectedTorrent.superSeeding);
                                   },
-                                  icon: torrentInfo.superSeeding
+                                  icon: controller.selectedTorrent.superSeeding
                                       ? const Icon(
                                           Icons.supervisor_account_rounded,
                                           color: Colors.white,
@@ -6897,17 +7084,20 @@ class _DownloadPageState extends State<DownloadPage>
                                 ),
                                 GFButton(
                                   text: '强制开始',
-                                  color: torrentInfo.forceStart
+                                  color: controller.selectedTorrent.forceStart
                                       ? GFColors.SUCCESS
                                       : GFColors.DANGER,
                                   onPressed: () async {
-                                    Get.back();
-                                    // await controller.controlTorrents(
-                                    //     command: 'ForceStart',
-                                    //     hashes: [torrentInfo.infohashV1!],
-                                    //     enable: !torrentInfo.forceStart!);
+                                    await controller.controlQbTorrents(
+                                        downloader: downloader,
+                                        command: 'set_force_start',
+                                        hashes: [
+                                          controller.selectedTorrent.infohashV1
+                                        ],
+                                        enable: !controller
+                                            .selectedTorrent.forceStart);
                                   },
-                                  icon: torrentInfo.forceStart
+                                  icon: controller.selectedTorrent.forceStart
                                       ? const Icon(
                                           Icons.double_arrow_outlined,
                                           color: Colors.white,
@@ -6943,7 +7133,8 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        formatDuration(torrentInfo.seedingTime),
+                                        formatDuration(controller
+                                            .selectedTorrent.seedingTime),
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 12),
                                       ),
@@ -6968,7 +7159,8 @@ class _DownloadPageState extends State<DownloadPage>
                                             .firstWhere(
                                               (element) =>
                                                   element.value ==
-                                                  torrentInfo.state,
+                                                  controller
+                                                      .selectedTorrent.state,
                                               orElse: () => MetaDataItem(
                                                 name: "未知状态",
                                                 value: qb.TorrentState.unknown,
@@ -6995,7 +7187,8 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        filesize(torrentInfo.size),
+                                        filesize(
+                                            controller.selectedTorrent.size),
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
                                       ),
@@ -7016,7 +7209,8 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        filesize(torrentInfo.uploaded),
+                                        filesize(controller
+                                            .selectedTorrent.uploaded),
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
                                       ),
@@ -7037,7 +7231,7 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        '${filesize(torrentInfo.upSpeed)}/S',
+                                        '${filesize(controller.selectedTorrent.upSpeed)}/S',
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
                                       ),
@@ -7058,7 +7252,7 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        '${filesize(torrentInfo.upLimit)}/S',
+                                        '${filesize(controller.selectedTorrent.upLimit)}/S',
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
                                       ),
@@ -7079,7 +7273,8 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        filesize(torrentInfo.downloaded),
+                                        filesize(controller
+                                            .selectedTorrent.downloaded),
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
                                       ),
@@ -7100,7 +7295,8 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        torrentInfo.ratio.toStringAsFixed(2),
+                                        controller.selectedTorrent.ratio
+                                            .toStringAsFixed(2),
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
                                       ),
@@ -7121,7 +7317,7 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        '${torrentInfo.ratioLimit}',
+                                        '${controller.selectedTorrent.ratioLimit}',
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
                                       ),
@@ -7260,38 +7456,38 @@ class _DownloadPageState extends State<DownloadPage>
 
                           // Wrap(runSpacing: 12, spacing: 12, children: [
                           // CustomTextTag(
-                          //   labelText: '可用性: ${torrentInfo.availability}',
+                          //   labelText: '可用性: ${controller.selectedTorrent.availability}',
                           // ),
 
                           // CustomTextTag(
                           //labelText:
-                          //   '文件路径: ${torrentInfo.contentPath}',
+                          //   '文件路径: ${controller.selectedTorrent.contentPath}',
                           //
                           // ),
 
                           // CustomTextTag(
-                          //   labelText: '下载路径: ${torrentInfo.downloadPath}',
+                          //   labelText: '下载路径: ${controller.selectedTorrent.downloadPath}',
                           // ),
 
                           // CustomTextTag(
                           //   labelText:
-                          //       'FL Piece Prio: ${torrentInfo.fLPiecePrio}',
+                          //       'FL Piece Prio: ${controller.selectedTorrent.fLPiecePrio}',
                           // ),
 
                           // CustomTextTag(
                           //labelText:
-                          //   '磁力链接: ${torrentInfo.magnetUri}',
+                          //   '磁力链接: ${controller.selectedTorrent.magnetUri}',
                           //
                           // ),
                           // Row(
                           //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           //   children: [
                           //     CustomTextTag(
-                          //       labelText: '最大分享比率: ${torrentInfo.maxRatio}',
+                          //       labelText: '最大分享比率: ${controller.selectedTorrent.maxRatio}',
                           //     ),
                           //     CustomTextTag(
                           //       labelText:
-                          //           '最大做种时间: ${formatDuration(torrentInfo.maxSeedingTime!)}',
+                          //           '最大做种时间: ${formatDuration(controller.selectedTorrent.maxSeedingTime!)}',
                           //     ),
                           //   ],
                           // ),
@@ -7299,14 +7495,14 @@ class _DownloadPageState extends State<DownloadPage>
                           //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           //   children: [
                           //     CustomTextTag(
-                          //       labelText: '完成数量: ${torrentInfo.numComplete}',
+                          //       labelText: '完成数量: ${controller.selectedTorrent.numComplete}',
                           //     ),
                           //     CustomTextTag(
                           //       labelText:
-                          //           '未完成数量: ${torrentInfo.numIncomplete}',
+                          //           '未完成数量: ${controller.selectedTorrent.numIncomplete}',
                           //     ),
                           //     CustomTextTag(
-                          //       labelText: '正在做种数量: ${torrentInfo.numLeechs}',
+                          //       labelText: '正在做种数量: ${controller.selectedTorrent.numLeechs}',
                           //     ),
                           //   ],
                           // ),
@@ -7314,37 +7510,37 @@ class _DownloadPageState extends State<DownloadPage>
                           //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           //   children: [
                           //     CustomTextTag(
-                          //       labelText: '做种数量: ${torrentInfo.numSeeds}',
+                          //       labelText: '做种数量: ${controller.selectedTorrent.numSeeds}',
                           //     ),
                           //     CustomTextTag(
-                          //       labelText: '优先级: ${torrentInfo.priority}',
+                          //       labelText: '优先级: ${controller.selectedTorrent.priority}',
                           //     ),
                           //     CustomTextTag(
-                          //       labelText: '保存路径: ${torrentInfo.savePath}',
+                          //       labelText: '保存路径: ${controller.selectedTorrent.savePath}',
                           //     ),
                           //   ],
                           // ),
 
                           // CustomTextTag(
-                          //   labelText: '做种时间限制: ${torrentInfo.seedingTimeLimit}',
+                          //   labelText: '做种时间限制: ${controller.selectedTorrent.seedingTimeLimit}',
                           // ),
 
                           // CustomTextTag(
-                          //   labelText: 'Seq DL: ${torrentInfo.seqDl}',
+                          //   labelText: 'Seq DL: ${controller.selectedTorrent.seqDl}',
                           // ),
                           // CustomTextTag(
-                          //   labelText: 'HASH: ${torrentInfo.infohashV1!}',
+                          //   labelText: 'HASH: ${controller.selectedTorrent.infohashV1!}',
                           // ),
                           // Row(
                           //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           //   children: [
                           //     CustomTextTag(
                           //       labelText:
-                          //           '添加时间: ${formatTimestampToDateTime(torrentInfo.addedOn!)}',
+                          //           '添加时间: ${formatTimestampToDateTime(controller.selectedTorrent.addedOn!)}',
                           //     ),
                           //     CustomTextTag(
                           //       labelText:
-                          //           '最后完整可见：${calcDurationFromTimeStamp(torrentInfo.seenComplete!)}',
+                          //           '最后完整可见：${calcDurationFromTimeStamp(controller.selectedTorrent.seenComplete!)}',
                           //     ),
                           //   ],
                           // ),
@@ -7353,11 +7549,11 @@ class _DownloadPageState extends State<DownloadPage>
                           //   children: [
                           //     CustomTextTag(
                           //       labelText:
-                          //           '耗时: ${formatDuration(torrentInfo.eta!)}',
+                          //           '耗时: ${formatDuration(controller.selectedTorrent.eta!)}',
                           //     ),
                           //     CustomTextTag(
                           //       labelText:
-                          //           '最后活动时间: ${calcDurationFromTimeStamp(torrentInfo.lastActivity!)}',
+                          //           '最后活动时间: ${calcDurationFromTimeStamp(controller.selectedTorrent.lastActivity!)}',
                           //     ),
                           //   ],
                           // ),
@@ -7366,26 +7562,24 @@ class _DownloadPageState extends State<DownloadPage>
                           //     children: [
                           //       CustomTextTag(
                           //         labelText:
-                          //             '已完成: ${filesize(torrentInfo.completed)}',
+                          //             '已完成: ${filesize(controller.selectedTorrent.completed)}',
                           //       ),
                           //       CustomTextTag(
                           //         labelText:
-                          //             '完成时间: ${calcDurationFromTimeStamp(torrentInfo.completionOn!)}',
+                          //             '完成时间: ${calcDurationFromTimeStamp(controller.selectedTorrent.completionOn!)}',
                           //       ),
                           //     ],
                           //   ),
-                          //   if (torrentInfo.amountLeft! > 0)
+                          //   if (controller.selectedTorrent.amountLeft! > 0)
                           //     CustomTextTag(
                           //       labelText:
-                          //           '剩余大小: ${filesize(torrentInfo.amountLeft)}',
+                          //           '剩余大小: ${filesize(controller.selectedTorrent.amountLeft)}',
                           //     ),
                           // ]),
-                          // CustomTextTag(
-                          //   labelText: '标签: ${torrentInfo.tags}',
-                          // ),
+
                           // CustomTextTag(
                           //   labelText:
-                          //       '活跃时间: ${formatDuration(torrentInfo.timeActive!)}',
+                          //       '活跃时间: ${formatDuration(controller.selectedTorrent.timeActive!)}',
                           // ),
                         ],
                       ),
@@ -7417,18 +7611,19 @@ class _DownloadPageState extends State<DownloadPage>
           );
         }),
       ),
-    );
+    ).whenComplete(() {
+      controller.selectedTorrent = null;
+    });
   }
 
   void _openTrTorrentInfoDetail(
       Downloader downloader, TrTorrent torrentInfo, context) async {
     CommonResponse response = await controller.getDownloaderTorrentDetailInfo(
-        downloader, torrentInfo.hashString);
+        downloader, torrentInfo.hashString, false);
     if (!response.succeed) {
       Get.snackbar('获取种子详情失败', response.msg);
       return;
     }
-    torrentInfo = TrTorrent.fromJson(response.data);
 
     Get.bottomSheet(
       shape: const RoundedRectangleBorder(
@@ -7444,7 +7639,9 @@ class _DownloadPageState extends State<DownloadPage>
         padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
         child: GetBuilder<DownloadController>(builder: (controller) {
           var repeatTorrents = controller.torrents
-              .where((element) => element.name == torrentInfo.name)
+              .where((element) =>
+                  element.name == controller.selectedTorrent.name &&
+                  element.hashString != controller.selectedTorrent.hashString)
               .map((e) => MetaDataItem.fromJson({
                     "name": controller.getTrMetaName(e.hashString),
                     "value": e,
@@ -7460,6 +7657,7 @@ class _DownloadPageState extends State<DownloadPage>
                           colorBrightness: ColorBrightness.dark),
                       shadowColor: Colors.orangeAccent,
                       elevation: 3,
+                      deleteButtonTooltipMessage: '删除',
                       label: SizedBox(
                         width: 52,
                         child: Text(
@@ -7474,7 +7672,38 @@ class _DownloadPageState extends State<DownloadPage>
                         _openTrTorrentInfoDetail(downloader, e.value, context);
                       },
                       onDeleted: () {
-                        // _removeTorrent(e.value);
+                        RxBool deleteFiles = false.obs;
+                        Get.defaultDialog(
+                          title: '确认',
+                          middleText: '您确定要执行这个操作吗？',
+                          content: Obx(() {
+                            return SwitchListTile(
+                                title: const Text('是否删除种子文件？'),
+                                value: deleteFiles.value,
+                                onChanged: (value) {
+                                  deleteFiles.value = value;
+                                });
+                          }),
+                          actions: [
+                            ElevatedButton(
+                              onPressed: () {
+                                Get.back(result: false);
+                              },
+                              child: const Text('取消'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () async {
+                                Get.back(result: true);
+                                await controller.controlTrTorrents(
+                                    downloader: downloader,
+                                    command: 'remove_torrent',
+                                    enable: deleteFiles.value,
+                                    ids: [e.value.hashString]);
+                              },
+                              child: const Text('确认'),
+                            ),
+                          ],
+                        );
                       },
                     ),
                   ))
@@ -7503,9 +7732,9 @@ class _DownloadPageState extends State<DownloadPage>
                             child: ListTile(
                               dense: true,
                               title: Tooltip(
-                                message: torrentInfo.name,
+                                message: controller.selectedTorrent.name,
                                 child: Text(
-                                  torrentInfo.name,
+                                  controller.selectedTorrent.name,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
@@ -7515,7 +7744,9 @@ class _DownloadPageState extends State<DownloadPage>
                               ),
                               subtitle: GFProgressBar(
                                 margin: EdgeInsets.zero,
-                                percentage: torrentInfo.percentDone.toDouble(),
+                                percentage: controller
+                                    .selectedTorrent.percentDone
+                                    .toDouble(),
                                 lineHeight: 12,
                                 progressHeadType: GFProgressHeadType.square,
                                 progressBarColor: GFColors.SUCCESS,
@@ -7524,17 +7755,19 @@ class _DownloadPageState extends State<DownloadPage>
                                       MainAxisAlignment.spaceAround,
                                   children: [
                                     Text(
-                                      '${torrentInfo.percentDone * 100}%',
+                                      '${controller.selectedTorrent.percentDone * 100}%',
                                       style: const TextStyle(
                                           fontSize: 8, color: Colors.white),
                                     ),
                                   ],
                                 ),
                               ),
-                              trailing: torrentInfo.status
+                              trailing: controller.selectedTorrent.status
                                           .toString()
                                           .contains('pause') ||
-                                      torrentInfo.trackerStats.isEmpty == true
+                                      controller.selectedTorrent.trackerStats
+                                              .isEmpty ==
+                                          true
                                   ? const Icon(Icons.pause, color: Colors.red)
                                   : const Icon(
                                       Icons.cloud_upload_outlined,
@@ -7542,10 +7775,10 @@ class _DownloadPageState extends State<DownloadPage>
                                     ),
                             ),
                           ),
-                          if (torrentInfo.error > 0)
+                          if (controller.selectedTorrent.error > 0)
                             Center(
                               child: Text(
-                                torrentInfo.errorString,
+                                controller.selectedTorrent.errorString,
                                 style: TextStyle(
                                     fontSize: 8,
                                     color: Theme.of(context).colorScheme.error),
@@ -7555,13 +7788,13 @@ class _DownloadPageState extends State<DownloadPage>
                           //   child: ListTile(
                           //     dense: true,
                           //     title: Text(
-                          //       torrentInfo.downloadDir,
+                          //       controller.selectedTorrent.downloadDir,
                           //       style: const TextStyle(fontSize: 12),
                           //     ),
                           //     subtitle: Tooltip(
-                          //       message: torrentInfo.downloadDir,
+                          //       message: controller.selectedTorrent.downloadDir,
                           //       child: Text(
-                          //         torrentInfo.downloadDir!,
+                          //         controller.selectedTorrent.downloadDir!,
                           //         style: const TextStyle(
                           //             overflow: TextOverflow.ellipsis),
                           //       ),
@@ -7616,14 +7849,16 @@ class _DownloadPageState extends State<DownloadPage>
                                         ),
                                         ElevatedButton(
                                           onPressed: () async {
-                                            // Get.back(result: true);
-                                            // await controller.controlTorrents(
-                                            //     command: 'recheck',
-                                            //     hashes: [
-                                            //       torrentInfo.hashString
-                                            //     ]);
-                                            // Get.back();
-                                            // controller.update();
+                                            Get.back(result: true);
+                                            await controller.controlTrTorrents(
+                                                downloader: downloader,
+                                                command: 'verify_torrent',
+                                                ids: [
+                                                  controller.selectedTorrent
+                                                      .hashString
+                                                ]);
+                                            Get.back();
+                                            controller.update();
                                           },
                                           child: const Text('确认'),
                                         ),
@@ -7640,9 +7875,12 @@ class _DownloadPageState extends State<DownloadPage>
                                   text: '强制汇报',
                                   color: GFColors.SUCCESS,
                                   onPressed: () async {
-                                    // await controller.controlTorrents(
-                                    //     command: 'reannounce',
-                                    //     hashes: [torrentInfo.hashString]);
+                                    await controller.controlTrTorrents(
+                                        downloader: downloader,
+                                        command: 'reannounce_torrent',
+                                        ids: [
+                                          controller.selectedTorrent.hashString
+                                        ]);
                                     Get.back();
                                   },
                                   icon: const Icon(
@@ -7656,7 +7894,8 @@ class _DownloadPageState extends State<DownloadPage>
                                   color: GFColors.SECONDARY,
                                   onPressed: () async {
                                     Clipboard.setData(ClipboardData(
-                                        text: torrentInfo.hashString));
+                                        text: controller
+                                            .selectedTorrent.hashString));
                                     Get.snackbar('复制种子HASH', '种子HASH复制成功！',
                                         colorText: Theme.of(context)
                                             .colorScheme
@@ -7692,7 +7931,8 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        formatDuration(torrentInfo.doneDate),
+                                        formatDuration(controller
+                                            .selectedTorrent.doneDate),
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 12),
                                       ),
@@ -7717,7 +7957,7 @@ class _DownloadPageState extends State<DownloadPage>
                                 //             .firstWhere(
                                 //               (element) =>
                                 //                   element.value ==
-                                //                   torrentInfo.state!,
+                                //                   controller.selectedTorrent.state!,
                                 //               orElse: () => MetaDataItem(
                                 //                 name: "未知状态",
                                 //                 value: qb.TorrentState.unknown,
@@ -7744,7 +7984,8 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        filesize(torrentInfo.totalSize),
+                                        filesize(controller
+                                            .selectedTorrent.totalSize),
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
                                       ),
@@ -7765,7 +8006,8 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        filesize(torrentInfo.uploadedEver),
+                                        filesize(controller
+                                            .selectedTorrent.uploadedEver),
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
                                       ),
@@ -7786,7 +8028,7 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        '${filesize(torrentInfo.rateUpload)}/S',
+                                        '${filesize(controller.selectedTorrent.rateUpload)}/S',
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
                                       ),
@@ -7807,7 +8049,7 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        '${filesize(torrentInfo.rateUpload)}/S',
+                                        '${filesize(controller.selectedTorrent.rateUpload)}/S',
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
                                       ),
@@ -7828,7 +8070,8 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        filesize(torrentInfo.downloadedEver),
+                                        filesize(controller
+                                            .selectedTorrent.downloadedEver),
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
                                       ),
@@ -7849,7 +8092,7 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        torrentInfo.uploadRatio
+                                        controller.selectedTorrent.uploadRatio
                                             .toStringAsFixed(2),
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
@@ -7871,7 +8114,7 @@ class _DownloadPageState extends State<DownloadPage>
                                 //             color: Colors.white, fontSize: 12),
                                 //       ),
                                 //       Text(
-                                //         '${torrentInfo.uploadRatio}',
+                                //         '${controller.selectedTorrent.uploadRatio}',
                                 //         style: const TextStyle(
                                 //             color: Colors.white, fontSize: 14),
                                 //       ),
@@ -8007,38 +8250,38 @@ class _DownloadPageState extends State<DownloadPage>
 
                           // Wrap(runSpacing: 12, spacing: 12, children: [
                           // CustomTextTag(
-                          //   labelText: '可用性: ${torrentInfo.availability}',
+                          //   labelText: '可用性: ${controller.selectedTorrent.availability}',
                           // ),
 
                           // CustomTextTag(
                           //labelText:
-                          //   '文件路径: ${torrentInfo.contentPath}',
+                          //   '文件路径: ${controller.selectedTorrent.contentPath}',
                           //
                           // ),
 
                           // CustomTextTag(
-                          //   labelText: '下载路径: ${torrentInfo.downloadPath}',
+                          //   labelText: '下载路径: ${controller.selectedTorrent.downloadPath}',
                           // ),
 
                           // CustomTextTag(
                           //   labelText:
-                          //       'FL Piece Prio: ${torrentInfo.fLPiecePrio}',
+                          //       'FL Piece Prio: ${controller.selectedTorrent.fLPiecePrio}',
                           // ),
 
                           // CustomTextTag(
                           //labelText:
-                          //   '磁力链接: ${torrentInfo.magnetUri}',
+                          //   '磁力链接: ${controller.selectedTorrent.magnetUri}',
                           //
                           // ),
                           // Row(
                           //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           //   children: [
                           //     CustomTextTag(
-                          //       labelText: '最大分享比率: ${torrentInfo.maxRatio}',
+                          //       labelText: '最大分享比率: ${controller.selectedTorrent.maxRatio}',
                           //     ),
                           //     CustomTextTag(
                           //       labelText:
-                          //           '最大做种时间: ${formatDuration(torrentInfo.maxSeedingTime!)}',
+                          //           '最大做种时间: ${formatDuration(controller.selectedTorrent.maxSeedingTime!)}',
                           //     ),
                           //   ],
                           // ),
@@ -8046,14 +8289,14 @@ class _DownloadPageState extends State<DownloadPage>
                           //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           //   children: [
                           //     CustomTextTag(
-                          //       labelText: '完成数量: ${torrentInfo.numComplete}',
+                          //       labelText: '完成数量: ${controller.selectedTorrent.numComplete}',
                           //     ),
                           //     CustomTextTag(
                           //       labelText:
-                          //           '未完成数量: ${torrentInfo.numIncomplete}',
+                          //           '未完成数量: ${controller.selectedTorrent.numIncomplete}',
                           //     ),
                           //     CustomTextTag(
-                          //       labelText: '正在做种数量: ${torrentInfo.numLeechs}',
+                          //       labelText: '正在做种数量: ${controller.selectedTorrent.numLeechs}',
                           //     ),
                           //   ],
                           // ),
@@ -8061,37 +8304,37 @@ class _DownloadPageState extends State<DownloadPage>
                           //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           //   children: [
                           //     CustomTextTag(
-                          //       labelText: '做种数量: ${torrentInfo.numSeeds}',
+                          //       labelText: '做种数量: ${controller.selectedTorrent.numSeeds}',
                           //     ),
                           //     CustomTextTag(
-                          //       labelText: '优先级: ${torrentInfo.priority}',
+                          //       labelText: '优先级: ${controller.selectedTorrent.priority}',
                           //     ),
                           //     CustomTextTag(
-                          //       labelText: '保存路径: ${torrentInfo.savePath}',
+                          //       labelText: '保存路径: ${controller.selectedTorrent.savePath}',
                           //     ),
                           //   ],
                           // ),
 
                           // CustomTextTag(
-                          //   labelText: '做种时间限制: ${torrentInfo.seedingTimeLimit}',
+                          //   labelText: '做种时间限制: ${controller.selectedTorrent.seedingTimeLimit}',
                           // ),
 
                           // CustomTextTag(
-                          //   labelText: 'Seq DL: ${torrentInfo.seqDl}',
+                          //   labelText: 'Seq DL: ${controller.selectedTorrent.seqDl}',
                           // ),
                           // CustomTextTag(
-                          //   labelText: 'HASH: ${torrentInfo.hashString}',
+                          //   labelText: 'HASH: ${controller.selectedTorrent.hashString}',
                           // ),
                           // Row(
                           //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           //   children: [
                           //     CustomTextTag(
                           //       labelText:
-                          //           '添加时间: ${formatTimestampToDateTime(torrentInfo.addedOn!)}',
+                          //           '添加时间: ${formatTimestampToDateTime(controller.selectedTorrent.addedOn!)}',
                           //     ),
                           //     CustomTextTag(
                           //       labelText:
-                          //           '最后完整可见：${calcDurationFromTimeStamp(torrentInfo.seenComplete!)}',
+                          //           '最后完整可见：${calcDurationFromTimeStamp(controller.selectedTorrent.seenComplete!)}',
                           //     ),
                           //   ],
                           // ),
@@ -8100,11 +8343,11 @@ class _DownloadPageState extends State<DownloadPage>
                           //   children: [
                           //     CustomTextTag(
                           //       labelText:
-                          //           '耗时: ${formatDuration(torrentInfo.eta!)}',
+                          //           '耗时: ${formatDuration(controller.selectedTorrent.eta!)}',
                           //     ),
                           //     CustomTextTag(
                           //       labelText:
-                          //           '最后活动时间: ${calcDurationFromTimeStamp(torrentInfo.lastActivity!)}',
+                          //           '最后活动时间: ${calcDurationFromTimeStamp(controller.selectedTorrent.lastActivity!)}',
                           //     ),
                           //   ],
                           // ),
@@ -8113,32 +8356,33 @@ class _DownloadPageState extends State<DownloadPage>
                           //     children: [
                           //       CustomTextTag(
                           //         labelText:
-                          //             '已完成: ${filesize(torrentInfo.completed)}',
+                          //             '已完成: ${filesize(controller.selectedTorrent.completed)}',
                           //       ),
                           //       CustomTextTag(
                           //         labelText:
-                          //             '完成时间: ${calcDurationFromTimeStamp(torrentInfo.completionOn!)}',
+                          //             '完成时间: ${calcDurationFromTimeStamp(controller.selectedTorrent.completionOn!)}',
                           //       ),
                           //     ],
                           //   ),
-                          //   if (torrentInfo.amountLeft! > 0)
+                          //   if (controller.selectedTorrent.amountLeft! > 0)
                           //     CustomTextTag(
                           //       labelText:
-                          //           '剩余大小: ${filesize(torrentInfo.amountLeft)}',
+                          //           '剩余大小: ${filesize(controller.selectedTorrent.amountLeft)}',
                           //     ),
                           // ]),
-                          // CustomTextTag(
-                          //   labelText: '标签: ${torrentInfo.tags}',
-                          // ),
+                          ...controller.selectedTorrent.labels
+                              .map((e) => CustomTextTag(
+                                    labelText: '标签: $e',
+                                  )),
                           // CustomTextTag(
                           //   labelText:
-                          //       '活跃时间: ${formatDuration(torrentInfo.timeActive!)}',
+                          //       '活跃时间: ${formatDuration(controller.selectedTorrent.timeActive!)}',
                           // ),
                         ],
                       ),
                     ],
                   ),
-                  TransmissionTreeView(torrentInfo.files),
+                  TransmissionTreeView(controller.selectedTorrent.files),
                   ListView(
                     children: [
                       Center(

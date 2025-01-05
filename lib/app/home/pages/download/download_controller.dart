@@ -118,6 +118,7 @@ class DownloadController extends GetxController {
   String selectedError = '全部';
   dynamic torrentState = '全部';
   String? selectedCategory = '全部';
+  dynamic selectedTorrent;
   String selectedTracker = '全部';
   String sortKey = 'name';
   String searchKey = '';
@@ -425,8 +426,15 @@ class DownloadController extends GetxController {
   }
 
   getDownloaderTorrentDetailInfo(
-      Downloader downloader, String torrentHash) async {
-    return await getTorrentDetailInfo(downloader.id!, torrentHash);
+      Downloader downloader, String torrentHash, bool isQb) async {
+    CommonResponse response =
+        await getTorrentDetailInfo(downloader.id!, torrentHash);
+
+    selectedTorrent = isQb
+        ? QbittorrentTorrentInfo.fromJson(response.data['properties'])
+        : TrTorrent.fromJson(response.data);
+    update();
+    return response;
   }
 
   getDownloaderCategoryList(Downloader downloader) async {
@@ -638,7 +646,9 @@ class DownloadController extends GetxController {
 
     if (selectedCategory != null && selectedCategory != '全部') {
       showTorrents = showTorrents
-          .where((torrent) => torrent.category == selectedCategory)
+          .where((torrent) =>
+              torrent.category ==
+              (selectedCategory != '未分类' ? selectedCategory : ''))
           .toList();
     }
     // logger_helper.Logger.instance.d(showTorrents.length);
@@ -713,35 +723,211 @@ class DownloadController extends GetxController {
     update();
   }
 
-  Future<CommonResponse> controlTorrents({
+  Future<void> controlTrTorrents({
+    required Downloader downloader,
+    required String command,
+    List<String> ids = const [],
+    bool? enable,
+    bool? move,
+    String? location,
+  }) async {
+    CommonResponse response;
+    switch (command) {
+      case 'remove_torrent':
+        response = await controlTorrent(downloaderId: downloader.id!, command: {
+          'command': command,
+          'ids': ids,
+          'delete_data': enable,
+        });
+      case 'start_all':
+        response = await controlTorrent(
+            downloaderId: downloader.id!, command: {'command': command});
+      case 'start_torrent':
+      case 'start_torrent':
+      case 'stop_torrent':
+      case 'verify_torrent':
+      case 'reannounce_torrent':
+        response = await controlTorrent(
+            downloaderId: downloader.id!,
+            command: {'command': command, 'ids': ids, 'bypass_queue': enable});
+      case 'move_torrent_data':
+        response = await controlTorrent(downloaderId: downloader.id!, command: {
+          'command': command,
+          'ids': ids,
+          'location': location,
+          'move': move
+        });
+      // case 'rename_torrent_path':
+      case 'queue_top':
+      case 'queue_bottom':
+      case 'queue_up':
+      case 'queue_down':
+        response = await controlTorrent(downloaderId: downloader.id!, command: {
+          'command': command,
+          'ids': ids,
+        });
+      default:
+        String msg = '未知命令：$command';
+        response = CommonResponse.error(msg: msg);
+    }
+    if (selectedTorrent != null) {
+      await getDownloaderTorrentDetailInfo(
+          downloader, selectedTorrent.hashString, false);
+    }
+    update();
+    Get.snackbar(response.succeed ? '成功啦！' : '出错啦！', response.msg,
+        colorText: Colors.white);
+  }
+
+  Future<void> controlQbTorrents({
     required Downloader downloader,
     required String command,
     required List<String> hashes,
-    String category = '',
-    bool deleteFiles = false,
-    bool enable = true,
-    int limit = 0,
-    RatioLimit ratioLimit = const RatioLimit.none(),
-    RatioLimit seedingTimeLimit = const RatioLimit.none(),
-    RatioLimit inactiveSeedingTimeLimit = const RatioLimit.none(),
+    String? category,
+    String? tag,
+    dynamic fileId,
+    String? newFileName,
+    String? location,
+    String? oldPath,
+    String? newPath,
+    String? newTorrentName,
+    bool? enable,
+    int? limit,
+    RatioLimit? ratioLimit,
+    RatioLimit? seedingTimeLimit,
+    RatioLimit? inactiveSeedingTimeLimit,
   }) async {
-    logger_helper.Logger.instance.d(command);
-    logger_helper.Logger.instance.d(hashes);
-    CommonResponse response =
-        await controlTorrent(downloaderId: downloader.id!, command: {
-      'command': command,
-      'hashes': hashes.join('|'),
-      'category': category,
-      'delete_files': deleteFiles,
-      'enable': enable,
-      'limit': limit,
-      'ratioLimit': ratioLimit.ratio,
-      'seedingTimeLimit': seedingTimeLimit.ratio,
-      'inactiveSeedingTimeLimit': inactiveSeedingTimeLimit.ratio,
-    });
-    // Get.snackbar(response.succeed ? '成功啦！' : '出错啦！', response.msg);
+    CommonResponse response;
+    switch (command) {
+      case 'rename':
+        response = await controlTorrent(downloaderId: downloader.id!, command: {
+          'command': command,
+          'torrent_hash': hashes[0],
+          'new_torrent_name': newTorrentName,
+        });
+        break;
+      case 'rename_file':
+        response = await controlTorrent(downloaderId: downloader.id!, command: {
+          'command': command,
+          'torrent_hash': hashes[0],
+          'file_id': fileId,
+          'new_file_name': newFileName,
+          'old_path': oldPath,
+          'new_path': newPath,
+        });
+        break;
+      case 'rename_folder':
+        response = await controlTorrent(downloaderId: downloader.id!, command: {
+          'command': command,
+          'torrent_hash': hashes[0],
+          'old_path': oldPath,
+          'new_path': newPath,
+        });
+        break;
+      case 'export':
+        response = await controlTorrent(downloaderId: downloader.id!, command: {
+          'command': command,
+          'torrent_hash': hashes[0],
+        });
+        break;
+      case 'start':
+      case 'resume':
+      case 'stop':
+      case 'pause':
+      case 'recheck':
+      case 'reannounce':
+      case 'increase_priority':
+      case 'decrease_priority':
+      case 'top_priority':
+      case 'bottom_priority':
+      case 'toggle_sequential_download':
+      case 'toggle_first_last_piece_priority':
+        response = await controlTorrent(downloaderId: downloader.id!, command: {
+          'command': command,
+          'torrent_hashes': hashes,
+        });
+        break;
+      case 'delete':
+        response = await controlTorrent(downloaderId: downloader.id!, command: {
+          'command': command,
+          'torrent_hashes': hashes,
+          'delete_files': enable,
+        });
+        break;
+      case 'set_auto_management':
+      case 'set_force_start':
+      case 'set_super_seeding':
+        response = await controlTorrent(downloaderId: downloader.id!, command: {
+          'command': command,
+          'torrent_hashes': hashes,
+          'enable': enable,
+        });
+        break;
+
+      case 'set_download_limit':
+      case 'set_upload_limit':
+        response = await controlTorrent(downloaderId: downloader.id!, command: {
+          'command': command,
+          'torrent_hashes': hashes,
+          'limit': limit,
+        });
+        break;
+      case 'set_share_limits':
+        response = await controlTorrent(downloaderId: downloader.id!, command: {
+          'command': command,
+          'torrent_hashes': hashes,
+          'ratio_limit': ratioLimit,
+          'seeding_time_limit': seedingTimeLimit,
+          'inactive_seeding_time_limit': inactiveSeedingTimeLimit,
+        });
+        break;
+      case 'set_location':
+        response = await controlTorrent(downloaderId: downloader.id!, command: {
+          'command': command,
+          'torrent_hashes': hashes,
+          'location': location,
+        });
+        break;
+      case 'set_save_path':
+        response = await controlTorrent(downloaderId: downloader.id!, command: {
+          'command': command,
+          'torrent_hashes': hashes,
+          'save_path': location,
+        });
+        break;
+      case 'set_download_path':
+        response = await controlTorrent(downloaderId: downloader.id!, command: {
+          'command': command,
+          'torrent_hashes': hashes,
+          'download_path': location,
+        });
+        break;
+      case 'set_category':
+        response = await controlTorrent(downloaderId: downloader.id!, command: {
+          'command': command,
+          'torrent_hashes': hashes,
+          'category': category,
+        });
+        break;
+      case 'add_tags':
+        response = await controlTorrent(downloaderId: downloader.id!, command: {
+          'command': command,
+          'torrent_hashes': hashes,
+          'category': category,
+        });
+        break;
+      default:
+        String msg = '未知命令：$command';
+        response = CommonResponse.error(msg: msg);
+    }
+    if (selectedTorrent != null) {
+      await getDownloaderTorrentDetailInfo(
+          downloader, selectedTorrent.hash, true);
+    }
     update();
-    return response;
+    if (!response.succeed) {
+      Get.snackbar(response.succeed ? '成功啦！' : '出错啦！', response.msg);
+    }
   }
 
   getDownloaderTorrents(Downloader downloader) async {
@@ -829,10 +1015,11 @@ class DownloadController extends GetxController {
         .toSet()
         .where((el) => el.isNotEmpty)
         .toList());
+    errors = errors.toSet().toList();
     categoryMap = {
       '全部': const Category(name: '全部', savePath: null),
       for (var dir in torrents
-          .map((e) => e.downloadDir.replaceAll(RegExp(r'\/$'), '').toString())
+          .map((e) => e.downloadDir.replaceAll(RegExp(r'/$'), '').toString())
           .toSet())
         dir.split('/').last: Category(
           name: dir.split('/').last,
@@ -841,7 +1028,14 @@ class DownloadController extends GetxController {
     };
     trackers = {'全部': []};
     // 遍历 torrents，构建 trackerHashes 数据
+    String selectHash = '';
+    if (selectedTorrent != null) {
+      selectHash = selectedTorrent.hashString;
+    }
     for (var torrent in torrents) {
+      if (torrent.hashString == selectHash) {
+        selectedTorrent = torrent;
+      }
       if (torrent.trackerStats.isEmpty) continue;
 
       final String host = Uri.parse(torrent.trackerStats.first.announce).host;
@@ -887,6 +1081,10 @@ class DownloadController extends GetxController {
       torrent['hash'] = entry.key; // 添加 hash 属性
       return QbittorrentTorrentInfo.fromJson(torrent);
     }).toList();
+    if (selectedTorrent != null) {
+      selectedTorrent = QbittorrentTorrentInfo.fromJson(
+          data['torrents'][selectedTorrent.hashString]);
+    }
     isTorrentsLoading = false;
     ServerState state = ServerState.fromJson(data['server_state']);
     serverStatus.add(state);
@@ -1055,7 +1253,10 @@ class DownloadController extends GetxController {
   }
 
   // todo 批量更换 tracker
-  replaceTrackers({required String site, required String newTracker}) async {
+  replaceTrackers(
+      {required Downloader downloader,
+      required String site,
+      required String newTracker}) async {
     CommonResponse response =
         CommonResponse(code: 0, msg: 'msg', succeed: true);
     return response;
