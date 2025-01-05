@@ -37,7 +37,7 @@ class TrTorrent {
   int startDate;
   int status;
   int totalSize;
-  List<TrackerStats?> trackerStats;
+  List<TrackerStats> trackerStats;
   int uploadLimit;
   bool uploadLimited;
   num uploadRatio;
