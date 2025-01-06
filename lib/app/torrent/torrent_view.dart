@@ -1851,7 +1851,7 @@ class TorrentView extends GetView<TorrentController> {
                         ),
                         Text(
                           basic_utils.DomainUtils.getDomainFromUrl(
-                                  torrentInfo.trackerStats.first!.announce)!
+                                  torrentInfo.trackerStats.first.announce)!
                               .toString(),
                           style: const TextStyle(
                               fontSize: 10, color: Colors.black38),

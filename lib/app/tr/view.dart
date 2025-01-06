@@ -931,11 +931,11 @@ class TrPage extends StatelessWidget {
                                           .firstWhereOrNull((String element) =>
                                               element.contains(Uri.parse(
                                                       torrentInfo.trackerStats
-                                                          .first!.announce)
+                                                          .first.announce)
                                                   .host))]
                                       ?.name ??
                                   Uri.parse(torrentInfo
-                                          .trackerStats.first!.announce)
+                                          .trackerStats.first.announce)
                                       .host,
                               style: TextStyle(
                                   fontSize: 10,

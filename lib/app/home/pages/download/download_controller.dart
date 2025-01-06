@@ -723,7 +723,7 @@ class DownloadController extends GetxController {
     update();
   }
 
-  Future<void> controlTrTorrents({
+  Future<CommonResponse> controlTrTorrents({
     required Downloader downloader,
     required String command,
     List<String> ids = const [],
@@ -775,11 +775,13 @@ class DownloadController extends GetxController {
           downloader, selectedTorrent.hashString, false);
     }
     update();
-    Get.snackbar(response.succeed ? '成功啦！' : '出错啦！', response.msg,
-        colorText: Colors.white);
+    if (!response.succeed) {
+      Get.snackbar('出错啦！', response.msg, colorText: Colors.red);
+    }
+    return response;
   }
 
-  Future<void> controlQbTorrents({
+  Future<CommonResponse> controlQbTorrents({
     required Downloader downloader,
     required String command,
     required List<String> hashes,
@@ -926,8 +928,10 @@ class DownloadController extends GetxController {
     }
     update();
     if (!response.succeed) {
-      Get.snackbar(response.succeed ? '成功啦！' : '出错啦！', response.msg);
+      Get.snackbar(response.succeed ? '成功啦！' : '出错啦！', response.msg,
+          colorText: Colors.red);
     }
+    return response;
   }
 
   getDownloaderTorrents(Downloader downloader) async {
@@ -1257,13 +1261,6 @@ class DownloadController extends GetxController {
       {required Downloader downloader,
       required String site,
       required String newTracker}) async {
-    CommonResponse response =
-        CommonResponse(code: 0, msg: 'msg', succeed: true);
-    return response;
-  }
-
-  // todo 移除红种
-  removeErrorTracker() async {
     CommonResponse response =
         CommonResponse(code: 0, msg: 'msg', succeed: true);
     return response;

@@ -110,7 +110,7 @@ class TrController extends GetxController {
       if (torrent.trackerStats.isEmpty == true) {
         continue;
       }
-      String host = Uri.parse(torrent.trackerStats.first!.announce).host;
+      String host = Uri.parse(torrent.trackerStats.first.announce).host;
       trackers[host] ??= [];
       trackers[host]!.add(torrent.hashString);
     }
@@ -213,7 +213,7 @@ class TrController extends GetxController {
       showTorrents = showTorrents
           .where((torrent) =>
               torrent.trackerStats.isNotEmpty &&
-              torrent.trackerStats.first?.announce
+              torrent.trackerStats.first.announce
                       .toLowerCase()
                       .contains(selectedTracker.toString().toLowerCase()) ==
                   true)

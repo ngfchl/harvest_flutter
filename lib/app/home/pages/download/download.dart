@@ -1258,15 +1258,9 @@ class _DownloadPageState extends State<DownloadPage>
                                   ),
                                 ),
                               ),
-                              onTap: () async {
-                                CommonResponse res =
-                                    await controller.removeErrorTracker();
-                                Get.snackbar('清理红种', res.msg,
-                                    colorText: res.code == 0
-                                        ? Theme.of(context).colorScheme.primary
-                                        : Theme.of(context).colorScheme.error);
-                                controller.update();
-                              },
+                              onTap: () => isQb
+                                  ? removeQbErrorTracker(downloader)
+                                  : removeTrErrorTracker(downloader),
                             ),
                             // PopupMenuItem<String>(
                             //   child: Center(
@@ -3097,7 +3091,7 @@ class _DownloadPageState extends State<DownloadPage>
               (torrentInfo.trackerStats.isNotEmpty
                   ? torrentInfo.trackerStats.first.announce
                   : '');
-      String? host = Uri.parse(tracker).host;
+      String host = Uri.parse(tracker).host;
       return CustomCard(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         margin: const EdgeInsets.all(2.5),
@@ -3278,7 +3272,7 @@ class _DownloadPageState extends State<DownloadPage>
                       children: [
                         torrentInfo.error <= 0
                             ? CustomTextTag(
-                                labelText: host == null
+                                labelText: host.isEmpty
                                     ? '未知'
                                     : (controller
                                             .trackerToWebSiteMap[host]?.name ??
@@ -8415,5 +8409,138 @@ class _DownloadPageState extends State<DownloadPage>
         }),
       ),
     );
+  }
+
+  ///@title 移除红种
+  ///@description 移除红种
+  ///@updateTime
+  removeQbErrorTracker(Downloader downloader) async {
+    try {
+      List<String> toRemoveTorrentList = [];
+      var groupedTorrents = groupBy(controller.torrents, (t) => t.contentPath);
+      for (var group in groupedTorrents.values) {
+        var hasTracker = group.any((t) => t.tracker?.isNotEmpty == true);
+        if (!hasTracker) {
+          group.sort((t1, t2) => t2.progress!.compareTo(t1.progress!));
+          toRemoveTorrentList.addAll(group.skip(1).map((t) => t.hash!));
+        } else {
+          toRemoveTorrentList.addAll(group
+              .where((element) => element.tracker!.isEmpty)
+              .map((t) => t.hash!));
+        }
+      }
+
+      logger_helper.Logger.instance.i(toRemoveTorrentList);
+      logger_helper.Logger.instance.i(toRemoveTorrentList.length);
+      if (toRemoveTorrentList.isEmpty) {
+        Get.snackbar('清理红种', '没有需要清理的种子！',
+            colorText: Theme.of(context).colorScheme.primary);
+        return;
+      }
+
+      Get.defaultDialog(
+        title: '确认',
+        radius: 5,
+        titleStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w900,
+            color: Colors.deepPurple),
+        middleText: '共检测到${toRemoveTorrentList.length}条可删除红种，确定要删除种子吗？',
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Get.back(result: false);
+            },
+            child: const Text('取消'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Get.back(result: true);
+              CommonResponse res = await controller.controlQbTorrents(
+                  downloader: downloader,
+                  command: 'delete',
+                  hashes: toRemoveTorrentList,
+                  enable: false);
+              if (res.succeed) {
+                controller.showTorrents.removeWhere(
+                    (element) => toRemoveTorrentList.contains(element.hash));
+                String msg = '清理出错种子成功，本次共清理${toRemoveTorrentList.length}个种子！';
+                Get.snackbar('删除通知', msg,
+                    colorText: Theme.of(context).colorScheme.primary);
+                controller.update();
+              }
+            },
+            child: const Text('确认'),
+          ),
+        ],
+      );
+    } catch (e) {
+      logger_helper.Logger.instance.e('出错啦！${e.toString()}');
+    }
+  }
+
+  removeTrErrorTracker(Downloader downloader) async {
+    try {
+      List<String> toRemoveTorrentList = [];
+      var groupedTorrents = groupBy(controller.torrents, (t) => t.name);
+      for (var group in groupedTorrents.values) {
+        var hasTracker = group.any((t) => t.error != 2);
+        if (!hasTracker) {
+          group.sort((t1, t2) => t2.percentDone.compareTo(t1.percentDone));
+          toRemoveTorrentList.addAll(group.skip(1).map((t) => t.hashString));
+        } else {
+          toRemoveTorrentList.addAll(group
+              .where((element) => element.error == 2)
+              .map((t) => t.hashString));
+        }
+      }
+
+      logger_helper.Logger.instance.i(toRemoveTorrentList);
+      logger_helper.Logger.instance.i(toRemoveTorrentList.length);
+      if (toRemoveTorrentList.isEmpty) {
+        Get.snackbar('清理红种', '没有需要清理的种子！',
+            colorText: Theme.of(context).colorScheme.primary);
+        return;
+      }
+      Get.defaultDialog(
+        title: '确认',
+        radius: 5,
+        titleStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w900,
+            color: Colors.deepPurple),
+        middleText: '共检测到${toRemoveTorrentList.length}条可删除红种，确定要删除种子吗？',
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Get.back(result: false);
+            },
+            child: const Text('取消'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Get.back(result: true);
+              CommonResponse res = await controller.controlTrTorrents(
+                  downloader: downloader,
+                  command: 'remove_torrent',
+                  ids: toRemoveTorrentList,
+                  enable: false);
+              if (res.succeed) {
+                controller.showTorrents.removeWhere((element) =>
+                    toRemoveTorrentList.contains(element.hashString));
+                String msg = '清理出错种子成功，本次共清理${toRemoveTorrentList.length}个种子！';
+                Get.snackbar('删除通知', msg,
+                    colorText: Theme.of(context).colorScheme.primary);
+                controller.update();
+              }
+            },
+            child: const Text('确认'),
+          ),
+        ],
+      );
+    } catch (e) {
+      logger_helper.Logger.instance.e('出错啦！${e.toString()}');
+      return CommonResponse.error(msg: '清理出错种子失败！${e.toString()}');
+    }
   }
 }
