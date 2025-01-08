@@ -131,7 +131,6 @@ class MySiteController extends GetxController {
         result[entry.value.name] = entry.value;
         return result;
       });
-      update();
       Logger.instance.d(
           '获取站点配置缓存耗时: ${DateTime.now().difference(startTime).inMilliseconds} 毫秒');
     }

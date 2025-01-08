@@ -12,6 +12,7 @@ import 'package:harvest/common/form_widgets.dart';
 import '../../common/custom_ua.dart';
 import '../../common/custom_upgrade.dart';
 import '../../common/logging.dart';
+import '../../common/site_map.dart';
 import '../../utils/storage.dart';
 import '../../utils/string_utils.dart';
 import 'controller/common_api.dart';
@@ -237,8 +238,16 @@ class HomeView extends GetView<HomeController> {
           const WebSocketLoggingWidget(),
           const SizedBox(width: 15),
           if (controller.userinfo?.isStaff == true) ...[
-            const CustomUpgradeWidget(),
-            const SizedBox(width: 15),
+            CustomUpgradeWidget(),
+            SizedBox(width: 15),
+            SiteMap(
+              child: Icon(
+                Icons.map,
+                size: 20,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            SizedBox(width: 15),
           ],
           // const Wen(),
 

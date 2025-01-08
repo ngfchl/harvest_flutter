@@ -47,6 +47,7 @@ dependencies:
   window_manager: ^0.4.2
   dartssh2_plus: ^3.0.0
   flutter_floating: ^1.0.8
+  timelines: ^0.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
