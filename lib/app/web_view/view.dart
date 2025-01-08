@@ -75,9 +75,7 @@ class _WebViewPageState extends State<WebViewPage> {
           ),
           actions: [
             GetBuilder<WebViewPageController>(builder: (controller) {
-              if (controller.mySite != null &&
-                  controller.mySite?.userId == null &&
-                  controller.progress >= 100) {
+              if (controller.mySite != null && controller.progress >= 100) {
                 return GFIconButton(
                   icon: const Icon(
                     Icons.cookie_sharp,
@@ -88,7 +86,7 @@ class _WebViewPageState extends State<WebViewPage> {
                       String? htmlStr = await webController?.getHtml();
                       var auth = await webController?.webStorage.localStorage
                           .getItem(key: 'auth');
-                      Logger.instance.d(auth);
+                      Logger.instance.d('auth: $auth');
                       // Logger.instance.i(htmlStr);
                       var document = parse(htmlStr).documentElement;
                       HtmlXPath selector = HtmlXPath.node(document!);
@@ -103,9 +101,11 @@ class _WebViewPageState extends State<WebViewPage> {
                           .queryXPath(controller.website!.myPasskeyRule)
                           .attrs;
                       Logger.instance.i('获取到的 Passkey：$passkeyRes');
-                      return;
+                      // return;
                       String cookies = await webController?.evaluateJavascript(
                           source: "document.cookie");
+                      Logger.instance.i('获取到的 Cookies：$cookies');
+
                       if (controller.mySite != null &&
                           controller.mySite!.mirror!.contains('m-team')) {
                         cookies = await webController?.evaluateJavascript(
@@ -192,7 +192,10 @@ class _WebViewPageState extends State<WebViewPage> {
                         .getItem(key: 'auth');
                     Logger.instance.d(auth);
                     controller.mySite = controller.mySite?.copyWith(
-                      cookie: cookieStr.isNotEmpty ? cookieStr : auth,
+                      cookie:
+                          controller.mySite?.mirror?.contains('m-team') != true
+                              ? cookieStr
+                              : auth,
                     );
                     Logger.instance.d('获取到的 Cookie：$cookieStr');
                     controller.mySite =
@@ -229,6 +232,7 @@ class _WebViewPageState extends State<WebViewPage> {
                       }
                     }
                     final response = await editMySite(controller.mySite!);
+
                     if (response.code == 0) {
                       Get.snackbar(
                         '保存成功！',
