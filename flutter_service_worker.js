@@ -12,9 +12,9 @@ const RESOURCES = {"icons/Icon-maskable-192.png": "36d6940bc29f61d82318bcb9a2499
 "assets/assets/images/qb.png": "331b0b7a29777d1640bef320895bb45e",
 "assets/assets/images/tr.png": "898c744464f9c9a0e025989d8b49bacd",
 "assets/AssetManifest.bin": "3f8cfcef3f13d3d981148fa8ba9ab740",
-"assets/NOTICES": "6326f0f2e62f167de333d9a7383e77b2",
+"assets/NOTICES": "b56f4b25a9e3039e3336b88967e6b8c1",
 "assets/AssetManifest.json": "88f538f33fde2bf638a4abab6e33ba51",
-"assets/fonts/MaterialIcons-Regular.otf": "9768b24118c2e84130557d9b3434eaa6",
+"assets/fonts/MaterialIcons-Regular.otf": "2bed5552b5f2f25529201335366f6489",
 "assets/packages/cupertino_icons/assets/CupertinoIcons.ttf": "45e448618205b215b2e914e123ecee6e",
 "assets/packages/dash_flags/assets/svgs/flags/languages/language_no.svg": "cdddd03984542bb13fa34e1e0d9a5e52",
 "assets/packages/dash_flags/assets/svgs/flags/languages/language_ja.svg": "262c5ada25764ddaaa528cd78565dd0c",
@@ -462,12 +462,12 @@ const RESOURCES = {"icons/Icon-maskable-192.png": "36d6940bc29f61d82318bcb9a2499
 "splash/img/light-3x.png": "3fe7013eb9fa577b8afdc002d93aa5a2",
 "splash/img/light-1x.png": "36d6940bc29f61d82318bcb9a2499e88",
 "splash/img/light-4x.png": "748fd1cca148ef3c7cfd389d1460ef63",
-"index.html": "249e547decd6148c2dd208592d607db7",
-"/": "249e547decd6148c2dd208592d607db7",
+"index.html": "a136c89cc1707a679387f47dd42b0b7f",
+"/": "a136c89cc1707a679387f47dd42b0b7f",
 "flutter.js": "383e55f7f3cce5be08fcf1f3881f585c",
 "favicon.png": "2bdf5b588c0ea2bb59c5ed4bb38374f9",
-"flutter_bootstrap.js": "fb946d014d78623db9801c73cf95bb46",
-"main.dart.js": "1e6eae2a648d8e5c29a9453e1454d910"};
+"flutter_bootstrap.js": "d5b34238191ff70905425377a263ad84",
+"main.dart.js": "be53ba03e505479ee67667db5f093bc0"};
 // The application shell files that are downloaded before a service worker can
 // start.
 const CORE = ["main.dart.js",
