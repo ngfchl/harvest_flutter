@@ -368,7 +368,7 @@ class DownloadController extends GetxController {
         CommonResponse response =
             CommonResponse.fromJson(json.decode(message), (p0) => p0);
         if (response.code == 0) {
-          logger_helper.Logger.instance.d(response.data);
+          // logger_helper.Logger.instance.d(response.data);
           Future<void> fetchStatus = fetchItemStatus(response.data);
           futures.add(fetchStatus);
           await Future.wait(futures);
@@ -1256,13 +1256,15 @@ class DownloadController extends GetxController {
     return response;
   }
 
-  // todo 批量更换 tracker
+  /*///@title 批量更换 tracker
+  ///@description 批量更换 tracker
+  ///@updateTime
+  */
   replaceTrackers(
       {required Downloader downloader,
-      required String site,
+      required List<String> torrentHashes,
       required String newTracker}) async {
-    CommonResponse response =
-        CommonResponse(code: 0, msg: 'msg', succeed: true);
-    return response;
+    return await replaceTorrentTrackerApi(downloader.id!,
+        {'torrent_hashes': torrentHashes, 'new_tracker': newTracker});
   }
 }

@@ -57,6 +57,12 @@ removeDownloaderApi(Downloader downloader) async {
   return await removeData(apiUrl);
 }
 
+///  修改Tracker信息
+replaceTorrentTrackerApi(int downloaderId, Map<String, dynamic> params) async {
+  String apiUrl = '${Api.DOWNLOADER_TRACKER_REPLACE}/$downloaderId';
+  return await editData(apiUrl, params);
+}
+
 //*///@title 获取下载器全量数据
 ///@description
 ///@updateTime

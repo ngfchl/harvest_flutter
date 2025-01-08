@@ -1284,112 +1284,8 @@ class _DownloadPageState extends State<DownloadPage>
                                     color:
                                         Theme.of(context).colorScheme.primary),
                               )),
-                              onTap: () {
-                                TextEditingController keyController =
-                                    TextEditingController(text: '');
-                                TextEditingController valueController =
-                                    TextEditingController(text: '');
-                                List<String> sites = controller.trackers.keys
-                                    .where((e) => e != ' All' && e != ' 红种')
-                                    .toList();
-                                sites.sort((a, b) =>
-                                    a.toLowerCase().compareTo(b.toLowerCase()));
-                                Get.bottomSheet(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(5.0), // 圆角半径
-                                  ),
-                                  SizedBox(
-                                    height: 240,
-                                    // width: 240,
-                                    child: Scaffold(
-                                      body: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          CustomPickerField(
-                                            controller: keyController,
-                                            labelText: '要替换的站点',
-                                            data: sites,
-                                            // onChanged: (p, position) {
-                                            //   keyController.text = selectOptions[p]!;
-                                            // },
-                                          ),
-                                          CustomTextField(
-                                              controller: valueController,
-                                              labelText: "替换为"),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceAround,
-                                            children: [
-                                              ElevatedButton(
-                                                style: OutlinedButton.styleFrom(
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            8.0), // 圆角半径
-                                                  ),
-                                                ),
-                                                onPressed: () {
-                                                  Get.back(result: false);
-                                                },
-                                                child: const Text('取消'),
-                                              ),
-                                              Stack(
-                                                children: [
-                                                  ElevatedButton(
-                                                    style: OutlinedButton
-                                                        .styleFrom(
-                                                      shape:
-                                                          RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(
-                                                                    8.0), // 圆角半径
-                                                      ),
-                                                    ),
-                                                    onPressed: () async {
-                                                      CommonResponse res =
-                                                          await controller
-                                                              .replaceTrackers(
-                                                                  downloader:
-                                                                      downloader,
-                                                                  site:
-                                                                      keyController
-                                                                          .text,
-                                                                  newTracker:
-                                                                      valueController
-                                                                          .text);
-
-                                                      if (res.code == 0) {
-                                                        Get.back(result: true);
-                                                      }
-                                                      Get.snackbar(
-                                                          'Tracker替换ing',
-                                                          res.msg,
-                                                          colorText: res.code ==
-                                                                  0
-                                                              ? Theme.of(
-                                                                      context)
-                                                                  .colorScheme
-                                                                  .primary
-                                                              : Theme.of(
-                                                                      context)
-                                                                  .colorScheme
-                                                                  .error);
-                                                    },
-                                                    child: const Text('确认'),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
+                              onTap: () =>
+                                  replaceTrackers(downloader: downloader),
                             ),
                             PopupMenuItem<String>(
                               child: Center(
@@ -1942,15 +1838,13 @@ class _DownloadPageState extends State<DownloadPage>
     );
   }
 
-  replaceTrackers(
-      {required Downloader downloader,
-      required String site,
-      required String newTracker}) {
+  replaceTrackers({
+    required Downloader downloader,
+  }) {
     TextEditingController keyController = TextEditingController(text: '');
     TextEditingController valueController = TextEditingController(text: '');
-    List<String> sites = controller.trackers.keys
-        .where((e) => e != ' All' && e != ' 红种')
-        .toList();
+    List<String> sites =
+        controller.trackers.keys.where((e) => e != '全部' && e != ' 红种').toList();
     sites.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
     Get.bottomSheet(
       shape: RoundedRectangleBorder(
@@ -1995,19 +1889,57 @@ class _DownloadPageState extends State<DownloadPage>
                           ),
                         ),
                         onPressed: () async {
-                          CommonResponse res = await controller.replaceTrackers(
-                            downloader: downloader,
-                            site: keyController.text,
-                            newTracker: valueController.text,
-                          );
-
-                          if (res.code == 0) {
-                            Get.back(result: true);
+                          List<String> torrentHashes =
+                              controller.trackers[keyController.text] ?? [];
+                          logger_helper.Logger.instance.d(torrentHashes);
+                          if (torrentHashes.isEmpty) {
+                            Get.snackbar('Tracker替换ing',
+                                '本下载器没有 ${keyController.text} 站点的种子！',
+                                colorText: Theme.of(context).colorScheme.error);
+                            return;
                           }
-                          Get.snackbar('Tracker替换ing', res.msg,
-                              colorText: res.succeed
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(context).colorScheme.error);
+                          Get.defaultDialog(
+                            title: '确认',
+                            radius: 5,
+                            titleStyle: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.deepPurple),
+                            middleText:
+                                '站点 ${keyController.text} 共检测到${torrentHashes.length}条种子，确定要替换 Tracker 地址吗？',
+                            actions: [
+                              ElevatedButton(
+                                onPressed: () {
+                                  Get.back(result: false);
+                                },
+                                child: const Text('取消'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  Get.back(result: true);
+                                  CommonResponse res =
+                                      await controller.replaceTrackers(
+                                    downloader: downloader,
+                                    torrentHashes: torrentHashes,
+                                    newTracker: valueController.text,
+                                  );
+                                  if (res.succeed) {
+                                    Get.back();
+                                  }
+                                  Get.snackbar('Tracker通知', res.msg,
+                                      colorText: res.succeed
+                                          ? Theme.of(context)
+                                              .colorScheme
+                                              .primary
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .error);
+                                  controller.update();
+                                },
+                                child: const Text('确认'),
+                              ),
+                            ],
+                          );
                         },
                         child: const Text('确认'),
                       ),
@@ -2425,7 +2357,7 @@ class _DownloadPageState extends State<DownloadPage>
                               return ListTile(
                                 dense: true,
                                 title: Text(
-                                  '${key.trim()}(${key == ' All' ? controller.torrents.length : hashList?.length})',
+                                  '${key.trim()}(${key == '全部' ? controller.torrents.length : hashList?.length})',
                                 ),
                                 titleTextStyle: TextStyle(
                                     color:
@@ -3010,7 +2942,7 @@ class _DownloadPageState extends State<DownloadPage>
                                     return ListTile(
                                       dense: true,
                                       title: Text(
-                                        '${key.trim()}(${key == ' All' ? controller.torrents.length : hashList?.length})',
+                                        '${key.trim()}(${key == '全部' ? controller.torrents.length : hashList?.length})',
                                       ),
                                       titleTextStyle: TextStyle(
                                           color: Theme.of(context)
@@ -3723,7 +3655,7 @@ class _DownloadPageState extends State<DownloadPage>
         RxString(controller.currentPrefs.torrentStopCondition);
     RxString resumeDataStorageType =
         RxString(controller.currentPrefs.resumeDataStorageType);
-    RxInt proxyType = RxInt(controller.currentPrefs.proxyType);
+    Rx proxyType = Rx(controller.currentPrefs.proxyType);
 
     TextEditingController webUiAddressController =
         TextEditingController(text: controller.currentPrefs.webUiAddress);
@@ -4586,6 +4518,8 @@ class _DownloadPageState extends State<DownloadPage>
                     }),
                     Obx(() {
                       return CustomCard(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 8),
                         child: Column(
                           children: [
                             Row(
@@ -4597,28 +4531,28 @@ class _DownloadPageState extends State<DownloadPage>
                                     value: proxyType.value,
                                     items: const [
                                       DropdownMenuItem(
-                                          value: 0,
+                                          value: 'None',
                                           child: Text(
                                               style: TextStyle(
                                                 fontSize: 14,
                                               ),
-                                              'None')),
+                                              '(无)')),
                                       // DropdownMenuItem(
-                                      //     value: 1,
+                                      //     value: 'SOCKS4',
                                       //     child: Text(
                                       //         style: TextStyle(
                                       //           fontSize: 14,
                                       //         ),
                                       //         'SOCKS4')),
                                       DropdownMenuItem(
-                                          value: 2,
+                                          value: 'SOCKS5',
                                           child: Text(
                                               style: TextStyle(
                                                 fontSize: 14,
                                               ),
                                               'SOCKS5')),
                                       DropdownMenuItem(
-                                          value: 3,
+                                          value: 'HTTP',
                                           child: Text(
                                               style: TextStyle(
                                                 fontSize: 14,
@@ -4630,7 +4564,7 @@ class _DownloadPageState extends State<DownloadPage>
                                     }),
                               ],
                             ),
-                            if (proxyType.value != 0)
+                            if (proxyType.value != 'None')
                               Column(
                                 children: [
                                   CustomTextField(
@@ -5677,19 +5611,24 @@ class _DownloadPageState extends State<DownloadPage>
                             },
                             title: const Text('启用内置 Tracker'),
                           ),
-                          CustomTextField(
-                            controller: embeddedTrackerPortController,
-                            labelText: '内置 tracker 端口',
-                          ),
-                          CheckboxListTile(
-                            dense: true,
-                            value: embeddedTrackerPortForwarding.value,
-                            onChanged: (value) {
-                              embeddedTrackerPortForwarding.value =
-                                  value == true;
-                            },
-                            title: const Text('对嵌入的 tracker 启用端口转发'),
-                          ),
+                          if (enableEmbeddedTracker.value == true)
+                            Column(
+                              children: [
+                                CustomTextField(
+                                  controller: embeddedTrackerPortController,
+                                  labelText: '内置 tracker 端口',
+                                ),
+                                CheckboxListTile(
+                                  dense: true,
+                                  value: embeddedTrackerPortForwarding.value,
+                                  onChanged: (value) {
+                                    embeddedTrackerPortForwarding.value =
+                                        value == true;
+                                  },
+                                  title: const Text('对嵌入的 tracker 启用端口转发'),
+                                ),
+                              ],
+                            ),
                         ]);
                       }),
                     ),
