@@ -237,15 +237,15 @@ class _LoginPageState extends State<LoginPage> {
                           CommonResponse res = await controller.doLogin();
 
                           Get.snackbar(
-                            res.code == 0 ? '登录成功！' : '登录失败',
-                            res.code == 0
+                            res.succeed ? '登录成功！' : '登录失败',
+                            res.succeed
                                 ? '登录成功！欢迎回来，${controller.selectedServer?.username}'
                                 : res.msg,
-                            colorText: res.code == 0
+                            colorText: res.succeed
                                 ? Theme.of(context).colorScheme.primary
                                 : Theme.of(context).colorScheme.error,
                           );
-                          Get.offNamed(Routes.HOME);
+                          if (res.succeed) Get.offNamed(Routes.HOME);
                         }
                       : null,
                 ),

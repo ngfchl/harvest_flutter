@@ -1,17 +1,45 @@
 import 'package:dio/dio.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/get_navigation.dart';
 import 'package:harvest/models/authinfo.dart';
 import 'package:harvest/utils/logger_helper.dart';
 import 'package:harvest/utils/storage.dart';
 
 class CustomInterceptors extends Interceptor {
   @override
-  Future<void> onResponse(
-      Response response, ResponseInterceptorHandler handler) async {
-    if ([403, 401].contains(response.statusCode)) {
+  Future<void> onError(
+      DioException err, ErrorInterceptorHandler handler) async {
+    if ([401, 403].contains(err.response?.statusCode)) {
       SPUtil.setBool("isLogin", false);
+      Get.offAndToNamed("/login");
+      handler.reject(DioException(
+        requestOptions: err.requestOptions,
+        error: "登录已过期，请重新登录！",
+        message: "登录已过期，请重新登录！",
+        type: DioExceptionType.badResponse,
+        response: err.response,
+      ));
+    } else {
+      return super.onError(err, handler);
     }
-    return super.onResponse(response, handler);
+  }
+
+  @override
+  Future<void> onRequest(
+      RequestOptions options, RequestInterceptorHandler handler) async {
+    // 指定不重试的 URL 或路径
+    List<String> noRetryUrls = [
+      '/api/no-retry-endpoint', // 替换为实际的 URL 或路径
+    ];
+
+    if (noRetryUrls.any((url) => options.path.contains(url))) {
+      // 如果请求的 URL 在 noRetryUrls 列表中，则不进行重试
+      handler.next(options);
+    } else {
+      // 否则，调用父类的方法进行重试
+      super.onRequest(options, handler);
+    }
   }
 }
 
@@ -61,6 +89,13 @@ class DioUtil {
         Duration(seconds: 2),
         Duration(seconds: 3)
       ],
+      retryEvaluator: (DioException err, int count) {
+        // 不重试 401 和 403 错误
+        if ([401, 403].contains(err.response?.statusCode)) {
+          return true;
+        }
+        return false;
+      },
     ));
   }
 
