@@ -317,7 +317,7 @@ class QbittorrentPreferences {
   bool proxyPeerConnections;
   int proxyPort;
   bool proxyTorrentsOnly;
-  dynamic proxyType;
+  String proxyType;
   String proxyUsername;
   bool queueingEnabled;
   bool randomPort;
@@ -679,7 +679,7 @@ class QbittorrentPreferences {
       proxyPeerConnections: json['proxy_peer_connections'] ?? false,
       proxyPort: json['proxy_port'] ?? 0,
       proxyTorrentsOnly: json['proxy_torrents_only'] ?? false,
-      proxyType: json['proxy_type'] ?? 0,
+      proxyType: json['proxy_type'],
       proxyUsername: json['proxy_username'] ?? '',
       queueingEnabled: json['queueing_enabled'] ?? false,
       randomPort: json['random_port'] ?? false,
@@ -1046,7 +1046,7 @@ class QbittorrentPreferences {
     bool? proxyPeerConnections,
     int? proxyPort,
     bool? proxyTorrentsOnly,
-    dynamic proxyType,
+    String? proxyType,
     String? proxyUsername,
     bool? queueingEnabled,
     bool? randomPort,
