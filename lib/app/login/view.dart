@@ -178,21 +178,29 @@ class _LoginPageState extends State<LoginPage> {
       return Scaffold(
         appBar: AppBar(
           title: const Text('服务器列表'),
-          actions: const [
-            LoggingView(),
-            SizedBox(width: 15),
-            DarkModeSwitch(),
-            SizedBox(width: 15),
-            SizedBox(
-              height: 20,
-              width: 20,
-              child: ThemeModal(
-                itemSize: 28,
+          actions: [
+            ...const [
+              LoggingView(),
+              SizedBox(width: 15),
+              DarkModeSwitch(),
+              SizedBox(width: 15),
+              SizedBox(
+                height: 20,
+                width: 20,
+                child: ThemeModal(
+                  itemSize: 28,
+                ),
+              ),
+              SizedBox(width: 15)
+            ],
+            CustomUAWidget(
+              child: Icon(
+                Icons.settings,
+                size: 20,
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
-            SizedBox(width: 15),
-            CustomUAWidget(),
-            SizedBox(width: 15),
+            const SizedBox(width: 15),
           ],
         ),
         body: SizedBox(

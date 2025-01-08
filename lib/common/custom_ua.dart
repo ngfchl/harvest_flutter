@@ -6,16 +6,14 @@ import '../utils/storage.dart';
 import 'form_widgets.dart';
 
 class CustomUAWidget extends StatelessWidget {
-  const CustomUAWidget({super.key});
+  final Widget child;
+
+  const CustomUAWidget({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      child: Icon(
-        Icons.settings,
-        size: 20,
-        color: Theme.of(context).colorScheme.primary,
-      ),
+      child: child,
       onTap: () {
         _showCustomUADialog(context);
       },
