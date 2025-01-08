@@ -35,6 +35,8 @@ class WebSite {
   late String pageMyBonus;
   late String pageViewFileList;
   late String myUidRule;
+  late String type;
+  late String nation;
   late bool hr;
   late int hrRate;
   late int hrTime;
@@ -131,6 +133,8 @@ class WebSite {
       pageMyBonus = json['page_mybonus'];
       pageViewFileList = json['page_viewfilelist'];
       myUidRule = json['my_uid_rule'];
+      type = json['type'];
+      nation = json['nation'];
       hr = json['hr'];
       hrRate = json['hr_rate'];
       hrTime = json['hr_time'];
