@@ -77,21 +77,33 @@ class DownloadController extends GetxController {
     {'name': '类别', 'value': 'category'},
     {'name': '大小', 'value': 'size'},
     {'name': '添加时间', 'value': 'addedOn'},
-    // {'name': '总大小', 'value': 'totalSize'},
+    {'name': '剩余大小', 'value': 'amountLeft'},
+    {'name': '自动管理', 'value': 'autoTmm'},
+    {'name': '可用', 'value': 'availability'},
+    {'name': '完成数', 'value': 'completed'},
     {'name': '完成时间', 'value': 'completionOn'},
+    {'name': '资源路径', 'value': 'contentPath'},
+    {'name': '下载速度', 'value': 'dlSpeed'},
+    {'name': '已下载', 'value': 'downloaded'},
+    {'name': '下载限速', 'value': 'dlLimit'},
+    {'name': '会话下载', 'value': 'downloadedSession'},
+    {'name': '会话上传', 'value': 'uploadedSession'},
+    {'name': '强制启动', 'value': 'forceStart'},
+    {'name': '超级做种', 'value': 'superSeeding'},
+    {'name': 'Hash', 'value': 'hash'},
+    {'name': '标签', 'value': 'tags'},
+    {'name': '最后活动', 'value': 'lastActivity'},
     {'name': '状态', 'value': 'state'},
+    {'name': '做种时间', 'value': 'seedingTime'},
     {'name': 'Tracker', 'value': 'tracker'},
+    {'name': '分享率', 'value': 'ratio'},
     {'name': '进度', 'value': 'progress'},
     {'name': '保存路径', 'value': 'savePath'},
     {'name': '已上传', 'value': 'uploaded'},
-    {'name': '已下载', 'value': 'downloaded'},
-    {'name': '下载速度', 'value': 'dlSpeed'},
     {'name': '上传速度', 'value': 'upSpeed'},
-    {'name': '最后活动时间', 'value': 'lastActivity'},
     {'name': '活跃时间', 'value': 'timeActive'},
-    {'name': '完成数', 'value': 'completed'},
-    {'name': 'Leechs 数量', 'value': 'numLeechs'},
-    {'name': 'Seeds 数量', 'value': 'numSeeds'},
+    {'name': 'Leech数量', 'value': 'numLeechs'},
+    {'name': 'Seed数量', 'value': 'numSeeds'},
     {'name': '未完成数', 'value': 'numIncomplete'},
     {'name': '已完成数', 'value': 'numComplete'},
     {'name': '优先级', 'value': 'priority'},
@@ -672,46 +684,82 @@ class DownloadController extends GetxController {
 
   sortQbTorrents() {
     switch (sortKey) {
+      case 'name':
+        showTorrents.sort((a, b) => a.name.compareTo(b.name));
+      case 'category':
+        torrents.sort((a, b) => a.category.compareTo(b.category));
+      case 'size':
+        showTorrents.sort((a, b) => a.size.compareTo(b.size));
       case 'addedOn':
         showTorrents.sort((a, b) => a.addedOn.compareTo(b.addedOn));
       case 'amountLeft':
         showTorrents.sort((a, b) => a.amountLeft.compareTo(b.amountLeft));
-      case 'name':
-        showTorrents.sort((a, b) => a.name.compareTo(b.name));
+      case 'autoTmm':
+        showTorrents.sort((a, b) => a.autoTmm.compareTo(b.autoTmm));
+      case 'availability':
+        showTorrents.sort((a, b) => a.availability.compareTo(b.availability));
+      case 'completed':
+        showTorrents.sort((a, b) => a.completed.compareTo(b.completed));
+      case 'completionOn':
+        showTorrents.sort((a, b) => a.completionOn.compareTo(b.completionOn));
       case 'contentPath':
         showTorrents.sort((a, b) => a.contentPath.compareTo(b.contentPath));
-      case 'category':
-        torrents.sort((a, b) => a.category.compareTo(b.category));
+      case 'dlSpeed':
+        showTorrents.sort((a, b) => b.dlSpeed.compareTo(a.dlSpeed));
+      case 'downloaded':
+        showTorrents.sort((a, b) => a.downloaded.compareTo(b.downloaded));
+      case 'dlLimit':
+        showTorrents.sort((a, b) => b.dlLimit.compareTo(a.dlLimit));
+      case 'downloadedSession':
+        showTorrents
+            .sort((a, b) => a.downloadedSession.compareTo(b.downloadedSession));
+      case 'uploadedSession':
+        showTorrents
+            .sort((a, b) => a.uploadedSession.compareTo(b.uploadedSession));
+      case 'forceStart':
+        showTorrents.sort((a, b) => a.forceStart.compareTo(b.forceStart));
+      case 'superSeeding':
+        showTorrents.sort((a, b) => a.superSeeding.compareTo(b.superSeeding));
+      case 'hash':
+        showTorrents.sort((a, b) => a.hash.compareTo(b.hash));
+      case 'tags':
+        showTorrents.sort((a, b) => a.tags.compareTo(b.tags));
       case 'seenComplete':
         torrents.sort((a, b) => a.seenComplete.compareTo(b.seenComplete));
-      case 'size':
-        showTorrents.sort((a, b) => a.size.compareTo(b.size));
-      case 'numComplete':
-        showTorrents.sort((a, b) =>
-            a.numComplete.toString().compareTo(b.numComplete.toString()));
-      case 'state':
-        showTorrents
-            .sort((a, b) => a.state.toString().compareTo(b.state.toString()));
       case 'lastActivity':
         showTorrents.sort((a, b) => a.lastActivity.compareTo(b.lastActivity));
-      case 'progress':
-        showTorrents.sort((a, b) => a.progress.compareTo(b.progress));
-      case 'ratio':
-        showTorrents.sort((a, b) => a.ratio.compareTo(b.ratio));
+      case 'state':
+        showTorrents.sort((a, b) => a.state.compareTo(b.state));
       case 'seedingTime':
         showTorrents.sort((a, b) => a.seedingTime.compareTo(b.seedingTime));
-      case 'downloaded':
-        showTorrents
-            .sort((a, b) => a.downloadedEver.compareTo(b.downloadedEver));
+      case 'tracker':
+        showTorrents.sort((a, b) => a.tracker.compareTo(b.tracker));
+      case 'ratio':
+        showTorrents.sort((a, b) => a.ratio.compareTo(b.ratio));
+      case 'progress':
+        showTorrents.sort((a, b) => a.progress.compareTo(b.progress));
+      case 'savePath':
+        showTorrents.sort((a, b) => a.savePath.compareTo(b.savePath));
       case 'upSpeed':
-        showTorrents.sort((a, b) => a.rateDownload.compareTo(b.rateDownload));
-      case 'rateUpload':
-        showTorrents.sort((a, b) => a.rateUpload.compareTo(b.rateUpload));
-      case 'dlSpeed':
-        showTorrents
-            .sort((a, b) => a.recheckProgress.compareTo(b.recheckProgress));
+        showTorrents.sort((a, b) => b.upSpeed.compareTo(a.upSpeed));
+      case 'uploaded':
+        showTorrents.sort((a, b) => b.uploaded.compareTo(a.uploaded));
+      case 'upLimit':
+        showTorrents.sort((a, b) => b.upLimit.compareTo(a.upLimit));
+      case 'timeActive':
+        showTorrents.sort((a, b) => b.timeActive.compareTo(a.timeActive));
+      case 'numLeechs':
+        showTorrents.sort((a, b) => b.numLeechs.compareTo(a.numLeechs));
+      case 'numSeeds':
+        showTorrents.sort((a, b) => b.numSeeds.compareTo(a.numSeeds));
       case 'numComplete':
-        showTorrents.sort((a, b) => a.numComplete.compareTo(b.activityDate));
+        showTorrents.sort((a, b) => b.numComplete.compareTo(a.numComplete));
+      case 'numIncomplete':
+        showTorrents.sort((a, b) => b.numIncomplete.compareTo(a.numIncomplete));
+      case 'priority':
+        showTorrents.sort((a, b) => a.priority.compareTo(b.priority));
+      case 'seenComplete':
+        showTorrents.sort((a, b) => a.seenComplete.compareTo(b.seenComplete));
       default:
         Get.snackbar('出错啦！', '未知排序规则：$sortKey');
     }
