@@ -1262,20 +1262,23 @@ class _DownloadPageState extends State<DownloadPage>
                                   ? removeQbErrorTracker(downloader)
                                   : removeTrErrorTracker(downloader),
                             ),
-                            // PopupMenuItem<String>(
-                            //   child: Center(
-                            //     child: Text(
-                            //       '切换限速',
-                            //       style: TextStyle(
-                            //         color:
-                            //             Theme.of(context).colorScheme.primary,
-                            //       ),
-                            //     ),
-                            //   ),
-                            //   onTap: () async {
-                            //     await controller.toggleSpeedLimit();
-                            //   },
-                            // ),
+                            PopupMenuItem<String>(
+                              child: Center(
+                                child: Text(
+                                  '重置排序',
+                                  style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
+                                ),
+                              ),
+                              onTap: () async {
+                                controller.resetSortKey(downloader);
+                                isQb
+                                    ? controller.sortQbTorrents()
+                                    : controller.sortTrTorrents();
+                              },
+                            ),
                             PopupMenuItem<String>(
                               child: Center(
                                   child: Text(
@@ -1959,7 +1962,7 @@ class _DownloadPageState extends State<DownloadPage>
         controller.serverStatus.whereType<TransmissionStats>().toList();
 
     TransmissionStats state = serverStatus.last;
-    TextEditingController searchKeyController = TextEditingController();
+    // TextEditingController searchKeyController = TextEditingController();
     return GFDrawer(
         child: Column(
       children: <Widget>[
@@ -2323,27 +2326,19 @@ class _DownloadPageState extends State<DownloadPage>
                 child: Column(
                   children: [
                     CustomTextField(
-                      controller: searchKeyController,
+                      controller: controller.showTrackersKeyController,
                       labelText: '筛选',
-                      onChanged: (String value) {
-                        // searchKey.text = value;
-                        controller.update();
-                      },
+                      onChanged: (String value) =>
+                          controller.filterTorrents(false),
                     ),
                     Expanded(
                       child:
                           GetBuilder<DownloadController>(builder: (controller) {
-                        List<String> keys = controller.trackers.keys
-                            .where((element) => element.toLowerCase().contains(
-                                searchKeyController.text.toLowerCase()))
-                            .toList();
-                        keys.sort((a, b) =>
-                            a.toLowerCase().compareTo(b.toLowerCase()));
                         return ListView.builder(
                             shrinkWrap: true,
-                            itemCount: keys.length,
+                            itemCount: controller.showTrackers.length,
                             itemBuilder: (context, index) {
-                              String? key = keys[index];
+                              String? key = controller.showTrackers[index];
                               List<String>? hashList;
                               if (key == ' 红种') {
                                 hashList = controller.torrents
@@ -2493,7 +2488,7 @@ class _DownloadPageState extends State<DownloadPage>
               '${downloader.host}:${downloader.port}-sortKey') ??
           'name';
       qb.ServerState state = serverStatus.first;
-      TextEditingController searchKeyController = TextEditingController();
+      // TextEditingController searchKeyController = TextEditingController();
       return GFDrawer(
         child: Column(
           children: <Widget>[
@@ -2906,29 +2901,20 @@ class _DownloadPageState extends State<DownloadPage>
                       child: Column(
                         children: [
                           CustomTextField(
-                            controller: searchKeyController,
+                            controller: controller.showTrackersKeyController,
                             labelText: '筛选',
-                            onChanged: (String value) {
-                              // searchKey.text = value;
-                              controller.update();
-                            },
+                            onChanged: (String value) =>
+                                controller.filterTorrents(false),
                           ),
                           Expanded(
                             child: GetBuilder<DownloadController>(
                                 builder: (controller) {
-                              List<String> keys = controller.trackers.keys
-                                  .where((element) => element
-                                      .toLowerCase()
-                                      .contains(searchKeyController.text
-                                          .toLowerCase()))
-                                  .toList();
-                              keys.sort((a, b) =>
-                                  a.toLowerCase().compareTo(b.toLowerCase()));
                               return ListView.builder(
                                   shrinkWrap: true,
-                                  itemCount: keys.length,
+                                  itemCount: controller.showTrackers.length,
                                   itemBuilder: (context, index) {
-                                    String? key = keys[index];
+                                    String? key =
+                                        controller.showTrackers[index];
                                     List<String>? hashList;
                                     if (key == ' 红种') {
                                       hashList = controller.torrents
@@ -4221,7 +4207,7 @@ class _DownloadPageState extends State<DownloadPage>
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text('当 Torrent 分类修改时'),
+                                const Text('当分类修改时'),
                                 DropdownButton(
                                     isDense: true,
                                     value: categoryChangedTmmEnabled.value,
@@ -4254,7 +4240,7 @@ class _DownloadPageState extends State<DownloadPage>
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text('当默认保存路径修改时'),
+                                const Text('当默认保存路径修改'),
                                 DropdownButton(
                                     isDense: true,
                                     value: savePathChangedTmmEnabled.value,
@@ -4265,14 +4251,14 @@ class _DownloadPageState extends State<DownloadPage>
                                               style: TextStyle(
                                                 fontSize: 14,
                                               ),
-                                              '重新定位受影响的种子')),
+                                              '重新定位')),
                                       DropdownMenuItem(
                                           value: false,
                                           child: Text(
                                               style: TextStyle(
                                                 fontSize: 14,
                                               ),
-                                              '切换受影响的种子为手动')),
+                                              '切换手动')),
                                     ],
                                     onChanged: (value) {
                                       savePathChangedTmmEnabled.value =
@@ -4287,7 +4273,7 @@ class _DownloadPageState extends State<DownloadPage>
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text('当分类保存路径修改时'),
+                                const Text('当分类保存路径修改'),
                                 DropdownButton(
                                     isDense: true,
                                     value: torrentChangedTmmEnabled.value,
@@ -4298,14 +4284,14 @@ class _DownloadPageState extends State<DownloadPage>
                                               style: TextStyle(
                                                 fontSize: 14,
                                               ),
-                                              '重新定位受影响的种子')),
+                                              '重新定位')),
                                       DropdownMenuItem(
                                           value: false,
                                           child: Text(
                                               style: TextStyle(
                                                 fontSize: 14,
                                               ),
-                                              '切换受影响的种子为手动')),
+                                              '切换手动')),
                                     ],
                                     onChanged: (value) {
                                       torrentChangedTmmEnabled.value == true;
@@ -5490,7 +5476,7 @@ class _DownloadPageState extends State<DownloadPage>
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text('恢复数据存储类型（需要重新启动）'),
+                                  const Text('恢复数据存储(需重启)'),
                                   DropdownButton(
                                       isDense: true,
                                       value: resumeDataStorageType.value,
@@ -6217,7 +6203,7 @@ class _DownloadPageState extends State<DownloadPage>
             child: Scaffold(
               appBar: AppBar(
                 title: const Text('配置选项'),
-                bottom: const TabBar(tabs: tabs),
+                bottom: const TabBar(tabs: tabs, isScrollable: true),
               ),
               body: TabBarView(children: [
                 ListView(

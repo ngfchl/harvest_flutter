@@ -122,6 +122,8 @@ class DownloadController extends GetxController {
   Map<String, WebSite> trackerToWebSiteMap = {};
   Map<String, Category?> categoryMap = {};
   Map<String, List<String>> trackers = {};
+  List<String> showTrackers = [];
+  TextEditingController showTrackersKeyController = TextEditingController();
   List<String> tags = ['全部'];
   List<String> errors = ['全部'];
   List<dynamic> serverStatus = [];
@@ -419,8 +421,19 @@ class DownloadController extends GetxController {
 
     trackers.addAll(mergeTrackers(
         Map<String, List<dynamic>>.from(response.data['trackers'])));
-
     update();
+  }
+
+  void filterSiteTorrent() {
+    showTrackers = trackers.keys.toList();
+    if (showTrackersKeyController.text.isNotEmpty) {
+      showTrackers = showTrackers
+          .where((element) => element
+              .toLowerCase()
+              .contains(showTrackersKeyController.text.toLowerCase()))
+          .toList();
+    }
+    showTrackers.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
   }
 
   Map<String, List<String>> mergeTrackers(Map<String, List<dynamic>> trackers) {
@@ -477,6 +490,7 @@ class DownloadController extends GetxController {
     // logger_helper.Logger.instance.d(showTorrents.length);
     filterTorrentsByTracker();
     sortTrTorrents();
+    filterSiteTorrent();
     update();
     logger_helper.Logger.instance.i(showTorrents.length);
   }
@@ -623,6 +637,7 @@ class DownloadController extends GetxController {
     searchKey = searchController.text;
     isTorrentsLoading = false;
     isQb ? filterQbTorrents() : filterTrTorrents();
+
     update();
   }
 
@@ -679,6 +694,7 @@ class DownloadController extends GetxController {
     logger_helper.Logger.instance.d(showTorrents.length);
 
     sortQbTorrents();
+    filterSiteTorrent();
     update();
   }
 
@@ -1183,6 +1199,12 @@ class DownloadController extends GetxController {
       logger_helper.Logger.instance
           .e('Error fetching download status: $status');
     }
+  }
+
+  resetSortKey(Downloader downloader) {
+    sortKey = 'name';
+    SPUtil.setString('${downloader.host}:${downloader.port}-sortKey', 'name');
+    update();
   }
 
   clearFilterOption() {
