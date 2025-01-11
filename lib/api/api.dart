@@ -5,6 +5,7 @@ class Api {
   static const String UPDATE_LOG = "auth/update/log";
   static const String AUTH_INFO = "auth/auth_info";
   static const String AUTH_USER = "auth/user";
+  static const String INVITE_USER = "auth/try";
 
   // 我的站点列表增删改查
   static const String WEBSITE_LIST = "mysite/website";

@@ -71,9 +71,14 @@ Future<CommonResponse> editData<T>(
   }
 }
 
-Future<CommonResponse> addData(String apiUrl, Map<String, dynamic> data) async {
+Future<CommonResponse> addData(String apiUrl, Map<String, dynamic>? data,
+    {Map<String, dynamic>? queryParameters}) async {
   try {
-    final response = await DioUtil().post(apiUrl, formData: data..remove('id'));
+    final response = await DioUtil().post(
+      apiUrl,
+      formData: data?..remove('id'),
+      queryParameters: queryParameters,
+    );
     if (response.statusCode == 200) {
       return CommonResponse.fromJson(response.data, (p0) => null);
     } else {

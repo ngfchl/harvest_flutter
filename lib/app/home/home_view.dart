@@ -11,6 +11,7 @@ import 'package:harvest/common/form_widgets.dart';
 
 import '../../common/custom_ua.dart';
 import '../../common/custom_upgrade.dart';
+import '../../common/invite_user.dart';
 import '../../common/logging.dart';
 import '../../common/site_map.dart';
 import '../../utils/storage.dart';
@@ -238,8 +239,8 @@ class HomeView extends GetView<HomeController> {
           const WebSocketLoggingWidget(),
           const SizedBox(width: 15),
           if (controller.userinfo?.isStaff == true) ...[
-            CustomUpgradeWidget(),
-            SizedBox(width: 15),
+            const CustomUpgradeWidget(),
+            const SizedBox(width: 15),
             SiteMap(
               child: Icon(
                 Icons.map,
@@ -247,7 +248,7 @@ class HomeView extends GetView<HomeController> {
                 color: Theme.of(context).colorScheme.primary,
               ),
             ),
-            SizedBox(width: 15),
+            const SizedBox(width: 15),
           ],
           // const Wen(),
 
@@ -554,6 +555,16 @@ class HomeView extends GetView<HomeController> {
                       child: CustomUAWidget(
                         child: Text(
                           '自定义UA',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                        ),
+                      ),
+                    ),
+                    PopupMenuItem(
+                      child: InviteUser(
+                        child: Text(
+                          '试用邀请',
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.secondary,
                           ),
