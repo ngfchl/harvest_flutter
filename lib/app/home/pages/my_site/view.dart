@@ -1179,14 +1179,17 @@ class _MySitePagePageState extends State<MySitePage>
                         ),
                         const SizedBox(height: 15),
                         Wrap(spacing: 12, runSpacing: 8, children: [
-                          if (selectedSite.value!.alive)
-                            ChoiceChip(
-                              label: const Text('可用'),
-                              selected: available.value,
-                              onSelected: (value) {
-                                available.value = value;
-                              },
-                            ),
+                          ChoiceChip(
+                            label: const Text('可用'),
+                            selected: selectedSite.value!.alive
+                                ? available.value
+                                : false,
+                            onSelected: (value) {
+                              selectedSite.value!.alive
+                                  ? available.value = value
+                                  : available.value = false;
+                            },
+                          ),
                           ChoiceChip(
                             label: const Text('数据'),
                             selected: getInfo.value,
