@@ -1,3 +1,5 @@
+import 'package:harvest/utils/logger_helper.dart';
+
 class QbittorrentTorrentInfo {
   final int addedOn;
   final int amountLeft;
@@ -385,6 +387,8 @@ class QbittorrentPreferences {
   bool webUiUpnp;
   bool webUiUseCustomHttpHeadersEnabled;
   String webUiUsername;
+  String version;
+  String webApiVersion;
 
   QbittorrentPreferences({
     required this.addTrackers,
@@ -561,9 +565,12 @@ class QbittorrentPreferences {
     required this.webUiUpnp,
     required this.webUiUseCustomHttpHeadersEnabled,
     required this.webUiUsername,
+    required this.version,
+    required this.webApiVersion,
   });
 
   factory QbittorrentPreferences.fromJson(Map<String, dynamic> json) {
+    Logger.instance.d(json['proxy_type']);
     return QbittorrentPreferences(
       addTrackers: json['add_trackers'] ?? '',
       addTrackersEnabled: json['add_trackers_enabled'] ?? false,
@@ -679,7 +686,7 @@ class QbittorrentPreferences {
       proxyPeerConnections: json['proxy_peer_connections'] ?? false,
       proxyPort: json['proxy_port'] ?? 0,
       proxyTorrentsOnly: json['proxy_torrents_only'] ?? false,
-      proxyType: json['proxy_type'],
+      proxyType: json['proxy_type'].toString(),
       proxyUsername: json['proxy_username'] ?? '',
       queueingEnabled: json['queueing_enabled'] ?? false,
       randomPort: json['random_port'] ?? false,
@@ -720,7 +727,7 @@ class QbittorrentPreferences {
       tempPath: json['temp_path'] ?? '',
       tempPathEnabled: json['temp_path_enabled'] ?? false,
       torrentChangedTmmEnabled: json['torrent_changed_tmm_enabled'] ?? false,
-      torrentContentLayout: json['torrent_content_layout'] ?? '',
+      torrentContentLayout: json['torrent_content_layout'] ?? 'Original',
       torrentStopCondition: json['torrent_stop_condition'] ?? 'None',
       upLimit: json['up_limit'] ?? 0,
       uploadChokingAlgorithm: json['upload_choking_algorithm'] ?? 0,
@@ -755,6 +762,8 @@ class QbittorrentPreferences {
       webUiUseCustomHttpHeadersEnabled:
           json['web_ui_use_custom_http_headers_enabled'] ?? false,
       webUiUsername: json['web_ui_username'] ?? '',
+      version: json['version'] ?? '',
+      webApiVersion: json['web_api_version'] ?? '',
     );
   }
 
@@ -1346,6 +1355,8 @@ class QbittorrentPreferences {
       webUiUseCustomHttpHeadersEnabled: webUiUseCustomHttpHeadersEnabled ??
           this.webUiUseCustomHttpHeadersEnabled,
       webUiUsername: webUiUsername ?? this.webUiUsername,
+      version: version,
+      webApiVersion: webApiVersion,
     );
   }
 }
