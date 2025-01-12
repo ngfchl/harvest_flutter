@@ -89,6 +89,7 @@ class MySiteController extends GetxController {
     openByInnerExplorer = SPUtil.getBool('openByInnerExplorer',
         defaultValue: !PlatformTool.isDesktopOS())!;
     await loadCacheInfo();
+    filterByKey();
     update();
     // 启动后台 Isolate
     Future.microtask(() async {
@@ -143,10 +144,8 @@ class MySiteController extends GetxController {
             .toList()
             .cast<MySite>();
         if (mySiteList.isNotEmpty) isLoaded = false;
-        filterByKey();
         Logger.instance.d(
             '获取站点信息缓存耗时: ${DateTime.now().difference(startTime).inMilliseconds} 毫秒');
-        update();
       } catch (e, trace) {
         Logger.instance.e(e);
         Logger.instance.d(trace);
