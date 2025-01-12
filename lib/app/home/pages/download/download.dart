@@ -535,15 +535,8 @@ class _DownloadPageState extends State<DownloadPage>
   }
 
   Widget buildDownloaderCard(Downloader downloader) {
-    RxBool connectState = true.obs;
     bool isQb = downloader.category == 'Qb';
-    if (downloader.isActive) {
-      controller.testConnect(downloader).then((res) {
-        connectState.value = res.succeed;
-      });
-    } else {
-      connectState.value = false;
-    }
+
     ChartSeriesController? chartSeriesController;
     var pathDownloader =
         '${downloader.protocol}://${downloader.host}:${downloader.port}';
@@ -651,9 +644,11 @@ class _DownloadPageState extends State<DownloadPage>
                 title: Text(
                   downloader.name,
                   style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: Theme.of(context).colorScheme.primary),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
                 subTitle: Text(
                   pathDownloader,
@@ -661,6 +656,7 @@ class _DownloadPageState extends State<DownloadPage>
                     fontSize: 11,
                     color: Theme.of(context).colorScheme.primary,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
                 onTap: () async {
                   _showTorrents(downloader);
@@ -682,32 +678,20 @@ class _DownloadPageState extends State<DownloadPage>
                 onLongPress: () async {
                   _showEditBottomSheet(downloader: downloader);
                 },
-                icon: GFIconButton(
-                  icon: connectState.value
-                      ? const Icon(
+                icon: downloader.status.isNotEmpty
+                    ? CustomTextTag(
+                        labelText: downloader.prefs.version,
+                        icon: const Icon(
                           Icons.bolt,
-                          color: Colors.green,
-                          size: 24,
-                        )
-                      : const Icon(
-                          Icons.offline_bolt_outlined,
-                          color: Colors.red,
-                          size: 24,
+                          size: 12,
                         ),
-                  type: GFButtonType.transparent,
-                  onPressed: () {
-                    controller.testConnect(downloader).then((res) {
-                      connectState.value = res.succeed;
-                      Get.snackbar(
-                        '下载器连接测试',
-                        res.msg,
-                        colorText: res.code == 0
-                            ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context).colorScheme.error,
-                      );
-                    });
-                  },
-                ),
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                      )
+                    : Icon(
+                        Icons.offline_bolt_outlined,
+                        color: Theme.of(context).colorScheme.error,
+                        size: 12,
+                      ),
               ),
               GetBuilder<DownloadController>(builder: (controller) {
                 return controller.isLoading
@@ -3462,6 +3446,8 @@ class _DownloadPageState extends State<DownloadPage>
     }
     controller.currentPrefs = QbittorrentPreferences.fromJson(response.data);
     controller.update();
+    logger_helper.Logger.instance
+        .d(controller.currentPrefs.torrentContentLayout);
     // QbittorrentPreferences prefs = downloader.prefs;
     RxBool autoTmmEnabled = RxBool(controller.currentPrefs.autoTmmEnabled);
     RxBool addTrackersEnabled =
@@ -3811,7 +3797,6 @@ class _DownloadPageState extends State<DownloadPage>
         text: controller.currentPrefs.webUiPort.toString());
     TextEditingController webUiSessionTimeoutController = TextEditingController(
         text: controller.currentPrefs.webUiSessionTimeout.toString());
-    logger_helper.Logger.instance.d(controller.currentPrefs.locale);
     Get.bottomSheet(
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
@@ -3829,7 +3814,8 @@ class _DownloadPageState extends State<DownloadPage>
             length: tabs.length,
             child: Scaffold(
               appBar: AppBar(
-                title: const Text('配置选项'),
+                title:
+                    Text('配置选项[${downloader.prefs.webApiersion.toString()}]'),
                 bottom: const TabBar(tabs: tabs, isScrollable: true),
               ),
               floatingActionButton: FloatingActionButton.extended(
@@ -4098,7 +4084,10 @@ class _DownloadPageState extends State<DownloadPage>
                                                 ),
                                                 '不创建子文件夹')),
                                       ],
-                                      onChanged: (value) {}),
+                                      onChanged: (value) {
+                                        torrentContentLayoutController.text =
+                                            value!;
+                                      }),
                                 ],
                               ),
                             ),
@@ -4515,35 +4504,71 @@ class _DownloadPageState extends State<DownloadPage>
                                 DropdownButton(
                                     isDense: true,
                                     value: proxyType.value,
-                                    items: const [
-                                      DropdownMenuItem(
-                                          value: 'None',
-                                          child: Text(
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                              ),
-                                              '(无)')),
-                                      // DropdownMenuItem(
-                                      //     value: 'SOCKS4',
-                                      //     child: Text(
-                                      //         style: TextStyle(
-                                      //           fontSize: 14,
-                                      //         ),
-                                      //         'SOCKS4')),
-                                      DropdownMenuItem(
-                                          value: 'SOCKS5',
-                                          child: Text(
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                              ),
-                                              'SOCKS5')),
-                                      DropdownMenuItem(
-                                          value: 'HTTP',
-                                          child: Text(
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                              ),
-                                              'HTTP')),
+                                    items: [
+                                      if (downloader.prefs.version
+                                              .compareTo('2.5.1') >
+                                          0) ...const [
+                                        DropdownMenuItem(
+                                            value: 'None',
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                '(无)')),
+                                        DropdownMenuItem(
+                                            value: 'SOCKS4',
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                'SOCKS4')),
+                                        DropdownMenuItem(
+                                            value: 'SOCKS5',
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                'SOCKS5')),
+                                        DropdownMenuItem(
+                                            value: 'HTTP',
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                'HTTP')),
+                                      ],
+                                      if (downloader.prefs.version
+                                              .compareTo('2.5.1') <
+                                          0) ...const [
+                                        DropdownMenuItem(
+                                            value: 0,
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                '(无)')),
+                                        DropdownMenuItem(
+                                            value: 1,
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                'SOCKS4')),
+                                        DropdownMenuItem(
+                                            value: 2,
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                'SOCKS5')),
+                                        DropdownMenuItem(
+                                            value: 3,
+                                            child: Text(
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                                'HTTP')),
+                                      ],
                                     ],
                                     onChanged: (value) {
                                       proxyType.value = value!;
