@@ -1,11 +1,12 @@
 import 'package:get/get.dart';
+import 'package:qbittorrent_api/qbittorrent_api.dart';
 
+import '../../../../api/downloader.dart';
 import '../../../../api/sub.dart';
 import '../../../../common/meta_item.dart';
 import '../../../../models/common_response.dart';
 import '../../../../models/download.dart';
 import '../../../../utils/logger_helper.dart';
-import '../../../torrent/torrent_controller.dart';
 import '../download/download_controller.dart';
 import '../models/SubTag.dart';
 import '../models/Subscribe.dart';
@@ -90,29 +91,23 @@ class SubscribeController extends GetxController {
     return res;
   }
 
-  Future<Map<String, String>> getDownloaderCategories(
+  Future<CommonResponse<Map<String, Category>>> getDownloaderCategoryList(
       Downloader downloader) async {
     try {
-      Get.put(TorrentController(downloader, false),
-          tag:
-              '${downloader.protocol}://${downloader.host}:${downloader.port}');
-      TorrentController torrentController = Get.find(
-          tag:
-              '${downloader.protocol}://${downloader.host}:${downloader.port}');
-      if (downloader.category.toLowerCase() == 'tr') {
-        torrentController.getAllTorrents();
+      CommonResponse response = await getDownloaderCategories(downloader.id!);
+      if (!response.succeed) {
+        return CommonResponse.error(msg: response.msg);
       }
-      update(['${downloader.id} - ${downloader.name}']);
-      await torrentController.getAllCategory();
-      update(['${downloader.id} - ${downloader.name}']);
-      update();
-      torrentController.update();
+      Map<String, Category> data = {
+        for (var item in response.data)
+          (item)['name']!: Category.fromJson(item as Map<String, dynamic>)
+      };
 
-      return torrentController.categoryList;
+      return CommonResponse.success(data: data);
     } catch (e, trace) {
       Logger.instance.e(e);
       Logger.instance.e(trace);
-      return {};
+      return CommonResponse.error(msg: '获取分类出错啦：$e');
     }
   }
 }

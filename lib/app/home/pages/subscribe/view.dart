@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
+import 'package:qbittorrent_api/qbittorrent_api.dart';
 
 import '../../../../common/card_view.dart';
 import '../../../../common/form_widgets.dart';
@@ -288,9 +289,16 @@ class _SubscribePageState extends State<SubscribePage> {
                               controller.update();
                               controller.downloaderController.text =
                                   item!.id.toString();
-                              controller.categories.value = await controller
+                              CommonResponse res = await controller
                                   .subController
-                                  .getDownloaderCategories(item);
+                                  .getDownloaderCategoryList(item);
+                              if (!res.succeed) {
+                                Get.snackbar('出错啦！', res.msg,
+                                    colorText:
+                                        Theme.of(context).colorScheme.error);
+                                return;
+                              }
+                              controller.categories.value = res.data;
                               controller.subController.isDownloaderLoading =
                                   false;
                               controller.update();
@@ -324,15 +332,23 @@ class _SubscribePageState extends State<SubscribePage> {
                                     controller.subController
                                         .isDownloaderLoading = true;
                                     controller.update();
-                                    controller.categories.value =
-                                        await controller.subController
-                                            .getDownloaderCategories(controller
-                                                .subController.downloaderList
-                                                .firstWhere((element) =>
-                                                    element.id ==
-                                                    int.parse(controller
-                                                        .downloaderController
-                                                        .text)));
+                                    CommonResponse res = await controller
+                                        .subController
+                                        .getDownloaderCategoryList(controller
+                                            .subController.downloaderList
+                                            .firstWhere((element) =>
+                                                element.id ==
+                                                int.parse(controller
+                                                    .downloaderController
+                                                    .text)));
+                                    if (!res.succeed) {
+                                      Get.snackbar('出错啦！', res.msg,
+                                          colorText: Theme.of(context)
+                                              .colorScheme
+                                              .error);
+                                      return;
+                                    }
+                                    controller.categories.value = res.data;
                                     if (controller.categories.isNotEmpty) {
                                       controller.downloaderCategoryController
                                               .text =
@@ -580,7 +596,7 @@ class EditDialogController extends GetxController {
   RxList<MyRss> rssList = <MyRss>[].obs;
   Map<String, RxList<String>> props = {};
   Map<String, RxString> prop = {};
-  RxMap<String, String> categories = <String, String>{}.obs;
+  RxMap<String, Category> categories = <String, Category>{}.obs;
   RxBool available = true.obs;
   RxBool start = true.obs;
   RxBool isLoading = false.obs;

@@ -9,12 +9,13 @@ import 'package:harvest/app/home/pages/dou_ban/douban_api.dart';
 import 'package:harvest/common/meta_item.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:harvest/utils/logger_helper.dart' as logger_helper;
+import 'package:qbittorrent_api/qbittorrent_api.dart';
 import 'package:web_socket_channel/status.dart' as status;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+import '../../../../api/downloader.dart';
 import '../../../../models/download.dart';
 import '../../../../utils/storage.dart';
-import '../../../torrent/torrent_controller.dart';
 import '../dou_ban/model.dart';
 import '../download/download_controller.dart';
 import '../models/my_site.dart';
@@ -440,33 +441,54 @@ class AggSearchController extends GetxController
     return CommonResponse.error(msg: res.data['message']);
   }
 
-  Future<Map<String, String>> getDownloaderCategories(
-      Downloader downloader) async {
+  getDownloaderCategoryList(Downloader downloader) async {
     isDownloaderLoading = true;
+    update();
     try {
-      TorrentController torrentController = Get.put(
-          TorrentController(downloader, false),
-          tag:
-              '${downloader.protocol}://${downloader.host}:${downloader.port}');
-      // TorrentController torrentController = Get.find(
-      //     tag:
-      //         '${downloader.protocol}://${downloader.host}:${downloader.port}');
-      if (downloader.category.toLowerCase() == 'tr') {
-        torrentController.getAllTorrents();
+      CommonResponse response = await getDownloaderCategories(downloader.id!);
+      if (!response.succeed) {
+        return response;
       }
-      update(['${downloader.id} - ${downloader.name}']);
-      await torrentController.getAllCategory();
+      Map<String, Category> data = {
+        for (var item in response.data)
+          (item)['name']!: Category.fromJson(item as Map<String, dynamic>)
+      };
       isDownloaderLoading = false;
-      update(['${downloader.id} - ${downloader.name}']);
       update();
-      torrentController.update();
-
-      return torrentController.categoryList;
+      return CommonResponse.success(data: data);
     } catch (e, trace) {
       logger_helper.Logger.instance.e(e);
       logger_helper.Logger.instance.e(trace);
-      isDownloaderLoading = false;
-      return {};
+      return CommonResponse.error(msg: '获取分类出错啦：$e');
     }
   }
+// Future<Map<String, String>> getDownloaderCategories(
+//     Downloader downloader) async {
+//   isDownloaderLoading = true;
+//   try {
+//     TorrentController torrentController = Get.put(
+//         TorrentController(downloader, false),
+//         tag:
+//             '${downloader.protocol}://${downloader.host}:${downloader.port}');
+//     // TorrentController torrentController = Get.find(
+//     //     tag:
+//     //         '${downloader.protocol}://${downloader.host}:${downloader.port}');
+//     if (downloader.category.toLowerCase() == 'tr') {
+//       torrentController.getAllTorrents();
+//     }
+//     update(['${downloader.id} - ${downloader.name}']);
+//     await torrentController.getAllCategory();
+//     isDownloaderLoading = false;
+//     update(['${downloader.id} - ${downloader.name}']);
+//     update();
+//     torrentController.update();
+//
+//     return torrentController.categoryList;
+//   } catch (e, trace) {
+//     logger_helper.Logger.instance.e(e);
+//     logger_helper.Logger.instance.e(trace);
+//     isDownloaderLoading = false;
+//     return {};
+//   }
+// }
 }

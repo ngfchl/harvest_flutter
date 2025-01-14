@@ -28,10 +28,10 @@ import '../../../../models/download.dart';
 import '../../../../utils/date_time_utils.dart';
 import '../../../../utils/logger_helper.dart' as logger_helper;
 import '../../../../utils/storage.dart';
-import '../../../torrent/models/transmission_base_torrent.dart';
 import '../agg_search/download_form.dart';
 import '../models/transmission.dart';
 import 'download_controller.dart';
+import 'transmission_base_torrent.dart';
 
 class DownloadPage extends StatefulWidget {
   const DownloadPage({super.key});
@@ -742,10 +742,18 @@ class _DownloadPageState extends State<DownloadPage>
                               size: 18,
                               color: Theme.of(context).colorScheme.primary,
                             )),
+                    // IconButton(
+                    //     onPressed: () {},
+                    //     icon: Icon(
+                    //       Icons.speed_outlined,
+                    //       size: 18,
+                    //       color: Theme.of(context).colorScheme.primary,
+                    //     )),
                     IconButton(
-                        onPressed: () {},
+                        onPressed: () =>
+                            _openAddTorrentDialog(controller, downloader),
                         icon: Icon(
-                          Icons.speed_outlined,
+                          Icons.add_outlined,
                           size: 18,
                           color: Theme.of(context).colorScheme.primary,
                         )),
@@ -1284,46 +1292,8 @@ class _DownloadPageState extends State<DownloadPage>
                                   ),
                                 ),
                               ),
-                              onTap: () async {
-                                Get.bottomSheet(
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(5.0)),
-                                  enableDrag: true,
-                                  CustomCard(
-                                    height: 400,
-                                    padding: const EdgeInsets.all(12),
-                                    child: Column(children: [
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: GFTypography(
-                                          text: '添加种子',
-                                          icon: const Icon(Icons.add),
-                                          dividerWidth: 0,
-                                          textColor: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface,
-                                          dividerColor: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface,
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: DownloadForm(
-                                          categories: controller
-                                              .categoryMap.values
-                                              .fold({}, (map, element) {
-                                            map[element!.name!] =
-                                                element.savePath ?? '';
-                                            return map;
-                                          }),
-                                          downloader: downloader,
-                                          info: null,
-                                        ),
-                                      ),
-                                    ]),
-                                  ),
-                                );
-                              },
+                              onTap: () =>
+                                  _openAddTorrentDialog(controller, downloader),
                             ),
                             // PopupMenuItem<String>(
                             //   child: Text(
@@ -1493,6 +1463,42 @@ class _DownloadPageState extends State<DownloadPage>
       );
       await controller.stopFetchTorrents();
     }
+  }
+
+  void _openAddTorrentDialog(
+      DownloadController controller, Downloader downloader) async {
+    await controller.getDownloaderCategoryList(downloader);
+    Get.bottomSheet(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+      enableDrag: true,
+      CustomCard(
+        height: 400,
+        padding: const EdgeInsets.all(12),
+        child: Column(children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: GFTypography(
+              text: '添加种子',
+              icon: const Icon(Icons.add),
+              dividerWidth: 0,
+              textColor: Theme.of(context).colorScheme.onSurface,
+              dividerColor: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          Expanded(
+            child: DownloadForm(
+              categories:
+                  controller.categoryMap.values.fold({}, (map, element) {
+                map[element!.name!] = element;
+                return map;
+              }),
+              downloader: downloader,
+              info: null,
+            ),
+          ),
+        ]),
+      ),
+    );
   }
 
   _showQbTorrent(
@@ -3815,7 +3821,7 @@ class _DownloadPageState extends State<DownloadPage>
             child: Scaffold(
               appBar: AppBar(
                 title:
-                    Text('配置选项[${downloader.prefs.webApiersion.toString()}]'),
+                    Text('配置选项[${downloader.prefs.webApiVersion.toString()}]'),
                 bottom: const TabBar(tabs: tabs, isScrollable: true),
               ),
               floatingActionButton: FloatingActionButton.extended(

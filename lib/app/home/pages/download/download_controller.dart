@@ -18,10 +18,10 @@ import '../../../../models/common_response.dart';
 import '../../../../models/download.dart';
 import '../../../../utils/logger_helper.dart' as logger_helper;
 import '../../../../utils/storage.dart';
-import '../../../torrent/models/transmission_base_torrent.dart';
 import '../models/transmission.dart';
 import '../models/website.dart';
 import '../my_site/controller.dart';
+import 'transmission_base_torrent.dart';
 
 class DownloadController extends GetxController {
   bool isLoaded = false;
@@ -467,10 +467,10 @@ class DownloadController extends GetxController {
     if (!response.succeed) {
       return response;
     }
-    categoryMap.addAll({
+    categoryMap = {
       for (var item in response.data)
         (item)['name']!: Category.fromJson(item as Map<String, dynamic>)
-    });
+    };
   }
 
   filterTrTorrents() {
@@ -1144,11 +1144,12 @@ class DownloadController extends GetxController {
       "全部",
       if (data['tags'] != null) ...List<String>.from(data['tags'] ?? [])
     ];
-    torrents = data['torrents'].entries.map((entry) {
-      var torrent = Map<String, dynamic>.from(entry.value); // 复制原始数据
-      torrent['hash'] = entry.key; // 添加 hash 属性
-      return QbittorrentTorrentInfo.fromJson(torrent);
-    }).toList();
+    torrents = data['torrents']?.entries.map((entry) {
+          var torrent = Map<String, dynamic>.from(entry.value); // 复制原始数据
+          torrent['hash'] = entry.key; // 添加 hash 属性
+          return QbittorrentTorrentInfo.fromJson(torrent);
+        }).toList() ??
+        [];
     if (selectedTorrent != null) {
       selectedTorrent = QbittorrentTorrentInfo.fromJson(
           data['torrents'][selectedTorrent.hashString]);

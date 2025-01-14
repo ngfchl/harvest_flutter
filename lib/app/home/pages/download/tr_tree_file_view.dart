@@ -2,7 +2,7 @@ import 'package:filesize/filesize.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../common/card_view.dart';
-import '../../../torrent/models/transmission_base_torrent.dart';
+import 'transmission_base_torrent.dart';
 
 class TreeNode {
   String name;
