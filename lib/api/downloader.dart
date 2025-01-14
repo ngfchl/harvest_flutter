@@ -230,23 +230,10 @@ Future<CommonResponse> controlTorrent(
 }
 
 Future<CommonResponse> pushTorrentToDownloader({
-  required int site,
   required int downloaderId,
-  required String url,
-  required String category,
+  required Map<String, dynamic> formData,
 }) async {
-  final response = await DioUtil().get(Api.PUSH_TORRENT_URL, queryParameters: {
-    "downloader_id": downloaderId,
-    "site": site,
-    "url": url,
-    "category": category,
-  });
-  if (response.statusCode == 200) {
-    Logger.instance.w(response.data);
-    return CommonResponse.fromJson(response.data, (p0) => null);
-  } else {
-    String msg = '获取主页状态失败: ${response.statusCode}';
-    // GFToast.showToast(msg, context);
-    return CommonResponse.error(msg: msg);
-  }
+  final response =
+      await addData('${Api.PUSH_TORRENT_URL}$downloaderId', formData);
+  return response;
 }

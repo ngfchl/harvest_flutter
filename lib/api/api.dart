@@ -56,7 +56,7 @@ class Api {
   static const String DOWNLOADER_TRACKER_REPLACE =
       "option/downloaders/trackers/replace/";
   static const String DOWNLOADER_SET_TAGS = "option/downloaders/tags/set/";
-  static const String DOWNLOADER_CATEGORY = "option/downloaders/category/";
+  static const String DOWNLOADER_CATEGORY = "option/downloaders/categories/";
   static const String DOWNLOADER_SET_CATEGORY =
       "option/downloaders/category/set/";
   static const String DOWNLOADER_CONTROL = "option/downloaders/control/";
@@ -65,6 +65,9 @@ class Api {
       "option/downloaders/preferences/";
   static const String DOWNLOADER_TORRENT_DETAIL =
       "option/downloaders/torrent/detail/";
+
+  // 推送种子到下载器
+  static const String PUSH_TORRENT_URL = "option/push_torrent/";
 
   // 下载器种子文件夹列表
 
@@ -81,9 +84,6 @@ class Api {
   // 种子列表
   static const String MYSITE_TORRENTS = "mysite/torrents";
   static const String MYSITE_TORRENTS_GET = "mysite/torrents/get";
-
-  // 推送种子到下载器
-  static const String PUSH_TORRENT_URL = "/mysite/push_torrent";
 
   // 任务列表
   static const String OPTION_OPERATE = "option/options";
