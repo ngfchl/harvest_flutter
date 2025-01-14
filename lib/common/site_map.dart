@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:filesize/filesize.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -13,6 +14,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../app/home/pages/models/my_site.dart';
 import '../app/routes/app_pages.dart';
+import '../utils/country.dart';
 import '../utils/logger_helper.dart';
 
 class SiteMap extends StatelessWidget {
@@ -35,7 +37,6 @@ class SiteMap extends StatelessWidget {
           ;
           // 获取已存在的站点名称列表
           // List<String> hasKeys = controller.mySiteList.map((element) => element.site).toList();
-
           // 筛选活着的且未添加过的站点，并进行排序
           RxList<WebSite> webSiteList = controller.webSiteList.values
               .where((item) => item.alive && item.type.toLowerCase() == 'pt')
@@ -104,141 +105,220 @@ class SiteMap extends StatelessWidget {
                             contentsBuilder: (context, int index) {
                               WebSite webSite = webSiteList[index];
                               MySite? mySite = mySiteMap[webSite.name];
+                              StatusInfo? status;
+                              if (mySite?.statusInfo.isNotEmpty == true) {
+                                status = mySite?.latestStatusInfo;
+                              }
                               bool flag = index % 2 != 0;
+                              String country =
+                                  getFlagEmojiFromCountryName(webSite.nation);
                               return TimelineNode(
-                                indicator: ListTile(
-                                  dense: true,
-                                  title: Align(
-                                    alignment: flag
-                                        ? Alignment.centerRight
-                                        : Alignment.centerLeft,
-                                    child: Text(
-                                      webSite.name,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary,
+                                indicator: Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    ListTile(
+                                      dense: true,
+                                      title: Row(
+                                        mainAxisAlignment: flag
+                                            ? MainAxisAlignment.end
+                                            : MainAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            country,
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .secondary,
+                                            ),
+                                          ),
+                                          Text(
+                                            mySite?.nickname ?? webSite.name,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ),
-                                  ),
-                                  subtitle: Align(
-                                    alignment: flag
-                                        ? Alignment.centerRight
-                                        : Alignment.centerLeft,
-                                    child: Text(
-                                      mySite != null
-                                          ? calcWeeksDays(mySite.timeJoin)
-                                          : '添加站点',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .secondary,
-                                      ),
-                                    ),
-                                  ),
-                                  onTap: () async {
-                                    Get.defaultDialog(
-                                        title: '请选择网址',
-                                        radius: 5,
-                                        content: SingleChildScrollView(
-                                            child: Column(
-                                          children: webSite.url
-                                              .map((u) => ListTile(
-                                                    dense: true,
-                                                    title: Text(u),
-                                                    onTap: () async {
-                                                      Get.back();
-                                                      if (u
-                                                          .contains('m-team')) {
-                                                        u = u.replaceFirst(
-                                                            "api", "xp");
-                                                      }
-                                                      if (kIsWeb ||
-                                                          !controller
-                                                              .openByInnerExplorer) {
-                                                        Logger.instance
-                                                            .d('使用外部浏览器打开');
-                                                        Uri uri = Uri.parse(u);
-                                                        if (!await launchUrl(
-                                                            uri,
-                                                            mode: LaunchMode
-                                                                .externalApplication)) {
-                                                          Get.snackbar('打开网页出错',
-                                                              '打开网页出错，不支持的客户端？',
-                                                              colorText: Theme.of(
-                                                                      context)
-                                                                  .colorScheme
-                                                                  .primary);
-                                                        }
-                                                      } else {
-                                                        Logger.instance
-                                                            .d('使用内置浏览器打开');
-                                                        Get.toNamed(
-                                                            Routes.WEBVIEW,
-                                                            arguments: {
-                                                              'url': u,
-                                                              'info': null,
-                                                              'mySite': mySite,
-                                                              'website': webSite
-                                                            });
-                                                      }
-                                                    },
-                                                  ))
-                                              .toList(),
-                                        )));
-                                  },
-                                  trailing: !flag
-                                      ? null
-                                      : ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                          child: CachedNetworkImage(
-                                            imageUrl: webSite.logo
-                                                    .startsWith('http')
-                                                ? webSite.logo
-                                                : '${mySite?.mirror}${webSite.logo}',
-                                            fit: BoxFit.fill,
-                                            httpHeaders: {
-                                              "user-agent":
-                                                  mySite?.userAgent ?? '',
-                                              "Cookie": mySite?.cookie ?? '',
-                                            },
-                                            errorWidget: (context, url,
-                                                    error) =>
-                                                const Image(
-                                                    image: AssetImage(
-                                                        'assets/images/logo.png')),
-                                            width: 32,
-                                            height: 32,
+                                      subtitle: Align(
+                                        alignment: flag
+                                            ? Alignment.centerRight
+                                            : Alignment.centerLeft,
+                                        child: Text(
+                                          '[${webSite.tags}]',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .secondary,
                                           ),
                                         ),
-                                  leading: flag
-                                      ? null
-                                      : ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                          child: CachedNetworkImage(
-                                            imageUrl: webSite.logo
-                                                    .startsWith('http')
-                                                ? webSite.logo
-                                                : '${mySite?.mirror}${webSite.logo}',
-                                            fit: BoxFit.fill,
-                                            httpHeaders: {
-                                              "user-agent":
-                                                  mySite?.userAgent ?? '',
-                                              "Cookie": mySite?.cookie ?? '',
-                                            },
-                                            errorWidget: (context, url,
-                                                    error) =>
-                                                const Image(
-                                                    image: AssetImage(
-                                                        'assets/images/logo.png')),
-                                            width: 32,
-                                            height: 32,
+                                      ),
+                                      onTap: () async {
+                                        Get.defaultDialog(
+                                            title: '请选择网址',
+                                            radius: 5,
+                                            content: SingleChildScrollView(
+                                                child: Column(
+                                              children: webSite.url
+                                                  .map((u) => ListTile(
+                                                        dense: true,
+                                                        title: Text(u),
+                                                        onTap: () async {
+                                                          Get.back();
+                                                          if (u.contains(
+                                                              'm-team')) {
+                                                            u = u.replaceFirst(
+                                                                "api", "xp");
+                                                          }
+                                                          if (kIsWeb ||
+                                                              !controller
+                                                                  .openByInnerExplorer) {
+                                                            Logger.instance
+                                                                .d('使用外部浏览器打开');
+                                                            Uri uri =
+                                                                Uri.parse(u);
+                                                            if (!await launchUrl(
+                                                                uri,
+                                                                mode: LaunchMode
+                                                                    .externalApplication)) {
+                                                              Get.snackbar(
+                                                                  '打开网页出错',
+                                                                  '打开网页出错，不支持的客户端？',
+                                                                  colorText: Theme.of(
+                                                                          context)
+                                                                      .colorScheme
+                                                                      .primary);
+                                                            }
+                                                          } else {
+                                                            Logger.instance
+                                                                .d('使用内置浏览器打开');
+                                                            Get.toNamed(
+                                                                Routes.WEBVIEW,
+                                                                arguments: {
+                                                                  'url': u,
+                                                                  'info': null,
+                                                                  'mySite':
+                                                                      mySite,
+                                                                  'website':
+                                                                      webSite
+                                                                });
+                                                          }
+                                                        },
+                                                      ))
+                                                  .toList(),
+                                            )));
+                                      },
+                                      trailing: !flag
+                                          ? null
+                                          : ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              child: CachedNetworkImage(
+                                                imageUrl: webSite.logo
+                                                        .startsWith('http')
+                                                    ? webSite.logo
+                                                    : '${mySite?.mirror}${webSite.logo}',
+                                                fit: BoxFit.fill,
+                                                httpHeaders: {
+                                                  "user-agent":
+                                                      mySite?.userAgent ?? '',
+                                                  "Cookie":
+                                                      mySite?.cookie ?? '',
+                                                },
+                                                errorWidget: (context, url,
+                                                        error) =>
+                                                    const Image(
+                                                        image: AssetImage(
+                                                            'assets/images/logo.png')),
+                                                width: 32,
+                                                height: 32,
+                                              ),
+                                            ),
+                                      leading: flag
+                                          ? null
+                                          : ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              child: CachedNetworkImage(
+                                                imageUrl: webSite.logo
+                                                        .startsWith('http')
+                                                    ? webSite.logo
+                                                    : '${mySite?.mirror}${webSite.logo}',
+                                                fit: BoxFit.fill,
+                                                httpHeaders: {
+                                                  "user-agent":
+                                                      mySite?.userAgent ?? '',
+                                                  "Cookie":
+                                                      mySite?.cookie ?? '',
+                                                },
+                                                errorWidget: (context, url,
+                                                        error) =>
+                                                    const Image(
+                                                        image: AssetImage(
+                                                            'assets/images/logo.png')),
+                                                width: 32,
+                                                height: 32,
+                                              ),
+                                            ),
+                                    ),
+                                    if (mySite != null)
+                                      Column(
+                                        // mainAxisAlignment:
+                                        //     MainAxisAlignment.spaceAround,
+                                        children: [
+                                          Text(
+                                            calcWeeksDays(mySite.timeJoin),
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .secondary,
+                                            ),
                                           ),
-                                        ),
+                                          Text(
+                                            '[${status?.myLevel}]',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
+                                            ),
+                                          ),
+                                          Text(
+                                            '↑${filesize(status?.uploaded ?? 0)} (${status?.seed ?? 0})',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
+                                            ),
+                                          ),
+                                          Text(
+                                            '↓${filesize(status?.downloaded ?? 0)} (${status?.leech ?? 0})',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
+                                            ),
+                                          ),
+                                          Text(
+                                            '☁︎${filesize(status?.seedVolume ?? 0)}',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                  ],
                                 ),
                               );
                             },
