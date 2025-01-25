@@ -85,6 +85,13 @@ class Api {
   static const String MYSITE_TORRENTS = "mysite/torrents";
   static const String MYSITE_TORRENTS_GET = "mysite/torrents/get";
 
+  // Flower
+  static const String FLOWER_TASKS = "/flower/api/tasks";
+  static const String FLOWER_TASKS_INFO = "/flower/api/task/info";
+  static const String FLOWER_TASKS_RESULT = "/flower/api/task/result";
+  static const String FLOWER_TASKS_ABORT = "/flower/api/task/abort";
+  static const String FLOWER_TASKS_REVOKE = "/flower/api/task/revoke";
+
   // 任务列表
   static const String OPTION_OPERATE = "option/options";
   static const String NOTICE_TEST = "option/test";
