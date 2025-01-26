@@ -2,6 +2,7 @@ import 'package:harvest/api/hooks.dart';
 
 import '../app/home/pages/models/task.dart';
 import '../models/common_response.dart';
+import '../models/flower.dart';
 import '../utils/dio_util.dart';
 import '../utils/logger_helper.dart';
 import 'api.dart';
@@ -85,4 +86,44 @@ Future<CommonResponse> addRemoteTask(Schedule schedule) async {
 Future<CommonResponse> removeRemoteTask(Schedule schedule) async {
   String apiUrl = '${Api.TASK_OPERATE}/${schedule.id}';
   return await removeData(apiUrl);
+}
+
+Future<CommonResponse> getTaskItemList() async {
+  String apiUrl = Api.FLOWER_TASKS;
+  try {
+    var response = await DioUtil().get(apiUrl);
+    if (response.statusCode == 200) {
+      return CommonResponse.success(
+          data: response.data as Map<String, dynamic>);
+    } else {
+      String msg = '获取数据列表失败: ${response.statusCode}';
+      // GFToast.showToast(msg, context);
+      return CommonResponse.error(msg: msg);
+    }
+  } catch (e, trace) {
+    Logger.instance.e(e);
+    Logger.instance.e(trace);
+    String msg = '获取数据列表失败: ${e.toString()}';
+    return CommonResponse.error(msg: msg);
+  }
+}
+
+Future<CommonResponse> getTaskItemInfo(TaskItem item) async {
+  String apiUrl = '${Api.FLOWER_TASKS_INFO}/${item.uuid}';
+  return await fetchBasicData(apiUrl);
+}
+
+Future<CommonResponse> getTaskItemResult(TaskItem item) async {
+  String apiUrl = '${Api.FLOWER_TASKS_RESULT}/${item.uuid}';
+  return await fetchBasicData(apiUrl);
+}
+
+Future<CommonResponse> abortTaskItem(TaskItem item) async {
+  String apiUrl = '${Api.FLOWER_TASKS_ABORT}/${item.uuid}';
+  return await fetchBasicData(apiUrl);
+}
+
+Future<CommonResponse> revokeTaskItem(TaskItem item) async {
+  String apiUrl = '${Api.FLOWER_TASKS_REVOKE}/${item.uuid}';
+  return await fetchBasicData(apiUrl);
 }

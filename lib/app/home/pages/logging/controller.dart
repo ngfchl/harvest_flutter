@@ -3,8 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
+import 'package:harvest/api/task.dart';
 import 'package:logger/logger.dart';
 
+import '../../../../models/flower.dart';
 import '../../../../utils/logger_helper.dart' as logger_helper;
 import '../../../../utils/storage.dart';
 
@@ -19,6 +21,7 @@ class LoggingController extends GetxController {
   InAppWebViewController? webController;
   bool shouldScrollToBottom = true;
   Level filterLevel = Level.info;
+  List<TaskItem> taskList = [];
 
   final ScrollController scrollController = ScrollController();
 
@@ -29,7 +32,36 @@ class LoggingController extends GetxController {
     logger_helper.memoryLogOutput.logsNotifier.addListener(onNewLog);
     scrollController.addListener(onScroll);
     // localLogs = await readFile();
+    await getTaskList();
     super.onInit();
+  }
+
+  getTaskList() async {
+    var response = await getTaskItemList();
+    logger_helper.Logger.instance.d(response);
+    if (response.succeed) {
+      taskList = response.data.values
+          .map<TaskItem>((e) => TaskItem.fromJson(e))
+          .toList();
+      update();
+    }
+    return response;
+  }
+
+  getTaskInfo(TaskItem item) async {
+    return await getTaskItemInfo(item);
+  }
+
+  getTaskResult(TaskItem item) async {
+    return await getTaskItemResult(item);
+  }
+
+  abortTask(TaskItem item) async {
+    return await abortTaskItem(item);
+  }
+
+  revokeTask(TaskItem item) async {
+    return await revokeTaskItem(item);
   }
 
   onScroll() {
@@ -89,7 +121,7 @@ class LoggingController extends GetxController {
             '$baseUrl/supervisor/tail.html?processname=celery-worker&limit=$logLength';
         break;
       case 'taskList':
-        accessUrl = '$baseUrl/flower/tasks';
+        accessUrl = '$baseUrl/api/flower/tasks';
         break;
     }
     await webController?.loadUrl(

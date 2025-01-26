@@ -46,7 +46,7 @@ importBaseSubTag() async {
       String msg = '订阅标签 导入失败！: ${response.statusCode}';
       return CommonResponse.error(msg: msg);
     }
-  } catch (e, trace) {
+  } catch (e) {
     String msg = '订阅标签 导入失败！: $e';
     return CommonResponse.error(msg: msg);
   }
