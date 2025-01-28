@@ -65,8 +65,8 @@ class DioUtil {
     _defaultOptions = await _buildRequestOptions();
     dio = Dio(BaseOptions(
         baseUrl: baseUrl,
-        connectTimeout: const Duration(seconds: 120),
-        receiveTimeout: const Duration(seconds: 12),
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 90),
         responseType: ResponseType.json,
         headers: {
           "User-Agent": SPUtil.getString("CustomUA",
