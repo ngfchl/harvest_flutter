@@ -155,9 +155,9 @@ class DownloadController extends GetxController {
   ].map((e) => MetaDataItem.fromJson(e)).toList();
   List<MetaDataItem> trStatus = [
     {"name": "全部", "value": null},
-    {"name": "红种", "value": 99},
+    // {"name": "错误", "value": 99},
     {"name": "下载中", "value": 4},
-    // {"name": "活动中", "value": 100},
+    {"name": "活动中", "value": 100},
     {"name": "做种中", "value": 6},
     {"name": "已停止", "value": 0},
     {"name": "校验中", "value": 2},
@@ -588,8 +588,11 @@ class DownloadController extends GetxController {
         break;
       case 100:
         showTorrents = showTorrents
-            .where(
-                (torrent) => torrent.rateUpload > 0 || torrent.rateDownload > 0)
+            .where((torrent) => [
+                  2,
+                  4,
+                  6,
+                ].contains(torrent.status))
             .toList();
         break;
       default:

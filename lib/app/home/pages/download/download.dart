@@ -2221,7 +2221,7 @@ class _DownloadPageState extends State<DownloadPage>
             ),
             GFAccordion(
               titleChild: GFTypography(
-                text: '种子状态【${controller.torrentState}】',
+                text: '种子状态【${controller.trTorrentState}】',
                 type: GFTypographyType.typo6,
                 icon: Icon(
                   Icons.info,
@@ -2244,32 +2244,43 @@ class _DownloadPageState extends State<DownloadPage>
                   return ListView(
                     shrinkWrap: true,
                     children: [
-                      ListTile(
-                        dense: true,
-                        title: Text(
-                          '活动中(${controller.torrents.where((torrent) => [
-                                2,
-                                4,
-                                6,
-                              ].contains(torrent.status)).toList().length})',
-                        ),
-                        titleTextStyle: TextStyle(
-                            color: Theme.of(context).colorScheme.primary),
-                        style: ListTileStyle.list,
-                        selected: controller.torrentState == '活动中',
-                        selectedColor: Theme.of(context).colorScheme.error,
-                        onTap: () {
-                          Get.back();
-                          controller.torrentState = '活动中';
-                          controller.filterTrTorrents();
-                        },
-                      ),
+                      // ListTile(
+                      //   dense: true,
+                      //   title: Text(
+                      //     '活动中(${controller.torrents.where((torrent) => [
+                      //           2,
+                      //           4,
+                      //           6,
+                      //         ].contains(torrent.status)).toList().length})',
+                      //   ),
+                      //   titleTextStyle: TextStyle(
+                      //       color: Theme.of(context).colorScheme.primary),
+                      //   style: ListTileStyle.list,
+                      //   selected: controller.torrentState == 100,
+                      //   selectedColor: Theme.of(context).colorScheme.error,
+                      //   onTap: () {
+                      //     Get.back();
+                      //     controller.torrentState = 100;
+                      //     controller.filterTrTorrents();
+                      //   },
+                      // ),
                       ...controller.trStatus.map((state) {
-                        final torrentsMatchingState = controller.torrents
-                            .where((torrent) => state.value != null
-                                ? torrent.status == state.value
-                                : true)
-                            .toList();
+                        var torrentsMatchingState = [];
+                        if (state.value == 100) {
+                          torrentsMatchingState = controller.torrents
+                              .where((torrent) => [
+                                    2,
+                                    4,
+                                    6,
+                                  ].contains(torrent.status))
+                              .toList();
+                        } else {
+                          torrentsMatchingState = controller.torrents
+                              .where((torrent) => state.value != null
+                                  ? torrent.status == state.value
+                                  : true)
+                              .toList();
+                        }
                         return ListTile(
                           dense: true,
                           title: Text(
@@ -2278,11 +2289,11 @@ class _DownloadPageState extends State<DownloadPage>
                           titleTextStyle: TextStyle(
                               color: Theme.of(context).colorScheme.primary),
                           style: ListTileStyle.list,
-                          selected: controller.torrentState == state.value,
+                          selected: controller.trTorrentState == state.value,
                           selectedColor: Theme.of(context).colorScheme.error,
                           onTap: () {
                             Get.back();
-                            controller.torrentState = state.value;
+                            controller.trTorrentState = state.value;
                             controller.filterTrTorrents();
                           },
                         );
@@ -3218,14 +3229,7 @@ class _DownloadPageState extends State<DownloadPage>
                               SizedBox(
                                 height: 12,
                                 child: Text(
-                                  controller.trStatus
-                                      .firstWhere(
-                                          (element) =>
-                                              element.value ==
-                                              torrentInfo.status,
-                                          orElse: () => MetaDataItem(
-                                              name: "未知状态", value: null))
-                                      .name,
+                                  '${controller.trStatus.firstWhere((element) => element.value == torrentInfo.status, orElse: () => MetaDataItem(name: "未知状态", value: null)).name}[${torrentInfo.status}]',
                                   style: TextStyle(
                                       fontSize: 10,
                                       color: Theme.of(context)
