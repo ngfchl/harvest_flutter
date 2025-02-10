@@ -48,10 +48,12 @@ class DownloadForm extends StatelessWidget {
     upLimitController.text = website?.limitSpeed.toString() ?? '';
     urlController.text = info?.magnetUrl ?? '';
     tagsController.text = info?.tags.join(',') ?? '';
-    savePathController.text = categories[categories.keys.first]?.savePath ??
-        (downloader.category.toLowerCase() == 'qb'
-            ? downloader.prefs.savePath
-            : downloader.prefs.downloadDir);
+    if (categories.isNotEmpty) {
+      savePathController.text = categories.values.first.savePath ??
+          (downloader.category.toLowerCase() == 'qb'
+              ? downloader.prefs.savePath
+              : downloader.prefs.downloadDir);
+    }
   }
 
   @override
@@ -68,7 +70,9 @@ class DownloadForm extends StatelessWidget {
 
   _buildQbittorrentForm(BuildContext context) {
     QbittorrentPreferences prefs = downloader.prefs;
-
+    if (savePathController.text.isEmpty) {
+      savePathController.text = prefs.savePath;
+    }
     RxBool advancedConfig = false.obs;
     RxBool paused = prefs.startPausedEnabled.obs;
     Rx<String> contentLayout = prefs.torrentContentLayout.obs;
@@ -120,16 +124,15 @@ class DownloadForm extends StatelessWidget {
                       controller: categoryController,
                       labelText: '分类',
                     ),
-              if (categories.isNotEmpty || advancedConfig.value)
-                InkWell(
-                  onLongPress: () {
-                    savePathController.text = downloader.prefs.savePath;
-                  },
-                  child: CustomTextField(
-                    controller: savePathController,
-                    labelText: '路径',
-                  ),
+              InkWell(
+                onLongPress: () {
+                  savePathController.text = prefs.savePath;
+                },
+                child: CustomTextField(
+                  controller: savePathController,
+                  labelText: '路径',
                 ),
+              ),
               Obx(() {
                 return SwitchListTile(
                     dense: true,
