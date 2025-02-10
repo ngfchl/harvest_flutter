@@ -49,6 +49,7 @@ class DownloadController extends GetxController {
 
   List<MetaDataItem> qBitStatus = [
     {"name": "全部", "value": null},
+    {"name": "活动中", "value": 'active'},
     {"name": "下载中", "value": 'downloading'},
     {"name": "下载暂停", "value": 'pausedDL'},
     {"name": "上传中", "value": 'uploading'},
@@ -588,11 +589,12 @@ class DownloadController extends GetxController {
         break;
       case 100:
         showTorrents = showTorrents
-            .where((torrent) => [
+            .where((torrent) =>
+                [
                   2,
                   4,
-                  6,
-                ].contains(torrent.status))
+                ].contains(torrent.status) ||
+                torrent.rateUpload > 0)
             .toList();
         break;
       default:
@@ -661,10 +663,27 @@ class DownloadController extends GetxController {
     }
     // logger_helper.Logger.instance.d(showTorrents.length);
 
-    if (torrentState != null && torrentState != '全部') {
-      showTorrents = showTorrents
-          .where((torrent) => torrent.state == torrentState)
-          .toList();
+    const List<String> activeStates = [
+      "downloading",
+      "uploading",
+      "checkingUP",
+      "forcedUP",
+      "moving",
+      "checkingDL",
+    ];
+
+    if (torrentState != null) {
+      if (torrentState == 'active') {
+        showTorrents = showTorrents
+            .where((torrent) =>
+                activeStates.contains(torrent.state) ||
+                (torrent.upSpeed + torrent.dlSpeed) > 0)
+            .toList();
+      } else if (torrentState != '全部') {
+        showTorrents = showTorrents
+            .where((torrent) => torrent.state == torrentState)
+            .toList();
+      }
     }
     // logger_helper.Logger.instance.d(showTorrents.length);
     if (selectedTag != '全部') {

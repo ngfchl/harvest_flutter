@@ -2244,35 +2244,16 @@ class _DownloadPageState extends State<DownloadPage>
                   return ListView(
                     shrinkWrap: true,
                     children: [
-                      // ListTile(
-                      //   dense: true,
-                      //   title: Text(
-                      //     '活动中(${controller.torrents.where((torrent) => [
-                      //           2,
-                      //           4,
-                      //           6,
-                      //         ].contains(torrent.status)).toList().length})',
-                      //   ),
-                      //   titleTextStyle: TextStyle(
-                      //       color: Theme.of(context).colorScheme.primary),
-                      //   style: ListTileStyle.list,
-                      //   selected: controller.torrentState == 100,
-                      //   selectedColor: Theme.of(context).colorScheme.error,
-                      //   onTap: () {
-                      //     Get.back();
-                      //     controller.torrentState = 100;
-                      //     controller.filterTrTorrents();
-                      //   },
-                      // ),
                       ...controller.trStatus.map((state) {
                         var torrentsMatchingState = [];
                         if (state.value == 100) {
                           torrentsMatchingState = controller.torrents
-                              .where((torrent) => [
+                              .where((torrent) =>
+                                  [
                                     2,
                                     4,
-                                    6,
-                                  ].contains(torrent.status))
+                                  ].contains(torrent.status) ||
+                                  torrent.rateUpload > 0)
                               .toList();
                         } else {
                           torrentsMatchingState = controller.torrents
@@ -2821,37 +2802,28 @@ class _DownloadPageState extends State<DownloadPage>
                         return ListView(
                           shrinkWrap: true,
                           children: [
-                            ListTile(
-                              dense: true,
-                              title: Text(
-                                '活动中(${controller.torrents.where((torrent) => [
-                                      qb.TorrentState.downloading,
-                                      qb.TorrentState.uploading,
-                                      // TorrentState.checkingUP,
-                                      qb.TorrentState.forcedUP,
-                                      qb.TorrentState.moving,
-                                      // TorrentState.checkingDL,
-                                    ].contains(torrent.state)).toList().length})',
-                              ),
-                              titleTextStyle: TextStyle(
-                                  color: Theme.of(context).colorScheme.primary),
-                              style: ListTileStyle.list,
-                              selected: controller.torrentFilter ==
-                                  qb.TorrentFilter.active,
-                              selectedColor:
-                                  Theme.of(context).colorScheme.error,
-                              onTap: () {
-                                Get.back();
-                                controller.torrentState = '活动中';
-                                controller.filterQbTorrents();
-                              },
-                            ),
                             ...controller.qBitStatus.map((state) {
-                              final torrentsMatchingState = controller.torrents
-                                  .where((torrent) => state.value != null
-                                      ? torrent.state == state.value
-                                      : true)
-                                  .toList();
+                              var torrentsMatchingState = [];
+                              if (state.value == 'active') {
+                                torrentsMatchingState = controller.torrents
+                                    .where((torrent) =>
+                                        [
+                                          "downloading",
+                                          "uploading",
+                                          "checkingUP",
+                                          "forcedUP",
+                                          "moving",
+                                          "checkingDL",
+                                        ].contains(torrent.state) ||
+                                        (torrent.upSpeed + torrent.dlSpeed) > 0)
+                                    .toList();
+                              } else {
+                                torrentsMatchingState = controller.torrents
+                                    .where((torrent) => state.value != null
+                                        ? torrent.state == state.value
+                                        : true)
+                                    .toList();
+                              }
                               return ListTile(
                                 dense: true,
                                 title: Text(
