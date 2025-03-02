@@ -349,7 +349,8 @@ class MySiteController extends GetxController {
       return toSearchList
           .where((site) =>
               site.nickname.toLowerCase().contains(searchKey.toLowerCase()) ||
-              site.mirror!.toLowerCase().contains(searchKey.toLowerCase()) ||
+              (site.mirror?.toLowerCase().contains(searchKey.toLowerCase()) ??
+                  false) ||
               site.site.toLowerCase().contains(searchKey.toLowerCase()))
           .toList();
     } else {
