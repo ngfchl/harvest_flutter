@@ -44,7 +44,7 @@ class DownloadForm extends StatelessWidget {
     this.website,
   }) {
     // 初始化控制器的值
-    cookieController.text = mysite?.cookie ?? '';
+    cookieController.text = mysite?.cookie ?? info?.cookie ?? '';
     upLimitController.text = website?.limitSpeed.toString() ?? '';
     urlController.text = info?.magnetUrl ?? '';
     tagsController.text = info?.tags.join(',') ?? '';
