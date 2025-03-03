@@ -200,15 +200,33 @@ class _MySitePagePageState extends State<MySitePage>
                             )
                           : GetBuilder<MySiteController>(builder: (controller) {
                               return ReorderableListView.builder(
-                                onReorder: (int oldIndex, int newIndex) {
+                                onReorder: (int oldIndex, int newIndex) async {
+                                  final item = controller.showStatusList
+                                      .removeAt(oldIndex);
+                                  Logger.instance.d('本站排序 ID：${item.sortId}');
                                   if (oldIndex < newIndex) {
                                     newIndex -= 1; // 移动时修正索引，因为item已被移除
                                   }
-                                  final item = controller.showStatusList
-                                      .removeAt(oldIndex);
+
+                                  final nextItem =
+                                      controller.showStatusList[newIndex];
+                                  MySite newItem;
+                                  if (controller.sortReversed) {
+                                    newItem = item.copyWith(
+                                        sortId: nextItem.sortId - 1 > 0
+                                            ? nextItem.sortId - 1
+                                            : 0);
+                                  } else {
+                                    newItem = item.copyWith(
+                                        sortId: nextItem.sortId + 1);
+                                  }
                                   controller.showStatusList
                                       .insert(newIndex, item);
                                   controller.update();
+                                  if (await controller
+                                      .saveMySiteToServer(newItem)) {
+                                    await controller.getSiteStatusFromServer();
+                                  }
                                 },
                                 itemCount: controller.showStatusList.length,
                                 itemBuilder: (BuildContext context, int index) {
@@ -338,7 +356,7 @@ class _MySitePagePageState extends State<MySitePage>
     StatusInfo? status;
     WebSite? website = controller.webSiteList[mySite.site];
 
-    Logger.instance.d('${mySite.nickname} - ${website?.name}');
+    // Logger.instance.d('${mySite.nickname} - ${website?.name}');
     if (website == null) {
       return CustomCard(
         key: Key("${mySite.id}-${mySite.site}"),
