@@ -120,7 +120,7 @@ class _DouBanPageState extends State<DouBanPage>
                                                 errorWidget: (context, url,
                                                         error) =>
                                                     Image.asset(
-                                                        'assets/images/logo.png'),
+                                                        'assets/images/avatar.png'),
                                                 width: 100,
                                                 height: 150,
                                                 fit: BoxFit.fitWidth,
@@ -232,7 +232,7 @@ class _DouBanPageState extends State<DouBanPage>
                                                 errorWidget: (context, url,
                                                         error) =>
                                                     Image.asset(
-                                                        'assets/images/logo.png'),
+                                                        'assets/images/avatar.png'),
                                                 width: 100,
                                                 height: 150,
                                                 fit: BoxFit.fitWidth,
@@ -386,7 +386,7 @@ class _DouBanPageState extends State<DouBanPage>
                                                                       url,
                                                                       error) =>
                                                                   Image.asset(
-                                                                      'assets/images/logo.png'),
+                                                                      'assets/images/avatar.png'),
                                                               width: 100,
                                                               height: 150,
                                                               fit: BoxFit
@@ -615,7 +615,7 @@ class _DouBanPageState extends State<DouBanPage>
                                                                       url,
                                                                       error) =>
                                                                   Image.asset(
-                                                                      'assets/images/logo.png'),
+                                                                      'assets/images/avatar.png'),
                                                               width: 100,
                                                               height: 150,
                                                               fit: BoxFit
@@ -822,7 +822,7 @@ class _DouBanPageState extends State<DouBanPage>
                                   errorWidget: (context, url, error) =>
                                       const Image(
                                           image: AssetImage(
-                                              'assets/images/logo.png')),
+                                              'assets/images/avatar.png')),
                                   fit: BoxFit.fitWidth,
                                 ),
                               ));
@@ -834,7 +834,7 @@ class _DouBanPageState extends State<DouBanPage>
                             placeholder: (context, url) => const Center(
                                 child: CircularProgressIndicator()),
                             errorWidget: (context, url, error) =>
-                                Image.asset('assets/images/logo.png'),
+                                Image.asset('assets/images/avatar.png'),
                             width: 120,
                             height: 180,
                             fit: BoxFit.fitWidth,
@@ -939,7 +939,7 @@ class _DouBanPageState extends State<DouBanPage>
                                         errorWidget: (context, url, error) =>
                                             const Image(
                                                 image: AssetImage(
-                                                    'assets/images/logo.png')),
+                                                    'assets/images/avatar.png')),
                                         fit: BoxFit.fitWidth,
                                       ),
                                     ));
@@ -987,7 +987,7 @@ class _DouBanPageState extends State<DouBanPage>
                                                           error) =>
                                                       const Image(
                                                           image: AssetImage(
-                                                              'assets/images/logo.png')),
+                                                              'assets/images/avatar.png')),
                                                   fit: BoxFit.fitWidth,
                                                 ),
                                               ));

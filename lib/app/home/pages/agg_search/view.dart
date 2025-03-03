@@ -501,7 +501,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                           placeholder: (context, url) =>
                               const Center(child: CircularProgressIndicator()),
                           errorWidget: (context, url, error) => const Image(
-                              image: AssetImage('assets/images/logo.png')),
+                              image: AssetImage('assets/images/avatar.png')),
                           fit: BoxFit.fitWidth,
                         ),
                       ),
@@ -718,7 +718,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                             placeholder: (context, url) => const Center(
                                 child: CircularProgressIndicator()),
                             errorWidget: (context, url, error) => const Image(
-                                image: AssetImage('assets/images/logo.png')),
+                                image: AssetImage('assets/images/avatar.png')),
                             fit: BoxFit.fitWidth,
                             httpHeaders: {
                               "user-agent": mySite.userAgent.toString(),
@@ -740,7 +740,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                             placeholder: (context, url) => const Center(
                                 child: CircularProgressIndicator()),
                             errorWidget: (context, url, error) => const Image(
-                                image: AssetImage('assets/images/logo.png'),
+                                image: AssetImage('assets/images/avatar.png'),
                                 fit: BoxFit.fitWidth),
                             fit: BoxFit.fitWidth,
                             httpHeaders: {
@@ -1325,7 +1325,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                     errorWidget: (context, url, error) =>
                                         const Image(
                                             image: AssetImage(
-                                                'assets/images/logo.png')),
+                                                'assets/images/avatar.png')),
                                     fit: BoxFit.fitWidth,
                                   ),
                                 ),
@@ -1341,7 +1341,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                               placeholder: (context, url) => const Center(
                                   child: CircularProgressIndicator()),
                               errorWidget: (context, url, error) =>
-                                  Image.asset('assets/images/logo.png'),
+                                  Image.asset('assets/images/avatar.png'),
                               width: 120,
                               height: 180,
                               fit: BoxFit.fitWidth,
@@ -1456,7 +1456,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                                       error) =>
                                                   const Image(
                                                       image: AssetImage(
-                                                          'assets/images/logo.png')),
+                                                          'assets/images/avatar.png')),
                                               fit: BoxFit.fitWidth,
                                             ),
                                           ),
@@ -1512,7 +1512,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                                                 url, error) =>
                                                             const Image(
                                                                 image: AssetImage(
-                                                                    'assets/images/logo.png')),
+                                                                    'assets/images/avatar.png')),
                                                         fit: BoxFit.fitWidth,
                                                       ),
                                                     ),
@@ -1697,7 +1697,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                             placeholder: (context, url) => const Center(
                                 child: CircularProgressIndicator()),
                             errorWidget: (context, url, error) => const Image(
-                                image: AssetImage('assets/images/logo.png')),
+                                image: AssetImage('assets/images/avatar.png')),
                             fit: BoxFit.fitWidth,
                           ),
                         ),
@@ -1715,7 +1715,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                             placeholder: (context, url) => const Center(
                                 child: CircularProgressIndicator()),
                             errorWidget: (context, url, error) => const Image(
-                                image: AssetImage('assets/images/logo.png'),
+                                image: AssetImage('assets/images/avatar.png'),
                                 fit: BoxFit.fitWidth),
                             fit: BoxFit.fitWidth,
                           ),
@@ -1852,7 +1852,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                         errorWidget: (context, url, error) =>
                                             const Image(
                                                 image: AssetImage(
-                                                    'assets/images/logo.png')),
+                                                    'assets/images/avatar.png')),
                                         fit: BoxFit.fitWidth,
                                       ),
                                     ),
@@ -1867,7 +1867,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                   placeholder: (context, url) => const Center(
                                       child: CircularProgressIndicator()),
                                   errorWidget: (context, url, error) =>
-                                      Image.asset('assets/images/logo.png'),
+                                      Image.asset('assets/images/avatar.png'),
                                   width: 120,
                                   height: 180,
                                   fit: BoxFit.fitWidth,

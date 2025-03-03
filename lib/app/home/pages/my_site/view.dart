@@ -348,7 +348,7 @@ class _MySitePagePageState extends State<MySitePage>
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
           leading: const Image(
-            image: AssetImage('assets/images/logo.png'),
+            image: AssetImage('assets/images/avatar.png'),
             width: 32,
             height: 32,
           ),
@@ -422,7 +422,7 @@ class _MySitePagePageState extends State<MySitePage>
                 "Cookie": mySite.cookie.toString(),
               },
               errorWidget: (context, url, error) =>
-                  const Image(image: AssetImage('assets/images/logo.png')),
+                  const Image(image: AssetImage('assets/images/avatar.png')),
               width: 32,
               height: 32,
             ),

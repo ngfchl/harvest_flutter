@@ -100,7 +100,7 @@ class SettingPage extends StatelessWidget {
                 '${controller.packageInfo.appName} 版本: ${controller.packageInfo.version}',
             content: AboutDialog(
               applicationIcon: Image.asset(
-                'assets/images/logo.png',
+                'assets/images/avatar.png',
                 height: 50,
                 width: 50,
               ),
