@@ -154,8 +154,8 @@ class _WebViewPageState extends State<WebViewPage> {
                     Icons.download_outlined,
                     size: 24,
                   ),
-                  onPressed: () {
-                    openDownloaderListSheet(context, controller.info!);
+                  onPressed: () async {
+                    await openDownloaderListSheet(context, controller.info!);
                   },
                   type: GFButtonType.transparent,
                 );
@@ -339,7 +339,7 @@ class _WebViewPageState extends State<WebViewPage> {
                       leechers: 0,
                       completers: 0,
                     );
-                    openDownloaderListSheet(context, info);
+                    await openDownloaderListSheet(context, info);
                   },
                   onLoadStop: (inAppWebViewController, webUri) async {
                     Logger.instance.d(webUri!.toString);

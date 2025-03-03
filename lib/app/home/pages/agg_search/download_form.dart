@@ -717,8 +717,15 @@ class DownloadForm extends StatelessWidget {
   }
 }
 
-openDownloaderListSheet(BuildContext context, SearchTorrentInfo info) {
+openDownloaderListSheet(BuildContext context, SearchTorrentInfo info) async {
   DownloadController downloadController = Get.find();
+  if (downloadController.dataList.isEmpty) {
+    await downloadController.getDownloaderListFromServer();
+    if (downloadController.dataList.isEmpty) {
+      Get.snackbar('无下载器可用', '请先到下载管理添加下载器后重试！');
+      return;
+    }
+  }
   Get.bottomSheet(CustomCard(
     margin: const EdgeInsets.all(8),
     child: Column(

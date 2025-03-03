@@ -698,7 +698,7 @@ class _AggSearchPageState extends State<AggSearchPage>
             return;
           }
         }
-        openDownloaderListSheet(context, info);
+        await openDownloaderListSheet(context, info);
       },
       child: CustomCard(
         child: Column(

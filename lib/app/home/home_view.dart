@@ -161,7 +161,8 @@ class HomeView extends GetView<HomeController> {
                 ),
                 currentAccountPicture: const GFAvatar(
                   radius: 80.0,
-                  backgroundImage: AssetImage('assets/images/launch_image.png'),
+                  shape: GFAvatarShape.standard,
+                  backgroundImage: AssetImage('assets/images/avatar.png'),
                 ),
                 // otherAccountsPictures: [
                 //   Image(

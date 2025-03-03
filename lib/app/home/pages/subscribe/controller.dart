@@ -45,6 +45,24 @@ class SubscribeController extends GetxController {
     Logger.instance.i(downloaderList);
     Logger.instance.i(tagCategoryList);
     await getSubscribeFromServer();
+    if (downloadController.dataList.isEmpty) {
+      await getDownloaderListFromServer();
+    }
+    update();
+  }
+
+  getDownloaderListFromServer() async {
+    try {
+      isDownloaderLoading = true;
+      update();
+      await downloadController.getDownloaderListFromServer();
+      Logger.instance.i('下载器列表:${downloadController.dataList}');
+      downloaderList = downloadController.dataList;
+    } catch (e) {
+      Get.snackbar('下载器信息获取失败', e.toString());
+    }
+    isDownloaderLoading = false;
+    update();
   }
 
   getSubscribeFromServer() async {

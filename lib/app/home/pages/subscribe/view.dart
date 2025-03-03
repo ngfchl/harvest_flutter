@@ -232,6 +232,13 @@ class _SubscribePageState extends State<SubscribePage> {
 
   Future<void> _openEditDialogX(Subscribe? sub) async {
     final dialogController = Get.put(EditDialogController());
+    if (controller.downloaderList.isEmpty) {
+      await controller.getDownloaderListFromServer();
+      if (controller.downloaderList.isEmpty) {
+        Get.snackbar('无下载器可用', '请先到下载管理添加下载器后重试！');
+        return;
+      }
+    }
     await dialogController.init(sub);
     Get.bottomSheet(
       shape: RoundedRectangleBorder(
