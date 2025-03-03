@@ -234,7 +234,7 @@ class SiteMap extends StatelessWidget {
                                                         error) =>
                                                     const Image(
                                                         image: AssetImage(
-                                                            'assets/images/logo.png')),
+                                                            'assets/images/avatar.png')),
                                                 width: 32,
                                                 height: 32,
                                               ),
@@ -260,7 +260,7 @@ class SiteMap extends StatelessWidget {
                                                         error) =>
                                                     const Image(
                                                         image: AssetImage(
-                                                            'assets/images/logo.png')),
+                                                            'assets/images/avatar.png')),
                                                 width: 32,
                                                 height: 32,
                                               ),
