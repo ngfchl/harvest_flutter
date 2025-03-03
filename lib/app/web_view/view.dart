@@ -10,6 +10,7 @@ import 'package:harvest/api/mysite.dart';
 import 'package:harvest/app/home/pages/agg_search/models/torrent_info.dart';
 import 'package:harvest/utils/logger_helper.dart';
 import 'package:html/parser.dart';
+import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:xpath_selector_html_parser/xpath_selector_html_parser.dart';
 
@@ -315,6 +316,31 @@ class _WebViewPageState extends State<WebViewPage> {
                     controller.isLoading = true;
                     controller.update();
                   },
+                  onDownloadStartRequest:
+                      (inAppWebViewController, request) async {
+                    var url = request.url.toString();
+                    Logger.instance.d('下载链接：$url');
+                    SearchTorrentInfo info = SearchTorrentInfo(
+                      siteId: '',
+                      tid: '',
+                      poster: '',
+                      category: '',
+                      magnetUrl: url,
+                      detailUrl: '',
+                      title: '',
+                      subtitle: '',
+                      cookie: controller.mySite?.cookie,
+                      saleStatus: '',
+                      tags: [],
+                      hr: true,
+                      published: 0,
+                      size: 0,
+                      seeders: 0,
+                      leechers: 0,
+                      completers: 0,
+                    );
+                    openDownloaderListSheet(context, info);
+                  },
                   onLoadStop: (inAppWebViewController, webUri) async {
                     Logger.instance.d(webUri!.toString);
                     controller.url = webUri.toString();
@@ -369,6 +395,29 @@ class _WebViewPageState extends State<WebViewPage> {
         }),
       ),
     );
+  }
+
+  /// 检查 URL 是否是一个 Torrent 文件
+  Future<bool> _isTorrentFile(String url) async {
+    try {
+      var response = await http.head(Uri.parse(url));
+      Logger.instance.d(response.headers);
+      String? contentType = response.headers['content-type'];
+      String? contentDisposition = response.headers['content-disposition'];
+
+      if (contentType == "application/x-bittorrent") {
+        return true;
+      }
+
+      // 处理附件下载情况
+      if (contentDisposition != null &&
+          contentDisposition.contains("attachment")) {
+        return contentDisposition.contains(".torrent");
+      }
+    } catch (e) {
+      print("请求失败: $e");
+    }
+    return false;
   }
 
   getTorrentLink() async {
