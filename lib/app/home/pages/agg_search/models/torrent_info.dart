@@ -7,6 +7,7 @@ class SearchTorrentInfo {
   String category;
   String magnetUrl;
   String detailUrl;
+  String? cookie;
   String title;
   String subtitle;
   String saleStatus;
@@ -31,6 +32,7 @@ class SearchTorrentInfo {
     required this.subtitle,
     required this.saleStatus,
     this.saleExpire,
+    this.cookie,
     this.progress,
     required this.tags,
     required this.hr,
@@ -70,6 +72,7 @@ class SearchTorrentInfo {
       detailUrl: json['detail_url'],
       title: json['title'],
       subtitle: json['subtitle'] ?? '',
+      cookie: json['cookie'] ?? '',
       progress: json['progress'],
       tags: List<String>.from(json['tags']),
       saleStatus: json['sale_status'] ?? '无优惠',
@@ -93,6 +96,7 @@ class SearchTorrentInfo {
     data['detail_url'] = detailUrl;
     data['title'] = title;
     data['subtitle'] = subtitle;
+    data['cookie'] = cookie;
     data['progress'] = progress;
     data['sale_status'] = saleStatus;
     data['sale_expire'] = saleExpire?.toString();
