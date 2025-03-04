@@ -458,113 +458,136 @@ class _DashBoardPageState extends State<DashBoardPage>
       {"name": "我的站点缓存", "value": "my_site_list"},
     ].map((e) => MetaDataItem.fromJson(e)).toList();
     return CustomCard(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          IconButton(
-            onPressed: () async {
-              await controller.initData();
-            },
-            icon: Icon(
-              Icons.cloud_download,
-              size: 24,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            style: ButtonStyle(
-              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5.0)),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          // mainAxisAlignment: MainAxisAlignment.spaceAround,
+          // crossAxisAlignment: CrossAxisAlignment.center,
+          spacing: 15,
+          children: [
+            ElevatedButton.icon(
+              onPressed: () async {
+                await controller.initData();
+              },
+              icon: Icon(
+                Icons.cloud_download,
+                size: 24,
+                color: Theme.of(context).colorScheme.primary,
               ),
-              padding: WidgetStateProperty.all(
-                  const EdgeInsets.symmetric(horizontal: 5)),
-              side: WidgetStateProperty.all(BorderSide.none),
-            ),
-            // label: Text(
-            //   '统计数据',
-            //   style: TextStyle(
-            //       color: Theme.of(context).colorScheme.primary, fontSize: 12),
-            // ),
-          ),
-          IconButton(
-            onPressed: () async {
-              await getAllStatusButton();
-            },
-            icon: Icon(
-              Icons.refresh,
-              size: 24,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            style: ButtonStyle(
-              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5.0)),
+              style: ButtonStyle(
+                shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                  RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5.0)),
+                ),
+                padding: WidgetStateProperty.all(
+                    const EdgeInsets.symmetric(horizontal: 5)),
+                side: WidgetStateProperty.all(BorderSide.none),
               ),
-              padding: WidgetStateProperty.all(
-                  const EdgeInsets.symmetric(horizontal: 5)),
-              side: WidgetStateProperty.all(BorderSide.none),
-            ),
-            // label: Text(
-            //   '统计数据',
-            //   style: TextStyle(
-            //       color: Theme.of(context).colorScheme.primary, fontSize: 12),
-            // ),
-          ),
-          IconButton(
-            onPressed: () async {
-              await signAllSiteButton();
-            },
-            icon: Icon(
-              Icons.credit_score,
-              size: 24,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            style: ButtonStyle(
-              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5.0)),
+              label: Text(
+                '统计数据',
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary, fontSize: 12),
               ),
-              padding: WidgetStateProperty.all(
-                  const EdgeInsets.symmetric(horizontal: 5)),
-              side: WidgetStateProperty.all(BorderSide.none),
             ),
-            // label: Text(
-            //   '全员签到',
-            //   style: TextStyle(
-            //       color: Theme.of(context).colorScheme.primary, fontSize: 12),
-            // ),
-          ),
-          CustomPopup(
-            showArrow: false,
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            barrierColor: Colors.transparent,
-            content: SizedBox(
-              width: 120,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ...cacheList.map((item) => PopupMenuItem<String>(
-                        child: Text(
-                          item.name,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.secondary,
+            ElevatedButton.icon(
+              onPressed: () async {
+                await getAllStatusButton();
+              },
+              icon: Icon(
+                Icons.refresh,
+                size: 24,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              style: ButtonStyle(
+                shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                  RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5.0)),
+                ),
+                padding: WidgetStateProperty.all(
+                    const EdgeInsets.symmetric(horizontal: 5)),
+                side: WidgetStateProperty.all(BorderSide.none),
+              ),
+              label: Text(
+                '统计数据',
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary, fontSize: 12),
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () async {
+                await signAllSiteButton();
+              },
+              icon: Icon(
+                Icons.credit_score,
+                size: 24,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              style: ButtonStyle(
+                shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                  RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5.0)),
+                ),
+                padding: WidgetStateProperty.all(
+                    const EdgeInsets.symmetric(horizontal: 5)),
+                side: WidgetStateProperty.all(BorderSide.none),
+              ),
+              label: Text(
+                '全员签到',
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary, fontSize: 12),
+              ),
+            ),
+            CustomPopup(
+              showArrow: false,
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              barrierColor: Colors.transparent,
+              content: SizedBox(
+                width: 120,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ...cacheList.map((item) => PopupMenuItem<String>(
+                          child: Text(
+                            item.name,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
                           ),
-                        ),
-                        onTap: () async {
-                          await clearMyCacheButton(item.value);
-                          await controller.mySiteController.initData();
-                        },
-                      )),
-                ],
+                          onTap: () async {
+                            await clearMyCacheButton(item.value);
+                            await controller.mySiteController.initData();
+                          },
+                        )),
+                  ],
+                ),
+              ),
+              child: ElevatedButton.icon(
+                icon: Icon(
+                  Icons.cleaning_services_rounded,
+                  size: 24,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                onPressed: null,
+                style: ButtonStyle(
+                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5.0)),
+                  ),
+                  padding: WidgetStateProperty.all(
+                      const EdgeInsets.symmetric(horizontal: 5)),
+                  side: WidgetStateProperty.all(BorderSide.none),
+                ),
+                label: Text(
+                  '清理缓存',
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontSize: 12),
+                ),
               ),
             ),
-            child: Icon(
-              Icons.cleaning_services_rounded,
-              size: 24,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
