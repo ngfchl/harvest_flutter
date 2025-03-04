@@ -331,12 +331,13 @@ class HomeView extends GetView<HomeController> {
                             child: DefaultTabController(
                               length: tabs.length,
                               child: Scaffold(
+                                resizeToAvoidBottomInset: false,
                                 appBar: const TabBar(tabs: tabs),
                                 body: TabBarView(
                                   children: [
-                                    Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceEvenly,
+                                    ListView(
+                                      // mainAxisAlignment:
+                                      //     MainAxisAlignment.spaceEvenly,
                                       children: [
                                         CustomPickerField(
                                           controller: keyController,
