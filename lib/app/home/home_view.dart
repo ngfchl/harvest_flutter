@@ -37,9 +37,18 @@ class HomeView extends GetView<HomeController> {
             // onConfirm: () {
             //   exit(0);
             // },
-            onCancel: () {
-              Navigator.of(context).pop(false);
-            },
+            cancel: ElevatedButton(
+                style: ButtonStyle(
+                  backgroundColor:
+                      WidgetStateProperty.all(Colors.blueAccent.withAlpha(250)),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop(false);
+                },
+                child: const Text(
+                  '取消',
+                  style: TextStyle(color: Colors.white),
+                )),
             confirm: ElevatedButton(
                 style: ButtonStyle(
                   backgroundColor:
