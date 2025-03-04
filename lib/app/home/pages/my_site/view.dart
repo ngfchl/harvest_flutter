@@ -705,7 +705,7 @@ class _MySitePagePageState extends State<MySitePage>
                       Row(
                         children: [
                           const Icon(
-                            Icons.insert_invitation,
+                            Icons.person_add_alt_outlined,
                             size: 12,
                           ),
                           Text(
