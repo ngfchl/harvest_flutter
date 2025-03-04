@@ -1027,10 +1027,12 @@ class _DashBoardPageState extends State<DashBoardPage>
                         Padding(
                           padding: const EdgeInsets.only(top: 6),
                           child: Text(
-                            filesize(controller.totalSeedVol, 0),
+                            filesize(controller.totalSeedVol, 2),
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
+                              letterSpacing: -1,
+                              wordSpacing: -1,
                               fontSize: 12,
                               color: Theme.of(context)
                                   .colorScheme
