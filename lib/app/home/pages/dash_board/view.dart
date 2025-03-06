@@ -485,7 +485,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                 side: WidgetStateProperty.all(BorderSide.none),
               ),
               label: Text(
-                '统计数据',
+                '重新加载',
                 style: TextStyle(
                     color: Theme.of(context).colorScheme.primary, fontSize: 12),
               ),
@@ -509,7 +509,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                 side: WidgetStateProperty.all(BorderSide.none),
               ),
               label: Text(
-                '统计数据',
+                '更新数据',
                 style: TextStyle(
                     color: Theme.of(context).colorScheme.primary, fontSize: 12),
               ),
