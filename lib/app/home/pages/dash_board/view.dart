@@ -269,7 +269,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 title: '小部件',
                                 radius: 5,
                                 titleStyle: const TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.w900),
+                                    fontSize: 14, fontWeight: FontWeight.w900),
                                 content: SizedBox(
                                     height: 260,
                                     width: 280,
@@ -290,6 +290,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                               title: Text(
                                                 "开启隐私模式",
                                                 style: TextStyle(
+                                                    fontSize: 12,
                                                     color: Theme.of(context)
                                                         .primaryColor),
                                               ),
@@ -306,6 +307,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                               title: Text(
                                                 "上传总量饼图",
                                                 style: TextStyle(
+                                                    fontSize: 12,
                                                     color: Theme.of(context)
                                                         .primaryColor),
                                               ),
@@ -321,6 +323,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                               title: Text(
                                                 "每日数据柱图",
                                                 style: TextStyle(
+                                                    fontSize: 12,
                                                     color: Theme.of(context)
                                                         .primaryColor),
                                               ),
@@ -334,6 +337,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                               title: Text(
                                                 "站点数据柱图",
                                                 style: TextStyle(
+                                                    fontSize: 12,
                                                     color: Theme.of(context)
                                                         .primaryColor),
                                               ),
@@ -347,6 +351,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                               title: Text(
                                                 "今日上传增量",
                                                 style: TextStyle(
+                                                    fontSize: 11,
                                                     color: Theme.of(context)
                                                         .primaryColor),
                                               ),
@@ -362,6 +367,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                               title: Text(
                                                 "今日下载增量",
                                                 style: TextStyle(
+                                                    fontSize: 11,
                                                     color: Theme.of(context)
                                                         .primaryColor),
                                               ),
@@ -428,11 +434,11 @@ class _DashBoardPageState extends State<DashBoardPage>
                             label: Text(
                               '加载数据',
                               style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 12,
                                   color: Theme.of(context).primaryColor),
                             ),
                             icon: Icon(Icons.cloud_download,
-                                size: 18,
+                                size: 12,
                                 color: Theme.of(context).primaryColor),
                           ));
               }),
@@ -472,7 +478,7 @@ class _DashBoardPageState extends State<DashBoardPage>
               },
               icon: Icon(
                 Icons.cloud_download,
-                size: 24,
+                size: 12,
                 color: Theme.of(context).colorScheme.primary,
               ),
               style: ButtonStyle(
@@ -496,7 +502,7 @@ class _DashBoardPageState extends State<DashBoardPage>
               },
               icon: Icon(
                 Icons.refresh,
-                size: 24,
+                size: 12,
                 color: Theme.of(context).colorScheme.primary,
               ),
               style: ButtonStyle(
@@ -520,7 +526,7 @@ class _DashBoardPageState extends State<DashBoardPage>
               },
               icon: Icon(
                 Icons.credit_score,
-                size: 24,
+                size: 12,
                 color: Theme.of(context).colorScheme.primary,
               ),
               style: ButtonStyle(
@@ -565,7 +571,7 @@ class _DashBoardPageState extends State<DashBoardPage>
               child: ElevatedButton.icon(
                 icon: Icon(
                   Icons.cleaning_services_rounded,
-                  size: 24,
+                  size: 12,
                   color: Theme.of(context).colorScheme.primary,
                 ),
                 onPressed: null,
@@ -643,7 +649,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
                                           fontWeight: FontWeight.w500,
-                                          fontSize: 14,
+                                          fontSize: 11,
                                           letterSpacing: -0.1,
                                           color: Theme.of(context)
                                               .colorScheme
@@ -674,7 +680,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                               fontWeight: FontWeight.w600,
-                                              fontSize: 14,
+                                              fontSize: 11,
                                               color: Theme.of(context)
                                                   .colorScheme
                                                   .primary,
@@ -731,7 +737,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
                                           fontWeight: FontWeight.w500,
-                                          fontSize: 14,
+                                          fontSize: 11,
                                           letterSpacing: -0.1,
                                           color: Theme.of(context)
                                               .colorScheme
@@ -763,7 +769,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                               fontWeight: FontWeight.w600,
-                                              fontSize: 14,
+                                              fontSize: 11,
                                               color: Theme.of(context)
                                                   .colorScheme
                                                   .primary,
@@ -843,7 +849,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                               textAlign: TextAlign.center,
                                               style: TextStyle(
                                                 fontWeight: FontWeight.normal,
-                                                fontSize: 14,
+                                                fontSize: 11,
                                                 letterSpacing: 0.0,
                                                 color: Theme.of(context)
                                                     .colorScheme
@@ -858,7 +864,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                               textAlign: TextAlign.center,
                                               style: TextStyle(
                                                 fontWeight: FontWeight.normal,
-                                                fontSize: 14,
+                                                fontSize: 11,
                                                 letterSpacing: 0.0,
                                                 color: Theme.of(context)
                                                     .colorScheme
@@ -930,7 +936,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontWeight: FontWeight.w500,
-                            fontSize: 12,
+                            fontSize: 11,
                             letterSpacing: -0.2,
                             color: Theme.of(context).colorScheme.primary,
                           ),
@@ -970,7 +976,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
-                              fontSize: 12,
+                              fontSize: 11,
                               color: Theme.of(context)
                                   .colorScheme
                                   .primary
@@ -991,7 +997,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontWeight: FontWeight.w500,
-                            fontSize: 12,
+                            fontSize: 11,
                             letterSpacing: -0.2,
                             color: Theme.of(context).colorScheme.primary,
                           ),
@@ -1033,7 +1039,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                               fontWeight: FontWeight.w600,
                               letterSpacing: -1,
                               wordSpacing: -1,
-                              fontSize: 12,
+                              fontSize: 11,
                               color: Theme.of(context)
                                   .colorScheme
                                   .primary
@@ -1058,7 +1064,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontWeight: FontWeight.w500,
-                                fontSize: 12,
+                                fontSize: 11,
                                 letterSpacing: -0.2,
                                 color: Theme.of(context).colorScheme.primary,
                               ),
@@ -1099,7 +1105,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  fontSize: 12,
+                                  fontSize: 11,
                                   color: Theme.of(context)
                                       .colorScheme
                                       .primary
@@ -1125,7 +1131,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                               '吸血中',
                               style: TextStyle(
                                 fontWeight: FontWeight.w500,
-                                fontSize: 12,
+                                fontSize: 11,
                                 letterSpacing: -0.2,
                                 color: Theme.of(context).colorScheme.primary,
                               ),
@@ -1166,7 +1172,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  fontSize: 12,
+                                  fontSize: 11,
                                   color: Theme.of(context)
                                       .colorScheme
                                       .primary
@@ -1411,7 +1417,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                 child: Text(
                   '${data.nickname}: ${filesize(data.latestStatusInfo?.uploaded ?? 0)}',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 11,
                     color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
