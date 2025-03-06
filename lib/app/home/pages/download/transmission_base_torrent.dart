@@ -155,7 +155,7 @@ class TrTorrent {
       recheckProgress: json['recheckProgress'] ?? 0,
       secondsDownloading: json['secondsDownloading'] ?? 0,
       secondsSeeding: json['secondsSeeding'] ?? 0,
-      seedRatioLimit: json['seedRatioLimit'] ?? 0.0,
+      seedRatioLimit: json['seedRatioLimit'].toDouble() ?? 0.0,
       seedRatioLimited: json['seedRatioLimited'] ?? 0,
       seedRatioMode: json['seedRatioMode'] ?? 0,
       sizeWhenDone: json['sizeWhenDone'] ?? 0,
