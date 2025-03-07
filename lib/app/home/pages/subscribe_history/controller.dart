@@ -19,7 +19,7 @@ class SubscribeHistoryController extends GetxController {
 
   getSubHistoryFromServer() async {
     CommonResponse response = await getSubHistoryListApi();
-    if (response.code == 0) {
+    if (response.succeed) {
       subHistory = response.data;
     } else {
       Get.snackbar('订阅历史获取失败', "订阅历史获取失败");
@@ -39,5 +39,11 @@ class SubscribeHistoryController extends GetxController {
     super.onClose();
   }
 
-  removeHistory(SubHistory history) {}
+  removeHistory(SubHistory history) async {
+    return await deleteSubHistoryListApi(history);
+  }
+
+  pushTorrent(SubHistory history) async {
+    return await pushTorrentApi(history);
+  }
 }

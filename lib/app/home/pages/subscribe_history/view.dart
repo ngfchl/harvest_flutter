@@ -79,16 +79,18 @@ class _SubscribeHistoryPageState extends State<SubscribeHistoryPage> {
                   ),
                   ElevatedButton(
                     onPressed: () async {
-                      Get.back(result: true);
                       CommonResponse res =
                           await controller.removeHistory(history);
-                      if (res.code == 0) {
+                      if (res.succeed) {
                         Get.snackbar('删除通知', res.msg.toString(),
-                            colorText: Theme.of(context).colorScheme.primary);
+                            colorText: Get.context?.theme.colorScheme.primary);
+                        controller.subHistory.remove(history);
+                        await controller.initData();
                       } else {
                         Get.snackbar('删除通知', res.msg.toString(),
-                            colorText: Theme.of(context).colorScheme.error);
+                            colorText: Get.context?.theme.colorScheme.error);
                       }
+                      Get.back(result: true);
                     },
                     child: const Text('确认'),
                   ),
@@ -132,7 +134,9 @@ class _SubscribeHistoryPageState extends State<SubscribeHistoryPage> {
                 Icons.upload,
                 size: 28,
               ),
-              onPressed: () {},
+              onPressed: () async {
+                await controller.pushTorrent(history);
+              },
             ),
           ),
           Padding(
