@@ -21,7 +21,6 @@ class SubscribeController extends GetxController {
   List<Subscribe> subList = [];
   List<MetaDataItem> tagCategoryList = [];
   List<SubTag> tags = [];
-  List<Downloader> downloaderList = <Downloader>[];
   bool isDownloaderLoading = false;
 
   @override
@@ -33,21 +32,10 @@ class SubscribeController extends GetxController {
   initData() async {
     await subTagController.initData();
     await rssController.initData();
-    await downloadController.getDownloaderListFromServer();
     tagCategoryList = subTagController.tagCategoryList;
     tags = subTagController.tags.where((e) => e.available == true).toList();
-    downloaderList = downloadController.dataList;
-    Logger.instance.i(tags
-        .where((element) =>
-            element.available == true && element.category == 'discount')
-        .map((e) => e.name!)
-        .toList());
-    Logger.instance.i(downloaderList);
     Logger.instance.i(tagCategoryList);
     await getSubscribeFromServer();
-    if (downloadController.dataList.isEmpty) {
-      await getDownloaderListFromServer();
-    }
     update();
   }
 
@@ -57,7 +45,6 @@ class SubscribeController extends GetxController {
       update();
       await downloadController.getDownloaderListFromServer();
       Logger.instance.i('下载器列表:${downloadController.dataList}');
-      downloaderList = downloadController.dataList;
     } catch (e) {
       Get.snackbar('下载器信息获取失败', e.toString());
     }

@@ -232,9 +232,9 @@ class _SubscribePageState extends State<SubscribePage> {
 
   Future<void> _openEditDialogX(Subscribe? sub) async {
     final dialogController = Get.put(EditDialogController());
-    if (controller.downloaderList.isEmpty) {
+    if (controller.downloadController.dataList.isEmpty) {
       await controller.getDownloaderListFromServer();
-      if (controller.downloaderList.isEmpty) {
+      if (controller.downloadController.dataList.isEmpty) {
         Get.snackbar('无下载器可用', '请先到下载管理添加下载器后重试！');
         return;
       }
@@ -271,9 +271,10 @@ class _SubscribePageState extends State<SubscribePage> {
                         Padding(
                           padding: const EdgeInsets.all(8),
                           child: DropdownSearch<Downloader>(
-                            items: controller.subController.downloaderList,
+                            items: controller
+                                .subController.downloadController.dataList,
                             selectedItem: controller
-                                .subController.downloaderList
+                                .subController.downloadController.dataList
                                 .firstWhereOrNull((element) =>
                                     element.id ==
                                     int.parse(
@@ -342,7 +343,9 @@ class _SubscribePageState extends State<SubscribePage> {
                                     CommonResponse res = await controller
                                         .subController
                                         .getDownloaderCategoryList(controller
-                                            .subController.downloaderList
+                                            .subController
+                                            .downloadController
+                                            .dataList
                                             .firstWhere((element) =>
                                                 element.id ==
                                                 int.parse(controller
@@ -618,7 +621,7 @@ class EditDialogController extends GetxController {
     imdbController.text = sub?.imdb ?? '';
     tmdbController.text = sub?.tmdb ?? '';
     downloaderController.text = sub?.downloaderId?.toString() ??
-        subController.downloaderList[0].id.toString();
+        subController.downloadController.dataList[0].id.toString();
     rssList.value = sub?.rssList ?? [];
     props = {
       'exclude': (sub?.exclude ?? <String>[]).obs,
