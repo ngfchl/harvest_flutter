@@ -80,3 +80,13 @@ removeSubscribeApi(Subscribe sub) async {
 Future<CommonResponse> getSubHistoryListApi() async {
   return await fetchDataList(Api.SUB_HISTORY, (p0) => SubHistory.fromJson(p0));
 }
+
+Future<CommonResponse> deleteSubHistoryListApi(SubHistory history) async {
+  String apiUrl = '${Api.SUB_HISTORY}/${history.id}';
+  return await removeData(apiUrl);
+}
+
+Future<CommonResponse> pushTorrentApi(SubHistory history) async {
+  String apiUrl = '${Api.SUB_HISTORY}/${history.id}';
+  return await editData(apiUrl, {});
+}
