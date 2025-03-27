@@ -10,6 +10,10 @@ String formatCreatedTimeToDateString(StatusInfo item) {
   return DateFormat("MM-dd").format(item.createdAt);
 }
 
+String formatCreatedTimeToMonthString(StatusInfo item) {
+  return DateFormat("yyyy-MM").format(item.createdAt);
+}
+
 String generateRandomString(
   int length, {
   bool includeNumbers = true,

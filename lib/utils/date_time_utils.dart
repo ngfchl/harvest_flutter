@@ -55,16 +55,44 @@ String formatDuration(int seconds) {
   return parts.length > 2 ? parts.sublist(0, 2).join() : parts.join();
 }
 
+////@title 获取今天的日期字符串
+///@description
+///@updateTime  2025/03/27
 String getDateString(DateTime dt) {
   return DateFormat('yyyy-MM-dd').format(dt);
 }
 
+////@title 获取今天的日期字符串
+///@description 获取今天的日期字符串
+///@updateTime 2025/03/27
 String getTodayString() {
   var dt = DateTime.now();
   return getDateString(dt);
 }
 
+////@title 获取昨天的日期字符串
+///@description 获取昨天的日期字符串
+///@updateTime
 String getYesterdayString() {
   var dt = DateTime.now().subtract(const Duration(days: 1));
   return getDateString(dt);
+}
+
+////@title 获取过去12个月的最后一天的日期列表
+///@description
+///@updateTime  2025/03/27
+List<String> getLastDaysOfPastYear() {
+  DateTime now = DateTime.now();
+  return List.generate(12, (i) {
+    DateTime lastDay = DateTime(now.year, now.month - i + 1, 0);
+    return getDateString(lastDay);
+  }).skip(1).toList().reversed.toList();
+}
+
+////@title 获取当前月份的天数
+///@description
+///@updateTime  2025/03/27
+int getDaysInCurrentMonth() {
+  DateTime now = DateTime.now();
+  return DateTime(now.year, now.month + 1, 0).day;
 }
