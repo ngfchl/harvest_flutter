@@ -76,6 +76,29 @@ class _WebViewPageState extends State<WebViewPage> {
           ),
           actions: [
             GetBuilder<WebViewPageController>(builder: (controller) {
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  if (controller.canGoBack)
+                    GFIconButton(
+                      icon: const Icon(Icons.arrow_back),
+                      type: GFButtonType.transparent,
+                      onPressed: () {
+                        webController?.goBack();
+                      },
+                    ),
+                  if (controller.canGoForward)
+                    GFIconButton(
+                      icon: const Icon(Icons.arrow_forward),
+                      type: GFButtonType.transparent,
+                      onPressed: () {
+                        webController?.goForward();
+                      },
+                    ),
+                ],
+              );
+            }),
+            GetBuilder<WebViewPageController>(builder: (controller) {
               if (controller.mySite != null && controller.progress >= 100) {
                 return GFIconButton(
                   icon: const Icon(
@@ -366,30 +389,6 @@ class _WebViewPageState extends State<WebViewPage> {
                   },
                 ),
               ),
-            ],
-          );
-        }),
-        floatingActionButtonLocation:
-            FloatingActionButtonLocation.miniCenterFloat,
-        floatingActionButton:
-            GetBuilder<WebViewPageController>(builder: (controller) {
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              if (controller.canGoBack)
-                GFIconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () {
-                    webController?.goBack();
-                  },
-                ),
-              if (controller.canGoForward)
-                GFIconButton(
-                  icon: const Icon(Icons.arrow_forward),
-                  onPressed: () {
-                    webController?.goForward();
-                  },
-                ),
             ],
           );
         }),
