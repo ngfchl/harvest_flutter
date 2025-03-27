@@ -95,95 +95,164 @@ class _WebViewPageState extends State<WebViewPage> {
                         webController?.goForward();
                       },
                     ),
+                  if (controller.mySite != null && controller.progress >= 100)
+                    GFIconButton(
+                      icon: const Icon(
+                        Icons.cookie_sharp,
+                        size: 24,
+                      ),
+                      onPressed: () async {
+                        try {
+                          String? htmlStr = await webController?.getHtml();
+                          var auth = await webController
+                              ?.webStorage.localStorage
+                              .getItem(key: 'auth');
+                          Logger.instance.d('auth: $auth');
+                          // Logger.instance.i(htmlStr);
+                          var document = parse(htmlStr).documentElement;
+                          HtmlXPath selector = HtmlXPath.node(document!);
+                          Logger.instance.d(controller.website!.myUidRule);
+                          var result = selector
+                              .queryXPath(controller.website!.myUidRule);
+                          Logger.instance.d(result.attr);
+                          RegExp regex = RegExp(r'\d+(?=\]?$)');
+                          Logger.instance.i(
+                              '获取到的 UID：${regex.firstMatch(result.attr!.trim())?.group(0)}');
+                          var passkeyRes = selector
+                              .queryXPath(controller.website!.myPasskeyRule)
+                              .attrs;
+                          Logger.instance.i('获取到的 Passkey：$passkeyRes');
+                          // return;
+                          String cookies = await webController
+                              ?.evaluateJavascript(source: "document.cookie");
+                          Logger.instance.i('获取到的 Cookies：$cookies');
+
+                          if (controller.mySite != null &&
+                              controller.mySite!.mirror!.contains('m-team')) {
+                            cookies = await webController?.evaluateJavascript(
+                                source: "localStorage.auth");
+                          }
+                          // 复制到剪切板
+                          Clipboard.setData(ClipboardData(text: cookies));
+                          Get.snackbar('获取 UID和 Cookie 成功',
+                              '你的 UID 是：${regex.firstMatch(result.attr!.trim())?.group(0)}，Cookie已复制到剪切板',
+                              colorText: Theme.of(context).colorScheme.primary);
+                        } catch (e) {
+                          Get.snackbar('获取 UID 失败', '请手动填写站点 UID',
+                              colorText: Theme.of(context).colorScheme.error);
+                          controller.mySite =
+                              controller.mySite?.copyWith(userId: '');
+                        }
+                      },
+                      type: GFButtonType.transparent,
+                    ),
+                  if (controller.info != null && controller.isTorrentPath)
+                    GFIconButton(
+                      icon: const Icon(
+                        Icons.link_outlined,
+                        size: 24,
+                      ),
+                      onPressed: () async {
+                        Clipboard.setData(
+                            ClipboardData(text: controller.info!.magnetUrl));
+                        Get.snackbar('复制下载链接', '种子下载链接已复制到剪切板！',
+                            colorText: Theme.of(context).colorScheme.error);
+                      },
+                      type: GFButtonType.transparent,
+                    ),
+                  if (controller.info != null && controller.isTorrentPath)
+                    GFIconButton(
+                      icon: const Icon(
+                        Icons.download_outlined,
+                        size: 24,
+                      ),
+                      onPressed: () async {
+                        await openDownloaderListSheet(
+                            context, controller.info!);
+                      },
+                      type: GFButtonType.transparent,
+                    ),
+                  if (controller.mySite != null && controller.progress >= 100)
+                    GFIconButton(
+                      icon: const Icon(
+                        Icons.cookie_outlined,
+                        size: 24,
+                      ),
+                      onPressed: () async {
+                        List<Cookie> cookies = await cookieManager.getCookies(
+                            url: WebUri(controller.url));
+                        String cookieStr = cookies
+                            .map((e) => '${e.name}=${e.value}')
+                            .join('; ');
+                        var auth = await webController?.webStorage.localStorage
+                            .getItem(key: 'auth');
+                        Logger.instance.d(auth);
+                        controller.mySite = controller.mySite?.copyWith(
+                          cookie:
+                              controller.mySite?.mirror?.contains('m-team') !=
+                                      true
+                                  ? cookieStr
+                                  : auth,
+                        );
+                        Logger.instance.d('获取到的 Cookie：$cookieStr');
+                        controller.mySite =
+                            controller.mySite?.copyWith(cookie: cookieStr);
+                        String? htmlStr = await webController?.getHtml();
+                        Logger.instance.i(htmlStr);
+                        var document = parse(htmlStr).documentElement;
+                        HtmlXPath selector = HtmlXPath.node(document!);
+                        if (controller.mySite?.userId == null ||
+                            controller.mySite?.userId == '') {
+                          try {
+                            var result = selector
+                                .queryXPath(controller.website!.myUidRule);
+
+                            RegExp regex = RegExp(r'\d+(?=\]?$)');
+                            controller.mySite = controller.mySite?.copyWith(
+                              userId: regex
+                                  .firstMatch(result.attr!.trim())
+                                  ?.group(0),
+                            );
+                          } catch (e) {
+                            Get.snackbar('获取 UID 失败', '请手动填写站点 UID',
+                                colorText: Theme.of(context).colorScheme.error);
+                          }
+                        }
+                        if (controller.mySite?.passkey == null ||
+                            controller.mySite?.passkey == '') {
+                          var passkeyRes = selector
+                              .queryXPath(controller.website!.myPasskeyRule)
+                              .attr;
+                          Logger.instance.i('获取到的 Passkey：$passkeyRes');
+                          if (passkeyRes != null && passkeyRes.isNotEmpty) {
+                            controller.mySite = controller.mySite
+                                ?.copyWith(passkey: passkeyRes);
+                          }
+                        }
+                        final response = await editMySite(controller.mySite!);
+
+                        if (response.code == 0) {
+                          Get.snackbar(
+                            '保存成功！',
+                            response.msg!,
+                            snackPosition: SnackPosition.TOP,
+                            colorText: Theme.of(context).colorScheme.primary,
+                            duration: const Duration(seconds: 3),
+                          );
+                        } else {
+                          Get.snackbar(
+                            '保存出错啦！',
+                            response.msg!,
+                            snackPosition: SnackPosition.TOP,
+                            colorText: Theme.of(context).colorScheme.error,
+                            duration: const Duration(seconds: 3),
+                          );
+                        }
+                      },
+                      type: GFButtonType.transparent,
+                    )
                 ],
               );
-            }),
-            GetBuilder<WebViewPageController>(builder: (controller) {
-              if (controller.mySite != null && controller.progress >= 100) {
-                return GFIconButton(
-                  icon: const Icon(
-                    Icons.cookie_sharp,
-                    size: 24,
-                  ),
-                  onPressed: () async {
-                    try {
-                      String? htmlStr = await webController?.getHtml();
-                      var auth = await webController?.webStorage.localStorage
-                          .getItem(key: 'auth');
-                      Logger.instance.d('auth: $auth');
-                      // Logger.instance.i(htmlStr);
-                      var document = parse(htmlStr).documentElement;
-                      HtmlXPath selector = HtmlXPath.node(document!);
-                      Logger.instance.d(controller.website!.myUidRule);
-                      var result =
-                          selector.queryXPath(controller.website!.myUidRule);
-                      Logger.instance.d(result.attr);
-                      RegExp regex = RegExp(r'\d+(?=\]?$)');
-                      Logger.instance.i(
-                          '获取到的 UID：${regex.firstMatch(result.attr!.trim())?.group(0)}');
-                      var passkeyRes = selector
-                          .queryXPath(controller.website!.myPasskeyRule)
-                          .attrs;
-                      Logger.instance.i('获取到的 Passkey：$passkeyRes');
-                      // return;
-                      String cookies = await webController?.evaluateJavascript(
-                          source: "document.cookie");
-                      Logger.instance.i('获取到的 Cookies：$cookies');
-
-                      if (controller.mySite != null &&
-                          controller.mySite!.mirror!.contains('m-team')) {
-                        cookies = await webController?.evaluateJavascript(
-                            source: "localStorage.auth");
-                      }
-                      // 复制到剪切板
-                      Clipboard.setData(ClipboardData(text: cookies));
-                      Get.snackbar('获取 UID和 Cookie 成功',
-                          '你的 UID 是：${regex.firstMatch(result.attr!.trim())?.group(0)}，Cookie已复制到剪切板',
-                          colorText: Theme.of(context).colorScheme.primary);
-                    } catch (e) {
-                      Get.snackbar('获取 UID 失败', '请手动填写站点 UID',
-                          colorText: Theme.of(context).colorScheme.error);
-                      controller.mySite =
-                          controller.mySite?.copyWith(userId: '');
-                    }
-                  },
-                  type: GFButtonType.transparent,
-                );
-              }
-              return const SizedBox.shrink();
-            }),
-            GetBuilder<WebViewPageController>(builder: (controller) {
-              if (controller.info != null && controller.isTorrentPath) {
-                return GFIconButton(
-                  icon: const Icon(
-                    Icons.link_outlined,
-                    size: 24,
-                  ),
-                  onPressed: () async {
-                    Clipboard.setData(
-                        ClipboardData(text: controller.info!.magnetUrl));
-                    Get.snackbar('复制下载链接', '种子下载链接已复制到剪切板！',
-                        colorText: Theme.of(context).colorScheme.error);
-                  },
-                  type: GFButtonType.transparent,
-                );
-              }
-              return const SizedBox.shrink();
-            }),
-            GetBuilder<WebViewPageController>(builder: (controller) {
-              if (controller.info != null && controller.isTorrentPath) {
-                return GFIconButton(
-                  icon: const Icon(
-                    Icons.download_outlined,
-                    size: 24,
-                  ),
-                  onPressed: () async {
-                    await openDownloaderListSheet(context, controller.info!);
-                  },
-                  type: GFButtonType.transparent,
-                );
-              }
-              return const SizedBox.shrink();
             }),
             GFIconButton(
               icon: const Icon(
@@ -200,86 +269,6 @@ class _WebViewPageState extends State<WebViewPage> {
               },
               type: GFButtonType.transparent,
             ),
-            GetBuilder<WebViewPageController>(builder: (controller) {
-              if (controller.mySite != null && controller.progress >= 100) {
-                return GFIconButton(
-                  icon: const Icon(
-                    Icons.cookie_outlined,
-                    size: 24,
-                  ),
-                  onPressed: () async {
-                    List<Cookie> cookies = await cookieManager.getCookies(
-                        url: WebUri(controller.url));
-                    String cookieStr =
-                        cookies.map((e) => '${e.name}=${e.value}').join('; ');
-                    var auth = await webController?.webStorage.localStorage
-                        .getItem(key: 'auth');
-                    Logger.instance.d(auth);
-                    controller.mySite = controller.mySite?.copyWith(
-                      cookie:
-                          controller.mySite?.mirror?.contains('m-team') != true
-                              ? cookieStr
-                              : auth,
-                    );
-                    Logger.instance.d('获取到的 Cookie：$cookieStr');
-                    controller.mySite =
-                        controller.mySite?.copyWith(cookie: cookieStr);
-                    String? htmlStr = await webController?.getHtml();
-                    Logger.instance.i(htmlStr);
-                    var document = parse(htmlStr).documentElement;
-                    HtmlXPath selector = HtmlXPath.node(document!);
-                    if (controller.mySite?.userId == null ||
-                        controller.mySite?.userId == '') {
-                      try {
-                        var result =
-                            selector.queryXPath(controller.website!.myUidRule);
-
-                        RegExp regex = RegExp(r'\d+(?=\]?$)');
-                        controller.mySite = controller.mySite?.copyWith(
-                          userId:
-                              regex.firstMatch(result.attr!.trim())?.group(0),
-                        );
-                      } catch (e) {
-                        Get.snackbar('获取 UID 失败', '请手动填写站点 UID',
-                            colorText: Theme.of(context).colorScheme.error);
-                      }
-                    }
-                    if (controller.mySite?.passkey == null ||
-                        controller.mySite?.passkey == '') {
-                      var passkeyRes = selector
-                          .queryXPath(controller.website!.myPasskeyRule)
-                          .attr;
-                      Logger.instance.i('获取到的 Passkey：$passkeyRes');
-                      if (passkeyRes != null && passkeyRes.isNotEmpty) {
-                        controller.mySite =
-                            controller.mySite?.copyWith(passkey: passkeyRes);
-                      }
-                    }
-                    final response = await editMySite(controller.mySite!);
-
-                    if (response.code == 0) {
-                      Get.snackbar(
-                        '保存成功！',
-                        response.msg!,
-                        snackPosition: SnackPosition.TOP,
-                        colorText: Theme.of(context).colorScheme.primary,
-                        duration: const Duration(seconds: 3),
-                      );
-                    } else {
-                      Get.snackbar(
-                        '保存出错啦！',
-                        response.msg!,
-                        snackPosition: SnackPosition.TOP,
-                        colorText: Theme.of(context).colorScheme.error,
-                        duration: const Duration(seconds: 3),
-                      );
-                    }
-                  },
-                  type: GFButtonType.transparent,
-                );
-              }
-              return const SizedBox.shrink();
-            }),
             GFIconButton(
               icon: const Icon(
                 Icons.refresh,
