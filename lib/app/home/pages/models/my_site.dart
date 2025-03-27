@@ -243,8 +243,19 @@ class MySite {
     return statusInfo[getStatusMaxKey()];
   }
 
+  StatusInfo? getEarliestStatusInfo() {
+    if (statusInfo.isEmpty) {
+      return null;
+    }
+    return statusInfo[getStatusMinKey()];
+  }
+
   StatusInfo? get latestStatusInfo {
     return getLatestStatusInfo();
+  }
+
+  StatusInfo? get earliestStatusInfo {
+    return getEarliestStatusInfo();
   }
 
   String getStatusMaxKey() {
@@ -255,6 +266,16 @@ class MySite {
       return statusInfo.keys.first;
     }
     return statusInfo.keys.reduce((a, b) => a.compareTo(b) > 0 ? a : b);
+  }
+
+  String getStatusMinKey() {
+    if (statusInfo.isEmpty) {
+      return '';
+    }
+    if (statusInfo.length == 1) {
+      return statusInfo.keys.first;
+    }
+    return statusInfo.keys.reduce((a, b) => b.compareTo(a) > 0 ? a : b);
   }
 
   String getSignMaxKey() {
