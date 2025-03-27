@@ -26,6 +26,7 @@ class DashBoardController extends GetxController {
   List<Map> stackChartDataList = [];
   List<MetaDataItem> seedDataList = [];
   List<Map> uploadIncrementDataList = [];
+  List<MetaDataItem> uploadMonthIncrementDataList = [];
   List<Map> downloadIncrementDataList = [];
   int totalUploaded = 0;
   int totalDownloaded = 0;
@@ -40,6 +41,7 @@ class DashBoardController extends GetxController {
   bool buildSmartLabelPieChart = true;
   bool buildSeedVolumePieChart = true;
   bool buildStackedBar = true;
+  bool buildMonthStackedBar = true;
   bool buildSiteInfo = true;
   bool showTodayUploadedIncrement = true;
   bool showTodayDownloadedIncrement = true;
@@ -84,12 +86,15 @@ class DashBoardController extends GetxController {
     totalLeeching = 0;
     todayUploadIncrement = 0;
     todayDownloadIncrement = 0;
-    uploadIncrementDataList = [];
-    downloadIncrementDataList = [];
+    uploadIncrementDataList.clear();
+    uploadMonthIncrementDataList.clear();
+    downloadIncrementDataList.clear();
     privateMode = SPUtil.getBool('DashBoardPrivateMode', defaultValue: false)!;
     List<String> dateList = generateDateList(days);
     String todayStr = getTodayString();
     String yesterdayStr = getYesterdayString();
+    List<String> monthList = getLastDaysOfPastYear();
+    monthList.add(todayStr);
     if (mySiteController.mySiteList.isEmpty) {
       await mySiteController.loadCacheInfo();
       update();
@@ -119,9 +124,14 @@ class DashBoardController extends GetxController {
             .map((e) => mySite.statusInfo[e])
             .where((element) => element != null)
             .toList();
-
+        Map<String, dynamic> monthStatusInfoMap = Map.fromEntries(mySite
+            .statusInfo.entries
+            .where((entry) => monthList.contains(entry.key)));
+        Logger.instance.d("${mySite.nickname}: $monthStatusInfoMap");
         stackChartDataList
             .add({'site': mySite.nickname, 'data': statusInfoList});
+        uploadMonthIncrementDataList.add(
+            MetaDataItem(name: mySite.nickname, value: monthStatusInfoMap));
         if (mySite.available == true && mySite.statusInfo.length > 1) {
           int increment = mySite.statusInfo[todayStr] != null &&
                   mySite.statusInfo[yesterdayStr] != null
