@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:harvest/common/meta_item.dart';
 import 'package:harvest/utils/storage.dart';
 import 'package:intl/intl.dart';
 
@@ -23,6 +24,7 @@ class DashBoardController extends GetxController {
     // }
   ];
   List<Map> stackChartDataList = [];
+  List<MetaDataItem> seedDataList = [];
   List<Map> uploadIncrementDataList = [];
   List<Map> downloadIncrementDataList = [];
   int totalUploaded = 0;
@@ -36,6 +38,7 @@ class DashBoardController extends GetxController {
   bool isLoading = false;
   bool buildSiteInfoCard = true;
   bool buildSmartLabelPieChart = true;
+  bool buildSeedVolumePieChart = true;
   bool buildStackedBar = true;
   bool buildSiteInfo = true;
   bool showTodayUploadedIncrement = true;
@@ -101,7 +104,7 @@ class DashBoardController extends GetxController {
       return (statusB?.uploaded ?? 0).compareTo(statusA?.uploaded ?? 0);
     });
     stackChartDataList.clear();
-    pieDataList.clear();
+    seedDataList.clear();
 
     for (final MySite mySite
         in statusList.where((item) => !excludeUrlList.contains(item.mirror))) {
@@ -154,6 +157,8 @@ class DashBoardController extends GetxController {
         totalSeedVol += currentStatus.seedVolume;
         totalSeeding += currentStatus.seed;
         totalLeeching += currentStatus.leech;
+        seedDataList.add(MetaDataItem(
+            name: mySite.nickname, value: currentStatus.seedVolume));
       }
       // 若当前站点无状态信息，添加默认的饼图数据
       else {
@@ -167,6 +172,7 @@ class DashBoardController extends GetxController {
 
     downloadIncrementDataList
         .sort((Map a, Map b) => b["data"].compareTo(a["data"]));
+    seedDataList.sort((a, b) => b.value.compareTo(a.value));
     isLoading = false;
     update();
   }

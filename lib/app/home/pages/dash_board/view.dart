@@ -321,6 +321,22 @@ class _DashBoardPageState extends State<DashBoardPage>
                                               }),
                                           CheckboxListTile(
                                               title: Text(
+                                                "做种总量饼图",
+                                                style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: Theme.of(context)
+                                                        .primaryColor),
+                                              ),
+                                              value: controller
+                                                  .buildSeedVolumePieChart,
+                                              onChanged: (bool? value) {
+                                                controller
+                                                        .buildSeedVolumePieChart =
+                                                    value!;
+                                                controller.update();
+                                              }),
+                                          CheckboxListTile(
+                                              title: Text(
                                                 "每日数据柱图",
                                                 style: TextStyle(
                                                     fontSize: 12,
@@ -408,6 +424,8 @@ class _DashBoardPageState extends State<DashBoardPage>
                                       _buildSiteInfoCard(),
                                     if (controller.buildSmartLabelPieChart)
                                       _buildSmartLabelPieChart(),
+                                    if (controller.buildSeedVolumePieChart)
+                                      _buildSeedVolumePieChart(),
                                     if (controller.buildStackedBar)
                                       _buildStackedBar(),
                                     if (controller.buildSiteInfo)
@@ -1430,6 +1448,61 @@ class _DashBoardPageState extends State<DashBoardPage>
     });
   }
 
+  Widget _buildSeedVolumePieChart() {
+    return GetBuilder<DashBoardController>(builder: (controller) {
+      return CustomCard(
+        height: 260,
+        padding: const EdgeInsets.only(left: 10),
+        child: SfCircularChart(
+          title: ChartTitle(
+              text: '做种总量：${filesize(controller.totalSeedVol)}',
+              textStyle: TextStyle(
+                fontSize: 11,
+                color: Theme.of(context).colorScheme.primary,
+              )),
+          centerX: '47%',
+          centerY: '45%',
+          margin: const EdgeInsets.all(10),
+          legend: Legend(
+              position: LegendPosition.left,
+              // height: "20",
+              isVisible: true,
+              iconWidth: 8,
+              padding: 5,
+              itemPadding: 5,
+              // width: '64',
+              isResponsive: true,
+              textStyle: TextStyle(
+                fontSize: 8,
+                color: Theme.of(context).colorScheme.primary,
+              )),
+          series: _getSeedVolumePieSeries(),
+          tooltipBehavior: TooltipBehavior(
+            enable: true,
+            header: '',
+            canShowMarker: false,
+            activationMode: ActivationMode.singleTap,
+            builder: (dynamic data, dynamic point, dynamic series,
+                int pointIndex, int seriesIndex) {
+              return Container(
+                color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  '${data.name}: ${filesize(data.value ?? 0)}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              );
+            },
+          ),
+          enableMultiSelection: true,
+        ),
+      );
+    });
+  }
+
   List<PieSeries<MySite, String>> _getSmartLabelPieSeries() {
     return <PieSeries<MySite, String>>[
       PieSeries<MySite, String>(
@@ -1443,6 +1516,42 @@ class _DashBoardPageState extends State<DashBoardPage>
         yValueMapper: (MySite data, _) => data.latestStatusInfo?.uploaded ?? 0,
         dataLabelMapper: (MySite data, _) =>
             '${controller.privateMode ? "${data.nickname.substring(0, 1)}**" : data.nickname}: ${filesize(data.latestStatusInfo?.uploaded ?? 0)}',
+        enableTooltip: true,
+        explode: true,
+        explodeIndex: 0,
+        explodeOffset: '10%',
+        radius: '65%',
+        // pointRenderMode: PointRenderMode.gradient,
+        dataLabelSettings: DataLabelSettings(
+          margin: EdgeInsets.zero,
+          isVisible: true,
+          labelPosition: ChartDataLabelPosition.outside,
+          textStyle: TextStyle(
+            fontSize: 8,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          showZeroValue: false,
+          connectorLineSettings: const ConnectorLineSettings(
+            type: ConnectorType.curve,
+            length: '20%',
+          ),
+          labelIntersectAction: LabelIntersectAction.shift,
+        ),
+      )
+    ];
+  }
+
+  List<PieSeries<MetaDataItem, String>> _getSeedVolumePieSeries() {
+    return <PieSeries<MetaDataItem, String>>[
+      PieSeries<MetaDataItem, String>(
+        name: '站点做种数据汇总',
+        dataSource: controller.seedDataList,
+        xValueMapper: (MetaDataItem data, _) => controller.privateMode
+            ? "${data.name.substring(0, 1)}**"
+            : data.name,
+        yValueMapper: (MetaDataItem data, _) => data.value ?? 0,
+        dataLabelMapper: (MetaDataItem data, _) =>
+            '${controller.privateMode ? "${data.name.substring(0, 1)}**" : data.name}: ${filesize(data.value ?? 0)}',
         enableTooltip: true,
         explode: true,
         explodeIndex: 0,
