@@ -441,6 +441,7 @@ class DownloadForm extends StatelessWidget {
                       'is_paused': paused.value,
                       'rename': renameController.text,
                       'tags': tagsController.text,
+                      'cookie': cookieController.text,
                       'content_layout': contentLayout.value,
                       'stop_condition': stopCondition.value == 'None'
                           ? null
@@ -682,6 +683,7 @@ class DownloadForm extends StatelessWidget {
 
   Future<void> submitForm(Map<String, dynamic> formData, context) async {
     try {
+      Logger.instance.i('提交表单: $formData');
       CommonResponse res = await pushTorrentToDownloader(
           downloaderId: downloader.id!, formData: formData);
 
