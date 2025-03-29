@@ -59,6 +59,19 @@ class DashBoardController extends GetxController {
 
   Future<void> initData() async {
     isLoading = true;
+    privateMode = SPUtil.getBool('privateMode', defaultValue: false)!;
+    buildStackedBar = SPUtil.getBool('buildStackedBar', defaultValue: false)!;
+    buildSeedVolumePieChart =
+        SPUtil.getBool('buildSeedVolumePieChart', defaultValue: false)!;
+    buildSmartLabelPieChart =
+        SPUtil.getBool('buildSmartLabelPieChart', defaultValue: false)!;
+    buildMonthStackedBar =
+        SPUtil.getBool('buildMonthStackedBar', defaultValue: false)!;
+    buildSiteInfo = SPUtil.getBool('buildSiteInfo', defaultValue: false)!;
+    showTodayUploadedIncrement =
+        SPUtil.getBool('showTodayUploadedIncrement', defaultValue: false)!;
+    showTodayDownloadedIncrement =
+        SPUtil.getBool('showTodayDownloadedIncrement', defaultValue: false)!;
     update();
     mySiteController.initFlag = true;
     await initChartData();
@@ -89,7 +102,7 @@ class DashBoardController extends GetxController {
     uploadIncrementDataList.clear();
     uploadMonthIncrementDataList.clear();
     downloadIncrementDataList.clear();
-    privateMode = SPUtil.getBool('DashBoardPrivateMode', defaultValue: false)!;
+
     List<String> dateList = generateDateList(days);
     String todayStr = getTodayString();
     String yesterdayStr = getYesterdayString();

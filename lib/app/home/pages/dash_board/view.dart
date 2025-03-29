@@ -286,131 +286,101 @@ class _DashBoardPageState extends State<DashBoardPage>
                                           //           value!;
                                           //       controller.update();
                                           //     }),
-                                          CheckboxListTile(
-                                              title: Text(
-                                                "开启隐私模式",
-                                                style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: Theme.of(context)
-                                                        .primaryColor),
-                                              ),
-                                              value: controller.privateMode,
-                                              onChanged: (bool? value) {
-                                                controller.privateMode = value!;
-                                                SPUtil.setBool(
-                                                    'DashBoardPrivateMode',
-                                                    controller.privateMode);
-                                                controller.initChartData();
-                                                controller.update();
-                                              }),
-                                          CheckboxListTile(
-                                              title: Text(
-                                                "上传总量饼图",
-                                                style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: Theme.of(context)
-                                                        .primaryColor),
-                                              ),
-                                              value: controller
-                                                  .buildSmartLabelPieChart,
-                                              onChanged: (bool? value) {
-                                                controller
-                                                        .buildSmartLabelPieChart =
-                                                    value!;
-                                                controller.update();
-                                              }),
-                                          CheckboxListTile(
-                                              title: Text(
-                                                "做种总量饼图",
-                                                style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: Theme.of(context)
-                                                        .primaryColor),
-                                              ),
-                                              value: controller
-                                                  .buildSeedVolumePieChart,
-                                              onChanged: (bool? value) {
-                                                controller
-                                                        .buildSeedVolumePieChart =
-                                                    value!;
-                                                controller.update();
-                                              }),
-                                          CheckboxListTile(
-                                              title: Text(
-                                                "每日数据柱图",
-                                                style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: Theme.of(context)
-                                                        .primaryColor),
-                                              ),
-                                              value: controller.buildStackedBar,
-                                              onChanged: (bool? value) {
-                                                controller.buildStackedBar =
-                                                    value!;
-                                                controller.update();
-                                              }),
-                                          CheckboxListTile(
-                                              title: Text(
-                                                "每月数据柱图",
-                                                style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: Theme.of(context)
-                                                        .primaryColor),
-                                              ),
-                                              value: controller
-                                                  .buildMonthStackedBar,
-                                              onChanged: (bool? value) {
-                                                controller
-                                                        .buildMonthStackedBar =
-                                                    value!;
-                                                controller.update();
-                                              }),
-                                          CheckboxListTile(
-                                              title: Text(
-                                                "站点数据柱图",
-                                                style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: Theme.of(context)
-                                                        .primaryColor),
-                                              ),
-                                              value: controller.buildSiteInfo,
-                                              onChanged: (bool? value) {
-                                                controller.buildSiteInfo =
-                                                    value!;
-                                                controller.update();
-                                              }),
-                                          CheckboxListTile(
-                                              title: Text(
-                                                "今日上传增量",
-                                                style: TextStyle(
-                                                    fontSize: 11,
-                                                    color: Theme.of(context)
-                                                        .primaryColor),
-                                              ),
-                                              value: controller
-                                                  .showTodayUploadedIncrement,
-                                              onChanged: (bool? value) {
-                                                controller
-                                                        .showTodayUploadedIncrement =
-                                                    value!;
-                                                controller.update();
-                                              }),
-                                          CheckboxListTile(
-                                              title: Text(
-                                                "今日下载增量",
-                                                style: TextStyle(
-                                                    fontSize: 11,
-                                                    color: Theme.of(context)
-                                                        .primaryColor),
-                                              ),
-                                              value: controller
-                                                  .showTodayDownloadedIncrement,
-                                              onChanged: (bool? value) {
-                                                controller
-                                                        .showTodayDownloadedIncrement =
-                                                    value!;
-                                                controller.update();
-                                              }),
+
+                                          CustomCheckboxListTile(
+                                            title: '开启隐私模式',
+                                            value: controller.privateMode,
+                                            storageKey: 'privateMode',
+                                            onUpdate: (bool newValue) {
+                                              controller.privateMode = newValue;
+                                              Logger.instance.d(
+                                                  "privateMode: ${controller.privateMode}");
+                                              controller.initChartData();
+                                            },
+                                          ),
+                                          CustomCheckboxListTile(
+                                            title: '上传总量饼图',
+                                            value: controller
+                                                .buildSmartLabelPieChart,
+                                            storageKey:
+                                                'buildSmartLabelPieChart',
+                                            onUpdate: (bool newValue) {
+                                              controller
+                                                      .buildSmartLabelPieChart =
+                                                  newValue;
+                                              controller.update();
+                                            },
+                                          ),
+                                          CustomCheckboxListTile(
+                                            title: '做种总量饼图',
+                                            value: controller
+                                                .buildSeedVolumePieChart,
+                                            storageKey:
+                                                'buildSeedVolumePieChart',
+                                            onUpdate: (bool newValue) {
+                                              controller
+                                                      .buildSeedVolumePieChart =
+                                                  newValue;
+                                              controller.update();
+                                            },
+                                          ),
+                                          CustomCheckboxListTile(
+                                            title: '每日数据柱图',
+                                            value: controller.buildStackedBar,
+                                            storageKey: 'buildStackedBar',
+                                            onUpdate: (bool newValue) {
+                                              controller.buildStackedBar =
+                                                  newValue;
+                                              controller.update();
+                                            },
+                                          ),
+                                          CustomCheckboxListTile(
+                                            title: '每月数据柱图',
+                                            value:
+                                                controller.buildMonthStackedBar,
+                                            storageKey: 'buildMonthStackedBar',
+                                            onUpdate: (bool newValue) {
+                                              controller.buildMonthStackedBar =
+                                                  newValue;
+                                              controller.update();
+                                            },
+                                          ),
+                                          CustomCheckboxListTile(
+                                            title: '站点数据柱图',
+                                            value: controller.buildSiteInfo,
+                                            storageKey: 'buildSiteInfo',
+                                            onUpdate: (bool newValue) {
+                                              controller.buildSiteInfo =
+                                                  newValue;
+                                              controller.update();
+                                            },
+                                          ),
+                                          CustomCheckboxListTile(
+                                            title: '今日上传增量',
+                                            value: controller
+                                                .showTodayUploadedIncrement,
+                                            storageKey:
+                                                'showTodayUploadedIncrement',
+                                            onUpdate: (bool newValue) {
+                                              controller
+                                                      .showTodayUploadedIncrement =
+                                                  newValue;
+                                              controller.update();
+                                            },
+                                          ),
+                                          CustomCheckboxListTile(
+                                            title: '今日下载增量',
+                                            value: controller
+                                                .showTodayDownloadedIncrement,
+                                            storageKey:
+                                                'showTodayDownloadedIncrement',
+                                            onUpdate: (bool newValue) {
+                                              controller
+                                                      .showTodayDownloadedIncrement =
+                                                  newValue;
+                                              controller.update();
+                                            },
+                                          ),
                                         ],
                                       );
                                     })),
@@ -2030,5 +2000,38 @@ class _DashBoardPageState extends State<DashBoardPage>
   void dispose() {
     Get.delete<DashBoardController>();
     super.dispose();
+  }
+}
+
+class CustomCheckboxListTile extends StatelessWidget {
+  final String title;
+  final bool value;
+  final String storageKey;
+  final void Function(bool) onUpdate;
+
+  const CustomCheckboxListTile({
+    super.key,
+    required this.title,
+    required this.value,
+    required this.storageKey,
+    this.onUpdate = _defaultOnUpdate,
+  });
+
+  static void _defaultOnUpdate(bool newValue) {}
+
+  @override
+  Widget build(BuildContext context) {
+    return CheckboxListTile(
+      title: Text(
+        title,
+        style: TextStyle(fontSize: 12, color: Theme.of(context).primaryColor),
+      ),
+      value: value,
+      onChanged: (bool? newValue) {
+        if (newValue == null) return;
+        onUpdate(newValue);
+        SPUtil.setBool(storageKey, newValue);
+      },
+    );
   }
 }
