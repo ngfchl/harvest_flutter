@@ -1029,6 +1029,7 @@ class _MySitePagePageState extends State<MySitePage>
     RxBool repeatTorrents =
         mySite != null ? mySite.repeatTorrents.obs : true.obs;
     RxBool hrDiscern = mySite != null ? mySite.hrDiscern.obs : false.obs;
+    RxBool showInDash = mySite != null ? mySite.showInDash.obs : true.obs;
     RxBool searchTorrents =
         mySite != null ? mySite.searchTorrents.obs : true.obs;
 
@@ -1209,6 +1210,13 @@ class _MySitePagePageState extends State<MySitePage>
                             },
                           ),
                           ChoiceChip(
+                            label: const Text('Dash'),
+                            selected: showInDash.value,
+                            onSelected: (value) {
+                              showInDash.value = value;
+                            },
+                          ),
+                          ChoiceChip(
                             label: const Text('数据'),
                             selected: getInfo.value,
                             onSelected: (value) {
@@ -1335,6 +1343,7 @@ class _MySitePagePageState extends State<MySitePage>
                           packageFile: packageFile.value,
                           repeatTorrents: repeatTorrents.value,
                           hrDiscern: hrDiscern.value,
+                          showInDash: showInDash.value,
                           searchTorrents: searchTorrents.value,
                           available: available.value,
                         );
@@ -1360,6 +1369,7 @@ class _MySitePagePageState extends State<MySitePage>
                           packageFile: packageFile.value,
                           repeatTorrents: repeatTorrents.value,
                           hrDiscern: hrDiscern.value,
+                          showInDash: showInDash.value,
                           searchTorrents: searchTorrents.value,
                           available: available.value,
                           id: 0,

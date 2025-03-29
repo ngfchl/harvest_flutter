@@ -112,6 +112,7 @@ class MySite {
   final bool packageFile;
   final bool hrDiscern;
   final bool searchTorrents;
+  final bool showInDash;
   final Map<String, dynamic>? removeTorrentRules;
   final String timeJoin;
   final int? mail;
@@ -143,6 +144,7 @@ class MySite {
     required this.brushRss,
     required this.packageFile,
     required this.hrDiscern,
+    required this.showInDash,
     required this.searchTorrents,
     required this.removeTorrentRules,
     required this.timeJoin,
@@ -195,6 +197,7 @@ class MySite {
       brushRss: json['brush_rss'] as bool? ?? false,
       packageFile: json['package_file'] as bool? ?? false,
       hrDiscern: json['hr_discern'] as bool? ?? false,
+      showInDash: json['show_in_dash'] as bool? ?? true,
       searchTorrents: json['search_torrents'] as bool? ?? false,
       removeTorrentRules: json['remove_torrent_rules'] as Map<String, dynamic>?,
       timeJoin: json['time_join'] as String,
@@ -229,6 +232,7 @@ class MySite {
       'package_file': packageFile,
       'repeat_torrents': repeatTorrents,
       'hr_discern': hrDiscern,
+      'show_in_dash': showInDash,
       'search_torrents': searchTorrents,
       'remove_torrent_rules': removeTorrentRules,
       'updated_at': updatedAt.toString(),
@@ -310,6 +314,7 @@ class MySite {
     bool? brushRss,
     bool? packageFile,
     bool? hrDiscern,
+    bool? showInDash,
     bool? searchTorrents,
     Map<String, dynamic>? removeTorrentRules,
     String? timeJoin,
@@ -340,6 +345,7 @@ class MySite {
       brushRss: brushRss ?? this.brushRss,
       packageFile: packageFile ?? this.packageFile,
       hrDiscern: hrDiscern ?? this.hrDiscern,
+      showInDash: showInDash ?? this.showInDash,
       searchTorrents: searchTorrents ?? this.searchTorrents,
       removeTorrentRules: removeTorrentRules ?? this.removeTorrentRules,
       timeJoin: timeJoin ?? this.timeJoin,
