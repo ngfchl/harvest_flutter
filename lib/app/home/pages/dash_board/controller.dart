@@ -128,10 +128,12 @@ class DashBoardController extends GetxController {
             .statusInfo.entries
             .where((entry) => monthList.contains(entry.key)));
         Logger.instance.d("${mySite.nickname}: $monthStatusInfoMap");
-        stackChartDataList
-            .add({'site': mySite.nickname, 'data': statusInfoList});
-        uploadMonthIncrementDataList.add(
-            MetaDataItem(name: mySite.nickname, value: monthStatusInfoMap));
+        if (mySite.showInDash) {
+          stackChartDataList
+              .add({'site': mySite.nickname, 'data': statusInfoList});
+          uploadMonthIncrementDataList.add(
+              MetaDataItem(name: mySite.nickname, value: monthStatusInfoMap));
+        }
         if (mySite.available == true && mySite.statusInfo.length > 1) {
           int increment = mySite.statusInfo[todayStr] != null &&
                   mySite.statusInfo[yesterdayStr] != null
@@ -145,13 +147,17 @@ class DashBoardController extends GetxController {
               : 0;
           if (increment > 0) {
             todayUploadIncrement += increment;
-            uploadIncrementDataList
-                .add({'site': mySite.nickname, 'data': increment});
+            if (mySite.showInDash) {
+              uploadIncrementDataList
+                  .add({'site': mySite.nickname, 'data': increment});
+            }
           }
           if (downloaded > 0) {
             todayDownloadIncrement += downloaded;
-            downloadIncrementDataList
-                .add({'site': mySite.nickname, 'data': downloaded});
+            if (mySite.showInDash) {
+              downloadIncrementDataList
+                  .add({'site': mySite.nickname, 'data': downloaded});
+            }
           }
         }
       }
@@ -167,8 +173,10 @@ class DashBoardController extends GetxController {
         totalSeedVol += currentStatus.seedVolume;
         totalSeeding += currentStatus.seed;
         totalLeeching += currentStatus.leech;
-        seedDataList.add(MetaDataItem(
-            name: mySite.nickname, value: currentStatus.seedVolume));
+        if (mySite.showInDash) {
+          seedDataList.add(MetaDataItem(
+              name: mySite.nickname, value: currentStatus.seedVolume));
+        }
       }
       // 若当前站点无状态信息，添加默认的饼图数据
       else {

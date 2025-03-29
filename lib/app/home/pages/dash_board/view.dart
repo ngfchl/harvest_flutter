@@ -1526,7 +1526,8 @@ class _DashBoardPageState extends State<DashBoardPage>
       PieSeries<MySite, String>(
         name: '站点上传数据汇总',
         dataSource: controller.statusList
-            .where((element) => element.available == true)
+            .where((element) =>
+                element.available == true && element.showInDash == true)
             .toList(),
         xValueMapper: (MySite data, _) => controller.privateMode
             ? "${data.nickname.substring(0, 1)}**"
