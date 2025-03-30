@@ -60,18 +60,18 @@ class DashBoardController extends GetxController {
   Future<void> initData() async {
     isLoading = true;
     privateMode = SPUtil.getBool('privateMode', defaultValue: false)!;
-    buildStackedBar = SPUtil.getBool('buildStackedBar', defaultValue: false)!;
+    buildStackedBar = SPUtil.getBool('buildStackedBar', defaultValue: true)!;
     buildSeedVolumePieChart =
-        SPUtil.getBool('buildSeedVolumePieChart', defaultValue: false)!;
+        SPUtil.getBool('buildSeedVolumePieChart', defaultValue: true)!;
     buildSmartLabelPieChart =
-        SPUtil.getBool('buildSmartLabelPieChart', defaultValue: false)!;
+        SPUtil.getBool('buildSmartLabelPieChart', defaultValue: true)!;
     buildMonthStackedBar =
-        SPUtil.getBool('buildMonthStackedBar', defaultValue: false)!;
-    buildSiteInfo = SPUtil.getBool('buildSiteInfo', defaultValue: false)!;
+        SPUtil.getBool('buildMonthStackedBar', defaultValue: true)!;
+    buildSiteInfo = SPUtil.getBool('buildSiteInfo', defaultValue: true)!;
     showTodayUploadedIncrement =
-        SPUtil.getBool('showTodayUploadedIncrement', defaultValue: false)!;
+        SPUtil.getBool('showTodayUploadedIncrement', defaultValue: true)!;
     showTodayDownloadedIncrement =
-        SPUtil.getBool('showTodayDownloadedIncrement', defaultValue: false)!;
+        SPUtil.getBool('showTodayDownloadedIncrement', defaultValue: true)!;
     update();
     mySiteController.initFlag = true;
     await initChartData();
