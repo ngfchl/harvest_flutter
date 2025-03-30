@@ -1260,8 +1260,8 @@ class SettingPage extends StatelessWidget {
                         onChanged: (value) {
                           repeat.value = value;
                         }),
-                    CustomTextField(
-                        controller: proxyController, labelText: '服务器'),
+                    // CustomTextField(
+                    //     controller: proxyController, labelText: '服务器'),
                     Row(
                       children: [
                         Expanded(
