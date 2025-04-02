@@ -74,6 +74,7 @@ class MySiteController extends GetxController {
     searchKey = '';
     filterKey = 'available';
     sortKey = SPUtil.getLocalStorage('mySite-sortKey') ?? 'mySiteSortId';
+    sortReversed = SPUtil.getLocalStorage('mySite-sortReversed') ?? false;
     baseUrl = SPUtil.getLocalStorage('server');
     isLoaded = true;
     loadingFromServer = true;
@@ -248,6 +249,7 @@ class MySiteController extends GetxController {
   void sortStatusList() {
     Logger.instance.i('当前排序方式：$sortKey');
     SPUtil.setString('mySite-sortKey', sortKey);
+    SPUtil.setBool('sortReversed', sortReversed);
     // 拆分数据为有消息和无消息两组
     // 有消息的数据
     List<MySite> mailStatusList = showStatusList
