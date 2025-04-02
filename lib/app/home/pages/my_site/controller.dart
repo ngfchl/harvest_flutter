@@ -9,7 +9,6 @@ import 'package:intl/intl.dart';
 import '../../../../api/mysite.dart';
 import '../../../../utils/date_time_utils.dart';
 import '../../../../utils/logger_helper.dart';
-import '../../../../utils/platform.dart';
 import '../../../../utils/storage.dart';
 
 class MySiteController extends GetxController {
@@ -75,6 +74,8 @@ class MySiteController extends GetxController {
     filterKey = 'available';
     sortKey = SPUtil.getLocalStorage('mySite-sortKey') ?? 'mySiteSortId';
     sortReversed = SPUtil.getLocalStorage('mySite-sortReversed') ?? false;
+    openByInnerExplorer =
+        SPUtil.getBool('openByInnerExplorer', defaultValue: true) ?? true;
     baseUrl = SPUtil.getLocalStorage('server');
     isLoaded = true;
     loadingFromServer = true;
@@ -87,8 +88,7 @@ class MySiteController extends GetxController {
     if (!initFlag) {
       return;
     }
-    openByInnerExplorer = SPUtil.getBool('openByInnerExplorer',
-        defaultValue: !PlatformTool.isDesktopOS())!;
+
     await loadCacheInfo();
     filterByKey();
     update();
