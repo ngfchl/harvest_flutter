@@ -480,7 +480,8 @@ class _MySitePagePageState extends State<MySitePage>
             children: [
               mySite.latestActive != null
                   ? Tooltip(
-                      message: '最后访问时间：${mySite.latestActive}',
+                      message:
+                          '最后访问时间：${calculateTimeElapsed(mySite.latestActive.toString())}',
                       child: Text(
                         mySite.nickname,
                         style: const TextStyle(
