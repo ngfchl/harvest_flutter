@@ -120,6 +120,7 @@ class MySite {
   final Map<String, SignInInfo> signInInfo;
   final Map<String, StatusInfo> statusInfo;
   final DateTime? updatedAt;
+  final DateTime? latestActive;
 
   MySite({
     required this.id,
@@ -136,6 +137,7 @@ class MySite {
     this.rss,
     this.torrents,
     this.updatedAt,
+    this.latestActive,
     required this.available,
     required this.signIn,
     required this.getInfo,
@@ -204,6 +206,9 @@ class MySite {
       mail: json['mail'] as int?,
       notice: json['notice'] as int?,
       updatedAt: DateTime.parse(json['updated_at'] as String),
+      latestActive: json['latest_active'] != null
+          ? DateTime.parse(json['latest_active'] as String).toLocal()
+          : null,
       signInInfo: signInInfo,
       statusInfo: statusInfo,
     );
