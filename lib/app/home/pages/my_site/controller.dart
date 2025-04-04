@@ -33,6 +33,7 @@ class MySiteController extends GetxController {
     {'name': '站点昵称', 'value': 'mySiteNickname'},
     {'name': '注册时间', 'value': 'mySiteJoined'},
     {'name': '更新时间', 'value': 'updatedAt'},
+    {'name': '最后访问', 'value': 'latestActive'},
     // {'name': '站点链接', 'value': 'siteUrl'},
     {'name': '做种体积', 'value': 'statusSeedVolume'},
     {'name': '站点魔力', 'value': 'statusMyBonus'},
@@ -294,6 +295,10 @@ class MySiteController extends GetxController {
         break;
       case 'siteUrl':
         otherStatusList.sort((a, b) => a.mirror!.compareTo(b.mirror!));
+        break;
+      case 'latestActive':
+        otherStatusList.sort((a, b) => (a.latestActive ?? DateTime(2012))
+            .compareTo(b.latestActive ?? DateTime(2012)));
         break;
       case 'statusSeedVolume':
         otherStatusList.sort((a, b) => (a.latestStatusInfo?.seedVolume ?? 0)

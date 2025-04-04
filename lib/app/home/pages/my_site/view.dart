@@ -478,12 +478,22 @@ class _MySitePagePageState extends State<MySitePage>
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                mySite.nickname,
-                style: const TextStyle(
-                  fontSize: 13,
-                ),
-              ),
+              mySite.latestActive != null
+                  ? Tooltip(
+                      message: '最后访问时间：${mySite.latestActive}',
+                      child: Text(
+                        mySite.nickname,
+                        style: const TextStyle(
+                          fontSize: 13,
+                        ),
+                      ),
+                    )
+                  : Text(
+                      mySite.nickname,
+                      style: const TextStyle(
+                        fontSize: 13,
+                      ),
+                    ),
               if (mySite.mail! > 0)
                 Row(
                   children: [
@@ -815,7 +825,7 @@ class _MySitePagePageState extends State<MySitePage>
                       ),
                     ),
                     SizedBox(
-                      width: 110,
+                      width: 115,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
