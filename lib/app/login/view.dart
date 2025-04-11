@@ -305,6 +305,7 @@ class _LoginPageState extends State<LoginPage> {
                     controller: protocolController,
                     labelText: '选择协议',
                     data: const ["http", "https"],
+                    readOnly: kIsWeb,
                     onConfirm: (p, position) {
                       protocolController.text = p;
                     },
@@ -315,10 +316,12 @@ class _LoginPageState extends State<LoginPage> {
                   CustomTextField(
                     controller: domainController,
                     labelText: '主机',
+                    readOnly: kIsWeb,
                   ),
                   CustomPortField(
                     controller: portController,
                     labelText: '端口',
+                    readOnly: kIsWeb,
                   ),
                   CustomTextField(
                     controller: usernameController,
