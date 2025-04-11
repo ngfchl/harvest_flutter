@@ -118,40 +118,49 @@ class MySiteController extends GetxController {
   ///@updateTime 2024-10-28
    */
   loadCacheInfo() async {
-    // 记录开始时间
-    Logger.instance.d('开始从缓存加载站点数据');
-    DateTime startTime = DateTime.now();
-    Map webSiteListMap = SPUtil.getMap('$baseUrl - webSiteList');
-    Map mySiteListMap = SPUtil.getMap('$baseUrl - mySiteList');
+    try {
+      // 记录开始时间
+      Logger.instance.d('开始从缓存加载站点数据');
+      DateTime startTime = DateTime.now();
+      Map webSiteListMap = SPUtil.getMap('$baseUrl - webSiteList');
+      Map mySiteListMap = SPUtil.getMap('$baseUrl - mySiteList');
 
-    if (webSiteListMap.isNotEmpty) {
-      Logger.instance.d('共获取到站点配置缓存：${webSiteListMap['webSiteList'].length} 条');
-      List<WebSite> webSiteObjectList = webSiteListMap['webSiteList']
-          .map((item) => WebSite.fromJson(item))
-          .toList()
-          .cast<WebSite>();
-      webSiteList = webSiteObjectList.asMap().entries.fold({}, (result, entry) {
-        result[entry.value.name] = entry.value;
-        return result;
-      });
-      Logger.instance.d(
-          '获取站点配置缓存耗时: ${DateTime.now().difference(startTime).inMilliseconds} 毫秒');
-    }
-
-    if (mySiteListMap.isNotEmpty) {
-      try {
-        Logger.instance.d('共获取站点信息缓存：${mySiteListMap['mySiteList'].length} 条');
-        mySiteList = mySiteListMap['mySiteList']
-            ?.map((item) => MySite.fromJson(item))
+      if (webSiteListMap.isNotEmpty) {
+        Logger.instance
+            .d('共获取到站点配置缓存：${webSiteListMap['webSiteList'].length} 条');
+        List<WebSite> webSiteObjectList = webSiteListMap['webSiteList']
+            .map((item) => WebSite.fromJson(item))
             .toList()
-            .cast<MySite>();
-        if (mySiteList.isNotEmpty) isLoaded = false;
+            .cast<WebSite>();
+        webSiteList =
+            webSiteObjectList.asMap().entries.fold({}, (result, entry) {
+          result[entry.value.name] = entry.value;
+          return result;
+        });
         Logger.instance.d(
-            '获取站点信息缓存耗时: ${DateTime.now().difference(startTime).inMilliseconds} 毫秒');
-      } catch (e, trace) {
-        Logger.instance.e(e);
-        Logger.instance.d(trace);
+            '获取站点配置缓存耗时: ${DateTime.now().difference(startTime).inMilliseconds} 毫秒');
       }
+
+      if (mySiteListMap.isNotEmpty) {
+        try {
+          Logger.instance
+              .d('共获取站点信息缓存：${mySiteListMap['mySiteList'].length} 条');
+          mySiteList = mySiteListMap['mySiteList']
+              ?.map((item) => MySite.fromJson(item))
+              .toList()
+              .cast<MySite>();
+          if (mySiteList.isNotEmpty) isLoaded = false;
+          Logger.instance.d(
+              '获取站点信息缓存耗时: ${DateTime.now().difference(startTime).inMilliseconds} 毫秒');
+        } catch (e, trace) {
+          Logger.instance.e(e);
+          Logger.instance.d(trace);
+        }
+      }
+    } catch (e, trace) {
+      String msg = '从缓存加载站点数据失败$e';
+      Logger.instance.e(msg);
+      Logger.instance.d(trace);
     }
   }
 
