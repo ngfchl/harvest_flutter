@@ -177,6 +177,7 @@ class CustomPickerField extends StatelessWidget {
   final TextEditingController controller;
   final String labelText;
   final List<String> data;
+  final bool readOnly;
   final Function(dynamic, int)? onConfirm;
   final Function(dynamic, int)? onChanged;
 
@@ -187,6 +188,7 @@ class CustomPickerField extends StatelessWidget {
     required this.data,
     this.onConfirm,
     this.onChanged,
+    this.readOnly = false,
   });
 
   @override
@@ -197,35 +199,37 @@ class CustomPickerField extends StatelessWidget {
         CustomTextField(
           controller: controller,
           labelText: labelText,
+          readOnly: readOnly,
         ),
-        Positioned.fill(
-          child: InkWell(
-            onTap: () {
-              Pickers.showSinglePicker(
-                context,
-                data: data,
-                selectData: controller.text,
-                pickerStyle: PickerStyle(
-                  showTitleBar: true,
-                  textSize: 14,
-                  textColor: Theme.of(context).colorScheme.onSurface,
-                  backgroundColor: Theme.of(context).colorScheme.surface,
-                  headDecoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface),
-                ),
-                onConfirm: (p, position) {
-                  controller.text = p;
-                  onConfirm?.call(p, position);
-                },
-                onChanged: (p, position) {
-                  controller.text = p;
-                  onChanged?.call(p, position);
-                },
-              );
-            },
-            child: Container(), // 空的容器占据整个触发 InkWell 的 onTap
+        if (!readOnly)
+          Positioned.fill(
+            child: InkWell(
+              onTap: () {
+                Pickers.showSinglePicker(
+                  context,
+                  data: data,
+                  selectData: controller.text,
+                  pickerStyle: PickerStyle(
+                    showTitleBar: true,
+                    textSize: 14,
+                    textColor: Theme.of(context).colorScheme.onSurface,
+                    backgroundColor: Theme.of(context).colorScheme.surface,
+                    headDecoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface),
+                  ),
+                  onConfirm: (p, position) {
+                    controller.text = p;
+                    onConfirm?.call(p, position);
+                  },
+                  onChanged: (p, position) {
+                    controller.text = p;
+                    onChanged?.call(p, position);
+                  },
+                );
+              },
+              child: Container(), // 空的容器占据整个触发 InkWell 的 onTap
+            ),
           ),
-        ),
       ],
     );
   }
