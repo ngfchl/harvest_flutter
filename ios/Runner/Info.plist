@@ -56,5 +56,9 @@
 		<false/>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
 		<false/>
+		<key>NSFileProtection</key>
+        <string>NSFileProtectionCompleteUntilFirstUserAuthentication</string>
+        <key>UIFileSharingEnabled</key>
+        <true/>
 	</dict>
 </plist>
