@@ -48,6 +48,7 @@ dependencies:
   dartssh2_plus: ^3.0.0
   flutter_floating: ^1.0.8
   timelines: ^0.1.0
+  file_picker: ^10.1.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
