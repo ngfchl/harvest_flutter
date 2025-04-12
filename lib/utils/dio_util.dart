@@ -111,13 +111,19 @@ class DioUtil {
   Future<Response> post(
     String url, {
     Map<String, dynamic>? queryParameters,
-    Map<String, dynamic>? formData,
+    dynamic formData,
     Options? options,
   }) async {
+    bool isFormData = formData is FormData;
+    final mergedOptions = options ?? await _buildRequestOptions();
+    // 移除 Content-Type 以便 Dio 自动设置 multipart/form-data 带 boundary
+    if (isFormData) {
+      mergedOptions.headers?.remove('Content-Type');
+    }
     final resp = await dio!.post(url,
         queryParameters: queryParameters,
         data: formData,
-        options: options ?? await _buildRequestOptions());
+        options: mergedOptions);
     Logger.instance.i(resp);
     return resp;
   }
