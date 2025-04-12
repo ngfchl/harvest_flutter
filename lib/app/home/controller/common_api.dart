@@ -24,22 +24,6 @@ Future<void> signAllSiteButton() async {
   }
 }
 
-Future<void> importFromPTPP() async {
-  final res = await importFromPTPPApi();
-  Get.back();
-  if (res.code == 0) {
-    Get.snackbar(
-      'PTPP导入任务',
-      'PTPP导入任务信息：${res.msg}',
-    );
-  } else {
-    Get.snackbar(
-      'PTPP导入任务失败',
-      'PTPP导入任务执行出错啦：${res.msg}',
-    );
-  }
-}
-
 Future<void> importFromCookieCloud() async {
   final res = await importFromCookieCloudApi();
   Get.back();

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:app_service/app_service.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
@@ -8,12 +9,15 @@ import 'package:getwidget/getwidget.dart';
 import 'package:harvest/app/home/pages/web_socket_logging/view.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/form_widgets.dart';
+import 'package:harvest/utils/logger_helper.dart';
 
+import '../../api/mysite.dart';
 import '../../common/custom_ua.dart';
 import '../../common/custom_upgrade.dart';
 import '../../common/invite_user.dart';
 import '../../common/logging.dart';
 import '../../common/site_map.dart';
+import '../../models/common_response.dart';
 import '../../utils/storage.dart';
 import '../../utils/string_utils.dart';
 import 'controller/common_api.dart';
@@ -589,9 +593,7 @@ class HomeView extends GetView<HomeController> {
                           color: Theme.of(context).colorScheme.secondary,
                         ),
                       ),
-                      onTap: () async {
-                        await importFromPTPP();
-                      },
+                      onTap: () async => pickAndUpload(),
                     ),
                     PopupMenuItem<String>(
                       child: Text(
@@ -618,5 +620,43 @@ class HomeView extends GetView<HomeController> {
         ],
       );
     });
+  }
+
+  void pickAndUpload() async {
+    Get.defaultDialog(
+      title: "选择 PTPP 备份文件",
+      content: Center(
+        child: TextButton(
+          onPressed: () async {
+            FilePickerResult? result = await FilePicker.platform.pickFiles();
+            if (result != null) {
+              File file = File(result.files.single.path!);
+              Logger.instance.d(file);
+              // return;
+              CommonResponse res = await importFromPTPPApi(file);
+              Get.back();
+              if (res.succeed) {
+                Get.snackbar(
+                  'PTPP导入任务',
+                  'PTPP导入任务信息：${res.msg}',
+                );
+              } else {
+                Get.snackbar(
+                  'PTPP导入任务失败',
+                  'PTPP导入任务执行出错啦：${res.msg}',
+                );
+              }
+            } else {
+              Get.snackbar(
+                'PTPP导入任务失败',
+                'PTPP导入任务执行出错啦：未发现你所选择的文件！',
+              );
+            }
+          },
+          child: const Text("选择文件"),
+        ),
+      ),
+    );
+    return;
   }
 }
