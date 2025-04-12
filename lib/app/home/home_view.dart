@@ -628,10 +628,20 @@ class HomeView extends GetView<HomeController> {
       content: Center(
         child: TextButton(
           onPressed: () async {
-            FilePickerResult? result = await FilePicker.platform.pickFiles();
+            FilePickerResult? result = await FilePicker.platform
+                .pickFiles(type: FileType.custom, allowedExtensions: ['zip']);
             if (result != null) {
               File file = File(result.files.single.path!);
               Logger.instance.d(file);
+              if (!file.path.contains('PT-Plugin-Plus-Backup')) {
+                Get.snackbar(
+                  '错误',
+                  '请选择正确的PTPP备份文件【“PT-Plugin-Plus-Backup”开头的 ZIP 文件】！',
+                  colorText: Colors.deepOrange,
+                  duration: const Duration(seconds: 3),
+                );
+                return;
+              }
               // return;
               CommonResponse res = await importFromPTPPApi(file);
               Get.back();
