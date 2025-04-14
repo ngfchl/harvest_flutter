@@ -968,6 +968,8 @@ class _DownloadPageState extends State<DownloadPage>
         TextEditingController(text: downloader?.password ?? '');
     final protocolController =
         TextEditingController(text: downloader?.protocol ?? 'http');
+    final sortIdController =
+        TextEditingController(text: downloader?.sortId.toString() ?? '0');
 
     final hostController = TextEditingController(text: downloader?.host ?? '');
     final portController =
@@ -1043,6 +1045,10 @@ class _DownloadPageState extends State<DownloadPage>
                       controller: portController,
                       labelText: '端口',
                     ),
+                    CustomTextField(
+                      controller: sortIdController,
+                      labelText: '排序',
+                    ),
                     CustomPickerField(
                       controller: torrentPathController,
                       labelText: '选择路径',
@@ -1114,7 +1120,8 @@ class _DownloadPageState extends State<DownloadPage>
                       downloader?.password = passwordController.text;
                       downloader?.protocol = protocolController.text;
                       downloader?.host = hostController.text;
-                      downloader?.port = int.parse(portController.text);
+                      downloader?.port = int.tryParse(portController.text) ?? 8999;
+                      downloader?.sortId = int.tryParse(sortIdController.text) ?? 0;
                       downloader?.torrentPath = torrentPathController.text;
                       downloader?.isActive = isActive.value;
                       downloader?.brush = brush.value;
@@ -1127,8 +1134,9 @@ class _DownloadPageState extends State<DownloadPage>
                         username: usernameController.text,
                         password: passwordController.text,
                         protocol: protocolController.text,
+                        sortId: int.tryParse(sortIdController.text) ?? 0,
                         host: hostController.text,
-                        port: int.parse(portController.text),
+                        port: int.tryParse(portController.text) ?? 8999,
                         torrentPath: torrentPathController.text,
                         isActive: isActive.value,
                         brush: brush.value,

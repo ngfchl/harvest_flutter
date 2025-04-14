@@ -301,6 +301,7 @@ class DownloadController extends GetxController {
     if (response.succeed) {
       dataList.clear();
       dataList = response.data;
+      dataList.sort((a,b)=> a.sortId.compareTo(b.sortId));
       isLoaded = true;
       _downloadStreamController.sink.add(dataList.toList());
     } else {
