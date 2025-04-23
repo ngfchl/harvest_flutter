@@ -607,7 +607,7 @@ class _DashBoardPageState extends State<DashBoardPage>
   Widget _buildSiteInfoCard() {
     return GetBuilder<DashBoardController>(builder: (controller) {
       MySite earliestSite = controller.mySiteController.mySiteList
-          .where((item) => !controller.excludeUrlList.contains(item.mirror))
+          .where((item) => !controller.excludeUrlList.contains(item.mirror) && DateTime.parse(item.timeJoin) != DateTime(2024, 2, 1))
           .reduce((value, element) =>
               value.timeJoin.compareTo(element.timeJoin) < 0 ? value : element);
       RxBool showYear = true.obs;

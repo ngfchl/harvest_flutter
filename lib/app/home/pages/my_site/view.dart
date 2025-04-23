@@ -635,7 +635,8 @@ class _MySitePagePageState extends State<MySitePage>
                                             Theme.of(context).colorScheme.error,
                                       )),
                                 ),
-                              if (level.keepAccount!=true && nextLevel.keepAccount)
+                              if (level.keepAccount != true &&
+                                  nextLevel.keepAccount)
                                 PopupMenuItem<String>(
                                   height: 13,
                                   child: Text('保留账号：${nextLevel.keepAccount}',
@@ -645,7 +646,8 @@ class _MySitePagePageState extends State<MySitePage>
                                             Theme.of(context).colorScheme.error,
                                       )),
                                 ),
-                              if (level.graduation!=true && nextLevel.graduation )
+                              if (level.graduation != true &&
+                                  nextLevel.graduation)
                                 PopupMenuItem<String>(
                                   height: 13,
                                   child: Text('毕业：${nextLevel.graduation}',
@@ -706,24 +708,36 @@ class _MySitePagePageState extends State<MySitePage>
               : Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      '⌚️${calcWeeksDays(mySite.timeJoin)}',
-                      style: const TextStyle(
-                        fontSize: 10,
+                    DateTime.parse(mySite.timeJoin) != DateTime(2024, 2, 1)
+                        ? Text(
+                            '⌚️${calcWeeksDays(mySite.timeJoin)}',
+                            style: const TextStyle(
+                              fontSize: 10,
+                            ),
+                          )
+                        : const Text(
+                            '⌚️获取失败！',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.red,
+                            ),
+                          ),
+                    if (level?.keepAccount == true)
+                      const Text(
+                        '🔥保号',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.red,
+                        ),
                       ),
-                    ),if(level?.keepAccount == true)const Text(
-                        '🔥保号' ,
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.red,
+                    if (level?.graduation == true)
+                      const Text(
+                        '🎓毕业',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.amber,
+                        ),
                       ),
-                    ),if(level?.graduation == true)const Text(
-                        '🎓毕业' ,
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.amber,
-                      ),
-                    ),
                     if (status.invitation > 0)
                       Row(
                         children: [
