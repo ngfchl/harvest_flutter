@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:app_service/app_service.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
@@ -631,9 +632,11 @@ class HomeView extends GetView<HomeController> {
             FilePickerResult? result = await FilePicker.platform
                 .pickFiles(type: FileType.custom, allowedExtensions: ['zip']);
             if (result != null) {
-              File file = File(result.files.single.path!);
+              PlatformFile file = result.files.single;
+              Logger.instance.d(result.files.single.path!);
               Logger.instance.d(file);
-              if (!file.path.contains('PT-Plugin-Plus-Backup')) {
+              Logger.instance.d(file.path);
+              if (!kIsWeb && file.path?.contains('PT-Plugin-Plus-Backup') != true) {
                 Get.snackbar(
                   '错误',
                   '请选择正确的PTPP备份文件【“PT-Plugin-Plus-Backup”开头的 ZIP 文件】！',

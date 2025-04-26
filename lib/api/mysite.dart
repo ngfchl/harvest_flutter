@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart';
 
 import '../app/home/pages/models/my_site.dart';
 import '../app/home/pages/models/website.dart';
@@ -80,13 +79,13 @@ repeatSite(int? mySiteId) async {
 }
 
 /// PTPP 导入
-importFromPTPPApi(File file) async {
-  final fileName = file.path.split('/').last;
+importFromPTPPApi(PlatformFile file) async {
+  final fileName = file.name;
 
   final response = await DioUtil().post(
     Api.IMPORT_COOKIE_PTPP,
     formData: FormData.fromMap({
-      "file": await MultipartFile.fromFile(file.path, filename: fileName),
+      "file": MultipartFile.fromBytes(file.bytes!, filename: fileName),
     }),
   );
   if (response.statusCode == 200) {
