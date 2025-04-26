@@ -1335,7 +1335,7 @@ class DownloadController extends GetxController {
       // await stopFetchStatus();
       // await getDownloaderStatus();
       Get.snackbar('提示', response.msg);
-      getDownloaderListFromServer();
+      await getDownloaderListFromServer(withStatus: true);
       update();
       return;
     }

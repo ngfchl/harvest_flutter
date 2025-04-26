@@ -614,6 +614,8 @@ class _DownloadPageState extends State<DownloadPage>
                           Get.snackbar('删除通知', res.msg.toString(),
                               colorText: Theme.of(context).colorScheme.error);
                         }
+                        await controller.getDownloaderListFromServer(
+                            withStatus: true);
                       },
                       child: const Text('确认'),
                     ),
@@ -1120,8 +1122,10 @@ class _DownloadPageState extends State<DownloadPage>
                       downloader?.password = passwordController.text;
                       downloader?.protocol = protocolController.text;
                       downloader?.host = hostController.text;
-                      downloader?.port = int.tryParse(portController.text) ?? 8999;
-                      downloader?.sortId = int.tryParse(sortIdController.text) ?? 0;
+                      downloader?.port =
+                          int.tryParse(portController.text) ?? 8999;
+                      downloader?.sortId =
+                          int.tryParse(sortIdController.text) ?? 0;
                       downloader?.torrentPath = torrentPathController.text;
                       downloader?.isActive = isActive.value;
                       downloader?.brush = brush.value;
@@ -1156,6 +1160,9 @@ class _DownloadPageState extends State<DownloadPage>
                         duration: const Duration(seconds: 3),
                       );
                       await controller.getDownloaderListFromServer();
+                      controller.update();
+                      await controller.getDownloaderListFromServer(
+                          withStatus: true);
                       controller.update();
                     } else {
                       Get.snackbar(
