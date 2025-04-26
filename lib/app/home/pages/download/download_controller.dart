@@ -209,7 +209,7 @@ class DownloadController extends GetxController {
       update();
     });
     await getDownloaderListFromServer();
-
+    update();
     trackerToWebSiteMap = mySiteController.buildTrackerToWebSite();
 
     if (realTimeState) {
@@ -222,6 +222,7 @@ class DownloadController extends GetxController {
       // 设置一个5分钟后执行的定时器
       // timerToStop();
     }
+    await getDownloaderListFromServer(withStatus: true);
     super.onInit();
   }
 
@@ -294,14 +295,15 @@ class DownloadController extends GetxController {
     await Future.wait(futures);
   }
 
-  getDownloaderListFromServer() async {
+  getDownloaderListFromServer({bool withStatus = false}) async {
     isLoaded = false;
     update();
-    CommonResponse response = await getDownloaderListApi();
+    CommonResponse response =
+        await getDownloaderListApi(withStatus: withStatus);
     if (response.succeed) {
       dataList.clear();
       dataList = response.data;
-      dataList.sort((a,b)=> a.sortId.compareTo(b.sortId));
+      dataList.sort((a, b) => a.sortId.compareTo(b.sortId));
       isLoaded = true;
       _downloadStreamController.sink.add(dataList.toList());
     } else {

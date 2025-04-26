@@ -9,9 +9,10 @@ import 'api.dart';
 
 ///获取下载器列表
 ///
-Future<CommonResponse> getDownloaderListApi() async {
+Future<CommonResponse> getDownloaderListApi({bool withStatus = false}) async {
   return await fetchDataList(
-      Api.DOWNLOADER_LIST, (p0) => Downloader.fromJson(p0));
+      Api.DOWNLOADER_LIST, (p0) => Downloader.fromJson(p0),
+      queryParameters: {"with_status": withStatus});
 }
 
 Future<CommonResponse> getDownloaderPaths() async {
