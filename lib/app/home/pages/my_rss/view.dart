@@ -216,7 +216,8 @@ class _MyRssPageState extends State<MyRssPage> {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: DropdownSearch<MySite>(
-                        items: controller.mySiteController.mySiteList,
+                        items: (String? filter, _) async =>
+                            controller.mySiteController.mySiteList,
                         selectedItem: controller.mySiteMap[siteController.text],
                         filterFn: (MySite item, String filter) =>
                             item.site
@@ -234,7 +235,7 @@ class _MyRssPageState extends State<MyRssPage> {
                         },
                         popupProps: PopupPropsMultiSelection.menu(
                           searchDelay: const Duration(milliseconds: 50),
-                          isFilterOnline: false,
+                          // isFilterOnline: false,
                           showSelectedItems: true,
                           showSearchBox: true,
                           searchFieldProps: TextFieldProps(
@@ -248,7 +249,7 @@ class _MyRssPageState extends State<MyRssPage> {
                             ),
                           ),
                           itemBuilder: (BuildContext context, MySite item,
-                              bool isSelected) {
+                              bool isSelected, _) {
                             return Container(
                               margin: const EdgeInsets.symmetric(horizontal: 8),
                               padding: EdgeInsets.zero,

@@ -9,7 +9,7 @@ import 'package:harvest/app/home/pages/models/website.dart';
 import 'package:harvest/app/home/pages/my_site/controller.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/utils/calc_weeks.dart';
-import 'package:timelines/timelines.dart';
+import 'package:timelines_plus/timelines_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../app/home/pages/models/my_site.dart';
@@ -34,7 +34,6 @@ class SiteMap extends StatelessWidget {
           Map<String, MySite> mySiteMap = controller.mySiteList.asMap().map(
                 (index, mySite) => MapEntry(mySite.site, mySite),
               );
-          ;
           // 获取已存在的站点名称列表
           // List<String> hasKeys = controller.mySiteList.map((element) => element.site).toList();
           // 筛选活着的且未添加过的站点，并进行排序

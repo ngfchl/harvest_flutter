@@ -271,7 +271,7 @@ class _SubscribePageState extends State<SubscribePage> {
                         Padding(
                           padding: const EdgeInsets.all(8),
                           child: DropdownSearch<Downloader>(
-                            items: controller
+                            items: (String filter, _) => controller
                                 .subController.downloadController.dataList,
                             selectedItem: controller
                                 .subController.downloadController.dataList
@@ -281,8 +281,8 @@ class _SubscribePageState extends State<SubscribePage> {
                                         controller.downloaderController.text)),
                             compareFn: (item, sItem) => item.id == sItem.id,
                             itemAsString: (Downloader? item) => item!.name,
-                            dropdownDecoratorProps: DropDownDecoratorProps(
-                              dropdownSearchDecoration: InputDecoration(
+                            decoratorProps: DropDownDecoratorProps(
+                              decoration: InputDecoration(
                                 labelText: '下载器',
                                 filled: true,
                                 fillColor: Theme.of(context)

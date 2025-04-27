@@ -1123,14 +1123,14 @@ class _MySitePagePageState extends State<MySitePage>
                           padding: const EdgeInsets.symmetric(
                               vertical: 4.0, horizontal: 8),
                           child: DropdownSearch<WebSite>(
-                            items: webSiteList,
+                            items: (String filter, _) => webSiteList,
                             selectedItem: webSiteList.firstWhereOrNull(
                                 (element) =>
                                     element.name == siteController.text),
                             compareFn: (item, sItem) => item.name == sItem.name,
                             itemAsString: (WebSite? item) => item!.name,
-                            dropdownDecoratorProps: DropDownDecoratorProps(
-                              dropdownSearchDecoration: InputDecoration(
+                            decoratorProps: DropDownDecoratorProps(
+                              decoration: InputDecoration(
                                 labelText: '选择站点',
                                 filled: true,
                                 fillColor: Theme.of(context)
@@ -1141,7 +1141,7 @@ class _MySitePagePageState extends State<MySitePage>
                             popupProps: PopupProps.menu(
                               showSearchBox: true,
                               showSelectedItems: true,
-                              itemBuilder: (ctx, item, isSelected) {
+                              itemBuilder: (ctx, item, isSelected, _) {
                                 return ListTile(
                                   leading: CircleAvatar(
                                     backgroundColor:

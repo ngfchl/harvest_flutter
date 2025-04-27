@@ -63,9 +63,8 @@ class _DownloadPageState extends State<DownloadPage>
                       controller.isLoaded = snapshot.hasData;
                       return EasyRefresh(
                           controller: EasyRefreshController(),
-                          onRefresh: () async {
-                            controller.getDownloaderListFromServer();
-                          },
+                          onRefresh: () => controller
+                              .getDownloaderListFromServer(withStatus: true),
                           child: Stack(
                             children: [
                               ListView.builder(
