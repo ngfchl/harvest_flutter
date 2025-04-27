@@ -24,8 +24,8 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.ptools.harvest"
-    compileSdk flutter.compileSdkVersion
-    ndkVersion flutter.ndkVersion
+    compileSdk 35 /* flutter.compileSdkVersion */
+    ndkVersion "29.0.13113456" /* flutter.ndkVersion */
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
