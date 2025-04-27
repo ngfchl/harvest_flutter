@@ -1,7 +1,7 @@
 name: harvest
 description: Harvest Project App Client
 publish_to: none
-version: 2025.0414.01+129
+version: 2025.0427.01+130
 environment:
   sdk: '>=3.3.2 <4.0.0'
 dependencies:
@@ -12,32 +12,32 @@ dependencies:
   get: ^4.6.6
   dio: ^5.5.0+1
   shared_preferences: ^2.3.1
-  getwidget: ^4.0.0
+  getwidget: ^6.0.0
   qbittorrent_api: ^1.2.2
   transmission_api: ^0.0.1
   easy_refresh: ^3.4.0
   url_launcher: ^6.3.0
-  intl: ^0.19.0
+  intl: ^0.20.2
   tmdb_api: ^2.2.0
-  dio_smart_retry: ^6.0.0
+  dio_smart_retry: ^7.0.1
   path: ^1.9.0
   filesize: ^2.0.1
   basic_utils: ^5.7.0
   flutter_ellipsis_text: ^1.0.1
-  syncfusion_flutter_core: ^26.2.8
-  syncfusion_flutter_charts: ^26.2.8
-  syncfusion_flutter_sliders: ^26.2.8
-  syncfusion_flutter_gauges: ^26.2.8
-  flutter_slidable: ^3.1.1
+  syncfusion_flutter_core: ^29.1.39
+  syncfusion_flutter_charts: ^29.1.39
+  syncfusion_flutter_sliders: ^29.1.39
+  syncfusion_flutter_gauges: ^29.1.39
+  flutter_slidable: ^4.0.0
   flutter_pickers: ^2.1.9
-  permission_handler: ^11.3.1
+  permission_handler: ^12.0.0+1
   flutter_inappwebview: ^6.0.0
   random_color: ^1.0.5
   package_info_plus: ^8.0.2
   app_service: ^4.0.1
   flutter_native_splash: ^2.4.1
   cached_network_image: ^3.4.0
-  dropdown_search: ^5.0.6
+  dropdown_search: ^6.0.2
   web_socket_channel: ^3.0.1
   flutter_popup: ^3.3.0
   xpath_selector_html_parser: ^3.0.1
@@ -47,12 +47,12 @@ dependencies:
   window_manager: ^0.4.2
   dartssh2_plus: ^3.0.0
   flutter_floating: ^1.0.8
-  timelines: ^0.1.0
+  timelines_plus: null
   file_picker: ^10.1.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
 flutter:
   uses-material-design: true
   assets:
