@@ -104,8 +104,14 @@ class DouBanController extends GetxController {
 
   getRankListByType(String type) async {
     int? typeId = typeMap[type];
+    Logger.instance.d(typeId);
     if (typeId == null || typeId == 0) {
-      await getDouBanTop250Api();
+      CommonResponse res = await getDouBanTop250Api();
+      if (res.succeed) {
+        douBanTop250 = res.data;
+      }
+      Logger.instance.d(douBanTop250);
+      update();
       return;
     }
     isLoading = true;
