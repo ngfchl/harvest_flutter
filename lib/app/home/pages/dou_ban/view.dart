@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:harvest/common/card_view.dart';
+import 'package:harvest/models/common_response.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../utils/logger_helper.dart';
@@ -790,8 +791,14 @@ class _DouBanPageState extends State<DouBanPage>
   }
 
   Future<dynamic> _buildOperateDialog(mediaInfo) async {
-    VideoDetail videoDetail =
+    CommonResponse detail =
         await controller.getVideoDetail(mediaInfo.douBanUrl);
+    if (!detail.succeed) {
+      Logger.instance.e(detail.msg);
+      return;
+    }
+    Logger.instance.e(detail.data);
+    VideoDetail videoDetail = VideoDetail.fromJson(detail.data);
     Get.bottomSheet(
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(

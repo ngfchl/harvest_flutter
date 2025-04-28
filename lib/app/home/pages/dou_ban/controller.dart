@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harvest/app/home/controller/home_controller.dart';
 
+import '../../../../api/douban.dart';
+import '../../../../models/common_response.dart';
 import '../../../../utils/logger_helper.dart';
 import '../agg_search/controller.dart';
 import 'douban_api.dart';
@@ -91,12 +93,12 @@ class DouBanController extends GetxController {
   }
 
   getDouBanMovieTags() async {
-    douBanMovieTags = await douBanHelper.getDouBanTags(category: 'movie');
+    douBanMovieTags = await getCategoryTagsApi(category: 'movie');
     update();
   }
 
   getDouBanVideoTags() async {
-    douBanTvTags = await douBanHelper.getDouBanTags(category: 'tv');
+    douBanTvTags = await getCategoryTagsApi(category: 'tv');
     update();
   }
 
@@ -115,23 +117,24 @@ class DouBanController extends GetxController {
     Logger.instance.d(rankMovieList);
   }
 
-  getDouBanTop250Api() async {
-    if (initPage >= 225) {
-      return;
-    }
-    var res = await douBanHelper.getDouBanTop250(initPage);
-    douBanTop250.addAll(res);
-    initPage += 25;
-    update();
-  }
+  // getDouBanTop250Api() async {
+  //   if (initPage >= 225) {
+  //     return;
+  //   }
+  //   var res = await douBanHelper.getDouBanTop250(initPage);
+  //   douBanTop250.addAll(res);
+  //   initPage += 25;
+  //   update();
+  // }
 
   getDouBanMovieHot(String tag) async {
     isLoading = true;
     update();
-    var res = await douBanHelper.getDouBanHot(
-        category: 'movie', tag: tag, pageLimit: 51);
-    douBanMovieHot.clear();
-    douBanMovieHot = res;
+    CommonResponse res = await getDouBanHotMovieApi(tag, 51);
+    if (res.succeed) {
+      douBanMovieHot.clear();
+      douBanMovieHot = res.data;
+    }
     isLoading = false;
     update();
   }
@@ -139,18 +142,33 @@ class DouBanController extends GetxController {
   getDouBanTvHot(String tag) async {
     isLoading = true;
     update();
-    var res = await douBanHelper.getDouBanHot(
-        category: 'tv', tag: tag, pageLimit: 51);
-    douBanTvHot.clear();
-    douBanTvHot = res;
+    CommonResponse res = await getDouBanHotTvApi(tag, 51);
+    if (res.succeed) {
+      douBanTvHot.clear();
+      douBanTvHot = res.data;
+    }
     isLoading = false;
     update();
+  }
+
+  String extractDoubanId(String url) {
+    final regex = RegExp(r'/subject/(\d+)/');
+    final match = regex.firstMatch(url);
+    if (match != null) {
+      return match.group(1)!; // 提取第一个分组，也就是id
+    }
+    return '';
   }
 
   getVideoDetail(String url) async {
     isLoading = true;
     update();
-    var res = await douBanHelper.getSubjectInfo(url);
+    String id = extractDoubanId(url);
+    if (id.isEmpty) {
+      Logger.instance.e('影视信息 Id 解析失败： URL：$url');
+      return;
+    }
+    var res = await getSubjectInfoApi(id);
     isLoading = false;
     update();
     return res;

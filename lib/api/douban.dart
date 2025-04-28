@@ -3,9 +3,9 @@ import '../app/home/pages/dou_ban/model.dart';
 import 'api.dart';
 import 'hooks.dart';
 
-getCategoryTagsApi(String type) async {
+getCategoryTagsApi({String category = 'movie'}) async {
   return await fetchBasicList(Api.DOUBAN_TAGS,
-      queryParameters: {'category': type});
+      queryParameters: {'category': category});
 }
 
 getCelebrityApi(String celebrityId) async {
@@ -13,7 +13,7 @@ getCelebrityApi(String celebrityId) async {
 }
 
 getSubjectInfoApi(String subjectId) async {
-  return await fetchDataList(Api.DOUBAN_TAGS, (p0) => p0);
+  return await fetchBasicData(Api.DOUBAN_SUBJECT + subjectId);
 }
 
 getDouBanHotMovieApi(String tag, int pageLimit) async {
