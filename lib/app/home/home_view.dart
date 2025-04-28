@@ -13,6 +13,7 @@ import 'package:harvest/common/form_widgets.dart';
 import 'package:harvest/utils/logger_helper.dart';
 
 import '../../api/mysite.dart';
+import '../../api/option.dart';
 import '../../common/custom_ua.dart';
 import '../../common/custom_upgrade.dart';
 import '../../common/invite_user.dart';
@@ -607,6 +608,25 @@ class HomeView extends GetView<HomeController> {
                         await importFromCookieCloud();
                       },
                     ),
+                    PopupMenuItem<String>(
+                      child: Text(
+                        'CF 测速',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                      ),
+                      onTap: () async {
+                        CommonResponse res = await speedTestApi();
+                        if (res.code == 0) {
+                          Get.back();
+                          Get.snackbar('测速任务发送成功', res.msg,
+                              colorText: Theme.of(context).colorScheme.primary);
+                        } else {
+                          Get.snackbar('测速任务发送失败', '测速任务执行出错啦：${res.msg}',
+                              colorText: Theme.of(context).colorScheme.error);
+                        }
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -636,7 +656,8 @@ class HomeView extends GetView<HomeController> {
               Logger.instance.d(result.files.single.path!);
               Logger.instance.d(file);
               Logger.instance.d(file.path);
-              if (!kIsWeb && file.path?.contains('PT-Plugin-Plus-Backup') != true) {
+              if (!kIsWeb &&
+                  file.path?.contains('PT-Plugin-Plus-Backup') != true) {
                 Get.snackbar(
                   '错误',
                   '请选择正确的PTPP备份文件【“PT-Plugin-Plus-Backup”开头的 ZIP 文件】！',

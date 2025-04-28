@@ -95,6 +95,7 @@ class Api {
   // 任务列表
   static const String OPTION_OPERATE = "option/options";
   static const String NOTICE_TEST = "option/test";
+  static const String SPEED_TEST = "option/speedtest";
   static const String TASK_RESULTS = "option/tasks";
   static const String TASK_OPERATE = "/option/schedule";
   static const String CRONTAB_LIST = "option/crontabs";

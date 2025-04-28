@@ -34,6 +34,11 @@ Future<CommonResponse> noticeTestApi(
       queryParameters: queryParameters);
 }
 
+/// 通知测试
+Future<CommonResponse> speedTestApi() async {
+  return await fetchBasicList(Api.SPEED_TEST);
+}
+
 /// 订阅标签 导入
 importBaseSubTag() async {
   try {
