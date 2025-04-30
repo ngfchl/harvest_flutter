@@ -30,6 +30,11 @@ getDouBanHotTvApi(String tag, int pageLimit) async {
       queryParameters: {'category': 'tv', 'tag': tag, 'page_limit': pageLimit});
 }
 
+getDouBanRankApi(int typeId) async {
+  return await fetchDataList(Api.DOUBAN_RANK, (p0) => RankMovie.fromJson(p0),
+      queryParameters: {'type_id': typeId});
+}
+
 getDouBanTop250Api() async {
   return await fetchDataList(
       Api.DOUBAN_TOP250, (p0) => TopMovieInfo.fromJson(p0));

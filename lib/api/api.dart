@@ -117,6 +117,7 @@ class Api {
   static const String DOUBAN_SUBJECT = "option/douban/subject/";
   static const String DOUBAN_TAGS = "option/douban/tags";
   static const String DOUBAN_HOT = "option/douban/hot";
+  static const String DOUBAN_RANK = "option/douban/rank";
 
   // tmdb API
   static const String TMDB_SEARCH = "/tmdb/search";

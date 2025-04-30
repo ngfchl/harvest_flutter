@@ -116,8 +116,12 @@ class DouBanController extends GetxController {
     }
     isLoading = true;
     update();
-    rankMovieList = await douBanHelper.getTypeRank(typeId);
-    initPage = 0;
+    CommonResponse res = await getDouBanRankApi(typeId);
+    if (res.succeed) {
+      rankMovieList = res.data;
+    }
+    Logger.instance.d(douBanTop250);
+    update();
     isLoading = false;
     update();
     Logger.instance.d(rankMovieList);
