@@ -852,7 +852,7 @@ class _MySitePagePageState extends State<MySitePage>
                       ),
                     ),
                     SizedBox(
-                      width: 115,
+                      width: 120,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -871,6 +871,14 @@ class _MySitePagePageState extends State<MySitePage>
                                   fontSize: 12,
                                 ),
                               ),
+                              if (website.spFull > 0 && status.bonusHour > 0)
+                                Text(
+                                  // formatNumber(status.bonusHour),
+                                  '(${((status.bonusHour / website.spFull) * 100).toStringAsFixed((status.bonusHour / website.spFull) * 100 > 1 ? 0 : 2)}%)',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                  ),
+                                ),
                             ],
                           ),
                           const SizedBox(height: 2),
