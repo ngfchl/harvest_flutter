@@ -343,6 +343,10 @@ class DownloadForm extends StatelessWidget {
                             labelText: ' Cookie',
                           ),
                           CustomTextField(
+                            controller: tagsController,
+                            labelText: ' 标签',
+                          ),
+                          CustomTextField(
                             controller: upLimitController,
                             labelText: ' 上传限速',
                             keyboardType: TextInputType.number,
