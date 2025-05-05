@@ -133,6 +133,11 @@ class DownloadForm extends StatelessWidget {
                   labelText: '路径',
                 ),
               ),
+              CustomTextField(
+                controller: tagsController,
+                labelText: ' 标签',
+                helperText: '多个标签用英文都好`,`分隔',
+              ),
               Obx(() {
                 return SwitchListTile(
                     dense: true,
@@ -343,10 +348,6 @@ class DownloadForm extends StatelessWidget {
                             labelText: ' Cookie',
                           ),
                           CustomTextField(
-                            controller: tagsController,
-                            labelText: ' 标签',
-                          ),
-                          CustomTextField(
                             controller: upLimitController,
                             labelText: ' 上传限速',
                             keyboardType: TextInputType.number,
@@ -530,6 +531,11 @@ class DownloadForm extends StatelessWidget {
                   labelText: '路径',
                 ),
               ),
+            CustomTextField(
+              controller: tagsController,
+              labelText: ' 标签',
+              helperText: '多个标签用英文都好`,`分隔',
+            ),
             Obx(() {
               return SwitchListTile(
                   dense: true,
