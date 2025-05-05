@@ -229,7 +229,7 @@ class HomeController extends GetxController {
       updateLogState = res.data;
     } else {
       Logger.instance.e(res.msg);
-      Get.snackbar('更新日志', '获取更新日志失败！', colorText: Colors.red);
+      Get.snackbar('更新日志', '获取更新日志失败！${res.msg}', colorText: Colors.red);
     }
     Logger.instance.d(updateLogState?.localLogs);
     update();
