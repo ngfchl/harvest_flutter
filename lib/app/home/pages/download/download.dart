@@ -688,10 +688,13 @@ class _DownloadPageState extends State<DownloadPage>
                         ),
                         backgroundColor: Theme.of(context).colorScheme.primary,
                       )
-                    : Icon(
-                        Icons.offline_bolt_outlined,
-                        color: Theme.of(context).colorScheme.error,
-                        size: 12,
+                    : IconButton(
+                        onPressed: () => controller.testConnect(downloader),
+                        icon: Icon(
+                          Icons.offline_bolt_outlined,
+                          color: Theme.of(context).colorScheme.error,
+                          size: 12,
+                        ),
                       ),
               ),
               GetBuilder<DownloadController>(builder: (controller) {
@@ -1193,7 +1196,8 @@ class _DownloadPageState extends State<DownloadPage>
 
   void _showTorrents(Downloader downloader) async {
     try {
-      if (downloader.prefs == null || downloader.status.isEmpty) {
+      var res = await controller.testConnect(downloader);
+      if (!res.succeed) {
         Get.snackbar(
           '提示',
           '下载器连接失败啦，请检查配置信息！',

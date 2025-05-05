@@ -1277,13 +1277,9 @@ class DownloadController extends GetxController {
   Future<CommonResponse> testConnect(Downloader downloader) async {
     try {
       // logger_helper.Logger.instance.i(downloader.name);
-      if (downloader.category.toLowerCase() == 'qb') {
-        await getQbInstance(downloader);
-        return CommonResponse.success(msg: '${downloader.name} 连接成功!');
-      } else {
-        await getTrInstance(downloader);
-        return CommonResponse.success(msg: '${downloader.name} 连接成功!');
-      }
+      var res = await testDownloaderApi(downloader.id!);
+      logger_helper.Logger.instance.d(res.msg);
+      return res;
     } catch (error) {
       return CommonResponse.error(msg: '${downloader.name} 连接失败!');
     }
