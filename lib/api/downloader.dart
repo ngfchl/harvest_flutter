@@ -72,6 +72,14 @@ Future<CommonResponse> getMainData(int downloaderId) async {
   return response;
 }
 
+//*///@title 测试下载器连接
+///@description
+///@updateTime
+Future<CommonResponse> testDownloaderApi(int downloaderId) async {
+  final response = await fetchBasicData('${Api.DOWNLOADER_TEST}$downloaderId');
+  return response;
+}
+
 //*///@title 获取下载器配置信息
 ///@description
 ///@updateTime

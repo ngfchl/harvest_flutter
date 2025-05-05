@@ -52,6 +52,7 @@ class Api {
   static const String DOWNLOADER_TOGGLE_SPEED_LIMIT_ENABLE =
       "/option/downloaders/toggle_speed_limit/";
   static const String DOWNLOADER_MAIN = "option/downloaders/main/";
+  static const String DOWNLOADER_TEST = "option/downloaders/test/";
   static const String DOWNLOADER_TAGS = "option/downloaders/tags/";
   static const String DOWNLOADER_TRACKER_REPLACE =
       "option/downloaders/trackers/replace/";
