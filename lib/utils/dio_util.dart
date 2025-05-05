@@ -24,23 +24,6 @@ class CustomInterceptors extends Interceptor {
       return super.onError(err, handler);
     }
   }
-
-  @override
-  Future<void> onRequest(
-      RequestOptions options, RequestInterceptorHandler handler) async {
-    // 指定不重试的 URL 或路径
-    List<String> noRetryUrls = [
-      '/api/no-retry-endpoint', // 替换为实际的 URL 或路径
-    ];
-
-    if (noRetryUrls.any((url) => options.path.contains(url))) {
-      // 如果请求的 URL 在 noRetryUrls 列表中，则不进行重试
-      handler.next(options);
-    } else {
-      // 否则，调用父类的方法进行重试
-      super.onRequest(options, handler);
-    }
-  }
 }
 
 class DioUtil {
@@ -48,13 +31,13 @@ class DioUtil {
 
   static final DioUtil _instance = DioUtil._privateConstructor();
 
-  late String token;
-  late Options _defaultOptions;
-  late Dio? dio;
+  static DioUtil get instance => _instance;
 
-  factory DioUtil() {
-    return _instance;
-  }
+  late Dio dio;
+  String token = '';
+  late Options _defaultOptions;
+
+  factory DioUtil() => _instance;
 
   Future<void> initialize(String server) async {
     await _initDio(server);
@@ -63,69 +46,82 @@ class DioUtil {
   Future<void> _initDio(String server) async {
     String baseUrl = '$server/api/';
     _defaultOptions = await _buildRequestOptions();
-    dio = Dio(BaseOptions(
-        baseUrl: baseUrl,
-        connectTimeout: const Duration(seconds: 15),
-        receiveTimeout: const Duration(seconds: 90),
-        responseType: ResponseType.json,
-        headers: {
-          "User-Agent": SPUtil.getString("CustomUA",
-              defaultValue: "Harvest APP Client/1.0"),
-        }));
 
-    dio?.interceptors.add(LogInterceptor(
+    dio = Dio(BaseOptions(
+      baseUrl: baseUrl,
+      connectTimeout: const Duration(seconds: 75),
+      receiveTimeout: const Duration(seconds: 90),
+      responseType: ResponseType.json,
+    ));
+
+    // 请求拦截器动态加 Authorization
+    dio.interceptors.insert(0, InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        if (token.isEmpty) {
+          token = await _loadTokenFromStorage();
+        }
+        if (token.isNotEmpty) {
+          options.headers['Authorization'] = 'Bearer $token';
+        }
+        options.headers['User-Agent'] = SPUtil.getString("CustomUA",
+            defaultValue: "Harvest APP Client/1.0");
+        handler.next(options);
+      },
+    ));
+
+    dio.interceptors.add(LogInterceptor(
       requestHeader: false,
       responseHeader: false,
-    )); // Add logging interceptor for debugging purposes
-    dio?.interceptors.add(CustomInterceptors());
-    dio?.interceptors.add(RetryInterceptor(
-      dio: dio!,
+      error: true,
+    ));
+
+    dio.interceptors.add(CustomInterceptors());
+
+    dio.interceptors.add(RetryInterceptor(
+      dio: dio,
       retries: 3,
-      logPrint: (message) {
-        Logger.instance.w(message);
-      },
+      logPrint: (message) => Logger.instance.w(message),
       retryDelays: const [
         Duration(seconds: 1),
         Duration(seconds: 2),
         Duration(seconds: 3)
       ],
       retryEvaluator: (DioException err, int count) {
-        // 不重试 401 和 403 错误
-        if ([401, 403].contains(err.response?.statusCode)) {
-          return true;
-        }
-        return false;
+        if ([401, 403].contains(err.response?.statusCode)) return false;
+        return [
+          DioExceptionType.connectionTimeout,
+          DioExceptionType.receiveTimeout,
+          DioExceptionType.sendTimeout,
+          DioExceptionType.unknown,
+        ].contains(err.type);
       },
     ));
   }
 
+  // 请求方法
   Future<Response<T>> get<T>(String url,
       {Map<String, dynamic>? queryParameters, Options? options}) async {
-    final response = await dio!.get<T>(url,
+    return await dio.get<T>(url,
         queryParameters: queryParameters,
         options: options ?? await _buildRequestOptions());
-    return response;
   }
 
-  // 同样修改post, put, delete方法中的options参数类型为RequestOptions?
   Future<Response> post(
     String url, {
     Map<String, dynamic>? queryParameters,
     dynamic formData,
     Options? options,
   }) async {
-    bool isFormData = formData is FormData;
     final mergedOptions = options ?? await _buildRequestOptions();
-    // 移除 Content-Type 以便 Dio 自动设置 multipart/form-data 带 boundary
-    if (isFormData) {
+    if (formData is FormData) {
       mergedOptions.headers?.remove('Content-Type');
     }
-    final resp = await dio!.post(url,
-        queryParameters: queryParameters,
-        data: formData,
-        options: mergedOptions);
-    Logger.instance.i(resp);
-    return resp;
+    return await dio.post(
+      url,
+      queryParameters: queryParameters,
+      data: formData,
+      options: mergedOptions,
+    );
   }
 
   Future<Response> put(
@@ -134,7 +130,7 @@ class DioUtil {
     Map<String, dynamic>? formData,
     Options? options,
   }) async {
-    return await dio!.put(
+    return await dio.put(
       url,
       queryParameters: queryParameters,
       data: formData,
@@ -148,7 +144,7 @@ class DioUtil {
     Map<String, dynamic>? formData,
     Options? options,
   }) async {
-    return await dio!.delete(
+    return await dio.delete(
       url,
       queryParameters: queryParameters,
       data: formData != null ? FormData.fromMap(formData) : null,
@@ -156,6 +152,7 @@ class DioUtil {
     );
   }
 
+  // 动态构建请求头
   Map<String, dynamic> _buildAuthHeaders() {
     final headers = <String, dynamic>{
       'Content-Type': 'application/json; charset=utf-8',
@@ -167,20 +164,24 @@ class DioUtil {
   }
 
   Future<Options> _buildRequestOptions() async {
-    Map<String, dynamic> userinfo = SPUtil.getLocalStorage('userinfo') ?? {};
-    if (userinfo.isNotEmpty) {
-      AuthInfo authInfo = AuthInfo.fromJson(userinfo);
-      token = authInfo.authToken ?? '';
-    } else {
-      token = '';
+    if (token.isEmpty) {
+      token = await _loadTokenFromStorage();
     }
-
     return Options(
       headers: _buildAuthHeaders(),
       receiveDataWhenStatusError: true,
       sendTimeout: const Duration(seconds: 120),
       receiveTimeout: const Duration(seconds: 120),
     );
+  }
+
+  Future<String> _loadTokenFromStorage() async {
+    final userinfo = SPUtil.getLocalStorage('userinfo') ?? {};
+    if (userinfo.isNotEmpty) {
+      final authInfo = AuthInfo.fromJson(userinfo);
+      return authInfo.authToken ?? '';
+    }
+    return '';
   }
 
   void updateAuthToken(String newToken) {
@@ -197,9 +198,8 @@ class DioUtil {
     _defaultOptions.headers = _buildAuthHeaders();
   }
 
-  // 增加释放资源的方法
   void dispose() {
-    dio!.interceptors.clear();
-    dio!.close();
+    dio.interceptors.clear();
+    dio.close();
   }
 }
