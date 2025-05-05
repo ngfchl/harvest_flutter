@@ -689,7 +689,19 @@ class _DownloadPageState extends State<DownloadPage>
                         backgroundColor: Theme.of(context).colorScheme.primary,
                       )
                     : IconButton(
-                        onPressed: () => controller.testConnect(downloader),
+                        onPressed: () async {
+                          CommonResponse res =
+                              await controller.testConnect(downloader);
+                          if (!res.succeed) {
+                            Get.snackbar(
+                              '下载器连接失败',
+                              '下载器 ${res.msg}',
+                              colorText: Theme.of(context).colorScheme.error,
+                            );
+                          }else{
+                            await controller.getDownloaderListFromServer(withStatus: true);
+                          }
+                        },
                         icon: Icon(
                           Icons.offline_bolt_outlined,
                           color: Theme.of(context).colorScheme.error,
