@@ -12,6 +12,7 @@ import 'package:flutter_popup/flutter_popup.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
+import 'package:harvest/app/home/pages/download/pagination.dart';
 import 'package:harvest/app/home/pages/download/qb_file_tree_view.dart';
 import 'package:harvest/app/home/pages/download/qbittorrent.dart';
 import 'package:harvest/app/home/pages/download/tr_tree_file_view.dart';
@@ -198,6 +199,57 @@ class _DownloadPageState extends State<DownloadPage>
                                           controller.duration++;
                                           SPUtil.setDouble(
                                               'duration', controller.duration);
+                                          controller.update();
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12.0),
+                                child: Row(
+                                  children: [
+                                    CustomTextTag(
+                                        backgroundColor: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                        labelText:
+                                            '分页大小：${controller.pageSize}个'),
+                                    InkWell(
+                                      child: const Icon(Icons.remove),
+                                      onTap: () {
+                                        if (controller.pageSize.toInt() > 10) {
+                                          controller.pageSize -= 10;
+                                          SPUtil.setInt(
+                                              'pageSize', controller.pageSize);
+                                          controller.update();
+                                        }
+                                      },
+                                    ),
+                                    Expanded(
+                                      child: Slider(
+                                          min: 1,
+                                          max: 20,
+                                          divisions: 19,
+                                          label: controller.pageSize.toString(),
+                                          value: controller.pageSize / 10,
+                                          onChanged: (pageSize) {
+                                            controller.pageSize =
+                                                (pageSize * 10).toInt();
+                                            SPUtil.setInt('pageSize',
+                                                controller.pageSize);
+                                            controller.update();
+                                          }),
+                                    ),
+                                    InkWell(
+                                      child: const Icon(Icons.add),
+                                      onTap: () {
+                                        if (controller.pageSize.toInt() < 200) {
+                                          controller.pageSize += 10;
+                                          SPUtil.setInt(
+                                              'pageSize', controller.pageSize);
                                           controller.update();
                                         }
                                       },
@@ -698,8 +750,9 @@ class _DownloadPageState extends State<DownloadPage>
                               '下载器 ${res.msg}',
                               colorText: Theme.of(context).colorScheme.error,
                             );
-                          }else{
-                            await controller.getDownloaderListFromServer(withStatus: true);
+                          } else {
+                            await controller.getDownloaderListFromServer(
+                                withStatus: true);
                           }
                         },
                         icon: Icon(
@@ -1221,267 +1274,260 @@ class _DownloadPageState extends State<DownloadPage>
       controller.getDownloaderTorrents(downloader);
       bool isQb = downloader.category == 'Qb';
 
-      Get.bottomSheet(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(5.0), // 圆角半径
-          ),
-          isScrollControlled: true,
-          GetBuilder<DownloadController>(builder: (controller) {
-        return SizedBox(
-          height: MediaQuery.of(context).size.height * 0.92,
-          width: MediaQuery.of(context).size.width,
-          child: SafeArea(
-            child: Scaffold(
-              resizeToAvoidBottomInset: false,
-              appBar: AppBar(
-                title: Row(
-                  children: [
-                    Text(
-                        '${downloader.name} (${controller.torrents.isNotEmpty ? controller.torrents.length : 'loading'})'),
-                    // if (controller.torrents.isEmpty)
-                    //   const SizedBox(
-                    //     height: 24,
-                    //     width: 24,
-                    //     child: Center(
-                    //       child: CircularProgressIndicator(),
-                    //     ),
-                    //   )
+      Future.delayed(Duration(milliseconds: 50), () {
+        final LocalPaginationController localPaginationController =
+            Get.put(LocalPaginationController(pageSize: controller.pageSize));
+
+        final ScrollController scrollController = ScrollController();
+        localPaginationController.bindSource(controller.showTorrents.obs);
+        scrollController.addListener(() {
+          if (scrollController.position.pixels >=
+                  scrollController.position.maxScrollExtent - 100 &&
+              localPaginationController.hasMore) {
+            localPaginationController.loadNextPage();
+          }
+        });
+
+        Get.bottomSheet(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(5.0), // 圆角半径
+            ),
+            isScrollControlled: true,
+            GetBuilder<DownloadController>(builder: (controller) {
+          return SizedBox(
+            height: MediaQuery.of(context).size.height * 0.92,
+            width: MediaQuery.of(context).size.width,
+            child: SafeArea(
+              child: Scaffold(
+                resizeToAvoidBottomInset: false,
+                appBar: AppBar(
+                  title: Row(
+                    children: [
+                      Text(
+                          '${downloader.name} (${controller.torrents.isNotEmpty ? controller.torrents.length : 'loading'})'),
+                    ],
+                  ),
+                  actions: [
+                    IconButton(
+                        onPressed: () async {
+                          await controller.clearFilterOption();
+                          controller.filterTorrents(isQb);
+                        },
+                        icon: const Icon(Icons.clear_all)),
+                    IconButton(
+                        onPressed: () async {
+                          await controller.stopFetchTorrents();
+                          Get.back();
+                        },
+                        icon: const Icon(Icons.exit_to_app_outlined)),
+                    CustomPopup(
+                        showArrow: false,
+                        backgroundColor: Theme.of(context).colorScheme.surface,
+                        barrierColor: Colors.transparent,
+                        content: SizedBox(
+                          width: 120,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              PopupMenuItem<String>(
+                                child: Center(
+                                  child: Text(
+                                    '清除红种',
+                                    style: TextStyle(
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                    ),
+                                  ),
+                                ),
+                                onTap: () => isQb
+                                    ? removeQbErrorTracker(downloader)
+                                    : removeTrErrorTracker(downloader),
+                              ),
+                              PopupMenuItem<String>(
+                                child: Center(
+                                  child: Text(
+                                    '重置排序',
+                                    style: TextStyle(
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                    ),
+                                  ),
+                                ),
+                                onTap: () async {
+                                  controller.resetSortKey(downloader);
+                                  isQb
+                                      ? controller.sortQbTorrents()
+                                      : controller.sortTrTorrents();
+                                },
+                              ),
+                              PopupMenuItem<String>(
+                                child: Center(
+                                    child: Text(
+                                  '替换Tracker',
+                                  style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary),
+                                )),
+                                onTap: () =>
+                                    replaceTrackers(downloader: downloader),
+                              ),
+                              PopupMenuItem<String>(
+                                child: Center(
+                                  child: Text(
+                                    '添加种子',
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .secondary,
+                                    ),
+                                  ),
+                                ),
+                                onTap: () => _openAddTorrentDialog(
+                                    controller, downloader),
+                              ),
+                            ],
+                          ),
+                        ),
+                        child: const Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Icon(
+                            Icons.add,
+                            size: 18,
+                          ),
+                        )),
                   ],
                 ),
-                actions: [
-                  IconButton(
-                      onPressed: () async {
-                        await controller.clearFilterOption();
-                        controller.filterTorrents(isQb);
-                      },
-                      icon: const Icon(Icons.clear_all)),
-                  IconButton(
-                      onPressed: () async {
-                        await controller.stopFetchTorrents();
-                        Get.back();
-                      },
-                      icon: const Icon(Icons.exit_to_app_outlined)),
-                  CustomPopup(
-                      showArrow: false,
-                      backgroundColor: Theme.of(context).colorScheme.surface,
-                      barrierColor: Colors.transparent,
-                      content: SizedBox(
-                        width: 120,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            PopupMenuItem<String>(
-                              child: Center(
-                                child: Text(
-                                  '清除红种',
-                                  style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                  ),
-                                ),
-                              ),
-                              onTap: () => isQb
-                                  ? removeQbErrorTracker(downloader)
-                                  : removeTrErrorTracker(downloader),
-                            ),
-                            PopupMenuItem<String>(
-                              child: Center(
-                                child: Text(
-                                  '重置排序',
-                                  style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                  ),
-                                ),
-                              ),
-                              onTap: () async {
-                                controller.resetSortKey(downloader);
-                                isQb
-                                    ? controller.sortQbTorrents()
-                                    : controller.sortTrTorrents();
-                              },
-                            ),
-                            PopupMenuItem<String>(
-                              child: Center(
+                drawer: GetBuilder<DownloadController>(builder: (controller) {
+                  return isQb
+                      ? _buildQbDrawer(downloader, context)
+                      : _buildTrDrawer(downloader, context);
+                }),
+                drawerEdgeDragWidth: 100,
+                body: CustomCard(
+                    child: Column(
+                  children: [
+                    Expanded(
+                      child: controller.isTorrentsLoading
+                          ? const Center(
+                              child: CircularProgressIndicator(),
+                            )
+                          : controller.showTorrents.isEmpty
+                              ? Center(
                                   child: Text(
-                                '替换Tracker',
-                                style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.primary),
-                              )),
-                              onTap: () =>
-                                  replaceTrackers(downloader: downloader),
-                            ),
-                            PopupMenuItem<String>(
-                              child: Center(
-                                child: Text(
-                                  '添加种子',
+                                  '暂无数据',
                                   style: TextStyle(
                                     color:
-                                        Theme.of(context).colorScheme.secondary,
+                                        Theme.of(context).colorScheme.primary,
                                   ),
-                                ),
-                              ),
-                              onTap: () =>
-                                  _openAddTorrentDialog(controller, downloader),
-                            ),
-                            // PopupMenuItem<String>(
-                            //   child: Text(
-                            //     'CC 同步',
-                            //     style: TextStyle(
-                            //       color: Theme.of(context).colorScheme.secondary,
-                            //     ),
-                            //   ),
-                            //   onTap: () async {
-                            //     await importFromCookieCloud();
-                            //   },
-                            // ),
-                            // PopupMenuItem<String>(
-                            //   child: Text(
-                            //     '清除缓存',
-                            //     style: TextStyle(
-                            //       color: Theme.of(context).colorScheme.secondary,
-                            //     ),
-                            //   ),
-                            //   onTap: () async {
-                            //     CommonResponse res = await clearMyCacheApi();
-                            //     Get.snackbar(
-                            //       '清除缓存',
-                            //       '清除缓存：${res.msg}',colorText: Theme.of(context).colorScheme.primary
-                            //     );
-                            //   },
-                            // ),
-                          ],
-                        ),
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Icon(
-                          Icons.add,
-                          size: 18,
-                        ),
-                      )),
-                ],
-              ),
-              drawer: GetBuilder<DownloadController>(builder: (controller) {
-                return isQb
-                    ? _buildQbDrawer(downloader, context)
-                    : _buildTrDrawer(downloader, context);
-              }),
-              drawerEdgeDragWidth: 100,
-              body: CustomCard(
-                  child: Column(
-                children: [
-                  Expanded(
-                    child: controller.isTorrentsLoading
-                        ? const Center(
-                            child: CircularProgressIndicator(),
-                          )
-                        : controller.showTorrents.isEmpty
-                            ? Center(
-                                child: Text(
-                                '暂无数据',
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                              ))
-                            : ListView.builder(
-                                itemCount: controller.showTorrents.length,
-                                itemBuilder: (BuildContext context, int index) {
-                                  if (isQb) {
-                                    QbittorrentTorrentInfo torrent =
-                                        controller.showTorrents[index];
-                                    return _showQbTorrent(
-                                        downloader, torrent, context);
-                                  } else {
-                                    TrTorrent torrent =
-                                        controller.showTorrents[index];
-                                    return _showTrTorrent(
-                                        downloader, torrent, context);
-                                  }
-                                }),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 5),
-                    child:
-                        GetBuilder<DownloadController>(builder: (controller) {
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: SizedBox(
-                              height: 36,
-                              child: TextField(
-                                controller: controller.searchController,
-                                textAlignVertical: TextAlignVertical.center,
-                                decoration: InputDecoration(
-                                  isDense: true,
-                                  hintText: '请输入搜索关键字',
-                                  hintStyle: const TextStyle(fontSize: 13),
-                                  // contentPadding: const EdgeInsets.symmetric(
-                                  //     vertical: 5, horizontal: 5),
-                                  border: OutlineInputBorder(
-                                    borderSide: BorderSide.none,
-                                    // 不绘制边框
-                                    borderRadius: BorderRadius.circular(0.0),
-                                    // 确保角落没有圆角
-                                    gapPadding: 0.0, // 移除边框与hintText之间的间距
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide: BorderSide.none,
-                                    // 仅在聚焦时绘制底部边框
-                                    borderRadius: BorderRadius.circular(0.0),
-                                  ),
-                                  suffixIcon: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.all(5.0),
-                                        child: Text(
-                                            '计数：${controller.showTorrents.length}',
-                                            style: const TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.orange)),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                onChanged: (value) =>
-                                    controller.filterTorrents(isQb),
-                              ),
-                            ),
-                          ),
-                          if (controller.searchKey.isNotEmpty)
-                            IconButton(
-                                onPressed: () {
-                                  if (controller
-                                      .searchController.text.isNotEmpty) {
-                                    controller.searchController.text =
-                                        controller.searchController.text
-                                            .substring(
-                                                0,
-                                                controller.searchController.text
-                                                        .length -
-                                                    1);
-                                    controller.searchKey =
-                                        controller.searchController.text;
-                                    controller.filterTorrents(isQb);
-                                  }
-                                },
-                                icon: const Icon(
-                                  Icons.backspace_outlined,
-                                  size: 18,
                                 ))
-                        ],
-                      );
-                    }),
-                  ),
-                ],
-              )),
+                              : ListView.builder(
+                                  controller: scrollController,
+                                  itemCount: localPaginationController
+                                      .displayedItems.length,
+                                  itemBuilder:
+                                      (BuildContext context, int index) {
+                                    if (isQb) {
+                                      QbittorrentTorrentInfo torrent =
+                                          localPaginationController
+                                              .displayedItems[index];
+                                      return _showQbTorrent(
+                                          downloader, torrent, context);
+                                    } else {
+                                      TrTorrent torrent =
+                                          localPaginationController
+                                              .displayedItems[index];
+                                      return _showTrTorrent(
+                                          downloader, torrent, context);
+                                    }
+                                  }),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 5),
+                      child:
+                          GetBuilder<DownloadController>(builder: (controller) {
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: SizedBox(
+                                height: 36,
+                                child: TextField(
+                                  controller: controller.searchController,
+                                  textAlignVertical: TextAlignVertical.center,
+                                  decoration: InputDecoration(
+                                    isDense: true,
+                                    hintText: '请输入搜索关键字',
+                                    hintStyle: const TextStyle(fontSize: 13),
+                                    // contentPadding: const EdgeInsets.symmetric(
+                                    //     vertical: 5, horizontal: 5),
+                                    border: OutlineInputBorder(
+                                      borderSide: BorderSide.none,
+                                      // 不绘制边框
+                                      borderRadius: BorderRadius.circular(0.0),
+                                      // 确保角落没有圆角
+                                      gapPadding: 0.0, // 移除边框与hintText之间的间距
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: BorderSide.none,
+                                      // 仅在聚焦时绘制底部边框
+                                      borderRadius: BorderRadius.circular(0.0),
+                                    ),
+                                    suffixIcon: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.all(5.0),
+                                          child: Text(
+                                              '计数：${controller.showTorrents.length}',
+                                              style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.orange)),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  onChanged: (value) {
+                                    controller.filterTorrents(isQb);
+                                    localPaginationController.bindSource(
+                                        controller.showTorrents.obs);
+                                  },
+                                ),
+                              ),
+                            ),
+                            if (controller.searchKey.isNotEmpty)
+                              IconButton(
+                                  onPressed: () {
+                                    if (controller
+                                        .searchController.text.isNotEmpty) {
+                                      controller.searchController.text =
+                                          controller.searchController.text
+                                              .substring(
+                                                  0,
+                                                  controller.searchController
+                                                          .text.length -
+                                                      1);
+                                      controller.searchKey =
+                                          controller.searchController.text;
+                                      controller.filterTorrents(isQb);
+                                    }
+                                  },
+                                  icon: const Icon(
+                                    Icons.backspace_outlined,
+                                    size: 18,
+                                  ))
+                          ],
+                        );
+                      }),
+                    ),
+                  ],
+                )),
+              ),
             ),
-          ),
-        );
-      })).whenComplete(() => controller.stopFetchTorrents());
+          );
+        })).whenComplete(() => controller.stopFetchTorrents());
+      });
     } catch (e, trace) {
       var message = '查看种子列表失败！$e';
       logger_helper.Logger.instance.e(message);

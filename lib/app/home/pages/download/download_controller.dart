@@ -182,6 +182,8 @@ class DownloadController extends GetxController {
 
   bool toggleSpeedLimitLoading = false;
 
+  int pageSize = 20;
+
   @override
   void onInit() async {
     realTimeState = SPUtil.getBool('realTimeState', defaultValue: true)!;
