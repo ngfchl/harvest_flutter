@@ -10,8 +10,6 @@ import 'package:harvest/common/meta_item.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:harvest/utils/logger_helper.dart' as logger_helper;
 import 'package:qbittorrent_api/qbittorrent_api.dart';
-import 'package:web_socket_channel/status.dart' as status;
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../../../api/api.dart';
 import '../../../../api/downloader.dart';
@@ -33,7 +31,6 @@ class AggSearchController extends GetxController
     with GetSingleTickerProviderStateMixin {
   MySiteController mySiteController = Get.find();
   DownloadController downloadController = Get.put(DownloadController(false));
-  late WebSocketChannel channel;
   TextEditingController searchKeyController = TextEditingController();
   String filterKey = '';
   String sortKey = 'seeders';
@@ -278,7 +275,8 @@ class AggSearchController extends GetxController
 
   cancelSearch() {
     isLoading = false;
-    channel.sink.close(status.normalClosure);
+    SSEClient.disableRetry();
+    SSEClient.unsubscribeFromSSE();
     update();
   }
 

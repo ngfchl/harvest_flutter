@@ -8,7 +8,6 @@ import 'package:harvest/app/home/pages/download/qbittorrent.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
 import 'package:transmission_api/transmission_api.dart' as tr;
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../../../api/downloader.dart';
 import '../../../../common/meta_item.dart';
@@ -41,8 +40,6 @@ class DownloadController extends GetxController {
   bool isTorrentsLoading = false;
   late StreamSubscription<SSEModel> subscription;
 
-  late WebSocketChannel channel;
-  late WebSocketChannel torrentsChannel;
   String baseUrl = SPUtil.getLocalStorage('server');
   List torrents = [];
   List showTorrents = [];
