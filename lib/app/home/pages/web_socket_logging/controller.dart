@@ -1,12 +1,14 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_floating/floating/floating.dart';
 import 'package:flutter_floating/floating/listener/event_listener.dart';
 import 'package:get/get.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
+import '../../../../models/authinfo.dart';
 import '../../../../models/common_response.dart';
+import '../../../../utils/flutter_client_sse.dart';
 import '../../../../utils/logger_helper.dart';
 import '../../../../utils/storage.dart';
 
@@ -16,7 +18,7 @@ class WebSocketLoggingController extends GetxController {
   String url = 'ws/logging';
   bool isLoading = false;
   bool wrapText = true;
-  late WebSocketChannel channel;
+  late StreamSubscription<SSEModel> subscription;
   ScrollController? scrollController;
   int filterLevel = 0;
   Map<String, int> levelList = {
@@ -27,6 +29,7 @@ class WebSocketLoggingController extends GetxController {
     'ERROR': 4,
     'CRITICAL': 5,
   };
+  String baseUrl = SPUtil.getLocalStorage('server');
 
   GlobalKey inTimeAPILogFloatingKey =
       GlobalKey(debugLabel: "inTimeAPILogFloatingWindows");
@@ -93,19 +96,29 @@ class WebSocketLoggingController extends GetxController {
     // 打开加载状态
     isLoading = true;
     update();
+    // 准备基础数据
     try {
-      String baseUrl = SPUtil.getLocalStorage('server');
-      final wsUrl =
-          Uri.parse('${baseUrl.replaceFirst('http', 'ws')}/api/ws/logging');
+      Map userinfo = SPUtil.getMap('userinfo');
+      AuthInfo authInfo = AuthInfo.fromJson(userinfo as Map<String, dynamic>);
+      final headers = <String, String>{
+        'Content-Type': 'application/json; charset=utf-8',
+        'Authorization': 'Bearer ${authInfo.authToken}'
+      };
+      List<Future<void>> futures = [];
+      // 打开 SSE 通道，开始搜索
 
-      channel = WebSocketChannel.connect(wsUrl);
-      await channel.ready;
-      channel.sink.add(json.encode({"limit": 1024, "interval": 1}));
-      channel.stream.listen((message) {
-        CommonResponse response =
-            CommonResponse.fromJson(json.decode(message), (p0) => p0);
-        Logger.instance.i(response.msg);
-        if (response.code == 0) {
+      subscription = SSEClient.subscribeToSSE(
+        method: SSERequestType.GET,
+        url: '$baseUrl/api/option/logging',
+        header: headers,
+        body: {
+          "limit": 1024,
+          "interval": 1,
+        },
+      ).listen((event) async {
+        Map<String, dynamic> jsonData = json.decode(event.data!);
+        CommonResponse response = CommonResponse.fromJson(jsonData, (p0) => p0);
+        if (response.succeed) {
           updateLogs(response.data);
         } else {
           updateLogs(response.msg.toString());
@@ -120,8 +133,8 @@ class WebSocketLoggingController extends GetxController {
     } catch (e, trace) {
       Logger.instance.e(e);
       Logger.instance.d(trace);
-      stopFetchLog();
     }
+    update();
   }
 
   void updateLogs(dynamic msg) async {
@@ -165,7 +178,9 @@ class WebSocketLoggingController extends GetxController {
 
   stopFetchLog() {
     isLoading = false;
-    channel.sink.close();
+    subscription.cancel();
+    SSEClient.disableRetry();
+    SSEClient.unsubscribeFromSSE();
     update();
   }
 
