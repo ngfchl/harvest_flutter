@@ -8,14 +8,14 @@ import 'package:harvest/app/home/pages/download/qbittorrent.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
 import 'package:transmission_api/transmission_api.dart' as tr;
-import 'package:web_socket_channel/status.dart' as status;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import '../../../../api/api.dart';
 import '../../../../api/downloader.dart';
 import '../../../../common/meta_item.dart';
+import '../../../../models/authinfo.dart';
 import '../../../../models/common_response.dart';
 import '../../../../models/download.dart';
+import '../../../../utils/flutter_client_sse.dart';
 import '../../../../utils/logger_helper.dart' as logger_helper;
 import '../../../../utils/storage.dart';
 import '../models/transmission.dart';
@@ -39,6 +39,8 @@ class DownloadController extends GetxController {
   bool realTimeState = false;
   bool isLoading = false;
   bool isTorrentsLoading = false;
+  late StreamSubscription<SSEModel> subscription;
+
   late WebSocketChannel channel;
   late WebSocketChannel torrentsChannel;
   String baseUrl = SPUtil.getLocalStorage('server');
@@ -216,7 +218,7 @@ class DownloadController extends GetxController {
 
     if (realTimeState) {
       logger_helper.Logger.instance.d('调用刷新 init');
-      await getDownloaderStatus();
+      await getSSEDownloaderStatus();
 
       // refreshDownloadStatus();
       // 设置定时器，每隔一定时间刷新下载器数据
@@ -370,48 +372,65 @@ class DownloadController extends GetxController {
         : await getTrSpeed(downloader);
   }
 
-  getDownloaderStatus() async {
+  getSSEDownloaderStatus() async {
     // 打开加载状态
     isLoading = true;
     update();
+    // 准备基础数据
     try {
-      final wsUrl = Uri.parse(
-          '${baseUrl.replaceFirst('http', 'ws')}/api/${Api.DOWNLOADER_STATUS}');
-      channel = WebSocketChannel.connect(wsUrl);
-
-      await channel.ready;
-      channel.sink.add(json.encode({
-        "interval": duration,
-      }));
+      Map userinfo = SPUtil.getMap('userinfo');
+      AuthInfo authInfo = AuthInfo.fromJson(userinfo as Map<String, dynamic>);
+      final headers = <String, String>{
+        'Content-Type': 'application/json; charset=utf-8',
+        'Authorization': 'Bearer ${authInfo.authToken}'
+      };
       List<Future<void>> futures = [];
-      channel.stream.listen((message) async {
-        CommonResponse response =
-            CommonResponse.fromJson(json.decode(message), (p0) => p0);
-        if (response.code == 0) {
-          // logger_helper.Logger.instance.d(response.data);
-          Future<void> fetchStatus = fetchItemStatus(response.data);
-          futures.add(fetchStatus);
-          await Future.wait(futures);
-          update();
+      // 打开 SSE 通道，开始搜索
+
+      subscription = SSEClient.subscribeToSSE(
+        method: SSERequestType.GET,
+        url: '$baseUrl/api/option/downloaders/status',
+        header: headers,
+        body: {
+          "interval": duration,
+          "timer": timerDuration,
+        },
+      ).listen((event) async {
+        Map<String, dynamic> jsonData = json.decode(event.data!);
+        CommonResponse response = CommonResponse.fromJson(jsonData, (p0) => p0);
+        logger_helper.Logger.instance.w(response.succeed);
+        if (response.succeed) {
+          try {
+            Future<void> fetchStatus = fetchItemStatus(response.data);
+            futures.add(fetchStatus);
+            await Future.wait(futures);
+            update();
+          } catch (e, trace) {
+            logger_helper.Logger.instance.e(e.toString());
+            logger_helper.Logger.instance.e(trace.toString());
+            isLoading = false;
+            await stopFetchStatus();
+            update();
+          }
         } else {
           logger_helper.Logger.instance.i(response.msg);
-          // searchMsg.add({"success": false, "msg": response.msg});
           update();
         }
-      }, onError: (err) {
+      }, onError: (err) async {
+        isLoading = false;
+        await stopFetchStatus();
         logger_helper.Logger.instance.e('获取下载器状态出错啦： ${err.toString()}');
-        // searchMsg.add({"success": false, "msg": '搜索出错啦：$err'});
-        stopFetchStatus();
-      }, onDone: () {
+        update();
+      }, onDone: () async {
+        isLoading = false;
+        await stopFetchStatus();
         logger_helper.Logger.instance.e('获取下载器状态结束啦！');
-        stopFetchStatus();
       });
     } catch (e, trace) {
       logger_helper.Logger.instance.e(e);
       logger_helper.Logger.instance.d(trace);
-      // searchMsg.add({"success": false, "msg": '搜索出错啦：$e'});
-      stopFetchStatus();
     }
+    update();
   }
 
   getQbMainData(Downloader downloader) async {
@@ -801,8 +820,6 @@ class DownloadController extends GetxController {
         showTorrents.sort((a, b) => b.numIncomplete.compareTo(a.numIncomplete));
       case 'priority':
         showTorrents.sort((a, b) => a.priority.compareTo(b.priority));
-      case 'seenComplete':
-        showTorrents.sort((a, b) => a.seenComplete.compareTo(b.seenComplete));
       default:
         Get.snackbar('出错啦！', '未知排序规则：$sortKey');
     }
@@ -833,7 +850,6 @@ class DownloadController extends GetxController {
       case 'start_all':
         response = await controlTorrent(
             downloaderId: downloader.id!, command: {'command': command});
-      case 'start_torrent':
       case 'start_torrent':
       case 'stop_torrent':
       case 'verify_torrent':
@@ -1025,21 +1041,23 @@ class DownloadController extends GetxController {
     return response;
   }
 
-  getDownloaderTorrents(Downloader downloader) async {
+  getSSEDownloaderTorrents(Downloader downloader) async {
     // 打开加载状态
     try {
       bool isQb = downloader.category == 'Qb';
       isTorrentsLoading = true;
+      Map userinfo = SPUtil.getMap('userinfo');
+      AuthInfo authInfo = AuthInfo.fromJson(userinfo as Map<String, dynamic>);
+      final headers = <String, String>{
+        'Content-Type': 'application/json; charset=utf-8',
+        'Authorization': 'Bearer ${authInfo.authToken}'
+      };
       serverStatus.clear();
       sortKey = SPUtil.getString(
               '${downloader.host}:${downloader.port}-sortKey',
               defaultValue: 'name') ??
           'name';
       update();
-      final wsUrl = Uri.parse(
-          '${baseUrl.replaceFirst('http', 'ws')}/api/${Api.DOWNLOADER_TORRENTS}');
-      torrentsChannel = WebSocketChannel.connect(wsUrl);
-      await torrentsChannel.ready;
       // 使用缓存
       trackerToWebSiteMap = mySiteController.buildTrackerToWebSite();
       String key = 'Downloader-$baseUrl:${downloader.name}-${downloader.id}';
@@ -1055,17 +1073,20 @@ class DownloadController extends GetxController {
         update();
       }
 
-      int rid = 0;
-      torrentsChannel.sink.add(json.encode({
-        "downloader_id": downloader.id,
-        "interval": duration,
-        "rid": rid,
-      }));
-
-      torrentsChannel.stream.listen((message) async {
+      int rid = -1;
+      SSEClient.enableRetry();
+      SSEClient.subscribeToSSE(
+        method: SSERequestType.GET,
+        url: '$baseUrl/api/option/downloaders/torrents/${downloader.id}',
+        header: headers,
+        body: {
+          "interval": duration,
+          "rid": rid,
+        },
+      ).listen((event) async {
         logger_helper.Logger.instance.d('开始刷新种子列表！Rid：$rid');
-        CommonResponse response =
-            CommonResponse.fromJson(json.decode(message), (p0) => p0);
+        Map<String, dynamic> jsonData = json.decode(event.data!);
+        CommonResponse response = CommonResponse.fromJson(jsonData, (p0) => p0);
         if (response.code == 0) {
           // logger_helper.Logger.instance.d(response.data[0]);
           await SPUtil.setCache(key, {key: response.data}, 3600 * 24 * 3);
@@ -1248,20 +1269,23 @@ class DownloadController extends GetxController {
   }
 
   stopFetchTorrents() async {
-    await torrentsChannel.sink.close(status.normalClosure);
-    await torrentsChannel.sink.done;
+    SSEClient.disableRetry();
+    SSEClient.unsubscribeFromSSE();
     torrents.clear();
     clearFilterOption();
     update();
   }
 
   toggleFetchStatus() async {
-    isLoading ? await stopFetchStatus() : await getDownloaderStatus();
+    isLoading ? await stopFetchStatus() : await getSSEDownloaderStatus();
   }
 
   stopFetchStatus() async {
     isLoading = false;
-    await channel.sink.close(status.normalClosure);
+    SSEClient.disableRetry();
+    SSEClient.unsubscribeFromSSE();
+    await subscription.cancel();
+    // statusStreamController.close();
     update();
   }
 

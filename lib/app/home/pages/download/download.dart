@@ -149,7 +149,7 @@ class _DownloadPageState extends State<DownloadPage>
                                   if (value == false) {
                                     await controller.stopFetchStatus();
                                   } else {
-                                    await controller.getDownloaderStatus();
+                                    await controller.getSSEDownloaderStatus();
                                   }
                                   controller.update();
                                 },
@@ -173,7 +173,7 @@ class _DownloadPageState extends State<DownloadPage>
                                           SPUtil.setDouble(
                                               'duration', controller.duration);
                                           controller.stopFetchStatus();
-                                          controller.getDownloaderStatus();
+                                          controller.getSSEDownloaderStatus();
                                           controller.update();
                                         }
                                       },
@@ -182,7 +182,7 @@ class _DownloadPageState extends State<DownloadPage>
                                       child: Slider(
                                           min: 1,
                                           max: 15,
-                                          divisions: 12,
+                                          divisions: 14,
                                           label: controller.duration.toString(),
                                           value: controller.duration.toDouble(),
                                           onChanged: (duration) {
@@ -216,7 +216,7 @@ class _DownloadPageState extends State<DownloadPage>
                                             .colorScheme
                                             .primary,
                                         labelText:
-                                            '分页大小：${controller.pageSize}个'),
+                                            '分页大小：${controller.pageSize * 10}个'),
                                     InkWell(
                                       child: const Icon(Icons.remove),
                                       onTap: () {
@@ -1271,7 +1271,7 @@ class _DownloadPageState extends State<DownloadPage>
         );
         return;
       }
-      controller.getDownloaderTorrents(downloader);
+      controller.getSSEDownloaderTorrents(downloader);
       bool isQb = downloader.category == 'Qb';
 
       Future.delayed(Duration(milliseconds: 50), () {
@@ -1279,12 +1279,15 @@ class _DownloadPageState extends State<DownloadPage>
             Get.put(LocalPaginationController(pageSize: controller.pageSize));
 
         final ScrollController scrollController = ScrollController();
-        localPaginationController.bindSource(controller.showTorrents.obs);
+        logger_helper.Logger.instance.i('开始加载种子数据 1');
+        localPaginationController.bindSource(controller.showTorrents.obs,
+            reset: true);
         scrollController.addListener(() {
           if (scrollController.position.pixels >=
                   scrollController.position.maxScrollExtent - 100 &&
               localPaginationController.hasMore) {
             localPaginationController.loadNextPage();
+            controller.update();
           }
         });
 
@@ -1294,7 +1297,9 @@ class _DownloadPageState extends State<DownloadPage>
             ),
             isScrollControlled: true,
             GetBuilder<DownloadController>(builder: (controller) {
-          localPaginationController.bindSource(controller.showTorrents.obs);
+          // logger_helper.Logger.instance.i('开始加载种子数据 2');
+          // localPaginationController.bindSource(controller.showTorrents.obs);
+
           return SizedBox(
             height: MediaQuery.of(context).size.height * 0.92,
             width: MediaQuery.of(context).size.width,
@@ -1422,29 +1427,26 @@ class _DownloadPageState extends State<DownloadPage>
                                         Theme.of(context).colorScheme.primary,
                                   ),
                                 ))
-                              : GetBuilder<DownloadController>(
-                                  builder: (controller) {
-                                  return ListView.builder(
-                                      controller: scrollController,
-                                      itemCount: localPaginationController
-                                          .displayedItems.length,
-                                      itemBuilder:
-                                          (BuildContext context, int index) {
-                                        if (isQb) {
-                                          QbittorrentTorrentInfo torrent =
-                                              localPaginationController
-                                                  .displayedItems[index];
-                                          return _showQbTorrent(
-                                              downloader, torrent, context);
-                                        } else {
-                                          TrTorrent torrent =
-                                              localPaginationController
-                                                  .displayedItems[index];
-                                          return _showTrTorrent(
-                                              downloader, torrent, context);
-                                        }
-                                      });
-                                }),
+                              : Obx(() => ListView.builder(
+                                  controller: scrollController,
+                                  itemCount: localPaginationController
+                                      .displayedItems.length,
+                                  itemBuilder:
+                                      (BuildContext context, int index) {
+                                    if (isQb) {
+                                      QbittorrentTorrentInfo torrent =
+                                          localPaginationController
+                                              .displayedItems[index];
+                                      return _showQbTorrent(
+                                          downloader, torrent, context);
+                                    } else {
+                                      TrTorrent torrent =
+                                          localPaginationController
+                                              .displayedItems[index];
+                                      return _showTrTorrent(
+                                          downloader, torrent, context);
+                                    }
+                                  })),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(top: 5),
@@ -1494,8 +1496,11 @@ class _DownloadPageState extends State<DownloadPage>
                                   ),
                                   onChanged: (value) {
                                     controller.filterTorrents(isQb);
+                                    logger_helper.Logger.instance.i(
+                                        '开始加载种子数据 3：${controller.showTorrents.length}');
                                     localPaginationController.bindSource(
-                                        controller.showTorrents.obs);
+                                        controller.showTorrents.obs,
+                                        reset: true);
                                   },
                                 ),
                               ),
