@@ -54,7 +54,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
     return GetBuilder<WebSocketLoggingController>(builder: (controller) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text("API日志"),
+          title: const Text("实时访问日志"),
           actions: [
             IconButton(
               icon: Icon(
