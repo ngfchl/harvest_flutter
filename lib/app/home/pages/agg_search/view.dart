@@ -129,7 +129,8 @@ class _AggSearchPageState extends State<AggSearchPage>
                                         await controller.doDouBanSearch();
                                       }
                                     } else {
-                                      await controller.doWebsocketSearch();
+                                      // await controller.doWebsocketSearch();
+                                      await controller.doSearch();
                                     }
                                   },
                                 ),
@@ -219,7 +220,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                             if (controller.isLoading) {
                                               await controller.cancelSearch();
                                             } else {
-                                              controller.doWebsocketSearch();
+                                              controller.doSearch();
                                             }
                                           },
                                         ),

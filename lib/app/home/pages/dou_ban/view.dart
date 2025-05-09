@@ -1,8 +1,7 @@
-import 'dart:io';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:custom_rating_bar/custom_rating_bar.dart';
 import 'package:easy_refresh/easy_refresh.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
@@ -1101,7 +1100,7 @@ class _DouBanPageState extends State<DouBanPage>
       url = mediaInfo.douBanUrl;
     }
     await controller.getVideoDetail(url);
-    if (!Platform.isIOS && !Platform.isAndroid) {
+    if (kIsWeb) {
       Logger.instance.i('Explorer');
       if (!await launchUrl(Uri.parse(url),
           mode: LaunchMode.externalApplication)) {

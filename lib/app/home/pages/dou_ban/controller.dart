@@ -191,7 +191,7 @@ class DouBanController extends GetxController {
       searchKey = "${detail.imdb}||$searchKey";
     }
     searchController.searchKeyController.text = searchKey;
-    await searchController.doWebsocketSearch();
+    await searchController.doSearch();
     homeController.changePage(1);
     searchController.update();
     homeController.update();

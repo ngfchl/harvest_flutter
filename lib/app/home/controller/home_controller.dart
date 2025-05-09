@@ -216,7 +216,7 @@ class HomeController extends GetxController {
   void logout() {
     SPUtil.remove("userinfo");
     SPUtil.remove("isLogin");
-    dioUtil.dio?.close();
+    dioUtil.dio.close();
     Get.delete<DownloadController>();
     Get.delete<HomeController>();
     Get.delete<MySiteController>();
