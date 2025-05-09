@@ -1294,6 +1294,7 @@ class _DownloadPageState extends State<DownloadPage>
             ),
             isScrollControlled: true,
             GetBuilder<DownloadController>(builder: (controller) {
+          localPaginationController.bindSource(controller.showTorrents.obs);
           return SizedBox(
             height: MediaQuery.of(context).size.height * 0.92,
             width: MediaQuery.of(context).size.width,
@@ -1421,26 +1422,29 @@ class _DownloadPageState extends State<DownloadPage>
                                         Theme.of(context).colorScheme.primary,
                                   ),
                                 ))
-                              : ListView.builder(
-                                  controller: scrollController,
-                                  itemCount: localPaginationController
-                                      .displayedItems.length,
-                                  itemBuilder:
-                                      (BuildContext context, int index) {
-                                    if (isQb) {
-                                      QbittorrentTorrentInfo torrent =
-                                          localPaginationController
-                                              .displayedItems[index];
-                                      return _showQbTorrent(
-                                          downloader, torrent, context);
-                                    } else {
-                                      TrTorrent torrent =
-                                          localPaginationController
-                                              .displayedItems[index];
-                                      return _showTrTorrent(
-                                          downloader, torrent, context);
-                                    }
-                                  }),
+                              : GetBuilder<DownloadController>(
+                                  builder: (controller) {
+                                  return ListView.builder(
+                                      controller: scrollController,
+                                      itemCount: localPaginationController
+                                          .displayedItems.length,
+                                      itemBuilder:
+                                          (BuildContext context, int index) {
+                                        if (isQb) {
+                                          QbittorrentTorrentInfo torrent =
+                                              localPaginationController
+                                                  .displayedItems[index];
+                                          return _showQbTorrent(
+                                              downloader, torrent, context);
+                                        } else {
+                                          TrTorrent torrent =
+                                              localPaginationController
+                                                  .displayedItems[index];
+                                          return _showTrTorrent(
+                                              downloader, torrent, context);
+                                        }
+                                      });
+                                }),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(top: 5),
