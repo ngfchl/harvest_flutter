@@ -1,14 +1,12 @@
-
-
 class TaskItem {
   String uuid;
   String name;
   String state;
-  double received;
+  double? received;
   double? sent;
-  double started;
+  double? started;
   double? rejected;
-  double succeeded;
+  double? succeeded;
   double? failed;
   double? retried;
   double? revoked;
@@ -17,7 +15,7 @@ class TaskItem {
   double? eta;
   double? expires;
   int retries;
-  String result;
+  String? result;
   String? exception;
   double timestamp;
   double runtime;
@@ -72,11 +70,11 @@ class TaskItem {
       uuid: json['uuid'],
       name: json['name'],
       state: json['state'],
-      received: json['received'].toDouble(),
+      received: json['received']?.toDouble(),
       sent: json['sent']?.toDouble(),
-      started: json['started'].toDouble(),
+      started: json['started']?.toDouble(),
       rejected: json['rejected']?.toDouble(),
-      succeeded: json['succeeded'].toDouble(),
+      succeeded: json['succeeded']?.toDouble(),
       failed: json['failed']?.toDouble(),
       retried: json['retried']?.toDouble(),
       revoked: json['revoked']?.toDouble(),

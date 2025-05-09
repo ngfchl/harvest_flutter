@@ -66,6 +66,17 @@ class LoggingView extends StatelessWidget {
                             IconButton(
                               onPressed: () async {
                                 controller.filterLevel = Level.all;
+                                await controller.getTaskList();
+                                controller.update();
+                              },
+                              icon: Icon(
+                                Icons.task,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () async {
+                                controller.filterLevel = Level.all;
                                 await controller.clearLogs();
                                 controller.update();
                               },
@@ -391,7 +402,7 @@ class LoggingView extends StatelessWidget {
                                                     content: item.state
                                                                 .toLowerCase() ==
                                                             'success'
-                                                        ? Text(item.result)
+                                                        ? Text(item.result!)
                                                         : Text(item.traceback
                                                             .toString()),
                                                   );
@@ -537,11 +548,45 @@ class LoggingView extends StatelessWidget {
                                             ],
                                           ),
                                     child: ListTile(
-                                      title: Text(item.name),
-                                      subtitle: Text(
-                                          DateTime.fromMillisecondsSinceEpoch(
-                                                  (item.started * 1000).toInt())
-                                              .toString()),
+                                      dense: true,
+                                      title: Tooltip(
+                                        message: item.result ?? '无结果',
+                                        textStyle: TextStyle(
+                                            fontSize: 8,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary),
+                                        child: Text(
+                                          item.name,
+                                          style: TextStyle(
+                                              fontSize: 10,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary),
+                                        ),
+                                      ),
+                                      subtitle: item.succeeded != null
+                                          ? Text(
+                                              "完成时间：${DateTime.fromMillisecondsSinceEpoch((item.succeeded! * 1000).toInt())}",
+                                              style: TextStyle(
+                                                  fontSize: 8,
+                                                  color: Colors.green),
+                                            )
+                                          : item.started != null
+                                              ? Text(
+                                                  "开始时间：${DateTime.fromMillisecondsSinceEpoch((item.started! * 1000).toInt())}",
+                                                  style: TextStyle(
+                                                      fontSize: 8,
+                                                      color: Colors.orange),
+                                                )
+                                              : item.received != null
+                                                  ? Text(
+                                                      "接收时间：${DateTime.fromMillisecondsSinceEpoch((item.received! * 1000).toInt())}",
+                                                      style: TextStyle(
+                                                          fontSize: 8,
+                                                          color: Colors.blue),
+                                                    )
+                                                  : null,
                                       trailing: SizedBox(
                                           width: 60,
                                           child: CustomTextTag(
