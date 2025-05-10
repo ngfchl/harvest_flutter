@@ -384,9 +384,10 @@ class LoggingView extends StatelessWidget {
                                       left: 8, right: 8, top: 6, bottom: 2),
                                   child: Slidable(
                                     key: ValueKey(item.uuid),
-                                    endActionPane: item.state.toLowerCase() ==
+                                    endActionPane: item.state?.toLowerCase() ==
                                                 'success' ||
-                                            item.state.toLowerCase() == 'failed'
+                                            item.state?.toLowerCase() ==
+                                                'failed'
                                         ? ActionPane(
                                             motion: const ScrollMotion(),
                                             extentRatio: 0.25,
@@ -400,7 +401,7 @@ class LoggingView extends StatelessWidget {
                                                   Get.defaultDialog(
                                                     title: '任务执行结果',
                                                     content: item.state
-                                                                .toLowerCase() ==
+                                                                ?.toLowerCase() ==
                                                             'success'
                                                         ? Text(item.result!)
                                                         : Text(item.traceback
@@ -557,7 +558,7 @@ class LoggingView extends StatelessWidget {
                                                 .colorScheme
                                                 .primary),
                                         child: Text(
-                                          item.name,
+                                          item.name ?? 'unknown',
                                           style: TextStyle(
                                               fontSize: 10,
                                               color: Theme.of(context)
@@ -590,8 +591,10 @@ class LoggingView extends StatelessWidget {
                                       trailing: SizedBox(
                                           width: 60,
                                           child: CustomTextTag(
-                                              labelText:
-                                                  item.state.toLowerCase())),
+                                            labelText:
+                                                item.state?.toLowerCase() ??
+                                                    'unknown',
+                                          )),
                                       onTap: () {},
                                     ),
                                   ),
