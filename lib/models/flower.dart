@@ -1,7 +1,7 @@
 class TaskItem {
   String uuid;
-  String name;
-  String state;
+  String? name;
+  String? state;
   double? received;
   double? sent;
   double? started;
@@ -10,26 +10,26 @@ class TaskItem {
   double? failed;
   double? retried;
   double? revoked;
-  String args;
-  String kwargs;
+  String? args;
+  String? kwargs;
   double? eta;
   double? expires;
-  int retries;
+  int? retries;
   String? result;
   String? exception;
-  double timestamp;
-  double runtime;
+  double? timestamp;
+  double? runtime;
   String? traceback;
   String? exchange;
   String? routingKey;
-  int clock;
+  int? clock;
   String? client;
-  String root;
-  String rootId;
+  String? root;
+  String? rootId;
   String? parent;
   String? parentId;
   List<dynamic>? children;
-  String worker;
+  String? worker;
 
   TaskItem({
     required this.uuid,
@@ -85,8 +85,8 @@ class TaskItem {
       retries: json['retries'],
       result: json['result'],
       exception: json['exception'],
-      timestamp: json['timestamp'].toDouble(),
-      runtime: json['runtime'].toDouble(),
+      timestamp: json['timestamp']?.toDouble(),
+      runtime: json['runtime']?.toDouble(),
       traceback: json['traceback'],
       exchange: json['exchange'],
       routingKey: json['routing_key'],
