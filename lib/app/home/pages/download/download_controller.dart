@@ -46,9 +46,24 @@ class DownloadController extends GetxController {
 
   DownloadController(this.realTimeState);
 
-  List<MetaDataItem> qBitStatus = [
+  // QB 下载器筛选状态
+  List<MetaDataItem> qBitFilterStatus = [
     {"name": "全部", "value": null},
     {"name": "活动中", "value": 'active'},
+    {"name": "下载中", "value": 'downloading'},
+    {"name": "做种中", "value": 'seeding'},
+    {"name": "已完成", "value": 'completed'},
+    {"name": "已暂停", "value": 'paused'},
+    {"name": "非活动", "value": 'inactive'},
+    {"name": "恢复中", "value": 'resumed'},
+    {"name": "等待中", "value": 'stalled'},
+    {"name": "上传队列", "value": 'stalled_uploading'},
+    {"name": "下载队列", "value": 'stalled_downloading'},
+    {"name": "错误", "value": 'errored'},
+  ].map((e) => MetaDataItem.fromJson(e)).toList();
+
+  // 下载器种子状态
+  List<MetaDataItem> qBitStatus = [
     {"name": "下载中", "value": 'downloading'},
     {"name": "下载暂停", "value": 'pausedDL'},
     {"name": "上传中", "value": 'uploading'},
@@ -56,21 +71,21 @@ class DownloadController extends GetxController {
     {"name": "等待下载", "value": 'stalledDL'},
     {"name": "移动中", "value": 'moving'},
     {"name": "上传暂停", "value": 'pausedUP'},
-    {"name": "队列下载中", "value": 'queuedDL'},
-    {"name": "队列上传中", "value": 'queuedUP'},
-    // {"name": "分配中", "value": 'allocating'},
-    {"name": "检查下载", "value": 'checkingDL'},
-    // {"name": "检查恢复数据", "value": 'checkingResumeData'},
-    {"name": "检查上传", "value": 'checkingUP'},
+    {"name": "下载队列", "value": 'queuedDL'},
+    {"name": "上传队列", "value": 'queuedUP'},
+    {"name": "分配中", "value": 'allocating'},
+    {"name": "校验下载", "value": 'checkingDL'},
+    {"name": "校验恢复数据", "value": 'checkingResumeData'},
+    {"name": "校验上传", "value": 'checkingUP'},
     {"name": "强制下载", "value": 'forcedDL'},
-    // {"name": "强制元数据下载", "value": 'forcedMetaDL'},
+    {"name": "强制元数据下载", "value": 'forcedMetaDL'},
     {"name": "强制上传", "value": 'forcedUP'},
-    // {"name": "元数据下载中", "value": 'metaDL'},
+    {"name": "元数据下载中", "value": 'metaDL'},
     {"name": "缺失文件", "value": 'missingFiles'},
-
-    // {"name": "未知状态", "value": unknown},
+    {"name": "未知状态", "value": "unknown"},
     {"name": "错误", "value": 'error'},
   ].map((e) => MetaDataItem.fromJson(e)).toList();
+
   List<MetaDataItem> qbSortOptions = [
     {"name": "无", "value": null},
     {'name': '名称', 'value': 'name'},
@@ -1036,6 +1051,68 @@ class DownloadController extends GetxController {
           colorText: Colors.red);
     }
     return response;
+  }
+
+  subTorrentList(downloader) async {
+    // 单独订阅种子列表
+    // 限制太多，暂时放弃
+    bool isQb = downloader.category == 'Qb';
+    Map userinfo = SPUtil.getMap('userinfo');
+    AuthInfo authInfo = AuthInfo.fromJson(userinfo as Map<String, dynamic>);
+    final headers = <String, String>{
+      'Content-Type': 'application/json; charset=utf-8',
+      'Authorization': 'Bearer ${authInfo.authToken}'
+    };
+    sortKey = SPUtil.getString('${downloader.host}:${downloader.port}-sortKey',
+            defaultValue: 'name') ??
+        'name';
+
+    try {
+      SSEClient.enableRetry();
+      SSEClient.subscribeToSSE(
+        method: SSERequestType.POST,
+        url:
+            '$baseUrl/api/option/downloaders/torrents/${downloader.id}?interval=${interval}',
+        header: headers,
+        body: {
+          "status_filter": torrentState,
+          "category": selectedCategory,
+          "tag": selectedTag,
+          "sort": sortKey,
+          "reverse": sortReversed,
+          "hashes": showTorrents.map((e) => e.hash!).toList(),
+        },
+      ).listen((event) async {
+        logger_helper.Logger.instance.d('开始刷新种子列表！');
+        Map<String, dynamic> jsonData = json.decode(event.data!);
+        CommonResponse response = CommonResponse.fromJson(jsonData, (p0) => p0);
+        if (response.code == 0) {
+          // logger_helper.Logger.instance.d(response.data[0]);
+          if (isQb) {
+            // parseQbMainData(response.data);
+            // rid += 1;
+          } else {
+            // parseTrData(response.data);
+          }
+          update();
+        } else {
+          logger_helper.Logger.instance.i(response.msg);
+          // searchMsg.add({"success": false, "msg": response.msg});
+          update();
+        }
+      }, onError: (err) async {
+        logger_helper.Logger.instance.e('刷新种子列表出错啦： ${err.toString()}');
+        // searchMsg.add({"success": false, "msg": '搜索出错啦：$err'});
+        await stopFetchTorrents();
+      }, onDone: () async {
+        logger_helper.Logger.instance.e('本次种子传输结束啦！');
+      });
+    } catch (e, trace) {
+      logger_helper.Logger.instance.e(e);
+      logger_helper.Logger.instance.d(trace);
+      // searchMsg.add({"success": false, "msg": '搜索出错啦：$e'});
+      await stopFetchTorrents();
+    }
   }
 
   getSSEDownloaderTorrents(Downloader downloader) async {
