@@ -57,7 +57,7 @@ class Api {
   static const String DOWNLOADER_TRACKER_REPLACE =
       "option/downloaders/trackers/replace/";
   static const String DOWNLOADER_SET_TAGS = "option/downloaders/tags/set/";
-  static const String DOWNLOADER_CATEGORY = "option/downloaders/categories/";
+  static const String DOWNLOADER_CATEGORY = "option/downloaders/category/";
   static const String DOWNLOADER_SET_CATEGORY =
       "option/downloaders/category/set/";
   static const String DOWNLOADER_CONTROL = "option/downloaders/control/";
