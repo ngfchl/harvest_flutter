@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:harvest/utils/dio_util.dart';
+import 'package:harvest/utils/logger_helper.dart';
 import 'package:harvest/utils/storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
@@ -26,8 +27,8 @@ void main() async {
     await DioUtil().initialize(server);
   }
   // 强制竖屏
-  SystemChrome.setPreferredOrientations(
-      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+  // SystemChrome.setPreferredOrientations(
+  //     [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
   // 固定写法，处理状态栏背景颜色
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -36,9 +37,16 @@ void main() async {
   // 必须加上这一行。
   if (GetPlatform.isDesktop && !GetPlatform.isWeb) {
     await windowManager.ensureInitialized();
-
-    WindowOptions windowOptions = const WindowOptions(
-      size: Size(1200, 900),
+    double height =
+        SPUtil.getDouble('ScreenSizeHeight', defaultValue: 900)?.toDouble() ??
+            900;
+    double width =
+        SPUtil.getDouble('ScreenSizeWidth', defaultValue: 1200)?.toDouble() ??
+            1200;
+    Logger.instance.d('window size: $width, $height');
+    WindowOptions windowOptions = WindowOptions(
+      // size: Size(1200, 900),
+      size: Size(width, height),
       center: true,
       backgroundColor: Colors.transparent,
       skipTaskbar: false,
@@ -60,7 +68,7 @@ class MyApp extends StatelessWidget {
 
   Future<void> onInit(BuildContext context) async {
     //延迟3秒
-    await Future.delayed(const Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 1));
     FlutterNativeSplash.remove();
   }
 

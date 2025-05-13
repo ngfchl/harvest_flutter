@@ -27,13 +27,13 @@ import '../pages/setting/setting.dart';
 import '../pages/ssh/view.dart';
 import '../pages/user/view.dart';
 
-class HomeController extends GetxController {
+class HomeController extends GetxController with WidgetsBindingObserver {
   int initPage = 0;
   AuthInfo? userinfo;
   TextEditingController searchController = TextEditingController();
   DioUtil dioUtil = DioUtil();
   bool isDarkMode = false;
-  bool isPhone = false;
+  RxBool isPortrait = false.obs; // 是否是竖屏
   UpdateLogState? updateLogState;
   AuthPeriod? authInfo;
 
@@ -44,6 +44,7 @@ class HomeController extends GetxController {
   @override
   void onClose() {
     searchController.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     super.onClose();
   }
 
@@ -94,8 +95,6 @@ class HomeController extends GetxController {
   @override
   void onInit() async {
     try {
-      isPhone = PlatformTool.isPhone();
-      Logger.instance.d('手机端：$isPhone');
       isDarkMode = Get.isDarkMode;
       initDio();
       userinfo = AuthInfo.fromJson(SPUtil.getLocalStorage('userinfo'));
@@ -105,6 +104,24 @@ class HomeController extends GetxController {
       Get.offAllNamed(Routes.LOGIN);
     }
     super.onInit();
+    WidgetsBinding.instance.addObserver(this);
+    _updateOrientation();
+  }
+
+  //** 屏幕旋转监听 **//
+  void _updateOrientation() {
+    isPortrait.value = PlatformTool.isSmallScreenPortrait();
+    final size = MediaQueryData.fromView(
+      WidgetsBinding.instance.platformDispatcher.views.first,
+    ).size;
+    Logger.instance.i('ScreenSize: width=${size.width}, height=${size.height}');
+    SPUtil.setDouble('ScreenSizeHeight', size.height);
+    SPUtil.setDouble('ScreenSizeWidth', size.width);
+  }
+
+  @override
+  void didChangeMetrics() {
+    _updateOrientation();
   }
 
   void initDio() async {

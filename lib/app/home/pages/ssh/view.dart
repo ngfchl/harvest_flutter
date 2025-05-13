@@ -259,7 +259,7 @@ class SshWidget extends StatelessWidget {
           // direction: Axis.vertical,
           startActionPane: ActionPane(
             motion: const ScrollMotion(),
-            extentRatio: PlatformTool.isPhone() ? 1 / 2 : 1 / 3,
+            extentRatio: PlatformTool.isSmallScreenPortrait() ? 1 / 2 : 1 / 3,
             children: [
               isRunning
                   ? SlidableAction(
@@ -317,7 +317,7 @@ class SshWidget extends StatelessWidget {
           ),
           endActionPane: ActionPane(
             motion: const ScrollMotion(),
-            extentRatio: PlatformTool.isPhone() ? 1 / 2 : 1 / 3,
+            extentRatio: PlatformTool.isSmallScreenPortrait() ? 1 / 2 : 1 / 3,
             children: [
               SlidableAction(
                 flex: 1,

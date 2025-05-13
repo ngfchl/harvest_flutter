@@ -35,7 +35,7 @@ class HomeView extends GetView<HomeController> {
     return GetBuilder<HomeController>(builder: (controller) {
       return PopScope(
         canPop: false,
-        onPopInvoked: (didPop) async {
+        onPopInvokedWithResult: (didPop, _) async {
           if (didPop) return;
           Get.defaultDialog(
             title: "退出",
@@ -73,72 +73,74 @@ class HomeView extends GetView<HomeController> {
             // buttonColor: Colors.red,
           );
         },
-        child: Scaffold(
-          key: _globalKey,
-          extendBody: true,
-          appBar: GFAppBar(
-            elevation: 1.5,
-            iconTheme: const IconThemeData(color: Colors.black38),
-            flexibleSpace: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  colors: [
-                    Colors.orange.withOpacity(0.4),
-                    Colors.grey.withOpacity(0.3),
-                    Colors.brown.withOpacity(0.1),
-                  ],
+        child: Obx(() {
+          return Scaffold(
+            key: _globalKey,
+            extendBody: true,
+            appBar: GFAppBar(
+              elevation: 1.5,
+              iconTheme: const IconThemeData(color: Colors.black38),
+              flexibleSpace: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      Colors.orange.withOpacity(0.4),
+                      Colors.grey.withOpacity(0.3),
+                      Colors.brown.withOpacity(0.1),
+                    ],
+                  ),
                 ),
               ),
+              actions: <Widget>[
+                _actionButtonList(context),
+              ],
             ),
-            actions: <Widget>[
-              _actionButtonList(context),
-            ],
-          ),
-          body: controller.isPhone
-              ? PageView(
-                  controller: controller.pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  onPageChanged: (index) {
-                    // controller.initPage.value = index;
-                    // controller.update();
-                  },
-                  children: controller.pages,
-                )
-              : Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CustomCard(
-                      width: 200,
-                      height: double.infinity,
+            body: controller.isPortrait.value
+                ? PageView(
+                    controller: controller.pageController,
+                    physics: const NeverScrollableScrollPhysics(),
+                    onPageChanged: (index) {
+                      // controller.initPage.value = index;
+                      // controller.update();
+                    },
+                    children: controller.pages,
+                  )
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CustomCard(
+                        width: 200,
+                        height: double.infinity,
+                        child: _buildMenuBar(context),
+                      ),
+                      Expanded(
+                          child: PageView(
+                        controller: controller.pageController,
+                        physics: const NeverScrollableScrollPhysics(),
+                        onPageChanged: (index) {
+                          // controller.initPage.value = index;
+                          // controller.update();
+                        },
+                        children: controller.pages,
+                      ))
+                    ],
+                  ),
+            drawer: controller.isPortrait.value
+                ? SizedBox(
+                    width: 200,
+                    child: GFDrawer(
+                      semanticLabel: 'Harvest',
+                      elevation: 10,
+                      color: Theme.of(context).colorScheme.surface,
                       child: _buildMenuBar(context),
                     ),
-                    Expanded(
-                        child: PageView(
-                      controller: controller.pageController,
-                      physics: const NeverScrollableScrollPhysics(),
-                      onPageChanged: (index) {
-                        // controller.initPage.value = index;
-                        // controller.update();
-                      },
-                      children: controller.pages,
-                    ))
-                  ],
-                ),
-          drawer: controller.isPhone
-              ? SizedBox(
-                  width: 200,
-                  child: GFDrawer(
-                    semanticLabel: 'Harvest',
-                    elevation: 10,
-                    color: Theme.of(context).colorScheme.surface,
-                    child: _buildMenuBar(context),
-                  ),
-                )
-              : null,
-          drawerEdgeDragWidth: 100,
-        ),
+                  )
+                : null,
+            drawerEdgeDragWidth: 100,
+          );
+        }),
       );
     });
   }

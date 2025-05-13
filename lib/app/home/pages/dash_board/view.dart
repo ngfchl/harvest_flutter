@@ -8,6 +8,7 @@ import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
+import 'package:harvest/app/home/controller/home_controller.dart';
 import 'package:harvest/app/home/pages/models/my_site.dart';
 import 'package:random_color/random_color.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -19,7 +20,6 @@ import '../../../../common/meta_item.dart';
 import '../../../../common/utils.dart';
 import '../../../../utils/calc_weeks.dart';
 import '../../../../utils/logger_helper.dart';
-import '../../../../utils/platform.dart';
 import '../../../../utils/storage.dart';
 import '../../controller/common_api.dart';
 import 'controller.dart';
@@ -402,34 +402,40 @@ class _DashBoardPageState extends State<DashBoardPage>
                               );
                             },
                             child: SingleChildScrollView(
-                              child: Wrap(
-                                  alignment: WrapAlignment.spaceAround,
-                                  direction: Axis.horizontal,
-                                  children: [
-                                    if (controller.buildSiteInfoCard)
-                                      _buildSiteInfoCard(),
-                                    if (controller.buildSiteInfo)
-                                      _buildSiteInfo(),
-                                    if (controller.buildSmartLabelPieChart)
-                                      _buildSmartLabelPieChart(),
-                                    if (controller.buildSeedVolumePieChart)
-                                      _buildSeedVolumePieChart(),
-                                    if (controller.buildStackedBar)
-                                      _buildStackedBar(),
-                                    if (controller.buildMonthStackedBar)
-                                      _buildMonthStackedBar(),
-                                    if (controller.showTodayUploadedIncrement)
-                                      _showTodayUploadedIncrement(),
-                                    if (controller.showTodayDownloadedIncrement)
-                                      _showTodayDownloadedIncrement(),
-                                  ]
-                                      .map((item) => FractionallySizedBox(
-                                            widthFactor: PlatformTool.isPhone()
-                                                ? 1
-                                                : 0.5,
-                                            child: item,
-                                          ))
-                                      .toList()),
+                              child: Obx(() {
+                                return Wrap(
+                                    alignment: WrapAlignment.spaceAround,
+                                    direction: Axis.horizontal,
+                                    children: [
+                                      if (controller.buildSiteInfoCard)
+                                        _buildSiteInfoCard(),
+                                      if (controller.buildSiteInfo)
+                                        _buildSiteInfo(),
+                                      if (controller.buildSmartLabelPieChart)
+                                        _buildSmartLabelPieChart(),
+                                      if (controller.buildSeedVolumePieChart)
+                                        _buildSeedVolumePieChart(),
+                                      if (controller.buildStackedBar)
+                                        _buildStackedBar(),
+                                      if (controller.buildMonthStackedBar)
+                                        _buildMonthStackedBar(),
+                                      if (controller.showTodayUploadedIncrement)
+                                        _showTodayUploadedIncrement(),
+                                      if (controller
+                                          .showTodayDownloadedIncrement)
+                                        _showTodayDownloadedIncrement(),
+                                    ]
+                                        .map((item) => FractionallySizedBox(
+                                              widthFactor:
+                                                  Get.find<HomeController>()
+                                                          .isPortrait
+                                                          .value
+                                                      ? 1
+                                                      : 0.5,
+                                              child: item,
+                                            ))
+                                        .toList());
+                              }),
                             ),
                           )
                         : Center(
@@ -607,7 +613,9 @@ class _DashBoardPageState extends State<DashBoardPage>
   Widget _buildSiteInfoCard() {
     return GetBuilder<DashBoardController>(builder: (controller) {
       MySite earliestSite = controller.mySiteController.mySiteList
-          .where((item) => !controller.excludeUrlList.contains(item.mirror) && DateTime.parse(item.timeJoin) != DateTime(2024, 2, 1))
+          .where((item) =>
+              !controller.excludeUrlList.contains(item.mirror) &&
+              DateTime.parse(item.timeJoin) != DateTime(2024, 2, 1))
           .reduce((value, element) =>
               value.timeJoin.compareTo(element.timeJoin) < 0 ? value : element);
       RxBool showYear = true.obs;
