@@ -5,9 +5,7 @@ import 'package:flutter_floating/floating/floating.dart';
 import 'package:flutter_floating/floating/manager/floating_manager.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_popup/flutter_popup.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
-import 'package:harvest/models/flower.dart';
 import 'package:logger/logger.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -40,7 +38,6 @@ class LoggingView extends StatelessWidget {
     List<Tab> tabs = const [
       Tab(text: 'APP日志'),
       Tab(text: 'API日志'),
-      Tab(text: '任务列表'),
     ];
     double width = MediaQuery.of(context).size.width * 0.75;
     double height = MediaQuery.of(context).size.height * 0.5;
@@ -63,17 +60,6 @@ class LoggingView extends StatelessWidget {
                         appBar: AppBar(
                           title: const Text('实时日志'),
                           actions: [
-                            IconButton(
-                              onPressed: () async {
-                                controller.filterLevel = Level.all;
-                                await controller.getTaskList();
-                                controller.update();
-                              },
-                              icon: Icon(
-                                Icons.task,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                            ),
                             IconButton(
                               onPressed: () async {
                                 controller.filterLevel = Level.all;
@@ -372,235 +358,6 @@ class LoggingView extends StatelessWidget {
                                       // const SizedBox(height: 30)
                                     ],
                                   ),
-                            ListView.builder(
-                              itemCount: controller.taskList.length,
-                              itemBuilder: (
-                                context,
-                                index,
-                              ) {
-                                TaskItem item = controller.taskList[index];
-                                return CustomCard(
-                                  margin: const EdgeInsets.only(
-                                      left: 8, right: 8, top: 6, bottom: 2),
-                                  child: Slidable(
-                                    key: ValueKey(item.uuid),
-                                    endActionPane: item.state?.toLowerCase() ==
-                                                'success' ||
-                                            item.state?.toLowerCase() ==
-                                                'failed'
-                                        ? ActionPane(
-                                            motion: const ScrollMotion(),
-                                            extentRatio: 0.25,
-                                            children: [
-                                              SlidableAction(
-                                                flex: 1,
-                                                borderRadius:
-                                                    const BorderRadius.all(
-                                                        Radius.circular(8)),
-                                                onPressed: (context) async {
-                                                  Get.defaultDialog(
-                                                    title: '任务执行结果',
-                                                    content: item.state
-                                                                ?.toLowerCase() ==
-                                                            'success'
-                                                        ? Text(item.result!)
-                                                        : Text(item.traceback
-                                                            .toString()),
-                                                  );
-                                                },
-                                                backgroundColor:
-                                                    const Color(0xFF0A9D96),
-                                                foregroundColor: Colors.white,
-                                                icon: Icons.copy_sharp,
-                                                label: '结果',
-                                              ),
-                                            ],
-                                          )
-                                        : ActionPane(
-                                            motion: const ScrollMotion(),
-                                            extentRatio: 0.5,
-                                            children: [
-                                              SlidableAction(
-                                                flex: 1,
-                                                borderRadius:
-                                                    const BorderRadius.all(
-                                                        Radius.circular(8)),
-                                                onPressed: (context) async {
-                                                  Get.defaultDialog(
-                                                    title: '确认',
-                                                    radius: 5,
-                                                    titleStyle: const TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                        color:
-                                                            Colors.deepPurple),
-                                                    middleText: '确定要删除任务吗？',
-                                                    actions: [
-                                                      ElevatedButton(
-                                                        onPressed: () {
-                                                          Get.back(
-                                                              result: false);
-                                                        },
-                                                        child: const Text('取消'),
-                                                      ),
-                                                      ElevatedButton(
-                                                        onPressed: () async {
-                                                          Get.back(
-                                                              result: true);
-                                                          var res =
-                                                              await controller
-                                                                  .abortTask(
-                                                                      item);
-                                                          if (res.code == 0) {
-                                                            Get.snackbar(
-                                                                '删除通知',
-                                                                res.msg
-                                                                    .toString(),
-                                                                colorText: Theme.of(
-                                                                        context)
-                                                                    .colorScheme
-                                                                    .primary);
-                                                          } else {
-                                                            Get.snackbar(
-                                                                '删除通知',
-                                                                res.msg
-                                                                    .toString(),
-                                                                colorText: Theme.of(
-                                                                        context)
-                                                                    .colorScheme
-                                                                    .error);
-                                                          }
-                                                        },
-                                                        child: const Text('确认'),
-                                                      ),
-                                                    ],
-                                                  );
-                                                },
-                                                backgroundColor:
-                                                    const Color(0xFFB11211),
-                                                foregroundColor: Colors.white,
-                                                // icon: Icons.delete,
-                                                label: '取消',
-                                              ),
-                                              SlidableAction(
-                                                flex: 1,
-                                                borderRadius:
-                                                    const BorderRadius.all(
-                                                        Radius.circular(8)),
-                                                onPressed: (context) async {
-                                                  Get.defaultDialog(
-                                                    title: '确认',
-                                                    radius: 5,
-                                                    titleStyle: const TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                        color:
-                                                            Colors.deepPurple),
-                                                    middleText: '确定要删除任务吗？',
-                                                    actions: [
-                                                      ElevatedButton(
-                                                        onPressed: () {
-                                                          Get.back(
-                                                              result: false);
-                                                        },
-                                                        child: const Text('取消'),
-                                                      ),
-                                                      ElevatedButton(
-                                                        onPressed: () async {
-                                                          Get.back(
-                                                              result: true);
-                                                          var res =
-                                                              await controller
-                                                                  .revokeTask(
-                                                                      item);
-                                                          if (res.code == 0) {
-                                                            Get.snackbar(
-                                                                '删除通知',
-                                                                res.msg
-                                                                    .toString(),
-                                                                colorText: Theme.of(
-                                                                        context)
-                                                                    .colorScheme
-                                                                    .primary);
-                                                          } else {
-                                                            Get.snackbar(
-                                                                '删除通知',
-                                                                res.msg
-                                                                    .toString(),
-                                                                colorText: Theme.of(
-                                                                        context)
-                                                                    .colorScheme
-                                                                    .error);
-                                                          }
-                                                        },
-                                                        child: const Text('确认'),
-                                                      ),
-                                                    ],
-                                                  );
-                                                },
-                                                backgroundColor:
-                                                    const Color(0xFFE30303),
-                                                foregroundColor: Colors.white,
-                                                // icon: Icons.delete,
-                                                label: '中断',
-                                              ),
-                                            ],
-                                          ),
-                                    child: ListTile(
-                                      dense: true,
-                                      title: Tooltip(
-                                        message: item.result ?? '无结果',
-                                        textStyle: TextStyle(
-                                            fontSize: 8,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .primary),
-                                        child: Text(
-                                          item.name ?? 'unknown',
-                                          style: TextStyle(
-                                              fontSize: 10,
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .primary),
-                                        ),
-                                      ),
-                                      subtitle: item.succeeded != null
-                                          ? Text(
-                                              "完成时间：${DateTime.fromMillisecondsSinceEpoch((item.succeeded! * 1000).toInt())}",
-                                              style: TextStyle(
-                                                  fontSize: 8,
-                                                  color: Colors.green),
-                                            )
-                                          : item.started != null
-                                              ? Text(
-                                                  "开始时间：${DateTime.fromMillisecondsSinceEpoch((item.started! * 1000).toInt())}",
-                                                  style: TextStyle(
-                                                      fontSize: 8,
-                                                      color: Colors.orange),
-                                                )
-                                              : item.received != null
-                                                  ? Text(
-                                                      "接收时间：${DateTime.fromMillisecondsSinceEpoch((item.received! * 1000).toInt())}",
-                                                      style: TextStyle(
-                                                          fontSize: 8,
-                                                          color: Colors.blue),
-                                                    )
-                                                  : null,
-                                      trailing: SizedBox(
-                                          width: 60,
-                                          child: CustomTextTag(
-                                            labelText:
-                                                item.state?.toLowerCase() ??
-                                                    'unknown',
-                                          )),
-                                      onTap: () {},
-                                    ),
-                                  ),
-                                );
-                              },
-                            )
                           ],
                         ),
                       );

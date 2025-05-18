@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:harvest/models/common_response.dart';
 
 import '../../../../api/task.dart';
+import '../../../../models/flower.dart';
 import '../../../../utils/logger_helper.dart';
 import '../models/task.dart';
 
@@ -11,50 +12,57 @@ class TaskController extends GetxController {
   Schedule? selectedTask;
   Map<int, Crontab> crontabList = <int, Crontab>{};
   List<String> taskList = [];
+  List<TaskItem> taskItemList = [];
 
   @override
   void onInit() {
+    super.onInit();
     getTaskInfo();
     update();
-    super.onInit();
   }
 
-  void getTaskInfo() {
+  getTaskInfo() async {
     isLoading = true;
     update();
-    getTaskList().then((value) {
-      if (value.code == 0) {
-        taskList = value.data.cast<String>();
-        update();
+
+    try {
+      final taskRes = await getTaskList();
+      if (taskRes.code == 0) {
+        taskList = taskRes.data.cast<String>();
       } else {
-        Get.snackbar('', value.msg.toString());
+        Get.snackbar('', taskRes.msg.toString());
       }
-    }).catchError((e, trace) {
+
+      final crontabRes = await getCrontabList();
+      if (crontabRes.code == 0) {
+        crontabList = crontabRes.data;
+      } else {
+        Get.snackbar('', crontabRes.msg.toString());
+      }
+
+      final scheduleRes = await getScheduleList();
+      if (scheduleRes.code == 0) {
+        dataList = scheduleRes.data;
+      } else {
+        Get.snackbar('解析出错啦！', scheduleRes.msg.toString());
+      }
+
+      final taskItemListRes = await getTaskItemList();
+      Logger.instance.d(taskItemListRes);
+      if (taskItemListRes.succeed) {
+        taskItemList = taskItemListRes.data.values
+            .map<TaskItem>((e) => TaskItem.fromJson(e))
+            .toList();
+        update();
+      }
+    } catch (e, stack) {
       Logger.instance.e(e);
-      Logger.instance.e(trace);
-      Get.snackbar('', e.toString());
-    });
-    getCrontabList().then((value) {
-      if (value.code == 0) {
-        crontabList = value.data;
-        update();
-      } else {
-        Get.snackbar('', value.msg.toString());
-      }
-    }).catchError((e) {
-      Get.snackbar('', e.toString());
-    });
-    getScheduleList().then((value) {
-      if (value.code == 0) {
-        dataList = value.data;
-      } else {
-        Get.snackbar('解析出错啦！', value.msg.toString());
-      }
-    }).catchError((e) {
-      Get.snackbar('网络访问出错啦', e.toString());
-    });
-    isLoading = false;
-    update();
+      Logger.instance.e(stack);
+      Get.snackbar('错误', e.toString());
+    } finally {
+      isLoading = false;
+      update();
+    }
   }
 
   Future<CommonResponse> changeScheduleState(Schedule task) async {
@@ -87,5 +95,21 @@ class TaskController extends GetxController {
     }
     update();
     return res;
+  }
+
+  getTaskItemInfo(TaskItem item) async {
+    return await getTaskItemInfo(item);
+  }
+
+  getTaskResult(TaskItem item) async {
+    return await getTaskItemResult(item);
+  }
+
+  abortTask(TaskItem item) async {
+    return await abortTaskItem(item);
+  }
+
+  revokeTask(TaskItem item) async {
+    return await revokeTaskItem(item);
   }
 }

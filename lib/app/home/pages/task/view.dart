@@ -1,5 +1,6 @@
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
@@ -8,6 +9,7 @@ import '../../../../common/card_view.dart';
 import '../../../../common/form_widgets.dart';
 import '../../../../common/utils.dart';
 import '../../../../models/common_response.dart';
+import '../../../../models/flower.dart';
 import '../../../../utils/logger_helper.dart';
 import '../models/task.dart';
 import 'controller.dart';
@@ -19,59 +21,282 @@ class TaskPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<TaskController>(builder: (controller) {
-      return Scaffold(
-        body: Column(
-          children: [
-            Expanded(
-              child: GetBuilder<TaskController>(builder: (controller) {
-                return EasyRefresh(
-                  onRefresh: () {
-                    controller.getTaskInfo();
+    List<Tab> tabs = const [
+      Tab(text: '计划任务'),
+      Tab(text: '任务记录'),
+    ];
+    return DefaultTabController(
+      length: tabs.length,
+      child: Scaffold(
+        bottomNavigationBar: TabBar(tabs: tabs),
+        body: GetBuilder<TaskController>(builder: (controller) {
+          return TabBarView(
+            physics: const NeverScrollableScrollPhysics(),
+            children: [
+              Scaffold(
+                appBar: AppBar(
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.refresh, size: 20),
+                      onPressed: () {
+                        controller.getTaskInfo();
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add, size: 20),
+                      onPressed: () {
+                        editTask(null, context);
+                      },
+                    ),
+                  ],
+                ),
+                body: Column(
+                  children: [
+                    Expanded(
+                      child: GetBuilder<TaskController>(builder: (controller) {
+                        return EasyRefresh(
+                          onRefresh: () {
+                            controller.getTaskInfo();
+                          },
+                          child: controller.isLoading
+                              ? ListView(
+                                  children: const [Center(child: GFLoader())],
+                                )
+                              : GetBuilder<TaskController>(
+                                  builder: (controller) {
+                                  return ListView.builder(
+                                    itemCount: controller.dataList.length,
+                                    itemBuilder:
+                                        (BuildContext context, int index) {
+                                      Schedule task =
+                                          controller.dataList[index];
+                                      return _buildTaskView(task, context);
+                                    },
+                                  );
+                                }),
+                        );
+                      }),
+                    ),
+                    const SizedBox(height: 50),
+                  ],
+                ),
+              ),
+              EasyRefresh(
+                onRefresh: () => controller.getTaskInfo(),
+                child: ListView.builder(
+                  itemCount: controller.taskList.length,
+                  itemBuilder: (
+                    context,
+                    index,
+                  ) {
+                    TaskItem item = controller.taskItemList[index];
+                    return CustomCard(
+                      margin: const EdgeInsets.only(
+                          left: 8, right: 8, top: 6, bottom: 2),
+                      child: Slidable(
+                        key: ValueKey(item.uuid),
+                        endActionPane: item.state?.toLowerCase() == 'success' ||
+                                item.state?.toLowerCase() == 'failed'
+                            ? ActionPane(
+                                motion: const ScrollMotion(),
+                                extentRatio: 0.25,
+                                children: [
+                                  SlidableAction(
+                                    flex: 1,
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(8)),
+                                    onPressed: (context) async {
+                                      Get.defaultDialog(
+                                        title: '任务执行结果',
+                                        content: item.state?.toLowerCase() ==
+                                                'success'
+                                            ? Text(item.result!)
+                                            : Text(item.traceback.toString()),
+                                      );
+                                    },
+                                    backgroundColor: const Color(0xFF0A9D96),
+                                    foregroundColor: Colors.white,
+                                    icon: Icons.copy_sharp,
+                                    label: '结果',
+                                  ),
+                                ],
+                              )
+                            : ActionPane(
+                                motion: const ScrollMotion(),
+                                extentRatio: 0.5,
+                                children: [
+                                  SlidableAction(
+                                    flex: 1,
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(8)),
+                                    onPressed: (context) async {
+                                      Get.defaultDialog(
+                                        title: '确认',
+                                        radius: 5,
+                                        titleStyle: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w900,
+                                            color: Colors.deepPurple),
+                                        middleText: '确定要删除任务吗？',
+                                        actions: [
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              Get.back(result: false);
+                                            },
+                                            child: const Text('取消'),
+                                          ),
+                                          ElevatedButton(
+                                            onPressed: () async {
+                                              Get.back(result: true);
+                                              var res = await controller
+                                                  .abortTask(item);
+                                              if (res.code == 0) {
+                                                Get.snackbar(
+                                                    '删除通知', res.msg.toString(),
+                                                    colorText: Theme.of(context)
+                                                        .colorScheme
+                                                        .primary);
+                                              } else {
+                                                Get.snackbar(
+                                                    '删除通知', res.msg.toString(),
+                                                    colorText: Theme.of(context)
+                                                        .colorScheme
+                                                        .error);
+                                              }
+                                            },
+                                            child: const Text('确认'),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                    backgroundColor: const Color(0xFFB11211),
+                                    foregroundColor: Colors.white,
+                                    // icon: Icons.delete,
+                                    label: '取消',
+                                  ),
+                                  SlidableAction(
+                                    flex: 1,
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(8)),
+                                    onPressed: (context) async {
+                                      Get.defaultDialog(
+                                        title: '确认',
+                                        radius: 5,
+                                        titleStyle: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w900,
+                                            color: Colors.deepPurple),
+                                        middleText: '确定要删除任务吗？',
+                                        actions: [
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              Get.back(result: false);
+                                            },
+                                            child: const Text('取消'),
+                                          ),
+                                          ElevatedButton(
+                                            onPressed: () async {
+                                              Get.back(result: true);
+                                              var res = await controller
+                                                  .revokeTask(item);
+                                              if (res.code == 0) {
+                                                Get.snackbar(
+                                                    '删除通知', res.msg.toString(),
+                                                    colorText: Theme.of(context)
+                                                        .colorScheme
+                                                        .primary);
+                                              } else {
+                                                Get.snackbar(
+                                                    '删除通知', res.msg.toString(),
+                                                    colorText: Theme.of(context)
+                                                        .colorScheme
+                                                        .error);
+                                              }
+                                            },
+                                            child: const Text('确认'),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                    backgroundColor: const Color(0xFFE30303),
+                                    foregroundColor: Colors.white,
+                                    // icon: Icons.delete,
+                                    label: '中断',
+                                  ),
+                                ],
+                              ),
+                        child: ListTile(
+                          dense: true,
+                          title: Text(
+                            item.name ?? 'unknown',
+                            style: TextStyle(
+                                fontSize: 10,
+                                color: Theme.of(context).colorScheme.primary),
+                          ),
+                          subtitle: item.succeeded != null
+                              ? Text(
+                                  "完成时间：${DateTime.fromMillisecondsSinceEpoch((item.succeeded! * 1000).toInt())}",
+                                  style: TextStyle(
+                                      fontSize: 8, color: Colors.green),
+                                )
+                              : item.started != null
+                                  ? Text(
+                                      "开始时间：${DateTime.fromMillisecondsSinceEpoch((item.started! * 1000).toInt())}",
+                                      style: TextStyle(
+                                          fontSize: 8, color: Colors.orange),
+                                    )
+                                  : item.received != null
+                                      ? Text(
+                                          "接收时间：${DateTime.fromMillisecondsSinceEpoch((item.received! * 1000).toInt())}",
+                                          style: TextStyle(
+                                              fontSize: 8, color: Colors.blue),
+                                        )
+                                      : null,
+                          trailing: SizedBox(
+                              width: 60,
+                              child: CustomTextTag(
+                                labelText:
+                                    item.state?.toLowerCase() ?? 'unknown',
+                              )),
+                          onTap: () {
+                            item.succeeded == null && item.failed == null
+                                ? Get.defaultDialog(
+                                    title: '任务详情',
+                                    content: CustomCard(
+                                      height: Get.height * 0.6,
+                                      width: Get.width * 0.8,
+                                      padding: const EdgeInsets.all(8),
+                                      child: Text('任务尚未完成，请稍后查看结果！'),
+                                    ),
+                                  )
+                                : Get.defaultDialog(
+                                    title: '任务详情',
+                                    content: CustomCard(
+                                      height: Get.height * 0.6,
+                                      width: Get.width * 0.8,
+                                      padding: const EdgeInsets.all(8),
+                                      child: Markdown(
+                                        data: item.result?.substring(
+                                                1, item.result!.length - 2) ??
+                                            '',
+                                        softLineBreak:
+                                            true, // ⬅️ 每个 \n 都当作 <br> 处理
+                                        styleSheet:
+                                            MarkdownStyleSheet.fromTheme(
+                                                Theme.of(context)),
+                                      ),
+                                    ),
+                                  );
+                          },
+                        ),
+                      ),
+                    );
                   },
-                  child: controller.isLoading
-                      ? ListView(
-                          children: const [Center(child: GFLoader())],
-                        )
-                      : GetBuilder<TaskController>(builder: (controller) {
-                          return ListView.builder(
-                            itemCount: controller.dataList.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              Schedule task = controller.dataList[index];
-                              return _buildTaskView(task, context);
-                            },
-                          );
-                        }),
-                );
-              }),
-            ),
-            const SizedBox(height: 50),
-          ],
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        floatingActionButton: _buildBottomButtonBar(context),
-      );
-    });
-  }
-
-  _buildBottomButtonBar(context) {
-    return CustomCard(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.refresh, size: 20),
-            onPressed: () {
-              controller.getTaskInfo();
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.add, size: 20),
-            onPressed: () {
-              editTask(null, context);
-            },
-          ),
-        ],
+                ),
+              )
+            ],
+          );
+        }),
       ),
     );
   }
