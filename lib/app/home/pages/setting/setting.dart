@@ -932,6 +932,8 @@ class SettingPage extends StatelessWidget {
         TextEditingController(text: option?.value.refreshToken ?? '');
     TextEditingController tokenController =
         TextEditingController(text: option?.value.token ?? '');
+    TextEditingController serverController =
+        TextEditingController(text: option?.value.server ?? '');
     TextEditingController proxyController =
         TextEditingController(text: option?.value.proxy ?? '');
     final isActive = (option == null ? true : option.isActive).obs;
@@ -984,6 +986,8 @@ class SettingPage extends StatelessWidget {
                     CustomTextField(
                         controller: tokenController, labelText: 'Token'),
                     CustomTextField(
+                        controller: serverController, labelText: '背景图地址'),
+                    CustomTextField(
                         controller: proxyController, labelText: '固定代理'),
                     Row(
                       children: [
@@ -1004,6 +1008,7 @@ class SettingPage extends StatelessWidget {
                                         refreshToken:
                                             refreshTokenController.text,
                                         token: tokenController.text,
+                                        server: serverController.text,
                                         proxy: proxyController.text),
                                   );
                                 } else {
@@ -1015,6 +1020,7 @@ class SettingPage extends StatelessWidget {
                                       toUid: toUidController.text,
                                       refreshToken: refreshTokenController.text,
                                       token: tokenController.text,
+                                      server: serverController.text,
                                       proxy: proxyController.text);
                                 }
                                 final res =
