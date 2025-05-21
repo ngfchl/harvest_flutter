@@ -12,7 +12,6 @@ import 'package:flutter_popup/flutter_popup.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
-import 'package:harvest/app/home/pages/download/pagination.dart';
 import 'package:harvest/app/home/pages/download/qb_file_tree_view.dart';
 import 'package:harvest/app/home/pages/download/qbittorrent.dart';
 import 'package:harvest/app/home/pages/download/tr_tree_file_view.dart';
@@ -1275,31 +1274,15 @@ class _DownloadPageState extends State<DownloadPage>
       bool isQb = downloader.category == 'Qb';
 
       Future.delayed(Duration(milliseconds: 50), () {
-        final LocalPaginationController localPaginationController =
-            Get.put(LocalPaginationController(pageSize: controller.pageSize));
-
-        final ScrollController scrollController = ScrollController();
         logger_helper.Logger.instance.i('开始加载种子数据 1');
-        localPaginationController.bindSource(controller.showTorrents.obs,
-            reset: true);
-        scrollController.addListener(() {
-          if (scrollController.position.pixels >=
-                  scrollController.position.maxScrollExtent - 100 &&
-              localPaginationController.hasMore) {
-            localPaginationController.loadNextPage();
-            controller.update();
-          }
-        });
-
+        controller.localPaginationController
+            .bindSource(controller.showTorrents.obs, reset: true);
         Get.bottomSheet(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(5.0), // 圆角半径
             ),
             isScrollControlled: true,
             GetBuilder<DownloadController>(builder: (controller) {
-          // logger_helper.Logger.instance.i('开始加载种子数据 2');
-          // localPaginationController.bindSource(controller.showTorrents.obs);
-
           return SizedBox(
             height: MediaQuery.of(context).size.height * 0.92,
             width: MediaQuery.of(context).size.width,
@@ -1428,21 +1411,23 @@ class _DownloadPageState extends State<DownloadPage>
                                   ),
                                 ))
                               : Obx(() => ListView.builder(
-                                  controller: scrollController,
-                                  itemCount: localPaginationController
-                                      .displayedItems.length,
+                                  controller: controller.scrollController,
+                                  itemCount: controller
+                                      .localPaginationController
+                                      .displayedItems
+                                      .length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
                                     if (isQb) {
                                       QbittorrentTorrentInfo torrent =
-                                          localPaginationController
+                                          controller.localPaginationController
                                               .displayedItems[index];
                                       return _showQbTorrent(
                                           downloader, torrent, context);
                                     } else {
-                                      TrTorrent torrent =
-                                          localPaginationController
-                                              .displayedItems[index];
+                                      TrTorrent torrent = controller
+                                          .localPaginationController
+                                          .displayedItems[index];
                                       return _showTrTorrent(
                                           downloader, torrent, context);
                                     }
@@ -1498,9 +1483,9 @@ class _DownloadPageState extends State<DownloadPage>
                                     controller.filterTorrents(isQb);
                                     logger_helper.Logger.instance.i(
                                         '开始加载种子数据 3：${controller.showTorrents.length}');
-                                    localPaginationController.bindSource(
-                                        controller.showTorrents.obs,
-                                        reset: true);
+                                    controller.localPaginationController
+                                        .bindSource(controller.showTorrents.obs,
+                                            reset: true);
                                   },
                                 ),
                               ),
@@ -2963,6 +2948,20 @@ class _DownloadPageState extends State<DownloadPage>
                             labelText: '筛选',
                             onChanged: (String value) =>
                                 controller.filterTorrents(false),
+                          ),
+                          ListTile(
+                            dense: true,
+                            title: Text('全部'),
+                            titleTextStyle: TextStyle(
+                                color: Theme.of(context).colorScheme.primary),
+                            style: ListTileStyle.list,
+                            selected: controller.selectedTracker == '全部',
+                            selectedColor: Theme.of(context).colorScheme.error,
+                            onTap: () {
+                              Get.back();
+                              controller.selectedTracker = '全部';
+                              controller.filterQbTorrents();
+                            },
                           ),
                           Expanded(
                             child: GetBuilder<DownloadController>(
@@ -7356,27 +7355,35 @@ class _DownloadPageState extends State<DownloadPage>
                                               children: [
                                                 Tooltip(
                                                   message: e.url.toString(),
-                                                  child: CustomTextTag(
-                                                    backgroundColor:
-                                                        Theme.of(context)
-                                                            .colorScheme
-                                                            .primary,
-                                                    labelText: controller
-                                                            .mySiteController
-                                                            .webSiteList
-                                                            .values
-                                                            .firstWhereOrNull(
-                                                              (element) => element
-                                                                  .tracker
-                                                                  .contains(Uri.parse(e
-                                                                          .url
-                                                                          .toString())
-                                                                      .host),
-                                                            )
-                                                            ?.name ??
-                                                        Uri.parse(e.url
-                                                                .toString())
-                                                            .host,
+                                                  child: InkWell(
+                                                    onTap: () {
+                                                      Clipboard.setData(
+                                                          ClipboardData(
+                                                              text: e.url
+                                                                  .toString()));
+                                                    },
+                                                    child: CustomTextTag(
+                                                      backgroundColor:
+                                                          Theme.of(context)
+                                                              .colorScheme
+                                                              .primary,
+                                                      labelText: controller
+                                                              .mySiteController
+                                                              .webSiteList
+                                                              .values
+                                                              .firstWhereOrNull(
+                                                                (element) => element
+                                                                    .tracker
+                                                                    .contains(Uri.parse(e
+                                                                            .url
+                                                                            .toString())
+                                                                        .host),
+                                                              )
+                                                              ?.name ??
+                                                          Uri.parse(e.url
+                                                                  .toString())
+                                                              .host,
+                                                    ),
                                                   ),
                                                 ),
                                                 CustomTextTag(

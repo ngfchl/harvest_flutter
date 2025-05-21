@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart'; // ignore: depend_on_referenced_packages
+import 'package:harvest/app/home/pages/download/pagination.dart';
 import 'package:harvest/app/home/pages/download/qbittorrent.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
@@ -45,6 +46,9 @@ class DownloadController extends GetxController {
   List showTorrents = [];
 
   DownloadController(this.realTimeState);
+
+  late LocalPaginationController localPaginationController;
+  final ScrollController scrollController = ScrollController();
 
   // QB 下载器筛选状态
   List<MetaDataItem> qBitFilterStatus = [
@@ -526,8 +530,10 @@ class DownloadController extends GetxController {
     filterTorrentsBySearchKey();
     // logger_helper.Logger.instance.d(showTorrents.length);
     filterTorrentsByTracker();
-    sortTrTorrents();
     filterSiteTorrent();
+    localPaginationController.bindSource(showTorrents.obs, reset: true);
+    sortTrTorrents();
+    localPaginationController.bindSource(showTorrents.obs);
     update();
     logger_helper.Logger.instance.i(showTorrents.length);
   }
@@ -678,7 +684,6 @@ class DownloadController extends GetxController {
     searchKey = searchController.text;
     isTorrentsLoading = false;
     isQb ? filterQbTorrents() : filterTrTorrents();
-
     update();
   }
 
@@ -751,8 +756,10 @@ class DownloadController extends GetxController {
 
     logger_helper.Logger.instance.d(showTorrents.length);
 
-    sortQbTorrents();
     filterSiteTorrent();
+    localPaginationController.bindSource(showTorrents.obs, reset: true);
+    sortQbTorrents();
+    localPaginationController.bindSource(showTorrents.obs);
     update();
   }
 
@@ -839,7 +846,7 @@ class DownloadController extends GetxController {
       logger_helper.Logger.instance.d('反转序列！');
       showTorrents = showTorrents.reversed.toList();
     }
-
+    localPaginationController.bindSource(showTorrents.obs);
     update();
   }
 
@@ -1126,12 +1133,23 @@ class DownloadController extends GetxController {
         'Content-Type': 'application/json; charset=utf-8',
         'Authorization': 'Bearer ${authInfo.authToken}'
       };
+      localPaginationController =
+          Get.put(LocalPaginationController(pageSize: pageSize));
+
       serverStatus.clear();
       sortKey = SPUtil.getString(
               '${downloader.host}:${downloader.port}-sortKey',
               defaultValue: 'name') ??
           'name';
       update();
+      scrollController.addListener(() {
+        if (scrollController.position.pixels >=
+                scrollController.position.maxScrollExtent - 100 &&
+            localPaginationController.hasMore) {
+          localPaginationController.loadNextPage();
+          update();
+        }
+      });
       // 使用缓存
       trackerToWebSiteMap = mySiteController.buildTrackerToWebSite();
       String key = 'Downloader-$baseUrl:${downloader.name}-${downloader.id}';
@@ -1274,7 +1292,7 @@ class DownloadController extends GetxController {
         [];
     if (selectedTorrent != null) {
       selectedTorrent = QbittorrentTorrentInfo.fromJson(
-          data['torrents'][selectedTorrent.hashString]);
+          data['torrents'][selectedTorrent.infohashV1]);
     }
     isTorrentsLoading = false;
     ServerState state = ServerState.fromJson(data['server_state']);
