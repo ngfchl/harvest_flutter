@@ -928,6 +928,10 @@ class SettingPage extends StatelessWidget {
         TextEditingController(text: option?.value.toUid ?? '@all');
     TextEditingController agentIdController =
         TextEditingController(text: option?.value.agentId ?? '');
+    TextEditingController refreshTokenController =
+        TextEditingController(text: option?.value.refreshToken ?? '');
+    TextEditingController tokenController =
+        TextEditingController(text: option?.value.token ?? '');
     TextEditingController proxyController =
         TextEditingController(text: option?.value.proxy ?? '');
     final isActive = (option == null ? true : option.isActive).obs;
@@ -975,6 +979,11 @@ class SettingPage extends StatelessWidget {
                     CustomTextField(
                         controller: toUidController, labelText: '接收 ID'),
                     CustomTextField(
+                        controller: refreshTokenController,
+                        labelText: 'EncodingAESKey'),
+                    CustomTextField(
+                        controller: tokenController, labelText: 'Token'),
+                    CustomTextField(
                         controller: proxyController, labelText: '固定代理'),
                     Row(
                       children: [
@@ -992,6 +1001,9 @@ class SettingPage extends StatelessWidget {
                                         agentId: agentIdController.text,
                                         corpId: corpIdController.text,
                                         toUid: toUidController.text,
+                                        refreshToken:
+                                            refreshTokenController.text,
+                                        token: tokenController.text,
                                         proxy: proxyController.text),
                                   );
                                 } else {
@@ -1001,6 +1013,8 @@ class SettingPage extends StatelessWidget {
                                       agentId: agentIdController.text,
                                       corpId: corpIdController.text,
                                       toUid: toUidController.text,
+                                      refreshToken: refreshTokenController.text,
+                                      token: tokenController.text,
                                       proxy: proxyController.text);
                                 }
                                 final res =
