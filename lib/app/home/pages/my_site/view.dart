@@ -1077,7 +1077,7 @@ class _MySitePagePageState extends State<MySitePage>
     RxBool showInDash = mySite != null ? mySite.showInDash.obs : true.obs;
     RxBool searchTorrents =
         mySite != null ? mySite.searchTorrents.obs : true.obs;
-
+    RxBool manualInput = false.obs;
     Get.bottomSheet(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
       CustomCard(
@@ -1193,11 +1193,36 @@ class _MySitePagePageState extends State<MySitePage>
                           ),
                         ),
                         if (urlList!.isNotEmpty)
-                          CustomPickerField(
-                            controller: mirrorController,
-                            labelText: '选择网址',
-                            data: urlList,
-                          ),
+                          Obx(() {
+                            return Row(
+                              children: [
+                                Expanded(
+                                  child: CustomPickerField(
+                                    controller: mirrorController,
+                                    labelText: '选择网址',
+                                    data: urlList,
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    manualInput.value = !manualInput.value;
+                                    controller.update();
+                                  },
+                                  icon: Icon(
+                                    manualInput.value
+                                        ? Icons.back_hand_outlined
+                                        : Icons.front_hand,
+                                  ),
+                                )
+                              ],
+                            );
+                          }),
+                        Obx(() => manualInput.value
+                            ? CustomTextField(
+                                controller: mirrorController,
+                                labelText: '手动输入 - 注意：油猴脚本和自动导入可能无法识别',
+                              )
+                            : SizedBox.shrink()),
                         CustomTextField(
                           controller: nicknameController,
                           labelText: '站点昵称',
