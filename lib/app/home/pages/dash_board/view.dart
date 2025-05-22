@@ -93,16 +93,16 @@ class _DashBoardPageState extends State<DashBoardPage>
               color: Theme.of(context).colorScheme.primary,
             ),
           ),
-          series: <DoughnutSeries<Map, String>>[
-            DoughnutSeries<Map, String>(
+          series: <DoughnutSeries<MetaDataItem, String>>[
+            DoughnutSeries<MetaDataItem, String>(
               name: '今日上传数据汇总',
               dataSource: controller.uploadIncrementDataList,
-              xValueMapper: (Map data, _) => controller.privateMode
-                  ? "${data["site"].substring(0, 1)}**"
-                  : data["site"],
-              yValueMapper: (Map data, _) => data["data"],
-              dataLabelMapper: (Map data, _) {
-                return '${controller.privateMode ? "${data["site"].substring(0, 1)}*" : data["site"]}: ${filesize(data["data"])}';
+              xValueMapper: (MetaDataItem data, _) => controller.privateMode
+                  ? "${data.name.substring(0, 1)}**"
+                  : data.name,
+              yValueMapper: (MetaDataItem data, _) => data.value,
+              dataLabelMapper: (MetaDataItem data, _) {
+                return '${controller.privateMode ? "${data.name.substring(0, 1)}*" : data.name}: ${filesize(data.value)}';
               },
               legendIconType: LegendIconType.circle,
               enableTooltip: true,
@@ -180,16 +180,16 @@ class _DashBoardPageState extends State<DashBoardPage>
               color: Theme.of(context).colorScheme.primary,
             ),
           ),
-          series: <DoughnutSeries<Map, String>>[
-            DoughnutSeries<Map, String>(
+          series: <DoughnutSeries<MetaDataItem, String>>[
+            DoughnutSeries<MetaDataItem, String>(
               name: '今日下载数据汇总',
               dataSource: controller.downloadIncrementDataList,
-              xValueMapper: (Map data, _) => controller.privateMode
-                  ? "${data["site"].substring(0, 1)}**"
-                  : data["site"],
-              yValueMapper: (Map data, _) => data["data"],
-              dataLabelMapper: (Map data, _) {
-                return '${controller.privateMode ? "${data["site"].substring(0, 1)}**" : data["site"]}: ${filesize(data["data"])}';
+              xValueMapper: (MetaDataItem data, _) => controller.privateMode
+                  ? "${data.name.substring(0, 1)}**"
+                  : data.name,
+              yValueMapper: (MetaDataItem data, _) => data.value,
+              dataLabelMapper: (MetaDataItem data, _) {
+                return '${controller.privateMode ? "${data.name.substring(0, 1)}**" : data.name}: ${filesize(data.value)}';
               },
               legendIconType: LegendIconType.circle,
               enableTooltip: true,
@@ -223,10 +223,12 @@ class _DashBoardPageState extends State<DashBoardPage>
   }
 
   Widget _showAllInfo() {
+    Logger.instance.d('数据标记 1');
+    Logger.instance.d(controller.earliestSite);
     return GetBuilder<DashBoardController>(builder: (controller) {
       return Column(
         children: [
-          if (controller.mySiteController.loadingFromServer)
+          if (controller.isLoading)
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -246,10 +248,11 @@ class _DashBoardPageState extends State<DashBoardPage>
           Expanded(
             child: EasyRefresh(
               onRefresh: () async {
-                controller.mySiteController.initFlag = true;
-                await controller.initChartData();
+                // controller.mySiteController.initFlag = true;
+                await controller.initChartData(controller.days);
               },
               child: GetBuilder<DashBoardController>(builder: (controller) {
+                Logger.instance.d('数据标记 2');
                 return controller.isLoading
                     ? GFLoader(
                         type: GFLoaderType.circle,
@@ -262,197 +265,189 @@ class _DashBoardPageState extends State<DashBoardPage>
                         loaderIconThree:
                             const Icon(Icons.ac_unit_rounded, size: 18),
                       )
-                    : controller.statusList.isNotEmpty
-                        ? InkWell(
-                            onLongPress: () {
-                              Get.defaultDialog(
-                                title: '小部件',
-                                radius: 5,
-                                titleStyle: const TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.w900),
-                                content: SizedBox(
-                                    height: 260,
-                                    width: 280,
-                                    child: GetBuilder<DashBoardController>(
-                                        builder: (controller) {
-                                      return ListView(
-                                        children: [
-                                          // CheckboxListTile(
-                                          //     title: const Text("站点数据汇总"),
-                                          //     value: controller
-                                          //         .buildSiteInfoCard,
-                                          //     onChanged: (bool? value) {
-                                          //       controller.buildSiteInfoCard =
-                                          //           value!;
-                                          //       controller.update();
-                                          //     }),
-
-                                          CustomCheckboxListTile(
-                                            title: '开启隐私模式',
-                                            value: controller.privateMode,
-                                            storageKey: 'privateMode',
-                                            onUpdate: (bool newValue) {
-                                              controller.privateMode = newValue;
-                                              Logger.instance.d(
-                                                  "privateMode: ${controller.privateMode}");
-                                              controller.initChartData();
-                                            },
-                                          ),
-                                          CustomCheckboxListTile(
-                                            title: '上传总量饼图',
-                                            value: controller
-                                                .buildSmartLabelPieChart,
-                                            storageKey:
-                                                'buildSmartLabelPieChart',
-                                            onUpdate: (bool newValue) {
-                                              controller
-                                                      .buildSmartLabelPieChart =
-                                                  newValue;
-                                              controller.update();
-                                            },
-                                          ),
-                                          CustomCheckboxListTile(
-                                            title: '做种总量饼图',
-                                            value: controller
-                                                .buildSeedVolumePieChart,
-                                            storageKey:
-                                                'buildSeedVolumePieChart',
-                                            onUpdate: (bool newValue) {
-                                              controller
-                                                      .buildSeedVolumePieChart =
-                                                  newValue;
-                                              controller.update();
-                                            },
-                                          ),
-                                          CustomCheckboxListTile(
-                                            title: '每日数据柱图',
-                                            value: controller.buildStackedBar,
-                                            storageKey: 'buildStackedBar',
-                                            onUpdate: (bool newValue) {
-                                              controller.buildStackedBar =
-                                                  newValue;
-                                              controller.update();
-                                            },
-                                          ),
-                                          CustomCheckboxListTile(
-                                            title: '每月数据柱图',
-                                            value:
-                                                controller.buildMonthStackedBar,
-                                            storageKey: 'buildMonthStackedBar',
-                                            onUpdate: (bool newValue) {
-                                              controller.buildMonthStackedBar =
-                                                  newValue;
-                                              controller.update();
-                                            },
-                                          ),
-                                          CustomCheckboxListTile(
-                                            title: '站点数据柱图',
-                                            value: controller.buildSiteInfo,
-                                            storageKey: 'buildSiteInfo',
-                                            onUpdate: (bool newValue) {
-                                              controller.buildSiteInfo =
-                                                  newValue;
-                                              controller.update();
-                                            },
-                                          ),
-                                          CustomCheckboxListTile(
-                                            title: '今日上传增量',
-                                            value: controller
-                                                .showTodayUploadedIncrement,
-                                            storageKey:
-                                                'showTodayUploadedIncrement',
-                                            onUpdate: (bool newValue) {
-                                              controller
-                                                      .showTodayUploadedIncrement =
-                                                  newValue;
-                                              controller.update();
-                                            },
-                                          ),
-                                          CustomCheckboxListTile(
-                                            title: '今日下载增量',
-                                            value: controller
-                                                .showTodayDownloadedIncrement,
-                                            storageKey:
-                                                'showTodayDownloadedIncrement',
-                                            onUpdate: (bool newValue) {
-                                              controller
-                                                      .showTodayDownloadedIncrement =
-                                                  newValue;
-                                              controller.update();
-                                            },
-                                          ),
-                                        ],
-                                      );
-                                    })),
-                                // actions: [
-                                //   ElevatedButton(
-                                //     onPressed: () {
-                                //       Get.back(result: false);
-                                //     },
-                                //     child: const Text('取消'),
-                                //   ),
-                                //   ElevatedButton(
-                                //     onPressed: () async {
-                                //       Get.back(result: true);
-                                //       Navigator.of(context).pop();
-                                //     },
-                                //     child: const Text('确认'),
-                                //   ),
-                                // ],
-                              );
-                            },
-                            child: SingleChildScrollView(
-                              child: Obx(() {
-                                return Wrap(
-                                    alignment: WrapAlignment.spaceAround,
-                                    direction: Axis.horizontal,
+                    : InkWell(
+                        onLongPress: () {
+                          Get.defaultDialog(
+                            title: '小部件',
+                            radius: 5,
+                            titleStyle: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w900),
+                            content: SizedBox(
+                                height: 260,
+                                width: 280,
+                                child: GetBuilder<DashBoardController>(
+                                    builder: (controller) {
+                                  return ListView(
                                     children: [
-                                      if (controller.buildSiteInfoCard)
-                                        _buildSiteInfoCard(),
-                                      if (controller.buildSiteInfo)
-                                        _buildSiteInfo(),
-                                      if (controller.buildSmartLabelPieChart)
-                                        _buildSmartLabelPieChart(),
-                                      if (controller.buildSeedVolumePieChart)
-                                        _buildSeedVolumePieChart(),
-                                      if (controller.buildStackedBar)
-                                        _buildStackedBar(),
-                                      if (controller.buildMonthStackedBar)
-                                        _buildMonthStackedBar(),
-                                      if (controller.showTodayUploadedIncrement)
-                                        _showTodayUploadedIncrement(),
-                                      if (controller
-                                          .showTodayDownloadedIncrement)
-                                        _showTodayDownloadedIncrement(),
-                                    ]
-                                        .map((item) => FractionallySizedBox(
-                                              widthFactor:
-                                                  Get.find<HomeController>()
-                                                          .isPortrait
-                                                          .value
-                                                      ? 1
-                                                      : 0.5,
-                                              child: item,
-                                            ))
-                                        .toList());
-                              }),
-                            ),
-                          )
-                        : Center(
-                            child: ElevatedButton.icon(
-                            onPressed: () async {
-                              await controller.initChartData();
-                            },
-                            label: Text(
-                              '加载数据',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: Theme.of(context).primaryColor),
-                            ),
-                            icon: Icon(Icons.cloud_download,
-                                size: 12,
-                                color: Theme.of(context).primaryColor),
-                          ));
+                                      // CheckboxListTile(
+                                      //     title: const Text("站点数据汇总"),
+                                      //     value: controller
+                                      //         .buildSiteInfoCard,
+                                      //     onChanged: (bool? value) {
+                                      //       controller.buildSiteInfoCard =
+                                      //           value!;
+                                      //       controller.update();
+                                      //     }),
+
+                                      CustomCheckboxListTile(
+                                        title: '开启隐私模式',
+                                        value: controller.privateMode,
+                                        storageKey: 'privateMode',
+                                        onUpdate: (bool newValue) {
+                                          controller.privateMode = newValue;
+                                          Logger.instance.d(
+                                              "privateMode: ${controller.privateMode}");
+                                          controller
+                                              .initChartData(controller.days);
+                                        },
+                                      ),
+                                      CustomCheckboxListTile(
+                                        title: '上传总量饼图',
+                                        value:
+                                            controller.buildSmartLabelPieChart,
+                                        storageKey: 'buildSmartLabelPieChart',
+                                        onUpdate: (bool newValue) {
+                                          controller.buildSmartLabelPieChart =
+                                              newValue;
+                                          controller.update();
+                                        },
+                                      ),
+                                      CustomCheckboxListTile(
+                                        title: '做种总量饼图',
+                                        value:
+                                            controller.buildSeedVolumePieChart,
+                                        storageKey: 'buildSeedVolumePieChart',
+                                        onUpdate: (bool newValue) {
+                                          controller.buildSeedVolumePieChart =
+                                              newValue;
+                                          controller.update();
+                                        },
+                                      ),
+                                      CustomCheckboxListTile(
+                                        title: '每日数据柱图',
+                                        value: controller.buildStackedBar,
+                                        storageKey: 'buildStackedBar',
+                                        onUpdate: (bool newValue) {
+                                          controller.buildStackedBar = newValue;
+                                          controller.update();
+                                        },
+                                      ),
+                                      CustomCheckboxListTile(
+                                        title: '每月数据柱图',
+                                        value: controller.buildMonthStackedBar,
+                                        storageKey: 'buildMonthStackedBar',
+                                        onUpdate: (bool newValue) {
+                                          controller.buildMonthStackedBar =
+                                              newValue;
+                                          controller.update();
+                                        },
+                                      ),
+                                      CustomCheckboxListTile(
+                                        title: '站点数据柱图',
+                                        value: controller.buildSiteInfo,
+                                        storageKey: 'buildSiteInfo',
+                                        onUpdate: (bool newValue) {
+                                          controller.buildSiteInfo = newValue;
+                                          controller.update();
+                                        },
+                                      ),
+                                      CustomCheckboxListTile(
+                                        title: '今日上传增量',
+                                        value: controller
+                                            .showTodayUploadedIncrement,
+                                        storageKey:
+                                            'showTodayUploadedIncrement',
+                                        onUpdate: (bool newValue) {
+                                          controller
+                                                  .showTodayUploadedIncrement =
+                                              newValue;
+                                          controller.update();
+                                        },
+                                      ),
+                                      CustomCheckboxListTile(
+                                        title: '今日下载增量',
+                                        value: controller
+                                            .showTodayDownloadedIncrement,
+                                        storageKey:
+                                            'showTodayDownloadedIncrement',
+                                        onUpdate: (bool newValue) {
+                                          controller
+                                                  .showTodayDownloadedIncrement =
+                                              newValue;
+                                          controller.update();
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                })),
+                            // actions: [
+                            //   ElevatedButton(
+                            //     onPressed: () {
+                            //       Get.back(result: false);
+                            //     },
+                            //     child: const Text('取消'),
+                            //   ),
+                            //   ElevatedButton(
+                            //     onPressed: () async {
+                            //       Get.back(result: true);
+                            //       Navigator.of(context).pop();
+                            //     },
+                            //     child: const Text('确认'),
+                            //   ),
+                            // ],
+                          );
+                        },
+                        child: SingleChildScrollView(
+                          child: Obx(() {
+                            return Wrap(
+                                alignment: WrapAlignment.spaceAround,
+                                direction: Axis.horizontal,
+                                children: [
+                                  if (controller.buildSiteInfoCard)
+                                    _buildSiteInfoCard(),
+                                  if (controller.buildSiteInfo)
+                                    _buildSiteInfo(),
+                                  if (controller.buildSmartLabelPieChart)
+                                    _buildSmartLabelPieChart(),
+                                  if (controller.buildSeedVolumePieChart)
+                                    _buildSeedVolumePieChart(),
+                                  if (controller.buildStackedBar)
+                                    _buildStackedBar(),
+                                  if (controller.buildMonthStackedBar)
+                                    _buildMonthStackedBar(),
+                                  if (controller.showTodayUploadedIncrement)
+                                    _showTodayUploadedIncrement(),
+                                  if (controller.showTodayDownloadedIncrement)
+                                    _showTodayDownloadedIncrement(),
+                                ]
+                                    .map((item) => FractionallySizedBox(
+                                          widthFactor:
+                                              Get.find<HomeController>()
+                                                      .isPortrait
+                                                      .value
+                                                  ? 1
+                                                  : 0.5,
+                                          child: item,
+                                        ))
+                                    .toList());
+                          }),
+                        ),
+                      );
+                // : Center(
+                //     child: ElevatedButton.icon(
+                //     onPressed: () async {
+                //       await controller.initChartData(controller.days);
+                //     },
+                //     label: Text(
+                //       '加载数据',
+                //       style: TextStyle(
+                //           fontSize: 12,
+                //           color: Theme.of(context).primaryColor),
+                //     ),
+                //     icon: Icon(Icons.cloud_download,
+                //         size: 12,
+                //         color: Theme.of(context).primaryColor),
+                //   ));
               }),
             ),
           ),
@@ -574,7 +569,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                           ),
                           onTap: () async {
                             await clearMyCacheButton(item.value);
-                            await controller.mySiteController.initData();
+                            // await controller.mySiteController.initData();
                           },
                         )),
                   ],
@@ -612,12 +607,13 @@ class _DashBoardPageState extends State<DashBoardPage>
 
   Widget _buildSiteInfoCard() {
     return GetBuilder<DashBoardController>(builder: (controller) {
-      MySite earliestSite = controller.mySiteController.mySiteList
-          .where((item) =>
-              !controller.excludeUrlList.contains(item.mirror) &&
-              DateTime.parse(item.timeJoin) != DateTime(2024, 2, 1))
-          .reduce((value, element) =>
-              value.timeJoin.compareTo(element.timeJoin) < 0 ? value : element);
+      // MySite earliestSite = controller.mySiteController.mySiteList
+      //     .where((item) =>
+      //         !controller.excludeUrlList.contains(item.mirror) &&
+      //         DateTime.parse(item.timeJoin) != DateTime(2024, 2, 1))
+      //     .reduce((value, element) =>
+      //         value.timeJoin.compareTo(element.timeJoin) < 0 ? value : element);
+      MySite earliestSite = controller.earliestSite!;
       RxBool showYear = true.obs;
       return CustomCard(
         height: 260,
@@ -986,7 +982,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                         Padding(
                           padding: const EdgeInsets.only(top: 6),
                           child: Text(
-                            '${controller.mySiteController.mySiteList.length}',
+                            '${controller.siteCount}',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
@@ -1210,13 +1206,11 @@ class _DashBoardPageState extends State<DashBoardPage>
 
   Widget _buildSiteInfo() {
     int maxUploaded = controller.statusList
-        .where((element) => element.available == true)
-        .map((MySite mySite) => mySite.latestStatusInfo?.uploaded ?? 0)
+        .map((item) => item.value['uploaded'])
         .reduce((a, b) => a > b ? a : b);
 
     int maxDownloaded = controller.statusList
-        .where((element) => element.available == true)
-        .map((MySite mySite) => mySite.latestStatusInfo?.downloaded ?? 0)
+        .map((item) => item.value['downloaded'])
         .reduce((a, b) => a > b ? a : b);
 
     var uploadColor = RandomColor().randomColor(
@@ -1227,9 +1221,6 @@ class _DashBoardPageState extends State<DashBoardPage>
         colorBrightness: ColorBrightness.dark,
         colorSaturation: ColorSaturation.highSaturation);
     return GetBuilder<DashBoardController>(builder: (controller) {
-      var statusList = controller.statusList
-          .where((element) => element.available == true)
-          .toList();
       return CustomCard(
         height: 260,
         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -1243,10 +1234,10 @@ class _DashBoardPageState extends State<DashBoardPage>
             const SizedBox(height: 5),
             Expanded(
               child: ListView.builder(
-                  itemCount: statusList.length,
+                  itemCount: controller.statusList.length,
                   itemBuilder: (context, index) {
-                    MySite mySite = statusList[index];
-                    StatusInfo? status = mySite.latestStatusInfo;
+                    MetaDataItem data = controller.statusList[index];
+                    StatusInfo? status = StatusInfo.fromJson(data.value);
 
                     return Container(
                       color: Colors.transparent,
@@ -1295,7 +1286,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                                   color: Colors.transparent),
                                           barPointers: <LinearBarPointer>[
                                             LinearBarPointer(
-                                              value: (status?.uploaded ?? 0) /
+                                              value: (status.uploaded ?? 0) /
                                                   maxUploaded *
                                                   100,
                                               thickness: 16,
@@ -1315,8 +1306,8 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   child: Center(
                                       child: EllipsisText(
                                     text: controller.privateMode
-                                        ? "${mySite.nickname.substring(0, 1)}**"
-                                        : mySite.nickname,
+                                        ? "${data.name.substring(0, 1)}**"
+                                        : data.name,
                                     style: TextStyle(
                                       fontSize: 10,
                                       color:
@@ -1348,10 +1339,10 @@ class _DashBoardPageState extends State<DashBoardPage>
                                             ),
                                             barPointers: <LinearBarPointer>[
                                               LinearBarPointer(
-                                                  value: (status?.downloaded ??
-                                                          0) /
-                                                      maxDownloaded *
-                                                      100,
+                                                  value:
+                                                      (status.downloaded ?? 0) /
+                                                          maxDownloaded *
+                                                          100,
                                                   thickness: 16,
                                                   edgeStyle:
                                                       LinearEdgeStyle.bothFlat,
@@ -1429,7 +1420,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                 color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  '${data.nickname}: ${filesize(data.latestStatusInfo?.uploaded ?? 0)}',
+                  '${data.name}: ${filesize(data.value.uploaded ?? 0)}',
                   style: TextStyle(
                     fontSize: 11,
                     color: Theme.of(context).colorScheme.primary,
@@ -1499,20 +1490,20 @@ class _DashBoardPageState extends State<DashBoardPage>
     });
   }
 
-  List<PieSeries<MySite, String>> _getSmartLabelPieSeries() {
-    return <PieSeries<MySite, String>>[
-      PieSeries<MySite, String>(
+  List<PieSeries<MetaDataItem, String>> _getSmartLabelPieSeries() {
+    return <PieSeries<MetaDataItem, String>>[
+      PieSeries<MetaDataItem, String>(
         name: '站点上传数据汇总',
         dataSource: controller.statusList
-            .where((element) =>
-                element.available == true && element.showInDash == true)
+            .map((item) => MetaDataItem(
+                name: item.name, value: StatusInfo.fromJson(item.value)))
             .toList(),
-        xValueMapper: (MySite data, _) => controller.privateMode
-            ? "${data.nickname.substring(0, 1)}**"
-            : data.nickname,
-        yValueMapper: (MySite data, _) => data.latestStatusInfo?.uploaded ?? 0,
-        dataLabelMapper: (MySite data, _) =>
-            '${controller.privateMode ? "${data.nickname.substring(0, 1)}**" : data.nickname}: ${filesize(data.latestStatusInfo?.uploaded ?? 0)}',
+        xValueMapper: (MetaDataItem data, _) => controller.privateMode
+            ? "${data.name.substring(0, 1)}**"
+            : data.name,
+        yValueMapper: (MetaDataItem data, _) => data.value.uploaded ?? 0,
+        dataLabelMapper: (MetaDataItem data, _) =>
+            '${controller.privateMode ? "${data.name.substring(0, 1)}**" : data.name}: ${filesize(data.value.uploaded ?? 0)}',
         enableTooltip: true,
         explode: true,
         explodeIndex: 0,
@@ -1684,28 +1675,24 @@ class _DashBoardPageState extends State<DashBoardPage>
                     ),
                     series: List.generate(controller.stackChartDataList.length,
                         (index) {
-                      Map siteData = controller.stackChartDataList[index];
-                      List<StatusInfo?> dataSource =
-                          siteData['data'].length >= 15
-                              ? siteData['data']
-                                  .sublist(siteData['data'].length - 15)
-                              : siteData['data'];
+                      MetaDataItem siteData =
+                          controller.stackChartDataList[index];
                       return StackedBarSeries<StatusInfo?, String>(
                         name: controller.privateMode
-                            ? "${siteData['site'].toString().substring(0, 1)}**"
-                            : siteData['site'],
+                            ? "${siteData.name.toString().substring(0, 1)}**"
+                            : siteData.name,
                         // width: 0.5,
                         borderRadius: BorderRadius.circular(1),
                         legendIconType: LegendIconType.circle,
-                        dataSource: dataSource,
+                        dataSource: siteData.value,
                         // isVisibleInLegend: true,
                         xValueMapper: (StatusInfo? status, loop) => loop > 0
                             ? formatCreatedTimeToDateString(status!)
                             : null,
                         yValueMapper: (StatusInfo? status, loop) {
-                          if (loop > 0 && loop < dataSource.length) {
+                          if (loop > 0 && loop < siteData.value.length) {
                             num increase = status!.uploaded -
-                                dataSource[loop - 1]!.uploaded;
+                                siteData.value[loop - 1]!.uploaded;
                             return increase > 0 ? increase : 0;
                           }
                           return null;
@@ -1717,8 +1704,8 @@ class _DashBoardPageState extends State<DashBoardPage>
                         ),
                         dataLabelMapper: (StatusInfo? status, _) =>
                             controller.privateMode
-                                ? siteData['site'].toString().substring(0, 1)
-                                : siteData['site'],
+                                ? siteData.name.toString().substring(0, 1)
+                                : siteData.name,
                         // color: RandomColor().randomColor(),
                         // enableTooltip: true,
                       );
@@ -1741,7 +1728,8 @@ class _DashBoardPageState extends State<DashBoardPage>
                               onTap: () async {
                                 if (controller.days > 1) {
                                   controller.days--;
-                                  await controller.initChartData();
+                                  await controller
+                                      .initChartData(controller.days);
                                   controller.update();
                                 }
                               },
@@ -1755,7 +1743,8 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   value: controller.days.toDouble(),
                                   onChanged: (value) async {
                                     controller.days = value.toInt();
-                                    await controller.initChartData();
+                                    await controller
+                                        .initChartData(controller.days);
 
                                     controller.update();
                                   }),
@@ -1765,7 +1754,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                               onTap: () {
                                 if (controller.days < 14) {
                                   controller.days++;
-                                  controller.initChartData();
+                                  controller.initChartData(controller.days);
                                   controller.update();
                                 }
                               },
@@ -1902,10 +1891,8 @@ class _DashBoardPageState extends State<DashBoardPage>
                         (index) {
                       MetaDataItem siteData =
                           controller.uploadMonthIncrementDataList[index];
-                      List<StatusInfo?> dataSource = siteData.value.values
-                          .toList()
-                          .whereType<StatusInfo?>()
-                          .toList();
+                      List<StatusInfo?> dataSource =
+                          siteData.value.whereType<StatusInfo?>().toList();
                       return StackedBarSeries<StatusInfo?, String>(
                         name: controller.privateMode
                             ? "${siteData.name.toString().substring(0, 1)}**"

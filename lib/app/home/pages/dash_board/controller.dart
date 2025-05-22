@@ -1,10 +1,10 @@
 import 'package:get/get.dart';
+import 'package:harvest/api/mysite.dart';
 import 'package:harvest/common/meta_item.dart';
+import 'package:harvest/models/common_response.dart';
 import 'package:harvest/utils/storage.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../models/authinfo.dart';
-import '../../../../utils/date_time_utils.dart';
 import '../../../../utils/logger_helper.dart';
 import '../models/my_site.dart';
 import '../my_site/controller.dart';
@@ -16,18 +16,13 @@ class DashBoardController extends GetxController {
     'https://ssdforum.org/',
     'https://cnlang.org/',
   ];
-  List<MySite> statusList = [];
-  List<Map<String, dynamic>> pieDataList = [
-    // {
-    //   'genre': '站点',
-    //   'sold': 10240000,
-    // }
-  ];
-  List<Map> stackChartDataList = [];
+  List<MetaDataItem> statusList = [];
+  List<Map<String, dynamic>> pieDataList = [];
+  List<MetaDataItem> stackChartDataList = [];
   List<MetaDataItem> seedDataList = [];
-  List<Map> uploadIncrementDataList = [];
+  List<MetaDataItem> uploadIncrementDataList = [];
   List<MetaDataItem> uploadMonthIncrementDataList = [];
-  List<Map> downloadIncrementDataList = [];
+  List<MetaDataItem> downloadIncrementDataList = [];
   int totalUploaded = 0;
   int totalDownloaded = 0;
   int todayUploadIncrement = 0;
@@ -45,9 +40,10 @@ class DashBoardController extends GetxController {
   bool buildSiteInfo = true;
   bool showTodayUploadedIncrement = true;
   bool showTodayDownloadedIncrement = true;
+  MySite? earliestSite;
   int days = 7;
   int maxDays = 0;
-  int initCount = 0;
+  int siteCount = 0;
   AuthInfo? userinfo;
 
   @override
@@ -74,7 +70,7 @@ class DashBoardController extends GetxController {
         SPUtil.getBool('showTodayDownloadedIncrement', defaultValue: true)!;
     update();
     mySiteController.initFlag = true;
-    await initChartData();
+    await loadCacheDashData();
 
     isLoading = false;
     update();
@@ -85,13 +81,13 @@ class DashBoardController extends GetxController {
       await mySiteController.getWebSiteListFromServer();
       await mySiteController.getSiteStatusFromServer();
       mySiteController.loadingFromServer = false;
-      await initChartData();
+      await initChartData(days);
       Logger.instance.i('从数据库加载数据完成！');
       update(); // UI 更新
     });
   }
 
-  Future<void> initChartData() async {
+  initChartData(days) async {
     totalUploaded = 0;
     totalDownloaded = 0;
     totalSeedVol = 0;
@@ -103,121 +99,78 @@ class DashBoardController extends GetxController {
     uploadMonthIncrementDataList.clear();
     downloadIncrementDataList.clear();
 
-    List<String> dateList = generateDateList(days);
-    String todayStr = getTodayString();
-    String yesterdayStr = getYesterdayString();
-    List<String> monthList = getLastDaysOfPastYear();
-    monthList.add(todayStr);
-    if (mySiteController.mySiteList.isEmpty) {
-      await mySiteController.loadCacheInfo();
-      update();
-      mySiteController.initFlag = false;
+    CommonResponse res = await getDashBoardDataApi(days);
+    if (res.succeed) {
+      try {
+        SPUtil.setCache('$baseUrl - DASHBOARD_DATA', res.data, 3600 * 8);
+        parseDashData(res.data);
+      } catch (e) {
+        String message = '仪表数据解析失败啦～${e.toString()}';
+        Logger.instance.e(message);
+        Get.snackbar('仪表数据解析失败啦～', message);
+      }
+    } else {
+      Get.snackbar('仪表数据加载失败！～', res.msg);
     }
-    statusList = mySiteController.mySiteList;
-    statusList.sort((MySite a, MySite b) {
-      final StatusInfo? statusA = a.latestStatusInfo;
-      final StatusInfo? statusB = b.latestStatusInfo;
-
-      // 使用 null-aware 操作符和三元表达式进行比较和排序
-      return (statusB?.uploaded ?? 0).compareTo(statusA?.uploaded ?? 0);
-    });
-    stackChartDataList.clear();
-    seedDataList.clear();
-
-    for (final MySite mySite
-        in statusList.where((item) => !excludeUrlList.contains(item.mirror))) {
-      final StatusInfo? currentStatus = mySite.latestStatusInfo;
-      maxDays = mySite.statusInfo.length > maxDays
-          ? mySite.statusInfo.length
-          : maxDays;
-      // 添加堆叠图表数据
-      if (mySite.statusInfo.isNotEmpty) {
-        dateList.sort((String a, String b) => a.compareTo(b));
-        List<StatusInfo?> statusInfoList = dateList
-            .map((e) => mySite.statusInfo[e])
-            .where((element) => element != null)
-            .toList();
-        Map<String, dynamic> monthStatusInfoMap = Map.fromEntries(mySite
-            .statusInfo.entries
-            .where((entry) => monthList.contains(entry.key)));
-        Logger.instance.d("${mySite.nickname}: $monthStatusInfoMap");
-        if (mySite.showInDash) {
-          stackChartDataList
-              .add({'site': mySite.nickname, 'data': statusInfoList});
-          uploadMonthIncrementDataList.add(
-              MetaDataItem(name: mySite.nickname, value: monthStatusInfoMap));
-        }
-        if (mySite.available == true && mySite.statusInfo.length > 1) {
-          int increment = mySite.statusInfo[todayStr] != null &&
-                  mySite.statusInfo[yesterdayStr] != null
-              ? mySite.statusInfo[todayStr]!.uploaded -
-                  mySite.statusInfo[yesterdayStr]!.uploaded
-              : 0;
-          int downloaded = mySite.statusInfo[todayStr] != null &&
-                  mySite.statusInfo[yesterdayStr] != null
-              ? mySite.statusInfo[todayStr]!.downloaded -
-                  mySite.statusInfo[yesterdayStr]!.downloaded
-              : 0;
-          if (increment > 0) {
-            todayUploadIncrement += increment;
-            if (mySite.showInDash) {
-              uploadIncrementDataList
-                  .add({'site': mySite.nickname, 'data': increment});
-            }
-          }
-          if (downloaded > 0) {
-            todayDownloadIncrement += downloaded;
-            if (mySite.showInDash) {
-              downloadIncrementDataList
-                  .add({'site': mySite.nickname, 'data': downloaded});
-            }
-          }
-        }
-      }
-      // 处理存在状态信息的情况
-      if (currentStatus != null) {
-        // 添加饼图数据
-        pieDataList
-            .add({'genre': mySite.nickname, 'sold': currentStatus.uploaded});
-
-        // 累加统计值
-        totalUploaded += currentStatus.uploaded;
-        totalDownloaded += currentStatus.downloaded;
-        totalSeedVol += currentStatus.seedVolume;
-        totalSeeding += currentStatus.seed;
-        totalLeeching += currentStatus.leech;
-        if (mySite.showInDash) {
-          seedDataList.add(MetaDataItem(
-              name: mySite.nickname, value: currentStatus.seedVolume));
-        }
-      }
-      // 若当前站点无状态信息，添加默认的饼图数据
-      else {
-        pieDataList.add({'genre': mySite.nickname, 'sold': 0});
-      }
-    }
-    Logger.instance.d('上传增量列表：$uploadIncrementDataList');
-    Logger.instance.d('下载增量列表：$downloadIncrementDataList');
-    uploadIncrementDataList
-        .sort((Map a, Map b) => b["data"].compareTo(a["data"]));
-
-    downloadIncrementDataList
-        .sort((Map a, Map b) => b["data"].compareTo(a["data"]));
-    seedDataList.sort((a, b) => b.value.compareTo(a.value));
-    isLoading = false;
-    update();
   }
 
-  List<String> generateDateList(days) {
-    // 当前日期
-    DateTime currentDate = DateTime.now();
+  loadCacheDashData() async {
+    String key = '$baseUrl - DASHBOARD_DATA';
+    Map<String, dynamic>? data = await SPUtil.getCache(key);
+    Logger.instance.i('开始从本地缓存加载数据...${data.isNotEmpty}');
+    if (data.isNotEmpty) {
+      parseDashData(data);
+    }
 
-    // 直接生成最近15天的日期列表
-    List<String> recentDates = List.generate(
-        days + 1,
-        (i) => DateFormat('yyyy-MM-dd')
-            .format(currentDate.subtract(Duration(days: i))));
+    mySiteController.initFlag = false;
+  }
 
-    return recentDates;
+  /*///@title 解析首页dash 数据
+  ///@description
+  ///@updateTime
+   */
+  parseDashData(data) {
+    totalUploaded = data['totalUploaded'];
+    totalDownloaded = data['totalDownloaded'];
+    totalSeedVol = data['totalSeedVol'];
+    totalSeeding = data['totalSeeding'];
+    totalLeeching = data['totalLeeching'];
+    siteCount = data['siteCount'] ?? 0;
+    todayUploadIncrement = data['todayUploadIncrement'];
+    todayDownloadIncrement = data['todayDownloadIncrement'];
+    uploadIncrementDataList = (data['uploadIncrementDataList'] as List)
+        .map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>))
+        .toList();
+
+    downloadIncrementDataList = (data['downloadIncrementDataList'] as List)
+        .map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>))
+        .toList();
+    uploadMonthIncrementDataList = (data['uploadMonthIncrementDataList']
+            as List)
+        .map((el) => MetaDataItem(
+              name: el['name'] as String,
+              value: (el['value'] as List<dynamic>)
+                  .map((e) => StatusInfo.fromJson(e as Map<String, dynamic>))
+                  .toList(),
+            ))
+        .toList();
+    statusList = (data['statusList'] as List)
+        .map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>))
+        .toList();
+    earliestSite = MySite.fromJson(data['earliestSite']);
+    stackChartDataList = (data['stackChartDataList'] as List<dynamic>)
+        .map((el) => MetaDataItem(
+              name: el['name'] as String,
+              value: (el['value'] as List<dynamic>)
+                  .map((e) => StatusInfo.fromJson(e as Map<String, dynamic>))
+                  .toList(),
+            ))
+        .toList();
+    pieDataList = (data['pieDataList'] as List)
+        .map((item) => item as Map<String, dynamic>)
+        .toList();
+    seedDataList = (data['seedDataList'] as List)
+        .map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>))
+        .toList();
   }
 }
