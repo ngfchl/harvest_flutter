@@ -8,6 +8,7 @@ class Api {
   static const String INVITE_USER = "auth/try";
 
   // 我的站点列表增删改查
+  static const String DASHBOARD_DATA = "mysite/dashboard";
   static const String WEBSITE_LIST = "mysite/website";
   static const String MYSITE_LIST = "mysite/mysite";
   static const String CLEAR_CACHE = "mysite/cache/clear";
