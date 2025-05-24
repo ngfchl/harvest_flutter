@@ -4,13 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
-import '../app/home/pages/models/my_site.dart';
-
-String formatCreatedTimeToDateString(StatusInfo item) {
+String formatCreatedTimeToDateString(item) {
   return DateFormat("MM-dd").format(item.createdAt);
 }
 
-String formatCreatedTimeToMonthString(StatusInfo item) {
+String formatCreatedTimeToMonthString(item) {
   return DateFormat("yyyy-MM").format(item.createdAt);
 }
 
