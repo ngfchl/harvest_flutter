@@ -251,17 +251,12 @@ class _DashBoardPageState extends State<DashBoardPage>
                 await controller.initChartData(controller.days);
               },
               child: GetBuilder<DashBoardController>(builder: (controller) {
-                return controller.isLoading
-                    ? GFLoader(
-                        type: GFLoaderType.circle,
-                        loaderColorOne: Theme.of(context).primaryColor,
-                        loaderColorTwo: Theme.of(context).primaryColor,
-                        loaderColorThree: Theme.of(context).primaryColor,
-                        loaderIconOne: const Icon(Icons.ac_unit, size: 18),
-                        loaderIconTwo:
-                            const Icon(Icons.ac_unit_outlined, size: 24),
-                        loaderIconThree:
-                            const Icon(Icons.ac_unit_rounded, size: 18),
+                return controller.statusList.isEmpty
+                    ? const Align(
+                        alignment: Alignment.centerRight,
+                        child: GFLoader(
+                          size: 18,
+                        ),
                       )
                     : InkWell(
                         onLongPress: () {
@@ -479,7 +474,7 @@ class _DashBoardPageState extends State<DashBoardPage>
           children: [
             ElevatedButton.icon(
               onPressed: () async {
-                await controller.initData();
+                await controller.initChartData(controller.days);
               },
               icon: Icon(
                 Icons.cloud_download,
