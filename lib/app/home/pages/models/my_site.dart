@@ -93,12 +93,12 @@ class TrafficDelta {
   final DateTime createdAt; // 格式：yyyy-MM-dd
   final int uploaded;
 
-  // final int downloaded;
+  final int? downloaded;
 
   TrafficDelta({
     required this.createdAt,
     required this.uploaded,
-    // required this.downloaded,
+    required this.downloaded,
   });
 
   /// 从 Map 构建实例
@@ -106,13 +106,13 @@ class TrafficDelta {
     return TrafficDelta(
       createdAt: DateTime.parse(json['created_at'] as String),
       uploaded: json['uploaded'] as int,
-      // downloaded: json['downloaded'] as int,
+      downloaded: json['downloaded'],
     );
   }
 
   @override
   String toString() {
-    return 'TrafficDelta(createdAt: $createdAt, uploaded: $uploaded)';
+    return 'TrafficDelta(createdAt: $createdAt, uploaded: $uploaded downloaded: $downloaded)';
   }
 }
 
