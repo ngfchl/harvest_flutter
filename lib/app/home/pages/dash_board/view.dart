@@ -223,7 +223,6 @@ class _DashBoardPageState extends State<DashBoardPage>
   }
 
   Widget _showAllInfo() {
-    Logger.instance.d('数据标记 1');
     Logger.instance.d(controller.earliestSite);
     return GetBuilder<DashBoardController>(builder: (controller) {
       return Column(
@@ -248,11 +247,10 @@ class _DashBoardPageState extends State<DashBoardPage>
           Expanded(
             child: EasyRefresh(
               onRefresh: () async {
-                // controller.mySiteController.initFlag = true;
+                controller.mySiteController.initFlag = true;
                 await controller.initChartData(controller.days);
               },
               child: GetBuilder<DashBoardController>(builder: (controller) {
-                Logger.instance.d('数据标记 2');
                 return controller.isLoading
                     ? GFLoader(
                         type: GFLoaderType.circle,
@@ -293,12 +291,12 @@ class _DashBoardPageState extends State<DashBoardPage>
                                         title: '开启隐私模式',
                                         value: controller.privateMode,
                                         storageKey: 'privateMode',
-                                        onUpdate: (bool newValue) {
+                                        onUpdate: (bool newValue) async {
                                           controller.privateMode = newValue;
                                           Logger.instance.d(
                                               "privateMode: ${controller.privateMode}");
-                                          controller
-                                              .initChartData(controller.days);
+                                          await controller.loadCacheDashData();
+                                          controller.update();
                                         },
                                       ),
                                       CustomCheckboxListTile(
