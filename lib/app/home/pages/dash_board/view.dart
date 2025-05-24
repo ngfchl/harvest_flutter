@@ -1235,7 +1235,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                   itemCount: controller.statusList.length,
                   itemBuilder: (context, index) {
                     MetaDataItem data = controller.statusList[index];
-                    StatusInfo? status = StatusInfo.fromJson(data.value);
+                    TrafficDelta? status = TrafficDelta.fromJson(data.value);
 
                     return Container(
                       color: Colors.transparent,
@@ -1494,7 +1494,7 @@ class _DashBoardPageState extends State<DashBoardPage>
         name: '站点上传数据汇总',
         dataSource: controller.statusList
             .map((item) => MetaDataItem(
-                name: item.name, value: StatusInfo.fromJson(item.value)))
+                name: item.name, value: TrafficDelta.fromJson(item.value)))
             .toList(),
         xValueMapper: (MetaDataItem data, _) => controller.privateMode
             ? "${data.name.substring(0, 1)}**"
@@ -1675,32 +1675,28 @@ class _DashBoardPageState extends State<DashBoardPage>
                         (index) {
                       MetaDataItem siteData =
                           controller.stackChartDataList[index];
-                      return StackedBarSeries<StatusInfo?, String>(
+                      final List<TrafficDelta> displayData = siteData.value;
+                      // Logger.instance.d(displayData);
+                      return StackedBarSeries<TrafficDelta?, String>(
                         name: controller.privateMode
                             ? "${siteData.name.toString().substring(0, 1)}**"
                             : siteData.name,
                         // width: 0.5,
                         borderRadius: BorderRadius.circular(1),
                         legendIconType: LegendIconType.circle,
-                        dataSource: siteData.value,
+                        dataSource: displayData,
                         // isVisibleInLegend: true,
-                        xValueMapper: (StatusInfo? status, loop) => loop > 0
-                            ? formatCreatedTimeToDateString(status!)
-                            : null,
-                        yValueMapper: (StatusInfo? status, loop) {
-                          if (loop > 0 && loop < siteData.value.length) {
-                            num increase = status!.uploaded -
-                                siteData.value[loop - 1]!.uploaded;
-                            return increase > 0 ? increase : 0;
-                          }
-                          return null;
+                        xValueMapper: (TrafficDelta? status, loop) =>
+                            formatCreatedTimeToDateString(status!),
+                        yValueMapper: (TrafficDelta? status, loop) {
+                          return status?.uploaded ?? 0;
                         },
                         // pointColorMapper: (StatusInfo status, _) =>
                         //     RandomColor().randomColor(),
                         emptyPointSettings: const EmptyPointSettings(
                           mode: EmptyPointMode.drop,
                         ),
-                        dataLabelMapper: (StatusInfo? status, _) =>
+                        dataLabelMapper: (TrafficDelta? status, _) =>
                             controller.privateMode
                                 ? siteData.name.toString().substring(0, 1)
                                 : siteData.name,
@@ -1889,9 +1885,9 @@ class _DashBoardPageState extends State<DashBoardPage>
                         (index) {
                       MetaDataItem siteData =
                           controller.uploadMonthIncrementDataList[index];
-                      List<StatusInfo?> dataSource =
-                          siteData.value.whereType<StatusInfo?>().toList();
-                      return StackedBarSeries<StatusInfo?, String>(
+                      List<TrafficDelta?> dataSource =
+                          siteData.value.whereType<TrafficDelta?>().toList();
+                      return StackedBarSeries<TrafficDelta?, String>(
                         name: controller.privateMode
                             ? "${siteData.name.toString().substring(0, 1)}**"
                             : siteData.name,
@@ -1900,23 +1896,17 @@ class _DashBoardPageState extends State<DashBoardPage>
                         legendIconType: LegendIconType.circle,
                         dataSource: dataSource,
                         // isVisibleInLegend: true,
-                        xValueMapper: (StatusInfo? status, loop) => loop > 0
-                            ? formatCreatedTimeToMonthString(status!)
-                            : null,
-                        yValueMapper: (StatusInfo? status, loop) {
-                          if (loop > 0 && loop < dataSource.length) {
-                            num increase = status!.uploaded -
-                                dataSource[loop - 1]!.uploaded;
-                            return increase > 0 ? increase : 0;
-                          }
-                          return null;
+                        xValueMapper: (TrafficDelta? status, loop) =>
+                            formatCreatedTimeToMonthString(status!),
+                        yValueMapper: (TrafficDelta? status, loop) {
+                          return status?.uploaded;
                         },
                         // pointColorMapper: (StatusInfo status, _) =>
                         //     RandomColor().randomColor(),
                         emptyPointSettings: const EmptyPointSettings(
                           mode: EmptyPointMode.drop,
                         ),
-                        dataLabelMapper: (StatusInfo? status, _) => controller
+                        dataLabelMapper: (TrafficDelta? status, _) => controller
                                 .privateMode
                             ? "${siteData.name.toString().substring(0, 1)}**"
                             : siteData.name,

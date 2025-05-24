@@ -17,7 +17,6 @@ class DashBoardController extends GetxController {
     'https://cnlang.org/',
   ];
   List<MetaDataItem> statusList = [];
-  List<Map<String, dynamic>> pieDataList = [];
   List<MetaDataItem> stackChartDataList = [];
   List<MetaDataItem> seedDataList = [];
   List<MetaDataItem> uploadIncrementDataList = [];
@@ -120,6 +119,9 @@ class DashBoardController extends GetxController {
     Logger.instance.i('开始从本地缓存加载数据...${data.isNotEmpty}');
     if (data.isNotEmpty) {
       parseDashData(data);
+      Logger.instance.i('开始从缓存加载数据完成...');
+    } else {
+      Logger.instance.i('无缓存数据，跳过...');
     }
 
     mySiteController.initFlag = false;
@@ -150,7 +152,7 @@ class DashBoardController extends GetxController {
         .map((el) => MetaDataItem(
               name: el['name'] as String,
               value: (el['value'] as List<dynamic>)
-                  .map((e) => StatusInfo.fromJson(e as Map<String, dynamic>))
+                  .map((e) => TrafficDelta.fromJson(e as Map<String, dynamic>))
                   .toList(),
             ))
         .toList();
@@ -162,12 +164,9 @@ class DashBoardController extends GetxController {
         .map((el) => MetaDataItem(
               name: el['name'] as String,
               value: (el['value'] as List<dynamic>)
-                  .map((e) => StatusInfo.fromJson(e as Map<String, dynamic>))
+                  .map((e) => TrafficDelta.fromJson(e as Map<String, dynamic>))
                   .toList(),
             ))
-        .toList();
-    pieDataList = (data['pieDataList'] as List)
-        .map((item) => item as Map<String, dynamic>)
         .toList();
     seedDataList = (data['seedDataList'] as List)
         .map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>))
