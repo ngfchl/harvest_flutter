@@ -48,7 +48,7 @@ class TaskController extends GetxController {
       }
 
       final taskItemListRes = await getTaskItemList();
-      Logger.instance.d(taskItemListRes);
+      // Logger.instance.d(taskItemListRes);
       if (taskItemListRes.succeed) {
         taskItemList = taskItemListRes.data.values
             .map<TaskItem>((e) => TaskItem.fromJson(e))

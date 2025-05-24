@@ -31,7 +31,7 @@ class TaskPage extends StatelessWidget {
         bottomNavigationBar: TabBar(tabs: tabs),
         body: GetBuilder<TaskController>(builder: (controller) {
           return TabBarView(
-            physics: const NeverScrollableScrollPhysics(),
+            physics: const BouncingScrollPhysics(),
             children: [
               Scaffold(
                 appBar: AppBar(
