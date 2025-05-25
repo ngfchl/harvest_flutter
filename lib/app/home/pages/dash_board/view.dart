@@ -8,7 +8,6 @@ import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
-import 'package:harvest/app/home/controller/home_controller.dart';
 import 'package:harvest/app/home/pages/models/my_site.dart';
 import 'package:random_color/random_color.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -66,164 +65,189 @@ class _DashBoardPageState extends State<DashBoardPage>
     });
   }
 
-  Widget _showTodayUploadedIncrement() {
-    // controller.todayIncrement = 0;
+  Widget _showTodayDownloadedIncrement() {
     return GetBuilder<DashBoardController>(builder: (controller) {
-      return CustomCard(
-        height: 260,
-        child: SfCircularChart(
-          title: ChartTitle(
-            text:
-                '今日上传增量：${filesize(controller.todayUploadIncrement)}【${controller.uploadIncrementDataList.length}个站点】',
-            textStyle: TextStyle(
-                fontSize: 11, color: Theme.of(context).colorScheme.primary),
-          ),
-          legend: Legend(
-            position: LegendPosition.left,
-            // height: "20",
-            isVisible: true,
-            iconWidth: 8,
-            iconHeight: 8,
-            padding: 5,
-            itemPadding: 5,
-            // width: '64',
-            isResponsive: true,
-            textStyle: TextStyle(
-              fontSize: 8,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-          series: <DoughnutSeries<MetaDataItem, String>>[
-            DoughnutSeries<MetaDataItem, String>(
-              name: '今日上传数据汇总',
-              dataSource: controller.uploadIncrementDataList,
-              xValueMapper: (MetaDataItem data, _) => controller.privateMode
-                  ? "${data.name.substring(0, 1)}**"
-                  : data.name,
-              yValueMapper: (MetaDataItem data, _) => data.value,
-              dataLabelMapper: (MetaDataItem data, _) {
-                return '${controller.privateMode ? "${data.name.substring(0, 1)}*" : data.name}: ${filesize(data.value)}';
-              },
-              legendIconType: LegendIconType.circle,
-              enableTooltip: true,
-              explode: true,
-              explodeIndex: 0,
-              explodeOffset: '10%',
-              radius: '60%',
-              // pointRenderMode: PointRenderMode.gradient,
-              dataLabelSettings: DataLabelSettings(
-                margin: EdgeInsets.zero,
-                isVisible: true,
-                labelPosition: ChartDataLabelPosition.outside,
-                textStyle: TextStyle(
-                  fontSize: 8,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                showZeroValue: false,
-                connectorLineSettings: const ConnectorLineSettings(
-                  type: ConnectorType.curve,
-                  length: '20%',
-                ),
-                labelIntersectAction: LabelIntersectAction.shift,
+      return controller.isLoading
+          ? const Align(
+              alignment: Alignment.centerRight,
+              child: GFLoader(
+                size: 18,
               ),
-            ),
-          ],
-          tooltipBehavior: TooltipBehavior(
-            enable: true,
-            header: '',
-            canShowMarker: false,
-            activationMode: ActivationMode.singleTap,
-            builder: (dynamic data, dynamic point, dynamic series,
-                int pointIndex, int seriesIndex) {
-              return Container(
-                color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  '${point.x}: ${filesize(point.y ?? 0)}',
-                  style: TextStyle(
-                    fontSize: 14,
+            )
+          : CustomCard(
+              height: 260,
+              child: SfCircularChart(
+                title: ChartTitle(
+                  text:
+                      '今日下载增量：${filesize(controller.todayDownloadIncrement)}【${controller.downloadIncrementDataList.length}个站点】',
+                  textStyle: TextStyle(
+                      fontSize: 11,
+                      color: Theme.of(context).colorScheme.primary),
+                ),
+                legend: Legend(
+                  position: LegendPosition.left,
+                  // height: "20",
+                  isVisible: true,
+                  iconWidth: 8,
+                  iconHeight: 8,
+                  padding: 5,
+                  itemPadding: 5,
+                  // width: '64',
+                  isResponsive: true,
+                  textStyle: TextStyle(
+                    fontSize: 8,
                     color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
-              );
-            },
-          ),
-        ),
-      );
+                series: <DoughnutSeries<MetaDataItem, String>>[
+                  DoughnutSeries<MetaDataItem, String>(
+                    name: '今日下载数据汇总',
+                    dataSource: controller.downloadIncrementDataList,
+                    xValueMapper: (MetaDataItem data, _) =>
+                        controller.privateMode
+                            ? "${data.name.substring(0, 1)}**"
+                            : data.name,
+                    yValueMapper: (MetaDataItem data, _) => data.value,
+                    dataLabelMapper: (MetaDataItem data, _) {
+                      return '${controller.privateMode ? "${data.name.substring(0, 1)}**" : data.name}: ${filesize(data.value)}';
+                    },
+                    legendIconType: LegendIconType.circle,
+                    enableTooltip: true,
+                    explode: true,
+                    explodeIndex: 0,
+                    explodeOffset: '10%',
+                    radius: '60%',
+                    pointRenderMode: PointRenderMode.gradient,
+                    dataLabelSettings: DataLabelSettings(
+                      margin: EdgeInsets.zero,
+                      isVisible: true,
+                      labelPosition: ChartDataLabelPosition.outside,
+                      textStyle: TextStyle(
+                        fontSize: 8,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      showZeroValue: false,
+                      connectorLineSettings: const ConnectorLineSettings(
+                        type: ConnectorType.curve,
+                        length: '10%',
+                      ),
+                      labelIntersectAction: LabelIntersectAction.shift,
+                    ),
+                  )
+                ],
+                // tooltipBehavior:
+                //     TooltipBehavior(enable: true, format: 'point.x : ${filesize(point.y)}'),
+              ),
+            );
     });
   }
 
-  Widget _showTodayDownloadedIncrement() {
-    // controller.todayIncrement = 0;
+  Widget _showTodayUploadedIncrement() {
     return GetBuilder<DashBoardController>(builder: (controller) {
-      return CustomCard(
-        height: 260,
-        child: SfCircularChart(
-          title: ChartTitle(
-            text:
-                '今日下载增量：${filesize(controller.todayDownloadIncrement)}【${controller.downloadIncrementDataList.length}个站点】',
-            textStyle: TextStyle(
-                fontSize: 11, color: Theme.of(context).colorScheme.primary),
-          ),
-          legend: Legend(
-            position: LegendPosition.left,
-            // height: "20",
-            isVisible: true,
-            iconWidth: 8,
-            iconHeight: 8,
-            padding: 5,
-            itemPadding: 5,
-            // width: '64',
-            isResponsive: true,
-            textStyle: TextStyle(
-              fontSize: 8,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-          series: <DoughnutSeries<MetaDataItem, String>>[
-            DoughnutSeries<MetaDataItem, String>(
-              name: '今日下载数据汇总',
-              dataSource: controller.downloadIncrementDataList,
-              xValueMapper: (MetaDataItem data, _) => controller.privateMode
-                  ? "${data.name.substring(0, 1)}**"
-                  : data.name,
-              yValueMapper: (MetaDataItem data, _) => data.value,
-              dataLabelMapper: (MetaDataItem data, _) {
-                return '${controller.privateMode ? "${data.name.substring(0, 1)}**" : data.name}: ${filesize(data.value)}';
-              },
-              legendIconType: LegendIconType.circle,
-              enableTooltip: true,
-              explode: true,
-              explodeIndex: 0,
-              explodeOffset: '10%',
-              radius: '60%',
-              pointRenderMode: PointRenderMode.gradient,
-              dataLabelSettings: DataLabelSettings(
-                margin: EdgeInsets.zero,
-                isVisible: true,
-                labelPosition: ChartDataLabelPosition.outside,
-                textStyle: TextStyle(
-                  fontSize: 8,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                showZeroValue: false,
-                connectorLineSettings: const ConnectorLineSettings(
-                  type: ConnectorType.curve,
-                  length: '10%',
-                ),
-                labelIntersectAction: LabelIntersectAction.shift,
+      return controller.isLoading
+          ? const Align(
+              alignment: Alignment.centerRight,
+              child: GFLoader(
+                size: 18,
               ),
             )
-          ],
-          // tooltipBehavior:
-          //     TooltipBehavior(enable: true, format: 'point.x : ${filesize(point.y)}'),
-        ),
-      );
+          : CustomCard(
+              height: 260,
+              child: SfCircularChart(
+                title: ChartTitle(
+                  text:
+                      '今日上传增量：${filesize(controller.todayUploadIncrement)}【${controller.uploadIncrementDataList.length}个站点】',
+                  textStyle: TextStyle(
+                      fontSize: 11,
+                      color: Theme.of(context).colorScheme.primary),
+                ),
+                legend: Legend(
+                  position: LegendPosition.left,
+                  // height: "20",
+                  isVisible: true,
+                  iconWidth: 8,
+                  iconHeight: 8,
+                  padding: 5,
+                  itemPadding: 5,
+                  // width: '64',
+                  isResponsive: true,
+                  textStyle: TextStyle(
+                    fontSize: 8,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                series: <DoughnutSeries<MetaDataItem, String>>[
+                  DoughnutSeries<MetaDataItem, String>(
+                    name: '今日上传数据汇总',
+                    dataSource: controller.uploadIncrementDataList,
+                    xValueMapper: (MetaDataItem data, _) =>
+                        controller.privateMode
+                            ? "${data.name.substring(0, 1)}**"
+                            : data.name,
+                    yValueMapper: (MetaDataItem data, _) => data.value,
+                    dataLabelMapper: (MetaDataItem data, _) {
+                      return '${controller.privateMode ? "${data.name.substring(0, 1)}*" : data.name}: ${filesize(data.value)}';
+                    },
+                    legendIconType: LegendIconType.circle,
+                    enableTooltip: true,
+                    explode: true,
+                    explodeIndex: 0,
+                    explodeOffset: '10%',
+                    radius: '60%',
+                    // pointRenderMode: PointRenderMode.gradient,
+                    dataLabelSettings: DataLabelSettings(
+                      margin: EdgeInsets.zero,
+                      isVisible: true,
+                      labelPosition: ChartDataLabelPosition.outside,
+                      textStyle: TextStyle(
+                        fontSize: 8,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      showZeroValue: false,
+                      connectorLineSettings: const ConnectorLineSettings(
+                        type: ConnectorType.curve,
+                        length: '20%',
+                      ),
+                      labelIntersectAction: LabelIntersectAction.shift,
+                    ),
+                  ),
+                ],
+                tooltipBehavior: TooltipBehavior(
+                  enable: true,
+                  header: '',
+                  canShowMarker: false,
+                  activationMode: ActivationMode.singleTap,
+                  builder: (dynamic data, dynamic point, dynamic series,
+                      int pointIndex, int seriesIndex) {
+                    return Container(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surface
+                          .withOpacity(0.8),
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        '${point.x}: ${filesize(point.y ?? 0)}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            );
     });
+  }
+
+  double _getWidthFactor() {
+    final size = MediaQuery.of(context).size;
+    if (size.width < 800) return 1.0; // 手机屏幕
+    if (size.width < 1200) return 0.5; // 平板屏幕
+    return 0.33; // 桌面屏幕
   }
 
   Widget _showAllInfo() {
-    Logger.instance.d(controller.earliestSite);
     return GetBuilder<DashBoardController>(builder: (controller) {
       return Column(
         children: [
@@ -391,39 +415,31 @@ class _DashBoardPageState extends State<DashBoardPage>
                           );
                         },
                         child: SingleChildScrollView(
-                          child: Obx(() {
-                            return Wrap(
-                                alignment: WrapAlignment.spaceAround,
-                                direction: Axis.horizontal,
-                                children: [
-                                  if (controller.buildSiteInfoCard)
-                                    _buildSiteInfoCard(),
-                                  if (controller.buildSiteInfo)
-                                    _buildSiteInfo(),
-                                  if (controller.buildSmartLabelPieChart)
-                                    _buildSmartLabelPieChart(),
-                                  if (controller.buildSeedVolumePieChart)
-                                    _buildSeedVolumePieChart(),
-                                  if (controller.buildStackedBar)
-                                    _buildStackedBar(),
-                                  if (controller.buildMonthStackedBar)
-                                    _buildMonthStackedBar(),
-                                  if (controller.showTodayUploadedIncrement)
-                                    _showTodayUploadedIncrement(),
-                                  if (controller.showTodayDownloadedIncrement)
-                                    _showTodayDownloadedIncrement(),
-                                ]
-                                    .map((item) => FractionallySizedBox(
-                                          widthFactor:
-                                              Get.find<HomeController>()
-                                                      .isPortrait
-                                                      .value
-                                                  ? 1
-                                                  : 0.5,
-                                          child: item,
-                                        ))
-                                    .toList());
-                          }),
+                          child: Wrap(
+                              alignment: WrapAlignment.spaceAround,
+                              direction: Axis.horizontal,
+                              children: [
+                                if (controller.buildSiteInfoCard)
+                                  _buildSiteInfoCard(),
+                                if (controller.buildSiteInfo) _buildSiteInfo(),
+                                if (controller.buildSmartLabelPieChart)
+                                  _buildSmartLabelPieChart(),
+                                if (controller.buildSeedVolumePieChart)
+                                  _buildSeedVolumePieChart(),
+                                if (controller.buildStackedBar)
+                                  _buildStackedBar(),
+                                if (controller.buildMonthStackedBar)
+                                  _buildMonthStackedBar(),
+                                if (controller.showTodayUploadedIncrement)
+                                  _showTodayUploadedIncrement(),
+                                if (controller.showTodayDownloadedIncrement)
+                                  _showTodayDownloadedIncrement(),
+                              ]
+                                  .map((item) => FractionallySizedBox(
+                                        widthFactor: _getWidthFactor(),
+                                        child: item,
+                                      ))
+                                  .toList()),
                         ),
                       );
                 // : Center(
@@ -1246,7 +1262,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                     SizedBox(
                                       width: 60,
                                       child: Text(
-                                        filesize(status?.uploaded ?? 0),
+                                        filesize(status.uploaded),
                                         style: TextStyle(
                                           fontSize: 10,
                                           color: Theme.of(context)
@@ -1257,7 +1273,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                       ),
                                     ),
                                     const SizedBox(
-                                      width: 5,
+                                      width: 3,
                                     ),
                                     Expanded(
                                       child: SizedBox(
@@ -1279,7 +1295,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                                   color: Colors.transparent),
                                           barPointers: <LinearBarPointer>[
                                             LinearBarPointer(
-                                              value: (status.uploaded ?? 0) /
+                                              value: (status.uploaded) /
                                                   maxUploaded *
                                                   100,
                                               thickness: 16,
@@ -1344,12 +1360,12 @@ class _DashBoardPageState extends State<DashBoardPage>
                                           )),
                                     ),
                                     const SizedBox(
-                                      width: 5,
+                                      width: 2,
                                     ),
                                     SizedBox(
                                         width: 60,
                                         child: Text(
-                                          filesize(status?.downloaded ?? 0),
+                                          filesize(status.downloaded ?? 0),
                                           style: TextStyle(
                                             fontSize: 10,
                                             color: Theme.of(context)
