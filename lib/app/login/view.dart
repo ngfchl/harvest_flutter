@@ -296,8 +296,7 @@ class _LoginPageState extends State<LoginPage> {
     controller.testRes = false;
     final formKey = GlobalKey<FormState>();
     String defaultEntry =
-        kIsWeb ? Uri.base.scheme : 'http://192.168.123.5:25174';
-
+        kIsWeb ? Uri.base.origin : 'http://192.168.123.5:25174';
     TextEditingController nameController =
         TextEditingController(text: serverToEdit?.name ?? 'DefaultServer');
     TextEditingController entryController =
