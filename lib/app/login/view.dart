@@ -108,7 +108,7 @@ class _LoginPageState extends State<LoginPage> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12.0),
                       child: Text(
-                        '${server.domain}:${server.port}',
+                        '${Uri.parse(server.entry).host}:${Uri.parse(server.entry).port}',
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.labelSmall,
                         overflow: TextOverflow.ellipsis,
@@ -179,19 +179,46 @@ class _LoginPageState extends State<LoginPage> {
         appBar: AppBar(
           title: const Text('服务器列表'),
           actions: [
-            ...const [
-              LoggingView(),
-              SizedBox(width: 15),
-              DarkModeSwitch(),
-              SizedBox(width: 15),
-              SizedBox(
+            ...[
+              IconButton(
+                  onPressed: () async {
+                    final CommonResponse res =
+                        await controller.clearServerCache();
+                    if (res.succeed) {
+                      Get.snackbar(
+                        '清除缓存服务器',
+                        '服务器缓存已成功清除',
+                        snackPosition: SnackPosition.BOTTOM,
+                        backgroundColor: Colors.green.shade400,
+                        duration: const Duration(seconds: 3),
+                      );
+                    } else {
+                      Get.snackbar(
+                        '清除服务器',
+                        '清除服务器缓存失败',
+                        snackPosition: SnackPosition.BOTTOM,
+                        backgroundColor: Colors.red.shade400,
+                        duration: const Duration(seconds: 3),
+                      );
+                    }
+                  },
+                  icon: Icon(
+                    Icons.cleaning_services_outlined,
+                    size: 18,
+                    color: Theme.of(context).colorScheme.primary,
+                  )),
+              const LoggingView(),
+              const SizedBox(width: 15),
+              const DarkModeSwitch(),
+              const SizedBox(width: 15),
+              const SizedBox(
                 height: 20,
                 width: 20,
                 child: ThemeModal(
                   itemSize: 28,
                 ),
               ),
-              SizedBox(width: 15)
+              const SizedBox(width: 15)
             ],
             CustomUAWidget(
               child: Icon(
@@ -268,22 +295,17 @@ class _LoginPageState extends State<LoginPage> {
   void showEditOrCreateServerSheet(Server? serverToEdit) async {
     controller.testRes = false;
     final formKey = GlobalKey<FormState>();
-    String defaultProtocol = kIsWeb ? Uri.base.scheme : 'http';
-    String defaultDomain = kIsWeb ? Uri.base.host : '192.168.123.5';
-    String defaultPort = kIsWeb ? Uri.base.port.toString() : '28000';
+    String defaultEntry =
+        kIsWeb ? Uri.base.scheme : 'http://192.168.123.5:25174';
 
     TextEditingController nameController =
         TextEditingController(text: serverToEdit?.name ?? 'DefaultServer');
-    TextEditingController protocolController =
-        TextEditingController(text: serverToEdit?.protocol ?? defaultProtocol);
-    TextEditingController domainController =
-        TextEditingController(text: serverToEdit?.domain ?? defaultDomain);
+    TextEditingController entryController =
+        TextEditingController(text: serverToEdit?.entry ?? defaultEntry);
     TextEditingController usernameController =
         TextEditingController(text: serverToEdit?.username ?? 'admin');
     TextEditingController passwordController =
         TextEditingController(text: serverToEdit?.password ?? 'adminadmin');
-    TextEditingController portController = TextEditingController(
-        text: serverToEdit?.port.toString() ?? defaultPort);
     await Get.bottomSheet(
       enableDrag: true,
       GetBuilder<LoginController>(builder: (controller) {
@@ -301,26 +323,9 @@ class _LoginPageState extends State<LoginPage> {
                     controller: nameController,
                     labelText: '名称',
                   ),
-                  CustomPickerField(
-                    controller: protocolController,
-                    labelText: '选择协议',
-                    data: const ["http", "https"],
-                    readOnly: kIsWeb,
-                    onConfirm: (p, position) {
-                      protocolController.text = p;
-                    },
-                    onChanged: (p, position) {
-                      protocolController.text = p;
-                    },
-                  ),
                   CustomTextField(
-                    controller: domainController,
-                    labelText: '主机',
-                    readOnly: kIsWeb,
-                  ),
-                  CustomPortField(
-                    controller: portController,
-                    labelText: '端口',
+                    controller: entryController,
+                    labelText: '地址',
                     readOnly: kIsWeb,
                   ),
                   CustomTextField(
@@ -390,8 +395,7 @@ class _LoginPageState extends State<LoginPage> {
                         onPressed: () {
                           // 清理表单控制器
                           nameController.clear();
-                          domainController.clear();
-                          portController.clear();
+                          entryController.clear();
                           // 关闭底部表单
                           Navigator.pop(context);
                         },
@@ -401,9 +405,7 @@ class _LoginPageState extends State<LoginPage> {
                           final server = Server(
                             id: 0,
                             name: nameController.text,
-                            protocol: protocolController.text,
-                            domain: domainController.text,
-                            port: int.parse(portController.text),
+                            entry: entryController.text,
                             username: usernameController.text,
                             password: passwordController.text,
                             selected: false,
@@ -467,9 +469,7 @@ class _LoginPageState extends State<LoginPage> {
                               final server = Server(
                                 id: serverToEdit?.id ?? 0,
                                 name: nameController.text,
-                                protocol: protocolController.text,
-                                domain: domainController.text,
-                                port: int.parse(portController.text),
+                                entry: entryController.text,
                                 username: usernameController.text,
                                 password: passwordController.text,
                                 selected: serverToEdit?.selected ?? false,

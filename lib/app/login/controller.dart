@@ -63,10 +63,8 @@ class LoginController extends GetxController {
   }
 
   void initDio(Server server) async {
-    String baseUrl = '${server.protocol}://${server.domain}:${server.port}';
-    await dioUtil.initialize(baseUrl);
-    SPUtil.setString('server', baseUrl);
-    SPUtil.setString('serverDomain', server.domain);
+    await dioUtil.initialize(server.entry);
+    SPUtil.setString('server', server.entry);
     update();
   }
 
@@ -74,8 +72,7 @@ class LoginController extends GetxController {
     isLoading = true; // 开始加载状态
     update();
     try {
-      String baseUrl = '${server.protocol}://${server.domain}:${server.port}';
-      await dioUtil.initialize(baseUrl);
+      await dioUtil.initialize(server.entry);
       LoginUser loginUser = LoginUser(
         username: server.username,
         password: server.password,
@@ -177,5 +174,9 @@ class LoginController extends GetxController {
       password: selectedServer?.password,
     );
     return connectToServer(loginUser);
+  }
+
+  clearServerCache() async {
+    return await serverRepository.clearServer();
   }
 }

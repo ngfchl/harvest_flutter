@@ -1,42 +1,34 @@
 class Server {
   final int id;
   final String name;
-  final String protocol;
-  final String domain;
+  final String entry;
   final String username;
   final String password;
-  final int port;
   bool selected;
 
   Server({
     required this.id,
     required this.name,
-    required this.protocol,
-    required this.domain,
+    required this.entry,
     required this.username,
     required this.password,
-    required this.port,
     required this.selected,
   });
 
   Server copyWith({
     int? id,
     String? name,
-    String? protocol,
-    String? domain,
+    String? entry,
     String? username,
     String? password,
-    int? port,
     bool? selected,
   }) {
     return Server(
       id: id ?? this.id,
       name: name ?? this.name,
-      protocol: protocol ?? this.protocol,
-      domain: domain ?? this.domain,
+      entry: entry ?? this.entry,
       username: username ?? this.username,
       password: password ?? this.password,
-      port: port ?? this.port,
       selected: selected ?? this.selected,
     );
   }
@@ -46,11 +38,9 @@ class Server {
     return {
       'id': id,
       'name': name,
-      'protocol': protocol,
-      'domain': domain,
+      'entry': entry,
       'username': username,
       'password': password,
-      'port': port,
       'selected': selected ? 1 : 0,
     };
   }
@@ -60,17 +50,15 @@ class Server {
     return Server(
       id: map['id'],
       name: map['name'],
-      protocol: map['protocol'],
-      domain: map['domain'],
+      entry: map['entry'],
       username: map['username'],
       password: map['password'] ?? '',
-      port: map['port'],
       selected: map['selected'] == 1,
     );
   }
 
   @override
   String toString() {
-    return 'Harvest服务器：$id - $name [$protocol://$domain:$port]';
+    return 'Harvest服务器：$id - $name [$entry]';
   }
 }

@@ -28,10 +28,8 @@ class ServerRepository {
 
 // 插入新的服务器信息
   Future<CommonResponse> insertServer(Server server) async {
-    bool exists = serverList.any((existingServer) =>
-        existingServer.protocol == server.protocol &&
-        existingServer.domain == server.domain &&
-        existingServer.port == server.port);
+    bool exists = serverList
+        .any((existingServer) => existingServer.entry == server.entry);
     if (exists) {
       return CommonResponse.error(msg: '服务器已存在');
     }
@@ -90,6 +88,19 @@ class ServerRepository {
       return CommonResponse.error(msg: '服务器删除失败!');
     } catch (e) {
       return CommonResponse.error(msg: '服务器删除失败! $e');
+    }
+  }
+
+  // 删除服务器信息
+  Future<CommonResponse> clearServer() async {
+    try {
+      Logger.instance.i('清除服务器...');
+      serverList.clear();
+      var res = await SPUtil.remove('servers');
+      Logger.instance.i('清除服务器结果: $res');
+      return CommonResponse.success(msg: '服务器清理成功!');
+    } catch (e) {
+      return CommonResponse.error(msg: '服务器清理失败! $e');
     }
   }
 
