@@ -277,10 +277,10 @@ packages:
     dependency: "direct main"
     description:
       name: file_picker
-      sha256: a222f231db4f822fc49e3b753674bda630e981873c84bf8604bceeb77fce0b24
+      sha256: "77f8e81d22d2a07d0dee2c62e1dda71dc1da73bf43bb2d45af09727406167964"
       url: "https://pub.dev"
     source: hosted
-    version: "10.1.7"
+    version: "10.1.9"
   filesize:
     dependency: "direct main"
     description:
@@ -338,10 +338,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_floating
-      sha256: "4196be92c583f63d9606c0781304a9212743727940d7ff4a5100bfaeeea563f1"
+      sha256: "59ace55b11d37e6f933839a7b2a27a0f5fa4a90597a5a786b56a0bdf15d1357c"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.0"
+    version: "1.1.1"
   flutter_inappwebview:
     dependency: "direct main"
     description:
@@ -450,10 +450,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_popup
-      sha256: "8f93cb4ec7341330ee585b4624ac6596f02587aaefc47297344cb7b5af26aa07"
+      sha256: "88e1e98c4111e1426a8f83991103b107e6ce329e610708b63f2c14940e472d24"
       url: "https://pub.dev"
     source: hosted
-    version: "3.3.4"
+    version: "3.3.6"
   flutter_settings_ui:
     dependency: transitive
     description:
@@ -1049,34 +1049,34 @@ packages:
     dependency: "direct main"
     description:
       name: syncfusion_flutter_charts
-      sha256: "388fdda00b4f9f45d5227992e496d0d463a713454c87ba8382e69eb3f47e6842"
+      sha256: "5df93c621dac51caaedcce5a93fb672db8e20637b2796ae3f4ae49382dc092e1"
       url: "https://pub.dev"
     source: hosted
-    version: "29.1.41"
+    version: "29.2.5"
   syncfusion_flutter_core:
     dependency: "direct main"
     description:
       name: syncfusion_flutter_core
-      sha256: "4fb16cf25fa56f787f3991bbdea6241512a81cdbfad4255452f3fd01b7d5fb25"
+      sha256: "69fa2cccda6013770273fb726d03528c35d6ced00a28a7b21fae8c7d5c756a73"
       url: "https://pub.dev"
     source: hosted
-    version: "29.1.41"
+    version: "29.2.5"
   syncfusion_flutter_gauges:
     dependency: "direct main"
     description:
       name: syncfusion_flutter_gauges
-      sha256: "40ecb83fa2c4f63d49eea05c5530bf90b0b2103d978d39e78a60ce17eaee6d92"
+      sha256: cdbd272f95d501188f4dbb07885175007a9e46be0ebffb4c22b337ae593e7126
       url: "https://pub.dev"
     source: hosted
-    version: "29.1.41"
+    version: "29.2.5"
   syncfusion_flutter_sliders:
     dependency: "direct main"
     description:
       name: syncfusion_flutter_sliders
-      sha256: ee6835fbaf413a9db57f1046027184f47527007a74f532f79311d86b81f88274
+      sha256: "8c155af2bbd68bc4f4d3f5adcf63f2fafe5e085cebc58c02402ee4f4d8d4bb20"
       url: "https://pub.dev"
     source: hosted
-    version: "29.1.41"
+    version: "29.2.5"
   synchronized:
     dependency: transitive
     description:
@@ -1233,10 +1233,10 @@ packages:
     dependency: transitive
     description:
       name: vector_graphics_compiler
-      sha256: "1b4b9e706a10294258727674a340ae0d6e64a7231980f9f9a3d12e4b42407aad"
+      sha256: "557a315b7d2a6dbb0aaaff84d857967ce6bdc96a63dc6ee2a57ce5a6ee5d3331"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.16"
+    version: "1.1.17"
   vector_math:
     dependency: transitive
     description:
