@@ -135,8 +135,37 @@ class _DashBoardPageState extends State<DashBoardPage>
                     ),
                   )
                 ],
-                // tooltipBehavior:
-                //     TooltipBehavior(enable: true, format: 'point.x : ${filesize(point.y)}'),
+                tooltipBehavior: TooltipBehavior(
+                  enable: true,
+                  header: '',
+                  canShowMarker: false,
+                  activationMode: ActivationMode.singleTap,
+                  shouldAlwaysShow: false,
+                  builder: (dynamic data, dynamic point, dynamic series,
+                      int pointIndex, int seriesIndex) {
+                    // 验证索引是否有效
+                    if (pointIndex < 0 ||
+                        pointIndex >=
+                            controller.downloadIncrementDataList.length) {
+                      return const SizedBox.shrink(); // 无效索引时返回空组件
+                    }
+
+                    return Container(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surface
+                          .withOpacity(0.8),
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        '${point.x}: ${filesize(point.y ?? 0)}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
             );
     });
@@ -217,8 +246,16 @@ class _DashBoardPageState extends State<DashBoardPage>
                   header: '',
                   canShowMarker: false,
                   activationMode: ActivationMode.singleTap,
+                  shouldAlwaysShow: false,
                   builder: (dynamic data, dynamic point, dynamic series,
                       int pointIndex, int seriesIndex) {
+                    // 验证索引是否有效
+                    if (pointIndex < 0 ||
+                        pointIndex >=
+                            controller.uploadIncrementDataList.length) {
+                      return const SizedBox.shrink(); // 无效索引时返回空组件
+                    }
+
                     return Container(
                       color: Theme.of(context)
                           .colorScheme
