@@ -13,7 +13,7 @@ class TaskItem {
   String? args;
   String? kwargs;
   double? eta;
-  double? expires;
+  String? expires;
   int? retries;
   String? result;
   String? exception;
@@ -81,7 +81,7 @@ class TaskItem {
       args: json['args'],
       kwargs: json['kwargs'],
       eta: json['eta']?.toDouble(),
-      expires: json['expires']?.toDouble(),
+      expires: json['expires'],
       retries: json['retries'],
       result: json['result'],
       exception: json['exception'],
