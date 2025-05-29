@@ -1707,9 +1707,13 @@ class _DashBoardPageState extends State<DashBoardPage>
                         (index) {
                       MetaDataItem siteData =
                           controller.stackChartDataList[index];
-                      final List<TrafficDelta> displayData =
-                          siteData.value.sublist(14 - controller.days);
-                      // Logger.instance.d(displayData);
+                      // Logger.instance.d('当前站点每日数据长度：${siteData.value.length}');
+                      List<TrafficDelta> displayData = siteData.value;
+                      if (displayData.length > controller.days) {
+                        displayData = displayData
+                            .sublist(displayData.length - controller.days);
+                      }
+                      // Logger.instance.d('处理后每日数据长度：${displayData.length}');
                       return StackedBarSeries<TrafficDelta?, String>(
                         name: controller.privateMode
                             ? "${siteData.name.toString().substring(0, 1)}**"
