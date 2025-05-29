@@ -31,6 +31,7 @@ class DashBoardController extends GetxController {
   int totalLeeching = 0;
   bool privateMode = false;
   bool isLoading = false;
+  bool isStackedLoading = false;
   bool buildSiteInfoCard = true;
   bool buildSmartLabelPieChart = true;
   bool buildSeedVolumePieChart = true;
@@ -80,29 +81,33 @@ class DashBoardController extends GetxController {
       await mySiteController.getWebSiteListFromServer();
       await mySiteController.getSiteStatusFromServer();
       mySiteController.loadingFromServer = false;
-      await initChartData(days);
+      await initChartData();
       Logger.instance.i('从数据库加载数据完成！');
       update(); // UI 更新
     });
   }
 
-  initChartData(days) async {
-    totalUploaded = 0;
-    totalDownloaded = 0;
-    totalSeedVol = 0;
-    totalSeeding = 0;
-    totalLeeching = 0;
-    todayUploadIncrement = 0;
-    todayDownloadIncrement = 0;
-    uploadIncrementDataList.clear();
-    uploadMonthIncrementDataList.clear();
-    downloadIncrementDataList.clear();
-
-    CommonResponse res = await getDashBoardDataApi(days);
+  initChartData() async {
+    CommonResponse res = await getDashBoardDataApi(15);
     if (res.succeed) {
       try {
-        SPUtil.setCache('$baseUrl - DASHBOARD_DATA', res.data, 3600 * 8);
+        // 清空数据
+        Logger.instance.i('开始初始化页面数据...');
+        totalUploaded = 0;
+        totalDownloaded = 0;
+        totalSeedVol = 0;
+        totalSeeding = 0;
+        totalLeeching = 0;
+        todayUploadIncrement = 0;
+        todayDownloadIncrement = 0;
+        uploadIncrementDataList.clear();
+        uploadMonthIncrementDataList.clear();
+        downloadIncrementDataList.clear();
+        Logger.instance.i('初始化页面数据完成,开始解析数据...');
         parseDashData(res.data);
+        Logger.instance.i('缓存数据完成，缓存中...');
+        SPUtil.setCache('$baseUrl - DASHBOARD_DATA', res.data, 3600 * 24);
+        Logger.instance.i('缓存数据完成！');
       } catch (e) {
         String message = '仪表数据解析失败啦～${e.toString()}';
         Logger.instance.e(message);
@@ -168,8 +173,11 @@ class DashBoardController extends GetxController {
                   .toList(),
             ))
         .toList();
+    Logger.instance
+        .i('stackChartDataList: ${stackChartDataList[1].value?.length}.');
     seedDataList = (data['seedDataList'] as List)
         .map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>))
         .toList();
+    update();
   }
 }
