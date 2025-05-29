@@ -14,7 +14,8 @@ String baseUrl = SPUtil.getLocalStorage('server');
 
 /// 获取
 Future<CommonResponse> getDashBoardDataApi(days) async {
-  final response = await fetchBasicData(Api.DASHBOARD_DATA,queryParameters: {"days": days});
+  final response =
+      await fetchBasicData(Api.DASHBOARD_DATA, queryParameters: {"days": days});
   if (response.code == 0) {
     SPUtil.setMap(
         '$baseUrl - DASHBOARD_DATA', {'DASHBOARD_DATA': response.data});
@@ -26,7 +27,8 @@ Future<CommonResponse> getDashBoardDataApi(days) async {
 Future<CommonResponse> getMySiteList() async {
   final response = await fetchDataList(Api.MYSITE_LIST, (p0) => p0);
   if (response.code == 0) {
-    SPUtil.setMap('$baseUrl - mySiteList', {'mySiteList': response.data});
+    SPUtil.setCache(
+        '$baseUrl - mySiteList', {'mySiteList': response.data}, 3600 * 24);
     return CommonResponse.success(
         data: response.data?.map((p0) => MySite.fromJson(p0)).toList());
   }
@@ -43,7 +45,8 @@ Future<CommonResponse> clearMyCacheApi(String key) async {
 Future<CommonResponse> getWebSiteList() async {
   final response = await fetchDataList(Api.WEBSITE_LIST, (p0) => p0);
   if (response.code == 0) {
-    SPUtil.setMap('$baseUrl - webSiteList', {'webSiteList': response.data});
+    SPUtil.setCache(
+        '$baseUrl - webSiteList', {'webSiteList': response.data}, 3600 * 24);
     Map<String, WebSite> dataList = response.data!
         .map((item) => WebSite.fromJson(item))
         .toList()
