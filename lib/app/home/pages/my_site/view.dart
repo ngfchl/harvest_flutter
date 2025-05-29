@@ -261,6 +261,7 @@ class _MySitePagePageState extends State<MySitePage>
               Future.microtask(() async {
                 Logger.instance.i('开始从数据库加载数据...');
                 controller.loadingFromServer = true;
+                controller.update(); // UI 更新
                 // 模拟后台获取数据
                 await controller.getWebSiteListFromServer();
                 await controller.getSiteStatusFromServer();

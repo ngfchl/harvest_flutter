@@ -80,7 +80,7 @@ class MySiteController extends GetxController {
     baseUrl = SPUtil.getLocalStorage('server');
     isLoaded = true;
     loadingFromServer = true;
-
+    update();
     await initData();
     super.onInit();
   }
@@ -122,8 +122,8 @@ class MySiteController extends GetxController {
       // 记录开始时间
       Logger.instance.d('开始从缓存加载站点数据');
       DateTime startTime = DateTime.now();
-      Map webSiteListMap = SPUtil.getMap('$baseUrl - webSiteList');
-      Map mySiteListMap = SPUtil.getMap('$baseUrl - mySiteList');
+      Map webSiteListMap = await SPUtil.getCache('$baseUrl - webSiteList');
+      Map mySiteListMap = await SPUtil.getCache('$baseUrl - mySiteList');
 
       if (webSiteListMap.isNotEmpty) {
         Logger.instance
