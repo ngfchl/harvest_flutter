@@ -1,6 +1,6 @@
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
@@ -271,7 +271,7 @@ class TaskPage extends StatelessWidget {
                                   )
                                 : Get.defaultDialog(
                                     title: '任务详情',
-                                    content: CustomCard(
+                                    content: Container(
                                       height: Get.height * 0.6,
                                       width: Get.width * 0.8,
                                       padding: const EdgeInsets.all(8),
