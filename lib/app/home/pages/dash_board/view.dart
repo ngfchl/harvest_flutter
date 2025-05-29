@@ -69,111 +69,91 @@ class _DashBoardPageState extends State<DashBoardPage>
     return GetBuilder<DashBoardController>(builder: (controller) {
       return CustomCard(
         height: 260,
-        child: controller.isLoading
-            ? Center(
-                child: GFLoader(
-                  type: GFLoaderType.custom,
-                  loaderIconOne: Icon(
-                    Icons.circle_outlined,
-                    size: 18,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .primary
-                        .withValues(alpha: 0.8),
-                  ),
+        child: SfCircularChart(
+          title: ChartTitle(
+            text:
+                '今日下载增量：${filesize(controller.todayDownloadIncrement)}【${controller.downloadIncrementDataList.length}个站点】',
+            textStyle: TextStyle(
+                fontSize: 11, color: Theme.of(context).colorScheme.primary),
+          ),
+          legend: Legend(
+            position: LegendPosition.left,
+            // height: "20",
+            isVisible: true,
+            iconWidth: 8,
+            iconHeight: 8,
+            padding: 5,
+            itemPadding: 5,
+            // width: '64',
+            isResponsive: true,
+            textStyle: TextStyle(
+              fontSize: 8,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          series: <DoughnutSeries<MetaDataItem, String>>[
+            DoughnutSeries<MetaDataItem, String>(
+              name: '今日下载数据汇总',
+              dataSource: controller.downloadIncrementDataList,
+              xValueMapper: (MetaDataItem data, _) => controller.privateMode
+                  ? "${data.name.substring(0, 1)}**"
+                  : data.name,
+              yValueMapper: (MetaDataItem data, _) => data.value,
+              dataLabelMapper: (MetaDataItem data, _) {
+                return '${controller.privateMode ? "${data.name.substring(0, 1)}**" : data.name}: ${filesize(data.value)}';
+              },
+              legendIconType: LegendIconType.circle,
+              enableTooltip: true,
+              explode: true,
+              explodeIndex: 0,
+              explodeOffset: '10%',
+              radius: '60%',
+              pointRenderMode: PointRenderMode.gradient,
+              dataLabelSettings: DataLabelSettings(
+                margin: EdgeInsets.zero,
+                isVisible: true,
+                labelPosition: ChartDataLabelPosition.outside,
+                textStyle: TextStyle(
+                  fontSize: 8,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
-              )
-            : SfCircularChart(
-                title: ChartTitle(
-                  text:
-                      '今日下载增量：${filesize(controller.todayDownloadIncrement)}【${controller.downloadIncrementDataList.length}个站点】',
-                  textStyle: TextStyle(
-                      fontSize: 11,
-                      color: Theme.of(context).colorScheme.primary),
+                showZeroValue: false,
+                connectorLineSettings: const ConnectorLineSettings(
+                  type: ConnectorType.curve,
+                  length: '10%',
                 ),
-                legend: Legend(
-                  position: LegendPosition.left,
-                  // height: "20",
-                  isVisible: true,
-                  iconWidth: 8,
-                  iconHeight: 8,
-                  padding: 5,
-                  itemPadding: 5,
-                  // width: '64',
-                  isResponsive: true,
-                  textStyle: TextStyle(
-                    fontSize: 8,
+                labelIntersectAction: LabelIntersectAction.shift,
+              ),
+            )
+          ],
+          tooltipBehavior: TooltipBehavior(
+            enable: true,
+            header: '',
+            canShowMarker: false,
+            activationMode: ActivationMode.singleTap,
+            shouldAlwaysShow: false,
+            builder: (dynamic data, dynamic point, dynamic series,
+                int pointIndex, int seriesIndex) {
+              // 验证索引是否有效
+              if (pointIndex < 0 ||
+                  pointIndex >= controller.downloadIncrementDataList.length) {
+                return const SizedBox.shrink(); // 无效索引时返回空组件
+              }
+
+              return Container(
+                color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  '${point.x}: ${filesize(point.y ?? 0)}',
+                  style: TextStyle(
+                    fontSize: 14,
                     color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
-                series: <DoughnutSeries<MetaDataItem, String>>[
-                  DoughnutSeries<MetaDataItem, String>(
-                    name: '今日下载数据汇总',
-                    dataSource: controller.downloadIncrementDataList,
-                    xValueMapper: (MetaDataItem data, _) =>
-                        controller.privateMode
-                            ? "${data.name.substring(0, 1)}**"
-                            : data.name,
-                    yValueMapper: (MetaDataItem data, _) => data.value,
-                    dataLabelMapper: (MetaDataItem data, _) {
-                      return '${controller.privateMode ? "${data.name.substring(0, 1)}**" : data.name}: ${filesize(data.value)}';
-                    },
-                    legendIconType: LegendIconType.circle,
-                    enableTooltip: true,
-                    explode: true,
-                    explodeIndex: 0,
-                    explodeOffset: '10%',
-                    radius: '60%',
-                    pointRenderMode: PointRenderMode.gradient,
-                    dataLabelSettings: DataLabelSettings(
-                      margin: EdgeInsets.zero,
-                      isVisible: true,
-                      labelPosition: ChartDataLabelPosition.outside,
-                      textStyle: TextStyle(
-                        fontSize: 8,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      showZeroValue: false,
-                      connectorLineSettings: const ConnectorLineSettings(
-                        type: ConnectorType.curve,
-                        length: '10%',
-                      ),
-                      labelIntersectAction: LabelIntersectAction.shift,
-                    ),
-                  )
-                ],
-                tooltipBehavior: TooltipBehavior(
-                  enable: true,
-                  header: '',
-                  canShowMarker: false,
-                  activationMode: ActivationMode.singleTap,
-                  shouldAlwaysShow: false,
-                  builder: (dynamic data, dynamic point, dynamic series,
-                      int pointIndex, int seriesIndex) {
-                    // 验证索引是否有效
-                    if (pointIndex < 0 ||
-                        pointIndex >=
-                            controller.downloadIncrementDataList.length) {
-                      return const SizedBox.shrink(); // 无效索引时返回空组件
-                    }
-
-                    return Container(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .surface
-                          .withOpacity(0.8),
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        '${point.x}: ${filesize(point.y ?? 0)}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
+              );
+            },
+          ),
+        ),
       );
     });
   }
@@ -182,111 +162,91 @@ class _DashBoardPageState extends State<DashBoardPage>
     return GetBuilder<DashBoardController>(builder: (controller) {
       return CustomCard(
         height: 260,
-        child: controller.isLoading
-            ? Center(
-                child: GFLoader(
-                  type: GFLoaderType.custom,
-                  loaderIconOne: Icon(
-                    Icons.circle_outlined,
-                    size: 18,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .primary
-                        .withValues(alpha: 0.8),
-                  ),
+        child: SfCircularChart(
+          title: ChartTitle(
+            text:
+                '今日上传增量：${filesize(controller.todayUploadIncrement)}【${controller.uploadIncrementDataList.length}个站点】',
+            textStyle: TextStyle(
+                fontSize: 11, color: Theme.of(context).colorScheme.primary),
+          ),
+          legend: Legend(
+            position: LegendPosition.left,
+            // height: "20",
+            isVisible: true,
+            iconWidth: 8,
+            iconHeight: 8,
+            padding: 5,
+            itemPadding: 5,
+            // width: '64',
+            isResponsive: true,
+            textStyle: TextStyle(
+              fontSize: 8,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          series: <DoughnutSeries<MetaDataItem, String>>[
+            DoughnutSeries<MetaDataItem, String>(
+              name: '今日上传数据汇总',
+              dataSource: controller.uploadIncrementDataList,
+              xValueMapper: (MetaDataItem data, _) => controller.privateMode
+                  ? "${data.name.substring(0, 1)}**"
+                  : data.name,
+              yValueMapper: (MetaDataItem data, _) => data.value,
+              dataLabelMapper: (MetaDataItem data, _) {
+                return '${controller.privateMode ? "${data.name.substring(0, 1)}*" : data.name}: ${filesize(data.value)}';
+              },
+              legendIconType: LegendIconType.circle,
+              enableTooltip: true,
+              explode: true,
+              explodeIndex: 0,
+              explodeOffset: '10%',
+              radius: '60%',
+              // pointRenderMode: PointRenderMode.gradient,
+              dataLabelSettings: DataLabelSettings(
+                margin: EdgeInsets.zero,
+                isVisible: true,
+                labelPosition: ChartDataLabelPosition.outside,
+                textStyle: TextStyle(
+                  fontSize: 8,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
-              )
-            : SfCircularChart(
-                title: ChartTitle(
-                  text:
-                      '今日上传增量：${filesize(controller.todayUploadIncrement)}【${controller.uploadIncrementDataList.length}个站点】',
-                  textStyle: TextStyle(
-                      fontSize: 11,
-                      color: Theme.of(context).colorScheme.primary),
+                showZeroValue: false,
+                connectorLineSettings: const ConnectorLineSettings(
+                  type: ConnectorType.curve,
+                  length: '20%',
                 ),
-                legend: Legend(
-                  position: LegendPosition.left,
-                  // height: "20",
-                  isVisible: true,
-                  iconWidth: 8,
-                  iconHeight: 8,
-                  padding: 5,
-                  itemPadding: 5,
-                  // width: '64',
-                  isResponsive: true,
-                  textStyle: TextStyle(
-                    fontSize: 8,
+                labelIntersectAction: LabelIntersectAction.shift,
+              ),
+            ),
+          ],
+          tooltipBehavior: TooltipBehavior(
+            enable: true,
+            header: '',
+            canShowMarker: false,
+            activationMode: ActivationMode.singleTap,
+            shouldAlwaysShow: false,
+            builder: (dynamic data, dynamic point, dynamic series,
+                int pointIndex, int seriesIndex) {
+              // 验证索引是否有效
+              if (pointIndex < 0 ||
+                  pointIndex >= controller.uploadIncrementDataList.length) {
+                return const SizedBox.shrink(); // 无效索引时返回空组件
+              }
+
+              return Container(
+                color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  '${point.x}: ${filesize(point.y ?? 0)}',
+                  style: TextStyle(
+                    fontSize: 14,
                     color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
-                series: <DoughnutSeries<MetaDataItem, String>>[
-                  DoughnutSeries<MetaDataItem, String>(
-                    name: '今日上传数据汇总',
-                    dataSource: controller.uploadIncrementDataList,
-                    xValueMapper: (MetaDataItem data, _) =>
-                        controller.privateMode
-                            ? "${data.name.substring(0, 1)}**"
-                            : data.name,
-                    yValueMapper: (MetaDataItem data, _) => data.value,
-                    dataLabelMapper: (MetaDataItem data, _) {
-                      return '${controller.privateMode ? "${data.name.substring(0, 1)}*" : data.name}: ${filesize(data.value)}';
-                    },
-                    legendIconType: LegendIconType.circle,
-                    enableTooltip: true,
-                    explode: true,
-                    explodeIndex: 0,
-                    explodeOffset: '10%',
-                    radius: '60%',
-                    // pointRenderMode: PointRenderMode.gradient,
-                    dataLabelSettings: DataLabelSettings(
-                      margin: EdgeInsets.zero,
-                      isVisible: true,
-                      labelPosition: ChartDataLabelPosition.outside,
-                      textStyle: TextStyle(
-                        fontSize: 8,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      showZeroValue: false,
-                      connectorLineSettings: const ConnectorLineSettings(
-                        type: ConnectorType.curve,
-                        length: '20%',
-                      ),
-                      labelIntersectAction: LabelIntersectAction.shift,
-                    ),
-                  ),
-                ],
-                tooltipBehavior: TooltipBehavior(
-                  enable: true,
-                  header: '',
-                  canShowMarker: false,
-                  activationMode: ActivationMode.singleTap,
-                  shouldAlwaysShow: false,
-                  builder: (dynamic data, dynamic point, dynamic series,
-                      int pointIndex, int seriesIndex) {
-                    // 验证索引是否有效
-                    if (pointIndex < 0 ||
-                        pointIndex >=
-                            controller.uploadIncrementDataList.length) {
-                      return const SizedBox.shrink(); // 无效索引时返回空组件
-                    }
-
-                    return Container(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .surface
-                          .withOpacity(0.8),
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        '${point.x}: ${filesize(point.y ?? 0)}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
+              );
+            },
+          ),
+        ),
       );
     });
   }
@@ -322,176 +282,183 @@ class _DashBoardPageState extends State<DashBoardPage>
           Expanded(
             child: EasyRefresh(
               onRefresh: () async {
-                controller.mySiteController.initFlag = true;
                 await controller.initChartData();
               },
               child: GetBuilder<DashBoardController>(builder: (controller) {
-                return InkWell(
-                  onLongPress: () {
-                    Get.defaultDialog(
-                      title: '小部件',
-                      radius: 5,
-                      titleStyle: const TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.w900),
-                      content: SizedBox(
-                          height: 260,
-                          width: 280,
-                          child: GetBuilder<DashBoardController>(
-                              builder: (controller) {
-                            return ListView(
-                              children: [
-                                // CheckboxListTile(
-                                //     title: const Text("站点数据汇总"),
-                                //     value: controller
-                                //         .buildSiteInfoCard,
-                                //     onChanged: (bool? value) {
-                                //       controller.buildSiteInfoCard =
-                                //           value!;
-                                //       controller.update();
-                                //     }),
+                return controller.isCacheLoading
+                    ? Center(
+                        child: GFLoader(
+                          type: GFLoaderType.custom,
+                          loaderIconOne: Icon(
+                            Icons.circle_outlined,
+                            size: 18,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withValues(alpha: 0.8),
+                          ),
+                        ),
+                      )
+                    : InkWell(
+                        onLongPress: () {
+                          Get.defaultDialog(
+                            title: '小部件',
+                            radius: 5,
+                            titleStyle: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w900),
+                            content: SizedBox(
+                                height: 260,
+                                width: 280,
+                                child: GetBuilder<DashBoardController>(
+                                    builder: (controller) {
+                                  return ListView(
+                                    children: [
+                                      // CheckboxListTile(
+                                      //     title: const Text("站点数据汇总"),
+                                      //     value: controller
+                                      //         .buildSiteInfoCard,
+                                      //     onChanged: (bool? value) {
+                                      //       controller.buildSiteInfoCard =
+                                      //           value!;
+                                      //       controller.update();
+                                      //     }),
 
-                                CustomCheckboxListTile(
-                                  title: '开启隐私模式',
-                                  value: controller.privateMode,
-                                  storageKey: 'privateMode',
-                                  onUpdate: (bool newValue) async {
-                                    controller.privateMode = newValue;
-                                    Logger.instance.d(
-                                        "privateMode: ${controller.privateMode}");
-                                    await controller.loadCacheDashData();
-                                    controller.update();
-                                  },
-                                ),
-                                CustomCheckboxListTile(
-                                  title: '上传总量饼图',
-                                  value: controller.buildSmartLabelPieChart,
-                                  storageKey: 'buildSmartLabelPieChart',
-                                  onUpdate: (bool newValue) {
-                                    controller.buildSmartLabelPieChart =
-                                        newValue;
-                                    controller.update();
-                                  },
-                                ),
-                                CustomCheckboxListTile(
-                                  title: '做种总量饼图',
-                                  value: controller.buildSeedVolumePieChart,
-                                  storageKey: 'buildSeedVolumePieChart',
-                                  onUpdate: (bool newValue) {
-                                    controller.buildSeedVolumePieChart =
-                                        newValue;
-                                    controller.update();
-                                  },
-                                ),
-                                CustomCheckboxListTile(
-                                  title: '每日数据柱图',
-                                  value: controller.buildStackedBar,
-                                  storageKey: 'buildStackedBar',
-                                  onUpdate: (bool newValue) {
-                                    controller.buildStackedBar = newValue;
-                                    controller.update();
-                                  },
-                                ),
-                                CustomCheckboxListTile(
-                                  title: '每月数据柱图',
-                                  value: controller.buildMonthStackedBar,
-                                  storageKey: 'buildMonthStackedBar',
-                                  onUpdate: (bool newValue) {
-                                    controller.buildMonthStackedBar = newValue;
-                                    controller.update();
-                                  },
-                                ),
-                                CustomCheckboxListTile(
-                                  title: '站点数据柱图',
-                                  value: controller.buildSiteInfo,
-                                  storageKey: 'buildSiteInfo',
-                                  onUpdate: (bool newValue) {
-                                    controller.buildSiteInfo = newValue;
-                                    controller.update();
-                                  },
-                                ),
-                                CustomCheckboxListTile(
-                                  title: '今日上传增量',
-                                  value: controller.showTodayUploadedIncrement,
-                                  storageKey: 'showTodayUploadedIncrement',
-                                  onUpdate: (bool newValue) {
-                                    controller.showTodayUploadedIncrement =
-                                        newValue;
-                                    controller.update();
-                                  },
-                                ),
-                                CustomCheckboxListTile(
-                                  title: '今日下载增量',
-                                  value:
-                                      controller.showTodayDownloadedIncrement,
-                                  storageKey: 'showTodayDownloadedIncrement',
-                                  onUpdate: (bool newValue) {
-                                    controller.showTodayDownloadedIncrement =
-                                        newValue;
-                                    controller.update();
-                                  },
-                                ),
-                              ],
-                            );
-                          })),
-                      // actions: [
-                      //   ElevatedButton(
-                      //     onPressed: () {
-                      //       Get.back(result: false);
-                      //     },
-                      //     child: const Text('取消'),
-                      //   ),
-                      //   ElevatedButton(
-                      //     onPressed: () async {
-                      //       Get.back(result: true);
-                      //       Navigator.of(context).pop();
-                      //     },
-                      //     child: const Text('确认'),
-                      //   ),
-                      // ],
-                    );
-                  },
-                  child: SingleChildScrollView(
-                    child: controller.mySiteController.initFlag
-                        ? Center(
-                            child: GFLoader(
-                              type: GFLoaderType.custom,
-                              loaderIconOne: Icon(
-                                Icons.circle_outlined,
-                                size: 18,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .primary
-                                    .withValues(alpha: 0.8),
-                              ),
-                            ),
-                          )
-                        : Wrap(
-                            alignment: WrapAlignment.spaceAround,
-                            direction: Axis.horizontal,
-                            children: [
-                              if (controller.buildSiteInfoCard)
-                                _buildSiteInfoCard(),
-                              if (controller.buildSiteInfo) _buildSiteInfo(),
-                              if (controller.buildSmartLabelPieChart)
-                                _buildSmartLabelPieChart(),
-                              if (controller.buildSeedVolumePieChart)
-                                _buildSeedVolumePieChart(),
-                              if (controller.buildStackedBar)
-                                _buildStackedBar(),
-                              if (controller.buildMonthStackedBar)
-                                _buildMonthStackedBar(),
-                              if (controller.showTodayUploadedIncrement)
-                                _showTodayUploadedIncrement(),
-                              if (controller.showTodayDownloadedIncrement)
-                                _showTodayDownloadedIncrement(),
-                            ]
-                                .map((item) => FractionallySizedBox(
-                                      widthFactor: _getWidthFactor(),
-                                      child: item,
-                                    ))
-                                .toList()),
-                  ),
-                );
+                                      CustomCheckboxListTile(
+                                        title: '开启隐私模式',
+                                        value: controller.privateMode,
+                                        storageKey: 'privateMode',
+                                        onUpdate: (bool newValue) async {
+                                          controller.privateMode = newValue;
+                                          Logger.instance.d(
+                                              "privateMode: ${controller.privateMode}");
+                                          await controller.loadCacheDashData();
+                                          controller.update();
+                                        },
+                                      ),
+                                      CustomCheckboxListTile(
+                                        title: '上传总量饼图',
+                                        value:
+                                            controller.buildSmartLabelPieChart,
+                                        storageKey: 'buildSmartLabelPieChart',
+                                        onUpdate: (bool newValue) {
+                                          controller.buildSmartLabelPieChart =
+                                              newValue;
+                                          controller.update();
+                                        },
+                                      ),
+                                      CustomCheckboxListTile(
+                                        title: '做种总量饼图',
+                                        value:
+                                            controller.buildSeedVolumePieChart,
+                                        storageKey: 'buildSeedVolumePieChart',
+                                        onUpdate: (bool newValue) {
+                                          controller.buildSeedVolumePieChart =
+                                              newValue;
+                                          controller.update();
+                                        },
+                                      ),
+                                      CustomCheckboxListTile(
+                                        title: '每日数据柱图',
+                                        value: controller.buildStackedBar,
+                                        storageKey: 'buildStackedBar',
+                                        onUpdate: (bool newValue) {
+                                          controller.buildStackedBar = newValue;
+                                          controller.update();
+                                        },
+                                      ),
+                                      CustomCheckboxListTile(
+                                        title: '每月数据柱图',
+                                        value: controller.buildMonthStackedBar,
+                                        storageKey: 'buildMonthStackedBar',
+                                        onUpdate: (bool newValue) {
+                                          controller.buildMonthStackedBar =
+                                              newValue;
+                                          controller.update();
+                                        },
+                                      ),
+                                      CustomCheckboxListTile(
+                                        title: '站点数据柱图',
+                                        value: controller.buildSiteInfo,
+                                        storageKey: 'buildSiteInfo',
+                                        onUpdate: (bool newValue) {
+                                          controller.buildSiteInfo = newValue;
+                                          controller.update();
+                                        },
+                                      ),
+                                      CustomCheckboxListTile(
+                                        title: '今日上传增量',
+                                        value: controller
+                                            .showTodayUploadedIncrement,
+                                        storageKey:
+                                            'showTodayUploadedIncrement',
+                                        onUpdate: (bool newValue) {
+                                          controller
+                                                  .showTodayUploadedIncrement =
+                                              newValue;
+                                          controller.update();
+                                        },
+                                      ),
+                                      CustomCheckboxListTile(
+                                        title: '今日下载增量',
+                                        value: controller
+                                            .showTodayDownloadedIncrement,
+                                        storageKey:
+                                            'showTodayDownloadedIncrement',
+                                        onUpdate: (bool newValue) {
+                                          controller
+                                                  .showTodayDownloadedIncrement =
+                                              newValue;
+                                          controller.update();
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                })),
+                            // actions: [
+                            //   ElevatedButton(
+                            //     onPressed: () {
+                            //       Get.back(result: false);
+                            //     },
+                            //     child: const Text('取消'),
+                            //   ),
+                            //   ElevatedButton(
+                            //     onPressed: () async {
+                            //       Get.back(result: true);
+                            //       Navigator.of(context).pop();
+                            //     },
+                            //     child: const Text('确认'),
+                            //   ),
+                            // ],
+                          );
+                        },
+                        child: SingleChildScrollView(
+                          child: Wrap(
+                              alignment: WrapAlignment.spaceAround,
+                              direction: Axis.horizontal,
+                              children: [
+                                if (controller.buildSiteInfoCard)
+                                  _buildSiteInfoCard(),
+                                if (controller.buildSiteInfo) _buildSiteInfo(),
+                                if (controller.buildSmartLabelPieChart)
+                                  _buildSmartLabelPieChart(),
+                                if (controller.buildSeedVolumePieChart)
+                                  _buildSeedVolumePieChart(),
+                                if (controller.buildStackedBar)
+                                  _buildStackedBar(),
+                                if (controller.buildMonthStackedBar)
+                                  _buildMonthStackedBar(),
+                                if (controller.showTodayUploadedIncrement)
+                                  _showTodayUploadedIncrement(),
+                                if (controller.showTodayDownloadedIncrement)
+                                  _showTodayDownloadedIncrement(),
+                              ]
+                                  .map((item) => FractionallySizedBox(
+                                        widthFactor: _getWidthFactor(),
+                                        child: item,
+                                      ))
+                                  .toList()),
+                        ),
+                      );
                 // : Center(
                 //     child: ElevatedButton.icon(
                 //     onPressed: () async {
@@ -686,622 +653,583 @@ class _DashBoardPageState extends State<DashBoardPage>
           bottomRight: Radius.circular(8.0),
           topRight: Radius.circular(68.0),
         ),
-        child: controller.isLoading
-            ? Center(
-                child: GFLoader(
-                  type: GFLoaderType.custom,
-                  loaderIconOne: Icon(
-                    Icons.circle_outlined,
-                    size: 18,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .primary
-                        .withValues(alpha: 0.8),
-                  ),
-                ),
-              )
-            : Column(
+        child: Column(
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+              child: Row(
                 children: <Widget>[
-                  Padding(
-                    padding:
-                        const EdgeInsets.only(top: 16, left: 16, right: 16),
-                    child: Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(
-                                left: 8, right: 8, top: 4),
-                            child: Column(
-                              children: <Widget>[
-                                Row(
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 8, right: 8, top: 4),
+                      child: Column(
+                        children: <Widget>[
+                          Row(
+                            children: <Widget>[
+                              Container(
+                                height: 48,
+                                width: 2,
+                                decoration: BoxDecoration(
+                                  color: HexColor('#87A0E5').withOpacity(0.5),
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(4.0)),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
-                                    Container(
-                                      height: 48,
-                                      width: 2,
-                                      decoration: BoxDecoration(
-                                        color: HexColor('#87A0E5')
-                                            .withOpacity(0.5),
-                                        borderRadius: const BorderRadius.all(
-                                            Radius.circular(4.0)),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 4, bottom: 2),
+                                      child: Text(
+                                        '上传量',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 11,
+                                          letterSpacing: -0.1,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                        ),
                                       ),
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                left: 4, bottom: 2),
-                                            child: Text(
-                                              '上传量',
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: 11,
-                                                letterSpacing: -0.1,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .primary,
-                                              ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: <Widget>[
+                                        const SizedBox(
+                                          width: 15,
+                                          height: 15,
+                                          child: Icon(
+                                            Icons.upload,
+                                            size: 15,
+                                            color: Colors.lightGreen,
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 4),
+                                          child: Text(
+                                            filesize(controller.totalUploaded),
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 11,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
                                             ),
                                           ),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: <Widget>[
-                                              const SizedBox(
-                                                width: 15,
-                                                height: 15,
-                                                child: Icon(
-                                                  Icons.upload,
-                                                  size: 15,
-                                                  color: Colors.lightGreen,
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 4),
-                                                child: Text(
-                                                  filesize(
-                                                      controller.totalUploaded),
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.w600,
-                                                    fontSize: 11,
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .primary,
-                                                  ),
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 4, bottom: 3),
-                                                child: Text(
-                                                  '',
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.w600,
-                                                    fontSize: 12,
-                                                    letterSpacing: -0.2,
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .primary
-                                                        .withOpacity(0.8),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          )
-                                        ],
-                                      ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              left: 4, bottom: 3),
+                                          child: Text(
+                                            '',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 12,
+                                              letterSpacing: -0.2,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary
+                                                  .withOpacity(0.8),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     )
                                   ],
                                 ),
-                                const SizedBox(height: 8),
-                                Row(
+                              )
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: <Widget>[
+                              Container(
+                                height: 48,
+                                width: 2,
+                                decoration: BoxDecoration(
+                                  color: HexColor('#F56E98').withOpacity(0.5),
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(4.0)),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
-                                    Container(
-                                      height: 48,
-                                      width: 2,
-                                      decoration: BoxDecoration(
-                                        color: HexColor('#F56E98')
-                                            .withOpacity(0.5),
-                                        borderRadius: const BorderRadius.all(
-                                            Radius.circular(4.0)),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 4, bottom: 2),
+                                      child: Text(
+                                        '下载量',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 11,
+                                          letterSpacing: -0.1,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                        ),
                                       ),
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                left: 4, bottom: 2),
-                                            child: Text(
-                                              '下载量',
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: 11,
-                                                letterSpacing: -0.1,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .primary,
-                                              ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: <Widget>[
+                                        const SizedBox(
+                                          width: 15,
+                                          height: 15,
+                                          child: Icon(
+                                            Icons.download,
+                                            size: 15,
+                                            color: Colors.redAccent,
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 4),
+                                          child: Text(
+                                            filesize(
+                                                controller.totalDownloaded),
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 11,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
                                             ),
                                           ),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: <Widget>[
-                                              const SizedBox(
-                                                width: 15,
-                                                height: 15,
-                                                child: Icon(
-                                                  Icons.download,
-                                                  size: 15,
-                                                  color: Colors.redAccent,
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 4),
-                                                child: Text(
-                                                  filesize(controller
-                                                      .totalDownloaded),
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.w600,
-                                                    fontSize: 11,
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .primary,
-                                                  ),
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 8, bottom: 3),
-                                                child: Text(
-                                                  '',
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.w600,
-                                                    fontSize: 12,
-                                                    letterSpacing: -0.2,
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .primary
-                                                        .withOpacity(0.8),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          )
-                                        ],
-                                      ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              left: 8, bottom: 3),
+                                          child: Text(
+                                            '',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 12,
+                                              letterSpacing: -0.2,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary
+                                                  .withOpacity(0.8),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     )
                                   ],
+                                ),
+                              )
+                            ],
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: Center(
+                      child: InkWell(
+                        onTap: () {
+                          showYear.value = !showYear.value;
+                        },
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Container(
+                                width: 100,
+                                height: 100,
+                                decoration: BoxDecoration(
+                                  color:
+                                      Theme.of(context).colorScheme.onSecondary,
+                                  borderRadius: const BorderRadius.all(
+                                    Radius.circular(100.0),
+                                  ),
+                                  border: Border.all(
+                                    width: 4,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary
+                                        .withOpacity(0.8),
+                                  ),
+                                ),
+                                child: Obx(() {
+                                  return Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: <Widget>[
+                                      const SizedBox(
+                                        height: 8,
+                                      ),
+                                      showYear.value
+                                          ? Text(
+                                              calcWeeksDays(
+                                                  earliestSite.timeJoin),
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.normal,
+                                                fontSize: 11,
+                                                letterSpacing: 0.0,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary
+                                                    .withOpacity(0.8),
+                                              ),
+                                            )
+                                          : Text(
+                                              calculateTimeElapsed(
+                                                      earliestSite.timeJoin)
+                                                  .replaceAll('前', ''),
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.normal,
+                                                fontSize: 11,
+                                                letterSpacing: 0.0,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary
+                                                    .withOpacity(0.8),
+                                              ),
+                                            ),
+                                      Text(
+                                        '🔥P龄',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                          letterSpacing: 0.0,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary
+                                              .withOpacity(0.8),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: CustomPaint(
+                                painter: CurvePainter(colors: [
+                                  HexColor("#8A98E8"),
+                                  HexColor("#8A98E8")
+                                ], angle: 140 + (360 - 140) * 1.0),
+                                child: const SizedBox(
+                                  width: 108,
+                                  height: 108,
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+            Padding(
+              padding:
+                  const EdgeInsets.only(left: 24, right: 24, top: 8, bottom: 8),
+              child: Container(
+                height: 2,
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(4.0)),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(
+                  left: 24, right: 24, top: 8, bottom: 16),
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          '站点数',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 11,
+                            letterSpacing: -0.2,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Container(
+                            height: 4,
+                            width: 50,
+                            decoration: BoxDecoration(
+                              color: HexColor('#87D0E5').withOpacity(0.2),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(4.0)),
+                            ),
+                            child: Row(
+                              children: <Widget>[
+                                Container(
+                                  width: 60 / 1.2,
+                                  height: 4,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(colors: [
+                                      HexColor('#87D0E5'),
+                                      HexColor('#87D0E5').withOpacity(0.5),
+                                    ]),
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(4.0)),
+                                  ),
                                 )
                               ],
                             ),
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.only(right: 16),
-                          child: Center(
-                            child: InkWell(
-                              onTap: () {
-                                showYear.value = !showYear.value;
-                              },
-                              child: Stack(
-                                clipBehavior: Clip.none,
-                                children: <Widget>[
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Container(
-                                      width: 100,
-                                      height: 100,
-                                      decoration: BoxDecoration(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSecondary,
-                                        borderRadius: const BorderRadius.all(
-                                          Radius.circular(100.0),
-                                        ),
-                                        border: Border.all(
-                                          width: 4,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primary
-                                              .withOpacity(0.8),
-                                        ),
-                                      ),
-                                      child: Obx(() {
-                                        return Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: <Widget>[
-                                            const SizedBox(
-                                              height: 8,
-                                            ),
-                                            showYear.value
-                                                ? Text(
-                                                    calcWeeksDays(
-                                                        earliestSite.timeJoin),
-                                                    textAlign: TextAlign.center,
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.normal,
-                                                      fontSize: 11,
-                                                      letterSpacing: 0.0,
-                                                      color: Theme.of(context)
-                                                          .colorScheme
-                                                          .primary
-                                                          .withOpacity(0.8),
-                                                    ),
-                                                  )
-                                                : Text(
-                                                    calculateTimeElapsed(
-                                                            earliestSite
-                                                                .timeJoin)
-                                                        .replaceAll('前', ''),
-                                                    textAlign: TextAlign.center,
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.normal,
-                                                      fontSize: 11,
-                                                      letterSpacing: 0.0,
-                                                      color: Theme.of(context)
-                                                          .colorScheme
-                                                          .primary
-                                                          .withOpacity(0.8),
-                                                    ),
-                                                  ),
-                                            Text(
-                                              '🔥P龄',
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 12,
-                                                letterSpacing: 0.0,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .secondary
-                                                    .withOpacity(0.8),
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      }),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(4.0),
-                                    child: CustomPaint(
-                                      painter: CurvePainter(colors: [
-                                        HexColor("#8A98E8"),
-                                        HexColor("#8A98E8")
-                                      ], angle: 140 + (360 - 140) * 1.0),
-                                      child: const SizedBox(
-                                        width: 108,
-                                        height: 108,
-                                      ),
-                                    ),
-                                  )
-                                ],
-                              ),
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(
+                            '${controller.siteCount}',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 11,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primary
+                                  .withOpacity(0.8),
                             ),
                           ),
-                        )
+                        ),
                       ],
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                        left: 24, right: 24, top: 8, bottom: 8),
-                    child: Container(
-                      height: 2,
-                      decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(4.0)),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                        left: 24, right: 24, top: 8, bottom: 16),
-                    child: Row(
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Expanded(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text(
-                                '站点数',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 11,
-                                  letterSpacing: -0.2,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 4),
-                                child: Container(
+                        Text(
+                          '做种量',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 11,
+                            letterSpacing: -0.2,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Container(
+                            height: 4,
+                            width: 50,
+                            decoration: BoxDecoration(
+                              color: HexColor('#89A0E5').withOpacity(0.2),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(4.0)),
+                            ),
+                            child: Row(
+                              children: <Widget>[
+                                Container(
+                                  width: 60 / 1.2,
                                   height: 4,
-                                  width: 50,
                                   decoration: BoxDecoration(
-                                    color: HexColor('#87D0E5').withOpacity(0.2),
+                                    gradient: LinearGradient(colors: [
+                                      HexColor('#89A0E5'),
+                                      HexColor('#89A0E5').withOpacity(0.5),
+                                    ]),
                                     borderRadius: const BorderRadius.all(
                                         Radius.circular(4.0)),
                                   ),
-                                  child: Row(
-                                    children: <Widget>[
-                                      Container(
-                                        width: 60 / 1.2,
-                                        height: 4,
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(colors: [
-                                            HexColor('#87D0E5'),
-                                            HexColor('#87D0E5')
-                                                .withOpacity(0.5),
-                                          ]),
-                                          borderRadius: const BorderRadius.all(
-                                              Radius.circular(4.0)),
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 6),
-                                child: Text(
-                                  '${controller.siteCount}',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 11,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .primary
-                                        .withOpacity(0.8),
-                                  ),
-                                ),
-                              ),
-                            ],
+                                )
+                              ],
+                            ),
                           ),
                         ),
-                        Expanded(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text(
-                                '做种量',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 11,
-                                  letterSpacing: -0.2,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 4),
-                                child: Container(
-                                  height: 4,
-                                  width: 50,
-                                  decoration: BoxDecoration(
-                                    color: HexColor('#89A0E5').withOpacity(0.2),
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(4.0)),
-                                  ),
-                                  child: Row(
-                                    children: <Widget>[
-                                      Container(
-                                        width: 60 / 1.2,
-                                        height: 4,
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(colors: [
-                                            HexColor('#89A0E5'),
-                                            HexColor('#89A0E5')
-                                                .withOpacity(0.5),
-                                          ]),
-                                          borderRadius: const BorderRadius.all(
-                                              Radius.circular(4.0)),
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 6),
-                                child: Text(
-                                  filesize(controller.totalSeedVol, 2),
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing: -1,
-                                    wordSpacing: -1,
-                                    fontSize: 11,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .primary
-                                        .withOpacity(0.8),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: <Widget>[
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Text(
-                                    '做种中',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 11,
-                                      letterSpacing: -0.2,
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 4),
-                                    child: Container(
-                                      height: 4,
-                                      width: 50,
-                                      decoration: BoxDecoration(
-                                        color: HexColor('#F56E98')
-                                            .withOpacity(0.2),
-                                        borderRadius: const BorderRadius.all(
-                                            Radius.circular(4.0)),
-                                      ),
-                                      child: Row(
-                                        children: <Widget>[
-                                          Container(
-                                            width: ((60 / 2) *
-                                                animationController!.value),
-                                            height: 4,
-                                            decoration: BoxDecoration(
-                                              gradient: LinearGradient(colors: [
-                                                HexColor('#F56E98')
-                                                    .withOpacity(0.1),
-                                                HexColor('#F56E98'),
-                                              ]),
-                                              borderRadius:
-                                                  const BorderRadius.all(
-                                                      Radius.circular(4.0)),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 6),
-                                    child: Text(
-                                      '${controller.totalSeeding}',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 11,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary
-                                            .withOpacity(0.8),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: <Widget>[
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Text(
-                                    '吸血中',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 11,
-                                      letterSpacing: -0.2,
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding:
-                                        const EdgeInsets.only(right: 0, top: 4),
-                                    child: Container(
-                                      height: 4,
-                                      width: 50,
-                                      decoration: BoxDecoration(
-                                        color: HexColor('#F1B440')
-                                            .withOpacity(0.2),
-                                        borderRadius: const BorderRadius.all(
-                                            Radius.circular(4.0)),
-                                      ),
-                                      child: Row(
-                                        children: <Widget>[
-                                          Container(
-                                            width: ((60 / 2.5) *
-                                                animationController!.value),
-                                            height: 4,
-                                            decoration: BoxDecoration(
-                                              gradient: LinearGradient(colors: [
-                                                HexColor('#F1B440')
-                                                    .withOpacity(0.1),
-                                                HexColor('#F1B440'),
-                                              ]),
-                                              borderRadius:
-                                                  const BorderRadius.all(
-                                                      Radius.circular(4.0)),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 6),
-                                    child: Text(
-                                      '${controller.totalLeeching}',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 11,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary
-                                            .withOpacity(0.8),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(
+                            filesize(controller.totalSeedVol, 2),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: -1,
+                              wordSpacing: -1,
+                              fontSize: 11,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primary
+                                  .withOpacity(0.8),
+                            ),
                           ),
                         ),
                       ],
                     ),
-                  )
+                  ),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              '做种中',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 11,
+                                letterSpacing: -0.2,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Container(
+                                height: 4,
+                                width: 50,
+                                decoration: BoxDecoration(
+                                  color: HexColor('#F56E98').withOpacity(0.2),
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(4.0)),
+                                ),
+                                child: Row(
+                                  children: <Widget>[
+                                    Container(
+                                      width: ((60 / 2) *
+                                          animationController!.value),
+                                      height: 4,
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(colors: [
+                                          HexColor('#F56E98').withOpacity(0.1),
+                                          HexColor('#F56E98'),
+                                        ]),
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(4.0)),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 6),
+                              child: Text(
+                                '${controller.totalSeeding}',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 11,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withOpacity(0.8),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              '吸血中',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 11,
+                                letterSpacing: -0.2,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 0, top: 4),
+                              child: Container(
+                                height: 4,
+                                width: 50,
+                                decoration: BoxDecoration(
+                                  color: HexColor('#F1B440').withOpacity(0.2),
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(4.0)),
+                                ),
+                                child: Row(
+                                  children: <Widget>[
+                                    Container(
+                                      width: ((60 / 2.5) *
+                                          animationController!.value),
+                                      height: 4,
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(colors: [
+                                          HexColor('#F1B440').withOpacity(0.1),
+                                          HexColor('#F1B440'),
+                                        ]),
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(4.0)),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 6),
+                              child: Text(
+                                '${controller.totalLeeching}',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 11,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withOpacity(0.8),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
+            )
+          ],
+        ),
       );
     });
   }
@@ -1326,182 +1254,158 @@ class _DashBoardPageState extends State<DashBoardPage>
       return CustomCard(
         height: 260,
         padding: const EdgeInsets.symmetric(vertical: 16),
-        child: controller.isLoading
-            ? Center(
-                child: GFLoader(
-                  type: GFLoaderType.custom,
-                  loaderIconOne: Icon(
-                    Icons.circle_outlined,
-                    size: 18,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .primary
-                        .withValues(alpha: 0.8),
-                  ),
-                ),
-              )
-            : Column(
-                children: [
-                  Text('站点数据',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(context).colorScheme.primary,
-                      )),
-                  const SizedBox(height: 5),
-                  Expanded(
-                    child: ListView.builder(
-                        itemCount: controller.statusList.length,
-                        itemBuilder: (context, index) {
-                          MetaDataItem data = controller.statusList[index];
-                          TrafficDelta? status =
-                              TrafficDelta.fromJson(data.value);
+        child: Column(
+          children: [
+            Text('站点数据',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.primary,
+                )),
+            const SizedBox(height: 5),
+            Expanded(
+              child: ListView.builder(
+                  itemCount: controller.statusList.length,
+                  itemBuilder: (context, index) {
+                    MetaDataItem data = controller.statusList[index];
+                    TrafficDelta? status = TrafficDelta.fromJson(data.value);
 
-                          return Container(
-                            color: Colors.transparent,
-                            padding: const EdgeInsets.all(1),
-                            child: Column(
-                              children: [
-                                Row(
+                    return Container(
+                      color: Colors.transparent,
+                      padding: const EdgeInsets.all(1),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
-                                    Expanded(
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: [
-                                          SizedBox(
-                                            width: 60,
-                                            child: Text(
-                                              filesize(status.uploaded),
-                                              style: TextStyle(
-                                                fontSize: 10,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .primary,
-                                              ),
-                                              textAlign: TextAlign.right,
-                                            ),
-                                          ),
-                                          const SizedBox(
-                                            width: 3,
-                                          ),
-                                          Expanded(
-                                            child: SizedBox(
-                                              height: 18,
-                                              // width: 100,
-                                              child: SfLinearGauge(
-                                                showTicks: false,
-                                                showLabels: false,
-                                                animateAxis: true,
-                                                isAxisInversed: true,
-                                                axisTrackStyle:
-                                                    const LinearAxisTrackStyle(
-                                                        thickness: 16,
-                                                        edgeStyle:
-                                                            LinearEdgeStyle
-                                                                .bothFlat,
-                                                        borderWidth: 2,
-                                                        borderColor:
-                                                            Color(0xff898989),
-                                                        color:
-                                                            Colors.transparent),
-                                                barPointers: <LinearBarPointer>[
-                                                  LinearBarPointer(
-                                                    value: (status.uploaded) /
-                                                        maxUploaded *
-                                                        100,
-                                                    thickness: 16,
-                                                    edgeStyle: LinearEdgeStyle
-                                                        .bothFlat,
-                                                    color: uploadColor,
-                                                  )
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ],
+                                    SizedBox(
+                                      width: 60,
+                                      child: Text(
+                                        filesize(status.uploaded),
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                        ),
+                                        textAlign: TextAlign.right,
                                       ),
                                     ),
+                                    const SizedBox(
+                                      width: 3,
+                                    ),
+                                    Expanded(
+                                      child: SizedBox(
+                                        height: 18,
+                                        // width: 100,
+                                        child: SfLinearGauge(
+                                          showTicks: false,
+                                          showLabels: false,
+                                          animateAxis: true,
+                                          isAxisInversed: true,
+                                          axisTrackStyle:
+                                              const LinearAxisTrackStyle(
+                                                  thickness: 16,
+                                                  edgeStyle:
+                                                      LinearEdgeStyle.bothFlat,
+                                                  borderWidth: 2,
+                                                  borderColor:
+                                                      Color(0xff898989),
+                                                  color: Colors.transparent),
+                                          barPointers: <LinearBarPointer>[
+                                            LinearBarPointer(
+                                              value: (status.uploaded) /
+                                                  maxUploaded *
+                                                  100,
+                                              thickness: 16,
+                                              edgeStyle:
+                                                  LinearEdgeStyle.bothFlat,
+                                              color: uploadColor,
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(
+                                  width: 70,
+                                  child: Center(
+                                      child: EllipsisText(
+                                    text: controller.privateMode
+                                        ? "${data.name.substring(0, 1)}**"
+                                        : data.name,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                    ),
+                                    ellipsis: '...',
+                                    maxLines: 1,
+                                  ))),
+                              Expanded(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Expanded(
+                                      child: SizedBox(
+                                          height: 18,
+                                          // width: 100,
+                                          child: SfLinearGauge(
+                                            showTicks: false,
+                                            showLabels: false,
+                                            animateAxis: true,
+                                            axisTrackStyle:
+                                                const LinearAxisTrackStyle(
+                                              thickness: 16,
+                                              edgeStyle:
+                                                  LinearEdgeStyle.bothFlat,
+                                              borderWidth: 2,
+                                              borderColor: Color(0xff898989),
+                                              color: Colors.transparent,
+                                            ),
+                                            barPointers: <LinearBarPointer>[
+                                              LinearBarPointer(
+                                                  value:
+                                                      (status.downloaded ?? 0) /
+                                                          maxDownloaded *
+                                                          100,
+                                                  thickness: 16,
+                                                  edgeStyle:
+                                                      LinearEdgeStyle.bothFlat,
+                                                  color: downloadColor),
+                                            ],
+                                          )),
+                                    ),
+                                    const SizedBox(
+                                      width: 2,
+                                    ),
                                     SizedBox(
-                                        width: 70,
-                                        child: Center(
-                                            child: EllipsisText(
-                                          text: controller.privateMode
-                                              ? "${data.name.substring(0, 1)}**"
-                                              : data.name,
+                                        width: 60,
+                                        child: Text(
+                                          filesize(status.downloaded ?? 0),
                                           style: TextStyle(
                                             fontSize: 10,
                                             color: Theme.of(context)
                                                 .colorScheme
                                                 .primary,
                                           ),
-                                          ellipsis: '...',
-                                          maxLines: 1,
-                                        ))),
-                                    Expanded(
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          Expanded(
-                                            child: SizedBox(
-                                                height: 18,
-                                                // width: 100,
-                                                child: SfLinearGauge(
-                                                  showTicks: false,
-                                                  showLabels: false,
-                                                  animateAxis: true,
-                                                  axisTrackStyle:
-                                                      const LinearAxisTrackStyle(
-                                                    thickness: 16,
-                                                    edgeStyle: LinearEdgeStyle
-                                                        .bothFlat,
-                                                    borderWidth: 2,
-                                                    borderColor:
-                                                        Color(0xff898989),
-                                                    color: Colors.transparent,
-                                                  ),
-                                                  barPointers: <LinearBarPointer>[
-                                                    LinearBarPointer(
-                                                        value:
-                                                            (status.downloaded ??
-                                                                    0) /
-                                                                maxDownloaded *
-                                                                100,
-                                                        thickness: 16,
-                                                        edgeStyle:
-                                                            LinearEdgeStyle
-                                                                .bothFlat,
-                                                        color: downloadColor),
-                                                  ],
-                                                )),
-                                          ),
-                                          const SizedBox(
-                                            width: 2,
-                                          ),
-                                          SizedBox(
-                                              width: 60,
-                                              child: Text(
-                                                filesize(
-                                                    status.downloaded ?? 0),
-                                                style: TextStyle(
-                                                  fontSize: 10,
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .primary,
-                                                ),
-                                              )),
-                                        ],
-                                      ),
-                                    ),
+                                        )),
                                   ],
                                 ),
-                              ],
-                            ),
-                          );
-                        }),
-                  ),
-                ],
-              ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+            ),
+          ],
+        ),
       );
     });
   }
@@ -1511,69 +1415,52 @@ class _DashBoardPageState extends State<DashBoardPage>
       return CustomCard(
         height: 260,
         padding: const EdgeInsets.only(left: 10),
-        child: controller.isLoading
-            ? Center(
-                child: GFLoader(
-                  type: GFLoaderType.custom,
-                  loaderIconOne: Icon(
-                    Icons.circle_outlined,
-                    size: 18,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .primary
-                        .withValues(alpha: 0.8),
+        child: SfCircularChart(
+          title: ChartTitle(
+              text: '上传数据',
+              textStyle: TextStyle(
+                fontSize: 11,
+                color: Theme.of(context).colorScheme.primary,
+              )),
+          centerX: '47%',
+          centerY: '45%',
+          margin: const EdgeInsets.all(10),
+          legend: Legend(
+              position: LegendPosition.left,
+              // height: "20",
+              isVisible: true,
+              iconWidth: 8,
+              padding: 5,
+              itemPadding: 5,
+              // width: '64',
+              isResponsive: true,
+              textStyle: TextStyle(
+                fontSize: 8,
+                color: Theme.of(context).colorScheme.primary,
+              )),
+          series: _getSmartLabelPieSeries(),
+          tooltipBehavior: TooltipBehavior(
+            enable: true,
+            header: '',
+            canShowMarker: false,
+            activationMode: ActivationMode.singleTap,
+            builder: (dynamic data, dynamic point, dynamic series,
+                int pointIndex, int seriesIndex) {
+              return Container(
+                color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  '${data.name}: ${filesize(data.value.uploaded ?? 0)}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
-              )
-            : SfCircularChart(
-                title: ChartTitle(
-                    text: '上传数据',
-                    textStyle: TextStyle(
-                      fontSize: 11,
-                      color: Theme.of(context).colorScheme.primary,
-                    )),
-                centerX: '47%',
-                centerY: '45%',
-                margin: const EdgeInsets.all(10),
-                legend: Legend(
-                    position: LegendPosition.left,
-                    // height: "20",
-                    isVisible: true,
-                    iconWidth: 8,
-                    padding: 5,
-                    itemPadding: 5,
-                    // width: '64',
-                    isResponsive: true,
-                    textStyle: TextStyle(
-                      fontSize: 8,
-                      color: Theme.of(context).colorScheme.primary,
-                    )),
-                series: _getSmartLabelPieSeries(),
-                tooltipBehavior: TooltipBehavior(
-                  enable: true,
-                  header: '',
-                  canShowMarker: false,
-                  activationMode: ActivationMode.singleTap,
-                  builder: (dynamic data, dynamic point, dynamic series,
-                      int pointIndex, int seriesIndex) {
-                    return Container(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .surface
-                          .withOpacity(0.8),
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        '${data.name}: ${filesize(data.value.uploaded ?? 0)}',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                enableMultiSelection: true,
-              ),
+              );
+            },
+          ),
+          enableMultiSelection: true,
+        ),
       );
     });
   }
@@ -1583,69 +1470,52 @@ class _DashBoardPageState extends State<DashBoardPage>
       return CustomCard(
         height: 260,
         padding: const EdgeInsets.only(left: 10),
-        child: controller.isLoading
-            ? Center(
-                child: GFLoader(
-                  type: GFLoaderType.custom,
-                  loaderIconOne: Icon(
-                    Icons.circle_outlined,
-                    size: 18,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .primary
-                        .withValues(alpha: 0.8),
+        child: SfCircularChart(
+          title: ChartTitle(
+              text: '做种总量：${filesize(controller.totalSeedVol)}',
+              textStyle: TextStyle(
+                fontSize: 11,
+                color: Theme.of(context).colorScheme.primary,
+              )),
+          centerX: '47%',
+          centerY: '45%',
+          margin: const EdgeInsets.all(10),
+          legend: Legend(
+              position: LegendPosition.left,
+              // height: "20",
+              isVisible: true,
+              iconWidth: 8,
+              padding: 5,
+              itemPadding: 5,
+              // width: '64',
+              isResponsive: true,
+              textStyle: TextStyle(
+                fontSize: 8,
+                color: Theme.of(context).colorScheme.primary,
+              )),
+          series: _getSeedVolumePieSeries(),
+          tooltipBehavior: TooltipBehavior(
+            enable: true,
+            header: '',
+            canShowMarker: false,
+            activationMode: ActivationMode.singleTap,
+            builder: (dynamic data, dynamic point, dynamic series,
+                int pointIndex, int seriesIndex) {
+              return Container(
+                color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  '${data.name}: ${filesize(data.value ?? 0)}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
-              )
-            : SfCircularChart(
-                title: ChartTitle(
-                    text: '做种总量：${filesize(controller.totalSeedVol)}',
-                    textStyle: TextStyle(
-                      fontSize: 11,
-                      color: Theme.of(context).colorScheme.primary,
-                    )),
-                centerX: '47%',
-                centerY: '45%',
-                margin: const EdgeInsets.all(10),
-                legend: Legend(
-                    position: LegendPosition.left,
-                    // height: "20",
-                    isVisible: true,
-                    iconWidth: 8,
-                    padding: 5,
-                    itemPadding: 5,
-                    // width: '64',
-                    isResponsive: true,
-                    textStyle: TextStyle(
-                      fontSize: 8,
-                      color: Theme.of(context).colorScheme.primary,
-                    )),
-                series: _getSeedVolumePieSeries(),
-                tooltipBehavior: TooltipBehavior(
-                  enable: true,
-                  header: '',
-                  canShowMarker: false,
-                  activationMode: ActivationMode.singleTap,
-                  builder: (dynamic data, dynamic point, dynamic series,
-                      int pointIndex, int seriesIndex) {
-                    return Container(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .surface
-                          .withOpacity(0.8),
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        '${data.name}: ${filesize(data.value ?? 0)}',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                enableMultiSelection: true,
-              ),
+              );
+            },
+          ),
+          enableMultiSelection: true,
+        ),
       );
     });
   }
@@ -1730,263 +1600,235 @@ class _DashBoardPageState extends State<DashBoardPage>
       return GetBuilder<DashBoardController>(builder: (controller) {
         return CustomCard(
           height: 260,
-          child: controller.isLoading
-              ? Center(
-                  child: GFLoader(
-                    type: GFLoaderType.custom,
-                    loaderIconOne: Icon(
-                      Icons.circle_outlined,
-                      size: 18,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withValues(alpha: 0.8),
+          child: Column(
+            children: [
+              SizedBox(
+                height: 200,
+                child: SfCartesianChart(
+                    title: ChartTitle(
+                        text: '每日上传增量',
+                        textStyle: TextStyle(
+                            fontSize: 11,
+                            color: Theme.of(context).colorScheme.primary)),
+                    isTransposed: true,
+                    margin: const EdgeInsets.all(15),
+                    legend: Legend(
+                        isVisible: false,
+                        iconWidth: 8,
+                        iconHeight: 8,
+                        padding: 5,
+                        itemPadding: 5,
+                        textStyle: TextStyle(
+                          fontSize: 8,
+                          color: Theme.of(context).colorScheme.primary,
+                        )),
+                    enableSideBySideSeriesPlacement: false,
+                    plotAreaBorderWidth: 0,
+                    enableAxisAnimation: true,
+                    selectionType: SelectionType.point,
+                    zoomPanBehavior: ZoomPanBehavior(
+                      enablePinching: true,
+                      enableDoubleTapZooming: true,
+                      zoomMode: ZoomMode.x,
+                      enablePanning: true,
+                      enableMouseWheelZooming: true,
+                      enableSelectionZooming: true,
+                      maximumZoomLevel: 0.3,
                     ),
-                  ),
-                )
-              : Column(
-                  children: [
-                    SizedBox(
-                      height: 200,
-                      child: SfCartesianChart(
-                          title: ChartTitle(
-                              text: '每日上传增量',
-                              textStyle: TextStyle(
-                                  fontSize: 11,
-                                  color:
-                                      Theme.of(context).colorScheme.primary)),
-                          isTransposed: true,
-                          margin: const EdgeInsets.all(15),
-                          legend: Legend(
-                              isVisible: false,
-                              iconWidth: 8,
-                              iconHeight: 8,
-                              padding: 5,
-                              itemPadding: 5,
-                              textStyle: TextStyle(
-                                fontSize: 8,
-                                color: Theme.of(context).colorScheme.primary,
-                              )),
-                          enableSideBySideSeriesPlacement: false,
-                          plotAreaBorderWidth: 0,
-                          enableAxisAnimation: true,
-                          selectionType: SelectionType.point,
-                          zoomPanBehavior: ZoomPanBehavior(
-                            enablePinching: true,
-                            enableDoubleTapZooming: true,
-                            zoomMode: ZoomMode.x,
-                            enablePanning: true,
-                            enableMouseWheelZooming: true,
-                            enableSelectionZooming: true,
-                            maximumZoomLevel: 0.3,
+                    tooltipBehavior: TooltipBehavior(
+                      enable: true,
+                      canShowMarker: true,
+                      duration: 0,
+                      activationMode: ActivationMode.singleTap,
+                      tooltipPosition: TooltipPosition.auto,
+                      builder: (dynamic data, dynamic point, dynamic series,
+                          int pointIndex, int seriesIndex) {
+                        return Container(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surface
+                              .withOpacity(0.8),
+                          padding: const EdgeInsets.all(8),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                Text(
+                                  point.x,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary
+                                        .withOpacity(0.8),
+                                  ),
+                                ),
+                                Text(
+                                  '${series.name}: ${filesize(point.y)}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .secondary
+                                        .withOpacity(0.8),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          tooltipBehavior: TooltipBehavior(
-                            enable: true,
-                            canShowMarker: true,
-                            duration: 0,
-                            activationMode: ActivationMode.singleTap,
-                            tooltipPosition: TooltipPosition.auto,
-                            builder: (dynamic data,
-                                dynamic point,
-                                dynamic series,
-                                int pointIndex,
-                                int seriesIndex) {
-                              return Container(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .surface
-                                    .withOpacity(0.8),
-                                padding: const EdgeInsets.all(8),
-                                child: SingleChildScrollView(
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                        point.x,
-                                        style: TextStyle(
-                                          fontSize: 13,
+                        );
+                      },
+                    ),
+                    primaryXAxis: CategoryAxis(
+                      majorGridLines: const MajorGridLines(width: 0),
+                      axisLabelFormatter: (AxisLabelRenderDetails details) {
+                        return ChartAxisLabel(
+                          details.text,
+                          TextStyle(
+                            fontSize: 10,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        );
+                      },
+                    ),
+                    primaryYAxis: NumericAxis(
+                      axisLine: const AxisLine(width: 0),
+                      axisLabelFormatter: (AxisLabelRenderDetails details) {
+                        return ChartAxisLabel(
+                          filesize(details.value.toInt()),
+                          TextStyle(
+                            fontSize: 10,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        );
+                      },
+                      majorTickLines: const MajorTickLines(size: 0),
+                    ),
+                    series: List.generate(controller.stackChartDataList.length,
+                        (index) {
+                      MetaDataItem siteData =
+                          controller.stackChartDataList[index];
+                      final List<TrafficDelta> displayData =
+                          siteData.value.sublist(14 - controller.days);
+                      // Logger.instance.d(displayData);
+                      return StackedBarSeries<TrafficDelta?, String>(
+                        name: controller.privateMode
+                            ? "${siteData.name.toString().substring(0, 1)}**"
+                            : siteData.name,
+                        // width: 0.5,
+                        borderRadius: BorderRadius.circular(1),
+                        legendIconType: LegendIconType.circle,
+                        dataSource: displayData,
+                        // isVisibleInLegend: true,
+                        xValueMapper: (TrafficDelta? status, loop) =>
+                            formatCreatedTimeToDateString(status!),
+                        yValueMapper: (TrafficDelta? status, loop) {
+                          return status?.uploaded ?? 0;
+                        },
+                        // pointColorMapper: (StatusInfo status, _) =>
+                        //     RandomColor().randomColor(),
+                        emptyPointSettings: const EmptyPointSettings(
+                          mode: EmptyPointMode.drop,
+                        ),
+                        dataLabelMapper: (TrafficDelta? status, _) =>
+                            controller.privateMode
+                                ? siteData.name.toString().substring(0, 1)
+                                : siteData.name,
+                        // color: RandomColor().randomColor(),
+                        // enableTooltip: true,
+                      );
+                    }).toList()),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Row(
+                  children: [
+                    CustomTextTag(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        labelText: '最近${controller.days}天'),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 12.0),
+                        child: GetBuilder<DashBoardController>(
+                            builder: (controller) {
+                          return Row(
+                            children: [
+                              controller.isStackedLoading
+                                  ? Center(
+                                      child: GFLoader(
+                                        type: GFLoaderType.custom,
+                                        loaderIconOne: Icon(
+                                          Icons.circle_outlined,
+                                          size: 18,
                                           color: Theme.of(context)
                                               .colorScheme
                                               .primary
-                                              .withOpacity(0.8),
+                                              .withValues(alpha: 0.8),
                                         ),
                                       ),
-                                      Text(
-                                        '${series.name}: ${filesize(point.y)}',
-                                        style: TextStyle(
-                                          fontSize: 12,
+                                    )
+                                  : InkWell(
+                                      onTap: () async {
+                                        if (controller.days > 1) {
+                                          controller.isStackedLoading = true;
+                                          controller.update();
+                                          controller.days--;
+                                          await controller.loadCacheDashData();
+                                          controller.isStackedLoading = false;
+                                          controller.update();
+                                        }
+                                      },
+                                      child: const Icon(Icons.remove),
+                                    ),
+                              Expanded(
+                                child: Slider(
+                                    min: 1,
+                                    max: 14,
+                                    divisions: 14,
+                                    label: controller.days.toString(),
+                                    value: controller.days.toDouble(),
+                                    onChanged: (value) async {
+                                      controller.days = value.toInt();
+                                      await controller.loadCacheDashData();
+                                      controller.update();
+                                    }),
+                              ),
+                              controller.isStackedLoading
+                                  ? Center(
+                                      child: GFLoader(
+                                        type: GFLoaderType.custom,
+                                        loaderIconOne: Icon(
+                                          Icons.circle_outlined,
+                                          size: 18,
                                           color: Theme.of(context)
                                               .colorScheme
-                                              .secondary
-                                              .withOpacity(0.8),
+                                              .primary
+                                              .withValues(alpha: 0.8),
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          primaryXAxis: CategoryAxis(
-                            majorGridLines: const MajorGridLines(width: 0),
-                            axisLabelFormatter:
-                                (AxisLabelRenderDetails details) {
-                              return ChartAxisLabel(
-                                details.text,
-                                TextStyle(
-                                  fontSize: 10,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                              );
-                            },
-                          ),
-                          primaryYAxis: NumericAxis(
-                            axisLine: const AxisLine(width: 0),
-                            axisLabelFormatter:
-                                (AxisLabelRenderDetails details) {
-                              return ChartAxisLabel(
-                                filesize(details.value.toInt()),
-                                TextStyle(
-                                  fontSize: 10,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                              );
-                            },
-                            majorTickLines: const MajorTickLines(size: 0),
-                          ),
-                          series: List.generate(
-                              controller.stackChartDataList.length, (index) {
-                            MetaDataItem siteData =
-                                controller.stackChartDataList[index];
-                            final List<TrafficDelta> displayData =
-                                siteData.value.sublist(14 - controller.days);
-                            // Logger.instance.d(displayData);
-                            return StackedBarSeries<TrafficDelta?, String>(
-                              name: controller.privateMode
-                                  ? "${siteData.name.toString().substring(0, 1)}**"
-                                  : siteData.name,
-                              // width: 0.5,
-                              borderRadius: BorderRadius.circular(1),
-                              legendIconType: LegendIconType.circle,
-                              dataSource: displayData,
-                              // isVisibleInLegend: true,
-                              xValueMapper: (TrafficDelta? status, loop) =>
-                                  formatCreatedTimeToDateString(status!),
-                              yValueMapper: (TrafficDelta? status, loop) {
-                                return status?.uploaded ?? 0;
-                              },
-                              // pointColorMapper: (StatusInfo status, _) =>
-                              //     RandomColor().randomColor(),
-                              emptyPointSettings: const EmptyPointSettings(
-                                mode: EmptyPointMode.drop,
-                              ),
-                              dataLabelMapper: (TrafficDelta? status, _) =>
-                                  controller.privateMode
-                                      ? siteData.name.toString().substring(0, 1)
-                                      : siteData.name,
-                              // color: RandomColor().randomColor(),
-                              // enableTooltip: true,
-                            );
-                          }).toList()),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                      child: Row(
-                        children: [
-                          CustomTextTag(
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.primary,
-                              labelText: '最近${controller.days}天'),
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 12.0),
-                              child: GetBuilder<DashBoardController>(
-                                  builder: (controller) {
-                                return Row(
-                                  children: [
-                                    controller.isStackedLoading
-                                        ? Center(
-                                            child: GFLoader(
-                                              type: GFLoaderType.custom,
-                                              loaderIconOne: Icon(
-                                                Icons.circle_outlined,
-                                                size: 18,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .primary
-                                                    .withValues(alpha: 0.8),
-                                              ),
-                                            ),
-                                          )
-                                        : InkWell(
-                                            onTap: () async {
-                                              if (controller.days > 1) {
-                                                controller.isStackedLoading =
-                                                    true;
-                                                controller.update();
-                                                controller.days--;
-                                                await controller
-                                                    .loadCacheDashData();
-                                                controller.isStackedLoading =
-                                                    false;
-                                                controller.update();
-                                              }
-                                            },
-                                            child: const Icon(Icons.remove),
-                                          ),
-                                    Expanded(
-                                      child: Slider(
-                                          min: 1,
-                                          max: 14,
-                                          divisions: 14,
-                                          label: controller.days.toString(),
-                                          value: controller.days.toDouble(),
-                                          onChanged: (value) async {
-                                            controller.days = value.toInt();
-                                            await controller
-                                                .loadCacheDashData();
-                                            controller.update();
-                                          }),
+                                    )
+                                  : InkWell(
+                                      onTap: () async {
+                                        if (controller.days < 14) {
+                                          controller.isStackedLoading = true;
+                                          controller.update();
+                                          controller.days++;
+                                          await controller.loadCacheDashData();
+                                          controller.isStackedLoading = false;
+                                          controller.update();
+                                        }
+                                      },
+                                      child: const Icon(Icons.add),
                                     ),
-                                    controller.isStackedLoading
-                                        ? Center(
-                                            child: GFLoader(
-                                              type: GFLoaderType.custom,
-                                              loaderIconOne: Icon(
-                                                Icons.circle_outlined,
-                                                size: 18,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .primary
-                                                    .withValues(alpha: 0.8),
-                                              ),
-                                            ),
-                                          )
-                                        : InkWell(
-                                            onTap: () async {
-                                              if (controller.days < 14) {
-                                                controller.isStackedLoading =
-                                                    true;
-                                                controller.update();
-                                                controller.days++;
-                                                await controller
-                                                    .loadCacheDashData();
-                                                controller.isStackedLoading =
-                                                    false;
-                                                controller.update();
-                                              }
-                                            },
-                                            child: const Icon(Icons.add),
-                                          ),
-                                  ],
-                                );
-                              }),
-                            ),
-                          ),
-                        ],
+                            ],
+                          );
+                        }),
                       ),
                     ),
                   ],
                 ),
+              ),
+            ],
+          ),
         );
       });
     } catch (e, trace) {
@@ -2001,222 +1843,200 @@ class _DashBoardPageState extends State<DashBoardPage>
       return GetBuilder<DashBoardController>(builder: (controller) {
         return CustomCard(
           height: 260,
-          child: controller.isLoading
-              ? Center(
-                  child: GFLoader(
-                    type: GFLoaderType.custom,
-                    loaderIconOne: Icon(
-                      Icons.circle_outlined,
-                      size: 18,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withValues(alpha: 0.8),
+          child: Column(
+            children: [
+              SizedBox(
+                height: 200,
+                child: SfCartesianChart(
+                    title: ChartTitle(
+                        text: '月度上传增量',
+                        textStyle: TextStyle(
+                            fontSize: 11,
+                            color: Theme.of(context).colorScheme.primary)),
+                    isTransposed: true,
+                    margin: const EdgeInsets.all(15),
+                    legend: Legend(
+                        isVisible: false,
+                        iconWidth: 8,
+                        iconHeight: 8,
+                        padding: 5,
+                        itemPadding: 5,
+                        textStyle: TextStyle(
+                          fontSize: 8,
+                          color: Theme.of(context).colorScheme.primary,
+                        )),
+                    enableSideBySideSeriesPlacement: false,
+                    plotAreaBorderWidth: 0,
+                    enableAxisAnimation: true,
+                    selectionType: SelectionType.point,
+                    zoomPanBehavior: ZoomPanBehavior(
+                      enablePinching: true,
+                      enableDoubleTapZooming: true,
+                      zoomMode: ZoomMode.x,
+                      enablePanning: true,
+                      enableMouseWheelZooming: true,
+                      enableSelectionZooming: true,
+                      maximumZoomLevel: 0.3,
                     ),
-                  ),
-                )
-              : Column(
-                  children: [
-                    SizedBox(
-                      height: 200,
-                      child: SfCartesianChart(
-                          title: ChartTitle(
-                              text: '月度上传增量',
-                              textStyle: TextStyle(
-                                  fontSize: 11,
-                                  color:
-                                      Theme.of(context).colorScheme.primary)),
-                          isTransposed: true,
-                          margin: const EdgeInsets.all(15),
-                          legend: Legend(
-                              isVisible: false,
-                              iconWidth: 8,
-                              iconHeight: 8,
-                              padding: 5,
-                              itemPadding: 5,
-                              textStyle: TextStyle(
-                                fontSize: 8,
-                                color: Theme.of(context).colorScheme.primary,
-                              )),
-                          enableSideBySideSeriesPlacement: false,
-                          plotAreaBorderWidth: 0,
-                          enableAxisAnimation: true,
-                          selectionType: SelectionType.point,
-                          zoomPanBehavior: ZoomPanBehavior(
-                            enablePinching: true,
-                            enableDoubleTapZooming: true,
-                            zoomMode: ZoomMode.x,
-                            enablePanning: true,
-                            enableMouseWheelZooming: true,
-                            enableSelectionZooming: true,
-                            maximumZoomLevel: 0.3,
-                          ),
-                          tooltipBehavior: TooltipBehavior(
-                            enable: true,
-                            canShowMarker: true,
-                            duration: 0,
-                            activationMode: ActivationMode.singleTap,
-                            tooltipPosition: TooltipPosition.auto,
-                            builder: (dynamic data,
-                                dynamic point,
-                                dynamic series,
-                                int pointIndex,
-                                int seriesIndex) {
-                              // Logger.instance.d(data);
-                              return Container(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .surface
-                                    .withOpacity(0.8),
-                                padding: const EdgeInsets.all(8),
-                                child: SingleChildScrollView(
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                        point.x,
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primary
-                                              .withOpacity(0.8),
-                                        ),
-                                      ),
-                                      Text(
-                                        '${series.name}: ${filesize(point.y)}',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .secondary
-                                              .withOpacity(0.8),
-                                        ),
-                                      ),
-                                    ],
+                    tooltipBehavior: TooltipBehavior(
+                      enable: true,
+                      canShowMarker: true,
+                      duration: 0,
+                      activationMode: ActivationMode.singleTap,
+                      tooltipPosition: TooltipPosition.auto,
+                      builder: (dynamic data, dynamic point, dynamic series,
+                          int pointIndex, int seriesIndex) {
+                        // Logger.instance.d(data);
+                        return Container(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surface
+                              .withOpacity(0.8),
+                          padding: const EdgeInsets.all(8),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                Text(
+                                  point.x,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary
+                                        .withOpacity(0.8),
                                   ),
                                 ),
-                              );
-                            },
-                          ),
-                          primaryXAxis: CategoryAxis(
-                            majorGridLines: const MajorGridLines(width: 0),
-                            axisLabelFormatter:
-                                (AxisLabelRenderDetails details) {
-                              return ChartAxisLabel(
-                                details.text,
-                                TextStyle(
-                                  fontSize: 10,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                              );
-                            },
-                          ),
-                          primaryYAxis: NumericAxis(
-                            axisLine: const AxisLine(width: 0),
-                            axisLabelFormatter:
-                                (AxisLabelRenderDetails details) {
-                              return ChartAxisLabel(
-                                filesize(details.value.toInt()),
-                                TextStyle(
-                                  fontSize: 10,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                              );
-                            },
-                            majorTickLines: const MajorTickLines(size: 0),
-                          ),
-                          series: List.generate(
-                              controller.uploadMonthIncrementDataList.length,
-                              (index) {
-                            MetaDataItem siteData =
-                                controller.uploadMonthIncrementDataList[index];
-                            List<TrafficDelta?> dataSource = siteData.value
-                                .whereType<TrafficDelta?>()
-                                .toList();
-                            return StackedBarSeries<TrafficDelta?, String>(
-                              name: controller.privateMode
-                                  ? "${siteData.name.toString().substring(0, 1)}**"
-                                  : siteData.name,
-                              // width: 0.5,
-                              borderRadius: BorderRadius.circular(1),
-                              legendIconType: LegendIconType.circle,
-                              dataSource: dataSource,
-                              // isVisibleInLegend: true,
-                              xValueMapper: (TrafficDelta? status, loop) =>
-                                  formatCreatedTimeToMonthString(status!),
-                              yValueMapper: (TrafficDelta? status, loop) {
-                                return status?.uploaded;
-                              },
-                              // pointColorMapper: (StatusInfo status, _) =>
-                              //     RandomColor().randomColor(),
-                              emptyPointSettings: const EmptyPointSettings(
-                                mode: EmptyPointMode.drop,
-                              ),
-                              dataLabelMapper: (TrafficDelta? status, _) =>
-                                  controller.privateMode
-                                      ? "${siteData.name.toString().substring(0, 1)}**"
-                                      : siteData.name,
-                              // color: RandomColor().randomColor(),
-                              // enableTooltip: true,
-                            );
-                          }).toList()),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                      child: Row(
-                        children: [
-                          CustomTextTag(
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.primary,
-                              labelText: '最近12月'),
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 12.0),
-                              child: Row(
-                                children: [
-                                  // InkWell(
-                                  //   child: const Icon(Icons.remove),
-                                  //   onTap: () async {
-                                  //     if (controller.days > 1) {
-                                  //       controller.days--;
-                                  //       await controller.initChartData();
-                                  //       controller.update();
-                                  //     }
-                                  //   },
-                                  // ),
-                                  Expanded(
-                                    child: Slider(
-                                        min: 1,
-                                        max: 12,
-                                        divisions: 12,
-                                        // label: controller.days.toString(),
-                                        value: 12,
-                                        onChanged: (value) async {
-                                          // controller.days = value.toInt();
-                                          // await controller.initChartData();
-                                          //
-                                          // controller.update();
-                                        }),
+                                Text(
+                                  '${series.name}: ${filesize(point.y)}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .secondary
+                                        .withOpacity(0.8),
                                   ),
-                                  // InkWell(
-                                  //   child: const Icon(Icons.add),
-                                  //   onTap: () {
-                                  //     if (controller.days < 14) {
-                                  //       controller.days++;
-                                  //       controller.initChartData();
-                                  //       controller.update();
-                                  //     }
-                                  //   },
-                                  // ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
+                        );
+                      },
+                    ),
+                    primaryXAxis: CategoryAxis(
+                      majorGridLines: const MajorGridLines(width: 0),
+                      axisLabelFormatter: (AxisLabelRenderDetails details) {
+                        return ChartAxisLabel(
+                          details.text,
+                          TextStyle(
+                            fontSize: 10,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        );
+                      },
+                    ),
+                    primaryYAxis: NumericAxis(
+                      axisLine: const AxisLine(width: 0),
+                      axisLabelFormatter: (AxisLabelRenderDetails details) {
+                        return ChartAxisLabel(
+                          filesize(details.value.toInt()),
+                          TextStyle(
+                            fontSize: 10,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        );
+                      },
+                      majorTickLines: const MajorTickLines(size: 0),
+                    ),
+                    series: List.generate(
+                        controller.uploadMonthIncrementDataList.length,
+                        (index) {
+                      MetaDataItem siteData =
+                          controller.uploadMonthIncrementDataList[index];
+                      List<TrafficDelta?> dataSource =
+                          siteData.value.whereType<TrafficDelta?>().toList();
+                      return StackedBarSeries<TrafficDelta?, String>(
+                        name: controller.privateMode
+                            ? "${siteData.name.toString().substring(0, 1)}**"
+                            : siteData.name,
+                        // width: 0.5,
+                        borderRadius: BorderRadius.circular(1),
+                        legendIconType: LegendIconType.circle,
+                        dataSource: dataSource,
+                        // isVisibleInLegend: true,
+                        xValueMapper: (TrafficDelta? status, loop) =>
+                            formatCreatedTimeToMonthString(status!),
+                        yValueMapper: (TrafficDelta? status, loop) {
+                          return status?.uploaded;
+                        },
+                        // pointColorMapper: (StatusInfo status, _) =>
+                        //     RandomColor().randomColor(),
+                        emptyPointSettings: const EmptyPointSettings(
+                          mode: EmptyPointMode.drop,
+                        ),
+                        dataLabelMapper: (TrafficDelta? status, _) => controller
+                                .privateMode
+                            ? "${siteData.name.toString().substring(0, 1)}**"
+                            : siteData.name,
+                        // color: RandomColor().randomColor(),
+                        // enableTooltip: true,
+                      );
+                    }).toList()),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Row(
+                  children: [
+                    CustomTextTag(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        labelText: '最近12月'),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 12.0),
+                        child: Row(
+                          children: [
+                            // InkWell(
+                            //   child: const Icon(Icons.remove),
+                            //   onTap: () async {
+                            //     if (controller.days > 1) {
+                            //       controller.days--;
+                            //       await controller.initChartData();
+                            //       controller.update();
+                            //     }
+                            //   },
+                            // ),
+                            Expanded(
+                              child: Slider(
+                                  min: 1,
+                                  max: 12,
+                                  divisions: 12,
+                                  // label: controller.days.toString(),
+                                  value: 12,
+                                  onChanged: (value) async {
+                                    // controller.days = value.toInt();
+                                    // await controller.initChartData();
+                                    //
+                                    // controller.update();
+                                  }),
+                            ),
+                            // InkWell(
+                            //   child: const Icon(Icons.add),
+                            //   onTap: () {
+                            //     if (controller.days < 14) {
+                            //       controller.days++;
+                            //       controller.initChartData();
+                            //       controller.update();
+                            //     }
+                            //   },
+                            // ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
                 ),
+              ),
+            ],
+          ),
         );
       });
     } catch (e, trace) {

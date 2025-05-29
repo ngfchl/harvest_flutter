@@ -31,6 +31,7 @@ class DashBoardController extends GetxController {
   int totalLeeching = 0;
   bool privateMode = false;
   bool isLoading = false;
+  bool isCacheLoading = false;
   bool isStackedLoading = false;
   bool buildSiteInfoCard = true;
   bool buildSmartLabelPieChart = true;
@@ -54,7 +55,6 @@ class DashBoardController extends GetxController {
   }
 
   Future<void> initData() async {
-    isLoading = true;
     privateMode = SPUtil.getBool('privateMode', defaultValue: false)!;
     buildStackedBar = SPUtil.getBool('buildStackedBar', defaultValue: true)!;
     buildSeedVolumePieChart =
@@ -68,27 +68,30 @@ class DashBoardController extends GetxController {
         SPUtil.getBool('showTodayUploadedIncrement', defaultValue: true)!;
     showTodayDownloadedIncrement =
         SPUtil.getBool('showTodayDownloadedIncrement', defaultValue: true)!;
+    isCacheLoading = true;
     update();
-    mySiteController.initFlag = true;
     await loadCacheDashData();
-
-    isLoading = false;
+    isCacheLoading = false;
     update();
     // 监听后台任务完成的消息
     Future.microtask(() async {
       Logger.instance.i('开始从数据库加载数据...');
+      isLoading = true;
+      update();
       // 模拟后台获取数据
-      await mySiteController.getWebSiteListFromServer();
-      await mySiteController.getSiteStatusFromServer();
-      mySiteController.loadingFromServer = false;
       await initChartData();
+      isLoading = false;
       Logger.instance.i('从数据库加载数据完成！');
       update(); // UI 更新
     });
   }
 
   initChartData() async {
-    CommonResponse res = await getDashBoardDataApi(15);
+    mySiteController.loadCacheInfo();
+    mySiteController.getWebSiteListFromServer();
+    mySiteController.getSiteStatusFromServer();
+    mySiteController.loadingFromServer = false;
+    CommonResponse res = await getDashBoardDataApi(14);
     if (res.succeed) {
       try {
         // 清空数据
@@ -128,8 +131,6 @@ class DashBoardController extends GetxController {
     } else {
       Logger.instance.i('无缓存数据，跳过...');
     }
-
-    mySiteController.initFlag = false;
   }
 
   /*///@title 解析首页dash 数据
