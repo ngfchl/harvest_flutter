@@ -84,7 +84,7 @@ class TaskPage extends StatelessWidget {
               EasyRefresh(
                 onRefresh: () => controller.getTaskInfo(),
                 child: ListView.builder(
-                  itemCount: controller.taskList.length,
+                  itemCount: controller.taskItemList.length,
                   itemBuilder: (
                     context,
                     index,
