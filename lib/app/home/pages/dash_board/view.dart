@@ -285,180 +285,172 @@ class _DashBoardPageState extends State<DashBoardPage>
                 await controller.initChartData();
               },
               child: GetBuilder<DashBoardController>(builder: (controller) {
-                return controller.isCacheLoading
-                    ? Center(
-                        child: GFLoader(
-                          type: GFLoaderType.custom,
-                          loaderIconOne: Icon(
-                            Icons.circle_outlined,
-                            size: 18,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .primary
-                                .withValues(alpha: 0.8),
-                          ),
-                        ),
-                      )
-                    : InkWell(
-                        onLongPress: () {
-                          Get.defaultDialog(
-                            title: '小部件',
-                            radius: 5,
-                            titleStyle: const TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w900),
-                            content: SizedBox(
-                                height: 260,
-                                width: 280,
-                                child: GetBuilder<DashBoardController>(
-                                    builder: (controller) {
-                                  return ListView(
-                                    children: [
-                                      // CheckboxListTile(
-                                      //     title: const Text("站点数据汇总"),
-                                      //     value: controller
-                                      //         .buildSiteInfoCard,
-                                      //     onChanged: (bool? value) {
-                                      //       controller.buildSiteInfoCard =
-                                      //           value!;
-                                      //       controller.update();
-                                      //     }),
-
-                                      CustomCheckboxListTile(
-                                        title: '开启隐私模式',
-                                        value: controller.privateMode,
-                                        storageKey: 'privateMode',
-                                        onUpdate: (bool newValue) async {
-                                          controller.privateMode = newValue;
-                                          Logger.instance.d(
-                                              "privateMode: ${controller.privateMode}");
-                                          await controller.loadCacheDashData();
-                                          controller.update();
-                                        },
-                                      ),
-                                      CustomCheckboxListTile(
-                                        title: '上传总量饼图',
-                                        value:
-                                            controller.buildSmartLabelPieChart,
-                                        storageKey: 'buildSmartLabelPieChart',
-                                        onUpdate: (bool newValue) {
-                                          controller.buildSmartLabelPieChart =
-                                              newValue;
-                                          controller.update();
-                                        },
-                                      ),
-                                      CustomCheckboxListTile(
-                                        title: '做种总量饼图',
-                                        value:
-                                            controller.buildSeedVolumePieChart,
-                                        storageKey: 'buildSeedVolumePieChart',
-                                        onUpdate: (bool newValue) {
-                                          controller.buildSeedVolumePieChart =
-                                              newValue;
-                                          controller.update();
-                                        },
-                                      ),
-                                      CustomCheckboxListTile(
-                                        title: '每日数据柱图',
-                                        value: controller.buildStackedBar,
-                                        storageKey: 'buildStackedBar',
-                                        onUpdate: (bool newValue) {
-                                          controller.buildStackedBar = newValue;
-                                          controller.update();
-                                        },
-                                      ),
-                                      CustomCheckboxListTile(
-                                        title: '每月数据柱图',
-                                        value: controller.buildMonthStackedBar,
-                                        storageKey: 'buildMonthStackedBar',
-                                        onUpdate: (bool newValue) {
-                                          controller.buildMonthStackedBar =
-                                              newValue;
-                                          controller.update();
-                                        },
-                                      ),
-                                      CustomCheckboxListTile(
-                                        title: '站点数据柱图',
-                                        value: controller.buildSiteInfo,
-                                        storageKey: 'buildSiteInfo',
-                                        onUpdate: (bool newValue) {
-                                          controller.buildSiteInfo = newValue;
-                                          controller.update();
-                                        },
-                                      ),
-                                      CustomCheckboxListTile(
-                                        title: '今日上传增量',
-                                        value: controller
-                                            .showTodayUploadedIncrement,
-                                        storageKey:
-                                            'showTodayUploadedIncrement',
-                                        onUpdate: (bool newValue) {
-                                          controller
-                                                  .showTodayUploadedIncrement =
-                                              newValue;
-                                          controller.update();
-                                        },
-                                      ),
-                                      CustomCheckboxListTile(
-                                        title: '今日下载增量',
-                                        value: controller
-                                            .showTodayDownloadedIncrement,
-                                        storageKey:
-                                            'showTodayDownloadedIncrement',
-                                        onUpdate: (bool newValue) {
-                                          controller
-                                                  .showTodayDownloadedIncrement =
-                                              newValue;
-                                          controller.update();
-                                        },
-                                      ),
-                                    ],
-                                  );
-                                })),
-                            // actions: [
-                            //   ElevatedButton(
-                            //     onPressed: () {
-                            //       Get.back(result: false);
-                            //     },
-                            //     child: const Text('取消'),
-                            //   ),
-                            //   ElevatedButton(
-                            //     onPressed: () async {
-                            //       Get.back(result: true);
-                            //       Navigator.of(context).pop();
-                            //     },
-                            //     child: const Text('确认'),
-                            //   ),
-                            // ],
-                          );
-                        },
-                        child: SingleChildScrollView(
-                          child: Wrap(
-                              alignment: WrapAlignment.spaceAround,
-                              direction: Axis.horizontal,
+                return InkWell(
+                  onLongPress: () {
+                    Get.defaultDialog(
+                      title: '小部件',
+                      radius: 5,
+                      titleStyle: const TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.w900),
+                      content: SizedBox(
+                          height: 260,
+                          width: 280,
+                          child: GetBuilder<DashBoardController>(
+                              builder: (controller) {
+                            return ListView(
                               children: [
-                                if (controller.buildSiteInfoCard)
-                                  _buildSiteInfoCard(),
-                                if (controller.buildSiteInfo) _buildSiteInfo(),
-                                if (controller.buildSmartLabelPieChart)
-                                  _buildSmartLabelPieChart(),
-                                if (controller.buildSeedVolumePieChart)
-                                  _buildSeedVolumePieChart(),
-                                if (controller.buildStackedBar)
-                                  _buildStackedBar(),
-                                if (controller.buildMonthStackedBar)
-                                  _buildMonthStackedBar(),
-                                if (controller.showTodayUploadedIncrement)
-                                  _showTodayUploadedIncrement(),
-                                if (controller.showTodayDownloadedIncrement)
-                                  _showTodayDownloadedIncrement(),
-                              ]
-                                  .map((item) => FractionallySizedBox(
-                                        widthFactor: _getWidthFactor(),
-                                        child: item,
-                                      ))
-                                  .toList()),
-                        ),
-                      );
+                                // CheckboxListTile(
+                                //     title: const Text("站点数据汇总"),
+                                //     value: controller
+                                //         .buildSiteInfoCard,
+                                //     onChanged: (bool? value) {
+                                //       controller.buildSiteInfoCard =
+                                //           value!;
+                                //       controller.update();
+                                //     }),
+
+                                CustomCheckboxListTile(
+                                  title: '开启隐私模式',
+                                  value: controller.privateMode,
+                                  storageKey: 'privateMode',
+                                  onUpdate: (bool newValue) async {
+                                    controller.privateMode = newValue;
+                                    Logger.instance.d(
+                                        "privateMode: ${controller.privateMode}");
+                                    await controller.loadCacheDashData();
+                                    controller.update();
+                                  },
+                                ),
+                                CustomCheckboxListTile(
+                                  title: '上传总量饼图',
+                                  value: controller.buildSmartLabelPieChart,
+                                  storageKey: 'buildSmartLabelPieChart',
+                                  onUpdate: (bool newValue) {
+                                    controller.buildSmartLabelPieChart =
+                                        newValue;
+                                    controller.update();
+                                  },
+                                ),
+                                CustomCheckboxListTile(
+                                  title: '做种总量饼图',
+                                  value: controller.buildSeedVolumePieChart,
+                                  storageKey: 'buildSeedVolumePieChart',
+                                  onUpdate: (bool newValue) {
+                                    controller.buildSeedVolumePieChart =
+                                        newValue;
+                                    controller.update();
+                                  },
+                                ),
+                                CustomCheckboxListTile(
+                                  title: '每日数据柱图',
+                                  value: controller.buildStackedBar,
+                                  storageKey: 'buildStackedBar',
+                                  onUpdate: (bool newValue) {
+                                    controller.buildStackedBar = newValue;
+                                    controller.update();
+                                  },
+                                ),
+                                CustomCheckboxListTile(
+                                  title: '每月数据柱图',
+                                  value: controller.buildMonthStackedBar,
+                                  storageKey: 'buildMonthStackedBar',
+                                  onUpdate: (bool newValue) {
+                                    controller.buildMonthStackedBar = newValue;
+                                    controller.update();
+                                  },
+                                ),
+                                CustomCheckboxListTile(
+                                  title: '站点数据柱图',
+                                  value: controller.buildSiteInfo,
+                                  storageKey: 'buildSiteInfo',
+                                  onUpdate: (bool newValue) {
+                                    controller.buildSiteInfo = newValue;
+                                    controller.update();
+                                  },
+                                ),
+                                CustomCheckboxListTile(
+                                  title: '今日上传增量',
+                                  value: controller.showTodayUploadedIncrement,
+                                  storageKey: 'showTodayUploadedIncrement',
+                                  onUpdate: (bool newValue) {
+                                    controller.showTodayUploadedIncrement =
+                                        newValue;
+                                    controller.update();
+                                  },
+                                ),
+                                CustomCheckboxListTile(
+                                  title: '今日下载增量',
+                                  value:
+                                      controller.showTodayDownloadedIncrement,
+                                  storageKey: 'showTodayDownloadedIncrement',
+                                  onUpdate: (bool newValue) {
+                                    controller.showTodayDownloadedIncrement =
+                                        newValue;
+                                    controller.update();
+                                  },
+                                ),
+                              ],
+                            );
+                          })),
+                      // actions: [
+                      //   ElevatedButton(
+                      //     onPressed: () {
+                      //       Get.back(result: false);
+                      //     },
+                      //     child: const Text('取消'),
+                      //   ),
+                      //   ElevatedButton(
+                      //     onPressed: () async {
+                      //       Get.back(result: true);
+                      //       Navigator.of(context).pop();
+                      //     },
+                      //     child: const Text('确认'),
+                      //   ),
+                      // ],
+                    );
+                  },
+                  child: SingleChildScrollView(
+                    child: controller.isCacheLoading
+                        ? Center(
+                            child: GFLoader(
+                              type: GFLoaderType.custom,
+                              loaderIconOne: Icon(
+                                Icons.circle_outlined,
+                                size: 18,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withValues(alpha: 0.8),
+                              ),
+                            ),
+                          )
+                        : Wrap(
+                            alignment: WrapAlignment.spaceAround,
+                            direction: Axis.horizontal,
+                            children: [
+                              if (controller.buildSiteInfoCard)
+                                _buildSiteInfoCard(),
+                              if (controller.buildSiteInfo) _buildSiteInfo(),
+                              if (controller.buildSmartLabelPieChart)
+                                _buildSmartLabelPieChart(),
+                              if (controller.buildSeedVolumePieChart)
+                                _buildSeedVolumePieChart(),
+                              if (controller.buildStackedBar)
+                                _buildStackedBar(),
+                              if (controller.buildMonthStackedBar)
+                                _buildMonthStackedBar(),
+                              if (controller.showTodayUploadedIncrement)
+                                _showTodayUploadedIncrement(),
+                              if (controller.showTodayDownloadedIncrement)
+                                _showTodayDownloadedIncrement(),
+                            ]
+                                .map((item) => FractionallySizedBox(
+                                      widthFactor: _getWidthFactor(),
+                                      child: item,
+                                    ))
+                                .toList()),
+                  ),
+                );
                 // : Center(
                 //     child: ElevatedButton.icon(
                 //     onPressed: () async {
