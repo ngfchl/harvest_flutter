@@ -111,8 +111,10 @@ class HomeView extends GetView<HomeController> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       CustomCard(
-                        width: 200,
-                        height: double.infinity,
+                        width: !controller.isSmallHorizontalScreen.value
+                            ? 200
+                            : 100,
+                        // height: double.infinity,
                         child: _buildMenuBar(context),
                       ),
                       Expanded(
@@ -148,98 +150,97 @@ class HomeView extends GetView<HomeController> {
   Widget _buildMenuBar(context) {
     return GetBuilder<HomeController>(builder: (controller) {
       return SingleChildScrollView(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width, // 确保宽度适配屏幕
-          ),
-          child: IntrinsicHeight(
-            child: NavigationRail(
-              useIndicator: true,
-              extended: true,
-              selectedIndex: controller.initPage,
-              selectedLabelTextStyle:
-                  TextStyle(color: Theme.of(context).colorScheme.primary),
-              selectedIconTheme: Theme.of(context)
-                  .iconTheme
-                  .copyWith(color: Theme.of(context).colorScheme.primary),
-              unselectedLabelTextStyle:
-                  TextStyle(color: Theme.of(context).colorScheme.secondary),
-              unselectedIconTheme: Theme.of(context)
-                  .iconTheme
-                  .copyWith(color: Theme.of(context).colorScheme.secondary),
-              backgroundColor: Colors.transparent,
-              onDestinationSelected: (index) => controller.changePage(index),
-              labelType: NavigationRailLabelType.none,
-              leading: GFDrawerHeader(
-                centerAlign: true,
-                closeButton: const SizedBox.shrink(),
-                decoration: const BoxDecoration(
-                  color: Colors.transparent,
-                ),
-                currentAccountPicture: const GFAvatar(
-                  radius: 80.0,
-                  shape: GFAvatarShape.standard,
-                  backgroundImage: AssetImage('assets/images/avatar.png'),
-                ),
-                // otherAccountsPictures: [
-                //   Image(
-                //     image: NetworkImage(
-                //         "https://cdn.pixabay.com/photo/2019/12/20/00/03/road-4707345_960_720.jpg"),
-                //     fit: BoxFit.cover,
-                //   ),
-                //   GFAvatar(
-                //     child: Text("ab"),
-                //   )
-                // ],
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 20.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Row(
+        child: IntrinsicHeight(
+          child: NavigationRail(
+            useIndicator: true,
+            extended: !controller.isSmallHorizontalScreen.value,
+            selectedIndex: controller.initPage,
+            selectedLabelTextStyle:
+                TextStyle(color: Theme.of(context).colorScheme.primary),
+            selectedIconTheme: Theme.of(context)
+                .iconTheme
+                .copyWith(color: Theme.of(context).colorScheme.primary),
+            unselectedLabelTextStyle:
+                TextStyle(color: Theme.of(context).colorScheme.secondary),
+            unselectedIconTheme: Theme.of(context)
+                .iconTheme
+                .copyWith(color: Theme.of(context).colorScheme.secondary),
+            backgroundColor: Colors.transparent,
+            onDestinationSelected: (index) => controller.changePage(index),
+            labelType: NavigationRailLabelType.none,
+            leading: controller.isSmallHorizontalScreen.value
+                ? SizedBox.shrink()
+                : GFDrawerHeader(
+                    centerAlign: true,
+                    closeButton: const SizedBox.shrink(),
+                    decoration: const BoxDecoration(
+                      color: Colors.transparent,
+                    ),
+                    currentAccountPicture: const GFAvatar(
+                      radius: 80.0,
+                      shape: GFAvatarShape.standard,
+                      backgroundImage: AssetImage('assets/images/avatar.png'),
+                    ),
+                    // otherAccountsPictures: [
+                    //   Image(
+                    //     image: NetworkImage(
+                    //         "https://cdn.pixabay.com/photo/2019/12/20/00/03/road-4707345_960_720.jpg"),
+                    //     fit: BoxFit.cover,
+                    //   ),
+                    //   GFAvatar(
+                    //     child: Text("ab"),
+                    //   )
+                    // ],
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 20.0),
+                      child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            '${controller.userinfo?.isStaff == true ? '👑' : '🎩'}${controller.userinfo?.user.toString()}',
-                            style: TextStyle(
-                                fontSize: 12,
-                                color: Theme.of(context).colorScheme.primary),
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                '${controller.userinfo?.isStaff == true ? '👑' : '🎩'}${controller.userinfo?.user.toString()}',
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  controller.logout();
+                                  controller.update();
+                                },
+                                icon: Icon(Icons.exit_to_app,
+                                    size: 16,
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
+                            ],
                           ),
-                          IconButton(
-                            onPressed: () {
-                              controller.logout();
-                              controller.update();
-                            },
-                            icon: Icon(Icons.exit_to_app,
-                                size: 16,
-                                color: Theme.of(context).colorScheme.primary),
+                          if (controller.authInfo != null)
+                            Text(
+                              'VIP：${controller.authInfo?.timeExpire.toString()}',
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: Theme.of(context).colorScheme.primary),
+                            ),
+                          Tooltip(
+                            message: '${SPUtil.getLocalStorage('server')}',
+                            child: Text(
+                              '${SPUtil.getLocalStorage('server')}',
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: Theme.of(context).colorScheme.primary),
+                            ),
                           ),
                         ],
                       ),
-                      if (controller.authInfo != null)
-                        Text(
-                          'VIP：${controller.authInfo?.timeExpire.toString()}',
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: Theme.of(context).colorScheme.primary),
-                        ),
-                      Tooltip(
-                        message: '${SPUtil.getLocalStorage('server')}',
-                        child: Text(
-                          '${SPUtil.getLocalStorage('server')}',
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: Theme.of(context).colorScheme.primary),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-              destinations: controller.destinations,
-            ),
+            destinations: controller.destinations,
           ),
         ),
       );
