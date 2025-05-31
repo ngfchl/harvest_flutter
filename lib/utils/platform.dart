@@ -70,7 +70,7 @@ class PlatformTool {
     final size = MediaQueryData.fromView(
       WidgetsBinding.instance.platformDispatcher.views.first,
     ).size;
-    return size.width < size.height && size.shortestSide < 600;
+    return size.width < size.height;
   }
 
   static bool isSmallScreen() {
@@ -86,7 +86,7 @@ class PlatformTool {
       WidgetsBinding.instance.platformDispatcher.views.first,
     ).size;
 
-    return size.shortestSide < 600;
+    return size.shortestSide < 600 && isPortrait();
   }
 
   static bool isDesktopOS() {
