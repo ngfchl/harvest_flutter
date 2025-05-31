@@ -1230,7 +1230,7 @@ class _MySitePagePageState extends State<MySitePage>
                         ),
                         CustomTextField(
                           controller: userIdController,
-                          maxLength: 16,
+                          maxLength: 128,
                           labelText: 'User ID',
                         ),
                         CustomTextField(
