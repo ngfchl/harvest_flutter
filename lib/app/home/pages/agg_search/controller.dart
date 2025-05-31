@@ -456,6 +456,11 @@ class AggSearchController extends GetxController
     selectedSiteList.clear();
     succeedSiteList.clear();
     showResults.clear();
+    selectedSiteList.clear();
+    selectedResolution.clear();
+    selectedCategories.clear();
+    selectedTags.clear();
+    selectedSaleStatusList.clear();
     update();
   }
 
