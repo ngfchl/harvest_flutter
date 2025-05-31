@@ -73,12 +73,27 @@ class PlatformTool {
     return size.width < size.height;
   }
 
+  static bool isHorizontalScreen() {
+    final size = MediaQueryData.fromView(
+      WidgetsBinding.instance.platformDispatcher.views.first,
+    ).size;
+    return size.width > size.height;
+  }
+
   static bool isSmallScreen() {
     final size = MediaQueryData.fromView(
       WidgetsBinding.instance.platformDispatcher.views.first,
     ).size;
 
     return size.shortestSide < 600;
+  }
+
+  static bool isSmallHorizontalScreen() {
+    final size = MediaQueryData.fromView(
+      WidgetsBinding.instance.platformDispatcher.views.first,
+    ).size;
+
+    return size.shortestSide < 600 && isHorizontalScreen();
   }
 
   static bool isSmallScreenPortrait() {
