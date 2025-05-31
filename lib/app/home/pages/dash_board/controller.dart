@@ -123,13 +123,20 @@ class DashBoardController extends GetxController {
 
   loadCacheDashData() async {
     String key = '$baseUrl - DASHBOARD_DATA';
-    Map<String, dynamic>? data = await SPUtil.getCache(key);
-    Logger.instance.i('开始从本地缓存加载数据...${data.isNotEmpty}');
-    if (data.isNotEmpty) {
-      parseDashData(data);
-      Logger.instance.i('开始从缓存加载数据完成...');
-    } else {
-      Logger.instance.i('无缓存数据，跳过...');
+    try {
+      Map<String, dynamic>? data = await SPUtil.getCache(key);
+      Logger.instance.i('开始从本地缓存加载数据...${data.isNotEmpty}');
+      if (data.isNotEmpty) {
+        parseDashData(data);
+        Logger.instance.i('开始从缓存加载数据完成...');
+      } else {
+        Logger.instance.i('无缓存数据，跳过...');
+      }
+    } catch (e, trace) {
+      String msg = '从缓存加载数据失败啦～$e';
+      await SPUtil.remove(key);
+      Logger.instance.e(msg);
+      Logger.instance.d(trace);
     }
   }
 
