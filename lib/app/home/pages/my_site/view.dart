@@ -1551,8 +1551,9 @@ class _MySitePagePageState extends State<MySitePage>
     signKeys.sort((a, b) => b.compareTo(a));
     Get.bottomSheet(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+        isScrollControlled: true,
         CustomCard(
-            width: 550,
+            width: double.infinity,
             child: Column(children: [
               Text(
                 "${mySite.nickname} [累计自动签到${mySite.signInInfo.length}天]",
@@ -1604,181 +1605,190 @@ class _MySitePagePageState extends State<MySitePage>
         .obs;
     Get.bottomSheet(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+      isScrollControlled: true,
       Obx(() {
-        return CustomCard(
-          width: 550,
-          child: SingleChildScrollView(
-            child: Column(children: [
-              Text(
-                "${mySite.nickname} [站点数据累计${mySite.statusInfo.length}天]",
-              ),
-              SfCartesianChart(
-                  tooltipBehavior: TooltipBehavior(
-                    enable: true,
-                    animationDuration: 100,
-                    shouldAlwaysShow: false,
-                    tooltipPosition: TooltipPosition.pointer,
-                    builder: (dynamic data, dynamic point, dynamic series,
-                        int pointIndex, int seriesIndex) {
-                      StatusInfo? lastData = pointIndex > 0
-                          ? series.dataSource[pointIndex - 1]
-                          : null;
-                      return Container(
-                          color: Colors.white,
-                          padding: const EdgeInsets.all(8),
-                          width: 200,
-                          child: SingleChildScrollView(
-                              child: StatusToolTip(
-                                  data: data, lastData: lastData)));
-                    },
-                  ),
-                  zoomPanBehavior: ZoomPanBehavior(
-                    /// To enable the pinch zooming as true.
-                    enablePinching: true,
-                    zoomMode: ZoomMode.x,
-                    enablePanning: true,
-                    enableMouseWheelZooming: true,
-                  ),
-                  legend: const Legend(
-                    isVisible: true,
-                    position: LegendPosition.bottom,
-                  ),
-                  primaryXAxis: const CategoryAxis(
-                    majorGridLines: MajorGridLines(width: 0),
-                  ),
-                  primaryYAxis: const NumericAxis(
-                    isVisible: false,
-                  ),
-                  axes: <ChartAxis>[
-                    NumericAxis(
-                      name: 'PrimaryYAxis',
-                      labelPosition: ChartDataLabelPosition.inside,
-                      numberFormat: NumberFormat.compact(),
-                      majorTickLines: const MajorTickLines(width: 0),
-                      minorTickLines: const MinorTickLines(width: 0),
-                    ),
-                    const NumericAxis(
-                      name: 'SecondaryYAxis',
-                      isVisible: false,
-                      tickPosition: TickPosition.inside,
-                      majorTickLines: MajorTickLines(width: 0),
-                      minorTickLines: MinorTickLines(width: 0),
-                    ),
-                    const NumericAxis(
-                      name: 'ThirdYAxis',
-                      isVisible: false,
-                      tickPosition: TickPosition.inside,
-                      majorTickLines: MajorTickLines(width: 0),
-                      minorTickLines: MinorTickLines(width: 0),
-                    ),
-                  ],
-                  series: <CartesianSeries>[
-                    LineSeries<StatusInfo, String>(
-                        name: '做种体积',
-                        yAxisName: 'PrimaryYAxis',
-                        dataSource: showData,
-                        xValueMapper: (StatusInfo item, _) =>
-                            formatCreatedTimeToDateString(item),
-                        yValueMapper: (StatusInfo item, _) => item.seedVolume),
-                    LineSeries<StatusInfo, String>(
-                        name: '上传量',
-                        yAxisName: 'SecondaryYAxis',
-                        dataSource: showData,
-                        xValueMapper: (StatusInfo item, _) =>
-                            formatCreatedTimeToDateString(item),
-                        yValueMapper: (StatusInfo item, _) => item.uploaded),
-                    ColumnSeries<StatusInfo, String>(
-                      name: '上传增量',
-                      dataSource: showData,
-                      yAxisName: 'ThirdYAxis',
-                      xValueMapper: (StatusInfo item, _) =>
-                          formatCreatedTimeToDateString(item),
-                      yValueMapper: (StatusInfo item, index) => index > 0 &&
-                              item.uploaded > showData[index - 1].uploaded
-                          ? item.uploaded - showData[index - 1].uploaded
-                          : 0,
-                      dataLabelSettings: DataLabelSettings(
-                          isVisible: true,
-                          textStyle: const TextStyle(fontSize: 10),
-                          builder: (dynamic data, dynamic point, dynamic series,
-                              int pointIndex, int seriesIndex) {
-                            return point.y > 0
-                                ? Text(filesize((point.y).toInt()))
-                                : const SizedBox.shrink();
-                          }),
-                    ),
-                    LineSeries<StatusInfo, String>(
-                        name: '下载量',
-                        yAxisName: 'SecondaryYAxis',
-                        dataSource: showData,
-                        xValueMapper: (StatusInfo item, _) =>
-                            formatCreatedTimeToDateString(item),
-                        yValueMapper: (StatusInfo item, _) => item.downloaded),
-                    LineSeries<StatusInfo, String>(
-                        name: '时魔',
-                        yAxisName: 'SecondaryYAxis',
-                        dataSource: showData,
-                        xValueMapper: (StatusInfo item, _) =>
-                            formatCreatedTimeToDateString(item),
-                        yValueMapper: (StatusInfo item, _) => item.bonusHour),
-                    LineSeries<StatusInfo, String>(
-                        name: '做种积分',
-                        yAxisName: 'PrimaryYAxis',
-                        dataSource: showData,
-                        xValueMapper: (StatusInfo item, _) =>
-                            formatCreatedTimeToDateString(item),
-                        yValueMapper: (StatusInfo item, _) => item.myScore),
-                    LineSeries<StatusInfo, String>(
-                        name: '魔力值',
-                        yAxisName: 'PrimaryYAxis',
-                        dataSource: showData,
-                        xValueMapper: (StatusInfo item, _) =>
-                            formatCreatedTimeToDateString(item),
-                        yValueMapper: (StatusInfo item, _) => item.myBonus),
-                    LineSeries<StatusInfo, String>(
-                        name: '做种数量',
-                        yAxisName: 'SecondaryYAxis',
-                        dataSource: showData,
-                        xValueMapper: (StatusInfo item, _) =>
-                            formatCreatedTimeToDateString(item),
-                        yValueMapper: (StatusInfo item, _) => item.seed),
-                    LineSeries<StatusInfo, String>(
-                        name: '吸血数量',
-                        yAxisName: 'SecondaryYAxis',
-                        dataSource: showData,
-                        xValueMapper: (StatusInfo item, _) =>
-                            formatCreatedTimeToDateString(item),
-                        yValueMapper: (StatusInfo item, _) => item.leech),
-                    LineSeries<StatusInfo, String>(
-                        name: '邀请',
-                        yAxisName: 'SecondaryYAxis',
-                        dataSource: showData,
-                        xValueMapper: (StatusInfo item, _) =>
-                            formatCreatedTimeToDateString(item),
-                        yValueMapper: (StatusInfo item, _) => item.invitation),
-                  ]),
-              Text(
-                "${rangeValues.value.end.toInt() - rangeValues.value.start.toInt() + 1}日数据",
-              ),
-              RangeSlider(
-                min: 0,
-                max: transformedData.length * 1.0 - 1,
-                divisions: transformedData.length - 1,
-                labels: RangeLabels(
-                  formatCreatedTimeToDateString(
-                      transformedData[rangeValues.value.start.toInt()]),
-                  formatCreatedTimeToDateString(
-                      transformedData[rangeValues.value.end.toInt()]),
+        return SafeArea(
+          child: CustomCard(
+            width: double.infinity,
+            child: SingleChildScrollView(
+              child: Column(children: [
+                Text(
+                  "${mySite.nickname} [站点数据累计${mySite.statusInfo.length}天]",
                 ),
-                onChanged: (value) {
-                  rangeValues.value = value;
-                  showData.value = transformedData.sublist(
-                      rangeValues.value.start.toInt(),
-                      rangeValues.value.end.toInt());
-                },
-                values: rangeValues.value,
-              ),
-            ]),
+                SfCartesianChart(
+                    tooltipBehavior: TooltipBehavior(
+                      enable: true,
+                      animationDuration: 100,
+                      shouldAlwaysShow: false,
+                      tooltipPosition: TooltipPosition.pointer,
+                      builder: (dynamic data, dynamic point, dynamic series,
+                          int pointIndex, int seriesIndex) {
+                        StatusInfo? lastData = pointIndex > 0
+                            ? series.dataSource[pointIndex - 1]
+                            : null;
+                        return Container(
+                            color: Colors.white,
+                            padding: const EdgeInsets.all(8),
+                            width: 200,
+                            child: SingleChildScrollView(
+                                child: StatusToolTip(
+                                    data: data, lastData: lastData)));
+                      },
+                    ),
+                    zoomPanBehavior: ZoomPanBehavior(
+                      /// To enable the pinch zooming as true.
+                      enablePinching: true,
+                      zoomMode: ZoomMode.x,
+                      enablePanning: true,
+                      enableMouseWheelZooming: true,
+                    ),
+                    legend: const Legend(
+                      isVisible: true,
+                      position: LegendPosition.bottom,
+                    ),
+                    primaryXAxis: const CategoryAxis(
+                      majorGridLines: MajorGridLines(width: 0),
+                    ),
+                    primaryYAxis: const NumericAxis(
+                      isVisible: false,
+                    ),
+                    axes: <ChartAxis>[
+                      NumericAxis(
+                        name: 'PrimaryYAxis',
+                        labelPosition: ChartDataLabelPosition.inside,
+                        numberFormat: NumberFormat.compact(),
+                        majorTickLines: const MajorTickLines(width: 0),
+                        minorTickLines: const MinorTickLines(width: 0),
+                      ),
+                      const NumericAxis(
+                        name: 'SecondaryYAxis',
+                        isVisible: false,
+                        tickPosition: TickPosition.inside,
+                        majorTickLines: MajorTickLines(width: 0),
+                        minorTickLines: MinorTickLines(width: 0),
+                      ),
+                      const NumericAxis(
+                        name: 'ThirdYAxis',
+                        isVisible: false,
+                        tickPosition: TickPosition.inside,
+                        majorTickLines: MajorTickLines(width: 0),
+                        minorTickLines: MinorTickLines(width: 0),
+                      ),
+                    ],
+                    series: <CartesianSeries>[
+                      LineSeries<StatusInfo, String>(
+                          name: '做种体积',
+                          yAxisName: 'PrimaryYAxis',
+                          dataSource: showData,
+                          xValueMapper: (StatusInfo item, _) =>
+                              formatCreatedTimeToDateString(item),
+                          yValueMapper: (StatusInfo item, _) =>
+                              item.seedVolume),
+                      LineSeries<StatusInfo, String>(
+                          name: '上传量',
+                          yAxisName: 'SecondaryYAxis',
+                          dataSource: showData,
+                          xValueMapper: (StatusInfo item, _) =>
+                              formatCreatedTimeToDateString(item),
+                          yValueMapper: (StatusInfo item, _) => item.uploaded),
+                      ColumnSeries<StatusInfo, String>(
+                        name: '上传增量',
+                        dataSource: showData,
+                        yAxisName: 'ThirdYAxis',
+                        xValueMapper: (StatusInfo item, _) =>
+                            formatCreatedTimeToDateString(item),
+                        yValueMapper: (StatusInfo item, index) => index > 0 &&
+                                item.uploaded > showData[index - 1].uploaded
+                            ? item.uploaded - showData[index - 1].uploaded
+                            : 0,
+                        dataLabelSettings: DataLabelSettings(
+                            isVisible: true,
+                            textStyle: const TextStyle(fontSize: 10),
+                            builder: (dynamic data,
+                                dynamic point,
+                                dynamic series,
+                                int pointIndex,
+                                int seriesIndex) {
+                              return point.y > 0
+                                  ? Text(filesize((point.y).toInt()))
+                                  : const SizedBox.shrink();
+                            }),
+                      ),
+                      LineSeries<StatusInfo, String>(
+                          name: '下载量',
+                          yAxisName: 'SecondaryYAxis',
+                          dataSource: showData,
+                          xValueMapper: (StatusInfo item, _) =>
+                              formatCreatedTimeToDateString(item),
+                          yValueMapper: (StatusInfo item, _) =>
+                              item.downloaded),
+                      LineSeries<StatusInfo, String>(
+                          name: '时魔',
+                          yAxisName: 'SecondaryYAxis',
+                          dataSource: showData,
+                          xValueMapper: (StatusInfo item, _) =>
+                              formatCreatedTimeToDateString(item),
+                          yValueMapper: (StatusInfo item, _) => item.bonusHour),
+                      LineSeries<StatusInfo, String>(
+                          name: '做种积分',
+                          yAxisName: 'PrimaryYAxis',
+                          dataSource: showData,
+                          xValueMapper: (StatusInfo item, _) =>
+                              formatCreatedTimeToDateString(item),
+                          yValueMapper: (StatusInfo item, _) => item.myScore),
+                      LineSeries<StatusInfo, String>(
+                          name: '魔力值',
+                          yAxisName: 'PrimaryYAxis',
+                          dataSource: showData,
+                          xValueMapper: (StatusInfo item, _) =>
+                              formatCreatedTimeToDateString(item),
+                          yValueMapper: (StatusInfo item, _) => item.myBonus),
+                      LineSeries<StatusInfo, String>(
+                          name: '做种数量',
+                          yAxisName: 'SecondaryYAxis',
+                          dataSource: showData,
+                          xValueMapper: (StatusInfo item, _) =>
+                              formatCreatedTimeToDateString(item),
+                          yValueMapper: (StatusInfo item, _) => item.seed),
+                      LineSeries<StatusInfo, String>(
+                          name: '吸血数量',
+                          yAxisName: 'SecondaryYAxis',
+                          dataSource: showData,
+                          xValueMapper: (StatusInfo item, _) =>
+                              formatCreatedTimeToDateString(item),
+                          yValueMapper: (StatusInfo item, _) => item.leech),
+                      LineSeries<StatusInfo, String>(
+                          name: '邀请',
+                          yAxisName: 'SecondaryYAxis',
+                          dataSource: showData,
+                          xValueMapper: (StatusInfo item, _) =>
+                              formatCreatedTimeToDateString(item),
+                          yValueMapper: (StatusInfo item, _) =>
+                              item.invitation),
+                    ]),
+                Text(
+                  "${rangeValues.value.end.toInt() - rangeValues.value.start.toInt() + 1}日数据",
+                ),
+                RangeSlider(
+                  min: 0,
+                  max: transformedData.length * 1.0 - 1,
+                  divisions: transformedData.length - 1,
+                  labels: RangeLabels(
+                    formatCreatedTimeToDateString(
+                        transformedData[rangeValues.value.start.toInt()]),
+                    formatCreatedTimeToDateString(
+                        transformedData[rangeValues.value.end.toInt()]),
+                  ),
+                  onChanged: (value) {
+                    rangeValues.value = value;
+                    showData.value = transformedData.sublist(
+                        rangeValues.value.start.toInt(),
+                        rangeValues.value.end.toInt());
+                  },
+                  values: rangeValues.value,
+                ),
+              ]),
+            ),
           ),
         );
       }),
