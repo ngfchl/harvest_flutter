@@ -1081,6 +1081,7 @@ class _MySitePagePageState extends State<MySitePage>
     RxBool manualInput = false.obs;
     Get.bottomSheet(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+      isScrollControlled: true,
       CustomCard(
         padding: const EdgeInsets.all(20),
         height: selectedSite.value != null ? 500 : 120,

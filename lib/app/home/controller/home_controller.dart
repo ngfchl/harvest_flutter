@@ -33,8 +33,8 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   TextEditingController searchController = TextEditingController();
   DioUtil dioUtil = DioUtil();
   bool isDarkMode = false;
-  RxBool isPortrait = false.obs; // 是否是竖屏
-  RxBool isSmallHorizontalScreen = false.obs; // 是否是竖屏
+  bool isPortrait = false; // 是否是竖屏
+  bool isSmallHorizontalScreen = false; // 是否是竖屏
   UpdateLogState? updateLogState;
   AuthPeriod? authInfo;
 
@@ -105,16 +105,14 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       Get.offAllNamed(Routes.LOGIN);
     }
     super.onInit();
-    if (PlatformTool.isDesktopOS()) {
-      WidgetsBinding.instance.addObserver(this);
-      _updateOrientation();
-    }
+    WidgetsBinding.instance.addObserver(this);
+    _updateOrientation();
   }
 
   //** 屏幕旋转监听 **//
   void _updateOrientation() {
-    isPortrait.value = PlatformTool.isSmallScreenPortrait();
-    isSmallHorizontalScreen.value = PlatformTool.isSmallHorizontalScreen();
+    isPortrait = PlatformTool.isPortrait();
+    isSmallHorizontalScreen = PlatformTool.isSmallHorizontalScreen();
     final size = MediaQueryData.fromView(
       WidgetsBinding.instance.platformDispatcher.views.first,
     ).size;

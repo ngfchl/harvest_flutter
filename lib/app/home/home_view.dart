@@ -73,31 +73,31 @@ class HomeView extends GetView<HomeController> {
             // buttonColor: Colors.red,
           );
         },
-        child: Obx(() {
-          return Scaffold(
-            key: _globalKey,
-            extendBody: true,
-            appBar: GFAppBar(
-              elevation: 1.5,
-              iconTheme: const IconThemeData(color: Colors.black38),
-              flexibleSpace: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [
-                      Colors.orange.withOpacity(0.4),
-                      Colors.grey.withOpacity(0.3),
-                      Colors.brown.withOpacity(0.1),
-                    ],
-                  ),
+        child: Scaffold(
+          key: _globalKey,
+          extendBody: true,
+          appBar: GFAppBar(
+            elevation: 1.5,
+            iconTheme: const IconThemeData(color: Colors.black38),
+            flexibleSpace: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    Colors.orange.withOpacity(0.4),
+                    Colors.grey.withOpacity(0.3),
+                    Colors.brown.withOpacity(0.1),
+                  ],
                 ),
               ),
-              actions: <Widget>[
-                _actionButtonList(context),
-              ],
             ),
-            body: controller.isPortrait.value
+            actions: <Widget>[
+              _actionButtonList(context),
+            ],
+          ),
+          body: GetBuilder<HomeController>(builder: (controller) {
+            return controller.isPortrait
                 ? PageView(
                     controller: controller.pageController,
                     physics: const NeverScrollableScrollPhysics(),
@@ -110,13 +110,17 @@ class HomeView extends GetView<HomeController> {
                 : Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      CustomCard(
-                        width: !controller.isSmallHorizontalScreen.value
-                            ? 200
-                            : 100,
-                        // height: double.infinity,
-                        child: _buildMenuBar(context),
-                      ),
+                      controller.isSmallHorizontalScreen
+                          ? SizedBox(
+                              width: 120,
+                              // height: double.infinity,
+                              child: _buildMenuBar(context),
+                            )
+                          : CustomCard(
+                              width: 200,
+                              // height: double.infinity,
+                              child: _buildMenuBar(context),
+                            ),
                       Expanded(
                           child: PageView(
                         controller: controller.pageController,
@@ -128,21 +132,21 @@ class HomeView extends GetView<HomeController> {
                         children: controller.pages,
                       ))
                     ],
+                  );
+          }),
+          drawer: controller.isPortrait
+              ? SizedBox(
+                  width: 200,
+                  child: GFDrawer(
+                    semanticLabel: 'Harvest',
+                    elevation: 10,
+                    color: Theme.of(context).colorScheme.surface,
+                    child: _buildMenuBar(context),
                   ),
-            drawer: controller.isPortrait.value
-                ? SizedBox(
-                    width: 200,
-                    child: GFDrawer(
-                      semanticLabel: 'Harvest',
-                      elevation: 10,
-                      color: Theme.of(context).colorScheme.surface,
-                      child: _buildMenuBar(context),
-                    ),
-                  )
-                : null,
-            drawerEdgeDragWidth: 100,
-          );
-        }),
+                )
+              : null,
+          drawerEdgeDragWidth: 100,
+        ),
       );
     });
   }
@@ -153,7 +157,7 @@ class HomeView extends GetView<HomeController> {
         child: IntrinsicHeight(
           child: NavigationRail(
             useIndicator: true,
-            extended: !controller.isSmallHorizontalScreen.value,
+            extended: !controller.isSmallHorizontalScreen,
             selectedIndex: controller.initPage,
             selectedLabelTextStyle:
                 TextStyle(color: Theme.of(context).colorScheme.primary),
@@ -167,79 +171,72 @@ class HomeView extends GetView<HomeController> {
                 .copyWith(color: Theme.of(context).colorScheme.secondary),
             backgroundColor: Colors.transparent,
             onDestinationSelected: (index) => controller.changePage(index),
-            labelType: NavigationRailLabelType.none,
-            leading: controller.isSmallHorizontalScreen.value
-                ? SizedBox.shrink()
-                : GFDrawerHeader(
-                    centerAlign: true,
-                    closeButton: const SizedBox.shrink(),
-                    decoration: const BoxDecoration(
-                      color: Colors.transparent,
-                    ),
-                    currentAccountPicture: const GFAvatar(
-                      radius: 80.0,
-                      shape: GFAvatarShape.standard,
-                      backgroundImage: AssetImage('assets/images/avatar.png'),
-                    ),
-                    // otherAccountsPictures: [
-                    //   Image(
-                    //     image: NetworkImage(
-                    //         "https://cdn.pixabay.com/photo/2019/12/20/00/03/road-4707345_960_720.jpg"),
-                    //     fit: BoxFit.cover,
-                    //   ),
-                    //   GFAvatar(
-                    //     child: Text("ab"),
-                    //   )
-                    // ],
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 20.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '${controller.userinfo?.isStaff == true ? '👑' : '🎩'}${controller.userinfo?.user.toString()}',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color:
-                                        Theme.of(context).colorScheme.primary),
-                              ),
-                              IconButton(
-                                onPressed: () {
-                                  controller.logout();
-                                  controller.update();
-                                },
-                                icon: Icon(Icons.exit_to_app,
-                                    size: 16,
-                                    color:
-                                        Theme.of(context).colorScheme.primary),
-                              ),
-                            ],
-                          ),
-                          if (controller.authInfo != null)
+            labelType: controller.isSmallHorizontalScreen
+                ? NavigationRailLabelType.selected
+                : NavigationRailLabelType.none,
+            leading: GetBuilder<HomeController>(builder: (controller) {
+              if (!controller.isSmallHorizontalScreen) {
+                return GFDrawerHeader(
+                  centerAlign: true,
+                  closeButton: const SizedBox.shrink(),
+                  decoration: const BoxDecoration(
+                    color: Colors.transparent,
+                  ),
+                  currentAccountPicture: const GFAvatar(
+                    radius: 80.0,
+                    shape: GFAvatarShape.standard,
+                    backgroundImage: AssetImage('assets/images/avatar.png'),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 20.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
                             Text(
-                              'VIP：${controller.authInfo?.timeExpire.toString()}',
+                              '${controller.userinfo?.isStaff == true ? '👑' : '🎩'}${controller.userinfo?.user.toString()}',
                               style: TextStyle(
                                   fontSize: 12,
                                   color: Theme.of(context).colorScheme.primary),
                             ),
-                          Tooltip(
-                            message: '${SPUtil.getLocalStorage('server')}',
-                            child: Text(
-                              '${SPUtil.getLocalStorage('server')}',
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                  fontSize: 12,
+                            IconButton(
+                              onPressed: () {
+                                controller.logout();
+                                controller.update();
+                              },
+                              icon: Icon(Icons.exit_to_app,
+                                  size: 16,
                                   color: Theme.of(context).colorScheme.primary),
                             ),
+                          ],
+                        ),
+                        if (controller.authInfo != null)
+                          Text(
+                            'VIP：${controller.authInfo?.timeExpire.toString()}',
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(context).colorScheme.primary),
                           ),
-                        ],
-                      ),
+                        Tooltip(
+                          message: '${SPUtil.getLocalStorage('server')}',
+                          child: Text(
+                            '${SPUtil.getLocalStorage('server')}',
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(context).colorScheme.primary),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                );
+              }
+              return SizedBox.shrink();
+            }),
             destinations: controller.destinations,
           ),
         ),
