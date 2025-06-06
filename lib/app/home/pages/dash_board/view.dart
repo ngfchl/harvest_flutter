@@ -369,6 +369,15 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   },
                                 ),
                                 CustomCheckboxListTile(
+                                  title: '账户数据信息',
+                                  value: controller.buildAccountInfoCard,
+                                  storageKey: 'buildAccountInfoCard',
+                                  onUpdate: (bool newValue) {
+                                    controller.buildAccountInfoCard = newValue;
+                                    controller.update();
+                                  },
+                                ),
+                                CustomCheckboxListTile(
                                   title: '今日上传增量',
                                   value: controller.showTodayUploadedIncrement,
                                   storageKey: 'showTodayUploadedIncrement',
@@ -392,64 +401,58 @@ class _DashBoardPageState extends State<DashBoardPage>
                               ],
                             );
                           })),
-                      // actions: [
-                      //   ElevatedButton(
-                      //     onPressed: () {
-                      //       Get.back(result: false);
-                      //     },
-                      //     child: const Text('取消'),
-                      //   ),
-                      //   ElevatedButton(
-                      //     onPressed: () async {
-                      //       Get.back(result: true);
-                      //       Navigator.of(context).pop();
-                      //     },
-                      //     child: const Text('确认'),
-                      //   ),
-                      // ],
                     );
                   },
-                  child: SingleChildScrollView(
-                    child: controller.isCacheLoading
-                        ? Center(
-                            child: GFLoader(
-                              type: GFLoaderType.custom,
-                              loaderIconOne: Icon(
-                                Icons.circle_outlined,
-                                size: 18,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .primary
-                                    .withValues(alpha: 0.8),
+                  child: GetBuilder<DashBoardController>(builder: (controller) {
+                    return SingleChildScrollView(
+                      child: controller.isCacheLoading
+                          ? Center(
+                              child: GFLoader(
+                                type: GFLoaderType.custom,
+                                loaderIconOne: Icon(
+                                  Icons.circle_outlined,
+                                  size: 18,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withValues(alpha: 0.8),
+                                ),
                               ),
-                            ),
-                          )
-                        : Wrap(
-                            alignment: WrapAlignment.spaceAround,
-                            direction: Axis.horizontal,
-                            children: [
-                              if (controller.buildSiteInfoCard)
-                                _buildSiteInfoCard(),
-                              if (controller.buildSiteInfo) _buildSiteInfo(),
-                              if (controller.buildSmartLabelPieChart)
-                                _buildSmartLabelPieChart(),
-                              if (controller.buildSeedVolumePieChart)
-                                _buildSeedVolumePieChart(),
-                              if (controller.buildStackedBar)
-                                _buildStackedBar(),
-                              if (controller.buildMonthStackedBar)
-                                _buildMonthStackedBar(),
-                              if (controller.showTodayUploadedIncrement)
-                                _showTodayUploadedIncrement(),
-                              if (controller.showTodayDownloadedIncrement)
-                                _showTodayDownloadedIncrement(),
-                            ]
-                                .map((item) => FractionallySizedBox(
-                                      widthFactor: _getWidthFactor(),
-                                      child: item,
-                                    ))
-                                .toList()),
-                  ),
+                            )
+                          : Wrap(
+                              alignment: WrapAlignment.spaceAround,
+                              direction: Axis.horizontal,
+                              children: [
+                                if (controller.buildSiteInfoCard &&
+                                    controller.earliestSite != null)
+                                  _buildSiteInfoCard(),
+                                if (controller.buildAccountInfoCard &&
+                                    (controller.emailMap.isNotEmpty ||
+                                        controller.usernameMap.isNotEmpty))
+                                  _buildAccountInfoCard(),
+                                if (controller.buildSiteInfo &&
+                                    controller.statusList.isNotEmpty)
+                                  _buildSiteInfo(),
+                                if (controller.buildSmartLabelPieChart)
+                                  _buildSmartLabelPieChart(),
+                                if (controller.buildSeedVolumePieChart)
+                                  _buildSeedVolumePieChart(),
+                                if (controller.buildStackedBar)
+                                  _buildStackedBar(),
+                                if (controller.buildMonthStackedBar)
+                                  _buildMonthStackedBar(),
+                                if (controller.showTodayUploadedIncrement)
+                                  _showTodayUploadedIncrement(),
+                                if (controller.showTodayDownloadedIncrement)
+                                  _showTodayDownloadedIncrement(),
+                              ]
+                                  .map((item) => FractionallySizedBox(
+                                        widthFactor: _getWidthFactor(),
+                                        child: item,
+                                      ))
+                                  .toList()),
+                    );
+                  }),
                 );
                 // : Center(
                 //     child: ElevatedButton.icon(
@@ -628,6 +631,7 @@ class _DashBoardPageState extends State<DashBoardPage>
   }
 
   Widget _buildSiteInfoCard() {
+    Logger.instance.d(controller.earliestSite);
     return GetBuilder<DashBoardController>(builder: (controller) {
       // MySite earliestSite = controller.mySiteController.mySiteList
       //     .where((item) =>
@@ -1219,7 +1223,240 @@ class _DashBoardPageState extends State<DashBoardPage>
                   ),
                 ],
               ),
-            )
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 24, right: 24, bottom: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('数据更新时间：',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 11,
+                          letterSpacing: -0.2,
+                          color: Theme.of(context).colorScheme.primary)),
+                  Container(
+                    height: 2,
+                    decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(4.0)),
+                    ),
+                  ),
+                  Text(controller.updatedAt,
+                      style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 11,
+                          letterSpacing: -0.2,
+                          color: Theme.of(context).colorScheme.primary))
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  String maskString(String input) {
+    if (!controller.privateMode || input.isEmpty) return input;
+
+    // 私有方法：应用用户名掩码规则
+    String maskUsername(String text) {
+      final length = text.length;
+      if (length == 1) return '$text**';
+      if (length == 2) return '${text[0]}**${text[1]}';
+
+      // 长度≥3: 保留首尾，中间替换为两个星号
+      return '${text[0]}**${text[length - 1]}';
+    }
+
+    // 检测是否为邮箱格式（包含@且前后有内容）
+    final emailMatch = RegExp(r'^(.+)@(.+)\.(.+)$').firstMatch(input);
+
+    if (emailMatch != null) {
+      final username = emailMatch.group(1)!;
+      final domain = '${emailMatch.group(2)!}.${emailMatch.group(3)!}';
+
+      // 掩码用户名部分，保留域名
+      return '${maskUsername(username)}@$domain';
+    }
+
+    // 普通字符串掩码处理
+    return maskUsername(input);
+  }
+
+  Widget _buildAccountInfoCard() {
+    Logger.instance.d(controller.emailMap);
+    Logger.instance.d(controller.usernameMap);
+    return GetBuilder<DashBoardController>(builder: (controller) {
+      return CustomCard(
+        height: 260,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(8.0),
+          bottomLeft: Radius.circular(8.0),
+          bottomRight: Radius.circular(8.0),
+          topRight: Radius.circular(8.0),
+        ),
+        padding:
+            const EdgeInsets.only(left: 24, right: 24, top: 16, bottom: 16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Expanded(
+              flex: 30,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: <Widget>[
+                  Text(
+                    '常用用户名称',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 11,
+                      letterSpacing: -0.2,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Container(
+                      height: 4,
+                      width: 70,
+                      decoration: BoxDecoration(
+                        color: HexColor('#89A0E5').withOpacity(0.2),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(4.0)),
+                      ),
+                      child: Row(
+                        children: <Widget>[
+                          Container(
+                            width: 70 / 1.2,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(colors: [
+                                HexColor('#89A0E5'),
+                                HexColor('#89A0E5').withOpacity(0.5),
+                              ]),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(4.0)),
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                  ...controller.usernameMap.map(
+                    (item) => Container(
+                      padding: const EdgeInsets.only(top: 6, bottom: 6),
+                      child: Text(
+                        '${maskString(item.name)}【${item.value}】',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 11,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withOpacity(0.8),
+                        ),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 4, left: 20, right: 20),
+              child: Container(
+                height: 260,
+                width: 5,
+                decoration: BoxDecoration(
+                  color: HexColor('#87D0E5').withOpacity(0.2),
+                  borderRadius: const BorderRadius.all(Radius.circular(4.0)),
+                ),
+                child: Row(
+                  children: <Widget>[
+                    Container(
+                      width: 4,
+                      height: 260 / 1.2,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(colors: [
+                          HexColor('#7C8B9A'),
+                          HexColor('#B9B8B7').withOpacity(0.5),
+                        ]),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(4.0)),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ),
+            Expanded(
+              flex: 70,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    '常用电子邮件',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 11,
+                      letterSpacing: -0.2,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Container(
+                      height: 5,
+                      width: 70,
+                      decoration: BoxDecoration(
+                        color: HexColor('#87D0E5').withOpacity(0.2),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(4.0)),
+                      ),
+                      child: Row(
+                        children: <Widget>[
+                          Container(
+                            width: 70 / 1.2,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(colors: [
+                                HexColor('#87D0E5'),
+                                HexColor('#87D0E5').withOpacity(0.5),
+                              ]),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(4.0)),
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                  ...controller.emailMap.map(
+                    (item) => Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(
+                        '${maskString(item.name)}【${item.value}】',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 11,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withOpacity(0.8),
+                        ),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
           ],
         ),
       );
@@ -1227,6 +1464,7 @@ class _DashBoardPageState extends State<DashBoardPage>
   }
 
   Widget _buildSiteInfo() {
+    Logger.instance.d(controller.statusList.length);
     int maxUploaded = controller.statusList
         .map((item) => item.value['uploaded'])
         .reduce((a, b) => a > b ? a : b);

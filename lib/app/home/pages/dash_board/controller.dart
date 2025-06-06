@@ -16,6 +16,8 @@ class DashBoardController extends GetxController {
     'https://ssdforum.org/',
     'https://cnlang.org/',
   ];
+  List<MetaDataItem> emailMap = [];
+  List<MetaDataItem> usernameMap = [];
   List<MetaDataItem> statusList = [];
   List<MetaDataItem> stackChartDataList = [];
   List<MetaDataItem> seedDataList = [];
@@ -29,11 +31,13 @@ class DashBoardController extends GetxController {
   int totalSeedVol = 0;
   int totalSeeding = 0;
   int totalLeeching = 0;
+  String updatedAt = '';
   bool privateMode = false;
   bool isLoading = false;
   bool isCacheLoading = false;
   bool isStackedLoading = false;
   bool buildSiteInfoCard = true;
+  bool buildAccountInfoCard = false;
   bool buildSmartLabelPieChart = true;
   bool buildSeedVolumePieChart = true;
   bool buildStackedBar = true;
@@ -61,6 +65,8 @@ class DashBoardController extends GetxController {
         SPUtil.getBool('buildSeedVolumePieChart', defaultValue: true)!;
     buildSmartLabelPieChart =
         SPUtil.getBool('buildSmartLabelPieChart', defaultValue: true)!;
+    buildAccountInfoCard =
+        SPUtil.getBool('buildAccountInfoCard', defaultValue: true)!;
     buildMonthStackedBar =
         SPUtil.getBool('buildMonthStackedBar', defaultValue: true)!;
     buildSiteInfo = SPUtil.getBool('buildSiteInfo', defaultValue: true)!;
@@ -103,6 +109,9 @@ class DashBoardController extends GetxController {
         totalLeeching = 0;
         todayUploadIncrement = 0;
         todayDownloadIncrement = 0;
+        updatedAt = '';
+        emailMap.clear();
+        usernameMap.clear();
         uploadIncrementDataList.clear();
         uploadMonthIncrementDataList.clear();
         downloadIncrementDataList.clear();
@@ -111,8 +120,8 @@ class DashBoardController extends GetxController {
         Logger.instance.i('缓存数据完成，缓存中...');
         SPUtil.setCache('$baseUrl - DASHBOARD_DATA', res.data, 3600 * 24);
         Logger.instance.i('缓存数据完成！');
-      } catch (e) {
-        String message = '仪表数据解析失败啦～${e.toString()}';
+      } catch (e, trace) {
+        String message = '仪表数据解析失败啦～${e.toString()} ${trace.toString()}';
         Logger.instance.e(message);
         Get.snackbar('仪表数据解析失败啦～', message);
       }
@@ -145,6 +154,13 @@ class DashBoardController extends GetxController {
   ///@updateTime
    */
   parseDashData(data) {
+    emailMap = (data['emailCount'] as List)
+        .map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>))
+        .toList();
+    usernameMap = (data['usernameCount'] as List)
+        .map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>))
+        .toList();
+    updatedAt = data['updatedAt'];
     totalUploaded = data['totalUploaded'];
     totalDownloaded = data['totalDownloaded'];
     totalSeedVol = data['totalSeedVol'];
