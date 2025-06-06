@@ -122,6 +122,8 @@ class MySite {
   final String nickname;
   final int sortId;
   final String? userId;
+  final String? username;
+  final String? email;
   final String? passkey;
   final String? authKey;
   final String? cookie;
@@ -155,6 +157,8 @@ class MySite {
     required this.nickname,
     required this.sortId,
     this.userId,
+    this.username,
+    this.email,
     this.passkey,
     this.authKey,
     this.cookie,
@@ -210,6 +214,8 @@ class MySite {
       nickname: json['nickname'] as String,
       sortId: json['sort_id'] as int,
       userId: json['user_id'] as String?,
+      username: json['username'] as String?,
+      email: json['email'] as String?,
       passkey: json['passkey'] as String?,
       authKey: json['authkey'] as String?,
       cookie: json['cookie'] as String?,
@@ -250,6 +256,8 @@ class MySite {
       'nickname': nickname,
       'passkey': passkey,
       'user_id': userId,
+      'username': username,
+      'email': email,
       'user_agent': userAgent,
       'rss': rss,
       'torrents': torrents,
@@ -330,6 +338,8 @@ class MySite {
     String? nickname,
     int? sortId,
     String? userId,
+    String? username,
+    String? email,
     String? passkey,
     String? authKey,
     String? cookie,
@@ -361,6 +371,8 @@ class MySite {
       nickname: nickname ?? this.nickname,
       sortId: sortId ?? this.sortId,
       userId: userId ?? this.userId,
+      username: username ?? this.username,
+      email: email ?? this.email,
       passkey: passkey ?? this.passkey,
       authKey: authKey ?? this.authKey,
       cookie: cookie ?? this.cookie,
