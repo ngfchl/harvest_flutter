@@ -57,6 +57,8 @@ class MySiteController extends GetxController {
     {'name': '无今日数据', 'value': 'status'},
     {'name': '无代理', 'value': 'proxy'},
     {'name': '无 UID', 'value': 'userId'},
+    {'name': '无用户名称', 'value': 'username'},
+    {'name': '无邮箱地址', 'value': 'email'},
     {'name': '无签到记录', 'value': 'signInInfo'},
     {'name': '无 Cookie', 'value': 'cookie'},
     {'name': '无 PassKey', 'value': 'passkey'},
@@ -365,6 +367,10 @@ class MySiteController extends GetxController {
       return toSearchList
           .where((site) =>
               site.nickname.toLowerCase().contains(searchKey.toLowerCase()) ||
+              (site.username?.toLowerCase().contains(searchKey.toLowerCase()) ??
+                  false) ||
+              (site.email?.toLowerCase().contains(searchKey.toLowerCase()) ??
+                  false) ||
               (site.mirror?.toLowerCase().contains(searchKey.toLowerCase()) ??
                   false) ||
               site.site.toLowerCase().contains(searchKey.toLowerCase()))
@@ -437,6 +443,13 @@ class MySiteController extends GetxController {
       case 'userId':
         filterByCondition(
             (item) => item.userId == null || item.userId!.isEmpty);
+        break;
+      case 'username':
+        filterByCondition(
+            (item) => item.username == null || item.username!.isEmpty);
+        break;
+      case 'email':
+        filterByCondition((item) => item.email == null || item.email!.isEmpty);
         break;
       case 'invitation':
         filterByCondition((item) {

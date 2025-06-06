@@ -1051,6 +1051,9 @@ class _MySitePagePageState extends State<MySitePage>
     final passkeyController =
         TextEditingController(text: mySite?.passkey ?? '');
     final userIdController = TextEditingController(text: mySite?.userId ?? '');
+    final usernameController =
+        TextEditingController(text: mySite?.username ?? '');
+    final emailController = TextEditingController(text: mySite?.email ?? '');
     final userAgentController = TextEditingController(
         text: mySite?.userAgent ??
             'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.0.0');
@@ -1230,9 +1233,19 @@ class _MySitePagePageState extends State<MySitePage>
                           labelText: '站点昵称',
                         ),
                         CustomTextField(
+                          controller: usernameController,
+                          maxLength: 128,
+                          labelText: '用户名称',
+                        ),
+                        CustomTextField(
                           controller: userIdController,
                           maxLength: 128,
                           labelText: 'User ID',
+                        ),
+                        CustomTextField(
+                          controller: emailController,
+                          maxLength: 128,
+                          labelText: '邮箱地址',
                         ),
                         CustomTextField(
                           controller: sortIdController,
@@ -1402,6 +1415,8 @@ class _MySitePagePageState extends State<MySitePage>
                           passkey: passkeyController.text.trim(),
                           authKey: apiKeyController.text.trim(),
                           userId: userIdController.text.trim(),
+                          username: usernameController.text.trim(),
+                          email: emailController.text.trim(),
                           sortId: int.parse(sortIdController.text.trim()),
                           userAgent: userAgentController.text.trim(),
                           proxy: proxyController.text.trim(),
@@ -1428,6 +1443,8 @@ class _MySitePagePageState extends State<MySitePage>
                           passkey: passkeyController.text.trim(),
                           authKey: apiKeyController.text.trim(),
                           userId: userIdController.text.trim(),
+                          username: usernameController.text.trim(),
+                          email: emailController.text.trim(),
                           sortId: int.parse(sortIdController.text.trim()),
                           userAgent: userAgentController.text.trim(),
                           proxy: proxyController.text.trim(),
