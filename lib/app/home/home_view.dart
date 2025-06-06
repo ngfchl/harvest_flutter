@@ -155,89 +155,96 @@ class HomeView extends GetView<HomeController> {
     return GetBuilder<HomeController>(builder: (controller) {
       return SingleChildScrollView(
         child: IntrinsicHeight(
-          child: NavigationRail(
-            useIndicator: true,
-            extended: !controller.isSmallHorizontalScreen,
-            selectedIndex: controller.initPage,
-            selectedLabelTextStyle:
-                TextStyle(color: Theme.of(context).colorScheme.primary),
-            selectedIconTheme: Theme.of(context)
-                .iconTheme
-                .copyWith(color: Theme.of(context).colorScheme.primary),
-            unselectedLabelTextStyle:
-                TextStyle(color: Theme.of(context).colorScheme.secondary),
-            unselectedIconTheme: Theme.of(context)
-                .iconTheme
-                .copyWith(color: Theme.of(context).colorScheme.secondary),
-            backgroundColor: Colors.transparent,
-            onDestinationSelected: (index) => controller.changePage(index),
-            labelType: controller.isSmallHorizontalScreen
-                ? NavigationRailLabelType.selected
-                : NavigationRailLabelType.none,
-            leading: GetBuilder<HomeController>(builder: (controller) {
-              if (!controller.isSmallHorizontalScreen) {
-                return GFDrawerHeader(
-                  centerAlign: true,
-                  closeButton: const SizedBox.shrink(),
-                  decoration: const BoxDecoration(
-                    color: Colors.transparent,
-                  ),
-                  currentAccountPicture: const GFAvatar(
-                    radius: 80.0,
-                    shape: GFAvatarShape.standard,
-                    backgroundImage: AssetImage('assets/images/avatar.png'),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 20.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height, // 确保宽度适配屏幕
+            ),
+            child: NavigationRail(
+              useIndicator: true,
+              extended: !controller.isSmallHorizontalScreen,
+              selectedIndex: controller.initPage,
+              selectedLabelTextStyle:
+                  TextStyle(color: Theme.of(context).colorScheme.primary),
+              selectedIconTheme: Theme.of(context)
+                  .iconTheme
+                  .copyWith(color: Theme.of(context).colorScheme.primary),
+              unselectedLabelTextStyle:
+                  TextStyle(color: Theme.of(context).colorScheme.secondary),
+              unselectedIconTheme: Theme.of(context)
+                  .iconTheme
+                  .copyWith(color: Theme.of(context).colorScheme.secondary),
+              backgroundColor: Colors.transparent,
+              onDestinationSelected: (index) => controller.changePage(index),
+              labelType: controller.isSmallHorizontalScreen
+                  ? NavigationRailLabelType.selected
+                  : NavigationRailLabelType.none,
+              leading: GetBuilder<HomeController>(builder: (controller) {
+                if (!controller.isSmallHorizontalScreen) {
+                  return GFDrawerHeader(
+                    centerAlign: true,
+                    closeButton: const SizedBox.shrink(),
+                    decoration: const BoxDecoration(
+                      color: Colors.transparent,
+                    ),
+                    currentAccountPicture: const GFAvatar(
+                      radius: 80.0,
+                      shape: GFAvatarShape.standard,
+                      backgroundImage: AssetImage('assets/images/avatar.png'),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 20.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                '${controller.userinfo?.isStaff == true ? '👑' : '🎩'}${controller.userinfo?.user.toString()}',
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  controller.logout();
+                                  controller.update();
+                                },
+                                icon: Icon(Icons.exit_to_app,
+                                    size: 16,
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
+                            ],
+                          ),
+                          if (controller.authInfo != null)
                             Text(
-                              '${controller.userinfo?.isStaff == true ? '👑' : '🎩'}${controller.userinfo?.user.toString()}',
+                              'VIP：${controller.authInfo?.timeExpire.toString()}',
                               style: TextStyle(
                                   fontSize: 12,
                                   color: Theme.of(context).colorScheme.primary),
                             ),
-                            IconButton(
-                              onPressed: () {
-                                controller.logout();
-                                controller.update();
-                              },
-                              icon: Icon(Icons.exit_to_app,
-                                  size: 16,
+                          Tooltip(
+                            message: '${SPUtil.getLocalStorage('server')}',
+                            child: Text(
+                              '${SPUtil.getLocalStorage('server')}',
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontSize: 12,
                                   color: Theme.of(context).colorScheme.primary),
                             ),
-                          ],
-                        ),
-                        if (controller.authInfo != null)
-                          Text(
-                            'VIP：${controller.authInfo?.timeExpire.toString()}',
-                            style: TextStyle(
-                                fontSize: 12,
-                                color: Theme.of(context).colorScheme.primary),
                           ),
-                        Tooltip(
-                          message: '${SPUtil.getLocalStorage('server')}',
-                          child: Text(
-                            '${SPUtil.getLocalStorage('server')}',
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                fontSize: 12,
-                                color: Theme.of(context).colorScheme.primary),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              }
-              return SizedBox.shrink();
-            }),
-            destinations: controller.destinations,
+                  );
+                }
+                return SizedBox.shrink();
+              }),
+              destinations: controller.destinations,
+            ),
           ),
         ),
       );
@@ -625,6 +632,17 @@ class HomeView extends GetView<HomeController> {
                           Get.snackbar('测速任务发送失败', '测速任务执行出错啦：${res.msg}',
                               colorText: Theme.of(context).colorScheme.error);
                         }
+                      },
+                    ),
+                    PopupMenuItem<String>(
+                      child: Text(
+                        '退出登录',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                      ),
+                      onTap: () async {
+                        controller.logout();
                       },
                     ),
                   ],

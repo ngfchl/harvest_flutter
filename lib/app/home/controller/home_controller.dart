@@ -87,18 +87,20 @@ class HomeController extends GetxController with WidgetsBindingObserver {
 
   @override
   void onReady() async {
+    Logger.instance.d('HomeController onReady');
     await getAuthInfo();
-    initMenus();
     await initUpdateLogState();
     update();
   }
 
   @override
   void onInit() async {
+    Logger.instance.d('HomeController onInit');
     try {
       isDarkMode = Get.isDarkMode;
       initDio();
       userinfo = AuthInfo.fromJson(SPUtil.getLocalStorage('userinfo'));
+      initMenus();
       update();
     } catch (e) {
       Logger.instance.e('初始化失败 $e');
