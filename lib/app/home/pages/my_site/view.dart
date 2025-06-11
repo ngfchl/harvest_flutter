@@ -421,6 +421,12 @@ class _MySitePagePageState extends State<MySitePage>
         FileSizeConvert.parseToByte(nextLevel?.downloaded ?? "0");
     int nextLevelToUploadedByte =
         FileSizeConvert.parseToByte(nextLevel?.uploaded ?? "0");
+    if (nextLevelToUploadedByte == 0) {
+      nextLevelToUploadedByte = (nextLevelToDownloadedByte < status!.downloaded
+              ? status.downloaded
+              : nextLevelToDownloadedByte) *
+          (nextLevel?.ratio ?? 0).toInt();
+    }
     return CustomCard(
       key: Key("${mySite.id}-${mySite.site}"),
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -554,14 +560,11 @@ class _MySitePagePageState extends State<MySitePage>
                                           Theme.of(context).colorScheme.primary,
                                     )),
                               ),
-                              if (status.uploaded < nextLevelToUploadedByte ||
-                                  status.uploaded <
-                                      nextLevelToDownloadedByte *
-                                          nextLevel.ratio)
+                              if (status.uploaded < nextLevelToUploadedByte)
                                 PopupMenuItem<String>(
                                   height: 13,
                                   child: Text(
-                                      '上传量：${filesize(status.uploaded)}/${nextLevelToUploadedByte > 0 ? nextLevel.uploaded : FileSizeConvert.parseToFileSize((nextLevelToDownloadedByte * nextLevel.ratio).toInt())}',
+                                      '上传量：${filesize(status.uploaded)}/${filesize(nextLevelToUploadedByte)}',
                                       style: TextStyle(
                                         fontSize: 10,
                                         color:
@@ -579,18 +582,18 @@ class _MySitePagePageState extends State<MySitePage>
                                             Theme.of(context).colorScheme.error,
                                       )),
                                 ),
-                              if (status.uploaded / status.downloaded <
-                                  nextLevel.ratio)
-                                PopupMenuItem<String>(
-                                  height: 13,
-                                  child: Text(
-                                      '分享率：${(status.uploaded / status.downloaded).toStringAsFixed(2)}/${nextLevel.ratio}',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color:
-                                            Theme.of(context).colorScheme.error,
-                                      )),
-                                ),
+                              // if (status.uploaded / status.downloaded <
+                              //     nextLevel.ratio)
+                              //   PopupMenuItem<String>(
+                              //     height: 13,
+                              //     child: Text(
+                              //         '分享率：${(status.uploaded / status.downloaded).toStringAsFixed(2)}/${nextLevel.ratio}',
+                              //         style: TextStyle(
+                              //           fontSize: 10,
+                              //           color:
+                              //               Theme.of(context).colorScheme.error,
+                              //         )),
+                              //   ),
                               if (nextLevel.torrents > 0)
                                 PopupMenuItem<String>(
                                   height: 13,
@@ -606,7 +609,7 @@ class _MySitePagePageState extends State<MySitePage>
                                 PopupMenuItem<String>(
                                   height: 13,
                                   child: Text(
-                                      '做种积分：${status.myScore}/${nextLevel.score}',
+                                      '做种积分：${formatNumber(status.myScore)}/${formatNumber(nextLevel.score)}',
                                       style: TextStyle(
                                         fontSize: 10,
                                         color:
