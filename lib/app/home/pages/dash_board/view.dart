@@ -21,6 +21,7 @@ import '../../../../common/meta_item.dart';
 import '../../../../common/utils.dart';
 import '../../../../utils/calc_weeks.dart';
 import '../../../../utils/logger_helper.dart';
+import '../../../../utils/screenshot.dart';
 import '../../../../utils/storage.dart';
 import '../../controller/common_api.dart';
 import 'controller.dart';
@@ -36,6 +37,7 @@ class _DashBoardPageState extends State<DashBoardPage>
     with AutomaticKeepAliveClientMixin, TickerProviderStateMixin {
   final controller = Get.put(DashBoardController());
   AnimationController? animationController;
+  final GlobalKey _captureKey = GlobalKey();
 
   @override
   bool get wantKeepAlive => true;
@@ -421,44 +423,47 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 ),
                               ),
                             )
-                          : Wrap(
-                              alignment: WrapAlignment.spaceAround,
-                              direction: Axis.horizontal,
-                              children: [
-                                if (controller.buildSiteInfoCard &&
-                                    controller.earliestSite != null)
-                                  _buildSiteInfoCard(),
-                                if (controller.buildAccountInfoCard &&
-                                    (controller.emailMap.isNotEmpty ||
-                                        controller.usernameMap.isNotEmpty))
-                                  _buildAccountInfoCard(),
-                                if (controller.buildSiteInfo &&
-                                    controller.statusList.isNotEmpty)
-                                  _buildSiteInfo(),
-                                if (controller.buildPublishedPieChart)
-                                  _buildPublishedPieChart(),
-                                if (controller.buildSeedVolumePieChart)
-                                  _buildSeedVolumePieChart(),
-                                if (controller.buildSmartLabelPieChart)
-                                  _buildSmartLabelPieChart(),
-                                if (controller.buildStackedBar)
-                                  _buildStackedBar(),
-                                if (controller.showTodayUploadedIncrement)
-                                  _showTodayUploadedIncrement(),
-                                if (controller.showTodayDownloadedIncrement)
-                                  _showTodayDownloadedIncrement(),
-                                if (controller.buildMonthPublishedBar)
-                                  _buildMonthPublishedBar(),
-                                if (controller.buildMonthStackedBar)
-                                  _buildMonthStackedBar(),
-                                if (controller.buildMonthDownloadedBar)
-                                  _buildMonthDownloadedBar(),
-                              ]
-                                  .map((item) => FractionallySizedBox(
-                                        widthFactor: _getWidthFactor(),
-                                        child: item,
-                                      ))
-                                  .toList()),
+                          : RepaintBoundary(
+                              key: _captureKey,
+                              child: Wrap(
+                                  alignment: WrapAlignment.spaceAround,
+                                  direction: Axis.horizontal,
+                                  children: [
+                                    if (controller.buildSiteInfoCard &&
+                                        controller.earliestSite != null)
+                                      _buildSiteInfoCard(),
+                                    if (controller.buildAccountInfoCard &&
+                                        (controller.emailMap.isNotEmpty ||
+                                            controller.usernameMap.isNotEmpty))
+                                      _buildAccountInfoCard(),
+                                    if (controller.buildSiteInfo &&
+                                        controller.statusList.isNotEmpty)
+                                      _buildSiteInfo(),
+                                    if (controller.buildPublishedPieChart)
+                                      _buildPublishedPieChart(),
+                                    if (controller.buildSeedVolumePieChart)
+                                      _buildSeedVolumePieChart(),
+                                    if (controller.buildSmartLabelPieChart)
+                                      _buildSmartLabelPieChart(),
+                                    if (controller.buildStackedBar)
+                                      _buildStackedBar(),
+                                    if (controller.showTodayUploadedIncrement)
+                                      _showTodayUploadedIncrement(),
+                                    if (controller.showTodayDownloadedIncrement)
+                                      _showTodayDownloadedIncrement(),
+                                    if (controller.buildMonthPublishedBar)
+                                      _buildMonthPublishedBar(),
+                                    if (controller.buildMonthStackedBar)
+                                      _buildMonthStackedBar(),
+                                    if (controller.buildMonthDownloadedBar)
+                                      _buildMonthDownloadedBar(),
+                                  ]
+                                      .map((item) => FractionallySizedBox(
+                                            widthFactor: _getWidthFactor(),
+                                            child: item,
+                                          ))
+                                      .toList()),
+                            ),
                     );
                   }),
                 );
@@ -531,7 +536,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                 side: WidgetStateProperty.all(BorderSide.none),
               ),
               label: Text(
-                '重新加载',
+                '加载',
                 style: TextStyle(
                     color: Theme.of(context).colorScheme.primary, fontSize: 12),
               ),
@@ -555,7 +560,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                 side: WidgetStateProperty.all(BorderSide.none),
               ),
               label: Text(
-                '更新数据',
+                '更新',
                 style: TextStyle(
                     color: Theme.of(context).colorScheme.primary, fontSize: 12),
               ),
@@ -579,11 +584,35 @@ class _DashBoardPageState extends State<DashBoardPage>
                 side: WidgetStateProperty.all(BorderSide.none),
               ),
               label: Text(
-                '全员签到',
+                '签到',
                 style: TextStyle(
                     color: Theme.of(context).colorScheme.primary, fontSize: 12),
               ),
             ),
+            if (!kIsWeb)
+              ElevatedButton.icon(
+                onPressed: () => ScreenshotSaver.captureAndSave(_captureKey),
+                icon: Icon(
+                  Icons.camera_alt_outlined,
+                  size: 12,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                style: ButtonStyle(
+                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5.0)),
+                  ),
+                  padding: WidgetStateProperty.all(
+                      const EdgeInsets.symmetric(horizontal: 5)),
+                  side: WidgetStateProperty.all(BorderSide.none),
+                ),
+                label: Text(
+                  '截图',
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontSize: 12),
+                ),
+              ),
             CustomPopup(
               showArrow: false,
               backgroundColor: Theme.of(context).colorScheme.surface,
@@ -625,7 +654,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                   side: WidgetStateProperty.all(BorderSide.none),
                 ),
                 label: Text(
-                  '清理缓存',
+                  '缓存',
                   style: TextStyle(
                       color: Theme.of(context).colorScheme.primary,
                       fontSize: 12),
