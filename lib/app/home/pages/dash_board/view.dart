@@ -447,12 +447,12 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   _showTodayUploadedIncrement(),
                                 if (controller.showTodayDownloadedIncrement)
                                   _showTodayDownloadedIncrement(),
+                                if (controller.buildMonthPublishedBar)
+                                  _buildMonthPublishedBar(),
                                 if (controller.buildMonthStackedBar)
                                   _buildMonthStackedBar(),
                                 if (controller.buildMonthDownloadedBar)
                                   _buildMonthDownloadedBar(),
-                                if (controller.buildMonthPublishedBar)
-                                  _buildMonthPublishedBar(),
                               ]
                                   .map((item) => FractionallySizedBox(
                                         widthFactor: _getWidthFactor(),
@@ -1269,13 +1269,13 @@ class _DashBoardPageState extends State<DashBoardPage>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Text('数据更新时间：',
+                      Text('最后更新：',
                           style: TextStyle(
                               fontWeight: FontWeight.w500,
                               fontSize: 11,
                               letterSpacing: -0.2,
                               color: Theme.of(context).colorScheme.primary)),
-                      Text(controller.updatedAt,
+                      Text(controller.updatedAt.substring(0, 19),
                           style: TextStyle(
                               fontWeight: FontWeight.w500,
                               fontSize: 11,
