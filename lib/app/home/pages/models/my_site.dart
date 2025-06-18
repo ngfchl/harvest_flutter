@@ -29,7 +29,7 @@ class StatusInfo {
   int seed;
   int leech;
   int invitation;
-  int publish;
+  int published;
   int seedDays;
   String myHr;
   String myLevel;
@@ -47,7 +47,7 @@ class StatusInfo {
     required this.seed,
     required this.leech,
     required this.invitation,
-    required this.publish,
+    required this.published,
     required this.seedDays,
     required this.myHr,
     required this.myLevel,
@@ -74,7 +74,7 @@ class StatusInfo {
       seed: json['seed'] as int,
       leech: json['leech'] as int,
       invitation: json['invitation'] ?? 0,
-      publish: json['publish'] ?? 0,
+      published: json['published'] ?? 0,
       seedDays: json['seed_days'] != null
           ? double.parse(json['seed_days'].toString()).toInt()
           : 0,
