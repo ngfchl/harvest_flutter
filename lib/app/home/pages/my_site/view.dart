@@ -451,7 +451,7 @@ class _MySitePagePageState extends State<MySitePage>
               height: 32,
             ),
           ),
-          onTap: () async {
+          onLongPress: () async {
             String path;
             if (mySite.mail! > 0 && !website.pageMessage.contains('api')) {
               path = website.pageMessage
@@ -694,7 +694,7 @@ class _MySitePagePageState extends State<MySitePage>
                   child: Text(
                     website.level?[status.myLevel]?.level ?? status.myLevel,
                     style: TextStyle(
-                      fontSize: 10,
+                      fontSize: 11,
                       color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
