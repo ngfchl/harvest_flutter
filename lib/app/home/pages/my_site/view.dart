@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
@@ -421,12 +422,10 @@ class _MySitePagePageState extends State<MySitePage>
         FileSizeConvert.parseToByte(nextLevel?.downloaded ?? "0");
     int nextLevelToUploadedByte =
         FileSizeConvert.parseToByte(nextLevel?.uploaded ?? "0");
-    if (nextLevelToUploadedByte == 0) {
-      nextLevelToUploadedByte = (nextLevelToDownloadedByte < status!.downloaded
-              ? status.downloaded
-              : nextLevelToDownloadedByte) *
-          (nextLevel?.ratio ?? 0).toInt();
-    }
+    int calcToUploaded =
+        max(nextLevelToDownloadedByte, status?.downloaded ?? 0) *
+            (nextLevel?.ratio ?? 0).toInt();
+
     return CustomCard(
       key: Key("${mySite.id}-${mySite.site}"),
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -564,7 +563,7 @@ class _MySitePagePageState extends State<MySitePage>
                                 PopupMenuItem<String>(
                                   height: 13,
                                   child: Text(
-                                      '上传量：${filesize(status.uploaded)}/${filesize(nextLevelToUploadedByte)}',
+                                      '上传量：${filesize(status.uploaded)}/${filesize(max(nextLevelToUploadedByte, calcToUploaded))}',
                                       style: TextStyle(
                                         fontSize: 10,
                                         color:
@@ -597,7 +596,8 @@ class _MySitePagePageState extends State<MySitePage>
                               if (nextLevel.torrents > 0)
                                 PopupMenuItem<String>(
                                   height: 13,
-                                  child: Text('需发种数量：${nextLevel.torrents}',
+                                  child: Text(
+                                      '需发种数量：${status.published}/${nextLevel.torrents}',
                                       style: TextStyle(
                                         fontSize: 10,
                                         color:
@@ -826,7 +826,7 @@ class _MySitePagePageState extends State<MySitePage>
                               ),
                               const SizedBox(width: 2),
                               Text(
-                                formatNumber(status.ratio),
+                                '${status.published}(${formatNumber(status.ratio)})',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: status.ratio > 1
@@ -1856,7 +1856,7 @@ class StatusToolTip extends StatelessWidget {
         if (data.invitation > 0) _buildDataRow('邀请', data.invitation),
         if (data.seedDays > 0) _buildDataRow('做种时间', data.seedDays),
         _buildDataRow('HR', data.myHr),
-        if (data.publish > 0) _buildDataRow('已发布', data.publish),
+        if (data.published > 0) _buildDataRow('已发布', data.published),
       ],
     );
   }
