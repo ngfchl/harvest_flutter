@@ -62,6 +62,8 @@
         <true/>
         <key>NSPhotoLibraryUsageDescription</key>
         <string>我们需要访问您的照片库以便上传照片。</string>
+        <key>NSPhotoLibraryAddUsageDescription</key>
+        <string>用于保存截图到相册</string>
         <key>NSCameraUsageDescription</key>
         <string>我们需要使用相机来拍摄照片。</string>
         <key>NSFileProtectionComplete</key>
