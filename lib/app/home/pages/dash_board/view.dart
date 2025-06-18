@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:filesize/filesize.dart';
 import 'package:flutter/foundation.dart';
@@ -9,6 +10,7 @@ import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:harvest/app/home/pages/models/my_site.dart';
+import 'package:harvest/utils/format_number.dart';
 import 'package:random_color/random_color.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
@@ -433,18 +435,24 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 if (controller.buildSiteInfo &&
                                     controller.statusList.isNotEmpty)
                                   _buildSiteInfo(),
-                                if (controller.buildSmartLabelPieChart)
-                                  _buildSmartLabelPieChart(),
+                                if (controller.buildPublishedPieChart)
+                                  _buildPublishedPieChart(),
                                 if (controller.buildSeedVolumePieChart)
                                   _buildSeedVolumePieChart(),
+                                if (controller.buildSmartLabelPieChart)
+                                  _buildSmartLabelPieChart(),
                                 if (controller.buildStackedBar)
                                   _buildStackedBar(),
-                                if (controller.buildMonthStackedBar)
-                                  _buildMonthStackedBar(),
                                 if (controller.showTodayUploadedIncrement)
                                   _showTodayUploadedIncrement(),
                                 if (controller.showTodayDownloadedIncrement)
                                   _showTodayDownloadedIncrement(),
+                                if (controller.buildMonthStackedBar)
+                                  _buildMonthStackedBar(),
+                                if (controller.buildMonthDownloadedBar)
+                                  _buildMonthDownloadedBar(),
+                                if (controller.buildMonthPublishedBar)
+                                  _buildMonthPublishedBar(),
                               ]
                                   .map((item) => FractionallySizedBox(
                                         widthFactor: _getWidthFactor(),
@@ -968,7 +976,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Text(
-                          '站点数',
+                          '发种数',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontWeight: FontWeight.w500,
@@ -1008,7 +1016,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                         Padding(
                           padding: const EdgeInsets.only(top: 6),
                           child: Text(
-                            '${controller.siteCount}',
+                            '${controller.totalPublished}',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
@@ -1229,24 +1237,52 @@ class _DashBoardPageState extends State<DashBoardPage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('数据更新时间：',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w500,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        '站点数：',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
                           fontSize: 11,
-                          letterSpacing: -0.2,
-                          color: Theme.of(context).colorScheme.primary)),
-                  Container(
-                    height: 2,
-                    decoration: const BoxDecoration(
-                      borderRadius: BorderRadius.all(Radius.circular(4.0)),
-                    ),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withOpacity(0.8),
+                        ),
+                      ),
+                      Text(
+                        '${controller.siteCount}',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 11,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withOpacity(0.8),
+                        ),
+                      ),
+                    ],
                   ),
-                  Text(controller.updatedAt,
-                      style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 11,
-                          letterSpacing: -0.2,
-                          color: Theme.of(context).colorScheme.primary))
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text('数据更新时间：',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 11,
+                              letterSpacing: -0.2,
+                              color: Theme.of(context).colorScheme.primary)),
+                      Text(controller.updatedAt,
+                          style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 11,
+                              letterSpacing: -0.2,
+                              color: Theme.of(context).colorScheme.primary)),
+                    ],
+                  )
                 ],
               ),
             ),
@@ -1681,6 +1717,100 @@ class _DashBoardPageState extends State<DashBoardPage>
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   '${data.name}: ${filesize(data.value.uploaded ?? 0)}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              );
+            },
+          ),
+          enableMultiSelection: true,
+        ),
+      );
+    });
+  }
+
+  Widget _buildPublishedPieChart() {
+    return GetBuilder<DashBoardController>(builder: (controller) {
+      return CustomCard(
+        height: 260,
+        padding: const EdgeInsets.only(left: 10),
+        child: SfCircularChart(
+          title: ChartTitle(
+              text: '发种数据',
+              textStyle: TextStyle(
+                fontSize: 11,
+                color: Theme.of(context).colorScheme.primary,
+              )),
+          centerX: '47%',
+          centerY: '45%',
+          margin: const EdgeInsets.all(10),
+          legend: Legend(
+              position: LegendPosition.left,
+              // height: "20",
+              isVisible: true,
+              iconWidth: 8,
+              padding: 5,
+              itemPadding: 5,
+              // width: '64',
+              isResponsive: true,
+              textStyle: TextStyle(
+                fontSize: 8,
+                color: Theme.of(context).colorScheme.primary,
+              )),
+          series: <PieSeries<MetaDataItem, String>>[
+            PieSeries<MetaDataItem, String>(
+              name: '站点发种数据汇总',
+              dataSource: controller.statusList
+                  .map((item) => MetaDataItem(
+                      name: item.name,
+                      value: TrafficDelta.fromJson(item.value)))
+                  .where((item) => item.value.published > 0)
+                  .sorted(
+                      (a, b) => b.value.published.compareTo(a.value.published))
+                  .toList(),
+              xValueMapper: (MetaDataItem data, _) => controller.privateMode
+                  ? "${data.name.substring(0, 1)}**"
+                  : data.name,
+              yValueMapper: (MetaDataItem data, _) => data.value.published ?? 0,
+              dataLabelMapper: (MetaDataItem data, _) =>
+                  '${controller.privateMode ? "${data.name.substring(0, 1)}**" : data.name}: ${data.value.published}',
+              enableTooltip: true,
+              explode: true,
+              explodeIndex: 0,
+              explodeOffset: '10%',
+              radius: '65%',
+              // pointRenderMode: PointRenderMode.gradient,
+              dataLabelSettings: DataLabelSettings(
+                margin: EdgeInsets.zero,
+                isVisible: true,
+                labelPosition: ChartDataLabelPosition.outside,
+                textStyle: TextStyle(
+                  fontSize: 8,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                showZeroValue: false,
+                connectorLineSettings: const ConnectorLineSettings(
+                  type: ConnectorType.curve,
+                  length: '20%',
+                ),
+                labelIntersectAction: LabelIntersectAction.shift,
+              ),
+            )
+          ],
+          tooltipBehavior: TooltipBehavior(
+            enable: true,
+            header: '',
+            canShowMarker: false,
+            activationMode: ActivationMode.singleTap,
+            builder: (dynamic data, dynamic point, dynamic series,
+                int pointIndex, int seriesIndex) {
+              return Container(
+                color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  '${data.name}: ${formatNumber(data.value.published, fixed: 0)}',
                   style: TextStyle(
                     fontSize: 11,
                     color: Theme.of(context).colorScheme.primary,
@@ -2201,6 +2331,422 @@ class _DashBoardPageState extends State<DashBoardPage>
                             formatCreatedTimeToMonthString(status!),
                         yValueMapper: (TrafficDelta? status, loop) {
                           return status?.uploaded;
+                        },
+                        // pointColorMapper: (StatusInfo status, _) =>
+                        //     RandomColor().randomColor(),
+                        emptyPointSettings: const EmptyPointSettings(
+                          mode: EmptyPointMode.drop,
+                        ),
+                        dataLabelMapper: (TrafficDelta? status, _) => controller
+                                .privateMode
+                            ? "${siteData.name.toString().substring(0, 1)}**"
+                            : siteData.name,
+                        // color: RandomColor().randomColor(),
+                        // enableTooltip: true,
+                      );
+                    }).toList()),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Row(
+                  children: [
+                    CustomTextTag(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        labelText: '最近12月'),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 12.0),
+                        child: Row(
+                          children: [
+                            // InkWell(
+                            //   child: const Icon(Icons.remove),
+                            //   onTap: () async {
+                            //     if (controller.days > 1) {
+                            //       controller.days--;
+                            //       await controller.initChartData();
+                            //       controller.update();
+                            //     }
+                            //   },
+                            // ),
+                            Expanded(
+                              child: Slider(
+                                  min: 1,
+                                  max: 12,
+                                  divisions: 12,
+                                  // label: controller.days.toString(),
+                                  value: 12,
+                                  onChanged: (value) async {
+                                    // controller.days = value.toInt();
+                                    // await controller.initChartData();
+                                    //
+                                    // controller.update();
+                                  }),
+                            ),
+                            // InkWell(
+                            //   child: const Icon(Icons.add),
+                            //   onTap: () {
+                            //     if (controller.days < 14) {
+                            //       controller.days++;
+                            //       controller.initChartData();
+                            //       controller.update();
+                            //     }
+                            //   },
+                            // ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      });
+    } catch (e, trace) {
+      Logger.instance.e(e);
+      Logger.instance.e(trace);
+      return const SizedBox.shrink();
+    }
+  }
+
+  Widget _buildMonthDownloadedBar() {
+    try {
+      return GetBuilder<DashBoardController>(builder: (controller) {
+        return CustomCard(
+          height: 260,
+          child: Column(
+            children: [
+              SizedBox(
+                height: 200,
+                child: SfCartesianChart(
+                    title: ChartTitle(
+                        text: '月度下载增量',
+                        textStyle: TextStyle(
+                            fontSize: 11,
+                            color: Theme.of(context).colorScheme.primary)),
+                    isTransposed: true,
+                    margin: const EdgeInsets.all(15),
+                    legend: Legend(
+                        isVisible: false,
+                        iconWidth: 8,
+                        iconHeight: 8,
+                        padding: 5,
+                        itemPadding: 5,
+                        textStyle: TextStyle(
+                          fontSize: 8,
+                          color: Theme.of(context).colorScheme.primary,
+                        )),
+                    enableSideBySideSeriesPlacement: false,
+                    plotAreaBorderWidth: 0,
+                    enableAxisAnimation: true,
+                    selectionType: SelectionType.point,
+                    zoomPanBehavior: ZoomPanBehavior(
+                      enablePinching: true,
+                      enableDoubleTapZooming: true,
+                      zoomMode: ZoomMode.x,
+                      enablePanning: true,
+                      enableMouseWheelZooming: true,
+                      enableSelectionZooming: true,
+                      maximumZoomLevel: 0.3,
+                    ),
+                    tooltipBehavior: TooltipBehavior(
+                      enable: true,
+                      canShowMarker: true,
+                      duration: 0,
+                      activationMode: ActivationMode.singleTap,
+                      tooltipPosition: TooltipPosition.auto,
+                      builder: (dynamic data, dynamic point, dynamic series,
+                          int pointIndex, int seriesIndex) {
+                        // Logger.instance.d(data);
+                        return Container(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surface
+                              .withOpacity(0.8),
+                          padding: const EdgeInsets.all(8),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                Text(
+                                  point.x,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary
+                                        .withOpacity(0.8),
+                                  ),
+                                ),
+                                Text(
+                                  '${series.name}: ${filesize(point.y)}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .secondary
+                                        .withOpacity(0.8),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    primaryXAxis: CategoryAxis(
+                      majorGridLines: const MajorGridLines(width: 0),
+                      axisLabelFormatter: (AxisLabelRenderDetails details) {
+                        return ChartAxisLabel(
+                          details.text,
+                          TextStyle(
+                            fontSize: 10,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        );
+                      },
+                    ),
+                    primaryYAxis: NumericAxis(
+                      axisLine: const AxisLine(width: 0),
+                      axisLabelFormatter: (AxisLabelRenderDetails details) {
+                        return ChartAxisLabel(
+                          filesize(details.value.toInt()),
+                          TextStyle(
+                            fontSize: 10,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        );
+                      },
+                      majorTickLines: const MajorTickLines(size: 0),
+                    ),
+                    series: List.generate(
+                        controller.uploadMonthIncrementDataList.length,
+                        (index) {
+                      MetaDataItem siteData =
+                          controller.uploadMonthIncrementDataList[index];
+                      List<TrafficDelta?> dataSource =
+                          siteData.value.whereType<TrafficDelta?>().toList();
+                      return StackedBarSeries<TrafficDelta?, String>(
+                        name: controller.privateMode
+                            ? "${siteData.name.toString().substring(0, 1)}**"
+                            : siteData.name,
+                        // width: 0.5,
+                        borderRadius: BorderRadius.circular(1),
+                        legendIconType: LegendIconType.circle,
+                        dataSource: dataSource,
+                        // isVisibleInLegend: true,
+                        xValueMapper: (TrafficDelta? status, loop) =>
+                            formatCreatedTimeToMonthString(status!),
+                        yValueMapper: (TrafficDelta? status, loop) {
+                          return status?.downloaded ?? 0;
+                        },
+                        // pointColorMapper: (StatusInfo status, _) =>
+                        //     RandomColor().randomColor(),
+                        emptyPointSettings: const EmptyPointSettings(
+                          mode: EmptyPointMode.drop,
+                        ),
+                        dataLabelMapper: (TrafficDelta? status, _) => controller
+                                .privateMode
+                            ? "${siteData.name.toString().substring(0, 1)}**"
+                            : siteData.name,
+                        // color: RandomColor().randomColor(),
+                        // enableTooltip: true,
+                      );
+                    }).toList()),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Row(
+                  children: [
+                    CustomTextTag(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        labelText: '最近12月'),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 12.0),
+                        child: Row(
+                          children: [
+                            // InkWell(
+                            //   child: const Icon(Icons.remove),
+                            //   onTap: () async {
+                            //     if (controller.days > 1) {
+                            //       controller.days--;
+                            //       await controller.initChartData();
+                            //       controller.update();
+                            //     }
+                            //   },
+                            // ),
+                            Expanded(
+                              child: Slider(
+                                  min: 1,
+                                  max: 12,
+                                  divisions: 12,
+                                  // label: controller.days.toString(),
+                                  value: 12,
+                                  onChanged: (value) async {
+                                    // controller.days = value.toInt();
+                                    // await controller.initChartData();
+                                    //
+                                    // controller.update();
+                                  }),
+                            ),
+                            // InkWell(
+                            //   child: const Icon(Icons.add),
+                            //   onTap: () {
+                            //     if (controller.days < 14) {
+                            //       controller.days++;
+                            //       controller.initChartData();
+                            //       controller.update();
+                            //     }
+                            //   },
+                            // ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      });
+    } catch (e, trace) {
+      Logger.instance.e(e);
+      Logger.instance.e(trace);
+      return const SizedBox.shrink();
+    }
+  }
+
+  Widget _buildMonthPublishedBar() {
+    try {
+      return GetBuilder<DashBoardController>(builder: (controller) {
+        return CustomCard(
+          height: 260,
+          child: Column(
+            children: [
+              SizedBox(
+                height: 200,
+                child: SfCartesianChart(
+                    title: ChartTitle(
+                        text: '月度发种增量',
+                        textStyle: TextStyle(
+                            fontSize: 11,
+                            color: Theme.of(context).colorScheme.primary)),
+                    isTransposed: true,
+                    margin: const EdgeInsets.all(15),
+                    legend: Legend(
+                        isVisible: false,
+                        iconWidth: 8,
+                        iconHeight: 8,
+                        padding: 5,
+                        itemPadding: 5,
+                        textStyle: TextStyle(
+                          fontSize: 8,
+                          color: Theme.of(context).colorScheme.primary,
+                        )),
+                    enableSideBySideSeriesPlacement: false,
+                    plotAreaBorderWidth: 0,
+                    enableAxisAnimation: true,
+                    selectionType: SelectionType.point,
+                    zoomPanBehavior: ZoomPanBehavior(
+                      enablePinching: true,
+                      enableDoubleTapZooming: true,
+                      zoomMode: ZoomMode.x,
+                      enablePanning: true,
+                      enableMouseWheelZooming: true,
+                      enableSelectionZooming: true,
+                      maximumZoomLevel: 0.3,
+                    ),
+                    tooltipBehavior: TooltipBehavior(
+                      enable: true,
+                      canShowMarker: true,
+                      duration: 0,
+                      activationMode: ActivationMode.singleTap,
+                      tooltipPosition: TooltipPosition.auto,
+                      builder: (dynamic data, dynamic point, dynamic series,
+                          int pointIndex, int seriesIndex) {
+                        // Logger.instance.d(data);
+                        return Container(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surface
+                              .withOpacity(0.8),
+                          padding: const EdgeInsets.all(8),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                Text(
+                                  point.x,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary
+                                        .withOpacity(0.8),
+                                  ),
+                                ),
+                                Text(
+                                  '${series.name}: ${formatNumber(point.y, fixed: 0)}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .secondary
+                                        .withOpacity(0.8),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    primaryXAxis: CategoryAxis(
+                      majorGridLines: const MajorGridLines(width: 0),
+                      axisLabelFormatter: (AxisLabelRenderDetails details) {
+                        return ChartAxisLabel(
+                          details.text,
+                          TextStyle(
+                            fontSize: 10,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        );
+                      },
+                    ),
+                    primaryYAxis: NumericAxis(
+                      axisLine: const AxisLine(width: 0),
+                      axisLabelFormatter: (AxisLabelRenderDetails details) {
+                        return ChartAxisLabel(
+                          formatNumber(details.value.toInt(), fixed: 0),
+                          TextStyle(
+                            fontSize: 10,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        );
+                      },
+                      majorTickLines: const MajorTickLines(size: 0),
+                    ),
+                    series: List.generate(
+                        controller.uploadMonthIncrementDataList.length,
+                        (index) {
+                      MetaDataItem siteData =
+                          controller.uploadMonthIncrementDataList[index];
+                      List<TrafficDelta?> dataSource =
+                          siteData.value.whereType<TrafficDelta?>().toList();
+                      return StackedBarSeries<TrafficDelta?, String>(
+                        name: controller.privateMode
+                            ? "${siteData.name.toString().substring(0, 1)}**"
+                            : siteData.name,
+                        // width: 0.5,
+                        borderRadius: BorderRadius.circular(1),
+                        legendIconType: LegendIconType.circle,
+                        dataSource: dataSource,
+                        // isVisibleInLegend: true,
+                        xValueMapper: (TrafficDelta? status, loop) =>
+                            formatCreatedTimeToMonthString(status!),
+                        yValueMapper: (TrafficDelta? status, loop) {
+                          return status?.published ?? 0;
                         },
                         // pointColorMapper: (StatusInfo status, _) =>
                         //     RandomColor().randomColor(),

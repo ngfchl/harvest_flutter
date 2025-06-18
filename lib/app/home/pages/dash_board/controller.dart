@@ -25,6 +25,7 @@ class DashBoardController extends GetxController {
   List<MetaDataItem> uploadMonthIncrementDataList = [];
   List<MetaDataItem> downloadIncrementDataList = [];
   int totalUploaded = 0;
+  int totalPublished = 0;
   int totalDownloaded = 0;
   int todayUploadIncrement = 0;
   int todayDownloadIncrement = 0;
@@ -38,8 +39,11 @@ class DashBoardController extends GetxController {
   bool isStackedLoading = false;
   bool buildSiteInfoCard = true;
   bool buildAccountInfoCard = false;
+  bool buildMonthPublishedBar = true;
+  bool buildPublishedPieChart = true;
   bool buildSmartLabelPieChart = true;
   bool buildSeedVolumePieChart = true;
+  bool buildMonthDownloadedBar = true;
   bool buildStackedBar = true;
   bool buildMonthStackedBar = true;
   bool buildSiteInfo = true;
@@ -67,6 +71,12 @@ class DashBoardController extends GetxController {
         SPUtil.getBool('buildSmartLabelPieChart', defaultValue: true)!;
     buildAccountInfoCard =
         SPUtil.getBool('buildAccountInfoCard', defaultValue: true)!;
+    buildMonthPublishedBar =
+        SPUtil.getBool('buildMonthPublishedBar', defaultValue: true)!;
+    buildMonthDownloadedBar =
+        SPUtil.getBool('buildMonthDownloadedBar', defaultValue: true)!;
+    buildPublishedPieChart =
+        SPUtil.getBool('buildPublishedPieChart', defaultValue: true)!;
     buildMonthStackedBar =
         SPUtil.getBool('buildMonthStackedBar', defaultValue: true)!;
     buildSiteInfo = SPUtil.getBool('buildSiteInfo', defaultValue: true)!;
@@ -103,6 +113,7 @@ class DashBoardController extends GetxController {
         // 清空数据
         Logger.instance.i('开始初始化页面数据...');
         totalUploaded = 0;
+        totalPublished = 0;
         totalDownloaded = 0;
         totalSeedVol = 0;
         totalSeeding = 0;
@@ -160,15 +171,16 @@ class DashBoardController extends GetxController {
     usernameMap = (data['usernameCount'] as List)
         .map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>))
         .toList();
-    updatedAt = data['updatedAt'];
-    totalUploaded = data['totalUploaded'];
-    totalDownloaded = data['totalDownloaded'];
-    totalSeedVol = data['totalSeedVol'];
-    totalSeeding = data['totalSeeding'];
-    totalLeeching = data['totalLeeching'];
+    updatedAt = data['updatedAt'] ?? '';
+    totalUploaded = data['totalUploaded'] ?? 0;
+    totalDownloaded = data['totalDownloaded'] ?? 0;
+    totalPublished = data['totalPublished'] ?? 0;
+    totalSeedVol = data['totalSeedVol'] ?? 0;
+    totalSeeding = data['totalSeeding'] ?? 0;
+    totalLeeching = data['totalLeeching'] ?? 0;
     siteCount = data['siteCount'] ?? 0;
-    todayUploadIncrement = data['todayUploadIncrement'];
-    todayDownloadIncrement = data['todayDownloadIncrement'];
+    todayUploadIncrement = data['todayUploadIncrement'] ?? 0;
+    todayDownloadIncrement = data['todayDownloadIncrement'] ?? 0;
     uploadIncrementDataList = (data['uploadIncrementDataList'] as List)
         .map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>))
         .toList();
