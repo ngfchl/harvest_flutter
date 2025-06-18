@@ -277,10 +277,10 @@ packages:
     dependency: "direct main"
     description:
       name: file_picker
-      sha256: "77f8e81d22d2a07d0dee2c62e1dda71dc1da73bf43bb2d45af09727406167964"
+      sha256: ef9908739bdd9c476353d6adff72e88fd00c625f5b959ae23f7567bd5137db0a
       url: "https://pub.dev"
     source: hosted
-    version: "10.1.9"
+    version: "10.2.0"
   filesize:
     dependency: "direct main"
     description:
@@ -450,10 +450,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_popup
-      sha256: "88e1e98c4111e1426a8f83991103b107e6ce329e610708b63f2c14940e472d24"
+      sha256: "08e554be1173f4e7bb5eda2ae2e5addd565873026a3ac9b64c38ea86dfd4dc9d"
       url: "https://pub.dev"
     source: hosted
-    version: "3.3.6"
+    version: "3.3.9"
   flutter_settings_ui:
     dependency: transitive
     description:
@@ -474,10 +474,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_svg
-      sha256: d44bf546b13025ec7353091516f6881f1d4c633993cb109c3916c3a0159dadf1
+      sha256: cd57f7969b4679317c17af6fd16ee233c1e60a82ed209d8a475c54fd6fd6f845
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.0"
+    version: "2.2.0"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -536,6 +536,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.5.4"
+  image_gallery_saver_plus:
+    dependency: "direct main"
+    description:
+      name: image_gallery_saver_plus
+      sha256: "199b9e24f8d85e98f11e3d35571ab68ae50626ad40e2bb85c84383f69a6950ad"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.1"
   intl:
     dependency: "direct main"
     description:
@@ -640,6 +648,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.16.0"
+  mime:
+    dependency: transitive
+    description:
+      name: mime
+      sha256: "41a20518f0cb1256669420fdba0cd90d21561e560ac240f26ef8322e45bb7ed6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   octo_image:
     dependency: transitive
     description:
@@ -664,6 +680,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.2.0"
+  pasteboard:
+    dependency: "direct main"
+    description:
+      name: pasteboard
+      sha256: "9ff73ada33f79a59ff91f6c01881fd4ed0a0031cfc4ae2d86c0384471525fca1"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.0"
   path:
     dependency: "direct main"
     description:
@@ -904,6 +928,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.0"
+  share_plus:
+    dependency: "direct main"
+    description:
+      name: share_plus
+      sha256: b2961506569e28948d75ec346c28775bb111986bb69dc6a20754a457e3d97fa0
+      url: "https://pub.dev"
+    source: hosted
+    version: "11.0.0"
+  share_plus_platform_interface:
+    dependency: transitive
+    description:
+      name: share_plus_platform_interface
+      sha256: "1032d392bc5d2095a77447a805aa3f804d2ae6a4d5eef5e6ebb3bd94c1bc19ef"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.0"
   shared_preferences:
     dependency: "direct main"
     description:
@@ -1049,34 +1089,34 @@ packages:
     dependency: "direct main"
     description:
       name: syncfusion_flutter_charts
-      sha256: "8c55049105f3939adfd8a913a5421154999f0dde4fd5472ab66f3d0f49d3a9a3"
+      sha256: c43329a0f74337c96cbf6e1993c990a111c56df4f307b63590063c50d7b027f1
       url: "https://pub.dev"
     source: hosted
-    version: "29.2.7"
+    version: "29.2.11"
   syncfusion_flutter_core:
     dependency: "direct main"
     description:
       name: syncfusion_flutter_core
-      sha256: "6898c5dc81f73ac4e1156a075e4dd4591ea8927f26dcc77f6ba0e9b1b1d6c8c5"
+      sha256: bee87cdfe527b31705190162e3bd27bf468d591ae7c68182244bdfd94e21f737
       url: "https://pub.dev"
     source: hosted
-    version: "29.2.7"
+    version: "29.2.11"
   syncfusion_flutter_gauges:
     dependency: "direct main"
     description:
       name: syncfusion_flutter_gauges
-      sha256: ad9558ddf861b2e3687df056e8041ffbc7a90545faf9d56cf5513a78ea052a21
+      sha256: "80d0d1a7dbf99272f6e181df9cd7567b6bff143bc010de0dcfde1410e6a62a20"
       url: "https://pub.dev"
     source: hosted
-    version: "29.2.7+1"
+    version: "29.2.11"
   syncfusion_flutter_sliders:
     dependency: "direct main"
     description:
       name: syncfusion_flutter_sliders
-      sha256: b0094c8f864a6e6716e773edcd149c2736452ab6e282e7aae867412b9948f6c9
+      sha256: "84ba05823f00e30cb0fdb98ad300a204617db4a6407de7c184f9836276f386b9"
       url: "https://pub.dev"
     source: hosted
-    version: "29.2.7"
+    version: "29.2.11"
   synchronized:
     dependency: transitive
     description:
@@ -1105,10 +1145,10 @@ packages:
     dependency: "direct main"
     description:
       name: timelines_plus
-      sha256: be31f493402dc24df7fe410dc5f82a605807bb4ca13183de6d4362886449b593
+      sha256: "335cd832e0aed7035458a5f336bc2c882dc70dcfa4d500d3bcadd764f1ac6553"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.6"
+    version: "1.0.7"
   tmdb_api:
     dependency: "direct main"
     description:
@@ -1121,10 +1161,10 @@ packages:
     dependency: "direct main"
     description:
       name: transmission_api
-      sha256: f22fa8934c4232b2d9fb074bf69de4fd435585aca11699317e9e1598262515ff
+      sha256: "1a914278c6d476f0c4f0ed43400095885d7a4dc9ae8ca56282ed97acceedbb70"
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.1"
+    version: "0.0.2"
   typed_data:
     dependency: transitive
     description:
@@ -1217,10 +1257,10 @@ packages:
     dependency: transitive
     description:
       name: vector_graphics
-      sha256: "44cc7104ff32563122a929e4620cf3efd584194eec6d1d913eb5ba593dbcf6de"
+      sha256: a4f059dc26fc8295b5921376600a194c4ec7d55e72f2fe4c7d2831e103d461e6
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.18"
+    version: "1.1.19"
   vector_graphics_codec:
     dependency: transitive
     description:

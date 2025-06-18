@@ -1,7 +1,7 @@
 name: harvest
 description: Harvest Project App Client
 publish_to: none
-version: 2025.0606.01+142
+version: 2025.0619.01+143
 environment:
   sdk: '>=3.3.2 <4.0.0'
 dependencies:
@@ -49,6 +49,9 @@ dependencies:
   timelines_plus: null
   file_picker: ^10.1.1
   flutter_markdown_plus: ^1.0.3
+  share_plus: ^11.0.0
+  image_gallery_saver_plus: ^4.0.1
+  pasteboard: ^0.4.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
