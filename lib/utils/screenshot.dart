@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
+import 'package:pasteboard/pasteboard.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -27,7 +28,11 @@ class ScreenshotSaver {
       final pngBytes = byteData!.buffer.asUint8List();
 
       if (Platform.isAndroid || Platform.isIOS) {
+        // 手机就保存到相册
         await _saveToGallery(pngBytes);
+      } else {
+        // 电脑就复制到粘贴板
+        await Pasteboard.writeImage(pngBytes);
       }
       await _shareImageBytes(pngBytes);
     } catch (e, stack) {
