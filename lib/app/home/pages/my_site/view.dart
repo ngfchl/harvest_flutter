@@ -1261,7 +1261,7 @@ class _MySitePagePageState extends State<MySitePage>
                         Obx(() => manualInput.value
                             ? CustomTextField(
                                 controller: mirrorController,
-                                labelText: '手动输入 - 注意：油猴脚本和自动导入可能无法识别',
+                                labelText: '手动输入 - 注意：浏览器插件自动导入可能无法识别',
                               )
                             : SizedBox.shrink()),
                         CustomTextField(

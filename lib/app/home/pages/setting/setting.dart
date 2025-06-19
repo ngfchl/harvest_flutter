@@ -830,7 +830,7 @@ class SettingPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
-                title: const Text('油猴 Token'),
+                title: const Text('安全 Token'),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null

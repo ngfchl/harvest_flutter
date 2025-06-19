@@ -15,7 +15,7 @@ class SettingController extends GetxController {
   String applicationLegalese = 'Copyright 2022-2024 无始无终. All rights reserved.';
   List<Option> optionList = [];
   List<Map<String, String>> optionMapList = [
-    {'name': '油猴Token', 'value': 'monkey_token'},
+    {'name': '安全Token', 'value': 'monkey_token'},
     // {'name': '辅种配置', 'value': 'repeat'},
     {'name': '通知详情', 'value': 'notice_content_item'},
     {'name': '通知开关', 'value': 'notice_category_enable'},
