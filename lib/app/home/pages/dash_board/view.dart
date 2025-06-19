@@ -326,11 +326,29 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   },
                                 ),
                                 CustomCheckboxListTile(
-                                  title: '上传总量饼图',
-                                  value: controller.buildSmartLabelPieChart,
-                                  storageKey: 'buildSmartLabelPieChart',
+                                  title: '账户数据信息',
+                                  value: controller.buildAccountInfoCard,
+                                  storageKey: 'buildAccountInfoCard',
                                   onUpdate: (bool newValue) {
-                                    controller.buildSmartLabelPieChart =
+                                    controller.buildAccountInfoCard = newValue;
+                                    controller.update();
+                                  },
+                                ),
+                                CustomCheckboxListTile(
+                                  title: '站点数据柱图',
+                                  value: controller.buildSiteInfo,
+                                  storageKey: 'buildSiteInfo',
+                                  onUpdate: (bool newValue) {
+                                    controller.buildSiteInfo = newValue;
+                                    controller.update();
+                                  },
+                                ),
+                                CustomCheckboxListTile(
+                                  title: '发种数量量饼图',
+                                  value: controller.buildPublishedPieChart,
+                                  storageKey: 'buildPublishedPieChart',
+                                  onUpdate: (bool newValue) {
+                                    controller.buildPublishedPieChart =
                                         newValue;
                                     controller.update();
                                   },
@@ -346,38 +364,22 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   },
                                 ),
                                 CustomCheckboxListTile(
-                                  title: '每日数据柱图',
+                                  title: '上传总量饼图',
+                                  value: controller.buildSmartLabelPieChart,
+                                  storageKey: 'buildSmartLabelPieChart',
+                                  onUpdate: (bool newValue) {
+                                    controller.buildSmartLabelPieChart =
+                                        newValue;
+                                    controller.update();
+                                  },
+                                ),
+
+                                CustomCheckboxListTile(
+                                  title: '每日上传柱图',
                                   value: controller.buildStackedBar,
                                   storageKey: 'buildStackedBar',
                                   onUpdate: (bool newValue) {
                                     controller.buildStackedBar = newValue;
-                                    controller.update();
-                                  },
-                                ),
-                                CustomCheckboxListTile(
-                                  title: '每月数据柱图',
-                                  value: controller.buildMonthStackedBar,
-                                  storageKey: 'buildMonthStackedBar',
-                                  onUpdate: (bool newValue) {
-                                    controller.buildMonthStackedBar = newValue;
-                                    controller.update();
-                                  },
-                                ),
-                                CustomCheckboxListTile(
-                                  title: '站点数据柱图',
-                                  value: controller.buildSiteInfo,
-                                  storageKey: 'buildSiteInfo',
-                                  onUpdate: (bool newValue) {
-                                    controller.buildSiteInfo = newValue;
-                                    controller.update();
-                                  },
-                                ),
-                                CustomCheckboxListTile(
-                                  title: '账户数据信息',
-                                  value: controller.buildAccountInfoCard,
-                                  storageKey: 'buildAccountInfoCard',
-                                  onUpdate: (bool newValue) {
-                                    controller.buildAccountInfoCard = newValue;
                                     controller.update();
                                   },
                                 ),
@@ -398,6 +400,34 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   storageKey: 'showTodayDownloadedIncrement',
                                   onUpdate: (bool newValue) {
                                     controller.showTodayDownloadedIncrement =
+                                        newValue;
+                                    controller.update();
+                                  },
+                                ),
+                                CustomCheckboxListTile(
+                                  title: '每月发种柱图',
+                                  value: controller.buildMonthPublishedBar,
+                                  storageKey: 'buildMonthPublishedBar',
+                                  onUpdate: (bool newValue) {
+                                    controller.buildMonthStackedBar = newValue;
+                                    controller.update();
+                                  },
+                                ),
+                                CustomCheckboxListTile(
+                                  title: '每月上传柱图',
+                                  value: controller.buildMonthStackedBar,
+                                  storageKey: 'buildMonthStackedBar',
+                                  onUpdate: (bool newValue) {
+                                    controller.buildMonthStackedBar = newValue;
+                                    controller.update();
+                                  },
+                                ),
+                                CustomCheckboxListTile(
+                                  title: '每月下载柱图',
+                                  value: controller.buildMonthDownloadedBar,
+                                  storageKey: 'buildMonthDownloadedBar',
+                                  onUpdate: (bool newValue) {
+                                    controller.buildMonthDownloadedBar =
                                         newValue;
                                     controller.update();
                                   },
