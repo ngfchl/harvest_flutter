@@ -21,7 +21,6 @@ dependencies:
   tmdb_api: ^2.2.0
   dio_smart_retry: ^7.0.1
   path: ^1.9.0
-  filesize: ^2.0.1
   basic_utils: ^5.7.0
   flutter_ellipsis_text: ^1.0.1
   syncfusion_flutter_core: ^29.1.39
