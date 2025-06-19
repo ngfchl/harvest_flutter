@@ -5,7 +5,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:easy_refresh/easy_refresh.dart';
-import 'package:filesize/filesize.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_popup/flutter_popup.dart';
@@ -425,7 +424,11 @@ class _MySitePagePageState extends State<MySitePage>
     int calcToUploaded =
         max(nextLevelToDownloadedByte, status?.downloaded ?? 0) *
             (nextLevel?.ratio ?? 0).toInt();
-
+    nextLevelToUploadedByte = max(nextLevelToUploadedByte, calcToUploaded);
+    Logger.instance.d(
+        '${FileSizeConvert.parseToFileSize(status?.uploaded)}(${status?.uploaded})/${FileSizeConvert.parseToFileSize(nextLevelToUploadedByte)}($nextLevelToUploadedByte)');
+    var toUpgradeTime = DateTime.parse(mySite.timeJoin)
+        .add(Duration(days: (nextLevel?.days ?? 0) * 7));
     return CustomCard(
       key: Key("${mySite.id}-${mySite.site}"),
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -559,28 +562,37 @@ class _MySitePagePageState extends State<MySitePage>
                                           Theme.of(context).colorScheme.primary,
                                     )),
                               ),
-                              if (status.uploaded < nextLevelToUploadedByte)
-                                PopupMenuItem<String>(
-                                  height: 13,
-                                  child: Text(
-                                      '上传量：${filesize(status.uploaded)}/${filesize(max(nextLevelToUploadedByte, calcToUploaded))}',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color:
-                                            Theme.of(context).colorScheme.error,
-                                      )),
-                                ),
-                              if (status.downloaded < nextLevelToDownloadedByte)
-                                PopupMenuItem<String>(
-                                  height: 13,
-                                  child: Text(
-                                      '下载量：${filesize(status.downloaded)}/${filesize(nextLevelToDownloadedByte)}',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color:
-                                            Theme.of(context).colorScheme.error,
-                                      )),
-                                ),
+                              // if (status.uploaded < nextLevelToUploadedByte)
+                              PopupMenuItem<String>(
+                                height: 13,
+                                child: Text(
+                                    '上传量：${FileSizeConvert.parseToFileSize(status.uploaded)}/${FileSizeConvert.parseToFileSize(nextLevelToUploadedByte)}',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: status.uploaded <
+                                              max(nextLevelToUploadedByte,
+                                                  calcToUploaded)
+                                          ? Theme.of(context).colorScheme.error
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                    )),
+                              ),
+                              // if (status.downloaded < nextLevelToDownloadedByte)
+                              PopupMenuItem<String>(
+                                height: 13,
+                                child: Text(
+                                    '下载量：${FileSizeConvert.parseToFileSize(status.downloaded)}/${FileSizeConvert.parseToFileSize(nextLevelToDownloadedByte)}',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: status.downloaded <
+                                              nextLevelToDownloadedByte
+                                          ? Theme.of(context).colorScheme.error
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                    )),
+                              ),
                               // if (status.uploaded / status.downloaded <
                               //     nextLevel.ratio)
                               //   PopupMenuItem<String>(
@@ -600,43 +612,63 @@ class _MySitePagePageState extends State<MySitePage>
                                       '需发种数量：${status.published}/${nextLevel.torrents}',
                                       style: TextStyle(
                                         fontSize: 10,
-                                        color:
-                                            Theme.of(context).colorScheme.error,
+                                        color: status.published <
+                                                nextLevel.torrents
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .error
+                                            : Theme.of(context)
+                                                .colorScheme
+                                                .primary,
                                       )),
                                 ),
-                              if (nextLevel.score > 0 &&
-                                  status.myScore < nextLevel.score)
+                              if (nextLevel.score > 0)
                                 PopupMenuItem<String>(
                                   height: 13,
                                   child: Text(
                                       '做种积分：${formatNumber(status.myScore)}/${formatNumber(nextLevel.score)}',
                                       style: TextStyle(
                                         fontSize: 10,
-                                        color:
-                                            Theme.of(context).colorScheme.error,
+                                        color: status.myScore < nextLevel.score
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .error
+                                            : Theme.of(context)
+                                                .colorScheme
+                                                .primary,
                                       )),
                                 ),
-                              if (nextLevel.bonus > 0 &&
-                                  status.myBonus < nextLevel.bonus)
+                              if (nextLevel.bonus > 0)
                                 PopupMenuItem<String>(
                                   height: 13,
                                   child: Text(
                                       '魔力值：${status.myBonus}/${nextLevel.bonus}',
                                       style: TextStyle(
                                         fontSize: 10,
-                                        color:
-                                            Theme.of(context).colorScheme.error,
+                                        color: status.myBonus < nextLevel.bonus
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .error
+                                            : Theme.of(context)
+                                                .colorScheme
+                                                .primary,
                                       )),
                                 ),
                               if (nextLevel.days > 0)
                                 PopupMenuItem<String>(
                                   height: 13,
                                   child: Text(
-                                      '升级日期：${DateFormat('yyyy-MM-dd').format(DateTime.parse(mySite.timeJoin).add(Duration(days: nextLevel.days * 7)))}',
+                                      '升级日期：${DateFormat('yyyy-MM-dd').format(DateTime.now())}/${DateFormat('yyyy-MM-dd').format(toUpgradeTime)}',
                                       style: TextStyle(
                                         fontSize: 10,
-                                        color:
-                                            Theme.of(context).colorScheme.error,
+                                        color: DateTime.now()
+                                                .isBefore(toUpgradeTime)
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .error
+                                            : Theme.of(context)
+                                                .colorScheme
+                                                .primary,
                                       )),
                                 ),
                               if (level.keepAccount != true &&
@@ -784,7 +816,7 @@ class _MySitePagePageState extends State<MySitePage>
                               ),
                               const SizedBox(width: 2),
                               Text(
-                                '${filesize(status.uploaded)} (${status.seed})',
+                                '${FileSizeConvert.parseToFileSize(status.uploaded)} (${status.seed})',
                                 style: const TextStyle(
                                   fontSize: 12,
                                 ),
@@ -801,7 +833,7 @@ class _MySitePagePageState extends State<MySitePage>
                               ),
                               const SizedBox(width: 2),
                               Text(
-                                '${filesize(status.downloaded)} (${status.leech})',
+                                '${FileSizeConvert.parseToFileSize(status.downloaded)} (${status.leech})',
                                 style: const TextStyle(
                                   fontSize: 12,
                                 ),
@@ -845,7 +877,8 @@ class _MySitePagePageState extends State<MySitePage>
                               ),
                               const SizedBox(width: 2),
                               Text(
-                                filesize(status.seedVolume),
+                                FileSizeConvert.parseToFileSize(
+                                    status.seedVolume),
                                 style: const TextStyle(
                                   fontSize: 12,
                                 ),
@@ -1731,7 +1764,8 @@ class _MySitePagePageState extends State<MySitePage>
                                 int pointIndex,
                                 int seriesIndex) {
                               return point.y > 0
-                                  ? Text(filesize((point.y).toInt()))
+                                  ? Text(FileSizeConvert.parseToFileSize(
+                                      (point.y).toInt()))
                                   : const SizedBox.shrink();
                             }),
                       ),
@@ -1841,11 +1875,11 @@ class StatusToolTip extends StatelessWidget {
       children: [
         _buildDataRow(
             '更新时间', DateFormat('yyyy-MM-dd HH:mm:ss').format(data.updatedAt)),
-        _buildDataRow('做种量', filesize(data.seedVolume)),
+        _buildDataRow('做种量', FileSizeConvert.parseToFileSize(data.seedVolume)),
         _buildDataRow('等级', data.myLevel),
-        _buildDataRow('上传量', filesize(data.uploaded)),
-        _buildDataRow('上传增量', filesize(difference)),
-        _buildDataRow('下载量', filesize(data.downloaded)),
+        _buildDataRow('上传量', FileSizeConvert.parseToFileSize(data.uploaded)),
+        _buildDataRow('上传增量', FileSizeConvert.parseToFileSize(difference)),
+        _buildDataRow('下载量', FileSizeConvert.parseToFileSize(data.downloaded)),
         _buildDataRow('分享率', data.ratio.toStringAsFixed(3)),
         _buildDataRow('魔力', formatNumber(data.myBonus)),
         if (data.myScore > 0) _buildDataRow('积分', formatNumber(data.myScore)),

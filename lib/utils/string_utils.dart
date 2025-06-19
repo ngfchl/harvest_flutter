@@ -23,8 +23,8 @@ String capitalize(String str) {
 
 class FileSizeConvert {
   /// 将文件大小字符串解析为字节
-  static int parseToByte(String fileSize) {
-    if (fileSize.isEmpty) {
+  static int parseToByte(String? fileSize) {
+    if (fileSize == null || fileSize.isEmpty) {
       return 0;
     }
 
@@ -44,20 +44,26 @@ class FileSizeConvert {
   }
 
   /// 将字节数转换为文件大小字符串
-  static String parseToFileSize(int byte) {
-    if (byte == 0) {
+  static String parseToFileSize(num? byte, [int fixed = 2]) {
+    if (byte == null || byte == 0) {
       return '0B';
     }
 
     List<String> units = ["B", "KB", "MB", "GB", "TB", "PB", 'EB'];
     double size = 1024.0;
+    byte = byte.toDouble();
 
     for (int i = 0; i < units.length; i++) {
-      if (byte / size < 1) {
-        return "${byte.toStringAsFixed(3)} ${units[i]}";
+      if (byte! / size < 1) {
+        return "${byte.toStringAsFixed(fixed)} ${units[i]}";
       }
-      byte = (byte / size).round();
+      byte = byte / size;
     }
-    return "${byte.toStringAsFixed(3)} EB";
+    return "${byte?.toStringAsFixed(fixed)} EB";
   }
+}
+
+main() {
+  print(FileSizeConvert.parseToByte("1024B"));
+  print(FileSizeConvert.parseToFileSize(4575067883175));
 }

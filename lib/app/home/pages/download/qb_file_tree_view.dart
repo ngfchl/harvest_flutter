@@ -1,8 +1,8 @@
-import 'package:filesize/filesize.dart';
 import 'package:flutter/material.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
 
 import '../../../../common/card_view.dart';
+import '../../../../utils/string_utils.dart';
 
 class TreeNode {
   String name;
@@ -75,7 +75,7 @@ class QBittorrentTreeView extends StatelessWidget {
           children: [
             CustomTextTag(labelText: node.content!.index.toString()),
             CustomTextTag(
-              labelText: filesize(node.content!.size),
+              labelText: FileSizeConvert.parseToFileSize(node.content!.size),
               icon: const Icon(Icons.download_done,
                   size: 10, color: Colors.white),
             ),

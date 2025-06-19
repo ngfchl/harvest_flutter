@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:filesize/filesize.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -16,6 +15,7 @@ import '../app/home/pages/models/my_site.dart';
 import '../app/routes/app_pages.dart';
 import '../utils/country.dart';
 import '../utils/logger_helper.dart';
+import '../utils/string_utils.dart';
 
 class SiteMap extends StatelessWidget {
   final Widget child;
@@ -289,7 +289,7 @@ class SiteMap extends StatelessWidget {
                                             ),
                                           ),
                                           Text(
-                                            '↑${filesize(status?.uploaded ?? 0)} (${status?.seed ?? 0})',
+                                            '↑${FileSizeConvert.parseToFileSize(status?.uploaded ?? 0)} (${status?.seed ?? 0})',
                                             style: TextStyle(
                                               fontSize: 11,
                                               color: Theme.of(context)
@@ -298,7 +298,7 @@ class SiteMap extends StatelessWidget {
                                             ),
                                           ),
                                           Text(
-                                            '↓${filesize(status?.downloaded ?? 0)} (${status?.leech ?? 0})',
+                                            '↓${FileSizeConvert.parseToFileSize(status?.downloaded ?? 0)} (${status?.leech ?? 0})',
                                             style: TextStyle(
                                               fontSize: 11,
                                               color: Theme.of(context)
@@ -307,7 +307,7 @@ class SiteMap extends StatelessWidget {
                                             ),
                                           ),
                                           Text(
-                                            '☁︎${filesize(status?.seedVolume ?? 0)}',
+                                            '☁︎${FileSizeConvert.parseToFileSize(status?.seedVolume ?? 0)}',
                                             style: TextStyle(
                                               fontSize: 11,
                                               color: Theme.of(context)

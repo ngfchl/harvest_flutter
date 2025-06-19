@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:easy_refresh/easy_refresh.dart';
-import 'package:filesize/filesize.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -28,6 +27,7 @@ import '../../../../models/download.dart';
 import '../../../../utils/date_time_utils.dart';
 import '../../../../utils/logger_helper.dart' as logger_helper;
 import '../../../../utils/storage.dart';
+import '../../../../utils/string_utils.dart';
 import '../agg_search/download_form.dart';
 import '../models/transmission.dart';
 import 'download_controller.dart';
@@ -377,7 +377,7 @@ class _DownloadPageState extends State<DownloadPage>
             color: Theme.of(context).colorScheme.surface,
           ),
           child: Text(
-            '${series.name}: ${filesize(point.y)}',
+            '${series.name}: ${FileSizeConvert.parseToFileSize(point.y)}',
             style: const TextStyle(
               fontSize: 12,
             ),
@@ -413,7 +413,7 @@ class _DownloadPageState extends State<DownloadPage>
                           axisLine: const AxisLine(width: 0),
                           axisLabelFormatter: (AxisLabelRenderDetails details) {
                             return ChartAxisLabel(
-                              filesize(details.value),
+                              FileSizeConvert.parseToFileSize(details.value),
                               const TextStyle(
                                 fontSize: 10,
                               ),
@@ -459,14 +459,14 @@ class _DownloadPageState extends State<DownloadPage>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        '上传限速：${filesize(res.upRateLimit)}/s',
+                        '上传限速：${FileSizeConvert.parseToFileSize(res.upRateLimit)}/s',
                         style: const TextStyle(
                           fontSize: 10,
                         ),
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        '下载限速：${filesize(res.dlRateLimit)}/s',
+                        '下载限速：${FileSizeConvert.parseToFileSize(res.dlRateLimit)}/s',
                         style: const TextStyle(
                           fontSize: 10,
                         ),
@@ -503,7 +503,7 @@ class _DownloadPageState extends State<DownloadPage>
                           axisLine: const AxisLine(width: 0),
                           axisLabelFormatter: (AxisLabelRenderDetails details) {
                             return ChartAxisLabel(
-                              filesize(details.value),
+                              FileSizeConvert.parseToFileSize(details.value),
                               const TextStyle(fontSize: 10),
                             );
                           },
@@ -559,7 +559,7 @@ class _DownloadPageState extends State<DownloadPage>
                       const SizedBox(width: 8),
                       if (downloader.prefs.speedLimitUpEnabled == true)
                         Text(
-                          '上传限速：${filesize(downloader.prefs.speedLimitUp * 1024)}/s',
+                          '上传限速：${FileSizeConvert.parseToFileSize(downloader.prefs.speedLimitUp * 1024)}/s',
                           style: const TextStyle(
                             fontSize: 10,
                           ),
@@ -567,7 +567,7 @@ class _DownloadPageState extends State<DownloadPage>
                       const SizedBox(width: 8),
                       if (downloader.prefs.speedLimitDownEnabled == true)
                         Text(
-                          '下载限速：${filesize(downloader.prefs.speedLimitDown * 1024)}/s',
+                          '下载限速：${FileSizeConvert.parseToFileSize(downloader.prefs.speedLimitDown * 1024)}/s',
                           style: const TextStyle(
                             fontSize: 10,
                           ),
@@ -860,7 +860,7 @@ class _DownloadPageState extends State<DownloadPage>
                     ),
                     const SizedBox(width: 2),
                     Text(
-                      '${filesize(res.upInfoSpeed!)}/S',
+                      '${FileSizeConvert.parseToFileSize(res.upInfoSpeed!)}/S',
                       style: const TextStyle(
                         fontSize: 10,
                       ),
@@ -877,7 +877,7 @@ class _DownloadPageState extends State<DownloadPage>
                     ),
                     const SizedBox(width: 2),
                     Text(
-                      '${filesize(res.dlInfoSpeed!)}/S',
+                      '${FileSizeConvert.parseToFileSize(res.dlInfoSpeed!)}/S',
                       style: const TextStyle(
                         fontSize: 10,
                       ),
@@ -894,7 +894,7 @@ class _DownloadPageState extends State<DownloadPage>
                     ),
                     const SizedBox(width: 2),
                     Text(
-                      filesize(res.upInfoData),
+                      FileSizeConvert.parseToFileSize(res.upInfoData),
                       style: const TextStyle(
                         fontSize: 10,
                       ),
@@ -912,7 +912,7 @@ class _DownloadPageState extends State<DownloadPage>
                     ),
                     const SizedBox(width: 2),
                     Text(
-                      filesize(res.dlInfoData),
+                      FileSizeConvert.parseToFileSize(res.dlInfoData),
                       style: const TextStyle(
                         fontSize: 10,
                       ),
@@ -942,7 +942,7 @@ class _DownloadPageState extends State<DownloadPage>
                 ),
                 const SizedBox(width: 2),
                 Text(
-                  '${filesize(res.uploadSpeed)}/S',
+                  '${FileSizeConvert.parseToFileSize(res.uploadSpeed)}/S',
                   style: const TextStyle(
                     fontSize: 10,
                   ),
@@ -959,7 +959,7 @@ class _DownloadPageState extends State<DownloadPage>
                 ),
                 const SizedBox(width: 2),
                 Text(
-                  '${filesize(res.downloadSpeed, 0)}/S',
+                  '${FileSizeConvert.parseToFileSize(res.downloadSpeed, 0)}/S',
                   style: const TextStyle(
                     fontSize: 10,
                   ),
@@ -976,7 +976,8 @@ class _DownloadPageState extends State<DownloadPage>
                 ),
                 const SizedBox(width: 2),
                 Text(
-                  filesize(res.currentStats.uploadedBytes),
+                  FileSizeConvert.parseToFileSize(
+                      res.currentStats.uploadedBytes),
                   style: const TextStyle(
                     fontSize: 10,
                   ),
@@ -994,7 +995,8 @@ class _DownloadPageState extends State<DownloadPage>
                 ),
                 const SizedBox(width: 2),
                 Text(
-                  filesize(res.currentStats.downloadedBytes),
+                  FileSizeConvert.parseToFileSize(
+                      res.currentStats.downloadedBytes),
                   style: const TextStyle(
                     fontSize: 10,
                   ),
@@ -1731,7 +1733,7 @@ class _DownloadPageState extends State<DownloadPage>
                         ),
                       ),
                       Text(
-                        filesize(torrentInfo.size),
+                        FileSizeConvert.parseToFileSize(torrentInfo.size),
                         style: const TextStyle(
                           fontSize: 10,
                         ),
@@ -1779,7 +1781,9 @@ class _DownloadPageState extends State<DownloadPage>
                                   Icons.upload,
                                   size: 12,
                                 ),
-                                Text(filesize(torrentInfo.upSpeed),
+                                Text(
+                                    FileSizeConvert.parseToFileSize(
+                                        torrentInfo.upSpeed),
                                     style: const TextStyle(
                                       fontSize: 10,
                                     ))
@@ -1791,7 +1795,9 @@ class _DownloadPageState extends State<DownloadPage>
                                   Icons.cloud_upload,
                                   size: 12,
                                 ),
-                                Text(filesize(torrentInfo.uploaded),
+                                Text(
+                                    FileSizeConvert.parseToFileSize(
+                                        torrentInfo.uploaded),
                                     style: const TextStyle(
                                       fontSize: 10,
                                     ))
@@ -1811,7 +1817,9 @@ class _DownloadPageState extends State<DownloadPage>
                                   Icons.download,
                                   size: 12,
                                 ),
-                                Text(filesize(torrentInfo.dlSpeed),
+                                Text(
+                                    FileSizeConvert.parseToFileSize(
+                                        torrentInfo.dlSpeed),
                                     style: const TextStyle(
                                       fontSize: 10,
                                     ))
@@ -1823,7 +1831,9 @@ class _DownloadPageState extends State<DownloadPage>
                                   Icons.cloud_download,
                                   size: 12,
                                 ),
-                                Text(filesize(torrentInfo.downloaded),
+                                Text(
+                                    FileSizeConvert.parseToFileSize(
+                                        torrentInfo.downloaded),
                                     style: const TextStyle(
                                       fontSize: 10,
                                     ))
@@ -2062,7 +2072,7 @@ class _DownloadPageState extends State<DownloadPage>
                     border: Border.all(width: 1),
                   ),
                   child: Text(
-                    '${series.name}: ${filesize(point.y)}',
+                    '${series.name}: ${FileSizeConvert.parseToFileSize(point.y)}',
                     style: const TextStyle(fontSize: 12),
                   ),
                 );
@@ -2076,7 +2086,7 @@ class _DownloadPageState extends State<DownloadPage>
                 axisLine: const AxisLine(width: 0),
                 axisLabelFormatter: (AxisLabelRenderDetails details) {
                   return ChartAxisLabel(
-                    filesize(details.value),
+                    FileSizeConvert.parseToFileSize(details.value),
                     const TextStyle(
                       fontSize: 10,
                     ),
@@ -2504,7 +2514,8 @@ class _DownloadPageState extends State<DownloadPage>
                   ),
                   backgroundColor: Colors.transparent,
                   labelColor: Colors.red,
-                  labelText: filesize(downloader.prefs.downloadDirFreeSpace)),
+                  labelText: FileSizeConvert.parseToFileSize(
+                      downloader.prefs.downloadDirFreeSpace)),
               CustomTextTag(
                   icon: const Icon(
                     Icons.upload_outlined,
@@ -2514,7 +2525,7 @@ class _DownloadPageState extends State<DownloadPage>
                   backgroundColor: Colors.transparent,
                   labelColor: Colors.green,
                   labelText:
-                      '${filesize(state.uploadSpeed)}[${filesize(state.currentStats.uploadedBytes)}]'),
+                      '${FileSizeConvert.parseToFileSize(state.uploadSpeed)}[${FileSizeConvert.parseToFileSize(state.currentStats.uploadedBytes)}]'),
               CustomTextTag(
                   icon: const Icon(
                     Icons.download_outlined,
@@ -2524,7 +2535,7 @@ class _DownloadPageState extends State<DownloadPage>
                   backgroundColor: Colors.transparent,
                   labelColor: Colors.red,
                   labelText:
-                      '${filesize(state.downloadSpeed)}[${filesize(state.currentStats.downloadedBytes)}]'),
+                      '${FileSizeConvert.parseToFileSize(state.downloadSpeed)}[${FileSizeConvert.parseToFileSize(state.currentStats.downloadedBytes)}]'),
             ],
           ),
         )
@@ -2596,7 +2607,7 @@ class _DownloadPageState extends State<DownloadPage>
                         border: Border.all(width: 1),
                       ),
                       child: Text(
-                        '${series.name}: ${filesize(point.y)}',
+                        '${series.name}: ${FileSizeConvert.parseToFileSize(point.y)}',
                         style: const TextStyle(fontSize: 12),
                       ),
                     );
@@ -2610,7 +2621,7 @@ class _DownloadPageState extends State<DownloadPage>
                     axisLine: const AxisLine(width: 0),
                     axisLabelFormatter: (AxisLabelRenderDetails details) {
                       return ChartAxisLabel(
-                        filesize(details.value),
+                        FileSizeConvert.parseToFileSize(details.value),
                         const TextStyle(
                           fontSize: 10,
                         ),
@@ -3029,7 +3040,8 @@ class _DownloadPageState extends State<DownloadPage>
                       ),
                       backgroundColor: Colors.transparent,
                       labelColor: Colors.green,
-                      labelText: filesize(state.freeSpaceOnDisk)),
+                      labelText: FileSizeConvert.parseToFileSize(
+                          state.freeSpaceOnDisk)),
                   CustomTextTag(
                       icon: const Icon(
                         Icons.upload_outlined,
@@ -3039,7 +3051,7 @@ class _DownloadPageState extends State<DownloadPage>
                       backgroundColor: Colors.transparent,
                       labelColor: Colors.green,
                       labelText:
-                          '${filesize(state.alltimeUl)}[${filesize(state.upInfoData)}]'),
+                          '${FileSizeConvert.parseToFileSize(state.alltimeUl)}[${FileSizeConvert.parseToFileSize(state.upInfoData)}]'),
                   CustomTextTag(
                       icon: const Icon(
                         Icons.download_outlined,
@@ -3049,7 +3061,7 @@ class _DownloadPageState extends State<DownloadPage>
                       backgroundColor: Colors.transparent,
                       labelColor: Colors.red,
                       labelText:
-                          '${filesize(state.alltimeDl)}[${filesize(state.dlInfoData)}]'),
+                          '${FileSizeConvert.parseToFileSize(state.alltimeDl)}[${FileSizeConvert.parseToFileSize(state.dlInfoData)}]'),
                 ],
               ),
             )
@@ -3275,7 +3287,8 @@ class _DownloadPageState extends State<DownloadPage>
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                filesize(torrentInfo.totalSize),
+                                FileSizeConvert.parseToFileSize(
+                                    torrentInfo.totalSize),
                                 style: TextStyle(
                                     fontSize: 10,
                                     color: Theme.of(context)
@@ -3342,7 +3355,9 @@ class _DownloadPageState extends State<DownloadPage>
                                       color: Theme.of(context)
                                           .colorScheme
                                           .onSurface),
-                                  Text(filesize(torrentInfo.rateUpload),
+                                  Text(
+                                      FileSizeConvert.parseToFileSize(
+                                          torrentInfo.rateUpload),
                                       style: TextStyle(
                                           fontSize: 10,
                                           color: Theme.of(context)
@@ -3357,7 +3372,9 @@ class _DownloadPageState extends State<DownloadPage>
                                       color: Theme.of(context)
                                           .colorScheme
                                           .onSurface),
-                                  Text(filesize(torrentInfo.uploadedEver),
+                                  Text(
+                                      FileSizeConvert.parseToFileSize(
+                                          torrentInfo.uploadedEver as int?),
                                       style: TextStyle(
                                           fontSize: 10,
                                           color: Theme.of(context)
@@ -3380,7 +3397,9 @@ class _DownloadPageState extends State<DownloadPage>
                                       color: Theme.of(context)
                                           .colorScheme
                                           .onSurface),
-                                  Text(filesize(torrentInfo.rateDownload),
+                                  Text(
+                                      FileSizeConvert.parseToFileSize(
+                                          torrentInfo.rateDownload),
                                       style: TextStyle(
                                           fontSize: 10,
                                           color: Theme.of(context)
@@ -3395,7 +3414,9 @@ class _DownloadPageState extends State<DownloadPage>
                                       color: Theme.of(context)
                                           .colorScheme
                                           .onSurface),
-                                  Text(filesize(torrentInfo.downloadedEver),
+                                  Text(
+                                      FileSizeConvert.parseToFileSize(
+                                          torrentInfo.downloadedEver),
                                       style: TextStyle(
                                           fontSize: 10,
                                           color: Theme.of(context)
@@ -7197,7 +7218,7 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        filesize(
+                                        FileSizeConvert.parseToFileSize(
                                             controller.selectedTorrent.size),
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
@@ -7219,8 +7240,9 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        filesize(controller
-                                            .selectedTorrent.uploaded),
+                                        FileSizeConvert.parseToFileSize(
+                                            controller
+                                                .selectedTorrent.uploaded),
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
                                       ),
@@ -7241,7 +7263,7 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        '${filesize(controller.selectedTorrent.upSpeed)}/S',
+                                        '${FileSizeConvert.parseToFileSize(controller.selectedTorrent.upSpeed)}/S',
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
                                       ),
@@ -7262,7 +7284,7 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        '${filesize(controller.selectedTorrent.upLimit)}/S',
+                                        '${FileSizeConvert.parseToFileSize(controller.selectedTorrent.upLimit)}/S',
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
                                       ),
@@ -7283,8 +7305,9 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        filesize(controller
-                                            .selectedTorrent.downloaded),
+                                        FileSizeConvert.parseToFileSize(
+                                            controller
+                                                .selectedTorrent.downloaded),
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
                                       ),
@@ -7580,7 +7603,7 @@ class _DownloadPageState extends State<DownloadPage>
                           //     children: [
                           //       CustomTextTag(
                           //         labelText:
-                          //             '已完成: ${filesize(controller.selectedTorrent.completed)}',
+                          //             '已完成: ${FileSizeConvert.parseToFileSize(controller.selectedTorrent.completed)}',
                           //       ),
                           //       CustomTextTag(
                           //         labelText:
@@ -7591,7 +7614,7 @@ class _DownloadPageState extends State<DownloadPage>
                           //   if (controller.selectedTorrent.amountLeft! > 0)
                           //     CustomTextTag(
                           //       labelText:
-                          //           '剩余大小: ${filesize(controller.selectedTorrent.amountLeft)}',
+                          //           '剩余大小: ${FileSizeConvert.parseToFileSize(controller.selectedTorrent.amountLeft)}',
                           //     ),
                           // ]),
 
@@ -8002,8 +8025,9 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        filesize(controller
-                                            .selectedTorrent.totalSize),
+                                        FileSizeConvert.parseToFileSize(
+                                            controller
+                                                .selectedTorrent.totalSize),
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
                                       ),
@@ -8024,8 +8048,9 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        filesize(controller
-                                            .selectedTorrent.uploadedEver),
+                                        FileSizeConvert.parseToFileSize(
+                                            controller
+                                                .selectedTorrent.uploadedEver),
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
                                       ),
@@ -8046,7 +8071,7 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        '${filesize(controller.selectedTorrent.rateUpload)}/S',
+                                        '${FileSizeConvert.parseToFileSize(controller.selectedTorrent.rateUpload)}/S',
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
                                       ),
@@ -8067,7 +8092,7 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        '${filesize(controller.selectedTorrent.rateUpload)}/S',
+                                        '${FileSizeConvert.parseToFileSize(controller.selectedTorrent.rateUpload)}/S',
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
                                       ),
@@ -8088,8 +8113,9 @@ class _DownloadPageState extends State<DownloadPage>
                                             color: Colors.white, fontSize: 12),
                                       ),
                                       Text(
-                                        filesize(controller
-                                            .selectedTorrent.downloadedEver),
+                                        FileSizeConvert.parseToFileSize(
+                                            controller.selectedTorrent
+                                                .downloadedEver),
                                         style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
                                       ),
@@ -8374,7 +8400,7 @@ class _DownloadPageState extends State<DownloadPage>
                           //     children: [
                           //       CustomTextTag(
                           //         labelText:
-                          //             '已完成: ${filesize(controller.selectedTorrent.completed)}',
+                          //             '已完成: ${FileSizeConvert.parseToFileSize(controller.selectedTorrent.completed)}',
                           //       ),
                           //       CustomTextTag(
                           //         labelText:
@@ -8385,7 +8411,7 @@ class _DownloadPageState extends State<DownloadPage>
                           //   if (controller.selectedTorrent.amountLeft! > 0)
                           //     CustomTextTag(
                           //       labelText:
-                          //           '剩余大小: ${filesize(controller.selectedTorrent.amountLeft)}',
+                          //           '剩余大小: ${FileSizeConvert.parseToFileSize(controller.selectedTorrent.amountLeft)}',
                           //     ),
                           // ]),
                           ...controller.selectedTorrent.labels

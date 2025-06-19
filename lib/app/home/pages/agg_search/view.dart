@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:custom_rating_bar/custom_rating_bar.dart';
-import 'package:filesize/filesize.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
@@ -875,7 +874,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                     CustomTextTag(
                         labelText: info.category, backgroundColor: Colors.blue),
                   CustomTextTag(
-                      labelText: filesize(info.size),
+                      labelText: FileSizeConvert.parseToFileSize(info.size),
                       backgroundColor: Colors.indigo),
                   if (info.saleStatus.isNotEmpty)
                     CustomTextTag(labelText: info.saleStatus),

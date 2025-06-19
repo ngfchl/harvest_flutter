@@ -1,7 +1,7 @@
-import 'package:filesize/filesize.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../common/card_view.dart';
+import '../../../../utils/string_utils.dart';
 import 'transmission_base_torrent.dart';
 
 class TreeNode {
@@ -74,7 +74,7 @@ class TransmissionTreeView extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             CustomTextTag(
-              labelText: filesize(node.content!.length),
+              labelText: FileSizeConvert.parseToFileSize(node.content!.length),
               icon: const Icon(Icons.download_done,
                   size: 10, color: Colors.white),
             ),

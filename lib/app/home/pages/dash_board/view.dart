@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:easy_refresh/easy_refresh.dart';
-import 'package:filesize/filesize.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
@@ -23,6 +22,7 @@ import '../../../../utils/calc_weeks.dart';
 import '../../../../utils/logger_helper.dart';
 import '../../../../utils/screenshot.dart';
 import '../../../../utils/storage.dart';
+import '../../../../utils/string_utils.dart';
 import '../../controller/common_api.dart';
 import 'controller.dart';
 
@@ -76,7 +76,7 @@ class _DashBoardPageState extends State<DashBoardPage>
         child: SfCircularChart(
           title: ChartTitle(
             text:
-                '今日下载增量：${filesize(controller.todayDownloadIncrement)}【${controller.downloadIncrementDataList.length}个站点】',
+                '今日下载增量：${FileSizeConvert.parseToFileSize(controller.todayDownloadIncrement)}【${controller.downloadIncrementDataList.length}个站点】',
             textStyle: TextStyle(
                 fontSize: 11, color: Theme.of(context).colorScheme.primary),
           ),
@@ -104,7 +104,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                   : data.name,
               yValueMapper: (MetaDataItem data, _) => data.value,
               dataLabelMapper: (MetaDataItem data, _) {
-                return '${controller.privateMode ? "${data.name.substring(0, 1)}**" : data.name}: ${filesize(data.value)}';
+                return '${controller.privateMode ? "${data.name.substring(0, 1)}**" : data.name}: ${FileSizeConvert.parseToFileSize(data.value)}';
               },
               legendIconType: LegendIconType.circle,
               enableTooltip: true,
@@ -148,7 +148,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                 color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  '${point.x}: ${filesize(point.y ?? 0)}',
+                  '${point.x}: ${FileSizeConvert.parseToFileSize(point.y ?? 0)}',
                   style: TextStyle(
                     fontSize: 14,
                     color: Theme.of(context).colorScheme.primary,
@@ -169,7 +169,7 @@ class _DashBoardPageState extends State<DashBoardPage>
         child: SfCircularChart(
           title: ChartTitle(
             text:
-                '今日上传增量：${filesize(controller.todayUploadIncrement)}【${controller.uploadIncrementDataList.length}个站点】',
+                '今日上传增量：${FileSizeConvert.parseToFileSize(controller.todayUploadIncrement)}【${controller.uploadIncrementDataList.length}个站点】',
             textStyle: TextStyle(
                 fontSize: 11, color: Theme.of(context).colorScheme.primary),
           ),
@@ -197,7 +197,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                   : data.name,
               yValueMapper: (MetaDataItem data, _) => data.value,
               dataLabelMapper: (MetaDataItem data, _) {
-                return '${controller.privateMode ? "${data.name.substring(0, 1)}*" : data.name}: ${filesize(data.value)}';
+                return '${controller.privateMode ? "${data.name.substring(0, 1)}*" : data.name}: ${FileSizeConvert.parseToFileSize(data.value)}';
               },
               legendIconType: LegendIconType.circle,
               enableTooltip: true,
@@ -241,7 +241,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                 color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  '${point.x}: ${filesize(point.y ?? 0)}',
+                  '${point.x}: ${FileSizeConvert.parseToFileSize(point.y ?? 0)}',
                   style: TextStyle(
                     fontSize: 14,
                     color: Theme.of(context).colorScheme.primary,
@@ -749,7 +749,8 @@ class _DashBoardPageState extends State<DashBoardPage>
                                           padding:
                                               const EdgeInsets.only(left: 4),
                                           child: Text(
-                                            filesize(controller.totalUploaded),
+                                            FileSizeConvert.parseToFileSize(
+                                                controller.totalUploaded),
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                               fontWeight: FontWeight.w600,
@@ -837,7 +838,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                           padding:
                                               const EdgeInsets.only(left: 4),
                                           child: Text(
-                                            filesize(
+                                            FileSizeConvert.parseToFileSize(
                                                 controller.totalDownloaded),
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
@@ -1106,7 +1107,8 @@ class _DashBoardPageState extends State<DashBoardPage>
                         Padding(
                           padding: const EdgeInsets.only(top: 6),
                           child: Text(
-                            filesize(controller.totalSeedVol, 2),
+                            FileSizeConvert.parseToFileSize(
+                                controller.totalSeedVol, 2),
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
@@ -1578,7 +1580,8 @@ class _DashBoardPageState extends State<DashBoardPage>
                                     SizedBox(
                                       width: 60,
                                       child: Text(
-                                        filesize(status.uploaded),
+                                        FileSizeConvert.parseToFileSize(
+                                            status.uploaded),
                                         style: TextStyle(
                                           fontSize: 10,
                                           color: Theme.of(context)
@@ -1681,7 +1684,8 @@ class _DashBoardPageState extends State<DashBoardPage>
                                     SizedBox(
                                         width: 60,
                                         child: Text(
-                                          filesize(status.downloaded ?? 0),
+                                          FileSizeConvert.parseToFileSize(
+                                              status.downloaded ?? 0),
                                           style: TextStyle(
                                             fontSize: 10,
                                             color: Theme.of(context)
@@ -1745,7 +1749,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                 color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  '${data.name}: ${filesize(data.value.uploaded ?? 0)}',
+                  '${data.name}: ${FileSizeConvert.parseToFileSize(data.value.uploaded ?? 0)}',
                   style: TextStyle(
                     fontSize: 11,
                     color: Theme.of(context).colorScheme.primary,
@@ -1861,7 +1865,8 @@ class _DashBoardPageState extends State<DashBoardPage>
         padding: const EdgeInsets.only(left: 10),
         child: SfCircularChart(
           title: ChartTitle(
-              text: '做种总量：${filesize(controller.totalSeedVol)}',
+              text:
+                  '做种总量：${FileSizeConvert.parseToFileSize(controller.totalSeedVol)}',
               textStyle: TextStyle(
                 fontSize: 11,
                 color: Theme.of(context).colorScheme.primary,
@@ -1894,7 +1899,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                 color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  '${data.name}: ${filesize(data.value ?? 0)}',
+                  '${data.name}: ${FileSizeConvert.parseToFileSize(data.value ?? 0)}',
                   style: TextStyle(
                     fontSize: 11,
                     color: Theme.of(context).colorScheme.primary,
@@ -1922,7 +1927,7 @@ class _DashBoardPageState extends State<DashBoardPage>
             : data.name,
         yValueMapper: (MetaDataItem data, _) => data.value.uploaded ?? 0,
         dataLabelMapper: (MetaDataItem data, _) =>
-            '${controller.privateMode ? "${data.name.substring(0, 1)}**" : data.name}: ${filesize(data.value.uploaded ?? 0)}',
+            '${controller.privateMode ? "${data.name.substring(0, 1)}**" : data.name}: ${FileSizeConvert.parseToFileSize(data.value.uploaded ?? 0)}',
         enableTooltip: true,
         explode: true,
         explodeIndex: 0,
@@ -1958,7 +1963,7 @@ class _DashBoardPageState extends State<DashBoardPage>
             : data.name,
         yValueMapper: (MetaDataItem data, _) => data.value ?? 0,
         dataLabelMapper: (MetaDataItem data, _) =>
-            '${controller.privateMode ? "${data.name.substring(0, 1)}**" : data.name}: ${filesize(data.value ?? 0)}',
+            '${controller.privateMode ? "${data.name.substring(0, 1)}**" : data.name}: ${FileSizeConvert.parseToFileSize(data.value ?? 0)}',
         enableTooltip: true,
         explode: true,
         explodeIndex: 0,
@@ -2052,7 +2057,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   ),
                                 ),
                                 Text(
-                                  '${series.name}: ${filesize(point.y)}',
+                                  '${series.name}: ${FileSizeConvert.parseToFileSize(point.y)}',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Theme.of(context)
@@ -2083,7 +2088,8 @@ class _DashBoardPageState extends State<DashBoardPage>
                       axisLine: const AxisLine(width: 0),
                       axisLabelFormatter: (AxisLabelRenderDetails details) {
                         return ChartAxisLabel(
-                          filesize(details.value.toInt()),
+                          FileSizeConvert.parseToFileSize(
+                              details.value.toInt()),
                           TextStyle(
                             fontSize: 10,
                             color: Theme.of(context).colorScheme.primary,
@@ -2300,7 +2306,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   ),
                                 ),
                                 Text(
-                                  '${series.name}: ${filesize(point.y)}',
+                                  '${series.name}: ${FileSizeConvert.parseToFileSize(point.y)}',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Theme.of(context)
@@ -2331,7 +2337,8 @@ class _DashBoardPageState extends State<DashBoardPage>
                       axisLine: const AxisLine(width: 0),
                       axisLabelFormatter: (AxisLabelRenderDetails details) {
                         return ChartAxisLabel(
-                          filesize(details.value.toInt()),
+                          FileSizeConvert.parseToFileSize(
+                              details.value.toInt()),
                           TextStyle(
                             fontSize: 10,
                             color: Theme.of(context).colorScheme.primary,
@@ -2508,7 +2515,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   ),
                                 ),
                                 Text(
-                                  '${series.name}: ${filesize(point.y)}',
+                                  '${series.name}: ${FileSizeConvert.parseToFileSize(point.y)}',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Theme.of(context)
@@ -2539,7 +2546,8 @@ class _DashBoardPageState extends State<DashBoardPage>
                       axisLine: const AxisLine(width: 0),
                       axisLabelFormatter: (AxisLabelRenderDetails details) {
                         return ChartAxisLabel(
-                          filesize(details.value.toInt()),
+                          FileSizeConvert.parseToFileSize(
+                              details.value.toInt()),
                           TextStyle(
                             fontSize: 10,
                             color: Theme.of(context).colorScheme.primary,
