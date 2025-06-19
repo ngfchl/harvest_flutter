@@ -409,7 +409,8 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   value: controller.buildMonthPublishedBar,
                                   storageKey: 'buildMonthPublishedBar',
                                   onUpdate: (bool newValue) {
-                                    controller.buildMonthStackedBar = newValue;
+                                    controller.buildMonthPublishedBar =
+                                        newValue;
                                     controller.update();
                                   },
                                 ),
