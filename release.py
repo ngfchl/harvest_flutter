@@ -22,8 +22,17 @@ class VersionManager:
             self.calc_version()
         else:
             self.output_folder = self.output_folder.replace('/', '\\')
-
+        self.fvm = self.get_fvm_command()
         self.tasks = ['apk', 'ios']
+
+    @staticmethod
+    def get_fvm_command():
+        if shutil.which("fvm"):
+            print("fvm 已安装")
+            return 'fvm'
+        else:
+            print("fvm 未安装")
+            return ''
 
     def read_version(self):
         print('开始读取当前版本号')
@@ -65,16 +74,16 @@ class VersionManager:
             yaml.safe_dump(yaml_data, file, default_flow_style=False, sort_keys=False)
 
     def compile(self, flag):
-        print(f'开始打包：flutter build {flag}')
+        print(f'开始打包：{self.fvm} flutter build {flag}')
         try:
             if flag == 'apk':
-                subprocess.run(["flutter", "build", "apk"])
+                subprocess.run([self.fvm, "flutter", "build", "apk"])
                 print(f'APK 编译完成，正在移动到指定文件夹 {self.output_folder}')
                 shutil.move("build/app/outputs/flutter-apk/app-release.apk",
                             f"{self.output_folder}/harvest_{self.new_version}.apk")
                 print(f'APK 打包完成')
             elif flag == 'macos':
-                subprocess.run(["flutter", "build", "macos"])
+                subprocess.run([self.fvm, "flutter", "build", "macos"])
                 print(f'macos APP 编译完成，正在移动到指定文件夹 {self.output_folder}')
                 res = subprocess.run(
                     "zip -r harvest.app.zip harvest.app", cwd='build/macos/Build/Products/Release/',
@@ -85,7 +94,7 @@ class VersionManager:
                             f"{self.output_folder}/harvest_{self.new_version}-macos.zip")
                 print(f'MacOS 打包完成')
             elif flag == 'windows':
-                res = subprocess.run(["flutter", "build", "windows"], shell=True,
+                res = subprocess.run([self.fvm, "flutter", "build", "windows"], shell=True,
                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 print(f"{res.stdout.decode("utf-8")}")
                 print(f'Windows APP 编译完成, 开始压缩')
@@ -94,7 +103,7 @@ class VersionManager:
                 print(f"压缩结果：{zip_path}")
                 print(f"APP 压缩完毕，准备移动，正在移动到指定文件夹 {self.output_folder}")
                 shutil.move(zip_path,
-                            f"{self.output_folder.replace('/', '\\')}\\harvest-win-{self.current_version}.zip")
+                            f"{self.output_folder.replace('/', '\\')}\\harvest_{self.current_version}-win.zip")
                 print(f'Windows 打包完成，打开文件夹')
                 subprocess.run(
                     [f"explorer", self.output_folder.replace('/', '\\')],
@@ -105,7 +114,7 @@ class VersionManager:
                 res = subprocess.run(["rm -rf build/ios/iphoneos/*"], shell=True,
                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 print(res.stdout.decode("utf-8"))
-                res = subprocess.run("flutter build ios", shell=True,
+                res = subprocess.run(f"{self.fvm} flutter build ios", shell=True,
                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 print(res.stdout.decode("utf-8"))
                 print(f'IOS 编译完成，打包为 ipa 文件')
@@ -149,11 +158,12 @@ class VersionManager:
                 tasks = ['windows']
             if sys.platform.startswith('darwin'):
                 tasks = [
-                    'macos',
                     'apk',
                     'ios',
+                    'macos',
                 ]
-            results = executor.map(self.compile, tasks)
+            # results = executor.map(self.compile, tasks)
+            results = [self.compile(task) for task in tasks]
             # 处理结果或捕获异常
             for result in results:
                 try:
