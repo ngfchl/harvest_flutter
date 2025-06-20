@@ -40,6 +40,7 @@ class MySiteController extends GetxController {
     {'name': '站点积分', 'value': 'statusMyScore'},
     {'name': '下载量', 'value': 'statusDownloaded'},
     {'name': '上传量', 'value': 'statusUploaded'},
+    {'name': '发种量', 'value': 'statusPublished'},
     {'name': '时魔', 'value': 'statusBonusHour'},
     {'name': '邀请', 'value': 'statusInvitation'},
     {'name': '正在下载', 'value': 'statusLeech'},
@@ -330,6 +331,10 @@ class MySiteController extends GetxController {
       case 'statusUploaded':
         otherStatusList.sort((a, b) => (a.latestStatusInfo?.uploaded ?? 0)
             .compareTo(b.latestStatusInfo?.uploaded ?? 0));
+        break;
+      case 'statusPublished':
+        otherStatusList.sort((a, b) => (a.latestStatusInfo?.published ?? 0)
+            .compareTo(b.latestStatusInfo?.published ?? 0));
         break;
       case 'statusBonusHour':
         otherStatusList.sort((a, b) => (a.latestStatusInfo?.bonusHour ?? 0)
