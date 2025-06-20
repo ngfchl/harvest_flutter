@@ -72,7 +72,7 @@ class _DashBoardPageState extends State<DashBoardPage>
   Widget _showTodayDownloadedIncrement() {
     return GetBuilder<DashBoardController>(builder: (controller) {
       return CustomCard(
-        height: 260,
+        height: controller.cardHeight,
         child: SfCircularChart(
           title: ChartTitle(
             text:
@@ -165,7 +165,7 @@ class _DashBoardPageState extends State<DashBoardPage>
   Widget _showTodayUploadedIncrement() {
     return GetBuilder<DashBoardController>(builder: (controller) {
       return CustomCard(
-        height: 260,
+        height: controller.cardHeight,
         child: SfCircularChart(
           title: ChartTitle(
             text:
@@ -297,7 +297,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                       titleStyle: const TextStyle(
                           fontSize: 14, fontWeight: FontWeight.w900),
                       content: SizedBox(
-                          height: 260,
+                          height: controller.cardHeight,
                           width: 280,
                           child: GetBuilder<DashBoardController>(
                               builder: (controller) {
@@ -432,6 +432,69 @@ class _DashBoardPageState extends State<DashBoardPage>
                                         newValue;
                                     controller.update();
                                   },
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12.0),
+                                  child: Row(
+                                    children: [
+                                      CustomTextTag(
+                                          backgroundColor: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                          labelText: '卡片高度'),
+                                      Expanded(
+                                        child: Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 12.0),
+                                          child: Row(
+                                            children: [
+                                              // InkWell(
+                                              //   child: const Icon(Icons.remove),
+                                              //   onTap: () async {
+                                              //     if (controller.days > 1) {
+                                              //       controller.days--;
+                                              //       await controller.initChartData();
+                                              //       controller.update();
+                                              //     }
+                                              //   },
+                                              // ),
+                                              Expanded(
+                                                child: Slider(
+                                                    min: 240,
+                                                    max: 300,
+                                                    divisions: 12,
+                                                    label: controller.cardHeight
+                                                        .toInt()
+                                                        .toString(),
+                                                    value:
+                                                        controller.cardHeight,
+                                                    onChanged: (value) async {
+                                                      controller.cardHeight =
+                                                          value.toDouble();
+                                                      await SPUtil.setDouble(
+                                                          'buildCardHeight',
+                                                          value);
+                                                      // await controller.loadCacheDashData();
+                                                      controller.update();
+                                                    }),
+                                              ),
+                                              // InkWell(
+                                              //   child: const Icon(Icons.add),
+                                              //   onTap: () {
+                                              //     if (controller.days < 14) {
+                                              //       controller.days++;
+                                              //       controller.initChartData();
+                                              //       controller.update();
+                                              //     }
+                                              //   },
+                                              // ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ],
                             );
@@ -710,7 +773,7 @@ class _DashBoardPageState extends State<DashBoardPage>
       MySite earliestSite = controller.earliestSite!;
       RxBool showYear = true.obs;
       return CustomCard(
-        height: 260,
+        height: controller.cardHeight,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(8.0),
           bottomLeft: Radius.circular(8.0),
@@ -1017,8 +1080,11 @@ class _DashBoardPageState extends State<DashBoardPage>
               ),
             ),
             Padding(
-              padding:
-                  const EdgeInsets.only(left: 24, right: 24, top: 8, bottom: 8),
+              padding: EdgeInsets.only(
+                  left: 24,
+                  right: 24,
+                  top: (controller.cardHeight - 226) / 2,
+                  bottom: 0),
               child: Container(
                 height: 2,
                 decoration: const BoxDecoration(
@@ -1027,8 +1093,8 @@ class _DashBoardPageState extends State<DashBoardPage>
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(
-                  left: 24, right: 24, top: 8, bottom: 16),
+              padding:
+                  const EdgeInsets.only(left: 24, right: 24, top: 0, bottom: 0),
               child: Row(
                 children: <Widget>[
                   Expanded(
@@ -1295,6 +1361,19 @@ class _DashBoardPageState extends State<DashBoardPage>
               ),
             ),
             Padding(
+              padding: EdgeInsets.only(
+                  left: 24,
+                  right: 24,
+                  top: (controller.cardHeight - 226) / 2,
+                  bottom: 0),
+              child: Container(
+                height: 2,
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(4.0)),
+                ),
+              ),
+            ),
+            Padding(
               padding: const EdgeInsets.only(left: 24, right: 24, bottom: 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1387,7 +1466,7 @@ class _DashBoardPageState extends State<DashBoardPage>
     Logger.instance.d(controller.usernameMap);
     return GetBuilder<DashBoardController>(builder: (controller) {
       return CustomCard(
-        height: 260,
+        height: controller.cardHeight,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(8.0),
           bottomLeft: Radius.circular(8.0),
@@ -1467,7 +1546,7 @@ class _DashBoardPageState extends State<DashBoardPage>
             Padding(
               padding: const EdgeInsets.only(top: 4, left: 20, right: 20),
               child: Container(
-                height: 260,
+                height: controller.cardHeight,
                 width: 5,
                 decoration: BoxDecoration(
                   color: HexColor('#87D0E5').withOpacity(0.2),
@@ -1580,7 +1659,7 @@ class _DashBoardPageState extends State<DashBoardPage>
         colorSaturation: ColorSaturation.highSaturation);
     return GetBuilder<DashBoardController>(builder: (controller) {
       return CustomCard(
-        height: 260,
+        height: controller.cardHeight,
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: Column(
           children: [
@@ -1743,7 +1822,7 @@ class _DashBoardPageState extends State<DashBoardPage>
   Widget _buildSmartLabelPieChart() {
     return GetBuilder<DashBoardController>(builder: (controller) {
       return CustomCard(
-        height: 260,
+        height: controller.cardHeight,
         padding: const EdgeInsets.only(left: 10),
         child: SfCircularChart(
           title: ChartTitle(
@@ -1798,7 +1877,7 @@ class _DashBoardPageState extends State<DashBoardPage>
   Widget _buildPublishedPieChart() {
     return GetBuilder<DashBoardController>(builder: (controller) {
       return CustomCard(
-        height: 260,
+        height: controller.cardHeight,
         padding: const EdgeInsets.only(left: 10),
         child: SfCircularChart(
           title: ChartTitle(
@@ -1892,7 +1971,7 @@ class _DashBoardPageState extends State<DashBoardPage>
   Widget _buildSeedVolumePieChart() {
     return GetBuilder<DashBoardController>(builder: (controller) {
       return CustomCard(
-        height: 260,
+        height: controller.cardHeight,
         padding: const EdgeInsets.only(left: 10),
         child: SfCircularChart(
           title: ChartTitle(
@@ -2024,11 +2103,10 @@ class _DashBoardPageState extends State<DashBoardPage>
     try {
       return GetBuilder<DashBoardController>(builder: (controller) {
         return CustomCard(
-          height: 260,
+          height: controller.cardHeight,
           child: Column(
             children: [
-              SizedBox(
-                height: 200,
+              Expanded(
                 child: SfCartesianChart(
                     title: ChartTitle(
                         text: '每日上传增量',
@@ -2272,11 +2350,10 @@ class _DashBoardPageState extends State<DashBoardPage>
     try {
       return GetBuilder<DashBoardController>(builder: (controller) {
         return CustomCard(
-          height: 260,
+          height: controller.cardHeight,
           child: Column(
             children: [
-              SizedBox(
-                height: 200,
+              Expanded(
                 child: SfCartesianChart(
                     title: ChartTitle(
                         text: '月度上传增量',
@@ -2481,11 +2558,10 @@ class _DashBoardPageState extends State<DashBoardPage>
     try {
       return GetBuilder<DashBoardController>(builder: (controller) {
         return CustomCard(
-          height: 260,
+          height: controller.cardHeight,
           child: Column(
             children: [
-              SizedBox(
-                height: 200,
+              Expanded(
                 child: SfCartesianChart(
                     title: ChartTitle(
                         text: '月度下载增量',
@@ -2690,11 +2766,10 @@ class _DashBoardPageState extends State<DashBoardPage>
     try {
       return GetBuilder<DashBoardController>(builder: (controller) {
         return CustomCard(
-          height: 260,
+          height: controller.cardHeight,
           child: Column(
             children: [
-              SizedBox(
-                height: 200,
+              Expanded(
                 child: SfCartesianChart(
                     title: ChartTitle(
                         text: '月度发种增量',

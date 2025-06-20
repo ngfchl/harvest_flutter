@@ -37,6 +37,7 @@ class DashBoardController extends GetxController {
   bool isLoading = false;
   bool isCacheLoading = false;
   bool isStackedLoading = false;
+  double cardHeight = 260;
   bool buildSiteInfoCard = true;
   bool buildAccountInfoCard = false;
   bool buildMonthPublishedBar = true;
@@ -64,6 +65,7 @@ class DashBoardController extends GetxController {
 
   Future<void> initData() async {
     privateMode = SPUtil.getBool('privateMode', defaultValue: false)!;
+    cardHeight = SPUtil.getDouble('buildCardHeight', defaultValue: 260)!;
     buildStackedBar = SPUtil.getBool('buildStackedBar', defaultValue: true)!;
     buildSeedVolumePieChart =
         SPUtil.getBool('buildSeedVolumePieChart', defaultValue: true)!;
