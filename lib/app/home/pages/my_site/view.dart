@@ -353,6 +353,36 @@ class _MySitePagePageState extends State<MySitePage>
     super.dispose();
   }
 
+  _openSitePage(MySite mySite, WebSite website) async {
+    String path;
+    if (mySite.mail! > 0 && !website.pageMessage.contains('api')) {
+      path = website.pageMessage.replaceFirst("{}", mySite.userId.toString());
+    } else {
+      path = website.pageIndex;
+    }
+    String url =
+        '${mySite.mirror!.endsWith('/') ? mySite.mirror : '${mySite.mirror}/'}$path';
+    if (mySite.mirror!.contains('m-team')) {
+      url = url.replaceFirst("api", "xp");
+    }
+    if (kIsWeb || !controller.openByInnerExplorer) {
+      Logger.instance.d('使用外部浏览器打开');
+      Uri uri = Uri.parse(url);
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
+            colorText: Theme.of(context).colorScheme.primary);
+      }
+    } else {
+      Logger.instance.d('使用内置浏览器打开');
+      Get.toNamed(Routes.WEBVIEW, arguments: {
+        'url': url,
+        'info': null,
+        'mySite': mySite,
+        'website': website
+      });
+    }
+  }
+
   Widget showSiteDataInfo(MySite mySite) {
     StatusInfo? status;
     WebSite? website = controller.webSiteList[mySite.site];
@@ -437,53 +467,27 @@ class _MySitePagePageState extends State<MySitePage>
           dense: true,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-          leading: ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: CachedNetworkImage(
-              imageUrl: website.logo.startsWith('http')
-                  ? website.logo
-                  : '${mySite.mirror}${website.logo}',
-              fit: BoxFit.fill,
-              httpHeaders: {
-                "user-agent": mySite.userAgent.toString(),
-                "Cookie": mySite.cookie.toString(),
-              },
-              errorWidget: (context, url, error) =>
-                  const Image(image: AssetImage('assets/images/avatar.png')),
-              width: 32,
-              height: 32,
+          leading: InkWell(
+            onTap: () => _openSitePage(mySite, website),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: CachedNetworkImage(
+                imageUrl: website.logo.startsWith('http')
+                    ? website.logo
+                    : '${mySite.mirror}${website.logo}',
+                fit: BoxFit.fill,
+                httpHeaders: {
+                  "user-agent": mySite.userAgent.toString(),
+                  "Cookie": mySite.cookie.toString(),
+                },
+                errorWidget: (context, url, error) =>
+                    const Image(image: AssetImage('assets/images/avatar.png')),
+                width: 32,
+                height: 32,
+              ),
             ),
           ),
-          onLongPress: () async {
-            String path;
-            if (mySite.mail! > 0 && !website.pageMessage.contains('api')) {
-              path = website.pageMessage
-                  .replaceFirst("{}", mySite.userId.toString());
-            } else {
-              path = website.pageIndex;
-            }
-            String url =
-                '${mySite.mirror!.endsWith('/') ? mySite.mirror : '${mySite.mirror}/'}$path';
-            if (mySite.mirror!.contains('m-team')) {
-              url = url.replaceFirst("api", "xp");
-            }
-            if (kIsWeb || !controller.openByInnerExplorer) {
-              Logger.instance.d('使用外部浏览器打开');
-              Uri uri = Uri.parse(url);
-              if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-                Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
-                    colorText: Theme.of(context).colorScheme.primary);
-              }
-            } else {
-              Logger.instance.d('使用内置浏览器打开');
-              Get.toNamed(Routes.WEBVIEW, arguments: {
-                'url': url,
-                'info': null,
-                'mySite': mySite,
-                'website': website
-              });
-            }
-          },
+          onLongPress: () => _openSitePage(mySite, website),
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
