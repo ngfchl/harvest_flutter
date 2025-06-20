@@ -107,31 +107,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                       borderRadius: BorderRadius.circular(0.0),
                                     ),
                                   ),
-                                  onSubmitted: (value) async {
-                                    if (controller.tabController.index == 0) {
-                                      if (controller
-                                          .searchKeyController.text.isEmpty) {
-                                        Get.snackbar("提示", "搜索关键字不能为空！");
-                                        return;
-                                      }
-
-                                      CommonResponse response =
-                                          await controller.searchTMDB();
-                                      if (response.succeed != true) {
-                                        Get.snackbar(
-                                          '警告',
-                                          '${response.msg}，从豆瓣获取信息...',
-                                          colorText: Theme.of(context)
-                                              .colorScheme
-                                              .error,
-                                        );
-                                        await controller.doDouBanSearch();
-                                      }
-                                    } else {
-                                      // await controller.doWebsocketSearch();
-                                      await controller.doSearch();
-                                    }
-                                  },
+                                  onSubmitted: (value) => _doTmdbSearch(),
                                 ),
                               ),
                               const SizedBox(
@@ -159,9 +135,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                                   .secondary,
                                             ),
                                           ),
-                                          onTap: () async {
-                                            await controller.searchTMDB();
-                                          },
+                                          onTap: () => _doTmdbSearch(),
                                         ),
                                         PopupMenuItem<String>(
                                           child: Text(
@@ -1999,5 +1973,27 @@ class _AggSearchPageState extends State<AggSearchPage>
             ));
       }),
     );
+  }
+
+  _doTmdbSearch() async {
+    if (controller.tabController.index == 0) {
+      if (controller.searchKeyController.text.isEmpty) {
+        Get.snackbar("提示", "搜索关键字不能为空！");
+        return;
+      }
+
+      CommonResponse response = await controller.searchTMDB();
+      if (response.succeed != true) {
+        Get.snackbar(
+          '警告',
+          '${response.msg}，从豆瓣获取信息...',
+          colorText: Theme.of(context).colorScheme.error,
+        );
+        await controller.doDouBanSearch();
+      }
+    } else {
+      // await controller.doWebsocketSearch();
+      await controller.doSearch();
+    }
   }
 }

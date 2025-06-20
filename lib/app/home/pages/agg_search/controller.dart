@@ -53,6 +53,7 @@ class AggSearchController extends GetxController
   bool sortReversed = false;
   bool isLoading = false;
   bool isDownloaderLoading = false;
+  String dataSource = 'TMDB';
   Floating? floating;
   Map<String, MySite> mySiteMap = <String, MySite>{};
   List<Tab> tabs = [
@@ -108,6 +109,8 @@ class AggSearchController extends GetxController
       return CommonResponse.error(msg: "搜索关键字不能为空！");
     }
     isLoading = true;
+    changeTab(0);
+    tabs[0] = Tab(text: '影视查询[TMDB]');
     update();
     logger_helper.Logger.instance.d(searchKeyController.text);
     CommonResponse response =
@@ -288,6 +291,7 @@ class AggSearchController extends GetxController
     DouBanSearchHelper helper = DouBanSearchHelper();
     isLoading = true;
     changeTab(0);
+    tabs[0] = Tab(text: '影视查询[豆瓣]');
     update();
     var response = await helper.doSearch(
       q: searchKeyController.text,
