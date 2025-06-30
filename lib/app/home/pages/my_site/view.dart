@@ -452,8 +452,9 @@ class _MySitePagePageState extends State<MySitePage>
     int nextLevelToUploadedByte =
         FileSizeConvert.parseToByte(nextLevel?.uploaded ?? "0");
     int calcToUploaded =
-        max(nextLevelToDownloadedByte, status?.downloaded ?? 0) *
-            (nextLevel?.ratio ?? 0).toInt();
+        (max(nextLevelToDownloadedByte, status?.downloaded ?? 0) *
+                (nextLevel?.ratio ?? 0))
+            .toInt();
     nextLevelToUploadedByte = max(nextLevelToUploadedByte, calcToUploaded);
     Logger.instance.d(
         '${FileSizeConvert.parseToFileSize(status?.uploaded)}(${status?.uploaded})/${FileSizeConvert.parseToFileSize(nextLevelToUploadedByte)}($nextLevelToUploadedByte)');
