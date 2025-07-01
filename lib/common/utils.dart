@@ -7,6 +7,9 @@ import 'package:intl/intl.dart';
 String formatCreatedTimeToDateString(item) {
   return DateFormat("MM-dd").format(item.createdAt);
 }
+String formatUpdatedTimeToDateString(item) {
+  return DateFormat("MM-dd").format(item.updatedAt);
+}
 
 String formatCreatedTimeToMonthString(item) {
   return DateFormat("yyyy-MM").format(item.createdAt);
