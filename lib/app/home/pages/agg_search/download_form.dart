@@ -440,6 +440,8 @@ class DownloadForm extends StatelessWidget {
                     int? upLimit = int.tryParse(upLimitController.text);
                     int? dlLimit = int.tryParse(dlLimitController.text);
                     await submitForm({
+                      'site_id': info?.siteId,
+                      'tid': info?.tid,
                       'urls': urlController.text,
                       'save_path': savePathController.text,
                       'category': categoryController.text,
@@ -664,6 +666,8 @@ class DownloadForm extends StatelessWidget {
                   int? upLimit = int.tryParse(upLimitController.text);
                   int? dlLimit = int.tryParse(dlLimitController.text);
                   await submitForm({
+                    'site_id': info?.siteId,
+                    'tid': info?.tid,
                     'urls': urlController.text,
                     'save_path': savePathController.text,
                     'tags': tagsController.text.split(','),

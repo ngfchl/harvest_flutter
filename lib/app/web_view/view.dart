@@ -332,9 +332,19 @@ class _WebViewPageState extends State<WebViewPage> {
                       (inAppWebViewController, request) async {
                     var url = request.url.toString();
                     Logger.instance.d('下载链接：$url');
+                    Uri? uri = Uri.tryParse(url);
+                    Logger.instance.d('种子 ID：${uri?.queryParameters['id']}');
+                    String tid = uri?.queryParameters['id'] ?? '';
+                    // if (tid.isEmpty) {
+                    //   final regex = RegExp(r'(\d+)');
+                    //   final matches = regex.allMatches(url);
+                    //   if (matches.isNotEmpty) {
+                    //     tid = matches.first.group(0)!;
+                    //   }
+                    // }
                     SearchTorrentInfo info = SearchTorrentInfo(
-                      siteId: '',
-                      tid: '',
+                      siteId: controller.mySite?.id.toString() ?? '',
+                      tid: tid,
                       poster: '',
                       category: '',
                       magnetUrl: url,
@@ -343,7 +353,7 @@ class _WebViewPageState extends State<WebViewPage> {
                       subtitle: '',
                       cookie: controller.mySite?.cookie,
                       saleStatus: '',
-                      tags: [],
+                      tags: [controller.mySite?.nickname ?? '', 'harvest-app'],
                       hr: true,
                       published: 0,
                       size: 0,
@@ -432,6 +442,9 @@ class _WebViewPageState extends State<WebViewPage> {
       downloadLink =
           "${controller.mySite?.mirror}${downloadLink.startsWith('/') ? downloadLink.substring(1) : downloadLink}";
     }
+    Uri? uri = Uri.tryParse(downloadLink);
+    Logger.instance.d('种子 ID：${uri?.queryParameters['id']}');
+
     Logger.instance.d(downloadLink);
     controller.info = SearchTorrentInfo(
         siteId: controller.mySite!.site,
