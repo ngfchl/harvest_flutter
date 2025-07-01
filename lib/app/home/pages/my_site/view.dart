@@ -1655,13 +1655,17 @@ class _MySitePagePageState extends State<MySitePage>
 
   void _showStatusHistory(MySite mySite) {
     List<StatusInfo> transformedData = mySite.statusInfo.values.toList();
+    Logger.instance.d(transformedData);
     Rx<RangeValues> rangeValues = RangeValues(
             transformedData.length > 7 ? transformedData.length - 7 : 0,
             transformedData.length.toDouble() - 1)
         .obs;
+    Logger.instance.d(rangeValues.value);
     RxList<StatusInfo> showData = transformedData
-        .sublist(rangeValues.value.start.toInt(), rangeValues.value.end.toInt())
+        .sublist(
+            rangeValues.value.start.toInt(), rangeValues.value.end.toInt() + 1)
         .obs;
+    Logger.instance.d(showData);
     Get.bottomSheet(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
       isScrollControlled: true,
@@ -1740,7 +1744,7 @@ class _MySitePagePageState extends State<MySitePage>
                           yAxisName: 'PrimaryYAxis',
                           dataSource: showData,
                           xValueMapper: (StatusInfo item, _) =>
-                              formatCreatedTimeToDateString(item),
+                              formatUpdatedTimeToDateString(item),
                           yValueMapper: (StatusInfo item, _) =>
                               item.seedVolume),
                       LineSeries<StatusInfo, String>(
@@ -1834,9 +1838,9 @@ class _MySitePagePageState extends State<MySitePage>
                   max: transformedData.length * 1.0 - 1,
                   divisions: transformedData.length - 1,
                   labels: RangeLabels(
-                    formatCreatedTimeToDateString(
+                    formatUpdatedTimeToDateString(
                         transformedData[rangeValues.value.start.toInt()]),
-                    formatCreatedTimeToDateString(
+                    formatUpdatedTimeToDateString(
                         transformedData[rangeValues.value.end.toInt()]),
                   ),
                   onChanged: (value) {
