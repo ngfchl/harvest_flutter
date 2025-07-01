@@ -672,6 +672,11 @@ class _AggSearchPageState extends State<AggSearchPage>
             return;
           }
         }
+        info.siteId = mySite.id.toString();
+        info.tags.addAll([
+          mySite.nickname.isNotEmpty ? mySite.nickname : mySite.site,
+          'harvest-app',
+        ]);
         await openDownloaderListSheet(context, info);
       },
       child: CustomCard(
