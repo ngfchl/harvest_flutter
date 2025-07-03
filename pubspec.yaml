@@ -51,6 +51,7 @@ dependencies:
   share_plus: ^11.0.0
   image_gallery_saver_plus: ^4.0.1
   pasteboard: ^0.4.0
+  web_socket_channel: ^3.0.3
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -58,4 +59,4 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-  - assets/images/
+    - assets/images/
