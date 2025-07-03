@@ -10,6 +10,8 @@ import 'package:harvest/common/meta_item.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:harvest/utils/logger_helper.dart' as logger_helper;
 import 'package:qbittorrent_api/qbittorrent_api.dart';
+import 'package:web_socket_channel/status.dart' as status;
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../../../api/api.dart';
 import '../../../../api/downloader.dart';
@@ -34,6 +36,7 @@ class AggSearchController extends GetxController
   TextEditingController searchKeyController = TextEditingController();
   String filterKey = '';
   String sortKey = 'seeders';
+  late WebSocketChannel channel;
   List<int> sites = <int>[];
   int maxCount = 0;
   List<SearchTorrentInfo> searchResults = <SearchTorrentInfo>[];
@@ -174,7 +177,7 @@ class AggSearchController extends GetxController
       searchKey = "$imdbId||$searchKey";
     }
     searchKeyController.text = searchKey;
-    await doSearch();
+    await doWebsocketSearch();
   }
 
   initData() async {
@@ -276,10 +279,11 @@ class AggSearchController extends GetxController
     update();
   }
 
-  cancelSearch() {
+  cancelSearch() async {
     isLoading = false;
-    SSEClient.disableRetry();
-    SSEClient.unsubscribeFromSSE();
+    // SSEClient.disableRetry();
+    // SSEClient.unsubscribeFromSSE();
+    await channel.sink.close(status.normalClosure);
     update();
   }
 
@@ -321,12 +325,101 @@ class AggSearchController extends GetxController
       searchKey = "${selectVideoDetail.imdb}||$searchKey";
     }
     searchKeyController.text = searchKey;
-    await doSearch();
+    await doWebsocketSearch();
   }
 
   changeTab(int index) {
     tabController.animateTo(index);
     update();
+  }
+
+  doWebsocketSearch() async {
+    // 打开加载状态
+    isLoading = true;
+    // 清空搜索记录
+    initSearchResult();
+    changeTab(1);
+    // 初始化站点数据
+    if (mySiteMap.isEmpty) {
+      logger_helper.Logger.instance.d('重新加载站点列表');
+      await initData();
+    }
+    try {
+      final wsUrl =
+          Uri.parse('${baseUrl.replaceFirst('http', 'ws')}/api/ws/search');
+      channel = WebSocketChannel.connect(wsUrl);
+
+      await channel.ready;
+      channel.sink.add(json.encode({
+        "key": searchKeyController.text,
+        "max_count": sites.length == mySiteMap.length ? maxCount : sites.length,
+        "sites": sites,
+      }));
+      channel.stream.listen((message) {
+        CommonResponse response =
+            CommonResponse.fromJson(json.decode(message), (p0) => p0);
+        logger_helper.Logger.instance.i(response.msg);
+        if (response.code == 0) {
+          List<SearchTorrentInfo> torrentInfoList =
+              List<Map<String, dynamic>>.from(response.data)
+                  .map((jsonItem) => SearchTorrentInfo.fromJson(jsonItem))
+                  .toList();
+          // 写入种子列表
+          searchResults.addAll(torrentInfoList);
+          hrResultList
+              .addAll(torrentInfoList.where((element) => element.hr).toList());
+          succeedTags.addAll(torrentInfoList.expand((element) => element.tags));
+          if (succeedTags.isNotEmpty) {
+            succeedTags = succeedTags.toSet().toList();
+            succeedTags.sort();
+            logger_helper.Logger.instance.d(succeedTags);
+          }
+          succeedResolution.addAll(torrentInfoList
+              .map((item) => resolutionKeyList
+                  .firstWhereOrNull((MetaDataItem resolution) =>
+                      item.title
+                          .toLowerCase()
+                          .contains(resolution.value.toLowerCase()) ||
+                      item.subtitle
+                          .toLowerCase()
+                          .contains(resolution.value.toLowerCase()))
+                  ?.value)
+              .whereType<String>() // 将结果转换为 List<String>
+              .toList());
+          succeedResolution = succeedResolution.toSet().toList();
+          logger_helper.Logger.instance.d(succeedResolution);
+          // 获取种子分类，并去重
+          succeedCategories
+              .addAll(torrentInfoList.map((e) => e.category).toList());
+          succeedCategories = succeedCategories.toSet().toList();
+          saleStatusList
+              .addAll(torrentInfoList.map((e) => e.saleStatus).toList());
+          saleStatusList = saleStatusList.toSet().toList();
+          // 写入有数据的站点
+          if (torrentInfoList.isNotEmpty) {
+            succeedSiteList.add(torrentInfoList[0].siteId);
+            searchMsg.insert(0, {"success": true, "msg": response.msg});
+            filterResults();
+          }
+          update();
+        } else {
+          searchMsg.add({"success": false, "msg": response.msg});
+          update();
+        }
+      }, onError: (err) {
+        logger_helper.Logger.instance.e('搜索出错啦： ${err.toString()}');
+        searchMsg.add({"success": false, "msg": '搜索出错啦：$err'});
+        cancelSearch();
+      }, onDone: () {
+        logger_helper.Logger.instance.e('搜索完成啦！');
+        cancelSearch();
+      });
+    } catch (e, trace) {
+      logger_helper.Logger.instance.e(e);
+      logger_helper.Logger.instance.d(trace);
+      searchMsg.add({"success": false, "msg": '搜索出错啦：$e'});
+      cancelSearch();
+    }
   }
 
   doSearch() async {

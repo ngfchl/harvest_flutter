@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_floating/floating/floating.dart';
 import 'package:flutter_floating/floating/listener/event_listener.dart';
 import 'package:get/get.dart';
+import 'package:web_socket_channel/status.dart' as status;
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../../../models/authinfo.dart';
 import '../../../../models/common_response.dart';
@@ -30,7 +32,7 @@ class WebSocketLoggingController extends GetxController {
     'CRITICAL': 5,
   };
   String baseUrl = SPUtil.getLocalStorage('server');
-
+  late WebSocketChannel channel;
   GlobalKey inTimeAPILogFloatingKey =
       GlobalKey(debugLabel: "inTimeAPILogFloatingWindows");
 
@@ -49,7 +51,7 @@ class WebSocketLoggingController extends GetxController {
         Logger.instance.d('显示试试 API 日志');
         scrollController ??= ScrollController();
         update();
-        await fetchingLogList();
+        await fetchingWebSocketLogList();
       }
       ..hideFloatingListener = () {
         // scrollController?.dispose();
@@ -61,7 +63,7 @@ class WebSocketLoggingController extends GetxController {
 
     logList = [];
     updateLogs("开始打印日志");
-    await fetchingLogList();
+    await fetchingWebSocketLogList();
     super.onInit();
   }
 
@@ -90,6 +92,41 @@ class WebSocketLoggingController extends GetxController {
         }).toList();
     }
     update();
+  }
+
+  fetchingWebSocketLogList() async {
+    // 打开加载状态
+    isLoading = true;
+    update();
+    try {
+      String baseUrl = SPUtil.getLocalStorage('server');
+      final wsUrl =
+          Uri.parse('${baseUrl.replaceFirst('http', 'ws')}/api/ws/logging');
+
+      channel = WebSocketChannel.connect(wsUrl);
+      await channel.ready;
+      channel.sink.add(json.encode({"limit": 1024, "interval": 1}));
+      channel.stream.listen((message) {
+        CommonResponse response =
+            CommonResponse.fromJson(json.decode(message), (p0) => p0);
+        Logger.instance.i(response.msg);
+        if (response.code == 0) {
+          updateLogs(response.data);
+        } else {
+          updateLogs(response.msg.toString());
+        }
+      }, onError: (err) {
+        Logger.instance.e('读取日志出错啦： ${err.toString()}');
+        stopFetchLog();
+      }, onDone: () {
+        Logger.instance.e('日志读取完成啦！');
+        // cancelSearch();
+      });
+    } catch (e, trace) {
+      Logger.instance.e(e);
+      Logger.instance.d(trace);
+      stopFetchLog();
+    }
   }
 
   fetchingLogList() async {
@@ -176,11 +213,12 @@ class WebSocketLoggingController extends GetxController {
     update();
   }
 
-  stopFetchLog() {
+  stopFetchLog() async {
     isLoading = false;
-    subscription.cancel();
-    SSEClient.disableRetry();
-    SSEClient.unsubscribeFromSSE();
+    // subscription.cancel();
+    await channel.sink.close(status.normalClosure);
+    // SSEClient.disableRetry();
+    // SSEClient.unsubscribeFromSSE();
     update();
   }
 

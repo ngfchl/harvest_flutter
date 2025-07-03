@@ -125,7 +125,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
                       color: Theme.of(context).colorScheme.primary,
                     ),
                     onPressed: () {
-                      controller.fetchingLogList();
+                      controller.fetchingWebSocketLogList();
                       controller.update();
                     },
                   ),
