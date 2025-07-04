@@ -14,13 +14,8 @@ String baseUrl = SPUtil.getLocalStorage('server');
 
 /// 获取
 Future<CommonResponse> getDashBoardDataApi(days) async {
-  final response =
-      await fetchBasicData(Api.DASHBOARD_DATA, queryParameters: {"days": days});
-  if (response.code == 0) {
-    SPUtil.setMap(
-        '$baseUrl - DASHBOARD_DATA', {'DASHBOARD_DATA': response.data});
-  }
-  return response;
+  return await fetchBasicData(Api.DASHBOARD_DATA,
+      queryParameters: {"days": days});
 }
 
 /// 获取
