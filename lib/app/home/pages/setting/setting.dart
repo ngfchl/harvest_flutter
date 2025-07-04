@@ -1,8 +1,10 @@
+import 'package:app_service/app_service.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/form_widgets.dart';
+import 'package:harvest/utils/storage.dart';
 
 import '../../../../api/option.dart';
 import '../../../../common/utils.dart';
@@ -28,6 +30,7 @@ class SettingPage extends StatelessWidget {
             child: Column(
               children: [
                 _versionCard(context),
+                _followSystemDarkForm(),
                 _noticeTestForm(context),
                 Flexible(
                   child: ListView(
@@ -119,6 +122,35 @@ class SettingPage extends StatelessWidget {
         },
       ),
     );
+  }
+
+  _followSystemDarkForm() {
+    final appService = Get.find<AppService>();
+    return Obx(() {
+      return CustomCard(
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+        child: ListTile(
+          dense: true,
+          contentPadding: EdgeInsets.zero,
+          title: const Text('跟随系统'),
+          leading: IconButton(
+              icon: appService.followSystem.value
+                  ? const Icon(Icons.brightness_auto_outlined)
+                  : appService.isDarkMode.value
+                      ? const Icon(Icons.brightness_4_outlined)
+                      : const Icon(Icons.brightness_5_outlined),
+              onPressed: () {}),
+          // secondary: const Text('跟随系统主题'),
+          trailing: Switch(
+              value: appService.followSystem.value,
+              onChanged: (bool v) async {
+                appService.followSystem.value = v;
+                await SPUtil.setBool('followSystemDark', v);
+                Logger.instance.d('系统主题跟随状态: $v');
+              }),
+        ),
+      );
+    });
   }
 
   void _openAddOptionForm(context) {
