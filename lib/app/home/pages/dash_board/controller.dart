@@ -211,8 +211,6 @@ class DashBoardController extends GetxController {
                   .toList(),
             ))
         .toList();
-    Logger.instance
-        .i('stackChartDataList: ${stackChartDataList[1].value?.length}.');
     seedDataList = (data['seedDataList'] as List)
         .map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>))
         .toList();
