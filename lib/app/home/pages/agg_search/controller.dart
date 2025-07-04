@@ -193,6 +193,7 @@ class AggSearchController extends GetxController
     };
     if (downloadController.dataList.isEmpty) {
       await downloadController.getDownloaderListFromServer();
+      downloadController.isLoaded = true;
     }
 
     update();

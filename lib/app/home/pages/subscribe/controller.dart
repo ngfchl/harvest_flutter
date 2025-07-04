@@ -48,6 +48,7 @@ class SubscribeController extends GetxController {
     } catch (e) {
       Get.snackbar('下载器信息获取失败', e.toString());
     }
+    downloadController.isLoaded = true;
     isDownloaderLoading = false;
     update();
   }
