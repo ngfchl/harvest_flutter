@@ -18,20 +18,22 @@ class LoginController extends GetxController {
   bool isLoading = false;
   bool canConnectInternet = false;
   bool showPassword = true;
-  bool testRes = false;
+  bool switchServerLoading = false;
   DioUtil dioUtil = DioUtil();
 
   @override
   void onInit() async {
-    super.onInit();
     Logger.instance.i('初始化登录页面');
     await serverRepository.init();
     Logger.instance.i(serverRepository.serverList);
     initServerList();
     await getNetworkPermission();
-    update();
+    super.onInit();
   }
 
+  ///@title 获取网络权限
+  ///@description 获取网络权限
+  ///@updateTime
   Future<void> getNetworkPermission() async {
     canConnectInternet =
         SPUtil.getBool('canConnectInternet', defaultValue: false)!;
@@ -46,6 +48,9 @@ class LoginController extends GetxController {
     }
   }
 
+  ///@title 初始化服务器列表
+  ///@description 初始化服务器列表
+  ///@updateTime
   initServerList() {
     Logger.instance.i('开始读取服务器列表');
     serverList = serverRepository.serverList;
@@ -58,16 +63,25 @@ class LoginController extends GetxController {
     }
   }
 
+  ////@title 判断是否有选中的服务器
+  ///@description
+  ///@updateTime
   bool get hasSelectedServer {
     return serverList.any((server) => server.selected);
   }
 
+  ////@title 初始化服务器连接
+  ///@description
+  ///@updateTime
   void initDio(Server server) async {
     await dioUtil.initialize(server.entry);
     SPUtil.setString('server', server.entry);
     update();
   }
 
+  ////@title 测试服务器连接
+  ///@description
+  ///@updateTime
   Future<CommonResponse> testServerConnection(Server server) async {
     isLoading = true; // 开始加载状态
     update();
@@ -91,14 +105,25 @@ class LoginController extends GetxController {
     }
   }
 
+  ////@title 选择服务器
+  ///@description
+  ///@updateTime
   void selectServer(Server server) async {
+    switchServerLoading = true;
+    update();
     selectedServer = server;
     server.selected = true;
-    await saveServer(server);
-    initServerList();
-    update();
+    saveServer(server);
+    await Future.delayed(Duration(milliseconds: 1000), () {
+      switchServerLoading = false;
+      update();
+      initServerList();
+    });
   }
 
+  ///@title 删除服务器
+  ///@description
+  ///@updateTime
   Future<CommonResponse> deleteServer(Server server) async {
     try {
       if (server.selected) {
@@ -116,6 +141,9 @@ class LoginController extends GetxController {
     }
   }
 
+  ///@title 保存服务器
+  ///@description
+  ///@updateTime
   Future<CommonResponse> saveServer(Server server) async {
     try {
       CommonResponse response;
@@ -138,6 +166,9 @@ class LoginController extends GetxController {
     }
   }
 
+  ///@title 登录服务器
+  ///@description
+  ///@updateTime
   Future<CommonResponse> connectToServer(LoginUser loginUser) async {
     isLoading = true;
     update();
@@ -158,6 +189,9 @@ class LoginController extends GetxController {
     }
   }
 
+  ///@title 登录操作
+  ///@description
+  ///@updateTime
   Future<CommonResponse> doLogin() async {
     // 连接到服务器
     if (selectedServer == null ||
@@ -176,6 +210,9 @@ class LoginController extends GetxController {
     return connectToServer(loginUser);
   }
 
+  ///@title 清除服务器记录
+  ///@description TODO
+  ///@updateTime
   clearServerCache() async {
     return await serverRepository.clearServer();
   }

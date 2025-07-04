@@ -232,59 +232,72 @@ class _LoginPageState extends State<LoginPage> {
         ),
         body: SizedBox(
           width: double.infinity,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          child: Stack(
+            alignment: Alignment.center,
             children: [
-              Wrap(spacing: 20, runSpacing: 20, children: [
-                ...controller.serverList
-                    .map((server) => _buildGridTile(server)),
-                _buildAddServerTile(),
-              ]),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 36.0),
-                child: ElevatedButton.icon(
-                  icon: controller.isLoading
-                      ? const Center(
-                          child: SizedBox(
-                              height: 18,
-                              width: 18,
-                              child: CircularProgressIndicator(
-                                  color: Colors.white70)),
-                        )
-                      : const Icon(Icons.link, size: 18, color: Colors.white70),
-                  label: const Text(
-                    '连接服务器',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    // 设置背景颜色为绿色
-                    padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                    // 调整内边距使得按钮更宽
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5.0), // 边角圆角大小可自定义
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Wrap(spacing: 20, runSpacing: 20, children: [
+                    ...controller.serverList
+                        .map((server) => _buildGridTile(server)),
+                    _buildAddServerTile(),
+                  ]),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 36.0),
+                    child: ElevatedButton.icon(
+                      icon: controller.isLoading
+                          ? const Center(
+                              child: SizedBox(
+                                  height: 18,
+                                  width: 18,
+                                  child: CircularProgressIndicator(
+                                      color: Colors.white70)),
+                            )
+                          : const Icon(Icons.link,
+                              size: 18, color: Colors.white70),
+                      label: const Text(
+                        '连接服务器',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        // 设置背景颜色为绿色
+                        padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                        // 调整内边距使得按钮更宽
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(5.0), // 边角圆角大小可自定义
+                        ),
+                      ),
+                      onPressed: controller.hasSelectedServer
+                          ? () async {
+                              // 连接服务器的操作逻辑
+                              CommonResponse res = await controller.doLogin();
+
+                              if (res.succeed) {
+                                await Future.delayed(
+                                    Duration(milliseconds: 2500), () {
+                                  Get.offNamed(Routes.HOME);
+                                  Get.snackbar(
+                                    res.succeed ? '登录成功！' : '登录失败',
+                                    res.succeed
+                                        ? '登录成功！欢迎回来，${controller.selectedServer?.username}'
+                                        : res.msg,
+                                    colorText: res.succeed
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Theme.of(context).colorScheme.error,
+                                  );
+                                });
+                              }
+                            }
+                          : null,
                     ),
                   ),
-                  onPressed: controller.hasSelectedServer
-                      ? () async {
-                          // 连接服务器的操作逻辑
-
-                          CommonResponse res = await controller.doLogin();
-
-                          Get.snackbar(
-                            res.succeed ? '登录成功！' : '登录失败',
-                            res.succeed
-                                ? '登录成功！欢迎回来，${controller.selectedServer?.username}'
-                                : res.msg,
-                            colorText: res.succeed
-                                ? Theme.of(context).colorScheme.primary
-                                : Theme.of(context).colorScheme.error,
-                          );
-                          if (res.succeed) Get.offNamed(Routes.HOME);
-                        }
-                      : null,
-                ),
+                ],
               ),
+              if (controller.switchServerLoading)
+                Center(child: CircularProgressIndicator())
             ],
           ),
         ),
@@ -293,7 +306,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void showEditOrCreateServerSheet(Server? serverToEdit) async {
-    controller.testRes = false;
     final formKey = GlobalKey<FormState>();
     String defaultEntry =
         kIsWeb ? Uri.base.origin : 'http://192.168.123.5:25174';
