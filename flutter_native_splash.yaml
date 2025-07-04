@@ -2,17 +2,17 @@ flutter_native_splash:
   color: "#ffffff"
   android: true
   ios: true
-  #  fullscreen: true
+  fullscreen: true # 是否全屏显示闪屏界面，默认是 false。
   android_gravity: fill
-  image: assets/images/avatar.png
+  image: assets/images/launch_bright.png
   color_dark: "#121212"
-  image_dark: assets/images/avatar.png
+  image_dark: assets/images/launch_dark.png
   branding_mode: bottom
 
   android_12:
-    image: assets/images/avatar.png
+    image: assets/images/launch_bright.png
     icon_background_color: "#ffffff"
-    image_dark: assets/images/avatar.png
+    image_dark: assets/images/launch_dark.png
     icon_background_color_dark: "#121212"
     branding_mode: bottom
   # 该锯生成原生代码来自定义 Flutter 默认白色原生闪屏界面的背景色和闪屏图像。
