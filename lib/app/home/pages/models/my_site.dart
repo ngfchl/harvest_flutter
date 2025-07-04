@@ -74,7 +74,9 @@ class StatusInfo {
       seed: json['seed'] as int,
       leech: json['leech'] as int,
       invitation: json['invitation'] ?? 0,
-      published: json['published'] ?? 0,
+      published: json['published'].runtimeType == int
+          ? json['published']
+          : int.tryParse(json['published']?.toString() ?? '0'),
       seedDays: json['seed_days'] != null
           ? double.parse(json['seed_days'].toString()).toInt()
           : 0,
