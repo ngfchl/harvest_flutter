@@ -3,6 +3,7 @@ import '../models/common_response.dart';
 import '../models/login_user.dart';
 import '../utils/dio_util.dart';
 import '../utils/logger_helper.dart';
+import '../utils/storage.dart';
 import 'api.dart';
 
 /// 用户
@@ -22,6 +23,7 @@ class UserAPI {
 
   /// Logout
   static Future logout() async {
+    await SPUtil.remove('userinfo');
     return await DioUtil().post(
       Api.LOGIN_URL,
     );
