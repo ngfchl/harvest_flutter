@@ -456,8 +456,8 @@ class _MySitePagePageState extends State<MySitePage>
                 (nextLevel?.ratio ?? 0))
             .toInt();
     nextLevelToUploadedByte = max(nextLevelToUploadedByte, calcToUploaded);
-    Logger.instance.d(
-        '${FileSizeConvert.parseToFileSize(status?.uploaded)}(${status?.uploaded})/${FileSizeConvert.parseToFileSize(nextLevelToUploadedByte)}($nextLevelToUploadedByte)');
+    // Logger.instance.d(
+    //     '${FileSizeConvert.parseToFileSize(status?.uploaded)}(${status?.uploaded})/${FileSizeConvert.parseToFileSize(nextLevelToUploadedByte)}($nextLevelToUploadedByte)');
     var toUpgradeTime = DateTime.parse(mySite.timeJoin)
         .add(Duration(days: (nextLevel?.days ?? 0) * 7));
     return CustomCard(

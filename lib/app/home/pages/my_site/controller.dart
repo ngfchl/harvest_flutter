@@ -185,7 +185,6 @@ class MySiteController extends GetxController {
     // 计算耗时
     Duration duration = endTime.difference(startTime);
     Logger.instance.d('获取站点配置程序耗时: ${duration.inMilliseconds} 毫秒');
-    update();
   }
 
   Future<void> getSiteStatusFromServer() async {
@@ -208,7 +207,6 @@ class MySiteController extends GetxController {
     // 计算耗时
     var duration = endTime.difference(startTime);
     Logger.instance.d('解析站点信息列表程序耗时: ${duration.inMilliseconds} 毫秒');
-    update();
   }
 
   Future<bool> saveMySiteToServer(MySite mySite) async {
