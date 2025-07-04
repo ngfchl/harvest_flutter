@@ -112,6 +112,10 @@ class DashBoardController extends GetxController {
     // 记录开始时间
     DateTime startTime = DateTime.now();
     CommonResponse res = await getDashBoardDataApi(14);
+    var endTime = DateTime.now();
+    // 计算耗时
+    var duration = endTime.difference(startTime);
+    Logger.instance.d('网络加载首页数据耗时: ${duration.inMilliseconds} 毫秒');
     if (res.succeed) {
       try {
         // 清空数据
@@ -143,9 +147,9 @@ class DashBoardController extends GetxController {
     } else {
       Get.snackbar('仪表数据加载失败！～', res.msg);
     }
-    var endTime = DateTime.now();
+    endTime = DateTime.now();
     // 计算耗时
-    var duration = endTime.difference(startTime);
+    duration = endTime.difference(startTime);
     Logger.instance.d('加载首页数据耗时: ${duration.inMilliseconds} 毫秒');
   }
 
@@ -220,6 +224,5 @@ class DashBoardController extends GetxController {
     seedDataList = (data['seedDataList'] as List)
         .map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>))
         .toList();
-    update();
   }
 }
