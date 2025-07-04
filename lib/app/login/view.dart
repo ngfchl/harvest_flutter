@@ -401,23 +401,37 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       ElevatedButton.icon(
                         onPressed: () async {
-                          final server = Server(
-                            id: 0,
-                            name: nameController.text,
-                            entry: entryController.text,
-                            username: usernameController.text,
-                            password: passwordController.text,
-                            selected: false,
-                          );
-                          CommonResponse flag =
-                              await controller.testServerConnection(server);
-                          if (flag.code == 0) {
-                            Get.snackbar('连接状态', '服务器连接成功',
-                                colorText:
-                                    Theme.of(context).colorScheme.primary);
-                            controller.testRes = true;
+                          if (formKey.currentState!.validate()) {
+                            final server = Server(
+                              id: serverToEdit?.id ?? 0,
+                              name: nameController.text,
+                              entry: entryController.text,
+                              username: usernameController.text,
+                              password: passwordController.text,
+                              selected: serverToEdit?.selected ?? false,
+                            );
+
+                            CommonResponse flag =
+                                await controller.testServerConnection(server);
+                            if (flag.succeed) {
+                              CommonResponse result =
+                                  await controller.saveServer(server);
+                              Get.snackbar(server.id == 0 ? '保存结果' : '更新结果',
+                                  "服务器连接成功：${result.msg}",
+                                  // snackPosition: SnackPosition.BOTTOM,
+                                  duration: const Duration(seconds: 3),
+                                  colorText: server.id == 0
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Theme.of(context).colorScheme.error);
+                              Navigator.pop(context);
+                            } else {
+                              Get.snackbar('测试失败', flag.msg,
+                                  colorText:
+                                      Theme.of(context).colorScheme.error);
+                            }
                           } else {
-                            Get.snackbar('连接状态', flag.msg,
+                            Get.snackbar('出错啦', '服务器信息校验失败！',
+                                duration: const Duration(seconds: 3),
                                 colorText: Theme.of(context).colorScheme.error);
                           }
                           controller.isLoading = false;
@@ -433,7 +447,7 @@ class _LoginPageState extends State<LoginPage> {
                             : const Icon(Icons.autorenew,
                                 size: 18, color: Colors.white70),
                         label: Text(
-                          controller.isLoading ? '测试...' : '测试',
+                          controller.isLoading ? '测试...' : '保存',
                           style: const TextStyle(color: Colors.white),
                         ),
                         style: ElevatedButton.styleFrom(
@@ -446,62 +460,6 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                       ),
-
-                      if (controller.testRes)
-                        ElevatedButton.icon(
-                          icon: const Icon(Icons.save,
-                              size: 18, color: Colors.white),
-                          label: Text(
-                            serverToEdit == null ? '添加' : '保存',
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            // 设置背景颜色为绿色
-                            shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular(5.0), // 边角圆角大小可自定义
-                            ),
-                          ),
-                          onPressed: () async {
-                            if (formKey.currentState!.validate()) {
-                              final server = Server(
-                                id: serverToEdit?.id ?? 0,
-                                name: nameController.text,
-                                entry: entryController.text,
-                                username: usernameController.text,
-                                password: passwordController.text,
-                                selected: serverToEdit?.selected ?? false,
-                              );
-                              Logger.instance.i(server);
-                              CommonResponse result =
-                                  await controller.saveServer(server);
-                              Logger.instance.i(result);
-                              if (result.code == 0) {
-                                Get.snackbar(server.id == 0 ? '保存结果' : '更新结果',
-                                    result.msg,
-                                    snackPosition: SnackPosition.BOTTOM,
-                                    duration: const Duration(seconds: 3),
-                                    colorText: server.id == 0
-                                        ? Theme.of(context).colorScheme.primary
-                                        : Theme.of(context).colorScheme.error);
-
-                                Navigator.pop(context);
-                              } else {
-                                Get.snackbar(
-                                    server.id == 0 ? '保存结果' : '更新结果',
-                                    server.id == 0
-                                        ? '保存服务器时出错：${result.msg}'
-                                        : '更新服务器时出错：${result.msg}',
-                                    snackPosition: SnackPosition.BOTTOM,
-                                    duration: const Duration(seconds: 3),
-                                    colorText: server.id == 0
-                                        ? Theme.of(context).colorScheme.primary
-                                        : Theme.of(context).colorScheme.error);
-                              }
-                            }
-                          },
-                        ),
                     ],
                   ),
                 ],
