@@ -1847,7 +1847,7 @@ class _MySitePagePageState extends State<MySitePage>
                     rangeValues.value = value;
                     showData.value = transformedData.sublist(
                         rangeValues.value.start.toInt(),
-                        rangeValues.value.end.toInt());
+                        rangeValues.value.end.toInt() + 1);
                   },
                   values: rangeValues.value,
                 ),
