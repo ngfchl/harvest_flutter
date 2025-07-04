@@ -1462,8 +1462,8 @@ class _DashBoardPageState extends State<DashBoardPage>
   }
 
   Widget _buildAccountInfoCard() {
-    Logger.instance.d(controller.emailMap);
-    Logger.instance.d(controller.usernameMap);
+    // Logger.instance.d(controller.emailMap);
+    // Logger.instance.d(controller.usernameMap);
     return GetBuilder<DashBoardController>(builder: (controller) {
       return CustomCard(
         height: controller.cardHeight,
@@ -1641,7 +1641,7 @@ class _DashBoardPageState extends State<DashBoardPage>
   }
 
   Widget _buildSiteInfo() {
-    Logger.instance.d(controller.statusList.length);
+    // Logger.instance.d(controller.statusList.length);
     int maxUploaded = controller.statusList
         .map((item) => item.value['uploaded'])
         .reduce((a, b) => a > b ? a : b);

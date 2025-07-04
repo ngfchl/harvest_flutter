@@ -101,14 +101,16 @@ class DashBoardController extends GetxController {
       isLoading = false;
       Logger.instance.i('从数据库加载数据完成！');
       update(); // UI 更新
+      mySiteController.loadCacheInfo();
+      mySiteController.getWebSiteListFromServer();
+      mySiteController.getSiteStatusFromServer();
+      mySiteController.loadingFromServer = false;
     });
   }
 
   initChartData() async {
-    mySiteController.loadCacheInfo();
-    mySiteController.getWebSiteListFromServer();
-    mySiteController.getSiteStatusFromServer();
-    mySiteController.loadingFromServer = false;
+    // 记录开始时间
+    DateTime startTime = DateTime.now();
     CommonResponse res = await getDashBoardDataApi(14);
     if (res.succeed) {
       try {
@@ -141,6 +143,10 @@ class DashBoardController extends GetxController {
     } else {
       Get.snackbar('仪表数据加载失败！～', res.msg);
     }
+    var endTime = DateTime.now();
+    // 计算耗时
+    var duration = endTime.difference(startTime);
+    Logger.instance.d('加载首页数据耗时: ${duration.inMilliseconds} 毫秒');
   }
 
   loadCacheDashData() async {
