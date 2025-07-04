@@ -1,5 +1,3 @@
-import 'package:harvest/utils/logger_helper.dart';
-
 class QbittorrentTorrentInfo {
   final int addedOn;
   final int amountLeft;
@@ -570,7 +568,6 @@ class QbittorrentPreferences {
   });
 
   factory QbittorrentPreferences.fromJson(Map<String, dynamic> json) {
-    Logger.instance.d(json['proxy_type']);
     return QbittorrentPreferences(
       addTrackers: json['add_trackers'] ?? '',
       addTrackersEnabled: json['add_trackers_enabled'] ?? false,

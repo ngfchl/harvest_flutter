@@ -27,7 +27,7 @@ import '../my_site/controller.dart';
 import 'transmission_base_torrent.dart';
 
 class DownloadController extends GetxController {
-  bool isLoaded = false;
+  bool loading = false;
   MySiteController mySiteController = Get.find();
   List<Downloader> dataList = <Downloader>[];
   Map<String, Downloader> dataMap = {};
@@ -320,7 +320,7 @@ class DownloadController extends GetxController {
   }
 
   getDownloaderListFromServer({bool withStatus = false}) async {
-    isLoaded = false;
+    loading = true;
     update();
     CommonResponse response =
         await getDownloaderListApi(withStatus: withStatus);
@@ -328,7 +328,7 @@ class DownloadController extends GetxController {
       dataList.clear();
       dataList = response.data;
       dataList.sort((a, b) => a.sortId.compareTo(b.sortId));
-      isLoaded = true;
+      loading = false;
       _downloadStreamController.sink.add(dataList.toList());
     } else {
       Get.snackbar('出错啦', response.msg);

@@ -60,7 +60,7 @@ class _DownloadPageState extends State<DownloadPage>
                     stream: controller.downloadStream,
                     // initialData: controller.dataList,
                     builder: (context, snapshot) {
-                      controller.isLoaded = snapshot.hasData;
+                      // controller.isLoaded = snapshot.hasData;
                       return EasyRefresh(
                           controller: EasyRefreshController(),
                           onRefresh: () => controller
@@ -75,7 +75,7 @@ class _DownloadPageState extends State<DownloadPage>
                                         controller.dataList[index];
                                     return buildDownloaderCard(downloader);
                                   }),
-                              if (!controller.isLoaded)
+                              if (controller.loading)
                                 const Center(child: CircularProgressIndicator())
                             ],
                           ));
