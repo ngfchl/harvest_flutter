@@ -14,15 +14,7 @@ import 'app/routes/app_pages.dart';
 void main() async {
   // 初始化插件前需要在runApp之前调用初始化代码
   WidgetsFlutterBinding.ensureInitialized();
-  HardwareKeyboard.instance.addHandler((event) {
-    if (event is KeyDownEvent &&
-        HardwareKeyboard.instance.logicalKeysPressed
-            .contains(event.logicalKey)) {
-      // 忽略重复的 KeyDown
-      return true;
-    }
-    return false;
-  });
+
   // 初始化 持久化数据信息
   await SPUtil.getInstance();
   await initDependencies();
