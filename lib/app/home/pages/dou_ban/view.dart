@@ -84,6 +84,7 @@ class _DouBanPageState extends State<DouBanPage>
                     children: [
                       CustomCard(
                         width: double.infinity,
+                        height: double.infinity,
                         padding: const EdgeInsets.all(8),
                         child: SingleChildScrollView(
                           child: Wrap(
@@ -198,6 +199,7 @@ class _DouBanPageState extends State<DouBanPage>
                     children: [
                       CustomCard(
                         width: double.infinity,
+                        height: double.infinity,
                         padding: const EdgeInsets.all(8),
                         child: SingleChildScrollView(
                           child: Wrap(
@@ -285,6 +287,13 @@ class _DouBanPageState extends State<DouBanPage>
                         //     onTap: () => controller.getDouBanTop250(),
                         //   ),
                         // ),
+                        ListTile(
+                          dense: true,
+                          title: Text(
+                            '豆瓣 Top250 ${controller.rankMovieList.length}',
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
                         SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             child: Wrap(
@@ -330,8 +339,9 @@ class _DouBanPageState extends State<DouBanPage>
                     ),
                   ),
                   Expanded(
-                    child: SizedBox(
+                    child: CustomCard(
                       width: double.infinity,
+                      height: double.infinity,
                       child: Stack(
                         children: [
                           EasyRefresh(
