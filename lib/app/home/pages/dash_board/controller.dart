@@ -55,10 +55,12 @@ class DashBoardController extends GetxController {
   int maxDays = 0;
   int siteCount = 0;
   AuthInfo? userinfo;
+  String? baseUrl;
 
   @override
   void onInit() {
     userinfo = AuthInfo.fromJson(SPUtil.getLocalStorage('userinfo'));
+    baseUrl = SPUtil.getLocalStorage('server');
     initData();
     super.onInit();
   }
