@@ -174,6 +174,9 @@ class LoginController extends GetxController {
     update();
 
     try {
+      await SPUtil.remove('userinfo');
+      SPUtil.setBool('isLogin', false);
+      DioUtil.instance.clearAuthToken();
       CommonResponse res = await UserAPI.login(loginUser);
       Logger.instance.i(res.code);
       Logger.instance.i(res.data);
