@@ -24,6 +24,8 @@ class UserAPI {
   /// Logout
   static Future logout() async {
     await SPUtil.remove('userinfo');
+    await SPUtil.remove('isLogin');
+    DioUtil.instance.clearAuthToken();
     return await DioUtil().post(
       Api.LOGIN_URL,
     );
