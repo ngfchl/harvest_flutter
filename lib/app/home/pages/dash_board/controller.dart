@@ -179,10 +179,10 @@ class DashBoardController extends GetxController {
   ///@updateTime
    */
   parseDashData(data) {
-    emailMap = (data['emailCount'] as List)
+    emailMap = (data['emailCount'] as List? ?? [])
         .map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>))
         .toList();
-    usernameMap = (data['usernameCount'] as List)
+    usernameMap = (data['usernameCount'] as List? ?? [])
         .map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>))
         .toList();
     updatedAt = data['updatedAt'] ?? '';
@@ -195,35 +195,39 @@ class DashBoardController extends GetxController {
     siteCount = data['siteCount'] ?? 0;
     todayUploadIncrement = data['todayUploadIncrement'] ?? 0;
     todayDownloadIncrement = data['todayDownloadIncrement'] ?? 0;
-    uploadIncrementDataList = (data['uploadIncrementDataList'] as List)
+    uploadIncrementDataList = (data['uploadIncrementDataList'] as List? ?? [])
         .map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>))
         .toList();
 
-    downloadIncrementDataList = (data['downloadIncrementDataList'] as List)
-        .map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>))
-        .toList();
+    downloadIncrementDataList =
+        (data['downloadIncrementDataList'] as List? ?? [])
+            .map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>))
+            .toList();
     uploadMonthIncrementDataList = (data['uploadMonthIncrementDataList']
-            as List)
+                as List? ??
+            [])
         .map((el) => MetaDataItem(
               name: el['name'] as String,
-              value: (el['value'] as List<dynamic>)
+              value: (el['value'] as List<dynamic>? ?? [])
                   .map((e) => TrafficDelta.fromJson(e as Map<String, dynamic>))
                   .toList(),
             ))
         .toList();
-    statusList = (data['statusList'] as List)
+    statusList = (data['statusList'] as List? ?? [])
         .map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>))
         .toList();
-    earliestSite = MySite.fromJson(data['earliestSite']);
-    stackChartDataList = (data['stackChartDataList'] as List<dynamic>)
+    earliestSite = data['earliestSite'] != null
+        ? MySite.fromJson(data['earliestSite'])
+        : null;
+    stackChartDataList = (data['stackChartDataList'] as List<dynamic>? ?? [])
         .map((el) => MetaDataItem(
               name: el['name'] as String,
-              value: (el['value'] as List<dynamic>)
+              value: (el['value'] as List<dynamic>? ?? [])
                   .map((e) => TrafficDelta.fromJson(e as Map<String, dynamic>))
                   .toList(),
             ))
         .toList();
-    seedDataList = (data['seedDataList'] as List)
+    seedDataList = (data['seedDataList'] as List? ?? [])
         .map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>))
         .toList();
   }
