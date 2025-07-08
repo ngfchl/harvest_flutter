@@ -761,6 +761,7 @@ class _DashBoardPageState extends State<DashBoardPage>
   Widget _buildSiteInfoCard() {
     // Logger.instance.d(controller.earliestSite);
     return GetBuilder<DashBoardController>(builder: (controller) {
+      // Rx<MySite?> earliestSite = controller.earliestSite.obs;
       RxBool showYear = true.obs;
       return CustomCard(
         height: controller.cardHeight,
@@ -991,69 +992,69 @@ class _DashBoardPageState extends State<DashBoardPage>
                                         .withOpacity(0.8),
                                   ),
                                 ),
-                                child: Obx(() {
-                                  return Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: <Widget>[
-                                      const SizedBox(
-                                        height: 8,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: <Widget>[
+                                    const SizedBox(
+                                      height: 8,
+                                    ),
+                                    controller.earliestSite == null
+                                        ? Text('--',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle())
+                                        : Obx(() {
+                                            return showYear.value
+                                                ? Text(
+                                                    calcWeeksDays(controller
+                                                        .earliestSite!
+                                                        .timeJoin),
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.normal,
+                                                      fontSize: 11,
+                                                      letterSpacing: 0.0,
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .primary
+                                                          .withOpacity(0.8),
+                                                    ),
+                                                  )
+                                                : Text(
+                                                    calculateTimeElapsed(
+                                                            controller
+                                                                .earliestSite!
+                                                                .timeJoin)
+                                                        .replaceAll('前', ''),
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.normal,
+                                                      fontSize: 11,
+                                                      letterSpacing: 0.0,
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .primary
+                                                          .withOpacity(0.8),
+                                                    ),
+                                                  );
+                                          }),
+                                    Text(
+                                      '🔥P龄',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                        letterSpacing: 0.0,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .secondary
+                                            .withOpacity(0.8),
                                       ),
-                                      controller.earliestSite == null
-                                          ? Text('--',
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle())
-                                          : showYear.value
-                                              ? Text(
-                                                  calcWeeksDays(controller
-                                                      .earliestSite!.timeJoin),
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.normal,
-                                                    fontSize: 11,
-                                                    letterSpacing: 0.0,
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .primary
-                                                        .withOpacity(0.8),
-                                                  ),
-                                                )
-                                              : Text(
-                                                  calculateTimeElapsed(
-                                                          controller
-                                                              .earliestSite!
-                                                              .timeJoin)
-                                                      .replaceAll('前', ''),
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.normal,
-                                                    fontSize: 11,
-                                                    letterSpacing: 0.0,
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .primary
-                                                        .withOpacity(0.8),
-                                                  ),
-                                                ),
-                                      Text(
-                                        '🔥P龄',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12,
-                                          letterSpacing: 0.0,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .secondary
-                                              .withOpacity(0.8),
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                }),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                             Padding(
