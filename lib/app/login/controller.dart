@@ -99,7 +99,7 @@ class LoginController extends GetxController {
       Logger.instance.e(msg);
       return CommonResponse.error(msg: msg);
     } finally {
-      isLoading = true;
+      isLoading = false;
       update();
     }
   }
@@ -149,7 +149,7 @@ class LoginController extends GetxController {
       if (server.id == 0) {
         // 判断是否为新添加的服务器
         Logger.instance.i('添加服务器');
-        if (selectedServer == null) {
+        if (selectedServer == null || server.selected) {
           server = server.copyWith(selected: true);
           selectServer(server);
         }
