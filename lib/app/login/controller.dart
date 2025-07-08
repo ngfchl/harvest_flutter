@@ -92,16 +92,15 @@ class LoginController extends GetxController {
         password: server.password,
       );
       CommonResponse response = await connectToServer(loginUser);
-
-      update();
       return response;
     } catch (e) {
       // 发生错误，如网络问题或服务器不可达
       String msg = '服务器访问失败: $e';
       Logger.instance.e(msg);
-      isLoading = false; // 结束加载状态
-      update();
       return CommonResponse.error(msg: msg);
+    } finally {
+      isLoading = true;
+      update();
     }
   }
 
@@ -150,12 +149,17 @@ class LoginController extends GetxController {
       if (server.id == 0) {
         // 判断是否为新添加的服务器
         Logger.instance.i('添加服务器');
+        if (selectedServer == null) {
+          server = server.copyWith(selected: true);
+          selectServer(server);
+        }
         response = await serverRepository.insertServer(server);
       } else {
         // 根据ID更新服务器
         Logger.instance.i('更新服务器');
         response = await serverRepository.updateServer(server);
       }
+
       serverList = serverRepository.serverList;
       update(); // 更新UI，重新获取服务器列表
       return response;
@@ -170,9 +174,6 @@ class LoginController extends GetxController {
   ///@description
   ///@updateTime
   Future<CommonResponse> connectToServer(LoginUser loginUser) async {
-    isLoading = true;
-    update();
-
     try {
       await SPUtil.remove('userinfo');
       SPUtil.setBool('isLogin', false);
@@ -196,6 +197,9 @@ class LoginController extends GetxController {
   ///@description
   ///@updateTime
   Future<CommonResponse> doLogin() async {
+    isLoading = true;
+    update();
+
     // 连接到服务器
     if (selectedServer == null ||
         selectedServer?.id == 0 ||
