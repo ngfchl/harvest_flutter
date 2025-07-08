@@ -191,7 +191,13 @@ class MySiteController extends GetxController {
     // 记录开始时间
     DateTime startTime = DateTime.now();
     CommonResponse res = await getMySiteList();
-    if (res.code == 0) {
+
+    // 记录结束时间
+    var endTime = DateTime.now();
+    // 计算耗时
+    var duration = endTime.difference(startTime);
+    Logger.instance.d('加载站点信息列表程序耗时: ${duration.inMilliseconds} 毫秒');
+    if (res.succeed) {
       mySiteList = res.data;
       filterByKey();
       isLoaded = false;
@@ -203,9 +209,9 @@ class MySiteController extends GetxController {
       );
     }
     // 记录结束时间
-    var endTime = DateTime.now();
+    endTime = DateTime.now();
     // 计算耗时
-    var duration = endTime.difference(startTime);
+    duration = endTime.difference(startTime);
     Logger.instance.d('解析站点信息列表程序耗时: ${duration.inMilliseconds} 毫秒');
   }
 
@@ -225,7 +231,10 @@ class MySiteController extends GetxController {
         duration: const Duration(seconds: 3),
       );
       update();
-
+      Future.microtask(() async {
+        await getSiteStatusFromServer();
+        update();
+      });
       return true;
     } else {
       Get.snackbar(
@@ -241,8 +250,11 @@ class MySiteController extends GetxController {
 
   Future<void> removeSiteFromServer(MySite mySite) async {
     CommonResponse res = await removeMySite(mySite);
-    if (res.code == 0) {
-      await getSiteStatusFromServer();
+    if (res.succeed) {
+      Future.microtask(() async {
+        await getSiteStatusFromServer();
+        update();
+      });
       Get.snackbar(
         '删除站点',
         res.msg.toString(),
@@ -505,7 +517,7 @@ class MySiteController extends GetxController {
   Future<void> signAllSiteButton() async {
     final res = await signIn(null);
     Get.back();
-    if (res.code == 0) {
+    if (res.succeed) {
       Get.snackbar(
         '签到任务',
         '签到任务信息：${res.msg}',
@@ -523,7 +535,7 @@ class MySiteController extends GetxController {
   Future<void> importFromCookieCloud() async {
     final res = await importFromCookieCloudApi();
     Get.back();
-    if (res.code == 0) {
+    if (res.succeed) {
       Get.snackbar(
         'CookieCloud任务',
         'CookieCloud任务信息：${res.msg}',
@@ -539,7 +551,7 @@ class MySiteController extends GetxController {
   Future<void> getAllStatusButton() async {
     final res = await getNewestStatus(null);
     Get.back();
-    if (res.code == 0) {
+    if (res.succeed) {
       Get.snackbar(
         '更新数据',
         '更新数据任务信息：${res.msg}',

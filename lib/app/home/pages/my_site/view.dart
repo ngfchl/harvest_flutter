@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
+import 'package:harvest/app/home/pages/dash_board/controller.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -982,6 +983,7 @@ class _MySitePagePageState extends State<MySitePage>
   Widget _buildMySiteOperate(WebSite website, MySite mySite) {
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     bool signed = mySite.getSignMaxKey() == today || mySite.signIn == false;
+    RxBool siteRefreshing = false.obs;
     return CustomPopup(
       showArrow: true,
       // contentPadding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
@@ -994,9 +996,9 @@ class _MySitePagePageState extends State<MySitePage>
               PopupMenuItem<String>(
                 child: const Text('我要签到'),
                 onTap: () async {
+                  siteRefreshing.value = true;
                   CommonResponse res = await signIn(mySite.id);
-
-                  if (res.code == 0) {
+                  if (res.succeed) {
                     Get.snackbar('签到成功', '${mySite.nickname} 签到信息：${res.msg}',
                         colorText: Theme.of(context).colorScheme.primary);
                     controller.initFlag = false;
@@ -1004,11 +1006,12 @@ class _MySitePagePageState extends State<MySitePage>
                   } else {
                     Get.snackbar(
                         '签到失败', '${mySite.nickname} 签到任务执行出错啦：${res.msg}',
-                        colorText: Theme.of(context).colorScheme.primary);
+                        colorText: Theme.of(context).colorScheme.error);
                   }
+                  siteRefreshing.value = false;
                 },
               ),
-            if (website.signIn && mySite.signIn && signed)
+            if (website.signIn && mySite.signIn)
               PopupMenuItem<String>(
                 child: const Text('签到历史'),
                 onTap: () async {
@@ -1018,18 +1021,24 @@ class _MySitePagePageState extends State<MySitePage>
             PopupMenuItem<String>(
               child: const Text('更新数据'),
               onTap: () async {
+                siteRefreshing.value = true;
                 CommonResponse res = await getNewestStatus(mySite.id);
-
-                if (res.code == 0) {
+                if (res.succeed) {
                   Get.snackbar('站点数据刷新成功', '${mySite.nickname} 数据刷新：${res.msg}',
                       colorText: Theme.of(context).colorScheme.primary);
                   controller.initFlag = false;
-                  controller.getSiteStatusFromServer();
+                  await controller.getSiteStatusFromServer();
+                  Future.delayed(Duration(seconds: 2), () async {
+                    DashBoardController dController = Get.find();
+                    dController.initChartData();
+                    dController.update();
+                  });
                 } else {
                   Get.snackbar(
                       '站点数据刷新失败', '${mySite.nickname} 数据刷新出错啦：${res.msg}',
-                      colorText: Theme.of(context).colorScheme.primary);
+                      colorText: Theme.of(context).colorScheme.error);
                 }
+                siteRefreshing.value = false;
               },
             ),
             if (website.repeatTorrents && mySite.repeatTorrents)
@@ -1038,13 +1047,13 @@ class _MySitePagePageState extends State<MySitePage>
                 onTap: () async {
                   CommonResponse res = await repeatSite(mySite.id);
 
-                  if (res.code == 0) {
+                  if (res.succeed) {
                     Get.snackbar('辅种任务发送成功', '${mySite.nickname} ${res.msg}',
                         colorText: Theme.of(context).colorScheme.primary);
                   } else {
                     Get.snackbar(
                         '辅种任务发送失败', '${mySite.nickname} 辅种出错啦：${res.msg}',
-                        colorText: Theme.of(context).colorScheme.primary);
+                        colorText: Theme.of(context).colorScheme.error);
                   }
                 },
               ),
@@ -1061,15 +1070,36 @@ class _MySitePagePageState extends State<MySitePage>
               },
             ),
           ])),
-      child: Icon(
-        Icons.widgets_outlined,
-        size: 36,
-        color: signed == true ? Colors.green : Colors.amber,
+      child: Obx(
+        () => siteRefreshing.value
+            ? SizedBox(
+                width: 36,
+                child: Center(
+                  child: GFLoader(
+                    size: 28,
+                    loaderColorOne: Theme.of(context).colorScheme.primary,
+                  ),
+                ))
+            : Icon(
+                Icons.widgets_outlined,
+                size: 36,
+                color: signed == true ? Colors.green : Colors.amber,
+              ),
       ),
     );
   }
 
   Future<void> _showEditBottomSheet({MySite? mySite}) async {
+    if (mySite != null) {
+      CommonResponse res = await getMySiteByIdApi(mySite.id);
+      if (!res.succeed) {
+        Get.snackbar('获取站点信息失败', "获取站点信息失败，请更新站点列表后重试！${res.msg}",
+            colorText: Theme.of(context).colorScheme.error);
+        return;
+      }
+      mySite = res.data;
+    }
+
     // 获取已添加的站点名称
     List<String> hasKeys =
         controller.mySiteList.map((element) => element.site).toList();
@@ -1104,14 +1134,17 @@ class _MySitePagePageState extends State<MySitePage>
         TextEditingController(text: mySite?.torrents ?? '');
     final cookieController = TextEditingController(text: mySite?.cookie ?? '');
     final mirrorController = TextEditingController(text: mySite?.mirror ?? '');
-    Rx<WebSite?> selectedSite = mySite != null
-        ? controller.webSiteList[mySite.site].obs
-        : controller.webSiteList.values.toList()[0].obs;
+    Rx<WebSite?> selectedSite = (mySite != null
+            ? controller.webSiteList[mySite.site]
+            : (webSiteList.isNotEmpty ? webSiteList.first : null))
+        .obs;
     RxList<String>? urlList = selectedSite.value != null
         ? selectedSite.value?.url.obs
         : <String>[].obs;
     RxBool getInfo = mySite != null ? mySite.getInfo.obs : true.obs;
-    RxBool available = mySite != null ? mySite.available.obs : true.obs;
+    RxBool available = mySite != null
+        ? mySite.available.obs
+        : (selectedSite.value?.alive ?? false).obs;
     RxBool signIn = mySite != null ? mySite.signIn.obs : true.obs;
     RxBool brushRss = mySite != null ? mySite.brushRss.obs : false.obs;
     RxBool brushFree = mySite != null ? mySite.brushFree.obs : false.obs;
@@ -1123,6 +1156,7 @@ class _MySitePagePageState extends State<MySitePage>
     RxBool searchTorrents =
         mySite != null ? mySite.searchTorrents.obs : true.obs;
     RxBool manualInput = false.obs;
+    RxBool doSaveLoading = false.obs;
     Get.bottomSheet(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
       isScrollControlled: true,
@@ -1153,6 +1187,16 @@ class _MySitePagePageState extends State<MySitePage>
                           controller.update();
                           isLoading.value = false;
                         },
+                        style: ButtonStyle(
+                          shape:
+                              WidgetStateProperty.all<RoundedRectangleBorder>(
+                            RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5.0)),
+                          ),
+                          padding: WidgetStateProperty.all(
+                              const EdgeInsets.symmetric(horizontal: 5)),
+                          side: WidgetStateProperty.all(BorderSide.none),
+                        ),
                         icon: Icon(
                           Icons.cloud_download_outlined,
                           size: 18,
@@ -1178,9 +1222,7 @@ class _MySitePagePageState extends State<MySitePage>
                               vertical: 4.0, horizontal: 8),
                           child: DropdownSearch<WebSite>(
                             items: (String filter, _) => webSiteList,
-                            selectedItem: webSiteList.firstWhereOrNull(
-                                (element) =>
-                                    element.name == siteController.text),
+                            selectedItem: selectedSite.value,
                             compareFn: (item, sItem) => item.name == sItem.name,
                             itemAsString: (WebSite? item) => item!.name,
                             decoratorProps: DropDownDecoratorProps(
@@ -1324,17 +1366,27 @@ class _MySitePagePageState extends State<MySitePage>
                         ),
                         const SizedBox(height: 15),
                         Wrap(spacing: 12, runSpacing: 8, children: [
-                          ChoiceChip(
-                            label: const Text('可用'),
-                            selected: selectedSite.value!.alive
-                                ? available.value
-                                : false,
-                            onSelected: (value) {
-                              selectedSite.value!.alive
-                                  ? available.value = value
-                                  : available.value = false;
-                            },
-                          ),
+                          selectedSite.value!.alive
+                              ? ChoiceChip(
+                                  label: const Text('可用'),
+                                  selected: selectedSite.value!.alive
+                                      ? available.value
+                                      : false,
+                                  onSelected: (value) {
+                                    selectedSite.value!.alive
+                                        ? available.value = value
+                                        : available.value = false;
+                                  },
+                                )
+                              : ChoiceChip(
+                                  label: const Text('可用'),
+                                  selected: false,
+                                  onSelected: (value) {
+                                    Logger.instance.d(
+                                        "站点可用性：${selectedSite.value!.alive}");
+                                    available.value = selectedSite.value!.alive;
+                                  },
+                                ),
                           ChoiceChip(
                             label: const Text('Dash'),
                             selected: showInDash.value,
@@ -1383,15 +1435,21 @@ class _MySitePagePageState extends State<MySitePage>
             OverflowBar(
               alignment: MainAxisAlignment.spaceAround,
               children: [
-                ElevatedButton(
+                ElevatedButton.icon(
                   style: ButtonStyle(
+                    shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                      RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5.0)),
+                    ),
                     backgroundColor: WidgetStateProperty.all(
                         Theme.of(context).colorScheme.primary),
                   ),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: Text(
+                  icon: Icon(Icons.cancel,
+                      color: Theme.of(context).colorScheme.onPrimary),
+                  label: Text(
                     '取消',
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onPrimary,
@@ -1401,6 +1459,10 @@ class _MySitePagePageState extends State<MySitePage>
                 if (mySite != null)
                   ElevatedButton(
                     style: ButtonStyle(
+                      shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                        RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5.0)),
+                      ),
                       backgroundColor: WidgetStateProperty.all(
                           Theme.of(context).colorScheme.error),
                     ),
@@ -1436,18 +1498,33 @@ class _MySitePagePageState extends State<MySitePage>
                     ),
                   ),
                 if (selectedSite.value != null)
-                  ElevatedButton(
+                  ElevatedButton.icon(
                     style: ButtonStyle(
+                      shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                        RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5.0)),
+                      ),
                       backgroundColor: WidgetStateProperty.all(
                           Theme.of(context).colorScheme.tertiary),
                     ),
-                    child: Text(
+                    icon: Obx(() {
+                      return doSaveLoading.value
+                          ? GFLoader(
+                              size: 20,
+                              loaderColorOne:
+                                  Theme.of(context).colorScheme.tertiary,
+                            )
+                          : Icon(Icons.save,
+                              color: Theme.of(context).colorScheme.onTertiary);
+                    }),
+                    label: Text(
                       '保存',
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.onTertiary,
                       ),
                     ),
                     onPressed: () async {
+                      doSaveLoading.value = true;
                       if (mySite != null) {
                         mySite = mySite?.copyWith(
                           site: siteController.text.trim(),
@@ -1516,7 +1593,13 @@ class _MySitePagePageState extends State<MySitePage>
                         Navigator.of(context).pop();
                         controller.initFlag = false;
                         controller.getSiteStatusFromServer();
+                        Future.delayed(Duration(seconds: 2), () async {
+                          DashBoardController dController = Get.find();
+                          dController.initChartData();
+                          dController.update();
+                        });
                       }
+                      doSaveLoading.value = false;
                     },
                   ),
               ],
