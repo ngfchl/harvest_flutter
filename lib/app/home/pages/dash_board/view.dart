@@ -222,6 +222,33 @@ class _DashBoardPageState extends State<DashBoardPage>
                   ),
                 ),
               ),
+              ElevatedButton.icon(
+                onPressed: () async {
+                  controller.isLoading = true;
+                  controller.update();
+                  await controller.initChartData();
+                  controller.isLoading = false;
+                  controller.update();
+                },
+                icon: Icon(
+                  Icons.cloud_download,
+                  size: 12,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                style: ButtonStyle(
+                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5.0)),
+                  ),
+                  side: WidgetStateProperty.all(BorderSide.none),
+                ),
+                label: Text(
+                  '加载',
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontSize: 12),
+                ),
+              ),
             ],
           ),
         ),
