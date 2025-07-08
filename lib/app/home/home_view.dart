@@ -45,6 +45,10 @@ class HomeView extends GetView<HomeController> {
             // },
             cancel: ElevatedButton(
                 style: ButtonStyle(
+                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5.0)),
+                  ),
                   backgroundColor:
                       WidgetStateProperty.all(Colors.blueAccent.withAlpha(250)),
                 ),
@@ -57,6 +61,10 @@ class HomeView extends GetView<HomeController> {
                 )),
             confirm: ElevatedButton(
                 style: ButtonStyle(
+                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5.0)),
+                  ),
                   backgroundColor:
                       WidgetStateProperty.all(Colors.redAccent.withAlpha(250)),
                 ),

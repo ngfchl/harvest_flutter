@@ -422,6 +422,10 @@ class DownloadForm extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: () => cancelForm(context),
                 style: ButtonStyle(
+                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5.0)),
+                  ),
                   backgroundColor:
                       WidgetStateProperty.all(Colors.redAccent.withAlpha(150)),
                 ),
@@ -648,6 +652,10 @@ class DownloadForm extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: () => cancelForm(context),
               style: ButtonStyle(
+                shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                  RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5.0)),
+                ),
                 backgroundColor:
                     WidgetStateProperty.all(Colors.redAccent.withAlpha(150)),
               ),
