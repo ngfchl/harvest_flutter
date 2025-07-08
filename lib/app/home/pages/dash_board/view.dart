@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:collection/collection.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/foundation.dart';
@@ -60,13 +58,178 @@ class _DashBoardPageState extends State<DashBoardPage>
             return _showAllInfo();
           }),
           floatingActionButton: controller.userinfo?.isStaff == true
-              ? _buildBottomButtonBar()
+              ? _buildBottomButtonBarFloat()
               : null,
           floatingActionButtonLocation:
-              FloatingActionButtonLocation.miniCenterDocked,
+              FloatingActionButtonLocation.miniEndFloat,
         ),
       );
     });
+  }
+
+  _buildBottomButtonBarFloat() {
+    List<MetaDataItem> cacheList = [
+      {"name": "豆瓣缓存数据", "value": "*douban*"},
+      {"name": "RSS缓存数据", "value": "rss_data_list"},
+      {"name": "单下载器缓存", "value": "repeat_info_hash_cache:*-*"},
+      {"name": "站点删种缓存", "value": "repeat_404_cache:*-*"},
+      {"name": "辅种错误缓存", "value": "repeat_error_cache:*-*"},
+      {"name": "辅种成功缓存", "value": "repeat_success_cache:*-*"},
+      {"name": "辅种数据缓存", "value": "repeat_info_hash_cache"},
+      {"name": "站点配置缓存", "value": "website_list"},
+      {"name": "我的站点缓存", "value": "my_site_list"},
+      {"name": "首页数据缓存", "value": "dashboard_data_*"},
+    ].map((e) => MetaDataItem.fromJson(e)).toList();
+    return CustomPopup(
+        contentDecoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.background,
+        ),
+        content: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            // mainAxisAlignment: MainAxisAlignment.spaceAround,
+            // crossAxisAlignment: CrossAxisAlignment.center,
+            direction: Axis.vertical,
+            spacing: 15,
+            children: [
+              ElevatedButton.icon(
+                onPressed: () async {
+                  await getAllStatusButton();
+                },
+                icon: Icon(
+                  Icons.refresh,
+                  size: 12,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                style: ButtonStyle(
+                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5.0)),
+                  ),
+                  side: WidgetStateProperty.all(BorderSide.none),
+                ),
+                label: Text(
+                  '更新',
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontSize: 12),
+                ),
+              ),
+              ElevatedButton.icon(
+                onPressed: () async {
+                  await signAllSiteButton();
+                },
+                icon: Icon(
+                  Icons.credit_score,
+                  size: 12,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                style: ButtonStyle(
+                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5.0)),
+                  ),
+                  side: WidgetStateProperty.all(BorderSide.none),
+                ),
+                label: Text(
+                  '签到',
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontSize: 12),
+                ),
+              ),
+              if (!kIsWeb)
+                ElevatedButton.icon(
+                  onPressed: () => ScreenshotSaver.captureAndSave(_captureKey),
+                  icon: Icon(
+                    Icons.camera_alt_outlined,
+                    size: 12,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  style: ButtonStyle(
+                    shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                      RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5.0)),
+                    ),
+                    side: WidgetStateProperty.all(BorderSide.none),
+                  ),
+                  label: Text(
+                    '截图',
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontSize: 12),
+                  ),
+                ),
+              CustomPopup(
+                showArrow: false,
+                backgroundColor: Theme.of(context).colorScheme.surface,
+                barrierColor: Colors.transparent,
+                content: SizedBox(
+                  width: 120,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ...cacheList.map((item) => PopupMenuItem<String>(
+                            child: Text(
+                              item.name,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                            onTap: () async {
+                              await clearMyCacheButton(item.value);
+                              // await controller.mySiteController.initData();
+                            },
+                          )),
+                    ],
+                  ),
+                ),
+                child: ElevatedButton.icon(
+                  icon: Icon(
+                    Icons.cleaning_services_rounded,
+                    size: 12,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  onPressed: null,
+                  style: ButtonStyle(
+                    shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                      RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5.0)),
+                    ),
+                    side: WidgetStateProperty.all(BorderSide.none),
+                    backgroundColor:
+                        WidgetStateProperty.resolveWith<Color>((states) {
+                      if (states.contains(WidgetState.disabled)) {
+                        return Theme.of(context).colorScheme.surface; // 禁用时背景色
+                      }
+                      return Colors.grey; // 正常背景色
+                    }),
+                    foregroundColor:
+                        WidgetStateProperty.resolveWith<Color>((states) {
+                      if (states.contains(WidgetState.disabled)) {
+                        return Theme.of(context).colorScheme.primary; // 禁用时文字色
+                      }
+                      return Colors.white;
+                    }),
+                    elevation: WidgetStateProperty.all(1),
+                  ),
+                  label: Text(
+                    '缓存',
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontSize: 12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        child: Icon(
+          Icons.settings_outlined,
+          color: Theme.of(context).colorScheme.primary,
+          size: 28,
+        ));
   }
 
   Widget _showTodayDownloadedIncrement() {
@@ -576,186 +739,11 @@ class _DashBoardPageState extends State<DashBoardPage>
               }),
             ),
           ),
-          if (!kIsWeb && Platform.isIOS) const SizedBox(height: 10),
-          if (controller.userinfo?.isStaff == true) const SizedBox(height: 50),
+          // if (!kIsWeb && Platform.isIOS) const SizedBox(height: 10),
+          // if (controller.userinfo?.isStaff == true) const SizedBox(height: 50),
         ],
       );
     });
-  }
-
-  _buildBottomButtonBar() {
-    List<MetaDataItem> cacheList = [
-      {"name": "豆瓣缓存数据", "value": "*douban*"},
-      {"name": "RSS缓存数据", "value": "rss_data_list"},
-      {"name": "单下载器缓存", "value": "repeat_info_hash_cache:*-*"},
-      {"name": "站点删种缓存", "value": "repeat_404_cache:*-*"},
-      {"name": "辅种错误缓存", "value": "repeat_error_cache:*-*"},
-      {"name": "辅种成功缓存", "value": "repeat_success_cache:*-*"},
-      {"name": "辅种数据缓存", "value": "repeat_info_hash_cache"},
-      {"name": "站点配置缓存", "value": "website_list"},
-      {"name": "我的站点缓存", "value": "my_site_list"},
-    ].map((e) => MetaDataItem.fromJson(e)).toList();
-    return CustomCard(
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Wrap(
-          alignment: WrapAlignment.spaceBetween,
-          // mainAxisAlignment: MainAxisAlignment.spaceAround,
-          // crossAxisAlignment: CrossAxisAlignment.center,
-          spacing: 15,
-          children: [
-            ElevatedButton.icon(
-              onPressed: () async {
-                controller.isLoading = true;
-                controller.update();
-                await controller.initChartData();
-                controller.isLoading = false;
-                controller.update();
-              },
-              icon: Icon(
-                Icons.cloud_download,
-                size: 12,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              style: ButtonStyle(
-                shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                  RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5.0)),
-                ),
-                padding: WidgetStateProperty.all(
-                    const EdgeInsets.symmetric(horizontal: 5)),
-                side: WidgetStateProperty.all(BorderSide.none),
-              ),
-              label: Text(
-                '加载',
-                style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary, fontSize: 12),
-              ),
-            ),
-            ElevatedButton.icon(
-              onPressed: () async {
-                await getAllStatusButton();
-              },
-              icon: Icon(
-                Icons.refresh,
-                size: 12,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              style: ButtonStyle(
-                shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                  RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5.0)),
-                ),
-                padding: WidgetStateProperty.all(
-                    const EdgeInsets.symmetric(horizontal: 5)),
-                side: WidgetStateProperty.all(BorderSide.none),
-              ),
-              label: Text(
-                '更新',
-                style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary, fontSize: 12),
-              ),
-            ),
-            ElevatedButton.icon(
-              onPressed: () async {
-                await signAllSiteButton();
-              },
-              icon: Icon(
-                Icons.credit_score,
-                size: 12,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              style: ButtonStyle(
-                shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                  RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5.0)),
-                ),
-                padding: WidgetStateProperty.all(
-                    const EdgeInsets.symmetric(horizontal: 5)),
-                side: WidgetStateProperty.all(BorderSide.none),
-              ),
-              label: Text(
-                '签到',
-                style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary, fontSize: 12),
-              ),
-            ),
-            if (!kIsWeb)
-              ElevatedButton.icon(
-                onPressed: () => ScreenshotSaver.captureAndSave(_captureKey),
-                icon: Icon(
-                  Icons.camera_alt_outlined,
-                  size: 12,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                style: ButtonStyle(
-                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5.0)),
-                  ),
-                  padding: WidgetStateProperty.all(
-                      const EdgeInsets.symmetric(horizontal: 5)),
-                  side: WidgetStateProperty.all(BorderSide.none),
-                ),
-                label: Text(
-                  '截图',
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontSize: 12),
-                ),
-              ),
-            CustomPopup(
-              showArrow: false,
-              backgroundColor: Theme.of(context).colorScheme.surface,
-              barrierColor: Colors.transparent,
-              content: SizedBox(
-                width: 120,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ...cacheList.map((item) => PopupMenuItem<String>(
-                          child: Text(
-                            item.name,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.secondary,
-                            ),
-                          ),
-                          onTap: () async {
-                            await clearMyCacheButton(item.value);
-                            // await controller.mySiteController.initData();
-                          },
-                        )),
-                  ],
-                ),
-              ),
-              child: ElevatedButton.icon(
-                icon: Icon(
-                  Icons.cleaning_services_rounded,
-                  size: 12,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                onPressed: null,
-                style: ButtonStyle(
-                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5.0)),
-                  ),
-                  padding: WidgetStateProperty.all(
-                      const EdgeInsets.symmetric(horizontal: 5)),
-                  side: WidgetStateProperty.all(BorderSide.none),
-                ),
-                label: Text(
-                  '缓存',
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontSize: 12),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   Widget _buildSiteInfoCard() {
