@@ -523,12 +523,9 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   alignment: WrapAlignment.spaceAround,
                                   direction: Axis.horizontal,
                                   children: [
-                                    if (controller.buildSiteInfoCard &&
-                                        controller.earliestSite != null)
+                                    if (controller.buildSiteInfoCard)
                                       _buildSiteInfoCard(),
-                                    if (controller.buildAccountInfoCard &&
-                                        (controller.emailMap.isNotEmpty ||
-                                            controller.usernameMap.isNotEmpty))
+                                    if (controller.buildAccountInfoCard)
                                       _buildAccountInfoCard(),
                                     if (controller.buildSiteInfo &&
                                         controller.statusList.isNotEmpty)
@@ -762,15 +759,8 @@ class _DashBoardPageState extends State<DashBoardPage>
   }
 
   Widget _buildSiteInfoCard() {
-    Logger.instance.d(controller.earliestSite);
+    // Logger.instance.d(controller.earliestSite);
     return GetBuilder<DashBoardController>(builder: (controller) {
-      // MySite earliestSite = controller.mySiteController.mySiteList
-      //     .where((item) =>
-      //         !controller.excludeUrlList.contains(item.mirror) &&
-      //         DateTime.parse(item.timeJoin) != DateTime(2024, 2, 1))
-      //     .reduce((value, element) =>
-      //         value.timeJoin.compareTo(element.timeJoin) < 0 ? value : element);
-      MySite earliestSite = controller.earliestSite!;
       RxBool showYear = true.obs;
       return CustomCard(
         height: controller.cardHeight,
@@ -1010,36 +1000,44 @@ class _DashBoardPageState extends State<DashBoardPage>
                                       const SizedBox(
                                         height: 8,
                                       ),
-                                      showYear.value
-                                          ? Text(
-                                              calcWeeksDays(
-                                                  earliestSite.timeJoin),
+                                      controller.earliestSite == null
+                                          ? Text('--',
                                               textAlign: TextAlign.center,
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.normal,
-                                                fontSize: 11,
-                                                letterSpacing: 0.0,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .primary
-                                                    .withOpacity(0.8),
-                                              ),
-                                            )
-                                          : Text(
-                                              calculateTimeElapsed(
-                                                      earliestSite.timeJoin)
-                                                  .replaceAll('前', ''),
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.normal,
-                                                fontSize: 11,
-                                                letterSpacing: 0.0,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .primary
-                                                    .withOpacity(0.8),
-                                              ),
-                                            ),
+                                              style: TextStyle())
+                                          : showYear.value
+                                              ? Text(
+                                                  calcWeeksDays(controller
+                                                      .earliestSite!.timeJoin),
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.normal,
+                                                    fontSize: 11,
+                                                    letterSpacing: 0.0,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .primary
+                                                        .withOpacity(0.8),
+                                                  ),
+                                                )
+                                              : Text(
+                                                  calculateTimeElapsed(
+                                                          controller
+                                                              .earliestSite!
+                                                              .timeJoin)
+                                                      .replaceAll('前', ''),
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.normal,
+                                                    fontSize: 11,
+                                                    letterSpacing: 0.0,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .primary
+                                                        .withOpacity(0.8),
+                                                  ),
+                                                ),
                                       Text(
                                         '🔥P龄',
                                         textAlign: TextAlign.center,
@@ -1416,7 +1414,10 @@ class _DashBoardPageState extends State<DashBoardPage>
                               fontSize: 11,
                               letterSpacing: -0.2,
                               color: Theme.of(context).colorScheme.primary)),
-                      Text(controller.updatedAt.substring(0, 19),
+                      Text(
+                          controller.updatedAt.isNotEmpty
+                              ? controller.updatedAt.substring(0, 19)
+                              : '',
                           style: TextStyle(
                               fontWeight: FontWeight.w500,
                               fontSize: 11,
@@ -1642,6 +1643,23 @@ class _DashBoardPageState extends State<DashBoardPage>
 
   Widget _buildSiteInfo() {
     // Logger.instance.d(controller.statusList.length);
+    if (controller.statusList.isEmpty) {
+      return CustomCard(
+        height: controller.cardHeight,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Column(
+          children: [
+            Text('站点数据',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.primary,
+                )),
+            const SizedBox(height: 5),
+            Expanded(child: Center(child: Text('暂无站点信息'))),
+          ],
+        ),
+      );
+    }
     int maxUploaded = controller.statusList
         .map((item) => item.value['uploaded'])
         .reduce((a, b) => a > b ? a : b);
