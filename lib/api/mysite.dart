@@ -133,6 +133,17 @@ getNewestStatus(int? mySiteId) async {
   }
 }
 
+///  获取单站站点信息
+Future<CommonResponse> getMySiteByIdApi(int mySiteId) async {
+  String apiUrl = '${Api.MYSITE_LIST}/$mySiteId';
+  CommonResponse response = await fetchBasicData(apiUrl);
+  if (response.code == 0) {
+    return CommonResponse.success(data: MySite.fromJson(response.data));
+  } else {
+    return response;
+  }
+}
+
 ///  修改站点信息
 editMySite(MySite mySite) async {
   String apiUrl = '${Api.MYSITE_LIST}/${mySite.id}';
