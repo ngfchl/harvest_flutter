@@ -16,6 +16,7 @@ class CustomUpgradeWidget extends StatelessWidget {
             Get.snackbar('请稍后', '更新日志获取中，请稍后...',
                 colorText: Theme.of(context).colorScheme.primary);
           }
+          controller.initUpdateLogState();
           Get.bottomSheet(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(5.0), // 圆角半径
