@@ -95,6 +95,7 @@ class _DashBoardPageState extends State<DashBoardPage>
             children: [
               ElevatedButton.icon(
                 onPressed: () async {
+                  Get.back();
                   await getAllStatusButton();
                 },
                 icon: Icon(
@@ -118,6 +119,7 @@ class _DashBoardPageState extends State<DashBoardPage>
               ),
               ElevatedButton.icon(
                 onPressed: () async {
+                  Get.back();
                   await signAllSiteButton();
                 },
                 icon: Icon(
@@ -141,7 +143,10 @@ class _DashBoardPageState extends State<DashBoardPage>
               ),
               if (!kIsWeb)
                 ElevatedButton.icon(
-                  onPressed: () => ScreenshotSaver.captureAndSave(_captureKey),
+                  onPressed: () async {
+                    Get.back();
+                    await ScreenshotSaver.captureAndSave(_captureKey);
+                  },
                   icon: Icon(
                     Icons.camera_alt_outlined,
                     size: 12,
@@ -178,6 +183,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                               ),
                             ),
                             onTap: () async {
+                              Get.back();
                               await clearMyCacheButton(item.value);
                               // await controller.mySiteController.initData();
                             },
@@ -224,6 +230,7 @@ class _DashBoardPageState extends State<DashBoardPage>
               ),
               ElevatedButton.icon(
                 onPressed: () async {
+                  Get.back();
                   controller.isLoading = true;
                   controller.update();
                   await controller.initChartData();

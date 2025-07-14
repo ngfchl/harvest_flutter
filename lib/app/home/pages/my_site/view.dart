@@ -24,7 +24,6 @@ import '../../../../common/utils.dart';
 import '../../../../utils/calc_weeks.dart';
 import '../../../../utils/format_number.dart';
 import '../../../../utils/logger_helper.dart';
-import '../../../../utils/storage.dart';
 import '../../../../utils/string_utils.dart';
 import '../../../routes/app_pages.dart';
 import '../models/my_site.dart';
@@ -84,82 +83,73 @@ class _MySitePagePageState extends State<MySitePage>
                       GetBuilder<MySiteController>(
                           id: Key('showSearchBar'),
                           builder: (controller) {
-                            return controller.showSearchBar
-                                ? Expanded(
-                                    child: InkWell(
-                                      onTap: () {
-                                        FocusScope.of(context)
-                                            .requestFocus(blankNode);
-                                      },
-                                      child: SizedBox(
-                                        height: 32,
-                                        child: TextField(
-                                          focusNode: blankNode,
-                                          controller:
-                                              controller.searchController,
-                                          style: const TextStyle(fontSize: 12),
-                                          textAlignVertical:
-                                              TextAlignVertical.center,
-                                          decoration: InputDecoration(
-                                            // labelText: '搜索',
-                                            isDense: true,
-                                            hintText: '输入关键词...',
-                                            labelStyle:
-                                                const TextStyle(fontSize: 12),
-                                            hintStyle:
-                                                const TextStyle(fontSize: 12),
-                                            contentPadding:
-                                                const EdgeInsets.symmetric(
-                                                    vertical: 8, horizontal: 5),
-                                            prefixIcon: const Icon(
-                                              Icons.search,
-                                              size: 14,
-                                            ),
-                                            // suffix: ,
-                                            suffixIcon: Padding(
-                                              padding: const EdgeInsets.only(
-                                                  right: 8.0),
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Text(
-                                                      '计数：${controller.showStatusList.length}',
-                                                      style: const TextStyle(
-                                                          fontSize: 12,
-                                                          color:
-                                                              Colors.orange)),
-                                                ],
-                                              ),
-                                            ),
-                                            border: OutlineInputBorder(
-                                              borderSide: BorderSide.none,
-                                              // 不绘制边框
-                                              borderRadius:
-                                                  BorderRadius.circular(0.0),
-                                              // 确保角落没有圆角
-                                              gapPadding:
-                                                  0.0, // 移除边框与hintText之间的间距
-                                            ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderSide: const BorderSide(
-                                                  width: 1.0,
-                                                  color: Colors.black),
-                                              // 仅在聚焦时绘制底部边框
-                                              borderRadius:
-                                                  BorderRadius.circular(0.0),
-                                            ),
-                                          ),
-                                          onChanged: (value) {
-                                            Logger.instance.d('搜索框内容变化：$value');
-                                            controller.searchKey = value;
-                                            controller.filterByKey();
-                                          },
+                            return Expanded(
+                              child: InkWell(
+                                onTap: () {
+                                  FocusScope.of(context)
+                                      .requestFocus(blankNode);
+                                },
+                                child: SizedBox(
+                                  height: 32,
+                                  child: TextField(
+                                    focusNode: blankNode,
+                                    controller: controller.searchController,
+                                    style: const TextStyle(fontSize: 12),
+                                    textAlignVertical: TextAlignVertical.center,
+                                    decoration: InputDecoration(
+                                      // labelText: '搜索',
+                                      isDense: true,
+                                      hintText: '输入关键词...',
+                                      labelStyle: const TextStyle(fontSize: 12),
+                                      hintStyle: const TextStyle(fontSize: 12),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              vertical: 8, horizontal: 5),
+                                      prefixIcon: const Icon(
+                                        Icons.search,
+                                        size: 14,
+                                      ),
+                                      // suffix: ,
+                                      suffixIcon: Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 8.0),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                                '计数：${controller.showStatusList.length}',
+                                                style: const TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.orange)),
+                                          ],
                                         ),
                                       ),
+                                      border: OutlineInputBorder(
+                                        borderSide: BorderSide.none,
+                                        // 不绘制边框
+                                        borderRadius:
+                                            BorderRadius.circular(0.0),
+                                        // 确保角落没有圆角
+                                        gapPadding: 0.0, // 移除边框与hintText之间的间距
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: const BorderSide(
+                                            width: 1.0, color: Colors.black),
+                                        // 仅在聚焦时绘制底部边框
+                                        borderRadius:
+                                            BorderRadius.circular(0.0),
+                                      ),
                                     ),
-                                  )
-                                : const SizedBox.shrink();
+                                    onChanged: (value) {
+                                      Logger.instance.d('搜索框内容变化：$value');
+                                      controller.searchKey = value;
+                                      controller.filterByKey();
+                                    },
+                                  ),
+                                ),
+                              ),
+                            );
                           }),
                       if (controller.searchKey.isNotEmpty)
                         IconButton(
@@ -270,32 +260,7 @@ class _MySitePagePageState extends State<MySitePage>
             children: [
               ElevatedButton.icon(
                 onPressed: () async {
-                  controller.showSearchBar = !controller.showSearchBar;
-                  Logger.instance.d('显示搜索栏：${controller.showSearchBar}');
-                  controller.update([Key('showSearchBar')]);
-                  if (controller.showSearchBar) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      FocusScope.of(context).requestFocus(blankNode);
-                    });
-                  } else {
-                    FocusScope.of(context).unfocus(); // 取消焦点
-                  }
-                },
-                icon: const Icon(
-                  Icons.search_outlined,
-                  size: 20,
-                ),
-                style: ButtonStyle(
-                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5.0)),
-                  ),
-                  side: WidgetStateProperty.all(BorderSide.none),
-                ),
-                label: const Text('搜索'),
-              ),
-              ElevatedButton.icon(
-                onPressed: () async {
+                  Get.back();
                   Future.microtask(() async {
                     Logger.instance.i('开始从数据库加载数据...');
                     controller.loadingFromServer = true;
@@ -323,6 +288,7 @@ class _MySitePagePageState extends State<MySitePage>
               ),
               ElevatedButton.icon(
                 onPressed: () {
+                  Get.back();
                   _showFilterBottomSheet();
                 },
                 icon: const Icon(
@@ -340,6 +306,7 @@ class _MySitePagePageState extends State<MySitePage>
               ),
               ElevatedButton.icon(
                 onPressed: () {
+                  Get.back();
                   _showSortBottomSheet();
                 },
                 icon: const Icon(
@@ -357,6 +324,7 @@ class _MySitePagePageState extends State<MySitePage>
               ),
               ElevatedButton.icon(
                 onPressed: () async {
+                  Get.back();
                   await _showEditBottomSheet();
                 },
                 icon: const Icon(
@@ -380,166 +348,6 @@ class _MySitePagePageState extends State<MySitePage>
           color: Theme.of(context).colorScheme.primary,
           size: 28,
         ));
-  }
-
-  _buildBottomButtonBar() {
-    return CustomCard(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-      child: SingleChildScrollView(
-        controller: ScrollController(initialScrollOffset: 250),
-        scrollDirection: Axis.horizontal,
-        child: Wrap(
-          alignment: WrapAlignment.spaceAround,
-          runAlignment: WrapAlignment.center,
-          direction: Axis.horizontal,
-          spacing: 15,
-          runSpacing: 10,
-          children: [
-            GetBuilder<MySiteController>(
-                id: Key('openByInnerExplorer'),
-                builder: (controller) {
-                  return Container(
-                    margin:
-                        const EdgeInsets.symmetric(vertical: 3, horizontal: 0),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 5.5, horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white, // 你可以根据实际需要调整
-                      borderRadius: BorderRadius.circular(5.0),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: Offset(1, 1),
-                          blurRadius: 1.0,
-                        ),
-                      ],
-                    ),
-                    child: GFToggle(
-                        enabledText: '内置',
-                        disabledText: '浏览器',
-                        enabledTextStyle: TextStyle(
-                            fontSize: 8,
-                            color: Theme.of(context).colorScheme.onPrimary),
-                        disabledTextStyle: TextStyle(
-                            fontSize: 5,
-                            color: Theme.of(context).colorScheme.onPrimary),
-                        type: GFToggleType.square,
-                        value: controller.openByInnerExplorer,
-                        onChanged: (bool? value) {
-                          controller.openByInnerExplorer = value!;
-                          SPUtil.setBool('openByInnerExplorer', value);
-                          controller.update([Key('openByInnerExplorer')]);
-                        }),
-                  );
-                }),
-            ElevatedButton.icon(
-              onPressed: () async {
-                controller.showSearchBar = !controller.showSearchBar;
-                Logger.instance.d('显示搜索栏：${controller.showSearchBar}');
-                controller.update([Key('showSearchBar')]);
-                if (controller.showSearchBar) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    FocusScope.of(context).requestFocus(blankNode);
-                  });
-                } else {
-                  FocusScope.of(context).unfocus(); // 取消焦点
-                }
-              },
-              icon: const Icon(
-                Icons.search_outlined,
-                size: 20,
-              ),
-              style: ButtonStyle(
-                shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                  RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5.0)),
-                ),
-                side: WidgetStateProperty.all(BorderSide.none),
-              ),
-              label: const Text('搜索'),
-            ),
-            ElevatedButton.icon(
-              onPressed: () async {
-                Future.microtask(() async {
-                  Logger.instance.i('开始从数据库加载数据...');
-                  controller.loadingFromServer = true;
-                  controller.update(); // UI 更新
-                  // 模拟后台获取数据
-                  await controller.getWebSiteListFromServer();
-                  await controller.getSiteStatusFromServer();
-                  controller.loadingFromServer = false;
-                  Logger.instance.i('从数据库加载数据完成！');
-                  controller.update(); // UI 更新
-                });
-              },
-              icon: const Icon(
-                Icons.cloud_download_outlined,
-                size: 20,
-              ),
-              style: ButtonStyle(
-                shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                  RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5.0)),
-                ),
-                side: WidgetStateProperty.all(BorderSide.none),
-              ),
-              label: const Text('加载'),
-            ),
-            ElevatedButton.icon(
-              onPressed: () {
-                _showFilterBottomSheet();
-              },
-              icon: const Icon(
-                Icons.filter_tilt_shift,
-                size: 20,
-              ),
-              style: ButtonStyle(
-                shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                  RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5.0)),
-                ),
-                side: WidgetStateProperty.all(BorderSide.none),
-              ),
-              label: const Text('筛选'),
-            ),
-            ElevatedButton.icon(
-              onPressed: () {
-                _showSortBottomSheet();
-              },
-              icon: const Icon(
-                Icons.swap_vert_circle_outlined,
-                size: 20,
-              ),
-              style: ButtonStyle(
-                shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                  RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5.0)),
-                ),
-                side: WidgetStateProperty.all(BorderSide.none),
-              ),
-              label: const Text('排序'),
-            ),
-            ElevatedButton.icon(
-              onPressed: () async {
-                await _showEditBottomSheet();
-              },
-              icon: const Icon(
-                Icons.add_circle_outline,
-                size: 20,
-              ),
-              style: ButtonStyle(
-                shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                  RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5.0)),
-                ),
-                side: WidgetStateProperty.all(BorderSide.none),
-              ),
-              label: const Text('添加'),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   @override

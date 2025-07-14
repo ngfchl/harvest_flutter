@@ -24,7 +24,6 @@ class MySiteController extends GetxController {
   String sortKey = 'statusMail';
   late String baseUrl;
   bool sortReversed = false;
-  bool showSearchBar = false;
   Map<String, WebSite> webSiteList = {};
 
   List<MetaDataItem> siteSortOptions = [
