@@ -240,8 +240,119 @@ class SettingPage extends StatelessWidget {
       'notice_category_enable': _noticeCategoryEnableForm,
       'notice_content_item': _noticeContentItem,
       'tmdb_api_auth': _tmdbApiAuthForm,
+      'aggregation_search': _aggregationSearchForm,
     };
     return optionForms;
+  }
+
+  Widget _aggregationSearchForm(Option? option, context) {
+    TextEditingController limitController =
+        TextEditingController(text: option?.value.limit.toString() ?? '30');
+    TextEditingController maxCountController =
+        TextEditingController(text: option?.value.maxCount.toString() ?? '30');
+    final isActive = (option == null ? true : option.isActive).obs;
+    final isEdit = (option == null).obs;
+    return Obx(() {
+      return CustomCard(
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ListTile(
+                title: const Text('聚合搜索配置'),
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                leading: option != null
+                    ? IconButton(
+                        onPressed: () async {
+                          option?.isActive = !option!.isActive;
+                          await controller.saveOption(option!);
+                        },
+                        icon: option!.isActive
+                            ? const Icon(Icons.check, color: Colors.green)
+                            : const Icon(Icons.clear, color: Colors.red))
+                    : const SizedBox.shrink(),
+                trailing: ExpandIcon(
+                  isExpanded: isEdit.value,
+                  onPressed: (value) {
+                    isEdit.value = !isEdit.value;
+                  },
+                  expandedColor: Colors.teal,
+                )),
+            if (isEdit.value)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    CustomTextField(
+                      autofocus: true,
+                      controller: maxCountController,
+                      labelText: '站点数量限制',
+                      helperText: '单次搜索的站点数量，太高数据返回较慢，0表示不限制',
+                    ),
+                    CustomTextField(
+                      autofocus: true,
+                      controller: limitController,
+                      labelText: '并发数量限制',
+                      helperText: '并发搜索站点数量，太高会占用太多内存，0表示不限制',
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FullWidthButton(
+                              text: '保存',
+                              onPressed: () async {
+                                if (option == null) {
+                                  option = Option(
+                                    id: 0,
+                                    name: 'aggregation_search',
+                                    isActive: isActive.value,
+                                    value: OptionValue(
+                                      limit:
+                                          int.tryParse(limitController.text) ??
+                                              30,
+                                      maxCount: int.tryParse(
+                                              maxCountController.text) ??
+                                          30,
+                                    ),
+                                  );
+                                } else {
+                                  option?.isActive = isActive.value;
+                                  option?.value = OptionValue(
+                                    limit: int.tryParse(limitController.text) ??
+                                        30,
+                                    maxCount:
+                                        int.tryParse(maxCountController.text) ??
+                                            30,
+                                  );
+                                }
+                                final res =
+                                    await controller.saveOption(option!);
+                                if (res.code == 0) {
+                                  Get.back();
+                                  Get.snackbar('配置保存成功',
+                                      '${controller.optionMap['aggregation_search']} 配置：${res.msg}',
+                                      colorText: Theme.of(context)
+                                          .colorScheme
+                                          .primary);
+                                  isEdit.value = false;
+                                } else {
+                                  Get.snackbar('配置保存失败',
+                                      '${controller.optionMap['aggregation_search']} 配置出错啦：${res.msg}',
+                                      colorText:
+                                          Theme.of(context).colorScheme.error);
+                                }
+                              }),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _tmdbApiAuthForm(Option? option, context) {

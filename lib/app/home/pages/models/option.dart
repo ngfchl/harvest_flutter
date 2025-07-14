@@ -50,6 +50,9 @@ class OptionValue {
   bool? leeching;
   bool? invite;
   bool? hr;
+  int? count;
+  int? maxCount;
+  int? limit;
 
   OptionValue({
     this.token,
@@ -103,6 +106,9 @@ class OptionValue {
     this.leeching,
     this.invite,
     this.hr,
+    this.count,
+    this.maxCount,
+    this.limit,
   });
 
   factory OptionValue.fromJson(Map<String, dynamic>? json) => OptionValue(
@@ -157,6 +163,9 @@ class OptionValue {
         leeching: json?['leeching'],
         invite: json?['invite'],
         hr: json?['hr'],
+        count: json?['count'],
+        maxCount: json?['max_count'],
+        limit: json?['limit'],
       );
 
   Map<String, dynamic> toJson() {
@@ -214,6 +223,9 @@ class OptionValue {
     if (leeching != null) data['leeching'] = leeching!;
     if (invite != null) data['invite'] = invite!;
     if (hr != null) data['hr'] = hr!;
+    if (count != null) data['count'] = count!;
+    if (maxCount != null) data['max_count'] = maxCount!;
+    if (limit != null) data['limit'] = limit!;
     return data;
   }
 }

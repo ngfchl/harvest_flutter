@@ -32,6 +32,7 @@ class SettingController extends GetxController {
     {'name': 'CookieCloud', 'value': 'cookie_cloud'},
     {'name': 'FileList', 'value': 'FileList'},
     {'name': 'TMDB配置', 'value': 'tmdb_api_auth'},
+    {'name': '聚合搜索配置', 'value': 'aggregation_search'},
   ];
   List<SelectOption> optionChoice = [];
   Map<String, String> optionMap = {};
