@@ -1908,53 +1908,60 @@ class _MySitePagePageState extends State<MySitePage>
         ));
   }
 
-  void _showSignHistory(MySite mySite) {
+  void _showSignHistory(MySite mySite) async {
+    CommonResponse res = await getMySiteByIdApi(mySite.id);
+    if (!res.succeed) {
+      Logger.instance.e('获取站点信息失败');
+      Get.snackbar('获取站点信息失败', res.msg,
+          colorText: Theme.of(context).colorScheme.error);
+      return;
+    }
+    mySite = res.data;
     List<String> signKeys = mySite.signInInfo.keys.toList();
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     signKeys.sort((a, b) => b.compareTo(a));
     Get.bottomSheet(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
         isScrollControlled: true,
-        CustomCard(
-            width: double.infinity,
-            child: Column(children: [
-              Text(
-                "${mySite.nickname} [累计自动签到${mySite.signInInfo.length}天]",
-              ),
-              Expanded(
-                  child: ListView.builder(
-                      itemCount: signKeys.length,
-                      itemBuilder: (context, index) {
-                        String signKey = signKeys[index];
-                        SignInInfo? item = mySite.signInInfo[signKey];
-                        return CustomCard(
-                          child: ListTile(
-                              title: Text(
-                                item!.info,
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: signKey == today
-                                        ? Colors.amber
-                                        : Theme.of(context)
-                                            .colorScheme
-                                            .primary),
-                              ),
-                              subtitle: Text(
-                                item.updatedAt,
-                                style: TextStyle(
-                                    fontSize: 10,
-                                    color: signKey == today
-                                        ? Colors.amber
-                                        : Theme.of(context)
-                                            .colorScheme
-                                            .primary),
-                              ),
-                              selected: signKey == today,
-                              selectedColor: Colors.amber,
-                              onTap: () {}),
-                        );
-                      }))
-            ])));
+        GetBuilder<MySiteController>(builder: (controller) {
+      return CustomCard(
+          width: double.infinity,
+          height: MediaQuery.of(context).size.height * 0.8,
+          child: Column(children: [
+            Text(
+              "${mySite.nickname} [累计自动签到${mySite.signInInfo.length}天]",
+            ),
+            Expanded(
+                child: ListView.builder(
+                    itemCount: signKeys.length,
+                    itemBuilder: (context, index) {
+                      String signKey = signKeys[index];
+                      SignInInfo? item = mySite.signInInfo[signKey];
+                      return CustomCard(
+                        child: ListTile(
+                            title: Text(
+                              item!.info,
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: signKey == today
+                                      ? Colors.amber
+                                      : Theme.of(context).colorScheme.primary),
+                            ),
+                            subtitle: Text(
+                              item.updatedAt,
+                              style: TextStyle(
+                                  fontSize: 10,
+                                  color: signKey == today
+                                      ? Colors.amber
+                                      : Theme.of(context).colorScheme.primary),
+                            ),
+                            selected: signKey == today,
+                            selectedColor: Colors.amber,
+                            onTap: () {}),
+                      );
+                    }))
+          ]));
+    }));
   }
 
   void _showStatusHistory(MySite mySite) {
