@@ -126,7 +126,7 @@ getNewestStatus(int? mySiteId) async {
   );
   if (response.statusCode == 200) {
     Logger.instance.w(response.data);
-    return CommonResponse.fromJson(response.data, (p0) => null);
+    return CommonResponse.fromJson(response.data, (p0) => p0);
   } else {
     String msg = '站点刷新数据失败！: ${response.statusCode}';
     return CommonResponse.error(msg: msg);

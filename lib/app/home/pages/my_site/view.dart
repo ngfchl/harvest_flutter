@@ -11,6 +11,7 @@ import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:harvest/app/home/pages/dash_board/controller.dart';
 import 'package:harvest/models/common_response.dart';
+import 'package:harvest/utils/date_time_utils.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -1058,7 +1059,7 @@ class _MySitePagePageState extends State<MySitePage>
                               ),
                               const SizedBox(width: 2),
                               Text(
-                                '${status.published}(${formatNumber(status.ratio)})',
+                                '${status.published}(${formatNumber(status.ratio, fixed: status.ratio >= 1000 ? 0 : 2)})',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: status.ratio > 1
@@ -1195,8 +1196,21 @@ class _MySitePagePageState extends State<MySitePage>
                   if (res.succeed) {
                     Get.snackbar('签到成功', '${mySite.nickname} 签到信息：${res.msg}',
                         colorText: Theme.of(context).colorScheme.primary);
-                    controller.initFlag = false;
-                    controller.getSiteStatusFromServer();
+                    SignInInfo? info =
+                        SignInInfo(updatedAt: getTodayString(), info: res.msg);
+                    Map<String, SignInInfo>? signInInfo = mySite.signInInfo;
+                    signInInfo.assign(getTodayString(), info);
+                    Logger.instance.d(signInInfo);
+                    MySite newSite = mySite.copyWith(signInInfo: signInInfo);
+                    controller.mySiteList =
+                        controller.mySiteList.map<MySite>((item) {
+                      if (item.id == mySite.id) {
+                        return newSite;
+                      }
+                      return item;
+                    }).toList();
+                    // controller.filterByKey();
+                    controller.update();
                   } else {
                     Get.snackbar(
                         '签到失败', '${mySite.nickname} 签到任务执行出错啦：${res.msg}',
@@ -1220,9 +1234,22 @@ class _MySitePagePageState extends State<MySitePage>
                 if (res.succeed) {
                   Get.snackbar('站点数据刷新成功', '${mySite.nickname} 数据刷新：${res.msg}',
                       colorText: Theme.of(context).colorScheme.primary);
-                  controller.initFlag = false;
-                  await controller.getSiteStatusFromServer();
-                  Future.delayed(Duration(seconds: 2), () async {
+                  StatusInfo? status = StatusInfo.fromJson(res.data);
+                  Map<String, StatusInfo>? statusInfo = mySite.statusInfo;
+                  statusInfo.assign(getTodayString(), status);
+                  Logger.instance.d(statusInfo);
+                  MySite newSite = mySite.copyWith(statusInfo: statusInfo);
+                  controller.mySiteList =
+                      controller.mySiteList.map<MySite>((item) {
+                    if (item.id == mySite.id) {
+                      return newSite;
+                    }
+                    return item;
+                  }).toList();
+                  // controller.filterByKey();
+                  controller.update();
+
+                  Future.delayed(Duration(microseconds: 500), () async {
                     DashBoardController dController = Get.find();
                     dController.initChartData();
                     dController.update();
