@@ -323,6 +323,32 @@ class _MySitePagePageState extends State<MySitePage>
                 label: const Text('排序'),
               ),
               ElevatedButton.icon(
+                onPressed: () {
+                  Get.back();
+                  controller.sortReversed = !controller.sortReversed;
+                  controller.sortStatusList();
+                },
+                icon: controller.sortReversed
+                    ? const Icon(
+                        Icons.upload_file_sharp,
+                        size: 20,
+                      )
+                    : const Icon(
+                        Icons.sim_card_download_sharp,
+                        size: 20,
+                      ),
+                style: ButtonStyle(
+                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5.0)),
+                  ),
+                  side: WidgetStateProperty.all(BorderSide.none),
+                ),
+                label: controller.sortReversed
+                    ? const Text('正序')
+                    : const Text('倒序'),
+              ),
+              ElevatedButton.icon(
                 onPressed: () async {
                   Get.back();
                   await _showEditBottomSheet();
@@ -1665,12 +1691,8 @@ class _MySitePagePageState extends State<MySitePage>
                             ? const Icon(Icons.check_box_outlined)
                             : const Icon(Icons.check_box_outline_blank_rounded),
                         onTap: () {
-                          if (controller.sortKey == item.value!) {
-                            controller.sortReversed = !controller.sortReversed;
-                          }
                           controller.sortKey = item.value!;
                           controller.sortStatusList();
-
                           Navigator.of(context).pop();
                         },
                       ),
