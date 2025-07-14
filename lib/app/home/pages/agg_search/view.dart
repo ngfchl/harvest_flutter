@@ -13,6 +13,7 @@ import 'package:harvest/app/home/pages/agg_search/models/torrent_info.dart';
 import 'package:harvest/app/home/pages/models/website.dart';
 import 'package:harvest/common/meta_item.dart';
 import 'package:harvest/models/common_response.dart';
+import 'package:harvest/utils/storage.dart';
 import 'package:intl/intl.dart';
 import 'package:random_color/random_color.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -312,6 +313,50 @@ class _AggSearchPageState extends State<AggSearchPage>
                                 return showTorrentInfo(info);
                               },
                             ),
+                            GetBuilder<AggSearchController>(
+                                id: Key('agg_search_history'),
+                                builder: (controller) {
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16),
+                                    child: SingleChildScrollView(
+                                      child: Wrap(
+                                        children: [
+                                          ...controller.searchHistory.map(
+                                            (el) => Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: InkWell(
+                                                onTap: () async {
+                                                  controller.searchKeyController
+                                                      .text = el;
+                                                  controller
+                                                      .doWebsocketSearch();
+                                                },
+                                                onLongPress: () {
+                                                  LoggerHelper.Logger.instance
+                                                      .d('长按删除历史搜索：$el');
+                                                  controller.searchHistory
+                                                      .remove(el);
+                                                  SPUtil.setStringList(
+                                                      'search_history',
+                                                      controller.searchHistory);
+                                                  controller.update();
+                                                },
+                                                child: Text(el,
+                                                    style: TextStyle(
+                                                        fontSize: 22,
+                                                        color: Theme.of(context)
+                                                            .colorScheme
+                                                            .primary)),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                })
                           ]),
                     ),
                     if (!kIsWeb && Platform.isIOS) const SizedBox(height: 10),

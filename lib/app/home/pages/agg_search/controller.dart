@@ -43,6 +43,7 @@ class AggSearchController extends GetxController
   List<SearchTorrentInfo> showResults = <SearchTorrentInfo>[];
   List<DouBanSearchResult> showDouBanResults = <DouBanSearchResult>[];
   List<Map<String, dynamic>> searchMsg = <Map<String, dynamic>>[];
+  List<String> searchHistory = <String>[];
   List<String> succeedSearchResults = <String>[];
   List<String> succeedCategories = <String>[];
   List<String> succeedTags = <String>[];
@@ -59,9 +60,10 @@ class AggSearchController extends GetxController
   String dataSource = 'TMDB';
   Floating? floating;
   Map<String, MySite> mySiteMap = <String, MySite>{};
-  List<Tab> tabs = [
+  final List<Tab> tabs = [
     const Tab(text: '影视查询'),
     const Tab(text: '资源搜索'),
+    const Tab(text: '搜索历史'),
   ];
   List<MetaDataItem> sortKeyList = [
     {'name': '发布时间', 'value': 'published'},
@@ -102,9 +104,18 @@ class AggSearchController extends GetxController
       {'name': '免费', 'value': saleStatusList},
       {'name': '分类', 'value': succeedCategories},
     ]);
-    tabController = TabController(length: 2, vsync: this);
+    tabController = TabController(length: tabs.length, vsync: this);
     await initData();
     super.onInit();
+  }
+
+  updateSearchHistory(String element) async {
+    searchHistory.insert(0, element);
+    searchHistory = searchHistory.toSet().toList();
+    SPUtil.setStringList('search_history', searchHistory);
+    update([
+      Key('agg_search_history'),
+    ]);
   }
 
   searchTMDB() async {
@@ -114,6 +125,7 @@ class AggSearchController extends GetxController
     isLoading = true;
     changeTab(0);
     tabs[0] = Tab(text: '影视查询[TMDB]');
+    updateSearchHistory(searchKeyController.text);
     update();
     logger_helper.Logger.instance.d(searchKeyController.text);
     CommonResponse response =
@@ -184,6 +196,7 @@ class AggSearchController extends GetxController
     sites = SPUtil.getStringList('custom_search_sites', defaultValue: [])
         .map((e) => int.parse(e))
         .toList();
+    searchHistory = SPUtil.getStringList('search_history', defaultValue: []);
     maxCount = sites.length;
     if (mySiteController.mySiteList.isEmpty) {
       await mySiteController.initData();
@@ -283,7 +296,11 @@ class AggSearchController extends GetxController
     isLoading = false;
     // SSEClient.disableRetry();
     // SSEClient.unsubscribeFromSSE();
-    await channel.sink.close(status.normalClosure);
+    try {
+      await channel.sink.close(status.normalClosure);
+    } catch (err) {
+      logger_helper.Logger.instance.e(err);
+    }
     update();
   }
 
@@ -348,13 +365,14 @@ class AggSearchController extends GetxController
       final wsUrl =
           Uri.parse('${baseUrl.replaceFirst('http', 'ws')}/api/ws/search');
       channel = WebSocketChannel.connect(wsUrl);
-
+      updateSearchHistory(searchKeyController.text);
       await channel.ready;
       channel.sink.add(json.encode({
         "key": searchKeyController.text,
         "max_count": sites.length == mySiteMap.length ? maxCount : sites.length,
         "sites": sites,
       }));
+
       channel.stream.listen((message) {
         CommonResponse response =
             CommonResponse.fromJson(json.decode(message), (p0) => p0);
