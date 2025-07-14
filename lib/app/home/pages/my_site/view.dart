@@ -1964,7 +1964,15 @@ class _MySitePagePageState extends State<MySitePage>
     }));
   }
 
-  void _showStatusHistory(MySite mySite) {
+  void _showStatusHistory(MySite mySite) async {
+    CommonResponse res = await getMySiteByIdApi(mySite.id);
+    if (!res.succeed) {
+      Logger.instance.e('获取站点信息失败');
+      Get.snackbar('获取站点信息失败', res.msg,
+          colorText: Theme.of(context).colorScheme.error);
+      return;
+    }
+    mySite = res.data;
     List<StatusInfo> transformedData = mySite.statusInfo.values.toList();
     Logger.instance.d(transformedData);
     Rx<RangeValues> rangeValues = RangeValues(
@@ -2055,7 +2063,7 @@ class _MySitePagePageState extends State<MySitePage>
                           yAxisName: 'PrimaryYAxis',
                           dataSource: showData,
                           xValueMapper: (StatusInfo item, _) =>
-                              formatUpdatedTimeToDateString(item),
+                              formatCreatedTimeToDateString(item),
                           yValueMapper: (StatusInfo item, _) =>
                               item.seedVolume),
                       LineSeries<StatusInfo, String>(
@@ -2149,9 +2157,9 @@ class _MySitePagePageState extends State<MySitePage>
                   max: transformedData.length * 1.0 - 1,
                   divisions: transformedData.length - 1,
                   labels: RangeLabels(
-                    formatUpdatedTimeToDateString(
+                    formatCreatedTimeToDateString(
                         transformedData[rangeValues.value.start.toInt()]),
-                    formatUpdatedTimeToDateString(
+                    formatCreatedTimeToDateString(
                         transformedData[rangeValues.value.end.toInt()]),
                   ),
                   onChanged: (value) {
@@ -2193,6 +2201,8 @@ class StatusToolTip extends StatelessWidget {
         : data.uploaded - lastData!.uploaded;
     return Column(
       children: [
+        _buildDataRow(
+            '创建时间', DateFormat('yyyy-MM-dd HH:mm:ss').format(data.createdAt)),
         _buildDataRow(
             '更新时间', DateFormat('yyyy-MM-dd HH:mm:ss').format(data.updatedAt)),
         _buildDataRow('做种量', FileSizeConvert.parseToFileSize(data.seedVolume)),
