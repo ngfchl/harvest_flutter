@@ -218,7 +218,9 @@ class MySite {
       id: json['id'] as int,
       site: json['site'] as String,
       nickname: json['nickname'] as String,
-      tags: List<String>.from(json['tags'] as List<dynamic>),
+      tags: json['tags'] != null
+          ? List<String>.from(json['tags'] as List<dynamic>)
+          : [],
       sortId: json['sort_id'] as int,
       userId: json['user_id'] as String?,
       username: json['username'] as String?,
