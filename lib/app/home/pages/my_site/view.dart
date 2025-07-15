@@ -270,6 +270,59 @@ class _MySitePagePageState extends State<MySitePage>
                               ),
                             ),
                           ),
+                          CustomPopup(
+                            contentDecoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.background,
+                            ),
+                            content: SingleChildScrollView(
+                              scrollDirection: Axis.vertical,
+                              child: Wrap(
+                                alignment: WrapAlignment.spaceBetween,
+                                // mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                // crossAxisAlignment: CrossAxisAlignment.center,
+                                direction: Axis.vertical,
+                                // spacing: 15,
+                                children: [
+                                  ...controller.tagList
+                                      .map((item) => PopupMenuItem<String>(
+                                            child: Text(
+                                              item,
+                                              style: TextStyle(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary,
+                                              ),
+                                            ),
+                                            onTap: () async {
+                                              Get.back();
+                                              controller.selectTag = item;
+                                              controller.filterByKey();
+                                              // await controller.mySiteController.initData();
+                                            },
+                                          )),
+                                ],
+                              ),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8.0, vertical: 3),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.tag,
+                                    size: 18,
+                                  ),
+                                  Text(
+                                    '【${controller.selectTag}】',
+                                    style: TextStyle(fontSize: 14),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
                         ],
                       )),
                 ),

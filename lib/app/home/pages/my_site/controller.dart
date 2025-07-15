@@ -549,6 +549,15 @@ class MySiteController extends GetxController {
       default:
         showStatusList = mySiteList;
     }
+
+    switch (selectTag) {
+      case '全部':
+        break;
+      default:
+        filterByCondition((item) => item.tags.contains(selectTag));
+        break;
+    }
+
     showStatusList = filterSiteStatusBySearchKey(showStatusList);
     sortStatusList();
     update();
