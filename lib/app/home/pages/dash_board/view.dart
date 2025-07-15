@@ -53,6 +53,7 @@ class _DashBoardPageState extends State<DashBoardPage>
     super.build(context);
     return GetBuilder<DashBoardController>(builder: (controller) {
       return SafeArea(
+        bottom: false,
         child: Scaffold(
           body: GetBuilder<DashBoardController>(builder: (controller) {
             return _showAllInfo();

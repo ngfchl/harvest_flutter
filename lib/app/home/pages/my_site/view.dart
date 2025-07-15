@@ -52,6 +52,7 @@ class _MySitePagePageState extends State<MySitePage>
     super.build(context);
     return GetBuilder<MySiteController>(builder: (controller) {
       return SafeArea(
+        bottom: false,
         child: Scaffold(
           body: EasyRefresh(
             onRefresh: () async {
