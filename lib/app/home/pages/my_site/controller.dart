@@ -25,6 +25,22 @@ class MySiteController extends GetxController {
   late String baseUrl;
   bool sortReversed = false;
   Map<String, WebSite> webSiteList = {};
+  String selectTag = '全部';
+  List<String> tagList = [
+    '电影',
+    '电视剧',
+    '动画片',
+    '漫画',
+    '动漫',
+    '音乐',
+    '4K',
+    '原盘',
+    'Web',
+    '游戏',
+    '软件',
+    '书籍',
+    '其他',
+  ];
 
   List<MetaDataItem> siteSortOptions = [
     // {'name': '站点ID', 'value': 'mySiteId'},
@@ -116,6 +132,17 @@ class MySiteController extends GetxController {
     });
   }
 
+  updateTagList() {
+    tagList = tagList
+        .toSet()
+        .where((item) => item.isNotEmpty)
+        .map((item) => item.trim())
+        .toSet()
+        .whereType<String>()
+        .toList();
+    tagList.sort((a, b) => a.compareTo(b));
+  }
+
   /*///@title 从缓存加载站点信息数据
   ///@description TODO
   ///@updateTime 2024-10-28
@@ -140,6 +167,18 @@ class MySiteController extends GetxController {
           result[entry.value.name] = entry.value;
           return result;
         });
+        webSiteList.values.toList().forEach((site) {
+          if (site.tags.trim().isEmpty) {
+            return;
+          }
+          if (site.tags.contains('，')) {
+            tagList.addAll(site.tags.trim().split('，'));
+          } else {
+            tagList.addAll(site.tags.trim().split(','));
+          }
+        });
+        updateTagList();
+
         Logger.instance.d(
             '获取站点配置缓存耗时: ${DateTime.now().difference(startTime).inMilliseconds} 毫秒');
       }
@@ -152,6 +191,11 @@ class MySiteController extends GetxController {
               ?.map((item) => MySite.fromJson(item))
               .toList()
               .cast<MySite>();
+          mySiteListMap.forEach((index, site) {
+            tagList.addAll(site.tags.trim());
+          });
+          updateTagList();
+
           if (mySiteList.isNotEmpty) isLoaded = false;
           Logger.instance.d(
               '获取站点信息缓存耗时: ${DateTime.now().difference(startTime).inMilliseconds} 毫秒');

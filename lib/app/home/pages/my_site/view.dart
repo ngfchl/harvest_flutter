@@ -13,6 +13,8 @@ import 'package:harvest/app/home/pages/dash_board/controller.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:harvest/utils/date_time_utils.dart';
 import 'package:intl/intl.dart';
+import 'package:multi_select_flutter/chip_field/multi_select_chip_field.dart';
+import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -170,6 +172,106 @@ class _MySitePagePageState extends State<MySitePage>
                             ))
                     ],
                   ),
+                ),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
+                  child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        // mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        // crossAxisAlignment: CrossAxisAlignment.center,
+                        direction: Axis.horizontal,
+                        spacing: 15,
+                        children: [
+                          InkWell(
+                            onTap: () => _showFilterBottomSheet(),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8.0, vertical: 3),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.filter_tilt_shift,
+                                    size: 18,
+                                  ),
+                                  SizedBox(width: 3),
+                                  Text(
+                                    '筛选',
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () {
+                              _showSortBottomSheet();
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8.0, vertical: 3),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.sort_by_alpha_outlined,
+                                    size: 18,
+                                  ),
+                                  SizedBox(width: 3),
+                                  Text(
+                                    '排序',
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () {
+                              controller.sortReversed =
+                                  !controller.sortReversed;
+                              controller.sortStatusList();
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8.0, vertical: 3),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  controller.sortReversed
+                                      ? const Icon(
+                                          Icons.sim_card_download_sharp,
+                                          size: 18,
+                                        )
+                                      : const Icon(
+                                          Icons.upload_file_sharp,
+                                          size: 18,
+                                        ),
+                                  SizedBox(width: 3),
+                                  controller.sortReversed
+                                      ? const Text(
+                                          '正序',
+                                          style: TextStyle(fontSize: 14),
+                                        )
+                                      : const Text(
+                                          '倒序',
+                                          style: TextStyle(fontSize: 14),
+                                        ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      )),
                 ),
                 Expanded(
                   child: controller.isLoaded
@@ -1189,6 +1291,7 @@ class _MySitePagePageState extends State<MySitePage>
         TextEditingController(text: mySite?.torrents ?? '');
     final cookieController = TextEditingController(text: mySite?.cookie ?? '');
     final mirrorController = TextEditingController(text: mySite?.mirror ?? '');
+    final tagController = TextEditingController(text: '');
     Rx<WebSite?> selectedSite = (mySite != null
             ? controller.webSiteList[mySite.site]
             : (webSiteList.isNotEmpty ? webSiteList.first : null))
@@ -1200,6 +1303,9 @@ class _MySitePagePageState extends State<MySitePage>
     RxBool available = mySite != null
         ? mySite.available.obs
         : (selectedSite.value?.alive ?? false).obs;
+    RxList<String> tags = mySite != null
+        ? mySite.tags.obs
+        : (selectedSite.value?.tags.split(',') ?? []).obs;
     RxBool signIn = mySite != null ? mySite.signIn.obs : true.obs;
     RxBool brushRss = mySite != null ? mySite.brushRss.obs : false.obs;
     RxBool brushFree = mySite != null ? mySite.brushFree.obs : false.obs;
@@ -1335,6 +1441,10 @@ class _MySitePagePageState extends State<MySitePage>
                             },
                           ),
                         ),
+                        CustomTextField(
+                          controller: nicknameController,
+                          labelText: '站点昵称',
+                        ),
                         if (urlList!.isNotEmpty)
                           Obx(() {
                             return Row(
@@ -1366,10 +1476,74 @@ class _MySitePagePageState extends State<MySitePage>
                                 labelText: '手动输入 - 注意：浏览器插件自动导入可能无法识别',
                               )
                             : SizedBox.shrink()),
-                        CustomTextField(
-                          controller: nicknameController,
-                          labelText: '站点昵称',
+                        Row(
+                          children: [
+                            Expanded(
+                              child: CustomTextField(
+                                controller: tagController,
+                                labelText: '添加标签',
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                if (tagController.text.isEmpty) {
+                                  return;
+                                }
+                                controller.tagList.add(tagController.text);
+                                controller.updateTagList();
+                                controller.update();
+                              },
+                              icon: Icon(
+                                Icons.plus_one_sharp,
+                                size: 20,
+                              ),
+                            )
+                          ],
                         ),
+
+                        GetBuilder<MySiteController>(builder: (controller) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 4.0, horizontal: 8),
+                            child: Obx(() {
+                              return MultiSelectChipField(
+                                items: controller.tagList
+                                    .map((tag) =>
+                                        MultiSelectItem<String?>(tag, tag))
+                                    .toList(),
+                                textStyle: TextStyle(fontSize: 13),
+                                initialValue: [...tags],
+                                title: Text(
+                                  "站点标签",
+                                  style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w800),
+                                ),
+                                headerColor: Colors.transparent,
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: Colors.blue.shade700, width: 0.8),
+                                ),
+                                // 关键设置：自定义 chipDisplay 实现自动换行
+                                scroll: false,
+                                // 禁用滚动
+                                selectedChipColor: Colors.blue.withOpacity(0.5),
+                                selectedTextStyle: TextStyle(
+                                    fontSize: 10, color: Colors.blue[800]),
+                                onTap: (List<String?> values) {
+                                  Logger.instance.d(values);
+                                  // tags.value = values;
+                                  tags.value = values
+                                      .where((value) => value != null)
+                                      .whereType<String>()
+                                      .toList();
+                                  tags.value = tags.toSet().toList();
+                                  Logger.instance.d(tags);
+                                },
+                              );
+                            }),
+                          );
+                        }),
                         CustomTextField(
                           controller: usernameController,
                           maxLength: 128,
@@ -1585,6 +1759,7 @@ class _MySitePagePageState extends State<MySitePage>
                           site: siteController.text.trim(),
                           mirror: mirrorController.text.trim(),
                           nickname: nicknameController.text.trim(),
+                          tags: tags,
                           passkey: passkeyController.text.trim(),
                           authKey: apiKeyController.text.trim(),
                           userId: userIdController.text.trim(),
@@ -1613,6 +1788,7 @@ class _MySitePagePageState extends State<MySitePage>
                           site: siteController.text.trim(),
                           mirror: mirrorController.text.trim(),
                           nickname: nicknameController.text.trim(),
+                          tags: tags,
                           passkey: passkeyController.text.trim(),
                           authKey: apiKeyController.text.trim(),
                           userId: userIdController.text.trim(),
