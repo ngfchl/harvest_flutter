@@ -283,6 +283,22 @@ class _MySitePagePageState extends State<MySitePage>
                                 direction: Axis.vertical,
                                 // spacing: 15,
                                 children: [
+                                  PopupMenuItem<String>(
+                                    child: Text(
+                                      '全部',
+                                      style: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                      ),
+                                    ),
+                                    onTap: () async {
+                                      Get.back();
+                                      controller.selectTag = '全部';
+                                      controller.filterByKey();
+                                      // await controller.mySiteController.initData();
+                                    },
+                                  ),
                                   ...controller.tagList
                                       .map((item) => PopupMenuItem<String>(
                                             child: Text(
