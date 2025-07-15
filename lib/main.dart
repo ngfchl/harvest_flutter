@@ -61,6 +61,7 @@ void main() async {
   // await Future.delayed(Duration(milliseconds: 3000), () {
   // FlutterNativeSplash.remove();
   // });
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   runApp(const MyApp());
 }
 
