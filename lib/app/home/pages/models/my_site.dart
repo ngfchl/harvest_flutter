@@ -123,6 +123,7 @@ class TrafficDelta {
 class MySite {
   final int id;
   final String site;
+  final List<String> tags;
   final String nickname;
   final int sortId;
   final String? userId;
@@ -160,6 +161,7 @@ class MySite {
     required this.site,
     required this.nickname,
     required this.sortId,
+    required this.tags,
     this.userId,
     this.username,
     this.email,
@@ -216,6 +218,7 @@ class MySite {
       id: json['id'] as int,
       site: json['site'] as String,
       nickname: json['nickname'] as String,
+      tags: List<String>.from(json['tags'] as List<dynamic>),
       sortId: json['sort_id'] as int,
       userId: json['user_id'] as String?,
       username: json['username'] as String?,
@@ -256,6 +259,7 @@ class MySite {
       'id': id,
       'site': site,
       'sort_id': sortId,
+      'tags': tags,
       'available': available,
       'nickname': nickname,
       'passkey': passkey,
@@ -340,6 +344,7 @@ class MySite {
     int? id,
     String? site,
     String? nickname,
+    List<String>? tags,
     int? sortId,
     String? userId,
     String? username,
@@ -373,6 +378,7 @@ class MySite {
       id: id ?? this.id,
       site: site ?? this.site,
       nickname: nickname ?? this.nickname,
+      tags: tags ?? this.tags,
       sortId: sortId ?? this.sortId,
       userId: userId ?? this.userId,
       username: username ?? this.username,
