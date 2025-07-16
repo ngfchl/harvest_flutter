@@ -1388,6 +1388,7 @@ class _MySitePagePageState extends State<MySitePage>
         mySite != null ? mySite.searchTorrents.obs : true.obs;
     RxBool manualInput = false.obs;
     RxBool doSaveLoading = false.obs;
+    final GlobalKey<FormFieldState> chipFieldKey = GlobalKey();
     Get.bottomSheet(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
       isScrollControlled: true,
@@ -1507,6 +1508,12 @@ class _MySitePagePageState extends State<MySitePage>
                               searchTorrents.value =
                                   selectedSite.value!.searchTorrents;
                               available.value = selectedSite.value!.alive;
+                              tags.value = selectedSite.value!.tags
+                                  .split(',')
+                                  .map((item) => item.trim())
+                                  .where((el) => el.isNotEmpty)
+                                  .toList();
+                              chipFieldKey.currentState?.reset();
                               controller.update();
                             },
                           ),
@@ -1577,6 +1584,7 @@ class _MySitePagePageState extends State<MySitePage>
                                 vertical: 4.0, horizontal: 8),
                             child: Obx(() {
                               return MultiSelectChipField(
+                                key: chipFieldKey,
                                 items: controller.tagList
                                     .map((tag) =>
                                         MultiSelectItem<String?>(tag, tag))
