@@ -1242,6 +1242,177 @@ class _AggSearchPageState extends State<AggSearchPage>
                             Theme.of(context).textTheme.titleMedium?.fontSize,
                       ),
                     )),
+                CustomCard(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                              child: Text(
+                                  '大小【${FileSizeConvert.parseToFileSize(controller.minSize)}-${FileSizeConvert.parseToFileSize(controller.maxSize)}】')),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              // TextButton(
+                              //     onPressed: () {
+                              //       // todo 先计算出初始值，
+                              //       controller.maxSize = controller.maxSize /
+                              //           controller.calcSize *
+                              //           1024;
+                              //       controller.minSize = controller.minSize /
+                              //           controller.calcSize *
+                              //           1024;
+                              //       controller.calcSize = 1024;
+                              //       controller.filterResults();
+                              //       controller.filterResults();
+                              //     },
+                              //     child: Text(
+                              //       'KB',
+                              //       style: TextStyle(
+                              //           fontSize: 12,
+                              //           color: controller.calcSize == 1024
+                              //               ? Colors.orange
+                              //               : Theme.of(context)
+                              //                   .colorScheme
+                              //                   .primary),
+                              //     )),
+                              TextButton(
+                                onPressed: () {
+                                  controller.maxSize = controller.maxSize /
+                                      controller.calcSize *
+                                      1024 *
+                                      1024;
+                                  controller.minSize = controller.minSize /
+                                      controller.calcSize *
+                                      1024 *
+                                      1024;
+                                  controller.calcSize = 1024 * 1024;
+                                  controller.filterResults();
+                                },
+                                child: Text(
+                                  'MB',
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      color: controller.calcSize == 1024 * 1024
+                                          ? Colors.orange
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .primary),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  controller.maxSize = controller.maxSize /
+                                      controller.calcSize *
+                                      1024 *
+                                      1024 *
+                                      1024;
+                                  controller.minSize = controller.minSize /
+                                      controller.calcSize *
+                                      1024 *
+                                      1024 *
+                                      1024;
+                                  controller.calcSize = 1024 * 1024 * 1024;
+                                  controller.filterResults();
+                                },
+                                child: Text(
+                                  'GB',
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      color: controller.calcSize ==
+                                              1024 * 1024 * 1024
+                                          ? Colors.orange
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .primary),
+                                ),
+                              ),
+                              TextButton(
+                                  onPressed: () {
+                                    controller.maxSize = controller.maxSize /
+                                        controller.calcSize *
+                                        1024 *
+                                        1024 *
+                                        1024 *
+                                        1024;
+                                    controller.minSize = controller.minSize /
+                                        controller.calcSize *
+                                        1024 *
+                                        1024 *
+                                        1024 *
+                                        1024;
+                                    controller.calcSize =
+                                        1024 * 1024 * 1024 * 1024;
+                                    controller.filterResults();
+                                  },
+                                  child: Text(
+                                    'TB',
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        color: controller.calcSize ==
+                                                1024 * 1024 * 1024 * 1024
+                                            ? Colors.orange
+                                            : Theme.of(context)
+                                                .colorScheme
+                                                .primary),
+                                  )),
+                            ],
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Text('最小'),
+                          Expanded(
+                            child: Slider(
+                                min: 0,
+                                max: 10,
+                                divisions: 20,
+                                value: controller.minSize / controller.calcSize,
+                                label: FileSizeConvert.parseToFileSize(
+                                    controller.minSize),
+                                onChanged: (value) async {
+                                  LoggerHelper.Logger.instance
+                                      .d('minSize：$value');
+                                  controller.minSize =
+                                      value * controller.calcSize;
+                                  SPUtil.setDouble('searchFilterFileMinxSize',
+                                      controller.minSize);
+                                  controller.filterResults();
+                                  controller.update();
+                                }),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Text('最大'),
+                          Expanded(
+                            child: Slider(
+                                min: 1,
+                                max: 100,
+                                divisions: 20,
+                                value: controller.maxSize / controller.calcSize,
+                                label: FileSizeConvert.parseToFileSize(
+                                    controller.maxSize),
+                                onChanged: (value) async {
+                                  LoggerHelper.Logger.instance
+                                      .d('maxSize：$value');
+                                  controller.maxSize =
+                                      value * controller.calcSize;
+                                  SPUtil.setDouble('searchFilterFileMaxSize',
+                                      controller.maxSize);
+                                  controller.filterResults();
+                                  controller.update();
+                                }),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
                 if (controller.succeedSiteList.isNotEmpty)
                   FilterItem(
                       name: '站点',

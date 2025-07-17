@@ -54,6 +54,10 @@ class AggSearchController extends GetxController
   List<String> selectedTags = <String>[];
   List<String> selectedResolution = <String>[];
   List<SearchTorrentInfo> hrResultList = <SearchTorrentInfo>[];
+  int calcSize = 1024 * 1024 * 1024;
+  double maxSize = 100 * 1024 * 1024 * 1024;
+  double minSize = 1 * 1024 * 1024 * 1024;
+
   bool sortReversed = false;
   bool isLoading = false;
   bool isDownloaderLoading = false;
@@ -193,6 +197,10 @@ class AggSearchController extends GetxController
   }
 
   initData() async {
+    // minSize = SPUtil.getDouble('searchFilterFileMinSize',
+    //     defaultValue: 1.0 * calcSize)!;
+    // maxSize = SPUtil.getDouble('searchFilterFileMaxSize',
+    //     defaultValue: 100.0 * calcSize)!;
     sites = SPUtil.getStringList('custom_search_sites', defaultValue: [])
         .map((e) => int.parse(e))
         .toList();
@@ -286,6 +294,13 @@ class AggSearchController extends GetxController
       filteredResults.retainWhere(
           (element) => selectedSaleStatusList.contains(element.saleStatus));
     }
+    logger_helper.Logger.instance.d(filteredResults.length);
+    logger_helper.Logger.instance
+        .d(filteredResults.map((item) => item.size).toList());
+
+    filteredResults.retainWhere(
+        (element) => element.size >= minSize && element.size <= maxSize);
+    logger_helper.Logger.instance.d(filteredResults.length);
 
     showResults = filteredResults;
     sortResults();
@@ -405,17 +420,21 @@ class AggSearchController extends GetxController
               .whereType<String>() // 将结果转换为 List<String>
               .toList());
           succeedResolution = succeedResolution.toSet().toList();
+          succeedResolution.sort();
           logger_helper.Logger.instance.d(succeedResolution);
           // 获取种子分类，并去重
           succeedCategories
               .addAll(torrentInfoList.map((e) => e.category).toList());
           succeedCategories = succeedCategories.toSet().toList();
+          succeedCategories.sort();
           saleStatusList
               .addAll(torrentInfoList.map((e) => e.saleStatus).toList());
           saleStatusList = saleStatusList.toSet().toList();
+          saleStatusList.sort();
           // 写入有数据的站点
           if (torrentInfoList.isNotEmpty) {
             succeedSiteList.add(torrentInfoList[0].siteId);
+            succeedSiteList.sort();
             searchMsg.insert(0, {"success": true, "msg": response.msg});
             filterResults();
           }
