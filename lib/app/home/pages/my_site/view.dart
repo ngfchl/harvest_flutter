@@ -1376,6 +1376,7 @@ class _MySitePagePageState extends State<MySitePage>
     RxList<String> tags = mySite != null
         ? mySite.tags.obs
         : (selectedSite.value?.tags.split(',') ?? []).obs;
+    Logger.instance.d(tags);
     RxBool signIn = mySite != null ? mySite.signIn.obs : true.obs;
     RxBool brushRss = mySite != null ? mySite.brushRss.obs : false.obs;
     RxBool brushFree = mySite != null ? mySite.brushFree.obs : false.obs;
@@ -1589,7 +1590,18 @@ class _MySitePagePageState extends State<MySitePage>
                                     .map((tag) =>
                                         MultiSelectItem<String?>(tag, tag))
                                     .toList(),
-                                textStyle: TextStyle(fontSize: 13),
+                                textStyle: TextStyle(
+                                    fontSize: 11,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface),
+                                selectedTextStyle: TextStyle(
+                                    fontSize: 10,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface),
+                                chipColor:
+                                    Theme.of(context).colorScheme.surface,
                                 initialValue: [...tags],
                                 title: Text(
                                   "站点标签",
@@ -1606,8 +1618,6 @@ class _MySitePagePageState extends State<MySitePage>
                                 scroll: false,
                                 // 禁用滚动
                                 selectedChipColor: Colors.blue.withOpacity(0.5),
-                                selectedTextStyle: TextStyle(
-                                    fontSize: 10, color: Colors.blue[800]),
                                 onTap: (List<String?> values) {
                                   Logger.instance.d(values);
                                   // tags.value = values;
