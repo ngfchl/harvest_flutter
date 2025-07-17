@@ -191,9 +191,9 @@ class MySiteController extends GetxController {
               ?.map((item) => MySite.fromJson(item))
               .toList()
               .cast<MySite>();
-          mySiteListMap.forEach((index, site) {
-            tagList.addAll(site.tags.trim());
-          });
+          for (var site in mySiteList) {
+            tagList.addAll(site.tags);
+          }
           updateTagList();
 
           if (mySiteList.isNotEmpty) isLoaded = false;
