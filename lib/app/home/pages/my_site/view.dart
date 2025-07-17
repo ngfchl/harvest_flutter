@@ -285,6 +285,7 @@ class _MySitePagePageState extends State<MySitePage>
                                 // spacing: 15,
                                 children: [
                                   PopupMenuItem<String>(
+                                    height: 32,
                                     child: Text(
                                       '全部',
                                       style: TextStyle(
@@ -302,6 +303,7 @@ class _MySitePagePageState extends State<MySitePage>
                                   ),
                                   ...controller.tagList
                                       .map((item) => PopupMenuItem<String>(
+                                            height: 32,
                                             child: Text(
                                               item,
                                               style: TextStyle(
@@ -1225,13 +1227,6 @@ class _MySitePagePageState extends State<MySitePage>
                   siteRefreshing.value = false;
                 },
               ),
-            if (website.signIn && mySite.signIn)
-              PopupMenuItem<String>(
-                child: const Text('签到历史'),
-                onTap: () async {
-                  _showSignHistory(mySite);
-                },
-              ),
             PopupMenuItem<String>(
               child: const Text('更新数据'),
               onTap: () async {
@@ -1256,6 +1251,7 @@ class _MySitePagePageState extends State<MySitePage>
                   controller.update();
 
                   Future.delayed(Duration(microseconds: 500), () async {
+                    controller.getSiteStatusFromServer();
                     DashBoardController dController = Get.find();
                     dController.initChartData();
                     dController.update();
@@ -1282,6 +1278,13 @@ class _MySitePagePageState extends State<MySitePage>
                         '辅种任务发送失败', '${mySite.nickname} 辅种出错啦：${res.msg}',
                         colorText: Theme.of(context).colorScheme.error);
                   }
+                },
+              ),
+            if (website.signIn && mySite.signIn)
+              PopupMenuItem<String>(
+                child: const Text('签到历史'),
+                onTap: () async {
+                  _showSignHistory(mySite);
                 },
               ),
             PopupMenuItem<String>(
