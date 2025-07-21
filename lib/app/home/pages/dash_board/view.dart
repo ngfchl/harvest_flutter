@@ -455,328 +455,340 @@ class _DashBoardPageState extends State<DashBoardPage>
 
   double _getWidthFactor() {
     final size = MediaQuery.of(context).size;
-    if (size.width < 800) return 1.0; // 手机屏幕
-    if (size.width < 1200) return 0.5; // 平板屏幕
-    return 0.33; // 桌面屏幕
+    double factor = size.width - 200;
+    if (factor < 800) return 1.0; // 手机屏幕
+    if (factor < 1200) return 0.5; // 平板屏幕
+    if (factor < 1800) return 1 / 3; // 平板屏幕
+    return 0.25; // 桌面屏幕
   }
 
   Widget _showAllInfo() {
     return GetBuilder<DashBoardController>(builder: (controller) {
-      return Column(
-        children: [
-          if (controller.isLoading)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Center(child: GFLoader(size: 8, loaderstrokeWidth: 2)),
-                const SizedBox(width: 5),
-                Text(
-                  '当前为缓存数据，正在从服务器加载',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Theme.of(context).colorScheme.primary,
+      return InteractiveViewer(
+        minScale: 0.5,
+        maxScale: 5.0,
+        child: Column(
+          children: [
+            if (controller.isLoading)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Center(child: GFLoader(size: 8, loaderstrokeWidth: 2)),
+                  const SizedBox(width: 5),
+                  Text(
+                    '当前为缓存数据，正在从服务器加载',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          const SizedBox(height: 5),
-          Expanded(
-            child: EasyRefresh(
-              onRefresh: () async {
-                await controller.initChartData();
-              },
-              child: GetBuilder<DashBoardController>(builder: (controller) {
-                return InkWell(
-                  onLongPress: () {
-                    Get.defaultDialog(
-                      title: '小部件',
-                      radius: 5,
-                      titleStyle: const TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.w900),
-                      content: SizedBox(
-                          height: controller.cardHeight,
-                          width: 280,
-                          child: GetBuilder<DashBoardController>(
-                              builder: (controller) {
-                            return ListView(
-                              children: [
-                                // CheckboxListTile(
-                                //     title: const Text("站点数据汇总"),
-                                //     value: controller
-                                //         .buildSiteInfoCard,
-                                //     onChanged: (bool? value) {
-                                //       controller.buildSiteInfoCard =
-                                //           value!;
-                                //       controller.update();
-                                //     }),
+                ],
+              ),
+            const SizedBox(height: 5),
+            Expanded(
+              child: EasyRefresh(
+                onRefresh: () async {
+                  await controller.initChartData();
+                },
+                child: GetBuilder<DashBoardController>(builder: (controller) {
+                  return InkWell(
+                    onLongPress: () {
+                      Get.defaultDialog(
+                        title: '小部件',
+                        radius: 5,
+                        titleStyle: const TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w900),
+                        content: SizedBox(
+                            height: controller.cardHeight,
+                            width: 280,
+                            child: GetBuilder<DashBoardController>(
+                                builder: (controller) {
+                              return ListView(
+                                children: [
+                                  // CheckboxListTile(
+                                  //     title: const Text("站点数据汇总"),
+                                  //     value: controller
+                                  //         .buildSiteInfoCard,
+                                  //     onChanged: (bool? value) {
+                                  //       controller.buildSiteInfoCard =
+                                  //           value!;
+                                  //       controller.update();
+                                  //     }),
 
-                                CustomCheckboxListTile(
-                                  title: '开启隐私模式',
-                                  value: controller.privateMode,
-                                  storageKey: 'privateMode',
-                                  onUpdate: (bool newValue) async {
-                                    controller.privateMode = newValue;
-                                    Logger.instance.d(
-                                        "privateMode: ${controller.privateMode}");
-                                    await controller.loadCacheDashData();
-                                    controller.update();
-                                  },
-                                ),
-                                CustomCheckboxListTile(
-                                  title: '账户数据信息',
-                                  value: controller.buildAccountInfoCard,
-                                  storageKey: 'buildAccountInfoCard',
-                                  onUpdate: (bool newValue) {
-                                    controller.buildAccountInfoCard = newValue;
-                                    controller.update();
-                                  },
-                                ),
-                                CustomCheckboxListTile(
-                                  title: '站点数据柱图',
-                                  value: controller.buildSiteInfo,
-                                  storageKey: 'buildSiteInfo',
-                                  onUpdate: (bool newValue) {
-                                    controller.buildSiteInfo = newValue;
-                                    controller.update();
-                                  },
-                                ),
-                                CustomCheckboxListTile(
-                                  title: '发种数量量饼图',
-                                  value: controller.buildPublishedPieChart,
-                                  storageKey: 'buildPublishedPieChart',
-                                  onUpdate: (bool newValue) {
-                                    controller.buildPublishedPieChart =
-                                        newValue;
-                                    controller.update();
-                                  },
-                                ),
-                                CustomCheckboxListTile(
-                                  title: '做种总量饼图',
-                                  value: controller.buildSeedVolumePieChart,
-                                  storageKey: 'buildSeedVolumePieChart',
-                                  onUpdate: (bool newValue) {
-                                    controller.buildSeedVolumePieChart =
-                                        newValue;
-                                    controller.update();
-                                  },
-                                ),
-                                CustomCheckboxListTile(
-                                  title: '上传总量饼图',
-                                  value: controller.buildSmartLabelPieChart,
-                                  storageKey: 'buildSmartLabelPieChart',
-                                  onUpdate: (bool newValue) {
-                                    controller.buildSmartLabelPieChart =
-                                        newValue;
-                                    controller.update();
-                                  },
-                                ),
+                                  CustomCheckboxListTile(
+                                    title: '开启隐私模式',
+                                    value: controller.privateMode,
+                                    storageKey: 'privateMode',
+                                    onUpdate: (bool newValue) async {
+                                      controller.privateMode = newValue;
+                                      Logger.instance.d(
+                                          "privateMode: ${controller.privateMode}");
+                                      await controller.loadCacheDashData();
+                                      controller.update();
+                                    },
+                                  ),
+                                  CustomCheckboxListTile(
+                                    title: '账户数据信息',
+                                    value: controller.buildAccountInfoCard,
+                                    storageKey: 'buildAccountInfoCard',
+                                    onUpdate: (bool newValue) {
+                                      controller.buildAccountInfoCard =
+                                          newValue;
+                                      controller.update();
+                                    },
+                                  ),
+                                  CustomCheckboxListTile(
+                                    title: '站点数据柱图',
+                                    value: controller.buildSiteInfo,
+                                    storageKey: 'buildSiteInfo',
+                                    onUpdate: (bool newValue) {
+                                      controller.buildSiteInfo = newValue;
+                                      controller.update();
+                                    },
+                                  ),
+                                  CustomCheckboxListTile(
+                                    title: '发种数量量饼图',
+                                    value: controller.buildPublishedPieChart,
+                                    storageKey: 'buildPublishedPieChart',
+                                    onUpdate: (bool newValue) {
+                                      controller.buildPublishedPieChart =
+                                          newValue;
+                                      controller.update();
+                                    },
+                                  ),
+                                  CustomCheckboxListTile(
+                                    title: '做种总量饼图',
+                                    value: controller.buildSeedVolumePieChart,
+                                    storageKey: 'buildSeedVolumePieChart',
+                                    onUpdate: (bool newValue) {
+                                      controller.buildSeedVolumePieChart =
+                                          newValue;
+                                      controller.update();
+                                    },
+                                  ),
+                                  CustomCheckboxListTile(
+                                    title: '上传总量饼图',
+                                    value: controller.buildSmartLabelPieChart,
+                                    storageKey: 'buildSmartLabelPieChart',
+                                    onUpdate: (bool newValue) {
+                                      controller.buildSmartLabelPieChart =
+                                          newValue;
+                                      controller.update();
+                                    },
+                                  ),
 
-                                CustomCheckboxListTile(
-                                  title: '每日上传柱图',
-                                  value: controller.buildStackedBar,
-                                  storageKey: 'buildStackedBar',
-                                  onUpdate: (bool newValue) {
-                                    controller.buildStackedBar = newValue;
-                                    controller.update();
-                                  },
-                                ),
-                                CustomCheckboxListTile(
-                                  title: '今日上传增量',
-                                  value: controller.showTodayUploadedIncrement,
-                                  storageKey: 'showTodayUploadedIncrement',
-                                  onUpdate: (bool newValue) {
-                                    controller.showTodayUploadedIncrement =
-                                        newValue;
-                                    controller.update();
-                                  },
-                                ),
-                                CustomCheckboxListTile(
-                                  title: '今日下载增量',
-                                  value:
-                                      controller.showTodayDownloadedIncrement,
-                                  storageKey: 'showTodayDownloadedIncrement',
-                                  onUpdate: (bool newValue) {
-                                    controller.showTodayDownloadedIncrement =
-                                        newValue;
-                                    controller.update();
-                                  },
-                                ),
-                                CustomCheckboxListTile(
-                                  title: '每月发种柱图',
-                                  value: controller.buildMonthPublishedBar,
-                                  storageKey: 'buildMonthPublishedBar',
-                                  onUpdate: (bool newValue) {
-                                    controller.buildMonthPublishedBar =
-                                        newValue;
-                                    controller.update();
-                                  },
-                                ),
-                                CustomCheckboxListTile(
-                                  title: '每月上传柱图',
-                                  value: controller.buildMonthStackedBar,
-                                  storageKey: 'buildMonthStackedBar',
-                                  onUpdate: (bool newValue) {
-                                    controller.buildMonthStackedBar = newValue;
-                                    controller.update();
-                                  },
-                                ),
-                                CustomCheckboxListTile(
-                                  title: '每月下载柱图',
-                                  value: controller.buildMonthDownloadedBar,
-                                  storageKey: 'buildMonthDownloadedBar',
-                                  onUpdate: (bool newValue) {
-                                    controller.buildMonthDownloadedBar =
-                                        newValue;
-                                    controller.update();
-                                  },
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12.0),
-                                  child: Row(
-                                    children: [
-                                      CustomTextTag(
-                                          backgroundColor: Theme.of(context)
-                                              .colorScheme
-                                              .primary,
-                                          labelText: '卡片高度'),
-                                      Expanded(
-                                        child: Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 12.0),
-                                          child: Row(
-                                            children: [
-                                              // InkWell(
-                                              //   child: const Icon(Icons.remove),
-                                              //   onTap: () async {
-                                              //     if (controller.days > 1) {
-                                              //       controller.days--;
-                                              //       await controller.initChartData();
-                                              //       controller.update();
-                                              //     }
-                                              //   },
-                                              // ),
-                                              Expanded(
-                                                child: Slider(
-                                                    min: 240,
-                                                    max: 300,
-                                                    divisions: 12,
-                                                    label: controller.cardHeight
-                                                        .toInt()
-                                                        .toString(),
-                                                    value:
-                                                        controller.cardHeight,
-                                                    onChanged: (value) async {
-                                                      controller.cardHeight =
-                                                          value.toDouble();
-                                                      await SPUtil.setDouble(
-                                                          'buildCardHeight',
-                                                          value);
-                                                      // await controller.loadCacheDashData();
-                                                      controller.update();
-                                                    }),
-                                              ),
-                                              // InkWell(
-                                              //   child: const Icon(Icons.add),
-                                              //   onTap: () {
-                                              //     if (controller.days < 14) {
-                                              //       controller.days++;
-                                              //       controller.initChartData();
-                                              //       controller.update();
-                                              //     }
-                                              //   },
-                                              // ),
-                                            ],
+                                  CustomCheckboxListTile(
+                                    title: '每日上传柱图',
+                                    value: controller.buildStackedBar,
+                                    storageKey: 'buildStackedBar',
+                                    onUpdate: (bool newValue) {
+                                      controller.buildStackedBar = newValue;
+                                      controller.update();
+                                    },
+                                  ),
+                                  CustomCheckboxListTile(
+                                    title: '今日上传增量',
+                                    value:
+                                        controller.showTodayUploadedIncrement,
+                                    storageKey: 'showTodayUploadedIncrement',
+                                    onUpdate: (bool newValue) {
+                                      controller.showTodayUploadedIncrement =
+                                          newValue;
+                                      controller.update();
+                                    },
+                                  ),
+                                  CustomCheckboxListTile(
+                                    title: '今日下载增量',
+                                    value:
+                                        controller.showTodayDownloadedIncrement,
+                                    storageKey: 'showTodayDownloadedIncrement',
+                                    onUpdate: (bool newValue) {
+                                      controller.showTodayDownloadedIncrement =
+                                          newValue;
+                                      controller.update();
+                                    },
+                                  ),
+                                  CustomCheckboxListTile(
+                                    title: '每月发种柱图',
+                                    value: controller.buildMonthPublishedBar,
+                                    storageKey: 'buildMonthPublishedBar',
+                                    onUpdate: (bool newValue) {
+                                      controller.buildMonthPublishedBar =
+                                          newValue;
+                                      controller.update();
+                                    },
+                                  ),
+                                  CustomCheckboxListTile(
+                                    title: '每月上传柱图',
+                                    value: controller.buildMonthStackedBar,
+                                    storageKey: 'buildMonthStackedBar',
+                                    onUpdate: (bool newValue) {
+                                      controller.buildMonthStackedBar =
+                                          newValue;
+                                      controller.update();
+                                    },
+                                  ),
+                                  CustomCheckboxListTile(
+                                    title: '每月下载柱图',
+                                    value: controller.buildMonthDownloadedBar,
+                                    storageKey: 'buildMonthDownloadedBar',
+                                    onUpdate: (bool newValue) {
+                                      controller.buildMonthDownloadedBar =
+                                          newValue;
+                                      controller.update();
+                                    },
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12.0),
+                                    child: Row(
+                                      children: [
+                                        CustomTextTag(
+                                            backgroundColor: Theme.of(context)
+                                                .colorScheme
+                                                .primary,
+                                            labelText: '卡片高度'),
+                                        Expanded(
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 12.0),
+                                            child: Row(
+                                              children: [
+                                                // InkWell(
+                                                //   child: const Icon(Icons.remove),
+                                                //   onTap: () async {
+                                                //     if (controller.days > 1) {
+                                                //       controller.days--;
+                                                //       await controller.initChartData();
+                                                //       controller.update();
+                                                //     }
+                                                //   },
+                                                // ),
+                                                Expanded(
+                                                  child: Slider(
+                                                      min: 240,
+                                                      max: 500,
+                                                      divisions: 13,
+                                                      label: controller
+                                                          .cardHeight
+                                                          .toInt()
+                                                          .toString(),
+                                                      value:
+                                                          controller.cardHeight,
+                                                      onChanged: (value) async {
+                                                        controller.cardHeight =
+                                                            value.toDouble();
+                                                        await SPUtil.setDouble(
+                                                            'buildCardHeight',
+                                                            value);
+                                                        // await controller.loadCacheDashData();
+                                                        controller.update();
+                                                      }),
+                                                ),
+                                                // InkWell(
+                                                //   child: const Icon(Icons.add),
+                                                //   onTap: () {
+                                                //     if (controller.days < 14) {
+                                                //       controller.days++;
+                                                //       controller.initChartData();
+                                                //       controller.update();
+                                                //     }
+                                                //   },
+                                                // ),
+                                              ],
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            })),
+                      );
+                    },
+                    child:
+                        GetBuilder<DashBoardController>(builder: (controller) {
+                      return SingleChildScrollView(
+                        child: controller.isCacheLoading
+                            ? Center(
+                                child: GFLoader(
+                                  type: GFLoaderType.custom,
+                                  loaderIconOne: Icon(
+                                    Icons.circle_outlined,
+                                    size: 18,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary
+                                        .withValues(alpha: 0.8),
                                   ),
                                 ),
-                              ],
-                            );
-                          })),
-                    );
-                  },
-                  child: GetBuilder<DashBoardController>(builder: (controller) {
-                    return SingleChildScrollView(
-                      child: controller.isCacheLoading
-                          ? Center(
-                              child: GFLoader(
-                                type: GFLoaderType.custom,
-                                loaderIconOne: Icon(
-                                  Icons.circle_outlined,
-                                  size: 18,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primary
-                                      .withValues(alpha: 0.8),
-                                ),
+                              )
+                            : RepaintBoundary(
+                                key: _captureKey,
+                                child: Wrap(
+                                    alignment: WrapAlignment.spaceAround,
+                                    direction: Axis.horizontal,
+                                    children: [
+                                      if (controller.buildSiteInfoCard)
+                                        _buildSiteInfoCard(),
+                                      if (controller.buildAccountInfoCard)
+                                        _buildAccountInfoCard(),
+                                      if (controller.buildSiteInfo &&
+                                          controller.statusList.isNotEmpty)
+                                        _buildSiteInfo(),
+                                      if (controller.buildPublishedPieChart)
+                                        _buildPublishedPieChart(),
+                                      if (controller.buildSeedVolumePieChart)
+                                        _buildSeedVolumePieChart(),
+                                      if (controller.buildSmartLabelPieChart)
+                                        _buildSmartLabelPieChart(),
+                                      if (controller.buildStackedBar)
+                                        _buildStackedBar(),
+                                      if (controller.showTodayUploadedIncrement)
+                                        _showTodayUploadedIncrement(),
+                                      if (controller
+                                          .showTodayDownloadedIncrement)
+                                        _showTodayDownloadedIncrement(),
+                                      if (controller.buildMonthPublishedBar)
+                                        _buildMonthPublishedBar(),
+                                      if (controller.buildMonthStackedBar)
+                                        _buildMonthStackedBar(),
+                                      if (controller.buildMonthDownloadedBar)
+                                        _buildMonthDownloadedBar(),
+                                    ]
+                                        .map((item) => FractionallySizedBox(
+                                              widthFactor: _getWidthFactor(),
+                                              child: item,
+                                            ))
+                                        .toList()),
                               ),
-                            )
-                          : RepaintBoundary(
-                              key: _captureKey,
-                              child: Wrap(
-                                  alignment: WrapAlignment.spaceAround,
-                                  direction: Axis.horizontal,
-                                  children: [
-                                    if (controller.buildSiteInfoCard)
-                                      _buildSiteInfoCard(),
-                                    if (controller.buildAccountInfoCard)
-                                      _buildAccountInfoCard(),
-                                    if (controller.buildSiteInfo &&
-                                        controller.statusList.isNotEmpty)
-                                      _buildSiteInfo(),
-                                    if (controller.buildPublishedPieChart)
-                                      _buildPublishedPieChart(),
-                                    if (controller.buildSeedVolumePieChart)
-                                      _buildSeedVolumePieChart(),
-                                    if (controller.buildSmartLabelPieChart)
-                                      _buildSmartLabelPieChart(),
-                                    if (controller.buildStackedBar)
-                                      _buildStackedBar(),
-                                    if (controller.showTodayUploadedIncrement)
-                                      _showTodayUploadedIncrement(),
-                                    if (controller.showTodayDownloadedIncrement)
-                                      _showTodayDownloadedIncrement(),
-                                    if (controller.buildMonthPublishedBar)
-                                      _buildMonthPublishedBar(),
-                                    if (controller.buildMonthStackedBar)
-                                      _buildMonthStackedBar(),
-                                    if (controller.buildMonthDownloadedBar)
-                                      _buildMonthDownloadedBar(),
-                                  ]
-                                      .map((item) => FractionallySizedBox(
-                                            widthFactor: _getWidthFactor(),
-                                            child: item,
-                                          ))
-                                      .toList()),
-                            ),
-                    );
-                  }),
-                );
-                // : Center(
-                //     child: ElevatedButton.icon(
-                //     onPressed: () async {
-                //       await controller.initChartData(controller.days);
-                //     },
-                //     label: Text(
-                //       '加载数据',
-                //       style: TextStyle(
-                //           fontSize: 12,
-                //           color: Theme.of(context).primaryColor),
-                //     ),
-                //     icon: Icon(Icons.cloud_download,
-                //         size: 12,
-                //         color: Theme.of(context).primaryColor),
-                //   ));
-              }),
+                      );
+                    }),
+                  );
+                  // : Center(
+                  //     child: ElevatedButton.icon(
+                  //     onPressed: () async {
+                  //       await controller.initChartData(controller.days);
+                  //     },
+                  //     label: Text(
+                  //       '加载数据',
+                  //       style: TextStyle(
+                  //           fontSize: 12,
+                  //           color: Theme.of(context).primaryColor),
+                  //     ),
+                  //     icon: Icon(Icons.cloud_download,
+                  //         size: 12,
+                  //         color: Theme.of(context).primaryColor),
+                  //   ));
+                }),
+              ),
             ),
-          ),
-          // if (!kIsWeb && Platform.isIOS) const SizedBox(height: 10),
-          // if (controller.userinfo?.isStaff == true) const SizedBox(height: 50),
-        ],
+            // if (!kIsWeb && Platform.isIOS) const SizedBox(height: 10),
+            // if (controller.userinfo?.isStaff == true) const SizedBox(height: 50),
+          ],
+        ),
       );
     });
   }
