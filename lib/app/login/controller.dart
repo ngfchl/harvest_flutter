@@ -57,7 +57,7 @@ class LoginController extends GetxController {
     Logger.instance.i('读取完毕，共有${serverList.length}个服务器');
     // 寻找selected为true的服务器，并赋值给selectedServer
     selectedServer = serverList.firstWhereOrNull((server) => server.selected);
-    Logger.instance.i('选种服务器：${selectedServer?.name.toString()}');
+    Logger.instance.i('选中服务器：${selectedServer?.name.toString()}');
     if (selectedServer != null) {
       initDio(selectedServer!);
     }
@@ -83,8 +83,6 @@ class LoginController extends GetxController {
   ///@description
   ///@updateTime
   Future<CommonResponse> testServerConnection(Server server) async {
-    isLoading = true; // 开始加载状态
-    update();
     try {
       await dioUtil.initialize(server.entry);
       LoginUser loginUser = LoginUser(
@@ -98,21 +96,20 @@ class LoginController extends GetxController {
       String msg = '服务器访问失败: $e';
       Logger.instance.e(msg);
       return CommonResponse.error(msg: msg);
-    } finally {
-      isLoading = false;
-      update();
     }
   }
 
   ////@title 选择服务器
   ///@description
   ///@updateTime
-  void selectServer(Server server) async {
+  void selectServer(Server server, {bool shouldSave = true}) async {
     switchServerLoading = true;
     update();
     selectedServer = server;
-    server.selected = true;
-    saveServer(server);
+
+    if (shouldSave) {
+      saveServer(server);
+    }
     await Future.delayed(Duration(milliseconds: 1000), () {
       switchServerLoading = false;
       update();
@@ -151,7 +148,7 @@ class LoginController extends GetxController {
         Logger.instance.i('添加服务器');
         if (selectedServer == null || server.selected) {
           server = server.copyWith(selected: true);
-          selectServer(server);
+          selectServer(server, shouldSave: false);
         }
         response = await serverRepository.insertServer(server);
       } else {
@@ -163,8 +160,10 @@ class LoginController extends GetxController {
       serverList = serverRepository.serverList;
       update(); // 更新UI，重新获取服务器列表
       return response;
-    } catch (e) {
+    } catch (e, trace) {
       String errMsg = "更新服务器出错啦：$e";
+      Logger.instance.e(errMsg);
+      Logger.instance.e(trace);
       update();
       return CommonResponse.error(msg: errMsg);
     }

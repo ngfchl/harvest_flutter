@@ -60,7 +60,7 @@ class _LoginPageState extends State<LoginPage> {
                   '删除',
                   '服务器已成功删除',
                   snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor: Colors.green.shade400,
+                  colorText: Theme.of(context).colorScheme.primary,
                   duration: const Duration(seconds: 3),
                 );
               } else {
@@ -68,7 +68,7 @@ class _LoginPageState extends State<LoginPage> {
                   '删除',
                   '删除服务器失败',
                   snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor: Colors.red.shade400,
+                  colorText: Theme.of(context).colorScheme.error,
                   duration: const Duration(seconds: 3),
                 );
               }
@@ -189,7 +189,7 @@ class _LoginPageState extends State<LoginPage> {
                         '清除缓存服务器',
                         '服务器缓存已成功清除',
                         snackPosition: SnackPosition.BOTTOM,
-                        backgroundColor: Colors.green.shade400,
+                        colorText: Theme.of(context).colorScheme.primary,
                         duration: const Duration(seconds: 3),
                       );
                     } else {
@@ -197,7 +197,7 @@ class _LoginPageState extends State<LoginPage> {
                         '清除服务器',
                         '清除服务器缓存失败',
                         snackPosition: SnackPosition.BOTTOM,
-                        backgroundColor: Colors.red.shade400,
+                        colorText: Theme.of(context).colorScheme.error,
                         duration: const Duration(seconds: 3),
                       );
                     }
@@ -308,7 +308,7 @@ class _LoginPageState extends State<LoginPage> {
   void showEditOrCreateServerSheet(Server? serverToEdit) async {
     final formKey = GlobalKey<FormState>();
     String defaultEntry =
-        kIsWeb ? Uri.base.origin : 'http://192.168.123.5:25174';
+        kIsWeb ? Uri.base.origin : 'http://192.168.123.5:35173';
     TextEditingController nameController =
         TextEditingController(text: serverToEdit?.name ?? 'DefaultServer');
     TextEditingController entryController =
@@ -413,6 +413,11 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       ElevatedButton.icon(
                         onPressed: () async {
+                          // 防止重复点击
+                          if (controller.isLoading) return;
+                          controller.isLoading = true; // 开始加载状态
+                          controller.update();
+
                           if (formKey.currentState!.validate()) {
                             final server = Server(
                               id: serverToEdit?.id ?? 0,
