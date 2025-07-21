@@ -1,4 +1,6 @@
-<!DOCTYPE html><html><head>
+<!DOCTYPE html>
+<html>
+<head>
     <!--
       If you are serving your web app in a path other than the root, change the
       href value below to reflect the base path you are serving from.
@@ -16,154 +18,117 @@
 
     <meta charset="UTF-8">
     <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-    <meta name="description" content="Harvest Project App Client">
+    <meta content="Harvest Project App Client" name="description">
 
     <!-- iOS meta tags & icons -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="harvest">
-    <link rel="apple-touch-icon" href="icons/Icon-192.png">
+    <meta content="yes" name="mobile-web-app-capable">
+    <meta content="black" name="mobile-web-app-status-bar-style">
+    <meta content="harvest" name="mobile-web-app-title">
+    <link href="icons/Icon-192.png" rel="touch-icon">
 
     <!-- Favicon -->
-    <link rel="icon" href="favicon.ico">
+    <link href="favicon.ico" rel="icon">
 
     <title>harvest</title>
-    <link rel="manifest" href="manifest.json">
+    <link href="manifest.json" rel="manifest">
 
     <script>
         // The value below is injected by flutter build, do not touch.
-        const "3954960765" = null;
+        const "1319568765" = null;
     </script>
     <!-- This script adds the flutter initialization JS code -->
-    <script src="flutter_bootstrap.js" async=""></script>
+    <script async="" src="flutter_bootstrap.js"></script>
 
 
-    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+          name="viewport">
 
 
-    
-    
-    <script type="application/javascript" src="/assets/packages/flutter_inappwebview_web/assets/web/web_support.js" defer=""></script>
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  <style id="splash-screen-style">
-    html {
-      height: 100%
-    }
+    <script defer=""
+            src="/assets/packages/flutter_inappwebview_web/assets/web/web_support.js"
+            type="application/javascript"></script>
 
-    body {
-      margin: 0;
-      min-height: 100%;
-      background-color: #ffffff;
-          background-size: 100% 100%;
-    }
 
-    .center {
-      margin: 0;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      -ms-transform: translate(-50%, -50%);
-      transform: translate(-50%, -50%);
-    }
+    <style id="splash-screen-style">
+        html {
+          height: 100%
+        }
 
-    .contain {
-      display:block;
-      width:100%; height:100%;
-      object-fit: contain;
-    }
+        body {
+          margin: 0;
+          min-height: 100%;
+          background-color: #ffffff;
+              background-size: 100% 100%;
+        }
 
-    .stretch {
-      display:block;
-      width:100%; height:100%;
-    }
+        .center {
+          margin: 0;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          -ms-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+        }
 
-    .cover {
-      display:block;
-      width:100%; height:100%;
-      object-fit: cover;
-    }
+        .contain {
+          display:block;
+          width:100%; height:100%;
+          object-fit: contain;
+        }
 
-    .bottom {
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      -ms-transform: translate(-50%, 0);
-      transform: translate(-50%, 0);
-    }
+        .stretch {
+          display:block;
+          width:100%; height:100%;
+        }
 
-    .bottomLeft {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-    }
+        .cover {
+          display:block;
+          width:100%; height:100%;
+          object-fit: cover;
+        }
 
-    .bottomRight {
-      position: absolute;
-      bottom: 0;
-      right: 0;
-    }
+        .bottom {
+          position: absolute;
+          bottom: 0;
+          left: 50%;
+          -ms-transform: translate(-50%, 0);
+          transform: translate(-50%, 0);
+        }
 
-    @media (prefers-color-scheme: dark) {
-      body {
-        background-color: #121212;
-          }
-    }
-  </style>
-  <script id="splash-screen-script">
-    function removeSplashFromWeb() {
-      document.getElementById("splash")?.remove();
-      document.getElementById("splash-branding")?.remove();
-      document.body.style.background = "transparent";
-    }
-  </script>
+        .bottomLeft {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+        }
+
+        .bottomRight {
+          position: absolute;
+          bottom: 0;
+          right: 0;
+        }
+
+        @media (prefers-color-scheme: dark) {
+          body {
+            background-color: #121212;
+              }
+        }
+    </style>
+    <script id="splash-screen-script">
+        function removeSplashFromWeb() {
+          document.getElementById("splash")?.remove();
+          document.getElementById("splash-branding")?.remove();
+          document.body.style.background = "transparent";
+        }
+    </script>
 </head>
 <body>
-  <picture id="splash">
-      <source srcset="splash/img/light-1x.png 1x, splash/img/light-2x.png 2x, splash/img/light-3x.png 3x, splash/img/light-4x.png 4x" media="(prefers-color-scheme: light)">
-      <source srcset="splash/img/dark-1x.png 1x, splash/img/dark-2x.png 2x, splash/img/dark-3x.png 3x, splash/img/dark-4x.png 4x" media="(prefers-color-scheme: dark)">
-      <img class="center" aria-hidden="true" src="splash/img/light-1x.png" alt="">
-  </picture>
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
+<picture id="splash">
+    <source media="(prefers-color-scheme: light)"
+            srcset="splash/img/light-1x.png 1x, splash/img/light-2x.png 2x, splash/img/light-3x.png 3x, splash/img/light-4x.png 4x">
+    <source media="(prefers-color-scheme: dark)"
+            srcset="splash/img/dark-1x.png 1x, splash/img/dark-2x.png 2x, splash/img/dark-3x.png 3x, splash/img/dark-4x.png 4x">
+    <img alt="" aria-hidden="true" class="center" src="splash/img/light-1x.png">
+</picture>
 
 
 <script>
@@ -183,5 +148,5 @@
 </script>
 
 
-
-</body></html>
+</body>
+</html>

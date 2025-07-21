@@ -439,9 +439,9 @@ const RESOURCES = {"assets/AssetManifest.bin": "00fd23be914034526dfc3b9060571ea1
 "assets/packages/flutter_inappwebview_web/assets/web/web_support.js": "509ae636cfdd93e49b5a6eaf0f06d79f",
 "assets/packages/flutter_inappwebview/assets/t_rex_runner/t-rex.css": "5a8d0222407e388155d7d1395a75d5b9",
 "assets/packages/flutter_inappwebview/assets/t_rex_runner/t-rex.html": "16911fcc170c8af1c5457940bd0bf055",
-"version.json": "6f17031d520ec9e466041b07c08fefee",
+"version.json": "97ac9446cdccd4644dacabac930016a7",
 "manifest.json": "ffe921cc76b49aadefa275084c9826a0",
-"flutter_bootstrap.js": "e123487115e0f31bddbcbfa023e5b3ea",
+"flutter_bootstrap.js": "67c5d83ef7e24ecb88d9d28694d61af0",
 "canvaskit/skwasm.wasm": "f0dfd99007f989368db17c9abeed5a49",
 "canvaskit/canvaskit.wasm": "efeeba7dcc952dae57870d4df3111fad",
 "canvaskit/skwasm.js.symbols": "80806576fa1056b43dd6d0b445b4b6f7",
@@ -462,15 +462,15 @@ const RESOURCES = {"assets/AssetManifest.bin": "00fd23be914034526dfc3b9060571ea1
 "splash/img/dark-3x.png": "168bf52a032d3346689b70d66ca97dae",
 "splash/img/dark-4x.png": "3e18798231d06d96c3bae3eb2bd05a18",
 "splash/img/light-3x.png": "f348659ee83531346ca98d5cbf026182",
-"index.html": "9779da764ea8f04ce3e6d4b683ad78ce",
-"/": "9779da764ea8f04ce3e6d4b683ad78ce",
+"index.html": "a1239cebcf167b92a6d99ba196d9276d",
+"/": "a1239cebcf167b92a6d99ba196d9276d",
 "favicon.ico": "f2cafad55e352c0165c301a6b3cf0ee8",
 "flutter.js": "76f08d47ff9f5715220992f993002504",
 "icons/Icon-512.png": "ee032f12dcd8461c59a1977c1fbfb63f",
 "icons/Icon-192.png": "8d560956e6e5cf9336ded8e5b354769a",
 "icons/Icon-maskable-512.png": "ee032f12dcd8461c59a1977c1fbfb63f",
 "icons/Icon-maskable-192.png": "8d560956e6e5cf9336ded8e5b354769a",
-"main.dart.js": "68f034b6320fbad2a3a0ef5e123bcbd1"};
+"main.dart.js": "75b1c3df99d0ae55bed401d8834d5454"};
 // The application shell files that are downloaded before a service worker can
 // start.
 const CORE = ["main.dart.js",
