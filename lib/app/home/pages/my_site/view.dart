@@ -1804,7 +1804,25 @@ class _MySitePagePageState extends State<MySitePage>
                               onPressed: () async {
                                 Get.back(result: true);
                                 Navigator.of(context).pop();
-                                await controller.removeSiteFromServer(mySite!);
+                                var res = await controller
+                                    .removeSiteFromServer(mySite!);
+                                if (res.succeed) {
+                                  Get.snackbar(
+                                    '删除站点',
+                                    res.msg.toString(),
+                                    colorText:
+                                        Theme.of(context).colorScheme.primary,
+                                  );
+                                  await controller.getSiteStatusFromServer();
+                                } else {
+                                  Logger.instance.e(res.msg);
+                                  Get.snackbar(
+                                    '删除站点',
+                                    res.msg.toString(),
+                                    colorText:
+                                        Theme.of(context).colorScheme.error,
+                                  );
+                                }
                               },
                               child: const Text('确认'),
                             ),
