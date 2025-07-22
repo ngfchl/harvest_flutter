@@ -167,18 +167,6 @@ class MySiteController extends GetxController {
           result[entry.value.name] = entry.value;
           return result;
         });
-        webSiteList.values.toList().forEach((site) {
-          if (site.tags.trim().isEmpty) {
-            return;
-          }
-          if (site.tags.contains('，')) {
-            tagList.addAll(site.tags.trim().split('，'));
-          } else {
-            tagList.addAll(site.tags.trim().split(','));
-          }
-        });
-        updateTagList();
-
         Logger.instance.d(
             '获取站点配置缓存耗时: ${DateTime.now().difference(startTime).inMilliseconds} 毫秒');
       }
@@ -243,6 +231,10 @@ class MySiteController extends GetxController {
     Logger.instance.d('加载站点信息列表程序耗时: ${duration.inMilliseconds} 毫秒');
     if (res.succeed) {
       mySiteList = res.data;
+      for (var site in mySiteList) {
+        tagList.addAll(site.tags);
+      }
+      updateTagList();
       filterByKey();
       isLoaded = false;
     } else {
@@ -277,7 +269,6 @@ class MySiteController extends GetxController {
       update();
       Future.microtask(() async {
         await getSiteStatusFromServer();
-        update();
       });
       return true;
     } else {
@@ -292,25 +283,8 @@ class MySiteController extends GetxController {
     }
   }
 
-  Future<void> removeSiteFromServer(MySite mySite) async {
-    CommonResponse res = await removeMySite(mySite);
-    if (res.succeed) {
-      Future.microtask(() async {
-        await getSiteStatusFromServer();
-        update();
-      });
-      Get.snackbar(
-        '删除站点',
-        res.msg.toString(),
-      );
-    } else {
-      Logger.instance.e(res.msg);
-      Get.snackbar(
-        '删除站点',
-        res.msg.toString(),
-      );
-    }
-    update();
+  Future<CommonResponse> removeSiteFromServer(MySite mySite) async {
+    return await removeMySite(mySite);
   }
 
   void sortStatusList() {
@@ -560,60 +534,9 @@ class MySiteController extends GetxController {
 
     showStatusList = filterSiteStatusBySearchKey(showStatusList);
     sortStatusList();
-    update();
   }
 
   void filterByCondition(bool Function(MySite) condition) {
     showStatusList = mySiteList.where(condition).toList();
-  }
-
-  Future<void> signAllSiteButton() async {
-    final res = await signIn(null);
-    Get.back();
-    if (res.succeed) {
-      Get.snackbar(
-        '签到任务',
-        '签到任务信息：${res.msg}',
-      );
-    } else {
-      Get.snackbar(
-        '签到失败',
-        '签到任务执行出错啦：${res.msg}',
-        colorText: Colors.white,
-        backgroundColor: Colors.red.withOpacity(0.7),
-      );
-    }
-  }
-
-  Future<void> importFromCookieCloud() async {
-    final res = await importFromCookieCloudApi();
-    Get.back();
-    if (res.succeed) {
-      Get.snackbar(
-        'CookieCloud任务',
-        'CookieCloud任务信息：${res.msg}',
-      );
-    } else {
-      Get.snackbar(
-        'CookieCloud失败',
-        'CookieCloud任务执行出错啦：${res.msg}',
-      );
-    }
-  }
-
-  Future<void> getAllStatusButton() async {
-    final res = await getNewestStatus(null);
-    Get.back();
-    if (res.succeed) {
-      Get.snackbar(
-        '更新数据',
-        '更新数据任务信息：${res.msg}',
-      );
-    } else {
-      Get.snackbar(
-        '更新数据',
-        '更新数据执行出错啦：${res.msg}',
-      );
-    }
   }
 }
