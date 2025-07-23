@@ -42,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
       return InkWell(
         onTap: () async {
           if (!server.selected) {
-            controller.selectServer(server);
+            controller.selectServer(server,shouldSave: true);
           }
         },
         onDoubleTap: () async {

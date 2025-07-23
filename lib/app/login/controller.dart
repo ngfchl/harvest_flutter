@@ -108,6 +108,7 @@ class LoginController extends GetxController {
     selectedServer = server;
 
     if (shouldSave) {
+      server = server.copyWith(selected: true);
       saveServer(server);
     }
     await Future.delayed(Duration(milliseconds: 1000), () {
@@ -153,7 +154,7 @@ class LoginController extends GetxController {
         response = await serverRepository.insertServer(server);
       } else {
         // 根据ID更新服务器
-        Logger.instance.i('更新服务器');
+        Logger.instance.i('更新服务器: ${server.selected}');
         response = await serverRepository.updateServer(server);
       }
 
