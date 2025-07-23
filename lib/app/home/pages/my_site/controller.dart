@@ -290,7 +290,7 @@ class MySiteController extends GetxController {
   void sortStatusList() {
     Logger.instance.i('当前排序方式：$sortKey');
     SPUtil.setString('mySite-sortKey', sortKey);
-    SPUtil.setBool('sortReversed', sortReversed);
+    SPUtil.setBool('mySite-sortReversed', sortReversed);
     // 拆分数据为有消息和无消息两组
     // 有消息的数据
     List<MySite> mailStatusList = showStatusList
