@@ -33,6 +33,7 @@ class SettingController extends GetxController {
     {'name': 'FileList', 'value': 'FileList'},
     {'name': 'TMDB配置', 'value': 'tmdb_api_auth'},
     {'name': '聚合搜索配置', 'value': 'aggregation_search'},
+    {'name': '自动添加标签', 'value': 'auto_import_tags'},
   ];
   List<SelectOption> optionChoice = [];
   Map<String, String> optionMap = {};

@@ -153,6 +153,94 @@ class SettingPage extends StatelessWidget {
     });
   }
 
+  Widget _autoImportTagsForm(Option? option, context) {
+    Logger.instance.d('自动添加标签: ${option?.value.repeat}');
+    RxBool repeat =
+        (option == null ? false : (option.value.repeat ?? false)).obs;
+    final isEdit = (option == null).obs;
+    return Obx(() {
+      return CustomCard(
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ListTile(
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              title: const Text('自动添加标签'),
+              leading: IconButton(
+                icon: repeat.value
+                    ? const Icon(
+                        Icons.hdr_auto,
+                        color: Colors.green,
+                      )
+                    : const Icon(
+                        Icons.front_hand_outlined,
+                        color: Colors.red,
+                      ),
+                onPressed: () {
+                  option?.isActive = !option!.isActive;
+                },
+              ),
+              subtitle: const Text('站点未设置标签时是否自动添加配置文件中的标签'),
+              trailing: ExpandIcon(
+                isExpanded: isEdit.value,
+                onPressed: (value) {
+                  isEdit.value = !isEdit.value;
+                },
+                expandedColor: Colors.teal,
+              ),
+            ),
+            if (isEdit.value)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    SwitchListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('自动添加标签'),
+                        value: repeat.value,
+                        onChanged: (bool v) async {
+                          repeat.value = v;
+                        }),
+                    FullWidthButton(
+                        text: '保存',
+                        onPressed: () async {
+                          if (option == null) {
+                            option = Option(
+                              id: 0,
+                              name: 'auto_import_tags',
+                              isActive: true,
+                              value: OptionValue(repeat: repeat.value),
+                            );
+                          } else {
+                            option?.isActive = true;
+                            option?.value = OptionValue(repeat: repeat.value);
+                          }
+                          Logger.instance.d('自动匹配: ${option?.value.repeat}');
+                          Logger.instance.d('自动匹配: ${option?.toJson()}');
+                          final res = await controller.saveOption(option!);
+                          if (res.code == 0) {
+                            Get.snackbar('配置保存成功',
+                                '${controller.optionMap['auto_import_tags']} 配置：${res.msg}',
+                                colorText:
+                                    Theme.of(context).colorScheme.primary);
+                          } else {
+                            Get.snackbar('配置保存失败',
+                                '${controller.optionMap['auto_import_tags']} 配置出错啦：${res.msg}',
+                                colorText: Theme.of(context).colorScheme.error);
+                          }
+                        }),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      );
+    });
+  }
+
   void _openAddOptionForm(context) {
     Map<String, OptionFormBuilder> optionForms = _optionFormMap();
     Logger.instance.i(optionForms);
@@ -241,6 +329,7 @@ class SettingPage extends StatelessWidget {
       'notice_content_item': _noticeContentItem,
       'tmdb_api_auth': _tmdbApiAuthForm,
       'aggregation_search': _aggregationSearchForm,
+      'auto_import_tags': _autoImportTagsForm,
     };
     return optionForms;
   }
