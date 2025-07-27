@@ -9,6 +9,7 @@ import 'package:harvest/app/home/pages/dou_ban/douban_api.dart';
 import 'package:harvest/common/meta_item.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:harvest/utils/logger_helper.dart' as logger_helper;
+import 'package:intl/intl.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
 import 'package:web_socket_channel/status.dart' as status;
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -241,7 +242,21 @@ class AggSearchController extends GetxController
         showResults.sort((a, b) => a.title.compareTo(b.title));
         break;
       case 'published':
-        showResults.sort((a, b) => a.published.compareTo(b.published));
+        showResults.sort((a, b) {
+          String aPublish;
+          String bPublish;
+          if (a.published is DateTime) {
+            aPublish = DateFormat('yyyy-MM-dd HH:mm:ss').format(a.published);
+          } else {
+            aPublish = a.published;
+          }
+          if (b.published is DateTime) {
+            bPublish = DateFormat('yyyy-MM-dd HH:mm:ss').format(b.published);
+          } else {
+            bPublish = b.published;
+          }
+          return aPublish.compareTo(bPublish);
+        });
         break;
       case 'size':
         showResults.sort((a, b) => b.size.compareTo(a.size));
@@ -295,8 +310,8 @@ class AggSearchController extends GetxController
           (element) => selectedSaleStatusList.contains(element.saleStatus));
     }
     logger_helper.Logger.instance.d(filteredResults.length);
-    logger_helper.Logger.instance
-        .d(filteredResults.map((item) => item.size).toList());
+    // logger_helper.Logger.instance
+    //     .d(filteredResults.map((item) => item.size).toList());
 
     filteredResults.retainWhere(
         (element) => element.size >= minSize && element.size <= maxSize);
