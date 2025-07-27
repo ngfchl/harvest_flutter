@@ -5984,8 +5984,45 @@ class _DownloadPageState extends State<DownloadPage>
                     onPressed: () {
                       _openQbTorrentInfoDetail(downloader, e.value, context);
                     },
-                    onDeleted: () {
-                      // _removeTorrent(controller, e.value);
+                    onDeleted: () async {
+                      RxBool deleteFiles = false.obs;
+                      Get.defaultDialog(
+                        title: '确认',
+                        middleText: '您确定要执行这个操作吗？',
+                        content: Obx(() {
+                          return SwitchListTile(
+                              title: const Text('是否删除种子文件？'),
+                              value: deleteFiles.value,
+                              onChanged: (value) {
+                                deleteFiles.value = value;
+                              });
+                        }),
+                        actions: [
+                          ElevatedButton(
+                            onPressed: () {
+                              Get.back(result: false);
+                            },
+                            child: const Text('取消'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () async {
+                              Get.back(result: true);
+                              CommonResponse res =
+                                  await controller.controlQbTorrents(
+                                      downloader: downloader,
+                                      command: 'delete',
+                                      hashes: [e.value.hash],
+                                      enable: deleteFiles.value);
+                              if (res.succeed) {
+                                controller.showTorrents.removeWhere(
+                                    (element) => element.hash == e.value.hash);
+                                controller.update();
+                              }
+                            },
+                            child: const Text('删除'),
+                          )
+                        ],
+                      );
                     },
                   ))
               .toList();
@@ -6947,11 +6984,18 @@ class _DownloadPageState extends State<DownloadPage>
                             ElevatedButton(
                               onPressed: () async {
                                 Get.back(result: true);
-                                await controller.controlTrTorrents(
+                                var res = await controller.controlTrTorrents(
                                     downloader: downloader,
                                     command: 'remove_torrent',
                                     enable: deleteFiles.value,
                                     ids: [e.value.hashString]);
+                                if (res.succeed) {
+                                  controller.showTorrents.removeWhere(
+                                      (element) =>
+                                          element.hashString ==
+                                          e.value.hashString);
+                                  controller.update();
+                                }
                               },
                               child: const Text('确认'),
                             ),
@@ -7842,7 +7886,44 @@ class ShowTorrentWidget extends StatelessWidget {
             children: [
               SlidableAction(
                 onPressed: (context) async {
-                  // _removeTorrent(controller, torrentInfo);
+                  RxBool deleteFiles = false.obs;
+                  Get.defaultDialog(
+                    title: '确认',
+                    middleText: '您确定要执行这个操作吗？',
+                    content: Obx(() {
+                      return SwitchListTile(
+                          title: const Text('是否删除种子文件？'),
+                          value: deleteFiles.value,
+                          onChanged: (value) {
+                            deleteFiles.value = value;
+                          });
+                    }),
+                    actions: [
+                      ElevatedButton(
+                        onPressed: () {
+                          Get.back(result: false);
+                        },
+                        child: const Text('取消'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () async {
+                          Get.back(result: true);
+                          CommonResponse res =
+                              await controller.controlQbTorrents(
+                                  downloader: downloader,
+                                  command: 'delete',
+                                  hashes: [torrentInfo.hash],
+                                  enable: deleteFiles.value);
+                          if (res.succeed) {
+                            controller.showTorrents.removeWhere(
+                                (element) => element.hash == torrentInfo.hash);
+                            controller.update();
+                          }
+                        },
+                        child: const Text('删除'),
+                      )
+                    ],
+                  );
                 },
                 flex: 2,
                 backgroundColor: const Color(0xFFFE4A49),
@@ -8225,8 +8306,47 @@ class ShowTorrentWidget extends StatelessWidget {
                     onPressed: () {
                       _openQbTorrentInfoDetail(downloader, e.value, context);
                     },
-                    onDeleted: () {
-                      // _removeTorrent(controller, e.value);
+                    onDeleted: () async {
+                      RxBool deleteFiles = false.obs;
+                      Get.defaultDialog(
+                        title: '确认',
+                        middleText: '您确定要执行这个操作吗？',
+                        content: Obx(() {
+                          return SwitchListTile(
+                              title: const Text('是否删除种子文件？'),
+                              value: deleteFiles.value,
+                              onChanged: (value) {
+                                deleteFiles.value = value;
+                              });
+                        }),
+                        actions: [
+                          ElevatedButton(
+                            onPressed: () {
+                              Get.back(result: false);
+                            },
+                            child: const Text('取消'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () async {
+                              Get.back(result: true);
+                              CommonResponse res =
+                                  await controller.controlQbTorrents(
+                                      downloader: downloader,
+                                      command: 'delete',
+                                      hashes: [e.value.hash],
+                                      enable: false);
+                              if (res.succeed) {
+                                controller.showTorrents.removeWhere(
+                                    (element) => element.hash == e.value.hash);
+                                controller.update();
+                              } else {
+                                Get.snackbar('删除通知', res.msg);
+                              }
+                            },
+                            child: const Text('删除'),
+                          )
+                        ],
+                      );
                     },
                   ))
               .toList();
@@ -9150,11 +9270,16 @@ class ShowTorrentWidget extends StatelessWidget {
                       ElevatedButton(
                         onPressed: () async {
                           Get.back(result: true);
-                          await controller.controlTrTorrents(
+                          var res = await controller.controlTrTorrents(
                               downloader: downloader,
                               command: 'remove_torrent',
                               enable: deleteFiles.value,
                               ids: [torrentInfo.hashString]);
+                          if (res.succeed) {
+                            controller.showTorrents.removeWhere((element) =>
+                                element.hashString == torrentInfo.hashString);
+                            controller.update();
+                          }
                         },
                         child: const Text('确认'),
                       ),
@@ -9632,11 +9757,18 @@ class ShowTorrentWidget extends StatelessWidget {
                             ElevatedButton(
                               onPressed: () async {
                                 Get.back(result: true);
-                                await controller.controlTrTorrents(
+                                var res = await controller.controlTrTorrents(
                                     downloader: downloader,
                                     command: 'remove_torrent',
                                     enable: deleteFiles.value,
                                     ids: [e.value.hashString]);
+                                if (res.succeed) {
+                                  controller.showTorrents.removeWhere(
+                                      (element) =>
+                                          element.hashString ==
+                                          e.value.hashString);
+                                  controller.update();
+                                }
                               },
                               child: const Text('确认'),
                             ),
