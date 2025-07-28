@@ -24,6 +24,7 @@ class MySiteController extends GetxController {
   String sortKey = 'statusMail';
   late String baseUrl;
   bool sortReversed = false;
+  bool searching = false;
   Map<String, WebSite> webSiteList = {};
   String selectTag = '全部';
   List<String> tagList = [
@@ -397,142 +398,96 @@ class MySiteController extends GetxController {
 
   filterSiteStatusBySearchKey(List<MySite> toSearchList) {
     if (searchKey.isNotEmpty) {
-      return toSearchList
-          .where((site) =>
-              site.nickname.toLowerCase().contains(searchKey.toLowerCase()) ||
-              (site.username?.toLowerCase().contains(searchKey.toLowerCase()) ??
-                  false) ||
-              (site.email?.toLowerCase().contains(searchKey.toLowerCase()) ??
-                  false) ||
-              (site.mirror?.toLowerCase().contains(searchKey.toLowerCase()) ??
-                  false) ||
-              site.site.toLowerCase().contains(searchKey.toLowerCase()))
-          .toList();
+      return toSearchList.where((site) {
+        var lowerCaseSearchKey = searchKey.toLowerCase();
+        return site.nickname.toLowerCase().contains(lowerCaseSearchKey) ||
+            (site.username?.toLowerCase().contains(lowerCaseSearchKey) ??
+                false) ||
+            (site.email?.toLowerCase().contains(lowerCaseSearchKey) ?? false) ||
+            (site.mirror?.toLowerCase().contains(lowerCaseSearchKey) ??
+                false) ||
+            site.site.toLowerCase().contains(lowerCaseSearchKey);
+      }).toList();
     } else {
       return toSearchList;
     }
   }
 
   void filterByKey() {
+    StatusInfo? getLatestStatusInfo(MySite item) {
+      if (item.statusInfo.isEmpty) return null;
+      final latestDate =
+          item.statusInfo.keys.reduce((a, b) => a.compareTo(b) > 0 ? a : b);
+      return item.statusInfo[latestDate];
+    }
+
     Logger.instance.i('开始筛选，当前筛选关键字：$filterKey');
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    switch (filterKey) {
-      case 'available':
-        filterByCondition((item) => item.available);
-        break;
-      case 'unavailable':
-        filterByCondition((item) => !item.available);
-        break;
-      case 'passkey':
-        filterByCondition(
-            (item) => item.passkey == null || item.passkey!.isEmpty);
-        break;
-      case 'authKey':
-        filterByCondition(
-            (item) => item.authKey == null || item.authKey!.isEmpty);
-        break;
-      case 'cookie':
-        filterByCondition(
-            (item) => item.cookie == null || item.cookie!.isEmpty);
-        break;
-      case 'proxy':
-        filterByCondition((item) =>
-            item.proxy == null || item.proxy == null || item.proxy!.isEmpty);
-        break;
-      case 'timeJoin':
-        filterByCondition((item) {
-          Logger.instance.d(item.timeJoin);
-          return item.timeJoin == '2024-02-01T00:00:00';
-        });
-        break;
-      case 'mail':
-        filterByCondition((item) => item.mail! > 0);
-        break;
-      case 'notice':
-        filterByCondition((item) => item.notice! > 0);
-        break;
-      case 'signInInfo':
-        filterByCondition((item) =>
-            item.available &&
-            webSiteList[item.site]!.signIn &&
-            item.signIn &&
-            item.signInInfo.isEmpty);
-        break;
-      case 'statusInfo':
-        filterByCondition((item) => item.statusInfo.isEmpty);
-        break;
-      case 'signIn':
-        filterByCondition((item) =>
-            item.available && item.signIn && item.signInInfo[today] == null);
-        break;
-      case 'status':
-        filterByCondition((item) {
-          Logger.instance.d(item.statusInfo[today]?.updatedAt);
-          return item.available &&
-              (item.statusInfo[today] == null ||
-                  !isToday(item.statusInfo[today]!.updatedAt.toString()));
-        });
-        break;
-      case 'userId':
-        filterByCondition(
-            (item) => item.userId == null || item.userId!.isEmpty);
-        break;
-      case 'username':
-        filterByCondition(
-            (item) => item.username == null || item.username!.isEmpty);
-        break;
-      case 'email':
-        filterByCondition((item) => item.email == null || item.email!.isEmpty);
-        break;
-      case 'invitation':
-        filterByCondition((item) {
-          String statusLatestDate =
-              item.statusInfo.keys.reduce((a, b) => a.compareTo(b) > 0 ? a : b);
-          return item.statusInfo[statusLatestDate] != null &&
-              item.statusInfo[statusLatestDate]!.invitation > 0;
-        });
-        break;
-      case 'noSeed':
-        filterByCondition((item) {
-          if (!item.available || item.statusInfo.isEmpty) return false;
-          String statusLatestDate =
-              item.statusInfo.keys.reduce((a, b) => a.compareTo(b) > 0 ? a : b);
-          return item.statusInfo[statusLatestDate] != null &&
-              item.statusInfo[statusLatestDate]!.seed <= 0;
-        });
-        break;
-      case 'leech':
-        filterByCondition((item) {
-          if (!item.available || item.statusInfo.isEmpty) return false;
-          String statusLatestDate =
-              item.statusInfo.keys.reduce((a, b) => a.compareTo(b) > 0 ? a : b);
-          return item.statusInfo[statusLatestDate] != null &&
-              item.statusInfo[statusLatestDate]!.leech > 0;
-        });
-        break;
-      case 'ratio':
-        filterByCondition((item) {
-          if (item.available || item.statusInfo.isEmpty) return false;
-          String statusLatestDate =
-              item.statusInfo.keys.reduce((a, b) => a.compareTo(b) > 0 ? a : b);
-          return item.statusInfo[statusLatestDate] != null &&
-              item.statusInfo[statusLatestDate]!.ratio > 0 &&
-              item.statusInfo[statusLatestDate]!.ratio <= 1;
-        });
-        break;
-      default:
-        showStatusList = mySiteList;
+
+    List<MySite> filtered = List.from(mySiteList);
+
+    Map<String, bool Function(MySite)> conditionMap = {
+      'available': (item) => item.available,
+      'unavailable': (item) => !item.available,
+      'passkey': (item) => item.passkey == null || item.passkey!.isEmpty,
+      'authKey': (item) => item.authKey == null || item.authKey!.isEmpty,
+      'cookie': (item) => item.cookie == null || item.cookie!.isEmpty,
+      'proxy': (item) => item.proxy == null || item.proxy!.isEmpty,
+      'timeJoin': (item) => item.timeJoin == '2024-02-01T00:00:00',
+      'mail': (item) => item.mail != null && item.mail! > 0,
+      'notice': (item) => item.notice != null && item.notice! > 0,
+      'signInInfo': (item) =>
+          item.available &&
+          webSiteList[item.site]?.signIn == true &&
+          item.signIn &&
+          item.signInInfo.isEmpty,
+      'statusInfo': (item) => item.statusInfo.isEmpty,
+      'signIn': (item) =>
+          item.available && item.signIn && item.signInInfo[today] == null,
+      'status': (item) {
+        final info = item.statusInfo[today];
+        return item.available &&
+            (info == null || !isToday(info.updatedAt.toString()));
+      },
+      'userId': (item) => item.userId == null || item.userId!.isEmpty,
+      'username': (item) => item.username == null || item.username!.isEmpty,
+      'email': (item) => item.email == null || item.email!.isEmpty,
+      'invitation': (item) {
+        final info = getLatestStatusInfo(item);
+        return info != null && info.invitation > 0;
+      },
+      'noSeed': (item) {
+        if (!item.available) return false;
+        final info = getLatestStatusInfo(item);
+        return info != null && info.seed <= 0;
+      },
+      'leech': (item) {
+        if (!item.available) return false;
+        final info = getLatestStatusInfo(item);
+        return info != null && info.leech > 0;
+      },
+      'ratio': (item) {
+        if (item.available) return false;
+        final info = getLatestStatusInfo(item);
+        return info != null && info.ratio > 0 && info.ratio <= 1;
+      },
+    };
+
+    // 应用筛选条件
+    if (conditionMap.containsKey(filterKey)) {
+      filtered = filtered.where(conditionMap[filterKey]!).toList();
     }
 
-    switch (selectTag) {
-      case '全部':
-        break;
-      default:
-        filterByCondition((item) => item.tags.contains(selectTag));
-        break;
+    // 标签筛选
+    if (selectTag != '全部') {
+      filtered =
+          filtered.where((item) => item.tags.contains(selectTag)).toList();
     }
 
-    showStatusList = filterSiteStatusBySearchKey(showStatusList);
+    // 搜索关键词筛选
+    filtered = filterSiteStatusBySearchKey(filtered);
+
+    showStatusList = filtered;
     sortStatusList();
   }
 

@@ -6,6 +6,7 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
@@ -96,6 +97,13 @@ class _MySitePagePageState extends State<MySitePage>
                                   height: 32,
                                   child: TextField(
                                     focusNode: blankNode,
+                                    scrollPhysics:
+                                        const NeverScrollableScrollPhysics(),
+                                    // 禁止滚动
+                                    maxLines: 1,
+                                    inputFormatters: [
+                                      LengthLimitingTextInputFormatter(20),
+                                    ],
                                     controller: controller.searchController,
                                     style: const TextStyle(fontSize: 12),
                                     textAlignVertical: TextAlignVertical.center,
@@ -144,10 +152,16 @@ class _MySitePagePageState extends State<MySitePage>
                                             BorderRadius.circular(0.0),
                                       ),
                                     ),
-                                    onChanged: (value) {
+                                    onSubmitted: (value) async {
+                                      controller.searching = true;
+                                      controller.update();
                                       Logger.instance.d('搜索框内容变化：$value');
                                       controller.searchKey = value;
+                                      await Future.delayed(
+                                          Duration(milliseconds: 300));
                                       controller.filterByKey();
+                                      controller.searching = false;
+                                      controller.update();
                                     },
                                   ),
                                 ),
@@ -167,10 +181,25 @@ class _MySitePagePageState extends State<MySitePage>
                               controller.filterByKey();
                               controller.update();
                             },
-                            icon: const Icon(
-                              Icons.backspace_outlined,
-                              size: 18,
-                            ))
+                            icon: controller.searching
+                                ? GFLoader(
+                                    type: GFLoaderType.custom,
+                                    duration: const Duration(milliseconds: 120),
+                                    loaderIconOne: Icon(
+                                      Icons.circle_outlined,
+                                      size: 16,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary
+                                          .withOpacity(0.8),
+                                    ),
+                                  )
+                                : Icon(Icons.backspace_outlined,
+                                    size: 18,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary
+                                        .withOpacity(0.8)))
                     ],
                   ),
                 ),
