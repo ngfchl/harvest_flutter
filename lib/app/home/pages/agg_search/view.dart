@@ -1378,8 +1378,8 @@ class _AggSearchPageState extends State<AggSearchPage>
                                       .d('minSize：$value');
                                   controller.minSize =
                                       value * controller.calcSize;
-                                  SPUtil.setDouble('searchFilterFileMinxSize',
-                                      controller.minSize);
+                                  // SPUtil.setDouble('searchFilterFileMinSize',
+                                  //     controller.minSize);
                                   controller.filterResults();
                                   controller.update();
                                 }),
@@ -1402,8 +1402,8 @@ class _AggSearchPageState extends State<AggSearchPage>
                                       .d('maxSize：$value');
                                   controller.maxSize =
                                       value * controller.calcSize;
-                                  SPUtil.setDouble('searchFilterFileMaxSize',
-                                      controller.maxSize);
+                                  // SPUtil.setDouble('searchFilterFileMaxSize',
+                                  //     controller.maxSize);
                                   controller.filterResults();
                                   controller.update();
                                 }),

@@ -57,7 +57,7 @@ class AggSearchController extends GetxController
   List<SearchTorrentInfo> hrResultList = <SearchTorrentInfo>[];
   int calcSize = 1024 * 1024 * 1024;
   double maxSize = 100 * 1024 * 1024 * 1024;
-  double minSize = 1 * 1024 * 1024 * 1024;
+  double minSize = 0;
 
   bool sortReversed = false;
   bool isLoading = false;
