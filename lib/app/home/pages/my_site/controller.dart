@@ -27,21 +27,7 @@ class MySiteController extends GetxController {
   bool searching = false;
   Map<String, WebSite> webSiteList = {};
   String selectTag = '全部';
-  List<String> tagList = [
-    '电影',
-    '电视剧',
-    '动画片',
-    '漫画',
-    '动漫',
-    '音乐',
-    '4K',
-    '原盘',
-    'Web',
-    '游戏',
-    '软件',
-    '书籍',
-    '其他',
-  ];
+  List<String> tagList = [];
 
   List<MetaDataItem> siteSortOptions = [
     // {'name': '站点ID', 'value': 'mySiteId'},
