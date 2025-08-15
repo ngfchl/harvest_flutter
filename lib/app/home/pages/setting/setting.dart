@@ -2,12 +2,15 @@ import 'package:app_service/app_service.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:harvest/api/api.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/form_widgets.dart';
 import 'package:harvest/utils/storage.dart';
 
+import '../../../../api/hooks.dart';
 import '../../../../api/option.dart';
 import '../../../../common/utils.dart';
+import '../../../../models/common_response.dart';
 import '../../../../utils/logger_helper.dart';
 import '../models/option.dart';
 import 'setting_controller.dart';
@@ -37,6 +40,7 @@ class SettingPage extends StatelessWidget {
                     children: controller.isLoaded
                         ? [const Center(child: CircularProgressIndicator())]
                         : [
+                            _telegramWebHookForm(context),
                             ..._optionListView(context),
                           ],
                   ),
@@ -2076,6 +2080,99 @@ class SettingPage extends StatelessWidget {
         ),
       );
     });
+  }
+
+  Widget _telegramWebHookForm(context) {
+    String? baseUrl = SPUtil.getLocalStorage('server');
+    String webhook = SPUtil.getLocalStorage('TELEGRAM_WEBHOOK') ?? "";
+    TextEditingController urlController = TextEditingController(
+      text: baseUrl != null && baseUrl.startsWith('https') ? baseUrl : webhook,
+    );
+    final isEdit = false.obs;
+    return Obx(() {
+      return CustomCard(
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ListTile(
+                title: const Text("Telegram Webhook"),
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                leading: IconButton(
+                  onPressed: () async {},
+                  icon:
+                      const Icon(Icons.telegram_outlined, color: Colors.green),
+                ),
+                trailing: ExpandIcon(
+                  isExpanded: isEdit.value,
+                  onPressed: (value) {
+                    isEdit.value = !isEdit.value;
+                  },
+                  expandedColor: Colors.teal,
+                )),
+            if (isEdit.value)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    CustomTextField(
+                      autofocus: true,
+                      controller: urlController,
+                      labelText: 'WebHook地址',
+                      helperText:
+                          '请仅输入Telegram Webhook地址域名部分，以/结尾，例：https://harvest.example.com/',
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FullWidthButton(
+                            text: '保存',
+                            onPressed: () =>
+                                _saveWebHook(context, urlController.text),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      );
+    });
+  }
+
+  void _saveWebHook(BuildContext context, String url) async {
+    if (url.isNotEmpty) {
+      if (!url.startsWith('https://')) {
+        Get.snackbar(
+          'WebHook 地址验证失败！',
+          'WebHook 必须使用 https 协议且只能使用 80、443、88、8443端口！',
+          colorText: Theme.of(context).colorScheme.error,
+        );
+        return;
+      }
+      CommonResponse response = await addData(Api.TELEGRAM_WEBHOOK, null,
+          queryParameters: {"host": url});
+      if (response.succeed) {
+        Get.back();
+        SPUtil.setLocalStorage('TELEGRAM_WEBHOOK', url);
+      }
+      Get.snackbar(
+        '保存成功',
+        response.msg,
+        colorText: response.succeed
+            ? Theme.of(context).colorScheme.primary
+            : Theme.of(context).colorScheme.error,
+      );
+    } else {
+      Get.snackbar(
+        '保存失败',
+        'WebHook 地址不能为空！',
+        colorText: Theme.of(context).colorScheme.error,
+      );
+    }
   }
 
   Widget _pushPlusForm(Option? option, context) {
