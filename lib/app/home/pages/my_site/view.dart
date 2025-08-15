@@ -231,7 +231,10 @@ class _MySitePagePageState extends State<MySitePage>
                                   ),
                                   SizedBox(width: 3),
                                   Text(
-                                    '筛选',
+                                    controller.filterOptions
+                                        .firstWhere((item) =>
+                                            item.value == controller.filterKey)
+                                        .name,
                                     style: TextStyle(fontSize: 14),
                                   ),
                                 ],
@@ -256,7 +259,10 @@ class _MySitePagePageState extends State<MySitePage>
                                   ),
                                   SizedBox(width: 3),
                                   Text(
-                                    '排序',
+                                    controller.siteSortOptions
+                                        .firstWhere((item) =>
+                                            item.value == controller.sortKey)
+                                        .name,
                                     style: TextStyle(fontSize: 14),
                                   ),
                                 ],
