@@ -36,6 +36,7 @@ class Api {
 
   // 通知测试
   static const String NOTIFY_TEST = "option/test";
+  static const String TELEGRAM_WEBHOOK = 'option/tg/webhook';
 
   // 更新 Docker
   static const String DOCKER_UPDATE = "option/update/";
