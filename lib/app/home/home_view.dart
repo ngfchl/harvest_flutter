@@ -105,42 +105,33 @@ class HomeView extends GetView<HomeController> {
             ],
           ),
           body: GetBuilder<HomeController>(builder: (controller) {
-            return controller.isPortrait
-                ? PageView(
-                    controller: controller.pageController,
-                    physics: const NeverScrollableScrollPhysics(),
-                    onPageChanged: (index) {
-                      // controller.initPage.value = index;
-                      // controller.update();
-                    },
-                    children: controller.pages,
-                  )
-                : Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      controller.isSmallHorizontalScreen
-                          ? SizedBox(
-                              width: 120,
-                              // height: double.infinity,
-                              child: _buildMenuBar(context),
-                            )
-                          : CustomCard(
-                              width: 200,
-                              // height: double.infinity,
-                              child: _buildMenuBar(context),
-                            ),
-                      Expanded(
-                          child: PageView(
-                        controller: controller.pageController,
-                        physics: const NeverScrollableScrollPhysics(),
-                        onPageChanged: (index) {
-                          // controller.initPage.value = index;
-                          // controller.update();
-                        },
-                        children: controller.pages,
-                      ))
-                    ],
-                  );
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (!controller.isPortrait)
+                  controller.isSmallHorizontalScreen
+                      ? SizedBox(
+                          width: 120,
+                          // height: double.infinity,
+                          child: _buildMenuBar(context),
+                        )
+                      : CustomCard(
+                          width: 200,
+                          // height: double.infinity,
+                          child: _buildMenuBar(context),
+                        ),
+                Expanded(
+                    child: PageView(
+                  controller: controller.pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  onPageChanged: (index) {
+                    // controller.initPage.value = index;
+                    // controller.update();
+                  },
+                  children: controller.pages,
+                ))
+              ],
+            );
           }),
           drawer: controller.isPortrait
               ? SizedBox(
