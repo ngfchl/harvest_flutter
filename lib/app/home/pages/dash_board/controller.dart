@@ -1,3 +1,6 @@
+import 'dart:collection';
+import 'dart:ui';
+
 import 'package:get/get.dart';
 import 'package:harvest/api/mysite.dart';
 import 'package:harvest/common/meta_item.dart';
@@ -50,12 +53,44 @@ class DashBoardController extends GetxController {
   bool buildSiteInfo = true;
   bool showTodayUploadedIncrement = true;
   bool showTodayDownloadedIncrement = true;
+  bool scaleEnable = true;
   MySite? earliestSite;
   int days = 7;
   int maxDays = 0;
   int siteCount = 0;
   AuthInfo? userinfo;
   String? baseUrl;
+  List<Color> lightColors = [
+    Color(0xFF1ABC9C), // turquoise 青绿
+    Color(0xFF3498DB), // peter river 蓝
+    Color(0xFFE67E22), // carrot 橙
+    Color(0xFFE74C3C), // alizarin 红
+    Color(0xFF9B59B6), // amethyst 紫
+    Color(0xFFF1C40F), // sunflower 黄
+    Color(0xFF2ECC71), // emerald 绿
+    Color(0xFF34495E), // wet asphalt 深灰蓝
+  ];
+  List<Color> darkColors = [
+    Color(0xFF3ECDC4), // 青绿 (turquoise green)
+    Color(0xFF55B7D1), // 天蓝 (sky blue)
+    Color(0xFFF67280), // 粉红 (soft red/pink)
+    Color(0xFFF8B195), // 粉橙 (peach)
+    Color(0xFFC06C84), // 暗紫红 (dark mauve)
+    Color(0xFF355C7D), // 深蓝灰 (slate blue)
+    Color(0xFFA8E6CF), // 淡绿 (mint green)
+    Color(0xFFDCE775), // 柔黄 (lime yellow)
+  ];
+
+  Map designations = SplayTreeMap<int, String>.from({
+    0: "",
+    10: "星辰初现",
+    20: "光耀九天",
+    30: "龙腾九霄",
+    50: "纵横天下",
+    100: "天命之子",
+    150: "九天霸主",
+    200: "万界之尊",
+  });
 
   @override
   void onInit() {
@@ -88,6 +123,7 @@ class DashBoardController extends GetxController {
         SPUtil.getBool('showTodayUploadedIncrement', defaultValue: true)!;
     showTodayDownloadedIncrement =
         SPUtil.getBool('showTodayDownloadedIncrement', defaultValue: true)!;
+    scaleEnable = SPUtil.getBool('scaleEnable', defaultValue: true)!;
     isCacheLoading = true;
     update();
     await loadCacheDashData();
@@ -108,6 +144,12 @@ class DashBoardController extends GetxController {
       mySiteController.getSiteStatusFromServer();
       mySiteController.loadingFromServer = false;
     });
+  }
+
+  String getDesignation(int count) {
+    // SplayTreeMap 会自动排序 keys
+    final eligibleKeys = designations.keys.where((k) => k <= count);
+    return eligibleKeys.isEmpty ? "" : designations[eligibleKeys.last]!;
   }
 
   initChartData() async {
