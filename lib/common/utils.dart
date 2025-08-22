@@ -12,7 +12,7 @@ String formatUpdatedTimeToDateString(item) {
 }
 
 String formatCreatedTimeToMonthString(item) {
-  return DateFormat("yyyy-MM").format(item.createdAt);
+  return DateFormat("yy-MM").format(item.createdAt);
 }
 
 String generateRandomString(
