@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 String formatCreatedTimeToDateString(item) {
   return DateFormat("MM-dd").format(item.createdAt);
 }
+
 String formatUpdatedTimeToDateString(item) {
   return DateFormat("MM-dd").format(item.updatedAt);
 }
@@ -64,4 +65,16 @@ checkEditController(TextEditingController controller, String field, context) {
     return false;
   }
   return true;
+}
+
+/**
+ * 计算宽度因子
+ */
+double getWidthFactor(context) {
+  final size = MediaQuery.of(context).size;
+  double factor = size.width - 200;
+  if (factor < 800) return 1.0; // 手机屏幕
+  if (factor < 1200) return 0.5; // 平板屏幕
+  if (factor < 1800) return 1 / 3; // 平板屏幕
+  return 0.25; // 桌面屏幕
 }
