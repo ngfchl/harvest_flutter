@@ -22,6 +22,7 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import '../../../../common/card_view.dart';
 import '../../../../common/form_widgets.dart';
 import '../../../../common/meta_item.dart';
+import '../../../../common/utils.dart';
 import '../../../../models/common_response.dart';
 import '../../../../models/download.dart';
 import '../../../../utils/date_time_utils.dart';
@@ -67,16 +68,25 @@ class _DownloadPageState extends State<DownloadPage>
                               .getDownloaderListFromServer(withStatus: true),
                           child: Stack(
                             children: [
-                              ListView.builder(
-                                  itemCount: controller.dataList.length,
-                                  itemBuilder:
-                                      (BuildContext context, int index) {
-                                    Downloader downloader =
-                                        controller.dataList[index];
-                                    return buildDownloaderCard(downloader);
-                                  }),
+                              SingleChildScrollView(
+                                child: Wrap(
+                                  alignment: WrapAlignment.start,
+                                  direction: Axis.horizontal,
+                                  crossAxisAlignment: WrapCrossAlignment.start,
+                                  runAlignment: WrapAlignment.start,
+                                  children: controller.dataList
+                                      .map((downloader) => FractionallySizedBox(
+                                            widthFactor:
+                                                getWidthFactor(context),
+                                            child:
+                                                buildDownloaderCard(downloader),
+                                          ))
+                                      .toList(),
+                                ),
+                              ),
                               if (controller.loading)
-                                const Center(child: CircularProgressIndicator())
+                                const Center(
+                                    child: CircularProgressIndicator()),
                             ],
                           ));
                     });
