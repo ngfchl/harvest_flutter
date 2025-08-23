@@ -103,25 +103,30 @@ class HomeView extends GetView<HomeController> {
                 GetBuilder<HomeController>(
                     id: 'home_view_background_image',
                     builder: (controller) {
-                      return Positioned.fill(
-                        child: controller.useLocalBackground
-                            ? Image.file(
-                                File(controller.backgroundImage),
-                                fit: BoxFit.cover,
-                              )
-                            : CachedNetworkImage(
-                                imageUrl:
-                                    '$cacheServer${controller.backgroundImage}',
-                                placeholder: (context, url) => const Center(
-                                    child: CircularProgressIndicator()),
-                                errorWidget: (context, url, error) =>
-                                    Image.asset(
-                                  'assets/images/background.png',
+                      Logger.instance.d(
+                          "useBackground: ${controller.useBackground} useLocalBackground: ${controller.useLocalBackground} backgroundImage: ${controller.backgroundImage}");
+                      if (controller.useBackground) {
+                        return Positioned.fill(
+                          child: controller.useLocalBackground
+                              ? Image.file(
+                                  File(controller.backgroundImage),
+                                  fit: BoxFit.cover,
+                                )
+                              : CachedNetworkImage(
+                                  imageUrl:
+                                      '${controller.useImageProxy ? cacheServer : ''}${controller.backgroundImage}',
+                                  placeholder: (context, url) => const Center(
+                                      child: CircularProgressIndicator()),
+                                  errorWidget: (context, url, error) =>
+                                      Image.asset(
+                                    'assets/images/background.png',
+                                    fit: BoxFit.cover,
+                                  ),
                                   fit: BoxFit.cover,
                                 ),
-                                fit: BoxFit.cover,
-                              ),
-                      );
+                        );
+                      }
+                      return SizedBox.shrink();
                     }),
                 Row(
                   mainAxisSize: MainAxisSize.min,

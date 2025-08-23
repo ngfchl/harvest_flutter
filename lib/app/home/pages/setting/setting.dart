@@ -32,7 +32,9 @@ class SettingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: (SPUtil.getBool('useBackground') ?? false)
+            ? Colors.transparent
+            : Theme.of(context).colorScheme.surface.withOpacity(0.7),
         body: GetBuilder<SettingController>(builder: (controller) {
           return EasyRefresh(
             onRefresh: controller.getOptionList,
@@ -2382,10 +2384,13 @@ class SettingPage extends StatelessWidget {
         (SPUtil.getDouble('cardOpacity', defaultValue: 0.7) ?? 0.7).obs;
     RxBool useLocalBackground =
         (SPUtil.getBool('useLocalBackground') ?? false).obs;
+    RxBool useBackground = (SPUtil.getBool('useBackground') ?? false).obs;
+    RxBool useImageProxy = (SPUtil.getBool('useImageProxy') ?? false).obs;
     TextEditingController urlController = TextEditingController(
       text: baseUrl.value,
     );
     final isEdit = false.obs;
+    HomeController homeController = Get.find();
     return Obx(() {
       return CustomCard(
         padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
@@ -2446,11 +2451,27 @@ class SettingPage extends StatelessWidget {
                         ),
                       ),
                       SwitchTile(
-                        title: '使用本地背景图片',
+                        title: '使用背景图片',
+                        value: useBackground.value,
+                        onChanged: (value) {
+                          useBackground.value = value;
+                          SPUtil.setBool('useBackground', value);
+                        },
+                      ),
+                      SwitchTile(
+                        title: '使用本地图片',
                         value: useLocalBackground.value,
                         onChanged: (value) {
                           useLocalBackground.value = value;
                           SPUtil.setBool('useLocalBackground', value);
+                        },
+                      ),
+                      SwitchTile(
+                        title: '网络图片加速',
+                        value: useImageProxy.value,
+                        onChanged: (value) {
+                          useImageProxy.value = value;
+                          SPUtil.setBool('useImageProxy', value);
                         },
                       ),
                       useLocalBackground.value
@@ -2480,15 +2501,17 @@ class SettingPage extends StatelessWidget {
                                   onPressed: () {
                                     if (urlController.text.isNotEmpty &&
                                         urlController.text.startsWith('http')) {
+                                      baseUrl.value = urlController.text;
+                                      Logger.instance.d(
+                                          'backgroundImage: ${urlController.text}');
                                       SPUtil.setString('backgroundImage',
                                           urlController.text);
-                                      HomeController homeController =
-                                          Get.find();
                                       homeController.backgroundImage =
                                           urlController.text;
                                       homeController.update(
                                           ['home_view_background_image']);
                                       isEdit.value = false;
+                                      homeController.onInit();
                                     } else {
                                       Get.snackbar(
                                         '出错啦',
@@ -2504,6 +2527,8 @@ class SettingPage extends StatelessWidget {
                       const SizedBox(height: 5),
                       Obx(() {
                         if (baseUrl.value.isNotEmpty) {
+                          Logger.instance.d(
+                              'backgroundImage: $baseUrl , useLocalBackground: $useLocalBackground');
                           return useLocalBackground.value
                               ? baseUrl.value.startsWith('http')
                                   ? SizedBox.shrink()
@@ -2512,16 +2537,18 @@ class SettingPage extends StatelessWidget {
                                       width: double.infinity,
                                       fit: BoxFit.fitWidth,
                                     )
-                              : CachedNetworkImage(
-                                  imageUrl:
-                                      'https://images.weserv.nl/?url=${baseUrl.value}',
-                                  placeholder: (context, url) => const Center(
-                                      child: CircularProgressIndicator()),
-                                  errorWidget: (context, url, error) =>
-                                      Image.asset(
-                                          'assets/images/background.png'),
-                                  fit: BoxFit.fitWidth,
-                                );
+                              : Obx(() {
+                                  return CachedNetworkImage(
+                                    imageUrl:
+                                        '${useImageProxy.value ? 'https://images.weserv.nl/?url=' : ''}${baseUrl.value}',
+                                    placeholder: (context, url) => const Center(
+                                        child: CircularProgressIndicator()),
+                                    errorWidget: (context, url, error) =>
+                                        Image.asset(
+                                            'assets/images/background.png'),
+                                    fit: BoxFit.fitWidth,
+                                  );
+                                });
                         }
                         return SizedBox.shrink();
                       }),
