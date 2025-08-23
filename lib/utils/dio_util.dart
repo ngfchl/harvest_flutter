@@ -52,6 +52,9 @@ class DioUtil {
       connectTimeout: const Duration(seconds: 75),
       receiveTimeout: const Duration(seconds: 90),
       responseType: ResponseType.json,
+      validateStatus: (status) {
+        return status != null && status < 600; // 所有状态码都当作正常返回
+      },
     ));
 
     // 请求拦截器动态加 Authorization
@@ -87,7 +90,10 @@ class DioUtil {
         Duration(seconds: 3)
       ],
       retryEvaluator: (DioException err, int count) {
-        if ([401, 403].contains(err.response?.statusCode)) return false;
+        if ([401, 403].contains(err.response?.statusCode) ||
+            err.response!.statusCode.toString().startsWith('5')) {
+          return false;
+        }
         return [
           DioExceptionType.connectionTimeout,
           DioExceptionType.receiveTimeout,

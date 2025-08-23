@@ -14,6 +14,9 @@ class UserAPI {
       Api.LOGIN_URL,
       formData: loginUser.toJson(),
     );
+    if (response.statusCode != 200) {
+      return CommonResponse.error(msg: '网站访问失败！错误码：${response.statusCode}');
+    }
     if (response.data['code'] == 0) {
       return CommonResponse.fromJson(
           response.data, (p0) => AuthInfo.fromJson(p0));
