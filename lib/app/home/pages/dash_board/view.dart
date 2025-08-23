@@ -808,6 +808,7 @@ class _DashBoardPageState extends State<DashBoardPage>
       // Rx<MySite?> earliestSite = controller.earliestSite.obs;
 
       RxBool showDescTitle = (SPUtil.getBool("showDescTitle") ?? true).obs;
+      RxBool showYear = (SPUtil.getBool("showYear") ?? true).obs;
       return CustomCard(
         height: controller.cardHeight,
         borderRadius: const BorderRadius.only(
@@ -1412,19 +1413,32 @@ class _DashBoardPageState extends State<DashBoardPage>
                       ),
                       controller.earliestSite == null
                           ? Text('--', textAlign: TextAlign.center)
-                          : Text(
-                              "${calculateTimeElapsed(controller.earliestSite!.timeJoin).replaceAll('前', '')} - ${calcWeeksDays(controller.earliestSite!.timeJoin)}",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontWeight: FontWeight.normal,
-                                fontSize: 11,
-                                letterSpacing: 0.0,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .primary
-                                    .withOpacity(0.8),
-                              ),
-                            ),
+                          : Obx(() {
+                              return InkWell(
+                                onTap: () {
+                                  showYear.value = !showYear.value;
+                                  SPUtil.setBool('showYear', showYear.value);
+                                },
+                                child: Text(
+                                  showYear.value
+                                      ? calcWeeksDays(
+                                          controller.earliestSite!.timeJoin)
+                                      : calculateTimeElapsed(
+                                              controller.earliestSite!.timeJoin)
+                                          .replaceAll('前', ''),
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: 11,
+                                    letterSpacing: 0.0,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary
+                                        .withOpacity(0.8),
+                                  ),
+                                ),
+                              );
+                            }),
                     ],
                   ),
                   Row(
@@ -1438,7 +1452,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                               color: Theme.of(context).colorScheme.primary)),
                       Text(
                           controller.updatedAt.isNotEmpty
-                              ? controller.updatedAt.substring(0, 19)
+                              ? controller.updatedAt.substring(2, 19)
                               : '',
                           style: TextStyle(
                               fontWeight: FontWeight.w500,
