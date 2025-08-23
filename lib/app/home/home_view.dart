@@ -116,8 +116,7 @@ class HomeView extends GetView<HomeController> {
                         child: controller.useLocalBackground
                             ? Image.file(
                                 File(controller.backgroundImage),
-                                width: double.infinity,
-                                fit: BoxFit.fitWidth,
+                                fit: BoxFit.cover,
                               )
                             : CachedNetworkImage(
                                 imageUrl:
@@ -125,7 +124,11 @@ class HomeView extends GetView<HomeController> {
                                 placeholder: (context, url) => const Center(
                                     child: CircularProgressIndicator()),
                                 errorWidget: (context, url, error) =>
-                                    Image.asset('assets/images/background.png'),
+                                    Image.asset(
+                                  'assets/images/background.png',
+                                  fit: BoxFit.cover,
+                                ),
+                                fit: BoxFit.cover,
                               ),
                       );
                     }),
