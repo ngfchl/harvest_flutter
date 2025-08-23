@@ -37,6 +37,8 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   bool isSmallHorizontalScreen = false; // 是否是竖屏
   UpdateLogState? updateLogState;
   AuthPeriod? authInfo;
+  String backgroundImage = '';
+  bool useLocalBackground = false;
 
   // final mySiteController = Get.put(MySiteController());
 
@@ -98,6 +100,13 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     Logger.instance.d('HomeController onInit');
     try {
       isDarkMode = Get.isDarkMode;
+      useLocalBackground = SPUtil.getBool('useLocalBackground') ?? false;
+      if (useLocalBackground) {
+        backgroundImage = SPUtil.getString('backgroundImage') ??
+            'https://images.weserv.nl/?url=https://cci1.yiimii.com/uploads/2023/11/20231114005921427.jpg';
+        Logger.instance.d('背景图：$backgroundImage');
+      }
+
       initDio();
       userinfo = AuthInfo.fromJson(SPUtil.getLocalStorage('userinfo'));
       initMenus();

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:app_service/app_service.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +33,7 @@ class HomeView extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
+    String cacheServer = 'https://images.weserv.nl/?url=';
     return GetBuilder<HomeController>(builder: (controller) {
       return PopScope(
         canPop: false,
@@ -105,31 +107,55 @@ class HomeView extends GetView<HomeController> {
             ],
           ),
           body: GetBuilder<HomeController>(builder: (controller) {
-            return Row(
-              mainAxisSize: MainAxisSize.min,
+            return Stack(
               children: [
-                if (!controller.isPortrait)
-                  controller.isSmallHorizontalScreen
-                      ? SizedBox(
-                          width: 120,
-                          // height: double.infinity,
-                          child: _buildMenuBar(context),
-                        )
-                      : CustomCard(
-                          width: 200,
-                          // height: double.infinity,
-                          child: _buildMenuBar(context),
-                        ),
-                Expanded(
-                    child: PageView(
-                  controller: controller.pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  onPageChanged: (index) {
-                    // controller.initPage.value = index;
-                    // controller.update();
-                  },
-                  children: controller.pages,
-                ))
+                GetBuilder<HomeController>(
+                    id: 'home_view_background_image',
+                    builder: (controller) {
+                      return Positioned.fill(
+                        child: controller.useLocalBackground
+                            ? Image.file(
+                                File(controller.backgroundImage),
+                                width: double.infinity,
+                                fit: BoxFit.fitWidth,
+                              )
+                            : CachedNetworkImage(
+                                imageUrl:
+                                    '$cacheServer${controller.backgroundImage}',
+                                placeholder: (context, url) => const Center(
+                                    child: CircularProgressIndicator()),
+                                errorWidget: (context, url, error) =>
+                                    Image.asset('assets/images/background.png'),
+                              ),
+                      );
+                    }),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!controller.isPortrait)
+                      controller.isSmallHorizontalScreen
+                          ? SizedBox(
+                              width: 120,
+                              // height: double.infinity,
+                              child: _buildMenuBar(context),
+                            )
+                          : CustomCard(
+                              width: 200,
+                              // height: double.infinity,
+                              child: _buildMenuBar(context),
+                            ),
+                    Expanded(
+                        child: PageView(
+                      controller: controller.pageController,
+                      physics: const NeverScrollableScrollPhysics(),
+                      onPageChanged: (index) {
+                        // controller.initPage.value = index;
+                        // controller.update();
+                      },
+                      children: controller.pages,
+                    ))
+                  ],
+                ),
               ],
             );
           }),
