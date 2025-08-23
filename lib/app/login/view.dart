@@ -377,6 +377,9 @@ class _LoginPageState extends State<LoginPage> {
                       maxLines: 1,
                       decoration: InputDecoration(
                         labelText: '密码',
+                        focusColor: Colors.transparent,
+                        hoverColor: Colors.transparent,
+                        fillColor: Colors.transparent,
                         labelStyle: const TextStyle(
                             fontSize: 12, color: Colors.black54),
                         contentPadding:
