@@ -22,8 +22,9 @@ class SwitchTile extends StatelessWidget {
     return ListTile(
       title: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 14,
+          color: Theme.of(context).colorScheme.primary,
         ),
       ),
       trailing: Transform.scale(
@@ -85,7 +86,8 @@ class CustomTextField extends StatelessWidget {
         readOnly: readOnly,
         inputFormatters: inputFormatters,
         scrollPhysics: const NeverScrollableScrollPhysics(),
-        style: const TextStyle(fontSize: 13),
+        style: TextStyle(
+            fontSize: 13, color: Theme.of(context).colorScheme.primary),
         decoration: InputDecoration(
           labelText: labelText,
           labelStyle: const TextStyle(fontSize: 12),
@@ -103,9 +105,12 @@ class CustomTextField extends StatelessWidget {
           prefixText: prefixText,
           prefixIcon: prefixIcon,
           suffixText: suffixText,
-          helperStyle: const TextStyle(fontSize: 12),
-          prefixStyle: const TextStyle(fontSize: 12),
-          suffixStyle: const TextStyle(fontSize: 12),
+          helperStyle: TextStyle(
+              fontSize: 12, color: Theme.of(context).colorScheme.primary),
+          prefixStyle: TextStyle(
+              fontSize: 12, color: Theme.of(context).colorScheme.primary),
+          suffixStyle: TextStyle(
+              fontSize: 12, color: Theme.of(context).colorScheme.primary),
         ),
       ),
     );
