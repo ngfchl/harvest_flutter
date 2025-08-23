@@ -102,6 +102,7 @@ class _MySitePagePageState extends State<MySitePage>
                                         const NeverScrollableScrollPhysics(),
                                     // 禁止滚动
                                     maxLines: 1,
+
                                     inputFormatters: [
                                       LengthLimitingTextInputFormatter(20),
                                     ],
@@ -111,15 +112,22 @@ class _MySitePagePageState extends State<MySitePage>
                                     decoration: InputDecoration(
                                       // labelText: '搜索',
                                       isDense: true,
+                                      fillColor: Colors.transparent,
+
+                                      hoverColor: Colors.transparent,
+                                      focusColor: Colors.transparent,
                                       hintText: '输入关键词...',
                                       labelStyle: const TextStyle(fontSize: 12),
                                       hintStyle: const TextStyle(fontSize: 12),
                                       contentPadding:
                                           const EdgeInsets.symmetric(
                                               vertical: 8, horizontal: 5),
-                                      prefixIcon: const Icon(
+                                      prefixIcon: Icon(
                                         Icons.search,
                                         size: 14,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
                                       ),
                                       // suffix: ,
                                       suffixIcon: Padding(
@@ -229,6 +237,8 @@ class _MySitePagePageState extends State<MySitePage>
                                   Icon(
                                     Icons.filter_tilt_shift,
                                     size: 18,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
                                   ),
                                   SizedBox(width: 3),
                                   Text(
@@ -236,7 +246,11 @@ class _MySitePagePageState extends State<MySitePage>
                                         .firstWhere((item) =>
                                             item.value == controller.filterKey)
                                         .name,
-                                    style: TextStyle(fontSize: 14),
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -257,6 +271,8 @@ class _MySitePagePageState extends State<MySitePage>
                                   Icon(
                                     Icons.sort_by_alpha_outlined,
                                     size: 18,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
                                   ),
                                   SizedBox(width: 3),
                                   Text(
@@ -264,7 +280,11 @@ class _MySitePagePageState extends State<MySitePage>
                                         .firstWhere((item) =>
                                             item.value == controller.sortKey)
                                         .name,
-                                    style: TextStyle(fontSize: 14),
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -285,23 +305,39 @@ class _MySitePagePageState extends State<MySitePage>
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   controller.sortReversed
-                                      ? const Icon(
+                                      ? Icon(
                                           Icons.sim_card_download_sharp,
                                           size: 18,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
                                         )
-                                      : const Icon(
+                                      : Icon(
                                           Icons.upload_file_sharp,
                                           size: 18,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
                                         ),
                                   SizedBox(width: 3),
                                   controller.sortReversed
-                                      ? const Text(
+                                      ? Text(
                                           '正序',
-                                          style: TextStyle(fontSize: 14),
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary,
+                                          ),
                                         )
-                                      : const Text(
+                                      : Text(
                                           '倒序',
-                                          style: TextStyle(fontSize: 14),
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary,
+                                          ),
                                         ),
                                 ],
                               ),
@@ -366,13 +402,19 @@ class _MySitePagePageState extends State<MySitePage>
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.tag,
                                     size: 18,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
                                   ),
                                   Text(
                                     '【${controller.selectTag}】',
-                                    style: TextStyle(fontSize: 14),
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                    ),
                                   )
                                 ],
                               ),
@@ -469,34 +511,6 @@ class _MySitePagePageState extends State<MySitePage>
             spacing: 15,
             children: [
               ElevatedButton.icon(
-                onPressed: () async {
-                  Get.back();
-                  Future.microtask(() async {
-                    Logger.instance.i('开始从数据库加载数据...');
-                    controller.loadingFromServer = true;
-                    controller.update(); // UI 更新
-                    // 模拟后台获取数据
-                    await controller.getWebSiteListFromServer();
-                    await controller.getSiteStatusFromServer();
-                    controller.loadingFromServer = false;
-                    Logger.instance.i('从数据库加载数据完成！');
-                    controller.update(); // UI 更新
-                  });
-                },
-                icon: const Icon(
-                  Icons.cloud_download_outlined,
-                  size: 20,
-                ),
-                style: ButtonStyle(
-                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5.0)),
-                  ),
-                  side: WidgetStateProperty.all(BorderSide.none),
-                ),
-                label: const Text('加载'),
-              ),
-              ElevatedButton.icon(
                 onPressed: () {
                   Get.back();
                   _showFilterBottomSheet();
@@ -575,6 +589,34 @@ class _MySitePagePageState extends State<MySitePage>
                   side: WidgetStateProperty.all(BorderSide.none),
                 ),
                 label: const Text('添加'),
+              ),
+              ElevatedButton.icon(
+                onPressed: () async {
+                  Get.back();
+                  Future.microtask(() async {
+                    Logger.instance.i('开始从数据库加载数据...');
+                    controller.loadingFromServer = true;
+                    controller.update(); // UI 更新
+                    // 模拟后台获取数据
+                    await controller.getWebSiteListFromServer();
+                    await controller.getSiteStatusFromServer();
+                    controller.loadingFromServer = false;
+                    Logger.instance.i('从数据库加载数据完成！');
+                    controller.update(); // UI 更新
+                  });
+                },
+                icon: const Icon(
+                  Icons.cloud_download_outlined,
+                  size: 20,
+                ),
+                style: ButtonStyle(
+                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5.0)),
+                  ),
+                  side: WidgetStateProperty.all(BorderSide.none),
+                ),
+                label: const Text('加载'),
               ),
             ],
           ),

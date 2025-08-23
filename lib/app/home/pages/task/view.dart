@@ -37,6 +37,7 @@ class TaskPage extends StatelessWidget {
               Scaffold(
                 backgroundColor: Colors.transparent,
                 appBar: AppBar(
+                  backgroundColor: Colors.transparent,
                   actions: [
                     IconButton(
                       icon: const Icon(Icons.refresh, size: 20),

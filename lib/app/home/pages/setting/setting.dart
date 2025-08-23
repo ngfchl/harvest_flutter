@@ -39,7 +39,7 @@ class SettingPage extends StatelessWidget {
             child: ListView(
               children: [
                 _versionCard(context),
-                _followSystemDarkForm(),
+                _followSystemDarkForm(context),
                 _noticeTestForm(context),
                 _telegramWebHookForm(context),
                 _backgroundImageForm(context),
@@ -96,9 +96,14 @@ class SettingPage extends StatelessWidget {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Version'),
             Text(
-                '${controller.packageInfo.version}+${controller.packageInfo.buildNumber}'),
+              'Version',
+              style: TextStyle(color: Theme.of(context).colorScheme.primary),
+            ),
+            Text(
+              '${controller.packageInfo.version}+${controller.packageInfo.buildNumber}',
+              style: TextStyle(color: Theme.of(context).colorScheme.primary),
+            ),
           ],
         ),
         onTap: () async {
@@ -115,11 +120,14 @@ class SettingPage extends StatelessWidget {
               applicationVersion: controller.packageInfo.version,
               applicationName: controller.packageInfo.appName,
               applicationLegalese: controller.applicationLegalese,
-              children: const [
+              children: [
                 Padding(
                   padding: EdgeInsets.all(8),
                   child: Text(
-                      'Harvest 本义收割,收获，本软件致力于让你更轻松的玩转国内 PT 站点，与收割机有异曲同工之妙，故此得名。'),
+                    'Harvest 本义收割,收获，本软件致力于让你更轻松的玩转国内 PT 站点，与收割机有异曲同工之妙，故此得名。',
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.primary),
+                  ),
                 )
               ],
             ),
@@ -129,7 +137,7 @@ class SettingPage extends StatelessWidget {
     );
   }
 
-  _followSystemDarkForm() {
+  _followSystemDarkForm(context) {
     final appService = Get.find<AppService>();
     return Obx(() {
       return CustomCard(
@@ -137,7 +145,10 @@ class SettingPage extends StatelessWidget {
         child: ListTile(
           dense: true,
           contentPadding: EdgeInsets.zero,
-          title: const Text('跟随系统'),
+          title: Text(
+            '跟随系统',
+            style: TextStyle(color: Theme.of(context).colorScheme.primary),
+          ),
           leading: IconButton(
               icon: appService.followSystem.value
                   ? const Icon(Icons.brightness_auto_outlined)
@@ -172,7 +183,10 @@ class SettingPage extends StatelessWidget {
             ListTile(
               dense: true,
               contentPadding: EdgeInsets.zero,
-              title: const Text('自动添加标签'),
+              title: Text(
+                '自动添加标签',
+                style: TextStyle(color: Theme.of(context).colorScheme.primary),
+              ),
               leading: IconButton(
                 icon: repeat.value
                     ? const Icon(
@@ -187,7 +201,10 @@ class SettingPage extends StatelessWidget {
                   option?.isActive = !option!.isActive;
                 },
               ),
-              subtitle: const Text('站点未设置标签时是否自动添加配置文件中的标签'),
+              subtitle: Text(
+                '站点未设置标签时是否自动添加配置文件中的标签',
+                style: TextStyle(color: Theme.of(context).colorScheme.primary),
+              ),
               trailing: ExpandIcon(
                 isExpanded: isEdit.value,
                 onPressed: (value) {
@@ -204,7 +221,11 @@ class SettingPage extends StatelessWidget {
                     SwitchListTile(
                         dense: true,
                         contentPadding: EdgeInsets.zero,
-                        title: const Text('自动添加标签'),
+                        title: Text(
+                          '自动添加标签',
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary),
+                        ),
                         value: repeat.value,
                         onChanged: (bool v) async {
                           repeat.value = v;
@@ -256,10 +277,14 @@ class SettingPage extends StatelessWidget {
         CustomCard(
           child: Column(
             children: [
-              const Center(
+              Center(
                 child: Padding(
                   padding: EdgeInsets.all(12.0),
-                  child: Text('请选择配置项'),
+                  child: Text(
+                    '请选择配置项',
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.primary),
+                  ),
                 ),
               ),
               Expanded(
@@ -273,7 +298,14 @@ class SettingPage extends StatelessWidget {
                               child: ListTile(
                                   dense: true,
                                   contentPadding: EdgeInsets.zero,
-                                  title: Center(child: Text(choice.name)),
+                                  title: Center(
+                                      child: Text(
+                                    choice.name,
+                                    style: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary),
+                                  )),
                                   hoverColor: Colors.teal,
                                   focusColor: Colors.teal,
                                   splashColor: Colors.teal,
@@ -353,7 +385,11 @@ class SettingPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
-                title: const Text('聚合搜索配置'),
+                title: Text(
+                  '聚合搜索配置',
+                  style:
+                      TextStyle(color: Theme.of(context).colorScheme.primary),
+                ),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
@@ -465,7 +501,11 @@ class SettingPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
-                title: const Text('TMDB配置'),
+                title: Text(
+                  'TMDB配置',
+                  style:
+                      TextStyle(color: Theme.of(context).colorScheme.primary),
+                ),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
@@ -503,7 +543,11 @@ class SettingPage extends StatelessWidget {
                         dense: true,
                         contentPadding:
                             const EdgeInsets.symmetric(horizontal: 8),
-                        title: const Text('TMDB开关'),
+                        title: Text(
+                          'TMDB开关',
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary),
+                        ),
                         value: isActive.value,
                         onChanged: (value) {
                           isActive.value = value;
@@ -595,7 +639,10 @@ class SettingPage extends StatelessWidget {
         child:
             Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
           ListTile(
-              title: const Text('通知开关'),
+              title: Text(
+                '通知开关',
+                style: TextStyle(color: Theme.of(context).colorScheme.primary),
+              ),
               dense: true,
               contentPadding: EdgeInsets.zero,
               leading: option != null
@@ -629,7 +676,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('阿里云'),
+                              title: Text(
+                                '阿里云盘',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: aliyundriveNotice.value!,
                               onChanged: (value) {
                                 aliyundriveNotice.value = value;
@@ -638,7 +690,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('站点数据'),
+                              title: Text(
+                                '站点数据',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: siteData.value!,
                               onChanged: (value) {
                                 siteData.value = value;
@@ -647,7 +704,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('成功站点消息'),
+                              title: Text(
+                                '成功站点消息',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: siteDataSuccess.value!,
                               onChanged: (value) {
                                 siteDataSuccess.value = value;
@@ -656,7 +718,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('今日数据'),
+                              title: Text(
+                                '今日数据',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: todayData.value!,
                               onChanged: (value) {
                                 todayData.value = value;
@@ -665,7 +732,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('拆包'),
+                              title: Text(
+                                '拆包',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: packageTorrent.value!,
                               onChanged: (value) {
                                 packageTorrent.value = value;
@@ -674,7 +746,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('删种'),
+                              title: Text(
+                                '删种',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: deleteTorrent.value!,
                               onChanged: (value) {
                                 deleteTorrent.value = value;
@@ -683,7 +760,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('RSS'),
+                              title: Text(
+                                'RSS',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: rssTorrent.value!,
                               onChanged: (value) {
                                 rssTorrent.value = value;
@@ -692,7 +774,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('种子推送'),
+                              title: Text(
+                                '种子推送',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: pushTorrent.value!,
                               onChanged: (value) {
                                 pushTorrent.value = value;
@@ -701,7 +788,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('Docker 升级'),
+                              title: Text(
+                                'Docker 升级',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: programUpgrade.value!,
                               onChanged: (value) {
                                 programUpgrade.value = value;
@@ -710,7 +802,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('PTPP 导入'),
+                              title: Text(
+                                'PTPP 导入',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: ptppImport.value!,
                               onChanged: (value) {
                                 ptppImport.value = value;
@@ -719,7 +816,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('公告详情'),
+                              title: Text(
+                                '公告详情',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: announcement.value!,
                               onChanged: (value) {
                                 announcement.value = value;
@@ -728,7 +830,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('短消息详情'),
+                              title: Text(
+                                '短消息详情',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: message.value!,
                               onChanged: (value) {
                                 message.value = value;
@@ -737,7 +844,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('签到成功消息'),
+                              title: Text(
+                                '签到成功消息',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: signInSuccess.value!,
                               onChanged: (value) {
                                 signInSuccess.value = value;
@@ -746,7 +858,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('CookieCloud 同步'),
+                              title: Text(
+                                'CookieCloud 同步',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: cookieSync.value!,
                               onChanged: (value) {
                                 cookieSync.value = value;
@@ -848,7 +965,10 @@ class SettingPage extends StatelessWidget {
         child:
             Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
           ListTile(
-              title: const Text('站点详情'),
+              title: Text(
+                '站点详情',
+                style: TextStyle(color: Theme.of(context).colorScheme.primary),
+              ),
               dense: true,
               contentPadding: EdgeInsets.zero,
               leading: option != null
@@ -882,7 +1002,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('等级'),
+                              title: Text(
+                                '等级',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: level.value!,
                               onChanged: (value) {
                                 level.value = value;
@@ -891,7 +1016,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('魔力'),
+                              title: Text(
+                                '魔力',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: bonus.value!,
                               onChanged: (value) {
                                 bonus.value = value;
@@ -900,7 +1030,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('时魔'),
+                              title: Text(
+                                '时魔',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: perBonus.value!,
                               onChanged: (value) {
                                 perBonus.value = value;
@@ -909,7 +1044,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('积分'),
+                              title: Text(
+                                '积分',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: score.value!,
                               onChanged: (value) {
                                 score.value = value;
@@ -918,7 +1058,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('分享率'),
+                              title: Text(
+                                '分享率',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: ratio.value!,
                               onChanged: (value) {
                                 ratio.value = value;
@@ -927,7 +1072,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('做种体积'),
+                              title: Text(
+                                '做种体积',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: seedingVol.value!,
                               onChanged: (value) {
                                 seedingVol.value = value;
@@ -936,7 +1086,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('上传量'),
+                              title: Text(
+                                '上传量',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: uploaded.value!,
                               onChanged: (value) {
                                 uploaded.value = value;
@@ -945,7 +1100,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('下载量'),
+                              title: Text(
+                                '下载量',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: downloaded.value!,
                               onChanged: (value) {
                                 downloaded.value = value;
@@ -954,7 +1114,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('做种数量'),
+                              title: Text(
+                                '做种数量',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: seeding.value!,
                               onChanged: (value) {
                                 seeding.value = value;
@@ -963,7 +1128,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('吸血数量'),
+                              title: Text(
+                                '吸血数量',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: leeching.value!,
                               onChanged: (value) {
                                 leeching.value = value;
@@ -972,7 +1142,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('邀请'),
+                              title: Text(
+                                '邀请',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: invite.value!,
                               onChanged: (value) {
                                 invite.value = value;
@@ -981,7 +1156,12 @@ class SettingPage extends StatelessWidget {
                               dense: true,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text('HR'),
+                              title: Text(
+                                'HR',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
                               value: hr.value!,
                               onChanged: (value) {
                                 hr.value = value;
@@ -1067,7 +1247,11 @@ class SettingPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
-                title: const Text('安全 Token'),
+                title: Text(
+                  '安全 Token',
+                  style:
+                      TextStyle(color: Theme.of(context).colorScheme.primary),
+                ),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
@@ -1182,7 +1366,11 @@ class SettingPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
-                title: const Text('企业微信'),
+                title: Text(
+                  '企业微信',
+                  style:
+                      TextStyle(color: Theme.of(context).colorScheme.primary),
+                ),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
@@ -1303,7 +1491,11 @@ class SettingPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
-                title: const Text('FileList'),
+                title: Text(
+                  'FileList',
+                  style:
+                      TextStyle(color: Theme.of(context).colorScheme.primary),
+                ),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
@@ -1398,7 +1590,11 @@ class SettingPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
-                title: const Text('通知测试'),
+                title: Text(
+                  '通知测试',
+                  style:
+                      TextStyle(color: Theme.of(context).colorScheme.primary),
+                ),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: const IconButton(
@@ -1479,7 +1675,11 @@ class SettingPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
-                title: const Text('爱语飞飞'),
+                title: Text(
+                  '爱语飞飞',
+                  style:
+                      TextStyle(color: Theme.of(context).colorScheme.primary),
+                ),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
@@ -1512,7 +1712,11 @@ class SettingPage extends StatelessWidget {
                         dense: true,
                         contentPadding:
                             const EdgeInsets.symmetric(horizontal: 8),
-                        title: const Text('辅种开关'),
+                        title: Text(
+                          '辅种开关',
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary),
+                        ),
                         value: repeat.value,
                         onChanged: (value) {
                           repeat.value = value;
@@ -1587,7 +1791,11 @@ class SettingPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
-                title: const Text('PushDeer'),
+                title: Text(
+                  'PushDeer',
+                  style:
+                      TextStyle(color: Theme.of(context).colorScheme.primary),
+                ),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
@@ -1683,7 +1891,11 @@ class SettingPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
-                title: const Text('阿里云盘'),
+                title: Text(
+                  '阿里云盘',
+                  style:
+                      TextStyle(color: Theme.of(context).colorScheme.primary),
+                ),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
@@ -1717,7 +1929,11 @@ class SettingPage extends StatelessWidget {
                         dense: true,
                         contentPadding:
                             const EdgeInsets.symmetric(horizontal: 8),
-                        title: const Text('领取福利'),
+                        title: Text(
+                          '领取福利',
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary),
+                        ),
                         value: welfare.value,
                         onChanged: (value) {
                           welfare.value = value;
@@ -1790,7 +2006,11 @@ class SettingPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
-                title: const Text('SSDForum'),
+                title: Text(
+                  'SSDForum',
+                  style:
+                      TextStyle(color: Theme.of(context).colorScheme.primary),
+                ),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
@@ -1899,7 +2119,11 @@ class SettingPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
-                title: const Text('百度 OCR'),
+                title: Text(
+                  '百度 OCR',
+                  style:
+                      TextStyle(color: Theme.of(context).colorScheme.primary),
+                ),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
@@ -2000,7 +2224,11 @@ class SettingPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
-                title: const Text('Bark'),
+                title: Text(
+                  'Bark',
+                  style:
+                      TextStyle(color: Theme.of(context).colorScheme.primary),
+                ),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
@@ -2097,7 +2325,11 @@ class SettingPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
-                title: const Text("Telegram Webhook"),
+                title: Text(
+                  "Telegram Webhook",
+                  style:
+                      TextStyle(color: Theme.of(context).colorScheme.primary),
+                ),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: IconButton(
@@ -2160,7 +2392,11 @@ class SettingPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               ListTile(
-                  title: const Text("APP背景图片"),
+                  title: Text(
+                    "APP背景图片",
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.primary),
+                  ),
                   dense: true,
                   contentPadding: EdgeInsets.zero,
                   leading: IconButton(
@@ -2242,11 +2478,13 @@ class SettingPage extends StatelessWidget {
                       Obx(() {
                         if (baseUrl.value.isNotEmpty) {
                           return useLocalBackground.value
-                              ? Image.file(
-                                  File(baseUrl.value),
-                                  width: double.infinity,
-                                  fit: BoxFit.fitWidth,
-                                )
+                              ? baseUrl.value.startsWith('http')
+                                  ? SizedBox.shrink()
+                                  : Image.file(
+                                      File(baseUrl.value),
+                                      width: double.infinity,
+                                      fit: BoxFit.fitWidth,
+                                    )
                               : CachedNetworkImage(
                                   imageUrl:
                                       'https://images.weserv.nl/?url=${baseUrl.value}',
@@ -2314,7 +2552,11 @@ class SettingPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
-                title: const Text('PushPlus'),
+                title: Text(
+                  'PushPlus',
+                  style:
+                      TextStyle(color: Theme.of(context).colorScheme.primary),
+                ),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
@@ -2411,7 +2653,11 @@ class SettingPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
-                title: const Text('WxPusher'),
+                title: Text(
+                  'WxPusher',
+                  style:
+                      TextStyle(color: Theme.of(context).colorScheme.primary),
+                ),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
@@ -2514,7 +2760,11 @@ class SettingPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
-                title: const Text('Telegram'),
+                title: Text(
+                  'Telegram配置',
+                  style:
+                      TextStyle(color: Theme.of(context).colorScheme.primary),
+                ),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
@@ -2618,7 +2868,11 @@ class SettingPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ListTile(
-                title: const Text('CookieCloud'),
+                title: Text(
+                  'CookieCloud',
+                  style:
+                      TextStyle(color: Theme.of(context).colorScheme.primary),
+                ),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: option != null
