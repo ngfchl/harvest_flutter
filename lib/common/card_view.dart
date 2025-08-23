@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../utils/storage.dart';
+
 class CustomCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry margin;
@@ -33,6 +35,7 @@ class CustomCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double opacity = SPUtil.getDouble('cardOpacity') ?? 0.7;
     return Container(
       height: height,
       width: width,
@@ -41,7 +44,8 @@ class CustomCard extends StatelessWidget {
       constraints: BoxConstraints(
           minWidth: 100, maxHeight: maxHeight ?? double.infinity),
       decoration: BoxDecoration(
-        color: color ?? Theme.of(context).colorScheme.surface.withOpacity(0.7),
+        color:
+            color ?? Theme.of(context).colorScheme.surface.withOpacity(opacity),
         borderRadius: borderRadius,
         boxShadow: boxShadow,
       ),
