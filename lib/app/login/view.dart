@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:app_service/app_service.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -42,7 +45,7 @@ class _LoginPageState extends State<LoginPage> {
       return InkWell(
         onTap: () async {
           if (!server.selected) {
-            controller.selectServer(server,shouldSave: true);
+            controller.selectServer(server, shouldSave: true);
           }
         },
         onDoubleTap: () async {
@@ -174,8 +177,10 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    String cacheServer = 'https://images.weserv.nl/?url=';
     return GetBuilder<LoginController>(builder: (controller) {
       return Scaffold(
+        backgroundColor: Colors.transparent,
         appBar: AppBar(
           title: const Text('服务器列表'),
           actions: [
@@ -235,6 +240,27 @@ class _LoginPageState extends State<LoginPage> {
           child: Stack(
             alignment: Alignment.center,
             children: [
+              GetBuilder<LoginController>(
+                  id: 'login_view_background_image',
+                  builder: (controller) {
+                    return Positioned.fill(
+                      child: controller.useLocalBackground
+                          ? Image.file(
+                              File(controller.backgroundImage),
+                              fit: BoxFit.cover,
+                            )
+                          : CachedNetworkImage(
+                              imageUrl:
+                                  '$cacheServer${controller.backgroundImage}',
+                              placeholder: (context, url) => const Center(
+                                  child: CircularProgressIndicator()),
+                              errorWidget: (context, url, error) => Image.asset(
+                                  'assets/images/background.png',
+                                  fit: BoxFit.cover),
+                              fit: BoxFit.cover,
+                            ),
+                    );
+                  }),
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [

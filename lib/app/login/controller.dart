@@ -20,10 +20,18 @@ class LoginController extends GetxController {
   bool showPassword = true;
   bool switchServerLoading = false;
   DioUtil dioUtil = DioUtil();
+  String backgroundImage = '';
+  bool useLocalBackground = false;
 
   @override
   void onInit() async {
     Logger.instance.i('初始化登录页面');
+    useLocalBackground = SPUtil.getBool('useLocalBackground') ?? false;
+    if (useLocalBackground) {
+      backgroundImage = SPUtil.getString('backgroundImage') ??
+          'https://images.weserv.nl/?url=https://cci1.yiimii.com/uploads/2023/11/20231114005921427.jpg';
+      Logger.instance.d('背景图：$backgroundImage');
+    }
     await serverRepository.init();
     Logger.instance.i(serverRepository.serverList);
     initServerList();
