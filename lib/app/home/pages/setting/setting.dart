@@ -2378,6 +2378,8 @@ class SettingPage extends StatelessWidget {
 
   Widget _backgroundImageForm(context) {
     RxString? baseUrl = (SPUtil.getString('backgroundImage') ?? '').obs;
+    RxDouble? opacity =
+        (SPUtil.getDouble('cardOpacity', defaultValue: 0.7) ?? 0.7).obs;
     RxBool useLocalBackground =
         (SPUtil.getBool('useLocalBackground') ?? false).obs;
     TextEditingController urlController = TextEditingController(
@@ -2418,6 +2420,31 @@ class SettingPage extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
                     children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16.0),
+                        child: Row(
+                          children: [
+                            Text(
+                              '卡片透明度',
+                              style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary),
+                            ),
+                            Expanded(
+                              child: Slider(
+                                  min: 0.1,
+                                  max: 1,
+                                  divisions: 10,
+                                  label: opacity.value.toString(),
+                                  value: opacity.value,
+                                  onChanged: (value) async {
+                                    opacity.value = value;
+                                    SPUtil.setDouble(
+                                        'cardOpacity', opacity.value);
+                                  }),
+                            ),
+                          ],
+                        ),
+                      ),
                       SwitchTile(
                         title: '使用本地背景图片',
                         value: useLocalBackground.value,
