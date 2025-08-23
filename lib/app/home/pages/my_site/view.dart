@@ -55,6 +55,7 @@ class _MySitePagePageState extends State<MySitePage>
       return SafeArea(
         bottom: false,
         child: Scaffold(
+          backgroundColor: Colors.transparent,
           body: EasyRefresh(
             onRefresh: () async {
               controller.initFlag = false;

@@ -22,6 +22,7 @@ class SshWidget extends StatelessWidget {
 
     return GetBuilder<SshController>(builder: (controller) {
       return Scaffold(
+        backgroundColor: Colors.transparent,
         body: controller.connected
             ? Column(
                 children: [
@@ -152,62 +153,36 @@ class SshWidget extends StatelessWidget {
                       '本功能仅支持使用 root 账户登录或者不使用 root账户可以直接操作的设备。已知不可用设备：群晖、极空间，',
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: TextField(
-                      controller: controller.hostController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: '请输入服务器地址',
-                      ),
-                    ),
+                  CustomTextField(
+                    controller: controller.hostController,
+                    labelText: '请输入服务器地址',
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: TextField(
-                      controller: controller.portController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: '请输入 SSH 端口',
-                      ),
-                    ),
+                  CustomTextField(
+                    controller: controller.portController,
+                    labelText: '请输入 SSH 端口',
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: TextField(
-                      controller: controller.usernameController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: '请输入账号',
-                      ),
-                    ),
+                  CustomTextField(
+                    controller: controller.usernameController,
+                    labelText: '请输入账号',
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: TextField(
-                      controller: controller.passwordController,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: '请输入密码',
-                      ),
-                    ),
+                  CustomTextField(
+                    controller: controller.passwordController,
+                    labelText: '请输入密码',
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: TextField(
-                      controller: controller.proxyController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: '默认代理',
-                      ),
-                    ),
+                  CustomTextField(
+                    controller: controller.proxyController,
+                    labelText: '默认代理',
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: SwitchListTile(
                         title: const Text('记住密码'),
                         value: controller.remember,
+                        selectedTileColor:
+                            Theme.of(context).colorScheme.primary,
+                        inactiveTrackColor: Colors.transparent,
+                        inactiveThumbColor:
+                            Theme.of(context).colorScheme.primary,
                         onChanged: (bool value) {
                           controller.remember = value;
                           controller.update();

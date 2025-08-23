@@ -53,6 +53,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
   Widget _showLoggingDialog(BuildContext context) {
     return GetBuilder<WebSocketLoggingController>(builder: (controller) {
       return Scaffold(
+        backgroundColor: Colors.transparent,
         appBar: AppBar(
           title: const Text("实时访问日志"),
           actions: [

@@ -28,12 +28,14 @@ class TaskPage extends StatelessWidget {
     return DefaultTabController(
       length: tabs.length,
       child: Scaffold(
+        backgroundColor: Colors.transparent,
         bottomNavigationBar: TabBar(tabs: tabs),
         body: GetBuilder<TaskController>(builder: (controller) {
           return TabBarView(
             physics: const BouncingScrollPhysics(),
             children: [
               Scaffold(
+                backgroundColor: Colors.transparent,
                 appBar: AppBar(
                   actions: [
                     IconButton(

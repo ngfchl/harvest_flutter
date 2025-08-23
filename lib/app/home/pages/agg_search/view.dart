@@ -65,6 +65,7 @@ class _AggSearchPageState extends State<AggSearchPage>
             length: controller.tabs.length,
             child: SafeArea(
               child: Scaffold(
+                backgroundColor: Colors.transparent,
                 floatingActionButtonLocation:
                     FloatingActionButtonLocation.centerDocked,
                 floatingActionButton: controller.searchResults.isNotEmpty &&
@@ -94,6 +95,9 @@ class _AggSearchPageState extends State<AggSearchPage>
                                     hintStyle: const TextStyle(fontSize: 14),
                                     contentPadding: const EdgeInsets.symmetric(
                                         vertical: 8, horizontal: 5),
+                                    fillColor: Colors.transparent,
+                                    focusColor: Colors.transparent,
+                                    hoverColor: Colors.transparent,
                                     border: OutlineInputBorder(
                                       borderSide: BorderSide.none,
                                       // 不绘制边框

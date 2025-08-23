@@ -27,6 +27,7 @@ class LoggingPage extends StatelessWidget {
       return DefaultTabController(
         length: tabs.length,
         child: Scaffold(
+          backgroundColor: Colors.transparent,
           bottomNavigationBar: TabBar(tabs: tabs),
           body: TabBarView(
             physics: const NeverScrollableScrollPhysics(),
@@ -35,6 +36,7 @@ class LoggingPage extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Scaffold(
+                      backgroundColor: Colors.transparent,
                       appBar: AppBar(
                         title: const Text('App日志'),
                         actions: [

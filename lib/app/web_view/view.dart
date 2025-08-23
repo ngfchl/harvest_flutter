@@ -68,6 +68,7 @@ class _WebViewPageState extends State<WebViewPage> {
         );
       },
       child: Scaffold(
+        backgroundColor: Colors.transparent,
         extendBody: true,
         appBar: AppBar(
           title: Text(

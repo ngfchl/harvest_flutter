@@ -57,6 +57,7 @@ class _DashBoardPageState extends State<DashBoardPage>
       return SafeArea(
         bottom: false,
         child: Scaffold(
+          backgroundColor: Colors.transparent,
           body: GetBuilder<DashBoardController>(builder: (controller) {
             return _showAllInfo();
           }),

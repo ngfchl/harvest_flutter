@@ -37,6 +37,7 @@ class _DouBanPageState extends State<DouBanPage>
       return DefaultTabController(
         length: tabs.length,
         child: Scaffold(
+          backgroundColor: Colors.transparent,
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerDocked,
           // floatingActionButton: _buildBottomButtonBar(),

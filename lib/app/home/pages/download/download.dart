@@ -53,6 +53,7 @@ class _DownloadPageState extends State<DownloadPage>
     super.build(context);
     return SafeArea(
       child: Scaffold(
+        backgroundColor: Colors.transparent,
         body: Column(
           children: [
             Expanded(
@@ -1300,6 +1301,7 @@ class _DownloadPageState extends State<DownloadPage>
             width: MediaQuery.of(context).size.width,
             child: SafeArea(
               child: Scaffold(
+                backgroundColor: Colors.transparent,
                 resizeToAvoidBottomInset: false,
                 appBar: AppBar(
                   title: Row(
@@ -1593,6 +1595,7 @@ class _DownloadPageState extends State<DownloadPage>
         height: 240,
         // width: 240,
         child: Scaffold(
+          backgroundColor: Colors.transparent,
           body: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -3122,6 +3125,7 @@ class _DownloadPageState extends State<DownloadPage>
           return DefaultTabController(
             length: tabs.length,
             child: Scaffold(
+              backgroundColor: Colors.transparent,
               appBar: AppBar(
                 title:
                     Text('配置选项[${downloader.prefs.webApiVersion.toString()}]'),
@@ -5535,6 +5539,7 @@ class _DownloadPageState extends State<DownloadPage>
           return DefaultTabController(
             length: tabs.length,
             child: Scaffold(
+              backgroundColor: Colors.transparent,
               appBar: AppBar(
                 title: const Text('配置选项'),
                 bottom: const TabBar(tabs: tabs, isScrollable: true),
@@ -6044,6 +6049,7 @@ class _DownloadPageState extends State<DownloadPage>
           return DefaultTabController(
             length: tabs.length,
             child: Scaffold(
+              backgroundColor: Colors.transparent,
               appBar: AppBar(
                 title: const Text('种子详情'),
                 bottom: const TabBar(tabs: tabs),
@@ -7023,6 +7029,7 @@ class _DownloadPageState extends State<DownloadPage>
           return DefaultTabController(
             length: tabs.length,
             child: Scaffold(
+              backgroundColor: Colors.transparent,
               appBar: AppBar(
                 title: const Text('种子详情'),
                 bottom: const TabBar(tabs: tabs),
@@ -8368,6 +8375,7 @@ class ShowTorrentWidget extends StatelessWidget {
           return DefaultTabController(
             length: tabs.length,
             child: Scaffold(
+              backgroundColor: Colors.transparent,
               appBar: AppBar(
                 title: const Text('种子详情'),
                 bottom: const TabBar(tabs: tabs),
@@ -9796,6 +9804,7 @@ class ShowTorrentWidget extends StatelessWidget {
           return DefaultTabController(
             length: tabs.length,
             child: Scaffold(
+              backgroundColor: Colors.transparent,
               appBar: AppBar(
                 title: const Text('种子详情'),
                 bottom: const TabBar(tabs: tabs),

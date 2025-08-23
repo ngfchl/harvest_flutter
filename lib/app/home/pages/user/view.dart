@@ -22,6 +22,7 @@ class UserWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: GetBuilder<UserController>(builder: (controller) {
         return controller.isLoading
             ? const Center(child: GFLoader())
