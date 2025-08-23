@@ -92,9 +92,10 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Padding(
+                Padding(
                   padding: EdgeInsets.all(8),
-                  child: Icon(Icons.computer, size: 32),
+                  child: Icon(Icons.computer,
+                      size: 32, color: Theme.of(context).colorScheme.primary),
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -104,7 +105,8 @@ class _LoginPageState extends State<LoginPage> {
                       child: Text(
                         server.name,
                         textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.titleSmall,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            color: Theme.of(context).colorScheme.primary),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -113,7 +115,8 @@ class _LoginPageState extends State<LoginPage> {
                       child: Text(
                         '${Uri.parse(server.entry).host}:${Uri.parse(server.entry).port}',
                         textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.labelSmall,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: Theme.of(context).colorScheme.primary),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -139,9 +142,13 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Padding(
+              Padding(
                 padding: EdgeInsets.all(8),
-                child: Icon(Icons.add_circle_outline, size: 32),
+                child: Icon(
+                  Icons.add_circle_outline,
+                  size: 32,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
               Column(
                 children: [
@@ -152,7 +159,11 @@ class _LoginPageState extends State<LoginPage> {
                         Text(
                           '添加服务器',
                           textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.titleSmall,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(
+                                  color: Theme.of(context).colorScheme.primary),
                         ),
                       ],
                     ),
@@ -182,7 +193,10 @@ class _LoginPageState extends State<LoginPage> {
       return Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
-          title: const Text('服务器列表'),
+          title: Text(
+            '服务器列表',
+            style: TextStyle(color: Theme.of(context).colorScheme.primary),
+          ),
           actions: [
             ...[
               IconButton(
@@ -214,7 +228,9 @@ class _LoginPageState extends State<LoginPage> {
                   )),
               const LoggingView(),
               const SizedBox(width: 15),
-              const DarkModeSwitch(),
+              DarkModeSwitch(
+                borderColor: Theme.of(context).colorScheme.primary,
+              ),
               const SizedBox(width: 15),
               const SizedBox(
                 height: 20,
@@ -244,7 +260,8 @@ class _LoginPageState extends State<LoginPage> {
                   id: 'login_view_background_image',
                   builder: (controller) {
                     return Positioned.fill(
-                      child: controller.useLocalBackground
+                      child: controller.useLocalBackground &&
+                              !controller.backgroundImage.startsWith('http')
                           ? Image.file(
                               File(controller.backgroundImage),
                               fit: BoxFit.cover,
@@ -273,21 +290,25 @@ class _LoginPageState extends State<LoginPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 36.0),
                     child: ElevatedButton.icon(
                       icon: controller.isLoading
-                          ? const Center(
+                          ? Center(
                               child: SizedBox(
                                   height: 18,
                                   width: 18,
                                   child: CircularProgressIndicator(
-                                      color: Colors.white70)),
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary)),
                             )
-                          : const Icon(Icons.link,
-                              size: 18, color: Colors.white70),
-                      label: const Text(
+                          : Icon(Icons.link,
+                              size: 18,
+                              color: Theme.of(context).colorScheme.primary),
+                      label: Text(
                         '连接服务器',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        backgroundColor: Theme.of(context).colorScheme.surface,
                         // 设置背景颜色为绿色
                         padding: const EdgeInsets.symmetric(horizontal: 40.0),
                         // 调整内边距使得按钮更宽
@@ -315,7 +336,16 @@ class _LoginPageState extends State<LoginPage> {
                                         : Theme.of(context).colorScheme.error,
                                   );
                                 });
+                              } else {
+                                Get.snackbar(
+                                  '登录失败',
+                                  res.msg,
+                                  colorText:
+                                      Theme.of(context).colorScheme.error,
+                                );
                               }
+                              controller.isLoading = false;
+                              controller.update();
                             }
                           : null,
                     ),
@@ -474,6 +504,8 @@ class _LoginPageState extends State<LoginPage> {
                               Get.snackbar('测试失败', flag.msg,
                                   colorText:
                                       Theme.of(context).colorScheme.error);
+                              controller.isLoading = false;
+                              controller.update();
                             }
                           } else {
                             Get.snackbar('出错啦', '服务器信息校验失败！',
