@@ -86,21 +86,12 @@ class HomeView extends GetView<HomeController> {
         child: Scaffold(
           key: _globalKey,
           extendBody: true,
-          appBar: GFAppBar(
-            elevation: 1.5,
-            iconTheme: const IconThemeData(color: Colors.black38),
-            flexibleSpace: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  colors: [
-                    Colors.orange.withOpacity(0.4),
-                    Colors.grey.withOpacity(0.3),
-                    Colors.brown.withOpacity(0.1),
-                  ],
-                ),
-              ),
+          appBar: AppBar(
+            backgroundColor:
+                Theme.of(context).colorScheme.surface.withOpacity(0.7),
+            elevation: 0,
+            iconTheme: IconThemeData(
+              color: Theme.of(context).colorScheme.primary,
             ),
             actions: <Widget>[
               _actionButtonList(context),
