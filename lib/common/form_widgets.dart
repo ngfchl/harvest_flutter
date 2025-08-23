@@ -84,6 +84,7 @@ class CustomTextField extends StatelessWidget {
         maxLines: maxLines,
         readOnly: readOnly,
         inputFormatters: inputFormatters,
+        scrollPhysics: const NeverScrollableScrollPhysics(),
         style: const TextStyle(fontSize: 13),
         decoration: InputDecoration(
           labelText: labelText,
@@ -95,6 +96,9 @@ class CustomTextField extends StatelessWidget {
           focusedBorder: const UnderlineInputBorder(
             borderSide: BorderSide(color: Color(0x16000000)),
           ),
+          focusColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+          fillColor: Colors.transparent,
           helperText: helperText,
           prefixText: prefixText,
           prefixIcon: prefixIcon,
