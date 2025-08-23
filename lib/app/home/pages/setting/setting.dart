@@ -1,14 +1,19 @@
+import 'dart:io';
+
 import 'package:app_service/app_service.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harvest/api/api.dart';
+import 'package:harvest/app/home/controller/home_controller.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/form_widgets.dart';
 import 'package:harvest/utils/storage.dart';
 
 import '../../../../api/hooks.dart';
 import '../../../../api/option.dart';
+import '../../../../common/image_helper.dart';
 import '../../../../common/utils.dart';
 import '../../../../models/common_response.dart';
 import '../../../../utils/logger_helper.dart';
@@ -27,24 +32,20 @@ class SettingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        backgroundColor: Colors.transparent,
         body: GetBuilder<SettingController>(builder: (controller) {
           return EasyRefresh(
             onRefresh: controller.getOptionList,
-            child: Column(
+            child: ListView(
               children: [
                 _versionCard(context),
                 _followSystemDarkForm(),
                 _noticeTestForm(context),
-                Flexible(
-                  child: ListView(
-                    children: controller.isLoaded
-                        ? [const Center(child: CircularProgressIndicator())]
-                        : [
-                            _telegramWebHookForm(context),
-                            ..._optionListView(context),
-                          ],
-                  ),
-                ),
+                _telegramWebHookForm(context),
+                _backgroundImageForm(context),
+                ...(controller.isLoaded
+                    ? [const Center(child: CircularProgressIndicator())]
+                    : _optionListView(context)),
                 const SizedBox(height: 50),
               ],
             ),
@@ -2138,6 +2139,132 @@ class SettingPage extends StatelessWidget {
                 ),
               ),
           ],
+        ),
+      );
+    });
+  }
+
+  Widget _backgroundImageForm(context) {
+    RxString? baseUrl = (SPUtil.getString('backgroundImage') ?? '').obs;
+    RxBool useLocalBackground =
+        (SPUtil.getBool('useLocalBackground') ?? false).obs;
+    TextEditingController urlController = TextEditingController(
+      text: baseUrl.value,
+    );
+    final isEdit = false.obs;
+    return Obx(() {
+      return CustomCard(
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ListTile(
+                  title: const Text("APP背景图片"),
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  leading: IconButton(
+                    onPressed: () async {},
+                    icon: Icon(
+                      Icons.image_outlined,
+                      color: Colors.green,
+                    ),
+                  ),
+                  trailing: ExpandIcon(
+                    isExpanded: isEdit.value,
+                    onPressed: (value) {
+                      isEdit.value = !isEdit.value;
+                    },
+                    expandedColor: Colors.teal,
+                  )),
+              if (isEdit.value)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      SwitchTile(
+                        title: '使用本地背景图片',
+                        value: useLocalBackground.value,
+                        onChanged: (value) {
+                          useLocalBackground.value = value;
+                          SPUtil.setBool('useLocalBackground', value);
+                        },
+                      ),
+                      useLocalBackground.value
+                          ? ImagePickerRow(
+                              onImagePicked: (String? path) {
+                                if (path != null) {
+                                  baseUrl.value = path;
+                                  SPUtil.setString('backgroundImage', path);
+                                  HomeController homeController = Get.find();
+                                  homeController.backgroundImage = path;
+                                  homeController
+                                      .update(['home_view_background_image']);
+                                }
+                              },
+                            )
+                          : Column(
+                              children: [
+                                CustomTextField(
+                                  autofocus: true,
+                                  controller: urlController,
+                                  labelText: '背景图片地址',
+                                  helperText:
+                                      '请仅输入网络图片地址，例：https://harvest.example.com/images/bg.jpg',
+                                ),
+                                FullWidthButton(
+                                  text: '保存',
+                                  onPressed: () {
+                                    if (urlController.text.isNotEmpty &&
+                                        urlController.text.startsWith('http')) {
+                                      SPUtil.setString('backgroundImage',
+                                          urlController.text);
+                                      HomeController homeController =
+                                          Get.find();
+                                      homeController.backgroundImage =
+                                          urlController.text;
+                                      homeController.update(
+                                          ['home_view_background_image']);
+                                      isEdit.value = false;
+                                    } else {
+                                      Get.snackbar(
+                                        '出错啦',
+                                        "请输入正确的网络图片地址！",
+                                        colorText:
+                                            Theme.of(context).colorScheme.error,
+                                      );
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
+                      const SizedBox(height: 5),
+                      Obx(() {
+                        if (baseUrl.value.isNotEmpty) {
+                          return useLocalBackground.value
+                              ? Image.file(
+                                  File(baseUrl.value),
+                                  width: double.infinity,
+                                  fit: BoxFit.fitWidth,
+                                )
+                              : CachedNetworkImage(
+                                  imageUrl:
+                                      'https://images.weserv.nl/?url=${baseUrl.value}',
+                                  placeholder: (context, url) => const Center(
+                                      child: CircularProgressIndicator()),
+                                  errorWidget: (context, url, error) =>
+                                      Image.asset(
+                                          'assets/images/background.png'),
+                                  fit: BoxFit.fitWidth,
+                                );
+                        }
+                        return SizedBox.shrink();
+                      }),
+                    ],
+                  ),
+                ),
+            ],
+          ),
         ),
       );
     });
