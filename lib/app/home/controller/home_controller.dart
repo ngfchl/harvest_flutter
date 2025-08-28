@@ -102,13 +102,14 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     Logger.instance.d('HomeController onInit');
     try {
       isDarkMode = Get.isDarkMode;
-      useBackground = SPUtil.getBool('useBackground') ?? false;
+      useBackground = SPUtil.getBool('useBackground');
       if (useBackground) {
-        useImageProxy = SPUtil.getBool('useImageProxy') ?? false;
-        useLocalBackground = SPUtil.getBool('useLocalBackground') ?? false;
+        useImageProxy = SPUtil.getBool('useImageProxy');
+        useLocalBackground = SPUtil.getBool('useLocalBackground');
 
-        backgroundImage = SPUtil.getString('backgroundImage') ??
-            'https://cci1.yiimii.com/uploads/2023/11/20231114005921427.jpg';
+        backgroundImage = SPUtil.getString('backgroundImage',
+            defaultValue:
+                'https://cci1.yiimii.com/uploads/2023/11/20231114005921427.jpg');
         Logger.instance.d('背景图：$backgroundImage');
       }
       initDio();

@@ -208,10 +208,10 @@ class DownloadController extends GetxController {
 
   @override
   void onInit() async {
-    realTimeState = SPUtil.getBool('realTimeState', defaultValue: true)!;
+    realTimeState = SPUtil.getBool('realTimeState', defaultValue: true);
     isTimerActive = realTimeState;
-    duration = SPUtil.getDouble('duration', defaultValue: 3.14)!;
-    timerDuration = SPUtil.getDouble('timerDuration', defaultValue: 3.14)!;
+    duration = SPUtil.getDouble('duration', defaultValue: 3.14);
+    timerDuration = SPUtil.getDouble('timerDuration', defaultValue: 3.14);
     downloadStream.listen((downloaders) {
       for (var downloader in downloaders) {
         // 查找 dataList 中 id 相同的元素

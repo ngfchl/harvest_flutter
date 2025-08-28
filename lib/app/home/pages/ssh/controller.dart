@@ -27,7 +27,7 @@ class SshController extends GetxController {
   TextEditingController proxyController = TextEditingController(text: '');
   List<String> logList = ['SSHClient欢迎你！'];
   List<DockerContainer> containerList = [];
-  String? server = SPUtil.getString('server');
+  String server = SPUtil.getString('server');
 
   // 使用StreamController来管理下载状态的流
   final StreamController<List<DockerContainer>> containerStreamController =
@@ -41,22 +41,21 @@ class SshController extends GetxController {
   @override
   void onInit() {
     String? hostname = SPUtil.getString('$server-SSH_CLIENT_HOSTNAME',
-        defaultValue: '192.168.1.1');
+        defaultValue: '192.168.123.5');
     String? password =
         SPUtil.getString('$server-SSH_CLIENT_PASSWORD', defaultValue: '');
     String? port =
         SPUtil.getString('$server-SSH_CLIENT_PORT', defaultValue: '');
     String? username =
-        SPUtil.getString('$server-SSH_CLIENT_USERNAME', defaultValue: '');
+        SPUtil.getString('$server-SSH_CLIENT_USERNAME', defaultValue: 'root');
     String? proxy =
         SPUtil.getString('$server-SSH_CLIENT_PROXY', defaultValue: '');
-    hostController.text = hostname!;
-    passwordController.text = password!;
-    proxyController.text = proxy!;
-    usernameController.text = username!;
-    portController.text = port!;
-    remember =
-        SPUtil.getBool('$server-SSH_CLIENT_REMEMBER', defaultValue: false)!;
+    hostController.text = hostname;
+    passwordController.text = password;
+    proxyController.text = proxy;
+    usernameController.text = username;
+    portController.text = port;
+    remember = SPUtil.getBool('$server-SSH_CLIENT_REMEMBER');
     super.onInit();
   }
 

@@ -101,29 +101,29 @@ class DashBoardController extends GetxController {
   }
 
   Future<void> initData() async {
-    privateMode = SPUtil.getBool('privateMode', defaultValue: false)!;
-    cardHeight = SPUtil.getDouble('buildCardHeight', defaultValue: 260)!;
-    buildStackedBar = SPUtil.getBool('buildStackedBar', defaultValue: true)!;
+    privateMode = SPUtil.getBool('privateMode', defaultValue: false);
+    cardHeight = SPUtil.getDouble('buildCardHeight', defaultValue: 260);
+    buildStackedBar = SPUtil.getBool('buildStackedBar', defaultValue: true);
     buildSeedVolumePieChart =
-        SPUtil.getBool('buildSeedVolumePieChart', defaultValue: true)!;
+        SPUtil.getBool('buildSeedVolumePieChart', defaultValue: true);
     buildSmartLabelPieChart =
-        SPUtil.getBool('buildSmartLabelPieChart', defaultValue: true)!;
+        SPUtil.getBool('buildSmartLabelPieChart', defaultValue: true);
     buildAccountInfoCard =
-        SPUtil.getBool('buildAccountInfoCard', defaultValue: true)!;
+        SPUtil.getBool('buildAccountInfoCard', defaultValue: true);
     buildMonthPublishedBar =
-        SPUtil.getBool('buildMonthPublishedBar', defaultValue: true)!;
+        SPUtil.getBool('buildMonthPublishedBar', defaultValue: true);
     buildMonthDownloadedBar =
-        SPUtil.getBool('buildMonthDownloadedBar', defaultValue: true)!;
+        SPUtil.getBool('buildMonthDownloadedBar', defaultValue: true);
     buildPublishedPieChart =
-        SPUtil.getBool('buildPublishedPieChart', defaultValue: true)!;
+        SPUtil.getBool('buildPublishedPieChart', defaultValue: true);
     buildMonthStackedBar =
-        SPUtil.getBool('buildMonthStackedBar', defaultValue: true)!;
-    buildSiteInfo = SPUtil.getBool('buildSiteInfo', defaultValue: true)!;
+        SPUtil.getBool('buildMonthStackedBar', defaultValue: true);
+    buildSiteInfo = SPUtil.getBool('buildSiteInfo', defaultValue: true);
     showTodayUploadedIncrement =
-        SPUtil.getBool('showTodayUploadedIncrement', defaultValue: true)!;
+        SPUtil.getBool('showTodayUploadedIncrement', defaultValue: true);
     showTodayDownloadedIncrement =
-        SPUtil.getBool('showTodayDownloadedIncrement', defaultValue: true)!;
-    scaleEnable = SPUtil.getBool('scaleEnable', defaultValue: true)!;
+        SPUtil.getBool('showTodayDownloadedIncrement', defaultValue: true);
+    scaleEnable = SPUtil.getBool('scaleEnable', defaultValue: true);
     isCacheLoading = true;
     update();
     await loadCacheDashData();

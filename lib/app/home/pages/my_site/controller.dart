@@ -79,11 +79,11 @@ class MySiteController extends GetxController {
   void onInit() async {
     searchKey = '';
     filterKey = 'available';
-    sortKey = SPUtil.getLocalStorage('mySite-sortKey') ?? 'mySiteSortId';
-    sortReversed = SPUtil.getLocalStorage('mySite-sortReversed') ?? false;
+    sortKey = SPUtil.getString('mySite-sortKey', defaultValue: 'mySiteSortId');
+    sortReversed = SPUtil.getBool('mySite-sortReversed', defaultValue: false);
     openByInnerExplorer =
-        SPUtil.getBool('openByInnerExplorer', defaultValue: true) ?? true;
-    baseUrl = SPUtil.getLocalStorage('server');
+        SPUtil.getBool('openByInnerExplorer', defaultValue: true);
+    baseUrl = SPUtil.getString('server');
     isLoaded = true;
     loadingFromServer = true;
     update();

@@ -38,11 +38,9 @@ void main() async {
   if (GetPlatform.isDesktop && !GetPlatform.isWeb) {
     await windowManager.ensureInitialized();
     double height =
-        SPUtil.getDouble('ScreenSizeHeight', defaultValue: 900)?.toDouble() ??
-            900;
+        SPUtil.getDouble('ScreenSizeHeight', defaultValue: 900).toDouble();
     double width =
-        SPUtil.getDouble('ScreenSizeWidth', defaultValue: 1200)?.toDouble() ??
-            1200;
+        SPUtil.getDouble('ScreenSizeWidth', defaultValue: 1200).toDouble();
     // Logger.instance.d('window size: $width, $height');
     WindowOptions windowOptions = WindowOptions(
       // size: Size(1200, 900),
@@ -79,7 +77,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final appService = Get.find<AppService>();
     appService.followSystem.value =
-        SPUtil.getBool('followSystemDark', defaultValue: true)!;
+        SPUtil.getBool('followSystemDark', defaultValue: true);
     return GetMaterialApp(
       title: "Harvest",
       defaultTransition: Transition.cupertino,

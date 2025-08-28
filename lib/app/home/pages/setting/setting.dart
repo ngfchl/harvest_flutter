@@ -32,7 +32,7 @@ class SettingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: (SPUtil.getBool('useBackground') ?? false)
+        backgroundColor: SPUtil.getBool('useBackground')
             ? Colors.transparent
             : Theme.of(context).colorScheme.surface.withOpacity(0.7),
         body: GetBuilder<SettingController>(builder: (controller) {
@@ -2315,7 +2315,7 @@ class SettingPage extends StatelessWidget {
 
   Widget _telegramWebHookForm(context) {
     String? baseUrl = SPUtil.getLocalStorage('server');
-    String webhook = SPUtil.getLocalStorage('TELEGRAM_WEBHOOK') ?? "";
+    String webhook = SPUtil.getString('TELEGRAM_WEBHOOK', defaultValue: '');
     TextEditingController urlController = TextEditingController(
       text: baseUrl != null && baseUrl.startsWith('https') ? baseUrl : webhook,
     );
@@ -2379,13 +2379,15 @@ class SettingPage extends StatelessWidget {
   }
 
   Widget _backgroundImageForm(context) {
-    RxString? baseUrl = (SPUtil.getString('backgroundImage') ?? '').obs;
-    RxDouble? opacity =
-        (SPUtil.getDouble('cardOpacity', defaultValue: 0.7) ?? 0.7).obs;
+    RxString? baseUrl =
+        SPUtil.getString('backgroundImage', defaultValue: '').obs;
+    RxDouble? opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7).obs;
     RxBool useLocalBackground =
-        (SPUtil.getBool('useLocalBackground') ?? false).obs;
-    RxBool useBackground = (SPUtil.getBool('useBackground') ?? false).obs;
-    RxBool useImageProxy = (SPUtil.getBool('useImageProxy') ?? false).obs;
+        SPUtil.getBool('useLocalBackground', defaultValue: false).obs;
+    RxBool useBackground =
+        SPUtil.getBool('useBackground', defaultValue: false).obs;
+    RxBool useImageProxy =
+        SPUtil.getBool('useImageProxy', defaultValue: false).obs;
     TextEditingController urlController = TextEditingController(
       text: baseUrl.value,
     );

@@ -807,8 +807,9 @@ class _DashBoardPageState extends State<DashBoardPage>
     return GetBuilder<DashBoardController>(builder: (controller) {
       // Rx<MySite?> earliestSite = controller.earliestSite.obs;
 
-      RxBool showDescTitle = (SPUtil.getBool("showDescTitle") ?? true).obs;
-      RxBool showYear = (SPUtil.getBool("showYear") ?? true).obs;
+      RxBool showDescTitle =
+          SPUtil.getBool("showDescTitle", defaultValue: true).obs;
+      RxBool showYear = SPUtil.getBool("showYear", defaultValue: true).obs;
       return CustomCard(
         height: controller.cardHeight,
         borderRadius: const BorderRadius.only(

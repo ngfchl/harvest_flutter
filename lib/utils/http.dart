@@ -22,7 +22,7 @@ class DioClient {
   final Dio dio = Dio();
 
   void _init() {
-    var server = SPUtil.getString("server") ?? '';
+    var server = SPUtil.getString("server", defaultValue: '');
     if (server.isEmpty) {
       Get.snackbar('出错啦！', '请先设置并选择服务器地址！');
       return;
