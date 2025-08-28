@@ -2392,6 +2392,7 @@ class SettingPage extends StatelessWidget {
       text: baseUrl.value,
     );
     final isEdit = false.obs;
+    final showPreview = false.obs;
     HomeController homeController = Get.find();
     return Obx(() {
       return CustomCard(
@@ -2399,6 +2400,7 @@ class SettingPage extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            spacing: 15.0,
             children: [
               ListTile(
                   title: Text(
@@ -2427,6 +2429,68 @@ class SettingPage extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
                     children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          spacing: 20,
+                          children: [
+                            if (useBackground.value)
+                              Expanded(
+                                child: FullWidthButton(
+                                  text: '预览',
+                                  onPressed: () {
+                                    if (urlController.text.isNotEmpty) {
+                                      baseUrl.value = urlController.text;
+                                      showPreview.value = !showPreview.value;
+                                    } else {
+                                      showPreview.value = false;
+                                    }
+                                  },
+                                ),
+                              ),
+                            Expanded(
+                              child: FullWidthButton(
+                                text: '保存',
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
+                                onPressed: () {
+                                  if (urlController.text.isNotEmpty) {
+                                    if (useLocalBackground.value &&
+                                        baseUrl.value.startsWith('http')) {
+                                      Get.snackbar(
+                                        '出错啦',
+                                        "请选择正确的背景图片！",
+                                        colorText:
+                                            Theme.of(context).colorScheme.error,
+                                      );
+                                      return;
+                                    }
+                                    baseUrl.value = urlController.text;
+                                    Logger.instance.d(
+                                        'backgroundImage: ${urlController.text}');
+                                    SPUtil.setString(
+                                        'backgroundImage', urlController.text);
+                                    homeController.backgroundImage =
+                                        urlController.text;
+                                    homeController
+                                        .update(['home_view_background_image']);
+                                    isEdit.value = false;
+                                    homeController.onInit();
+                                  } else {
+                                    Get.snackbar(
+                                      '出错啦',
+                                      "请选择或输入正确的图片地址！",
+                                      colorText:
+                                          Theme.of(context).colorScheme.error,
+                                    );
+                                  }
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                       Padding(
                         padding: const EdgeInsets.only(left: 16.0),
                         child: Row(
@@ -2460,100 +2524,71 @@ class SettingPage extends StatelessWidget {
                           SPUtil.setBool('useBackground', value);
                         },
                       ),
-                      SwitchTile(
-                        title: '使用本地图片',
-                        value: useLocalBackground.value,
-                        onChanged: (value) {
-                          useLocalBackground.value = value;
-                          SPUtil.setBool('useLocalBackground', value);
-                        },
-                      ),
-                      SwitchTile(
-                        title: '网络图片加速',
-                        value: useImageProxy.value,
-                        onChanged: (value) {
-                          useImageProxy.value = value;
-                          SPUtil.setBool('useImageProxy', value);
-                        },
-                      ),
-                      useLocalBackground.value
-                          ? ImagePickerRow(
+                      if (useBackground.value)
+                        Column(children: [
+                          SwitchTile(
+                            title: '使用本地图片',
+                            value: useLocalBackground.value,
+                            onChanged: (value) {
+                              useLocalBackground.value = value;
+                              SPUtil.setBool('useLocalBackground', value);
+                            },
+                          ),
+                          if (!useLocalBackground.value)
+                            SwitchTile(
+                              title: '网络图片加速',
+                              value: useImageProxy.value,
+                              onChanged: (value) {
+                                useImageProxy.value = value;
+                                SPUtil.setBool('useImageProxy', value);
+                              },
+                            ),
+                          if (useLocalBackground.value)
+                            ImagePickerRow(
                               onImagePicked: (String? path) {
                                 if (path != null) {
-                                  baseUrl.value = path;
-                                  SPUtil.setString('backgroundImage', path);
-                                  HomeController homeController = Get.find();
-                                  homeController.backgroundImage = path;
-                                  homeController
-                                      .update(['home_view_background_image']);
+                                  urlController.text = path;
                                 }
                               },
-                            )
-                          : Column(
-                              children: [
-                                CustomTextField(
-                                  autofocus: true,
-                                  controller: urlController,
-                                  labelText: '背景图片地址',
-                                  helperText:
-                                      '请仅输入网络图片地址，例：https://harvest.example.com/images/bg.jpg',
-                                ),
-                                FullWidthButton(
-                                  text: '保存',
-                                  onPressed: () {
-                                    if (urlController.text.isNotEmpty &&
-                                        urlController.text.startsWith('http')) {
-                                      baseUrl.value = urlController.text;
-                                      Logger.instance.d(
-                                          'backgroundImage: ${urlController.text}');
-                                      SPUtil.setString('backgroundImage',
-                                          urlController.text);
-                                      homeController.backgroundImage =
-                                          urlController.text;
-                                      homeController.update(
-                                          ['home_view_background_image']);
-                                      isEdit.value = false;
-                                      homeController.onInit();
-                                    } else {
-                                      Get.snackbar(
-                                        '出错啦',
-                                        "请输入正确的网络图片地址！",
-                                        colorText:
-                                            Theme.of(context).colorScheme.error,
-                                      );
-                                    }
-                                  },
-                                ),
-                              ],
                             ),
-                      const SizedBox(height: 5),
-                      Obx(() {
-                        if (baseUrl.value.isNotEmpty) {
-                          Logger.instance.d(
-                              'backgroundImage: $baseUrl , useLocalBackground: $useLocalBackground');
-                          return useLocalBackground.value
-                              ? baseUrl.value.startsWith('http')
-                                  ? SizedBox.shrink()
-                                  : Image.file(
-                                      File(baseUrl.value),
-                                      width: double.infinity,
-                                      fit: BoxFit.fitWidth,
-                                    )
-                              : Obx(() {
-                                  return CachedNetworkImage(
-                                    imageUrl:
-                                        '${useImageProxy.value ? 'https://images.weserv.nl/?url=' : ''}${baseUrl.value}',
-                                    placeholder: (context, url) => const Center(
-                                        child: CircularProgressIndicator()),
-                                    errorWidget: (context, url, error) =>
-                                        Image.asset(
-                                            'assets/images/background.png'),
-                                    fit: BoxFit.fitWidth,
-                                  );
-                                });
-                        }
-                        return SizedBox.shrink();
-                      }),
+                          if (!useLocalBackground.value)
+                            CustomTextField(
+                              controller: urlController,
+                              labelText: '背景图片地址',
+                              helperText:
+                                  '请仅输入网络图片地址，例：https://harvest.example.com/images/bg.jpg',
+                            ),
+                          const SizedBox(height: 5),
+                          Obx(() {
+                            if (showPreview.value && baseUrl.value.isNotEmpty) {
+                              Logger.instance.d(
+                                  'backgroundImage: $baseUrl , useLocalBackground: $useLocalBackground');
+                              return useLocalBackground.value
+                                  ? baseUrl.value.startsWith('http')
+                                      ? SizedBox.shrink()
+                                      : Image.file(
+                                          File(baseUrl.value),
+                                          width: double.infinity,
+                                          fit: BoxFit.fitWidth,
+                                        )
+                                  : Obx(() {
+                                      return CachedNetworkImage(
+                                        imageUrl:
+                                            '${useImageProxy.value ? 'https://images.weserv.nl/?url=' : ''}${baseUrl.value}',
+                                        placeholder: (context, url) =>
+                                            const Center(
+                                                child:
+                                                    CircularProgressIndicator()),
+                                        errorWidget: (context, url, error) =>
+                                            Image.asset(
+                                                'assets/images/background.png'),
+                                        fit: BoxFit.fitWidth,
+                                      );
+                                    });
+                            }
+                            return SizedBox.shrink();
+                          }),
+                        ]),
                     ],
                   ),
                 ),
