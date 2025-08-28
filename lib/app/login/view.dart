@@ -259,24 +259,28 @@ class _LoginPageState extends State<LoginPage> {
               GetBuilder<LoginController>(
                   id: 'login_view_background_image',
                   builder: (controller) {
-                    return Positioned.fill(
-                      child: controller.useLocalBackground &&
-                              !controller.backgroundImage.startsWith('http')
-                          ? Image.file(
-                              File(controller.backgroundImage),
-                              fit: BoxFit.cover,
-                            )
-                          : CachedNetworkImage(
-                              imageUrl:
-                                  '$cacheServer${controller.backgroundImage}',
-                              placeholder: (context, url) => const Center(
-                                  child: CircularProgressIndicator()),
-                              errorWidget: (context, url, error) => Image.asset(
-                                  'assets/images/background.png',
-                                  fit: BoxFit.cover),
-                              fit: BoxFit.cover,
-                            ),
-                    );
+                    if (controller.useBackground) {
+                      return Positioned.fill(
+                        child: controller.useLocalBackground &&
+                                !controller.backgroundImage.startsWith('http')
+                            ? Image.file(
+                                File(controller.backgroundImage),
+                                fit: BoxFit.cover,
+                              )
+                            : CachedNetworkImage(
+                                imageUrl:
+                                    '${controller.useImageProxy ? cacheServer : ''}${controller.backgroundImage}',
+                                placeholder: (context, url) => const Center(
+                                    child: CircularProgressIndicator()),
+                                errorWidget: (context, url, error) =>
+                                    Image.asset('assets/images/background.png',
+                                        fit: BoxFit.cover),
+                                fit: BoxFit.cover,
+                              ),
+                      );
+                    }
+
+                    return SizedBox.shrink();
                   }),
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
