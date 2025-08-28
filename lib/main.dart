@@ -88,6 +88,24 @@ class MyApp extends StatelessWidget {
       navigatorKey: Get.key,
       theme: appService.currentTheme,
       getPages: AppPages.routes,
+      builder: (context, child) {
+        // 处理 MediaQuery 异常问题，特别是小米澎湃系统
+        MediaQueryData mediaQuery = MediaQuery.of(context);
+        double safeTop = mediaQuery.padding.top;
+
+        // 如果出现异常值，使用默认值替代
+        if (safeTop > 80 || safeTop < 0) {
+          print('Detected abnormal top padding: $safeTop, using fallback.');
+          safeTop = 24.0; // 合理默认值
+        }
+
+        return MediaQuery(
+          data: mediaQuery.copyWith(
+            padding: mediaQuery.padding.copyWith(top: safeTop),
+          ),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
       translations: Messages([
         AppServiceMessages().keys,
       ]),
