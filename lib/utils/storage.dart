@@ -82,7 +82,7 @@ class SPUtil {
   }
 
   /// 根据key获取int类型
-  static int? getInt(String key, {int defaultValue = 0}) {
+  static int getInt(String key, {int defaultValue = 0}) {
     return _preferences.getInt(key) ?? defaultValue;
   }
 
@@ -92,7 +92,7 @@ class SPUtil {
   }
 
   /// 根据key获取double类型
-  static double? getDouble(String key, {double defaultValue = 0.0}) {
+  static double getDouble(String key, {double defaultValue = 0.0}) {
     return _preferences.getDouble(key) ?? defaultValue;
   }
 
@@ -102,7 +102,7 @@ class SPUtil {
   }
 
   /// 根据key获取字符串类型
-  static String? getString(String key, {String defaultValue = ""}) {
+  static String getString(String key, {String defaultValue = ""}) {
     return _preferences.getString(key) ?? defaultValue;
   }
 
@@ -112,7 +112,7 @@ class SPUtil {
   }
 
   /// 根据key获取布尔类型
-  static bool? getBool(String key, {bool defaultValue = false}) {
+  static bool getBool(String key, {bool defaultValue = false}) {
     return _preferences.getBool(key) ?? defaultValue;
   }
 
