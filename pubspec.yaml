@@ -1,7 +1,7 @@
 name: harvest
 description: Harvest Project App Client
 publish_to: none
-version: 2025.0823.01+157
+version: 2025.0828.01+158
 environment:
   sdk: '>=3.3.2 <4.0.0'
 dependencies:
