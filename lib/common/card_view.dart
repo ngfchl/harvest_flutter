@@ -35,7 +35,7 @@ class CustomCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double opacity = SPUtil.getDouble('cardOpacity') ?? 0.7;
+    double opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
     return Container(
       height: height,
       width: width,
