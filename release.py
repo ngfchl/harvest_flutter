@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import sys
 import traceback
+import platform
 
 import yaml
 
@@ -18,6 +19,7 @@ class VersionManager:
         self.version_date_format = '%Y.%m%d'
         self.ios_path = 'build/ios/iphoneos/'
         self.current_version = self.read_version()
+        self.machine = self.calc_machine()
         if not sys.platform.startswith('win32'):
             self.calc_version()
         else:
@@ -33,6 +35,26 @@ class VersionManager:
         else:
             print("fvm 未安装")
             return ''
+
+    @staticmethod
+    def calc_machine():
+        machine = platform.machine().lower()
+
+        x86_set = {"x86_64", "amd64"}
+        x86_32_set = {"i386", "i686"}
+        arm64_set = {"arm64", "aarch64"}
+        arm32_set = {"arm", "armv7", "armv7l", "armhf"}
+
+        if machine in x86_set:
+            return "x86_64"
+        elif machine in x86_32_set:
+            return "x86_32"
+        elif machine in arm64_set:
+            return "arm64"
+        elif machine in arm32_set:
+            return "arm32"
+        else:
+            return "unknown"
 
     def read_version(self):
         print('开始读取当前版本号')
@@ -91,11 +113,10 @@ class VersionManager:
                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 print(res.stdout.decode("utf-8"))
                 shutil.move("build/macos/Build/Products/Release/harvest.app.zip",
-                            f"{self.output_folder}/harvest_{self.new_version}-macos.zip")
+                            f"{self.output_folder}/harvest_{self.new_version}_{self.machine}-macos.zip")
                 print(f'MacOS 打包完成')
             elif flag == 'windows':
-                res = subprocess.run([self.fvm, "flutter", "build", "windows"], shell=True,
-                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                res = subprocess.run(f"{self.fvm} flutter build windows", shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 print(f"{res.stdout.decode("utf-8")}")
                 print(f'Windows APP 编译完成, 开始压缩')
                 zip_path = shutil.make_archive('Release', 'zip', os.path.join(os.getcwd(),
@@ -103,7 +124,7 @@ class VersionManager:
                 print(f"压缩结果：{zip_path}")
                 print(f"APP 压缩完毕，准备移动，正在移动到指定文件夹 {self.output_folder}")
                 shutil.move(zip_path,
-                            f"{self.output_folder.replace('/', '\\')}\\harvest_{self.current_version}-win.zip")
+                            f"{self.output_folder.replace('/', '\\')}\\harvest_{self.current_version}_{self.machine}-win.zip")
                 print(f'Windows 打包完成，打开文件夹')
                 subprocess.run(
                     [f"explorer", self.output_folder.replace('/', '\\')],
