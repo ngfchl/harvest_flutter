@@ -929,7 +929,7 @@ class _MySitePagePageState extends State<MySitePage>
                                 PopupMenuItem<String>(
                                   height: 13,
                                   child: Text(
-                                      '魔力值：${status.myBonus}/${nextLevel.bonus}',
+                                      '魔力值：${formatNumber(status.myBonus)}/${formatNumber(nextLevel.bonus)}',
                                       style: TextStyle(
                                         fontSize: 10,
                                         color: status.myBonus < nextLevel.bonus
