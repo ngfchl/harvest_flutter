@@ -61,6 +61,8 @@ class _AggSearchPageState extends State<AggSearchPage>
             controller.searchMsg.where((element) => !element['success']).length;
         // controller.update();
         return GetBuilder<AggSearchController>(builder: (controller) {
+          var backgroundColor =
+              Theme.of(context).colorScheme.surface.withOpacity(opacity);
           return DefaultTabController(
             length: controller.tabs.length,
             child: SafeArea(
@@ -75,12 +77,8 @@ class _AggSearchPageState extends State<AggSearchPage>
                 appBar: PreferredSize(
                   preferredSize: Size.fromHeight(kToolbarHeight),
                   child: Material(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .surface
-                        .withOpacity(opacity), // 背景色
+                    color: backgroundColor, // 背景色
                     child: TabBar(
-                      labelColor: Colors.red,
                       controller: controller.tabController,
                       onTap: (int index) => controller.changeTab(index),
                       tabs: controller.tabs,
@@ -96,6 +94,8 @@ class _AggSearchPageState extends State<AggSearchPage>
                         children: [
                           Expanded(
                             child: TextField(
+                              style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary),
                               controller: controller.searchKeyController,
                               decoration: InputDecoration(
                                 isDense: true,
@@ -254,117 +254,176 @@ class _AggSearchPageState extends State<AggSearchPage>
                         ],
                       ),
                     ),
-                    if (controller.searchMsg.isNotEmpty)
-                      GFAccordion(
-                        titleChild: Text(
-                            '失败$failedCount个站点，$succeedCount个站点共${controller.searchResults.length}个种子，筛选结果：${controller.showResults.length}个',
-                            style: const TextStyle(
-                                fontSize: 12, color: Colors.black87)),
-                        titlePadding: EdgeInsets.zero,
-                        contentChild: SizedBox(
-                          height: 100,
-                          child: Column(
-                            children: [
-                              Expanded(
-                                child: ListView.builder(
-                                  itemCount: controller.searchMsg.length,
-                                  itemBuilder:
-                                      (BuildContext context, int index) {
-                                    String info =
-                                        controller.searchMsg[index]['msg'];
-                                    return Text(info,
-                                        style: const TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.black87));
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
                     Expanded(
-                      child: TabBarView(
-                          controller: controller.tabController,
-                          children: [
-                            Column(
-                              children: [
-                                if (controller.results.isNotEmpty)
+                      child: CustomCard(
+                        child: TabBarView(
+                            controller: controller.tabController,
+                            children: [
+                              Column(
+                                children: [
+                                  if (controller.results.isNotEmpty)
+                                    Expanded(
+                                      child: ListView.builder(
+                                          itemCount: controller.results.length,
+                                          itemBuilder: (context, int index) =>
+                                              mediaItemCard(
+                                                  controller.results[index])),
+                                    ),
+                                  if (controller.showDouBanResults.isNotEmpty)
+                                    Expanded(
+                                      child: ListView.builder(
+                                        itemCount:
+                                            controller.showDouBanResults.length,
+                                        itemBuilder:
+                                            (BuildContext context, int index) {
+                                          DouBanSearchResult info = controller
+                                              .showDouBanResults[index];
+                                          return showDouBanSearchInfo(info);
+                                        },
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  if (controller.searchMsg.isNotEmpty)
+                                    GFAccordion(
+                                      titleChild: Text(
+                                          '失败$failedCount个站点，$succeedCount个站点共${controller.searchResults.length}个种子，筛选结果：${controller.showResults.length}个',
+                                          style: TextStyle(
+                                              fontSize: 12,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary)),
+                                      titlePadding: EdgeInsets.zero,
+                                      collapsedTitleBackgroundColor:
+                                          backgroundColor,
+                                      expandedTitleBackgroundColor:
+                                          backgroundColor,
+                                      contentBackgroundColor: backgroundColor,
+                                      contentChild: SizedBox(
+                                        height: 100,
+                                        child: ListView.builder(
+                                          itemCount:
+                                              controller.searchMsg.length,
+                                          itemBuilder: (BuildContext context,
+                                              int index) {
+                                            String info = controller
+                                                .searchMsg[index]['msg'];
+                                            return Text(info,
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .primary,
+                                                ));
+                                          },
+                                        ),
+                                      ),
+                                    ),
                                   Expanded(
                                     child: ListView.builder(
-                                        itemCount: controller.results.length,
-                                        itemBuilder: (context, int index) =>
-                                            mediaItemCard(
-                                                controller.results[index])),
-                                  ),
-                                if (controller.showDouBanResults.isNotEmpty)
-                                  Expanded(
-                                    child: ListView.builder(
-                                      itemCount:
-                                          controller.showDouBanResults.length,
+                                      itemCount: controller.showResults.length,
                                       itemBuilder:
                                           (BuildContext context, int index) {
-                                        DouBanSearchResult info =
-                                            controller.showDouBanResults[index];
-                                        return showDouBanSearchInfo(info);
+                                        SearchTorrentInfo info =
+                                            controller.showResults[index];
+                                        return showTorrentInfo(info);
                                       },
                                     ),
                                   ),
-                              ],
-                            ),
-                            ListView.builder(
-                              itemCount: controller.showResults.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                SearchTorrentInfo info =
-                                    controller.showResults[index];
-                                return showTorrentInfo(info);
-                              },
-                            ),
-                            GetBuilder<AggSearchController>(
-                                id: Key('agg_search_history'),
-                                builder: (controller) {
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16),
-                                    child: SingleChildScrollView(
+                                ],
+                              ),
+                              GetBuilder<AggSearchController>(
+                                  id: Key('agg_search_history'),
+                                  builder: (controller) {
+                                    return SingleChildScrollView(
                                       child: Wrap(
+                                        runSpacing: 8,
+                                        spacing: 8,
                                         children: [
+                                          FilterChip(
+                                            backgroundColor: backgroundColor,
+                                            deleteIcon: Icon(
+                                              Icons.clear,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .error,
+                                            ),
+                                            deleteButtonTooltipMessage:
+                                                '确定要删除全部搜索记录吗？',
+                                            label: Text('一键清理',
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .error,
+                                                )),
+                                            onSelected: (bool value) {},
+                                            onDeleted: () {
+                                              Get.defaultDialog(
+                                                title: '提示',
+                                                middleText: '确定要删除全部搜索记录吗？',
+                                                cancel: TextButton(
+                                                  onPressed: () {
+                                                    Get.back();
+                                                  },
+                                                  child: Text('取消'),
+                                                ),
+                                                confirm: TextButton(
+                                                  onPressed: () {
+                                                    controller.searchHistory
+                                                        .clear();
+                                                    SPUtil.setStringList(
+                                                        'search_history',
+                                                        controller
+                                                            .searchHistory);
+                                                    controller.update();
+                                                  },
+                                                  child: Text('确定'),
+                                                ),
+                                              );
+                                            },
+                                          ),
                                           ...controller.searchHistory.map(
-                                            (el) => Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: InkWell(
-                                                onTap: () async {
-                                                  controller.searchKeyController
-                                                      .text = el;
-                                                  controller
-                                                      .doWebsocketSearch();
-                                                },
-                                                onLongPress: () {
-                                                  LoggerHelper.Logger.instance
-                                                      .d('长按删除历史搜索：$el');
-                                                  controller.searchHistory
-                                                      .remove(el);
-                                                  SPUtil.setStringList(
-                                                      'search_history',
-                                                      controller.searchHistory);
-                                                  controller.update();
-                                                },
-                                                child: Text(el,
-                                                    style: TextStyle(
-                                                        fontSize: 22,
-                                                        color: Theme.of(context)
-                                                            .colorScheme
-                                                            .primary)),
+                                            (el) => FilterChip(
+                                              backgroundColor: backgroundColor,
+                                              deleteIcon: Icon(
+                                                Icons.clear,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .error,
                                               ),
+                                              deleteButtonTooltipMessage:
+                                                  '确定要删除记录吗？',
+                                              label: Text(el,
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .onSurface,
+                                                  )),
+                                              onSelected: (bool value) {
+                                                controller.searchKeyController
+                                                    .text = el;
+                                                controller.doWebsocketSearch();
+                                              },
+                                              onDeleted: () {
+                                                controller.searchHistory
+                                                    .remove(el);
+                                                SPUtil.setStringList(
+                                                    'search_history',
+                                                    controller.searchHistory);
+                                                controller.update();
+                                              },
                                             ),
                                           ),
                                         ],
                                       ),
-                                    ),
-                                  );
-                                })
-                          ]),
+                                    );
+                                  })
+                            ]),
+                      ),
                     ),
                     if (!kIsWeb && Platform.isIOS) const SizedBox(height: 10),
                     if (controller.tabController.index == 1)
