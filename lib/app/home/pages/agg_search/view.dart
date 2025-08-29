@@ -42,6 +42,7 @@ class _AggSearchPageState extends State<AggSearchPage>
     with AutomaticKeepAliveClientMixin {
   final controller = Get.put(AggSearchController());
   String cacheServer = 'https://images.weserv.nl/?url=';
+  double opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
 
   @override
   bool get wantKeepAlive => true;
@@ -49,7 +50,6 @@ class _AggSearchPageState extends State<AggSearchPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-
     return GetBuilder<AggSearchController>(
       assignId: true,
       builder: (controller) {
@@ -72,182 +72,185 @@ class _AggSearchPageState extends State<AggSearchPage>
                         controller.tabController.index == 1
                     ? _buildBottomButtonBar()
                     : null,
-                appBar: TabBar(
-                    controller: controller.tabController,
-                    onTap: (int index) => controller.changeTab(index),
-                    tabs: controller.tabs),
+                appBar: PreferredSize(
+                  preferredSize: Size.fromHeight(kToolbarHeight),
+                  child: Material(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .surface
+                        .withOpacity(opacity), // 背景色
+                    child: TabBar(
+                      labelColor: Colors.red,
+                      controller: controller.tabController,
+                      onTap: (int index) => controller.changeTab(index),
+                      tabs: controller.tabs,
+                    ),
+                  ),
+                ),
                 body: Column(
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 5),
-                      child: Column(
+                    CustomCard(
+                      margin: EdgeInsets.zero,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: controller.searchKeyController,
-                                  decoration: InputDecoration(
-                                    isDense: true,
-                                    hintText: '请输入搜索关键字',
-                                    hintStyle: const TextStyle(fontSize: 14),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        vertical: 8, horizontal: 5),
-                                    fillColor: Colors.transparent,
-                                    focusColor: Colors.transparent,
-                                    hoverColor: Colors.transparent,
-                                    border: OutlineInputBorder(
-                                      borderSide: BorderSide.none,
-                                      // 不绘制边框
-                                      borderRadius: BorderRadius.circular(0.0),
-                                      // 确保角落没有圆角
-                                      gapPadding: 0.0, // 移除边框与hintText之间的间距
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderSide: const BorderSide(
-                                          width: 1.0, color: Colors.black),
-                                      // 仅在聚焦时绘制底部边框
-                                      borderRadius: BorderRadius.circular(0.0),
-                                    ),
-                                  ),
-                                  onSubmitted: (value) => _doTmdbSearch(),
+                          Expanded(
+                            child: TextField(
+                              controller: controller.searchKeyController,
+                              decoration: InputDecoration(
+                                isDense: true,
+                                hintText: '请输入搜索关键字',
+                                hintStyle: const TextStyle(fontSize: 14),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 8, horizontal: 5),
+                                fillColor: Colors.transparent,
+                                focusColor: Colors.transparent,
+                                hoverColor: Colors.transparent,
+                                border: OutlineInputBorder(
+                                  borderSide: BorderSide.none,
+                                  // 不绘制边框
+                                  borderRadius: BorderRadius.circular(0.0),
+                                  // 确保角落没有圆角
+                                  gapPadding: 0.0, // 移除边框与hintText之间的间距
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: const BorderSide(
+                                      width: 1.0, color: Colors.black),
+                                  // 仅在聚焦时绘制底部边框
+                                  borderRadius: BorderRadius.circular(0.0),
                                 ),
                               ),
-                              const SizedBox(
-                                width: 5,
-                              ),
-                              GetBuilder<AggSearchController>(
-                                  builder: (controller) {
-                                return CustomPopup(
-                                  showArrow: false,
-                                  backgroundColor:
-                                      Theme.of(context).colorScheme.surface,
-                                  barrierColor: Colors.transparent,
-                                  content: SizedBox(
-                                    width: 100,
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        // if (controller.tmdbClient != null)
-                                        PopupMenuItem<String>(
-                                          child: Text(
-                                            'T M D B',
-                                            style: TextStyle(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .secondary,
-                                            ),
-                                          ),
-                                          onTap: () => _doTmdbSearch(),
+                              onSubmitted: (value) => _doTmdbSearch(),
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          GetBuilder<AggSearchController>(
+                              builder: (controller) {
+                            return CustomPopup(
+                              showArrow: false,
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.surface,
+                              barrierColor: Colors.transparent,
+                              content: SizedBox(
+                                width: 100,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // if (controller.tmdbClient != null)
+                                    PopupMenuItem<String>(
+                                      child: Text(
+                                        'T M D B',
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary,
                                         ),
-                                        PopupMenuItem<String>(
-                                          child: Text(
-                                            '来自豆瓣',
-                                            style: TextStyle(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .secondary,
-                                            ),
-                                          ),
-                                          onTap: () async {
-                                            await controller.doDouBanSearch();
-                                          },
-                                        ),
-                                        PopupMenuItem<String>(
-                                          child: Text(
-                                            '清理tmdb',
-                                            style: TextStyle(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .secondary,
-                                            ),
-                                          ),
-                                          onTap: () async {
-                                            controller.results.clear();
-                                            controller.update();
-                                          },
-                                        ),
-                                        PopupMenuItem<String>(
-                                          child: Text(
-                                            '清理豆瓣',
-                                            style: TextStyle(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .secondary,
-                                            ),
-                                          ),
-                                          onTap: () async {
-                                            controller.showDouBanResults
-                                                .clear();
-                                            controller.update();
-                                          },
-                                        ),
-                                        PopupMenuItem<String>(
-                                          child: Text(
-                                            '搜索资源',
-                                            style: TextStyle(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .secondary,
-                                            ),
-                                          ),
-                                          onTap: () async {
-                                            // 在这里执行搜索操作
-                                            if (controller.isLoading) {
-                                              await controller.cancelSearch();
-                                            } else {
-                                              controller.doWebsocketSearch();
-                                            }
-                                          },
-                                        ),
-                                        PopupMenuItem<String>(
-                                          child: Text(
-                                            '站点[◉${controller.maxCount}]',
-                                            style: TextStyle(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .secondary,
-                                            ),
-                                          ),
-                                          onTap: () async {
-                                            _openSiteSheet();
-                                          },
-                                        ),
-                                      ],
+                                      ),
+                                      onTap: () => _doTmdbSearch(),
                                     ),
-                                  ),
-                                  child: Container(
-                                    width: 36,
-                                    height: 36,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                    child: controller.isLoading
-                                        ? InkWell(
-                                            onTap: () =>
-                                                controller.cancelSearch(),
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(8),
-                                              child: CircularProgressIndicator(
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .onPrimary,
-                                              ),
-                                            ),
-                                          )
-                                        : Icon(
-                                            Icons.search,
-                                            size: 28,
+                                    PopupMenuItem<String>(
+                                      child: Text(
+                                        '来自豆瓣',
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary,
+                                        ),
+                                      ),
+                                      onTap: () async {
+                                        await controller.doDouBanSearch();
+                                      },
+                                    ),
+                                    PopupMenuItem<String>(
+                                      child: Text(
+                                        '清理tmdb',
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary,
+                                        ),
+                                      ),
+                                      onTap: () async {
+                                        controller.results.clear();
+                                        controller.update();
+                                      },
+                                    ),
+                                    PopupMenuItem<String>(
+                                      child: Text(
+                                        '清理豆瓣',
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary,
+                                        ),
+                                      ),
+                                      onTap: () async {
+                                        controller.showDouBanResults.clear();
+                                        controller.update();
+                                      },
+                                    ),
+                                    PopupMenuItem<String>(
+                                      child: Text(
+                                        '搜索资源',
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary,
+                                        ),
+                                      ),
+                                      onTap: () async {
+                                        // 在这里执行搜索操作
+                                        if (controller.isLoading) {
+                                          await controller.cancelSearch();
+                                        } else {
+                                          controller.doWebsocketSearch();
+                                        }
+                                      },
+                                    ),
+                                    PopupMenuItem<String>(
+                                      child: Text(
+                                        '站点[◉${controller.maxCount}]',
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary,
+                                        ),
+                                      ),
+                                      onTap: () async {
+                                        _openSiteSheet();
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              child: Container(
+                                width: 36,
+                                height: 36,
+                                color: Theme.of(context).colorScheme.primary,
+                                child: controller.isLoading
+                                    ? InkWell(
+                                        onTap: () => controller.cancelSearch(),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8),
+                                          child: CircularProgressIndicator(
                                             color: Theme.of(context)
                                                 .colorScheme
                                                 .onPrimary,
                                           ),
-                                  ),
-                                );
-                              }),
-                            ],
-                          ),
+                                        ),
+                                      )
+                                    : Icon(
+                                        Icons.search,
+                                        size: 28,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary,
+                                      ),
+                              ),
+                            );
+                          }),
                         ],
                       ),
                     ),
@@ -560,7 +563,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                         backgroundColor: Theme.of(context)
                             .colorScheme
                             .primary
-                            .withOpacity(0.7),
+                            .withOpacity(opacity),
                         labelColor: Theme.of(context).colorScheme.onPrimary,
                       ),
                     ),
@@ -782,7 +785,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                           backgroundColor: Theme.of(context)
                               .colorScheme
                               .primary
-                              .withOpacity(0.7),
+                              .withOpacity(opacity),
                           labelColor: Theme.of(context).colorScheme.onPrimary,
                         ),
                       ]),
@@ -1131,7 +1134,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                               backgroundColor: Theme.of(context)
                                   .colorScheme
                                   .primary
-                                  .withOpacity(0.8),
+                                  .withOpacity(opacity),
                               labelStyle: const TextStyle(
                                   fontSize: 12, color: Colors.white),
                               selectedColor: Colors.green,
@@ -1924,7 +1927,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                           backgroundColor: Theme.of(context)
                               .colorScheme
                               .primary
-                              .withOpacity(0.7),
+                              .withOpacity(opacity),
                           labelColor: Theme.of(context).colorScheme.onPrimary,
                         ),
                       ]),

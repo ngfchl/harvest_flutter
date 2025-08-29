@@ -36,22 +36,11 @@ class TaskPage extends StatelessWidget {
             children: [
               Scaffold(
                 backgroundColor: Colors.transparent,
-                appBar: AppBar(
-                  backgroundColor: Colors.transparent,
-                  actions: [
-                    IconButton(
-                      icon: const Icon(Icons.refresh, size: 20),
-                      onPressed: () {
-                        controller.getTaskInfo();
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.add, size: 20),
-                      onPressed: () {
-                        editTask(null, context);
-                      },
-                    ),
-                  ],
+                floatingActionButton: IconButton(
+                  icon: const Icon(Icons.add, size: 20),
+                  onPressed: () {
+                    editTask(null, context);
+                  },
                 ),
                 body: Column(
                   children: [

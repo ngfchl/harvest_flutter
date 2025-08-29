@@ -63,366 +63,390 @@ class _MySitePagePageState extends State<MySitePage>
             },
             child: Column(
               children: [
-                if (controller.loadingFromServer)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const Center(
-                          child: GFLoader(size: 8, loaderstrokeWidth: 2)),
-                      const SizedBox(width: 5),
-                      Text(
-                        '当前为缓存数据，正在从服务器加载',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                Padding(
-                  padding:
+                CustomCard(
+                  margin:
                       const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
-                  child: Row(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
+                  child: Column(
                     children: [
-                      GetBuilder<MySiteController>(
-                          id: Key('showSearchBar'),
-                          builder: (controller) {
-                            return Expanded(
-                              child: InkWell(
-                                onTap: () {
-                                  FocusScope.of(context)
-                                      .requestFocus(blankNode);
+                      if (controller.loadingFromServer)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Center(
+                                child: GFLoader(size: 8, loaderstrokeWidth: 2)),
+                            const SizedBox(width: 5),
+                            Text(
+                              '当前为缓存数据，正在从服务器加载',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      Row(
+                        children: [
+                          GetBuilder<MySiteController>(
+                              id: Key('showSearchBar'),
+                              builder: (controller) {
+                                return Expanded(
+                                  child: InkWell(
+                                    onTap: () {
+                                      FocusScope.of(context)
+                                          .requestFocus(blankNode);
+                                    },
+                                    child: SizedBox(
+                                      height: 32,
+                                      child: TextField(
+                                        focusNode: blankNode,
+                                        scrollPhysics:
+                                            const NeverScrollableScrollPhysics(),
+                                        // 禁止滚动
+                                        maxLines: 1,
+
+                                        inputFormatters: [
+                                          LengthLimitingTextInputFormatter(20),
+                                        ],
+                                        controller: controller.searchController,
+                                        style: const TextStyle(fontSize: 12),
+                                        textAlignVertical:
+                                            TextAlignVertical.center,
+                                        decoration: InputDecoration(
+                                          // labelText: '搜索',
+                                          isDense: true,
+                                          fillColor: Colors.transparent,
+
+                                          hoverColor: Colors.transparent,
+                                          focusColor: Colors.transparent,
+                                          hintText: '输入关键词...',
+                                          labelStyle:
+                                              const TextStyle(fontSize: 12),
+                                          hintStyle:
+                                              const TextStyle(fontSize: 12),
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                  vertical: 8, horizontal: 5),
+                                          prefixIcon: Icon(
+                                            Icons.search,
+                                            size: 14,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary,
+                                          ),
+                                          // suffix: ,
+                                          suffixIcon: Padding(
+                                            padding: const EdgeInsets.only(
+                                                right: 8.0),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                    '计数：${controller.showStatusList.length}',
+                                                    style: const TextStyle(
+                                                        fontSize: 12,
+                                                        color: Colors.orange)),
+                                              ],
+                                            ),
+                                          ),
+                                          border: OutlineInputBorder(
+                                            borderSide: BorderSide.none,
+                                            // 不绘制边框
+                                            borderRadius:
+                                                BorderRadius.circular(0.0),
+                                            // 确保角落没有圆角
+                                            gapPadding:
+                                                0.0, // 移除边框与hintText之间的间距
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: const BorderSide(
+                                                width: 1.0,
+                                                color: Colors.black),
+                                            // 仅在聚焦时绘制底部边框
+                                            borderRadius:
+                                                BorderRadius.circular(0.0),
+                                          ),
+                                        ),
+                                        onSubmitted: (value) async {
+                                          controller.searching = true;
+                                          controller.update();
+                                          Logger.instance.d('搜索框内容变化：$value');
+                                          controller.searchKey = value;
+                                          await Future.delayed(
+                                              Duration(milliseconds: 300));
+                                          controller.filterByKey();
+                                          controller.searching = false;
+                                          controller.update();
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }),
+                          if (controller.searchKey.isNotEmpty)
+                            IconButton(
+                                onPressed: () {
+                                  controller.searchController.text = controller
+                                      .searchController.text
+                                      .substring(
+                                          0,
+                                          controller.searchController.text
+                                                  .length -
+                                              1);
+                                  controller.searchKey =
+                                      controller.searchController.text;
+                                  controller.filterByKey();
+                                  controller.update();
                                 },
-                                child: SizedBox(
-                                  height: 32,
-                                  child: TextField(
-                                    focusNode: blankNode,
-                                    scrollPhysics:
-                                        const NeverScrollableScrollPhysics(),
-                                    // 禁止滚动
-                                    maxLines: 1,
-
-                                    inputFormatters: [
-                                      LengthLimitingTextInputFormatter(20),
-                                    ],
-                                    controller: controller.searchController,
-                                    style: const TextStyle(fontSize: 12),
-                                    textAlignVertical: TextAlignVertical.center,
-                                    decoration: InputDecoration(
-                                      // labelText: '搜索',
-                                      isDense: true,
-                                      fillColor: Colors.transparent,
-
-                                      hoverColor: Colors.transparent,
-                                      focusColor: Colors.transparent,
-                                      hintText: '输入关键词...',
-                                      labelStyle: const TextStyle(fontSize: 12),
-                                      hintStyle: const TextStyle(fontSize: 12),
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                              vertical: 8, horizontal: 5),
-                                      prefixIcon: Icon(
-                                        Icons.search,
-                                        size: 14,
+                                icon: controller.searching
+                                    ? GFLoader(
+                                        type: GFLoaderType.custom,
+                                        duration:
+                                            const Duration(milliseconds: 120),
+                                        loaderIconOne: Icon(
+                                          Icons.circle_outlined,
+                                          size: 16,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary
+                                              .withOpacity(0.8),
+                                        ),
+                                      )
+                                    : Icon(Icons.backspace_outlined,
+                                        size: 18,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary
+                                            .withOpacity(0.8)))
+                        ],
+                      ),
+                      SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Wrap(
+                            alignment: WrapAlignment.spaceBetween,
+                            // mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            // crossAxisAlignment: CrossAxisAlignment.center,
+                            direction: Axis.horizontal,
+                            spacing: 15,
+                            children: [
+                              InkWell(
+                                onTap: () => _showFilterBottomSheet(),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0, vertical: 3),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.filter_tilt_shift,
+                                        size: 18,
                                         color: Theme.of(context)
                                             .colorScheme
                                             .primary,
                                       ),
-                                      // suffix: ,
-                                      suffixIcon: Padding(
-                                        padding:
-                                            const EdgeInsets.only(right: 8.0),
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Text(
-                                                '计数：${controller.showStatusList.length}',
-                                                style: const TextStyle(
-                                                    fontSize: 12,
-                                                    color: Colors.orange)),
-                                          ],
+                                      SizedBox(width: 3),
+                                      Text(
+                                        controller.filterOptions
+                                            .firstWhere((item) =>
+                                                item.value ==
+                                                controller.filterKey)
+                                            .name,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
                                         ),
                                       ),
-                                      border: OutlineInputBorder(
-                                        borderSide: BorderSide.none,
-                                        // 不绘制边框
-                                        borderRadius:
-                                            BorderRadius.circular(0.0),
-                                        // 确保角落没有圆角
-                                        gapPadding: 0.0, // 移除边框与hintText之间的间距
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: const BorderSide(
-                                            width: 1.0, color: Colors.black),
-                                        // 仅在聚焦时绘制底部边框
-                                        borderRadius:
-                                            BorderRadius.circular(0.0),
-                                      ),
-                                    ),
-                                    onSubmitted: (value) async {
-                                      controller.searching = true;
-                                      controller.update();
-                                      Logger.instance.d('搜索框内容变化：$value');
-                                      controller.searchKey = value;
-                                      await Future.delayed(
-                                          Duration(milliseconds: 300));
-                                      controller.filterByKey();
-                                      controller.searching = false;
-                                      controller.update();
-                                    },
+                                    ],
                                   ),
                                 ),
                               ),
-                            );
-                          }),
-                      if (controller.searchKey.isNotEmpty)
-                        IconButton(
-                            onPressed: () {
-                              controller.searchController.text =
-                                  controller.searchController.text.substring(
-                                      0,
-                                      controller.searchController.text.length -
-                                          1);
-                              controller.searchKey =
-                                  controller.searchController.text;
-                              controller.filterByKey();
-                              controller.update();
-                            },
-                            icon: controller.searching
-                                ? GFLoader(
-                                    type: GFLoaderType.custom,
-                                    duration: const Duration(milliseconds: 120),
-                                    loaderIconOne: Icon(
-                                      Icons.circle_outlined,
-                                      size: 16,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .primary
-                                          .withOpacity(0.8),
-                                    ),
-                                  )
-                                : Icon(Icons.backspace_outlined,
-                                    size: 18,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .primary
-                                        .withOpacity(0.8)))
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
-                  child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Wrap(
-                        alignment: WrapAlignment.spaceBetween,
-                        // mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        // crossAxisAlignment: CrossAxisAlignment.center,
-                        direction: Axis.horizontal,
-                        spacing: 15,
-                        children: [
-                          InkWell(
-                            onTap: () => _showFilterBottomSheet(),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8.0, vertical: 3),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.filter_tilt_shift,
-                                    size: 18,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                  ),
-                                  SizedBox(width: 3),
-                                  Text(
-                                    controller.filterOptions
-                                        .firstWhere((item) =>
-                                            item.value == controller.filterKey)
-                                        .name,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          InkWell(
-                            onTap: () {
-                              _showSortBottomSheet();
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8.0, vertical: 3),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.sort_by_alpha_outlined,
-                                    size: 18,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                  ),
-                                  SizedBox(width: 3),
-                                  Text(
-                                    controller.siteSortOptions
-                                        .firstWhere((item) =>
-                                            item.value == controller.sortKey)
-                                        .name,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          InkWell(
-                            onTap: () {
-                              controller.sortReversed =
-                                  !controller.sortReversed;
-                              controller.sortStatusList();
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8.0, vertical: 3),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  controller.sortReversed
-                                      ? Icon(
-                                          Icons.sim_card_download_sharp,
-                                          size: 18,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primary,
-                                        )
-                                      : Icon(
-                                          Icons.upload_file_sharp,
-                                          size: 18,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primary,
-                                        ),
-                                  SizedBox(width: 3),
-                                  controller.sortReversed
-                                      ? Text(
-                                          '正序',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .primary,
-                                          ),
-                                        )
-                                      : Text(
-                                          '倒序',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .primary,
-                                          ),
-                                        ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          CustomPopup(
-                            contentDecoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.background,
-                            ),
-                            content: SingleChildScrollView(
-                              scrollDirection: Axis.vertical,
-                              child: Wrap(
-                                alignment: WrapAlignment.spaceBetween,
-                                // mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                // crossAxisAlignment: CrossAxisAlignment.center,
-                                direction: Axis.vertical,
-                                // spacing: 15,
-                                children: [
-                                  PopupMenuItem<String>(
-                                    height: 32,
-                                    child: Text(
-                                      '全部',
-                                      style: TextStyle(
+                              InkWell(
+                                onTap: () {
+                                  _showSortBottomSheet();
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0, vertical: 3),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.sort_by_alpha_outlined,
+                                        size: 18,
                                         color: Theme.of(context)
                                             .colorScheme
                                             .primary,
                                       ),
-                                    ),
-                                    onTap: () async {
-                                      Get.back();
-                                      controller.selectTag = '全部';
-                                      controller.filterByKey();
-                                      // await controller.mySiteController.initData();
-                                    },
+                                      SizedBox(width: 3),
+                                      Text(
+                                        controller.siteSortOptions
+                                            .firstWhere((item) =>
+                                                item.value ==
+                                                controller.sortKey)
+                                            .name,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  ...controller.tagList
-                                      .map((item) => PopupMenuItem<String>(
-                                            height: 32,
-                                            child: Text(
-                                              item,
+                                ),
+                              ),
+                              InkWell(
+                                onTap: () {
+                                  controller.sortReversed =
+                                      !controller.sortReversed;
+                                  controller.sortStatusList();
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0, vertical: 3),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      controller.sortReversed
+                                          ? Icon(
+                                              Icons.sim_card_download_sharp,
+                                              size: 18,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
+                                            )
+                                          : Icon(
+                                              Icons.upload_file_sharp,
+                                              size: 18,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
+                                            ),
+                                      SizedBox(width: 3),
+                                      controller.sortReversed
+                                          ? Text(
+                                              '正序',
                                               style: TextStyle(
+                                                fontSize: 14,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary,
+                                              ),
+                                            )
+                                          : Text(
+                                              '倒序',
+                                              style: TextStyle(
+                                                fontSize: 14,
                                                 color: Theme.of(context)
                                                     .colorScheme
                                                     .primary,
                                               ),
                                             ),
-                                            onTap: () async {
-                                              Get.back();
-                                              controller.selectTag = item;
-                                              controller.filterByKey();
-                                              // await controller.mySiteController.initData();
-                                            },
-                                          )),
-                                ],
-                              ),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8.0, vertical: 3),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.tag,
-                                    size: 18,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
+                                    ],
                                   ),
-                                  Text(
-                                    '【${controller.selectTag}】',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                    ),
-                                  )
-                                ],
+                                ),
                               ),
-                            ),
-                          ),
-                        ],
-                      )),
+                              CustomPopup(
+                                contentDecoration: BoxDecoration(
+                                  color:
+                                      Theme.of(context).colorScheme.background,
+                                ),
+                                content: SingleChildScrollView(
+                                  scrollDirection: Axis.vertical,
+                                  child: Wrap(
+                                    alignment: WrapAlignment.spaceBetween,
+                                    // mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                    // crossAxisAlignment: CrossAxisAlignment.center,
+                                    direction: Axis.vertical,
+                                    // spacing: 15,
+                                    children: [
+                                      PopupMenuItem<String>(
+                                        height: 32,
+                                        child: Text(
+                                          '全部',
+                                          style: TextStyle(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary,
+                                          ),
+                                        ),
+                                        onTap: () async {
+                                          Get.back();
+                                          controller.selectTag = '全部';
+                                          controller.filterByKey();
+                                          // await controller.mySiteController.initData();
+                                        },
+                                      ),
+                                      ...controller.tagList
+                                          .map((item) => PopupMenuItem<String>(
+                                                height: 32,
+                                                child: Text(
+                                                  item,
+                                                  style: TextStyle(
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .primary,
+                                                  ),
+                                                ),
+                                                onTap: () async {
+                                                  Get.back();
+                                                  controller.selectTag = item;
+                                                  controller.filterByKey();
+                                                  // await controller.mySiteController.initData();
+                                                },
+                                              )),
+                                    ],
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0, vertical: 3),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.tag,
+                                        size: 18,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                      ),
+                                      Text(
+                                        '【${controller.selectTag}】',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )),
+                    ],
+                  ),
                 ),
+
                 Expanded(
                   child: controller.isLoaded
                       ? Center(

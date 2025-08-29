@@ -18,199 +18,201 @@ class SshWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    TextEditingController commandController = TextEditingController();
-
     return GetBuilder<SshController>(builder: (controller) {
       return Scaffold(
         backgroundColor: Colors.transparent,
-        body: controller.connected
-            ? Column(
+        body: CustomCard(
+          child: controller.connected
+              ? commandWidget(context)
+              : loginWidget(context),
+        ),
+      );
+    });
+  }
+
+  Widget loginWidget(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const Padding(
+          padding: EdgeInsets.all(8.0),
+          child: CustomTextTag(
+            labelText: 'SSH 连接设备为危险操作，请你一定要知晓每一个 SSH 命令的含义确认操作',
+            backgroundColor: Colors.orange,
+          ),
+        ),
+        const Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Text(
+            '本功能仅支持使用 root 账户登录或者不使用 root账户可以直接操作的设备。已知不可用设备：群晖、极空间，',
+          ),
+        ),
+        CustomTextField(
+          controller: controller.hostController,
+          labelText: '请输入服务器地址',
+        ),
+        CustomTextField(
+          controller: controller.portController,
+          labelText: '请输入 SSH 端口',
+        ),
+        CustomTextField(
+          controller: controller.usernameController,
+          labelText: '请输入账号',
+        ),
+        CustomTextField(
+          controller: controller.passwordController,
+          labelText: '请输入密码',
+        ),
+        CustomTextField(
+          controller: controller.proxyController,
+          labelText: '默认代理',
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: SwitchListTile(
+              title: const Text('记住密码'),
+              value: controller.remember,
+              selectedTileColor: Theme.of(context).colorScheme.primary,
+              inactiveTrackColor: Colors.transparent,
+              inactiveThumbColor: Theme.of(context).colorScheme.primary,
+              onChanged: (bool value) {
+                controller.remember = value;
+                controller.update();
+              }),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: FullWidthButton(
+            labelColor: Theme.of(context).colorScheme.onPrimary,
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            onPressed: () async {
+              await controller.connect();
+              try {
+                if (!controller.connected) {
+                  Get.snackbar('登录失败！', '登录失败啦，请检查用户名密码！');
+                }
+              } catch (e, trace) {
+                Logger.instance.e(e);
+                Logger.instance.e(trace);
+              }
+            },
+            text: '连接',
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget commandWidget(BuildContext context) {
+    TextEditingController commandController = TextEditingController();
+    return Column(
+      children: [
+        CustomCard(
+          padding: EdgeInsets.all(8),
+          child: Column(
+            spacing: 8,
+            children: [
+              SizedBox(
+                height: 28,
+                child: TextField(
+                  controller: commandController,
+                  decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: '请输入命令',
+                      labelStyle: TextStyle(fontSize: 14)),
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: SizedBox(
-                      height: 28,
-                      child: TextField(
-                        controller: commandController,
-                        decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: '请输入命令',
-                            labelStyle: TextStyle(fontSize: 14)),
+                  ElevatedButton(
+                      onPressed: () async {
+                        await controller.execute(commandController.text);
+                      },
+                      child: Text(
+                        '发送',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      )),
+                  ElevatedButton(
+                    onPressed: () {
+                      controller.clear();
+                    },
+                    child: Text(
+                      '清除',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                   ),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-                    height: 40,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        ElevatedButton(
-                            onPressed: () async {
-                              await controller.execute(commandController.text);
-                            },
-                            child: Text(
-                              '发送',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                            )),
-                        ElevatedButton(
-                          onPressed: () {
-                            controller.clear();
-                          },
-                          child: Text(
-                            '清除',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            controller.getContainerList();
-                          },
-                          child: Text(
-                            '刷新',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            controller.disconnect();
-                          },
-                          child: Text(
-                            '断开',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                      child: StreamBuilder<List<DockerContainer>>(
-                          stream: controller.containerStream,
-                          builder: (context, snapshot) {
-                            return ListView.builder(
-                                itemCount: controller.containerList.length,
-                                itemBuilder: (context, index) {
-                                  DockerContainer container =
-                                      controller.containerList[index];
-
-                                  return buildContainerCard(container, context);
-                                });
-                          })),
-                  CustomCard(
-                      height: MediaQuery.of(context).size.height * 0.3,
-                      color: Theme.of(context).colorScheme.surface,
-                      child: ListView.builder(
-                          itemCount: controller.logList.length,
-                          controller: controller.scrollController,
-                          itemBuilder: (context, index) {
-                            String res = controller.logList[index];
-                            return Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 2),
-                                width: MediaQuery.of(context).size.width,
-                                child: SelectableText(
-                                  res.toString().trim(),
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      letterSpacing: 1.5,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface
-                                          .withOpacity(0.8)),
-                                ));
-                          })),
-                ],
-              )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  AppBar(
-                    title: const Text('SSH Client'),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: CustomTextTag(
-                      labelText: 'SSH 连接设备为危险操作，请你一定要知晓每一个 SSH 命令的含义确认操作',
-                      backgroundColor: Colors.orange,
-                    ),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.all(8.0),
+                  ElevatedButton(
+                    onPressed: () {
+                      controller.getContainerList();
+                    },
                     child: Text(
-                      '本功能仅支持使用 root 账户登录或者不使用 root账户可以直接操作的设备。已知不可用设备：群晖、极空间，',
+                      '刷新',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
                   ),
-                  CustomTextField(
-                    controller: controller.hostController,
-                    labelText: '请输入服务器地址',
-                  ),
-                  CustomTextField(
-                    controller: controller.portController,
-                    labelText: '请输入 SSH 端口',
-                  ),
-                  CustomTextField(
-                    controller: controller.usernameController,
-                    labelText: '请输入账号',
-                  ),
-                  CustomTextField(
-                    controller: controller.passwordController,
-                    labelText: '请输入密码',
-                  ),
-                  CustomTextField(
-                    controller: controller.proxyController,
-                    labelText: '默认代理',
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: SwitchListTile(
-                        title: const Text('记住密码'),
-                        value: controller.remember,
-                        selectedTileColor:
-                            Theme.of(context).colorScheme.primary,
-                        inactiveTrackColor: Colors.transparent,
-                        inactiveThumbColor:
-                            Theme.of(context).colorScheme.primary,
-                        onChanged: (bool value) {
-                          controller.remember = value;
-                          controller.update();
-                        }),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: FullWidthButton(
-                      labelColor: Theme.of(context).colorScheme.onPrimary,
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      onPressed: () async {
-                        await controller.connect();
-                        try {
-                          if (!controller.connected) {
-                            Get.snackbar('登录失败！', '登录失败啦，请检查用户名密码！');
-                          }
-                        } catch (e, trace) {
-                          Logger.instance.e(e);
-                          Logger.instance.e(trace);
-                        }
-                      },
-                      text: '连接',
+                  ElevatedButton(
+                    onPressed: () {
+                      controller.disconnect();
+                    },
+                    child: Text(
+                      '断开',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
                   ),
                 ],
               ),
-      );
-    });
+            ],
+          ),
+        ),
+        Expanded(
+            child: StreamBuilder<List<DockerContainer>>(
+                stream: controller.containerStream,
+                builder: (context, snapshot) {
+                  return ListView.builder(
+                      itemCount: controller.containerList.length,
+                      itemBuilder: (context, index) {
+                        DockerContainer container =
+                            controller.containerList[index];
+                        return buildContainerCard(container, context);
+                      });
+                })),
+        CustomCard(
+            height: MediaQuery.of(context).size.height * 0.3,
+            child: ListView.builder(
+                itemCount: controller.logList.length,
+                controller: controller.scrollController,
+                itemBuilder: (context, index) {
+                  String res = controller.logList[index];
+                  return Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 2),
+                      width: MediaQuery.of(context).size.width,
+                      child: SelectableText(
+                        res.toString().trim(),
+                        style: TextStyle(
+                            fontSize: 12,
+                            letterSpacing: 1.5,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withOpacity(0.8)),
+                      ));
+                })),
+      ],
+    );
   }
 
   Widget buildContainerCard(DockerContainer container, BuildContext context) {
@@ -228,7 +230,6 @@ class SshWidget extends StatelessWidget {
       }
       ContainerStats? stats = container.stats;
       return CustomCard(
-        padding: const EdgeInsets.all(8),
         child: Slidable(
           key: ValueKey('${container.id}_${container.name}'),
           // direction: Axis.vertical,

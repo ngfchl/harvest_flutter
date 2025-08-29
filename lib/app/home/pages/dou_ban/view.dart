@@ -41,7 +41,11 @@ class _DouBanPageState extends State<DouBanPage>
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerDocked,
           // floatingActionButton: _buildBottomButtonBar(),
-          bottomNavigationBar: const TabBar(tabs: tabs),
+          bottomNavigationBar: CustomCard(
+              child: const TabBar(
+            tabs: tabs,
+            dividerHeight: 0,
+          )),
           body: TabBarView(
             children: [
               Column(children: [
@@ -373,6 +377,7 @@ class _DouBanPageState extends State<DouBanPage>
                                                       });
                                                 },
                                                 child: CustomCard(
+                                                  color: Colors.transparent,
                                                   padding:
                                                       const EdgeInsets.all(8),
                                                   child: Row(
