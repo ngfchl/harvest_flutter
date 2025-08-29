@@ -342,49 +342,51 @@ class _AggSearchPageState extends State<AggSearchPage>
                                         runSpacing: 8,
                                         spacing: 8,
                                         children: [
-                                          FilterChip(
-                                            backgroundColor: backgroundColor,
-                                            deleteIcon: Icon(
-                                              Icons.clear,
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .error,
+                                          if (controller
+                                              .searchHistory.isNotEmpty)
+                                            FilterChip(
+                                              backgroundColor: backgroundColor,
+                                              deleteIcon: Icon(
+                                                Icons.clear,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .error,
+                                              ),
+                                              deleteButtonTooltipMessage:
+                                                  '确定要删除全部搜索记录吗？',
+                                              label: Text('一键清理',
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .error,
+                                                  )),
+                                              onSelected: (bool value) {},
+                                              onDeleted: () {
+                                                Get.defaultDialog(
+                                                  title: '提示',
+                                                  middleText: '确定要删除全部搜索记录吗？',
+                                                  cancel: TextButton(
+                                                    onPressed: () {
+                                                      Get.back();
+                                                    },
+                                                    child: Text('取消'),
+                                                  ),
+                                                  confirm: TextButton(
+                                                    onPressed: () {
+                                                      controller.searchHistory
+                                                          .clear();
+                                                      SPUtil.setStringList(
+                                                          'search_history',
+                                                          controller
+                                                              .searchHistory);
+                                                      controller.update();
+                                                    },
+                                                    child: Text('确定'),
+                                                  ),
+                                                );
+                                              },
                                             ),
-                                            deleteButtonTooltipMessage:
-                                                '确定要删除全部搜索记录吗？',
-                                            label: Text('一键清理',
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .error,
-                                                )),
-                                            onSelected: (bool value) {},
-                                            onDeleted: () {
-                                              Get.defaultDialog(
-                                                title: '提示',
-                                                middleText: '确定要删除全部搜索记录吗？',
-                                                cancel: TextButton(
-                                                  onPressed: () {
-                                                    Get.back();
-                                                  },
-                                                  child: Text('取消'),
-                                                ),
-                                                confirm: TextButton(
-                                                  onPressed: () {
-                                                    controller.searchHistory
-                                                        .clear();
-                                                    SPUtil.setStringList(
-                                                        'search_history',
-                                                        controller
-                                                            .searchHistory);
-                                                    controller.update();
-                                                  },
-                                                  child: Text('确定'),
-                                                ),
-                                              );
-                                            },
-                                          ),
                                           ...controller.searchHistory.map(
                                             (el) => FilterChip(
                                               backgroundColor: backgroundColor,
