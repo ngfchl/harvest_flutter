@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:app_service/app_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_refresh/easy_refresh.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harvest/api/api.dart';
@@ -2391,6 +2392,9 @@ class SettingPage extends StatelessWidget {
     TextEditingController urlController = TextEditingController(
       text: baseUrl.value,
     );
+    if (kIsWeb) {
+      useLocalBackground.value = false;
+    }
     final isEdit = false.obs;
     final showPreview = false.obs;
     HomeController homeController = Get.find();
@@ -2524,11 +2528,11 @@ class SettingPage extends StatelessWidget {
                           SPUtil.setBool('useBackground', value);
                         },
                       ),
-                      if (useBackground.value)
+                      if (!kIsWeb && useBackground.value)
                         Column(children: [
                           SwitchTile(
                             title: '使用本地图片',
-                            value: useLocalBackground.value,
+                            value: kIsWeb ? false : useLocalBackground.value,
                             onChanged: (value) {
                               useLocalBackground.value = value;
                               SPUtil.setBool('useLocalBackground', value);
