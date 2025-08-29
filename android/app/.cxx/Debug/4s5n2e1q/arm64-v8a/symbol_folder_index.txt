@@ -1,0 +1,1 @@
+/Users/ngf/StudioProjects/harvest_flutter/build/app/intermediates/cxx/Debug/4s5n2e1q/obj/arm64-v8a

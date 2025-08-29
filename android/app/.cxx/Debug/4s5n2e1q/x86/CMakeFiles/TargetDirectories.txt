@@ -1,0 +1,2 @@
+/Users/ngf/StudioProjects/harvest_flutter/android/app/.cxx/Debug/4s5n2e1q/x86/CMakeFiles/edit_cache.dir
+/Users/ngf/StudioProjects/harvest_flutter/android/app/.cxx/Debug/4s5n2e1q/x86/CMakeFiles/rebuild_cache.dir

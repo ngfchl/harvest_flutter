@@ -1,13 +1,12 @@
 import concurrent.futures
 import datetime
 import os
+import platform
 import re
 import shutil
 import subprocess
 import sys
 import traceback
-import platform
-
 import yaml
 
 
@@ -116,7 +115,8 @@ class VersionManager:
                             f"{self.output_folder}/harvest_{self.new_version}_{self.machine}-macos.zip")
                 print(f'MacOS 打包完成')
             elif flag == 'windows':
-                res = subprocess.run(f"{self.fvm} flutter build windows", shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                res = subprocess.run(f"{self.fvm} flutter build windows", shell=True, stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE)
                 print(f"{res.stdout.decode("utf-8")}")
                 print(f'Windows APP 编译完成, 开始压缩')
                 zip_path = shutil.make_archive('Release', 'zip', os.path.join(os.getcwd(),
@@ -198,6 +198,6 @@ class VersionManager:
 
 
 if __name__ == '__main__':
-    manager = VersionManager('pubspec.yaml', '~/Desktop/harvest')
+    manager = VersionManager('pubspec.yaml', '/Volumes/DataSet/Sync/harvest')
     manager.compile_and_install()
     # manager.calc_version()
