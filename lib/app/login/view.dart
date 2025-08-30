@@ -190,177 +190,190 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     String cacheServer = 'https://images.weserv.nl/?url=';
     return GetBuilder<LoginController>(builder: (controller) {
-      return Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: Text(
-            '服务器列表',
-            style: TextStyle(color: Theme.of(context).colorScheme.primary),
-          ),
-          actions: [
-            ...[
-              IconButton(
-                  onPressed: () async {
-                    final CommonResponse res =
-                        await controller.clearServerCache();
-                    if (res.succeed) {
-                      Get.snackbar(
-                        '清除缓存服务器',
-                        '服务器缓存已成功清除',
-                        snackPosition: SnackPosition.BOTTOM,
-                        colorText: Theme.of(context).colorScheme.primary,
-                        duration: const Duration(seconds: 3),
-                      );
-                    } else {
-                      Get.snackbar(
-                        '清除服务器',
-                        '清除服务器缓存失败',
-                        snackPosition: SnackPosition.BOTTOM,
-                        colorText: Theme.of(context).colorScheme.error,
-                        duration: const Duration(seconds: 3),
-                      );
-                    }
-                  },
-                  icon: Icon(
-                    Icons.cleaning_services_outlined,
-                    size: 18,
-                    color: Theme.of(context).colorScheme.primary,
-                  )),
-              const LoggingView(),
-              const SizedBox(width: 15),
-              DarkModeSwitch(
-                borderColor: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(width: 15),
-              const SizedBox(
-                height: 20,
-                width: 20,
-                child: ThemeModal(
-                  itemSize: 28,
-                ),
-              ),
-              const SizedBox(width: 15)
-            ],
-            CustomUAWidget(
-              child: Icon(
-                Icons.settings,
-                size: 20,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-            const SizedBox(width: 15),
-          ],
-        ),
-        body: SizedBox(
-          width: double.infinity,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              GetBuilder<LoginController>(
-                  id: 'login_view_background_image',
-                  builder: (controller) {
-                    if (controller.useBackground) {
-                      return Positioned.fill(
-                        child: controller.useLocalBackground &&
-                                !controller.backgroundImage.startsWith('http')
-                            ? Image.file(
-                                File(controller.backgroundImage),
-                                fit: BoxFit.cover,
-                              )
-                            : CachedNetworkImage(
-                                imageUrl:
-                                    '${controller.useImageProxy ? cacheServer : ''}${controller.backgroundImage}',
-                                placeholder: (context, url) => const Center(
-                                    child: CircularProgressIndicator()),
-                                errorWidget: (context, url, error) =>
-                                    Image.asset('assets/images/background.png',
-                                        fit: BoxFit.cover),
-                                fit: BoxFit.cover,
-                              ),
-                      );
-                    }
+      return Stack(
+        children: [
+          GetBuilder<LoginController>(
+              id: 'login_view_background_image',
+              builder: (controller) {
+                if (controller.useBackground) {
+                  return Positioned.fill(
+                    child: controller.useLocalBackground &&
+                            !controller.backgroundImage.startsWith('http')
+                        ? Image.file(
+                            File(controller.backgroundImage),
+                            fit: BoxFit.cover,
+                          )
+                        : CachedNetworkImage(
+                            imageUrl:
+                                '${controller.useImageProxy ? cacheServer : ''}${controller.backgroundImage}',
+                            placeholder: (context, url) => const Center(
+                                child: CircularProgressIndicator()),
+                            errorWidget: (context, url, error) => Image.asset(
+                                'assets/images/background.png',
+                                fit: BoxFit.cover),
+                            fit: BoxFit.cover,
+                          ),
+                  );
+                }
 
-                    return SizedBox.shrink();
-                  }),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Wrap(spacing: 20, runSpacing: 20, children: [
-                    ...controller.serverList
-                        .map((server) => _buildGridTile(server)),
-                    _buildAddServerTile(),
-                  ]),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 36.0),
-                    child: ElevatedButton.icon(
-                      icon: controller.isLoading
-                          ? Center(
-                              child: SizedBox(
-                                  height: 18,
-                                  width: 18,
-                                  child: CircularProgressIndicator(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .primary)),
-                            )
-                          : Icon(Icons.link,
-                              size: 18,
-                              color: Theme.of(context).colorScheme.primary),
-                      label: Text(
-                        '连接服务器',
-                        style: TextStyle(
-                            color: Theme.of(context).colorScheme.primary),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.surface,
-                        // 设置背景颜色为绿色
-                        padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                        // 调整内边距使得按钮更宽
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(5.0), // 边角圆角大小可自定义
-                        ),
-                      ),
-                      onPressed: controller.hasSelectedServer
-                          ? () async {
-                              // 连接服务器的操作逻辑
-                              CommonResponse res = await controller.doLogin();
-
-                              if (res.succeed) {
-                                await Future.delayed(
-                                    Duration(milliseconds: 2500), () {
-                                  Get.offNamed(Routes.HOME);
-                                  Get.snackbar(
-                                    res.succeed ? '登录成功！' : '登录失败',
-                                    res.succeed
-                                        ? '登录成功！欢迎回来，${controller.selectedServer?.username}'
-                                        : res.msg,
-                                    colorText: res.succeed
-                                        ? Theme.of(context).colorScheme.primary
-                                        : Theme.of(context).colorScheme.error,
-                                  );
-                                });
-                              } else {
-                                Get.snackbar(
-                                  '登录失败',
-                                  res.msg,
-                                  colorText:
-                                      Theme.of(context).colorScheme.error,
-                                );
-                              }
-                              controller.isLoading = false;
-                              controller.update();
-                            }
-                          : null,
+                return SizedBox.shrink();
+              }),
+          Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: AppBar(
+              backgroundColor:
+                  Theme.of(context).colorScheme.surface.withOpacity(0.5),
+              title: Text(
+                '服务器列表',
+                style: TextStyle(color: Theme.of(context).colorScheme.primary),
+              ),
+              actions: [
+                ...[
+                  IconButton(
+                      onPressed: () async {
+                        final CommonResponse res =
+                            await controller.clearServerCache();
+                        if (res.succeed) {
+                          Get.snackbar(
+                            '清除缓存服务器',
+                            '服务器缓存已成功清除',
+                            snackPosition: SnackPosition.BOTTOM,
+                            colorText: Theme.of(context).colorScheme.primary,
+                            duration: const Duration(seconds: 3),
+                          );
+                        } else {
+                          Get.snackbar(
+                            '清除服务器',
+                            '清除服务器缓存失败',
+                            snackPosition: SnackPosition.BOTTOM,
+                            colorText: Theme.of(context).colorScheme.error,
+                            duration: const Duration(seconds: 3),
+                          );
+                        }
+                      },
+                      icon: Icon(
+                        Icons.cleaning_services_outlined,
+                        size: 18,
+                        color: Theme.of(context).colorScheme.primary,
+                      )),
+                  const LoggingView(),
+                  const SizedBox(width: 15),
+                  DarkModeSwitch(
+                    borderColor: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 15),
+                  const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: ThemeModal(
+                      itemSize: 28,
                     ),
                   ),
+                  const SizedBox(width: 15)
+                ],
+                CustomUAWidget(
+                  child: Icon(
+                    Icons.settings,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(width: 15),
+              ],
+            ),
+            body: CustomCard(
+              width: double.infinity,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Wrap(spacing: 20, runSpacing: 20, children: [
+                        ...controller.serverList
+                            .map((server) => _buildGridTile(server)),
+                        _buildAddServerTile(),
+                      ]),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 36.0),
+                        child: ElevatedButton.icon(
+                          icon: controller.isLoading
+                              ? Center(
+                                  child: SizedBox(
+                                      height: 18,
+                                      width: 18,
+                                      child: CircularProgressIndicator(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary)),
+                                )
+                              : Icon(Icons.link,
+                                  size: 18,
+                                  color: Theme.of(context).colorScheme.primary),
+                          label: Text(
+                            '连接服务器',
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                Theme.of(context).colorScheme.surface,
+                            // 设置背景颜色为绿色
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 40.0),
+                            // 调整内边距使得按钮更宽
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(5.0), // 边角圆角大小可自定义
+                            ),
+                          ),
+                          onPressed: controller.hasSelectedServer
+                              ? () async {
+                                  // 连接服务器的操作逻辑
+                                  CommonResponse res =
+                                      await controller.doLogin();
+
+                                  if (res.succeed) {
+                                    await Future.delayed(
+                                        Duration(milliseconds: 2500), () {
+                                      Get.offNamed(Routes.HOME);
+                                      Get.snackbar(
+                                        res.succeed ? '登录成功！' : '登录失败',
+                                        res.succeed
+                                            ? '登录成功！欢迎回来，${controller.selectedServer?.username}'
+                                            : res.msg,
+                                        colorText: res.succeed
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .primary
+                                            : Theme.of(context)
+                                                .colorScheme
+                                                .error,
+                                      );
+                                    });
+                                  } else {
+                                    Get.snackbar(
+                                      '登录失败',
+                                      res.msg,
+                                      colorText:
+                                          Theme.of(context).colorScheme.error,
+                                    );
+                                  }
+                                  controller.isLoading = false;
+                                  controller.update();
+                                }
+                              : null,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (controller.switchServerLoading)
+                    Center(child: CircularProgressIndicator())
                 ],
               ),
-              if (controller.switchServerLoading)
-                Center(child: CircularProgressIndicator())
-            ],
+            ),
           ),
-        ),
+        ],
       );
     });
   }
