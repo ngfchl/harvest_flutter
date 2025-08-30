@@ -2528,16 +2528,17 @@ class SettingPage extends StatelessWidget {
                           SPUtil.setBool('useBackground', value);
                         },
                       ),
-                      if (!kIsWeb && useBackground.value)
-                        Column(children: [
-                          SwitchTile(
-                            title: '使用本地图片',
-                            value: kIsWeb ? false : useLocalBackground.value,
-                            onChanged: (value) {
-                              useLocalBackground.value = value;
-                              SPUtil.setBool('useLocalBackground', value);
-                            },
-                          ),
+                      if (useBackground.value)
+                        Column(spacing: 10, children: [
+                          if (!kIsWeb)
+                            SwitchTile(
+                              title: '使用本地图片',
+                              value: kIsWeb ? false : useLocalBackground.value,
+                              onChanged: (value) {
+                                useLocalBackground.value = value;
+                                SPUtil.setBool('useLocalBackground', value);
+                              },
+                            ),
                           if (!useLocalBackground.value)
                             SwitchTile(
                               title: '网络图片加速',
@@ -2547,22 +2548,20 @@ class SettingPage extends StatelessWidget {
                                 SPUtil.setBool('useImageProxy', value);
                               },
                             ),
-                          if (useLocalBackground.value)
-                            ImagePickerRow(
-                              onImagePicked: (String? path) {
-                                if (path != null) {
-                                  urlController.text = path;
-                                }
-                              },
-                            ),
-                          if (!useLocalBackground.value)
-                            CustomTextField(
-                              controller: urlController,
-                              labelText: '背景图片地址',
-                              helperText:
-                                  '请仅输入网络图片地址，例：https://harvest.example.com/images/bg.jpg',
-                            ),
-                          const SizedBox(height: 5),
+                          useLocalBackground.value
+                              ? ImagePickerRow(
+                                  onImagePicked: (String? path) {
+                                    if (path != null) {
+                                      urlController.text = path;
+                                    }
+                                  },
+                                )
+                              : CustomTextField(
+                                  controller: urlController,
+                                  labelText: '背景图片地址',
+                                  helperText:
+                                      '请仅输入网络图片地址，例：https://harvest.example.com/images/bg.jpg',
+                                ),
                           Obx(() {
                             if (showPreview.value && baseUrl.value.isNotEmpty) {
                               Logger.instance.d(
