@@ -5,11 +5,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:elevarm_ui/elevarm_ui.dart';
 
 import '../../api/api.dart';
 import '../../common/card_view.dart';
 import '../../common/custom_ua.dart';
-import '../../common/form_widgets.dart';
 import '../../common/logging.dart';
 import '../../models/common_response.dart';
 import '../../models/login_user.dart';
@@ -403,18 +403,30 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisSize: MainAxisSize.max,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  CustomTextField(
+                  ElevarmTextInputField(
                     controller: nameController,
-                    labelText: '名称',
+                    label: '名称',
                   ),
-                  CustomTextField(
+                  ElevarmTextInputField(
                     controller: entryController,
-                    labelText: '地址',
+                    label: '地址',
                     readOnly: kIsWeb,
                   ),
-                  CustomTextField(
+                  ElevarmTextInputField(
                     controller: usernameController,
-                    labelText: '账号',
+                    label: '账号',
+                  ),
+                  ElevarmTextInputField(
+                    controller: passwordController,
+                    label: '密码',
+                    obscureText: controller.showPassword,
+                    suffixIconAssetName: controller.showPassword
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                    onTapSuffix: () {
+                      controller.showPassword = !controller.showPassword;
+                      controller.update();
+                    },
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(

@@ -416,7 +416,7 @@ class _DownloadPageState extends State<DownloadPage>
                     child: SfCartesianChart(
                       plotAreaBorderWidth: 0,
                       tooltipBehavior: tooltipBehavior,
-                      primaryXAxis: const CategoryAxis(
+                      primaryXAxis: CategoryAxis(
                           isVisible: false,
                           majorGridLines: MajorGridLines(width: 0),
                           edgeLabelPlacement: EdgeLabelPlacement.shift),
@@ -506,7 +506,7 @@ class _DownloadPageState extends State<DownloadPage>
                     child: SfCartesianChart(
                       plotAreaBorderWidth: 0,
                       tooltipBehavior: tooltipBehavior,
-                      primaryXAxis: const CategoryAxis(
+                      primaryXAxis: CategoryAxis(
                           isVisible: false,
                           majorGridLines: MajorGridLines(width: 0),
                           edgeLabelPlacement: EdgeLabelPlacement.none),
@@ -1747,7 +1747,7 @@ class _DownloadPageState extends State<DownloadPage>
                 );
               },
             ),
-            primaryXAxis: const CategoryAxis(
+            primaryXAxis: CategoryAxis(
                 isVisible: false,
                 majorGridLines: MajorGridLines(width: 0),
                 edgeLabelPlacement: EdgeLabelPlacement.shift),
@@ -2282,7 +2282,7 @@ class _DownloadPageState extends State<DownloadPage>
                     );
                   },
                 ),
-                primaryXAxis: const CategoryAxis(
+                primaryXAxis: CategoryAxis(
                     isVisible: false,
                     majorGridLines: MajorGridLines(width: 0),
                     edgeLabelPlacement: EdgeLabelPlacement.shift),

@@ -2298,7 +2298,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                         },
                         // pointColorMapper: (StatusInfo status, _) =>
                         //     RandomColor().randomColor(),
-                        emptyPointSettings: const EmptyPointSettings(
+                        emptyPointSettings: EmptyPointSettings(
                           mode: EmptyPointMode.drop,
                         ),
                         dataLabelMapper: (TrafficDelta? status, _) =>
@@ -2544,7 +2544,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                         },
                         // pointColorMapper: (StatusInfo status, _) =>
                         //     RandomColor().randomColor(),
-                        emptyPointSettings: const EmptyPointSettings(
+                        emptyPointSettings: EmptyPointSettings(
                           mode: EmptyPointMode.drop,
                         ),
                         dataLabelMapper: (TrafficDelta? status, _) => controller
@@ -2754,7 +2754,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                         },
                         // pointColorMapper: (StatusInfo status, _) =>
                         //     RandomColor().randomColor(),
-                        emptyPointSettings: const EmptyPointSettings(
+                        emptyPointSettings: EmptyPointSettings(
                           mode: EmptyPointMode.drop,
                         ),
                         dataLabelMapper: (TrafficDelta? status, _) => controller
@@ -2963,7 +2963,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                         },
                         // pointColorMapper: (StatusInfo status, _) =>
                         //     RandomColor().randomColor(),
-                        emptyPointSettings: const EmptyPointSettings(
+                        emptyPointSettings: EmptyPointSettings(
                           mode: EmptyPointMode.drop,
                         ),
                         dataLabelMapper: (TrafficDelta? status, _) => controller
