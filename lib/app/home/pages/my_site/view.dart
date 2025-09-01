@@ -2245,10 +2245,10 @@ class _MySitePagePageState extends State<MySitePage>
                       isVisible: true,
                       position: LegendPosition.bottom,
                     ),
-                    primaryXAxis: CategoryAxis(
+                    primaryXAxis: const CategoryAxis(
                       majorGridLines: MajorGridLines(width: 0),
                     ),
-                    primaryYAxis: NumericAxis(
+                    primaryYAxis: const NumericAxis(
                       isVisible: false,
                     ),
                     axes: <ChartAxis>[
@@ -2259,14 +2259,14 @@ class _MySitePagePageState extends State<MySitePage>
                         majorTickLines: const MajorTickLines(width: 0),
                         minorTickLines: const MinorTickLines(width: 0),
                       ),
-                      NumericAxis(
+                      const NumericAxis(
                         name: 'SecondaryYAxis',
                         isVisible: false,
                         tickPosition: TickPosition.inside,
                         majorTickLines: MajorTickLines(width: 0),
                         minorTickLines: MinorTickLines(width: 0),
                       ),
-                      NumericAxis(
+                      const NumericAxis(
                         name: 'ThirdYAxis',
                         isVisible: false,
                         tickPosition: TickPosition.inside,

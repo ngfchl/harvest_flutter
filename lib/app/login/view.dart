@@ -5,11 +5,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:elevarm_ui/elevarm_ui.dart';
 
 import '../../api/api.dart';
 import '../../common/card_view.dart';
 import '../../common/custom_ua.dart';
+import '../../common/form_widgets.dart';
 import '../../common/logging.dart';
 import '../../models/common_response.dart';
 import '../../models/login_user.dart';
@@ -34,7 +34,6 @@ class _LoginPageState extends State<LoginPage> {
       BoxDecoration decoration = BoxDecoration(
         border: Border.all(color: Colors.transparent),
       );
-
       if (server.selected) {
         decoration = BoxDecoration(
           border: Border.all(
@@ -403,30 +402,18 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisSize: MainAxisSize.max,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  ElevarmTextInputField(
+                  CustomTextField(
                     controller: nameController,
-                    label: '名称',
+                    labelText: '名称',
                   ),
-                  ElevarmTextInputField(
+                  CustomTextField(
                     controller: entryController,
-                    label: '地址',
+                    labelText: '地址',
                     readOnly: kIsWeb,
                   ),
-                  ElevarmTextInputField(
+                  CustomTextField(
                     controller: usernameController,
-                    label: '账号',
-                  ),
-                  ElevarmTextInputField(
-                    controller: passwordController,
-                    label: '密码',
-                    obscureText: controller.showPassword,
-                    suffixIconAssetName: controller.showPassword
-                        ? Icons.visibility
-                        : Icons.visibility_off,
-                    onTapSuffix: () {
-                      controller.showPassword = !controller.showPassword;
-                      controller.update();
-                    },
+                    labelText: '账号',
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(
@@ -434,6 +421,10 @@ class _LoginPageState extends State<LoginPage> {
                     child: TextFormField(
                       controller: passwordController,
                       maxLines: 1,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                       decoration: InputDecoration(
                         labelText: '密码',
                         focusColor: Colors.transparent,
@@ -455,6 +446,7 @@ class _LoginPageState extends State<LoginPage> {
                                 ? Icons.visibility
                                 : Icons.visibility_off,
                             size: 18,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                           onPressed: () {
                             controller.showPassword = !controller.showPassword;
@@ -477,14 +469,19 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       // 新增取消按钮
                       ElevatedButton.icon(
-                        icon: const Icon(Icons.cancel_outlined,
-                            size: 18, color: Colors.white70),
-                        label: const Text(
+                        icon: Icon(
+                          Icons.cancel_outlined,
+                          size: 18,
+                          color: Theme.of(context).colorScheme.onError,
+                        ),
+                        label: Text(
                           '取消',
-                          style: TextStyle(color: Colors.white70),
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onError,
+                          ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
+                          backgroundColor: Theme.of(context).colorScheme.error,
                           // 设置背景颜色为绿色
                           shape: RoundedRectangleBorder(
                             borderRadius:
@@ -545,21 +542,30 @@ class _LoginPageState extends State<LoginPage> {
                           controller.update();
                         },
                         icon: controller.isLoading
-                            ? const Center(
+                            ? Center(
                                 child: SizedBox(
                                     height: 18,
                                     width: 18,
-                                    child: CircularProgressIndicator()),
+                                    child: CircularProgressIndicator(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary,
+                                    )),
                               )
-                            : const Icon(Icons.autorenew,
-                                size: 18, color: Colors.white70),
+                            : Icon(
+                                Icons.autorenew,
+                                size: 18,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
                         label: Text(
                           controller.isLoading ? '测试...' : '保存',
-                          style: const TextStyle(color: Colors.white),
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          ),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
-                              Theme.of(context).colorScheme.secondary,
+                              Theme.of(context).colorScheme.primary,
                           // 设置背景颜色为绿色
                           shape: RoundedRectangleBorder(
                             borderRadius:

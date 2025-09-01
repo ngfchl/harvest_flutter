@@ -474,23 +474,24 @@ class _DashBoardPageState extends State<DashBoardPage>
           child: Column(
             children: [
               if (controller.isLoading)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const Center(
-                        child: GFLoader(size: 8, loaderstrokeWidth: 2)),
-                    const SizedBox(width: 5),
-                    Text(
-                      '当前为缓存数据，正在从服务器加载',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Theme.of(context).colorScheme.primary,
+                CustomCard(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Center(
+                          child: GFLoader(size: 8, loaderstrokeWidth: 2)),
+                      const SizedBox(width: 5),
+                      Text(
+                        '当前为缓存数据，正在从服务器加载',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              const SizedBox(height: 5),
               Expanded(
                 child: GetBuilder<DashBoardController>(builder: (controller) {
                   return InkWell(
@@ -2298,7 +2299,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                         },
                         // pointColorMapper: (StatusInfo status, _) =>
                         //     RandomColor().randomColor(),
-                        emptyPointSettings: EmptyPointSettings(
+                        emptyPointSettings: const EmptyPointSettings(
                           mode: EmptyPointMode.drop,
                         ),
                         dataLabelMapper: (TrafficDelta? status, _) =>
@@ -2544,7 +2545,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                         },
                         // pointColorMapper: (StatusInfo status, _) =>
                         //     RandomColor().randomColor(),
-                        emptyPointSettings: EmptyPointSettings(
+                        emptyPointSettings: const EmptyPointSettings(
                           mode: EmptyPointMode.drop,
                         ),
                         dataLabelMapper: (TrafficDelta? status, _) => controller
@@ -2754,7 +2755,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                         },
                         // pointColorMapper: (StatusInfo status, _) =>
                         //     RandomColor().randomColor(),
-                        emptyPointSettings: EmptyPointSettings(
+                        emptyPointSettings: const EmptyPointSettings(
                           mode: EmptyPointMode.drop,
                         ),
                         dataLabelMapper: (TrafficDelta? status, _) => controller
@@ -2963,7 +2964,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                         },
                         // pointColorMapper: (StatusInfo status, _) =>
                         //     RandomColor().randomColor(),
-                        emptyPointSettings: EmptyPointSettings(
+                        emptyPointSettings: const EmptyPointSettings(
                           mode: EmptyPointMode.drop,
                         ),
                         dataLabelMapper: (TrafficDelta? status, _) => controller
