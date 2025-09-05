@@ -90,8 +90,7 @@ class DioUtil {
         Duration(seconds: 3)
       ],
       retryEvaluator: (DioException err, int count) {
-        if ([401, 403].contains(err.response?.statusCode) ||
-            err.response!.statusCode.toString().startsWith('5')) {
+        if (err.response!.statusCode.toString().startsWith('5')) {
           return false;
         }
         return [
