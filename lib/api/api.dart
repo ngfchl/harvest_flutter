@@ -139,4 +139,9 @@ class Api {
   static const String TMDB_TOP_MOVIES = "/tmdb/top_rated/movies";
   static const String TMDB_LATEST_MOVIES = "/tmdb/latest/movies";
   static const String TMDB_LATEST_TV = "/tmdb/latest/tv";
+
+  // 资源管理
+  static const String SOURCE_LIST = "source/all";
+  static const String SOURCE_URL = "source/file/url";
+  static const String SOURCE_ACCESS = "source/file/access";
 }
