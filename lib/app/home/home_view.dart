@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
@@ -204,6 +205,7 @@ class HomeView extends GetView<HomeController> {
                   : NavigationRailLabelType.none,
               leading: GetBuilder<HomeController>(builder: (controller) {
                 if (!controller.isSmallHorizontalScreen) {
+                  var baseUrl = SPUtil.getLocalStorage('server');
                   return GFDrawerHeader(
                     centerAlign: true,
                     closeButton: const SizedBox.shrink(),
@@ -243,17 +245,27 @@ class HomeView extends GetView<HomeController> {
                               ),
                             ],
                           ),
-                          if (controller.authInfo != null)
+                          if (controller.authInfo != null) ...[
                             Text(
-                              'VIP：${controller.authInfo?.timeExpire.toString()}',
+                              'VIP: ${controller.authInfo?.username.toString()}',
                               style: TextStyle(
                                   fontSize: 12,
                                   color: Theme.of(context).colorScheme.primary),
                             ),
-                          Tooltip(
-                            message: '${SPUtil.getLocalStorage('server')}',
+                            Text(
+                              'Expire: ${controller.authInfo?.timeExpire.toString()}',
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: Theme.of(context).colorScheme.primary),
+                            )
+                          ],
+                          InkWell(
+                            onTap: () async {
+                              await Clipboard.setData(
+                                  ClipboardData(text: baseUrl));
+                            },
                             child: Text(
-                              '${SPUtil.getLocalStorage('server')}',
+                              '$baseUrl',
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                   fontSize: 12,
