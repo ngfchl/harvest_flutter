@@ -21,6 +21,7 @@ import '../../../utils/platform.dart';
 import '../../../utils/storage.dart';
 import '../../routes/app_pages.dart';
 import '../pages/download/download_controller.dart';
+import '../pages/file_manage/view.dart';
 import '../pages/models/AuthPeriod.dart';
 import '../pages/my_site/controller.dart';
 import '../pages/setting/setting.dart';
@@ -173,7 +174,10 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     pages = [
       const DashBoardPage(),
       const AggSearchPage(),
-      if (userinfo?.isStaff == true) const MySitePage(),
+      if (userinfo?.isStaff == true) ...[
+        const MySitePage(),
+        FileManagePage(),
+      ],
       const DownloadPage(),
       if (userinfo?.isStaff == true) TaskPage(),
       if (userinfo?.isStaff == true) SettingPage(),
@@ -187,20 +191,25 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     ];
     destinations = [
       const NavigationRailDestination(
-        icon: Icon(Icons.home, size: 18),
+        icon: Icon(Icons.home_outlined, size: 18),
         label: Text('仪表盘'),
       ),
       const NavigationRailDestination(
-        icon: Icon(Icons.search, size: 18),
+        icon: Icon(Icons.search_outlined, size: 18),
         label: Text('聚合搜索'),
       ),
-      if (userinfo?.isStaff == true)
+      if (userinfo?.isStaff == true) ...[
         const NavigationRailDestination(
-          icon: Icon(Icons.language, size: 18),
+          icon: Icon(Icons.language_outlined, size: 18),
           label: Text('站点数据'),
         ),
+        const NavigationRailDestination(
+          icon: Icon(Icons.folder_outlined, size: 18),
+          label: Text('资源管理'),
+        ),
+      ],
       const NavigationRailDestination(
-        icon: Icon(Icons.cloud_download, size: 18),
+        icon: Icon(Icons.cloud_download_outlined, size: 18),
         label: Text('下载管理'),
       ),
       if (userinfo?.isStaff == true)
@@ -210,12 +219,12 @@ class HomeController extends GetxController with WidgetsBindingObserver {
         ),
       if (userinfo?.isStaff == true) ...[
         const NavigationRailDestination(
-          icon: Icon(Icons.settings, size: 18),
+          icon: Icon(Icons.settings_outlined, size: 18),
           label: Text('系统设置'),
         ),
       ],
       const NavigationRailDestination(
-        icon: Icon(Icons.man, size: 18),
+        icon: Icon(Icons.man_2_outlined, size: 18),
         label: Text('用户管理'),
       ),
       const NavigationRailDestination(
@@ -224,20 +233,20 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       ),
       if (userinfo?.isStaff == true)
         const NavigationRailDestination(
-          icon: Icon(Icons.rss_feed, size: 18),
+          icon: Icon(Icons.rss_feed_outlined, size: 18),
           label: Text('站点RSS'),
         ),
       const NavigationRailDestination(
-        icon: Icon(Icons.history, size: 18),
+        icon: Icon(Icons.history_outlined, size: 18),
         label: Text('订阅历史'),
       ),
       if (userinfo?.isStaff == true)
         const NavigationRailDestination(
-          icon: Icon(Icons.tag, size: 18),
+          icon: Icon(Icons.tag_outlined, size: 18),
           label: Text('订阅标签'),
         ),
       const NavigationRailDestination(
-        icon: Icon(Icons.theaters, size: 18),
+        icon: Icon(Icons.theaters_outlined, size: 18),
         label: Text('豆瓣影视'),
       ),
       if (userinfo?.isStaff == true)
