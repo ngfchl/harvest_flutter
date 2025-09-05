@@ -6,7 +6,7 @@
 		<false/>
 		<key>NSAppTransportSecurity</key>
 		<dict>
-			<key>NSAllowArbitraryLoads</key>
+			<key>NSAllowsArbitraryLoads</key>
 			<true/>
 		</dict>
 		<key>CFBundleDevelopmentRegion</key>
@@ -68,5 +68,11 @@
 		<string>我们需要使用相机来拍摄照片。</string>
 		<key>NSFileProtectionComplete</key>
 		<string>我们需要访问文件存储以保存您的数据。</string>
+		<key>NSLocalNetworkUsageDescription</key>
+        <string>Used to search for chromecast devices</string>
+        <key>NSBonjourServices</key>
+        <array>
+          <string>_googlecast._tcp</string>
+        </array>
 	</dict>
 </plist>
