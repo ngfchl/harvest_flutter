@@ -93,9 +93,12 @@ class HomeView extends GetView<HomeController> {
                       "useBackground: ${controller.useBackground} useLocalBackground: ${controller.useLocalBackground} backgroundImage: ${controller.backgroundImage}");
                   if (controller.useBackground) {
                     return Positioned.fill(
-                      child: controller.useLocalBackground
+                      child: controller.useLocalBackground &&
+                              !controller.backgroundImage.startsWith('http')
                           ? Image.file(
-                              File(controller.backgroundImage),
+                              File(controller.backgroundImage.isNotEmpty
+                                  ? controller.backgroundImage
+                                  : 'assets/images/background.png'),
                               fit: BoxFit.cover,
                             )
                           : CachedNetworkImage(
