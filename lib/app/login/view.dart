@@ -211,6 +211,7 @@ class _LoginPageState extends State<LoginPage> {
                                 'assets/images/background.png',
                                 fit: BoxFit.cover),
                             fit: BoxFit.cover,
+                            cacheKey: controller.backgroundImage,
                           ),
                   );
                 }

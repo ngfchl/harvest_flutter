@@ -111,6 +111,7 @@ class HomeView extends GetView<HomeController> {
                                 fit: BoxFit.cover,
                               ),
                               fit: BoxFit.cover,
+                              cacheKey: controller.backgroundImage,
                             ),
                     );
                   }

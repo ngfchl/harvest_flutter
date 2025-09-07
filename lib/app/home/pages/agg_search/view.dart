@@ -590,6 +590,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                           errorWidget: (context, url, error) => const Image(
                               image: AssetImage('assets/images/avatar.png')),
                           fit: BoxFit.fitWidth,
+                          cacheKey: posterPath,
                         ),
                       ),
                     ));
