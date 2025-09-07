@@ -360,17 +360,55 @@ class FileManagePage extends StatelessWidget {
                     options: VlcPlayerOptions(),
                   );
 
-                  Get.defaultDialog(
-                      title: '播放',
-                      content: CustomCard(
-                        width: Get.width,
-                        child: VlcPlayer(
-                          controller: vlcController,
-                          aspectRatio: 16 / 9,
-                          placeholder:
-                              Center(child: CircularProgressIndicator()),
-                        ),
-                      )).whenComplete(() {
+                  Get.dialog(
+                    CustomCard(
+                      width: double.infinity,
+                      height: Get.height * 0.7,
+                      child: Stack(
+                        children: [
+                          Positioned.fill(
+                            child: VlcPlayer(
+                              controller: vlcController,
+                              aspectRatio: 16 / 9,
+                              placeholder:
+                                  Center(child: CircularProgressIndicator()),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 2,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              spacing: 10,
+                              children: [
+                                IconButton(
+                                    onPressed: () {
+                                      vlcController.play();
+                                    },
+                                    icon: Icon(Icons.play_arrow_outlined)),
+                                IconButton(
+                                    onPressed: () {
+                                      vlcController.pause();
+                                    },
+                                    icon: Icon(Icons.pause_outlined)),
+                                IconButton(
+                                    onPressed: () {
+                                      Get.back();
+                                    },
+                                    icon: Icon(Icons.exit_to_app_outlined)),
+                                IconButton(
+                                    onPressed: () {},
+                                    icon: Icon(Icons.fullscreen_outlined)),
+                                IconButton(
+                                    onPressed: () {},
+                                    icon: Icon(Icons.fullscreen_exit_outlined)),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                    barrierDismissible: false,
+                  ).whenComplete(() {
                     vlcController.stop();
                     vlcController.dispose();
                   });
