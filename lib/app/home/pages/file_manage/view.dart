@@ -2,7 +2,9 @@ import 'dart:io';
 
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dio/dio.dart';
 import 'package:easy_refresh/easy_refresh.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,6 +13,7 @@ import 'package:get/get.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:harvest/utils/string_utils.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -418,8 +421,7 @@ class FileManagePage extends StatelessWidget {
               ),
             ElevatedButton.icon(
               onPressed: () async {
-                Get.snackbar('提示', '下载功能开发中，敬请期待');
-                // await Dio().download(url);
+                await pickAndDownload(url);
               },
               icon: Icon(Icons.download_outlined),
               label: Text("下载"),
@@ -428,6 +430,59 @@ class FileManagePage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> pickAndDownload(String url) async {
+    RxDouble progress = 0.0.obs; // 0 ~ 100
+    RxBool downloading = false.obs;
+    // 1. 权限
+
+    if (GetPlatform.isMobile &&
+        await Permission.storage.request().isDenied &&
+        await Permission.photos.request().isDenied) {
+      Get.snackbar('权限失败', '需要存储权限');
+      return;
+    }
+
+    /// 选择保存位置并下载
+    // 1. 系统文件选择器（无需 Get.dialog）
+    final savePath = await FilePicker.platform.saveFile(
+      dialogTitle: '选择保存位置',
+      fileName: Uri.parse(url).queryParameters['path']?.split('/').last,
+    );
+    if (savePath == null) return; // 用户取消
+
+    // 2. 下载（带 GetX 加载圈）
+    Get.dialog(
+      Center(child: Obx(() {
+        return CircularProgressIndicator(
+          value: progress.value / 100,
+          strokeWidth: 2,
+        );
+      })),
+      barrierDismissible: false,
+      name: '下载到',
+    );
+
+    try {
+      await Dio().download(
+        url,
+        savePath,
+        onReceiveProgress: (received, total) {
+          if (total <= 0) return;
+          progress.value = (received / total * 100).toDouble();
+        },
+      );
+      // 4. 成功
+      Get.back(); // 关闭加载圈
+      Get.snackbar('完成', '文件已保存到 $savePath');
+    } catch (e) {
+      Get.back();
+      Get.snackbar('失败', e.toString());
+    } finally {
+      downloading.value = false;
+      progress.value = 0;
+    }
   }
 
   void showImage(String url) {
