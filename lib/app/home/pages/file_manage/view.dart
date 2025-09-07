@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/foundation.dart';
@@ -28,6 +29,8 @@ class FileManagePage extends StatelessWidget {
         builder: (controller) {
           return CustomCard(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   '文件管理',
@@ -114,11 +117,23 @@ class FileManagePage extends StatelessWidget {
                                     ],
                                   ),
                                   trailing: CircleAvatar(
-                                      child: Icon(
-                                    Icons.folder,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                  )),
+                                    backgroundColor: Colors.transparent,
+                                    child: item.isDir
+                                        ? Icon(
+                                            Icons.folder,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary,
+                                          )
+                                        : Text(
+                                            item.ext.toString(),
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary),
+                                          ),
+                                  ),
                                   onTap: () async {
                                     if (item.isDir) {
                                       controller.currentPath = item.path;
@@ -138,6 +153,9 @@ class FileManagePage extends StatelessWidget {
                                           showImage(res.data);
                                         } else if (item.mimeType
                                             .startsWith('video')) {
+                                          showPlayer(res.data);
+                                        } else if (item.mimeType
+                                            .startsWith('audio')) {
                                           showPlayer(res.data);
                                         } else {
                                           Get.snackbar(
@@ -186,6 +204,7 @@ class FileManagePage extends StatelessWidget {
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       schemes.addAll({
         'VLC': 'vlc://$url',
+        'VidHub': 'vidhub://$url',
         'Infuse':
             'infuse://x-callback-url/play?url=${Uri.encodeComponent(url)}',
         'nPlayer': 'nplayer-$url', // 会自动转为 nplayer-http://
@@ -194,19 +213,12 @@ class FileManagePage extends StatelessWidget {
         'KMPlayer': 'kmplayer://$url',
         'MXPlayer': 'mxplayer://$url',
       });
-    } else if (defaultTargetPlatform == TargetPlatform.android) {
-      schemes.addAll({
-        'VLC': 'vlc://$url',
-        'MX Player': 'mxplayer://$url',
-        'KMPlayer': 'kmp://$url',
-        'nPlayer': 'nplayer-$url',
-        'GOM Player': 'gomplayer://$url',
-      });
     } else if (defaultTargetPlatform == TargetPlatform.macOS) {
       // macOS 上常见播放器只能通过 open -a 调用
       schemes.addAll({
         'IINA': 'iina://weblink?url=${Uri.encodeComponent(url)}',
         'VLC': 'vlc://$url', // 部分版本支持
+        'Infuse': 'Infuse://$url', // 部分版本支持
       });
     } else if (defaultTargetPlatform == TargetPlatform.windows) {
       // Windows 常用 PotPlayer / VLC
@@ -233,7 +245,16 @@ class FileManagePage extends StatelessWidget {
           await Process.run('open', ['-a', 'VLC', url]);
           break;
         case 'iina':
-          await Process.run('open', ['-a', 'IINA', url]);
+          Logger.instance.d('调用 iina');
+          var res = await Process.run(
+            '/Applications/IINA.app/Contents/MacOS/iina-cli',
+            [url],
+          );
+          // await Process.run('open', ['-a', '/Applications/IINA.app', url]);
+          Logger.instance.d('调用 iina 结果: ${res.stdout} \n ${res.stderr}');
+          break;
+        case 'infuse':
+          await Process.run('open', ['-a', 'infuse', url]);
           break;
         case 'mpv':
           await Process.run('open', ['-a', 'mpv', url]);
@@ -278,102 +299,97 @@ class FileManagePage extends StatelessWidget {
 
   void showPlayer(String url) async {
     final schemes = buildSchemes(url);
-
-    switch (defaultTargetPlatform) {
-      case TargetPlatform.android:
-      case TargetPlatform.iOS:
-        Get.defaultDialog(
-          title: '打开方式',
-          content: CustomCard(
-            child: Wrap(
-              alignment: WrapAlignment.spaceAround,
-              spacing: 10,
-              children: [
-                ...schemes.entries.toList().map(
-                      (entry) => ElevatedButton.icon(
-                        onPressed: () async {
-                          final uri = Uri.parse(entry.value);
-                          if (!await launchUrl(uri,
-                              mode: LaunchMode.externalApplication)) {
-                            Logger.instance.w('无法使用${entry.key}外部播放器');
-                          }
-                        },
-                        label: Text(
-                          entry.key.toString(),
-                        ),
+    Get.defaultDialog(
+      title: '打开方式',
+      content: CustomCard(
+        child: Wrap(
+          alignment: WrapAlignment.spaceAround,
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            if (defaultTargetPlatform == TargetPlatform.iOS)
+              ...schemes.entries.toList().map(
+                    (entry) => ElevatedButton.icon(
+                      onPressed: () async {
+                        final uri = Uri.parse(entry.value);
+                        if (!await launchUrl(uri,
+                            mode: LaunchMode.externalApplication)) {
+                          Logger.instance.w('无法使用${entry.key}外部播放器');
+                        }
+                      },
+                      label: Text(
+                        entry.key.toString(),
                       ),
                     ),
-                // if (defaultTargetPlatform == TargetPlatform.android)
-                //   ElevatedButton.icon(
-                //     onPressed: () async {
-                //       final intent = AndroidIntent(
-                //         action: 'action_view',
-                //         data: url,
-                //         type: 'video/*',
-                //       );
-                //       intent.launch();
-                //     },
-                //     label: Text("默认播放器"),
-                //   ),
-              ],
-            ),
-          ),
-        );
-
-      case TargetPlatform.linux:
-      case TargetPlatform.macOS:
-      case TargetPlatform.windows:
-        Get.defaultDialog(
-          title: '打开方式',
-          content: CustomCard(
-            child: Wrap(
-              alignment: WrapAlignment.spaceAround,
-              spacing: 10,
-              children: [
-                ...schemes.entries.toList().map(
-                      (entry) => ElevatedButton.icon(
-                        onPressed: () async {
-                          openWithPlayer(entry.key, url);
-                        },
-                        label: Text(
-                          entry.key.toString(),
-                        ),
+                  ),
+            if (defaultTargetPlatform == TargetPlatform.android)
+              ElevatedButton.icon(
+                onPressed: () async {
+                  final intent = AndroidIntent(
+                    action: 'action_view',
+                    data: url,
+                    type: 'video/*',
+                  );
+                  intent.launch();
+                },
+                icon: Icon(Icons.open_in_new_rounded),
+                label: Text('打开'),
+              ),
+            if (defaultTargetPlatform == TargetPlatform.linux ||
+                defaultTargetPlatform == TargetPlatform.macOS ||
+                defaultTargetPlatform == TargetPlatform.windows)
+              ...schemes.entries.toList().map(
+                    (entry) => ElevatedButton.icon(
+                      onPressed: () async {
+                        openWithPlayer(entry.key, url);
+                      },
+                      label: Text(
+                        entry.key.toString(),
                       ),
                     ),
-                ElevatedButton.icon(
-                  onPressed: () async {
-                    VlcPlayerController vlcController =
-                        VlcPlayerController.network(
-                      url,
-                      hwAcc: HwAcc.full,
-                      autoPlay: true,
-                      options: VlcPlayerOptions(),
-                    );
+                  ),
+            if (defaultTargetPlatform == TargetPlatform.android ||
+                defaultTargetPlatform == TargetPlatform.iOS)
+              ElevatedButton.icon(
+                onPressed: () async {
+                  VlcPlayerController vlcController =
+                      VlcPlayerController.network(
+                    url,
+                    hwAcc: HwAcc.full,
+                    autoPlay: true,
+                    options: VlcPlayerOptions(),
+                  );
 
-                    Get.defaultDialog(
-                        title: '播放',
-                        content: CustomCard(
-                          child: VlcPlayer(
-                            controller: vlcController,
-                            aspectRatio: 16 / 9,
-                            placeholder:
-                                Center(child: CircularProgressIndicator()),
-                          ),
-                        )).whenComplete(() {
-                      vlcController.stop();
-                      vlcController.dispose();
-                    });
-                  },
-                  label: Text("直接打开"),
-                ),
-              ],
+                  Get.defaultDialog(
+                      title: '播放',
+                      content: CustomCard(
+                        width: Get.width,
+                        child: VlcPlayer(
+                          controller: vlcController,
+                          aspectRatio: 16 / 9,
+                          placeholder:
+                              Center(child: CircularProgressIndicator()),
+                        ),
+                      )).whenComplete(() {
+                    vlcController.stop();
+                    vlcController.dispose();
+                  });
+                },
+                icon: Icon(Icons.play_arrow_outlined),
+                label: Text("播放"),
+              ),
+            ElevatedButton.icon(
+              onPressed: () async {
+                Get.snackbar('提示', '下载功能开发中，敬请期待');
+                // await Dio().download(url);
+              },
+              icon: Icon(Icons.download_outlined),
+              label: Text("下载"),
             ),
-          ),
-        );
-      case TargetPlatform.fuchsia:
-        // TODO: Handle this case.
-        throw UnimplementedError();
-    }
+          ],
+        ),
+      ),
+    );
   }
 
   void showImage(String url) {
@@ -381,34 +397,15 @@ class FileManagePage extends StatelessWidget {
       title: '海报预览',
       content: CustomCard(
         borderRadius: BorderRadius.circular(5),
-        height: Get.height * 0.7,
+        height: Get.height * 0.8,
         width: Get.width,
-        child: Column(
-          children: [
-            Expanded(
-              child: InkWell(
-                onTap: () => Get.back(),
-                child: PhotoView(
-                  imageProvider: CachedNetworkImageProvider(url),
-                ),
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                ElevatedButton.icon(
-                  icon: Icon(Icons.arrow_back_outlined),
-                  onPressed: () => Get.back(),
-                  label: Text('关闭'),
-                ),
-                ElevatedButton.icon(
-                  icon: Icon(Icons.cloud_download_outlined),
-                  onPressed: () => Get.back(),
-                  label: Text('下载'),
-                ),
-              ],
-            ),
-          ],
+        child: InkWell(
+          onTap: () => Get.back(),
+          child: PhotoView(
+            maxScale: 5.0,
+            minScale: 0.8,
+            imageProvider: CachedNetworkImageProvider(url),
+          ),
         ),
       ),
     );
