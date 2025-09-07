@@ -13,6 +13,8 @@ import 'package:get/get.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:harvest/utils/string_utils.dart';
+import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -486,21 +488,99 @@ class FileManagePage extends StatelessWidget {
   }
 
   void showImage(String url) {
-    Get.defaultDialog(
-      title: '海报预览',
-      content: CustomCard(
+    Get.dialog(
+      CustomCard(
         borderRadius: BorderRadius.circular(5),
-        height: Get.height * 0.8,
-        width: Get.width,
-        child: InkWell(
-          onTap: () => Get.back(),
-          child: PhotoView(
-            maxScale: 5.0,
-            minScale: 0.8,
-            imageProvider: CachedNetworkImageProvider(url),
-          ),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => Get.back(),
+                  child: PhotoView(
+                    maxScale: PhotoViewComputedScale.covered * 5, // 允许用户放大
+                    minScale: PhotoViewComputedScale.contained,
+                    initialScale: PhotoViewComputedScale.contained, // 默认显示整个图片
+                    imageProvider: CachedNetworkImageProvider(url,
+                        cacheKey: Uri.parse(url).queryParameters['path']),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    onPressed: () async {
+                      if (GetPlatform.isDesktop || GetPlatform.isWeb) {
+                        await pickAndDownload(url);
+                      } else {
+                        if (GetPlatform.isAndroid) {
+                          if (!await Permission.storage.request().isGranted ||
+                              !await Permission.photos.request().isGranted) {
+                            Get.snackbar('权限失败', '需要存储权限以保存图片');
+                            return;
+                          }
+                        } else if (GetPlatform.isIOS) {
+                          final status = await Permission.photosAddOnly.status;
+                          Logger.instance.d('photosAddOnly status: $status');
+                          if (!status.isGranted) {
+                            Get.snackbar('权限失败', '需要相册写入权限');
+                            return;
+                          }
+                        }
+                        // Get.dialog(
+                        //   const Center(child: CircularProgressIndicator()),
+                        //   barrierDismissible: false,
+                        //   name: 'album_download',
+                        // );
+
+                        try {
+                          // 1. 先下到临时目录
+                          final tempDir = await getTemporaryDirectory();
+                          final tempFile = File(
+                              '${tempDir.path}/${Uri.parse(url).queryParameters['path']}');
+                          Logger.instance.d(
+                              '临时文件URL: ${Uri.parse(url).queryParameters['path']}');
+                          Logger.instance.d('临时文件保存路径: ${tempFile.path}');
+                          await Dio().download(url, tempFile.path);
+
+                          // 2. 写相册（自动区分 iOS/Android）
+                          final result = await ImageGallerySaverPlus.saveFile(
+                              tempFile.path);
+                          Get.back(); // 关闭加载圈
+
+                          if (result['isSuccess'] == true) {
+                            Get.snackbar('✅ 已保存', '图片已存入系统相册');
+                          } else {
+                            Logger.instance.e(result['errorMessage']);
+                            Get.snackbar('❌ 保存失败', '保存失败!!!!!');
+                          }
+                        } catch (e) {
+                          Get.back();
+                          Logger.instance.e(e);
+                          Get.snackbar('❌ 下载失败', '❌ 下载失败');
+                        }
+                      }
+                    },
+                    icon: Icon(Icons.save_alt_outlined),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      Get.back();
+                    },
+                    icon: Icon(Icons.exit_to_app_outlined),
+                  ),
+                ],
+              ),
+            )
+          ],
         ),
       ),
+      barrierDismissible: false,
     );
   }
 }
