@@ -764,6 +764,8 @@ class _MySitePagePageState extends State<MySitePage>
     nextLevelToUploadedByte = max(nextLevelToUploadedByte, calcToUploaded);
     // Logger.instance.d(
     //     '${FileSizeConvert.parseToFileSize(status?.uploaded)}(${status?.uploaded})/${FileSizeConvert.parseToFileSize(nextLevelToUploadedByte)}($nextLevelToUploadedByte)');
+    String iconUrl = '${controller.baseUrl}/local/icons/${website.name}.png';
+    Logger.instance.d('${website.name} - $iconUrl');
     var toUpgradeTime = DateTime.parse(mySite.timeJoin)
         .add(Duration(days: (nextLevel?.days ?? 0) * 7));
     return CustomCard(
@@ -779,16 +781,23 @@ class _MySitePagePageState extends State<MySitePage>
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: CachedNetworkImage(
-                imageUrl: website.logo.startsWith('http')
-                    ? website.logo
-                    : '${mySite.mirror}${website.logo}',
+                imageUrl: iconUrl,
+                cacheKey: iconUrl,
                 fit: BoxFit.fill,
-                httpHeaders: {
-                  "user-agent": mySite.userAgent.toString(),
-                  "Cookie": mySite.cookie.toString(),
-                },
-                errorWidget: (context, url, error) =>
-                    const Image(image: AssetImage('assets/images/avatar.png')),
+                errorWidget: (context, url, error) => CachedNetworkImage(
+                  imageUrl: website.logo.startsWith('http')
+                      ? website.logo
+                      : '${mySite.mirror}${website.logo}',
+                  fit: BoxFit.fill,
+                  httpHeaders: {
+                    "user-agent": mySite.userAgent.toString(),
+                    "Cookie": mySite.cookie.toString(),
+                  },
+                  errorWidget: (context, url, error) => const Image(
+                      image: AssetImage('assets/images/avatar.png')),
+                  width: 32,
+                  height: 32,
+                ),
                 width: 32,
                 height: 32,
               ),
