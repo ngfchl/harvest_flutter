@@ -139,6 +139,53 @@ class FileManagePage extends StatelessWidget {
                                                     .primary),
                                           ),
                                   ),
+                                  onLongPress: () {
+                                    Get.defaultDialog(
+                                      title: '常用操作',
+                                      content: CustomCard(
+                                        child: Wrap(
+                                          alignment: WrapAlignment.spaceAround,
+                                          spacing: 10,
+                                          runSpacing: 10,
+                                          children: [
+                                            ElevatedButton.icon(
+                                              onPressed: () async {},
+                                              icon: Icon(Icons.open_in_new),
+                                              label: Text("打开目录"),
+                                            ),
+                                            ElevatedButton.icon(
+                                              onPressed: () async {},
+                                              icon: Icon(
+                                                  Icons.movie_filter_outlined),
+                                              label: Text("刮削资源"),
+                                            ),
+                                            ElevatedButton.icon(
+                                              onPressed: () async {},
+                                              icon: Icon(
+                                                  Icons.local_movies_outlined),
+                                              label: Text("查询做种"),
+                                            ),
+                                            ElevatedButton.icon(
+                                              onPressed: () async {},
+                                              icon: Icon(Icons.delete_outline),
+                                              label: Text("删除目录"),
+                                            ),
+                                            ElevatedButton.icon(
+                                              onPressed: () async {},
+                                              icon: Icon(Icons
+                                                  .drive_file_rename_outline),
+                                              label: Text("重命名"),
+                                            ),
+                                            ElevatedButton.icon(
+                                              onPressed: () async {},
+                                              icon: Icon(Icons.hardware),
+                                              label: Text("硬链接"),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
                                   onTap: () async {
                                     if (item.isDir) {
                                       controller.currentPath = item.path;
