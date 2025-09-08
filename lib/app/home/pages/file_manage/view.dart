@@ -154,30 +154,47 @@ class FileManagePage extends StatelessWidget {
                                               label: Text("打开目录"),
                                             ),
                                             ElevatedButton.icon(
-                                              onPressed: () async {},
+                                              onPressed: () async {
+                                                doFileAction(
+                                                    item.path, 'search_tmdb');
+                                              },
                                               icon: Icon(
                                                   Icons.movie_filter_outlined),
                                               label: Text("刮削资源"),
                                             ),
                                             ElevatedButton.icon(
-                                              onPressed: () async {},
+                                              onPressed: () async {
+                                                doFileAction(
+                                                    item.path, 'search_seed');
+                                              },
                                               icon: Icon(
                                                   Icons.local_movies_outlined),
                                               label: Text("查询做种"),
                                             ),
                                             ElevatedButton.icon(
-                                              onPressed: () async {},
+                                              onPressed: () async {
+                                                doFileAction(
+                                                    item.path, 'delete_dir');
+                                              },
                                               icon: Icon(Icons.delete_outline),
                                               label: Text("删除目录"),
                                             ),
                                             ElevatedButton.icon(
-                                              onPressed: () async {},
+                                              onPressed: () async {
+                                                doFileAction(
+                                                    item.path, 'rename_dir',
+                                                    newFileName: "newFileName");
+                                              },
                                               icon: Icon(Icons
                                                   .drive_file_rename_outline),
                                               label: Text("重命名"),
                                             ),
                                             ElevatedButton.icon(
-                                              onPressed: () async {},
+                                              onPressed: () async {
+                                                doFileAction(
+                                                    item.path, 'hard_link',
+                                                    newFileName: "newFileName");
+                                              },
                                               icon: Icon(Icons.hardware),
                                               label: Text("硬链接"),
                                             ),
@@ -265,6 +282,12 @@ class FileManagePage extends StatelessWidget {
           );
         });
   }
+
+  /*///@title
+  ///@description TODO 文件操作
+  ///@updateTime
+   */
+  doFileAction(String path, String action, {String? newFileName}) {}
 
   Map<String, String> buildSchemes(String url) {
     final schemes = <String, String>{};
