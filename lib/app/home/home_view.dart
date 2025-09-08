@@ -22,6 +22,7 @@ import '../../common/invite_user.dart';
 import '../../common/logging.dart';
 import '../../common/site_map.dart';
 import '../../models/common_response.dart';
+import '../../utils/screenshot.dart';
 import '../../utils/storage.dart';
 import '../../utils/string_utils.dart';
 import 'controller/common_api.dart';
@@ -31,6 +32,7 @@ class HomeView extends GetView<HomeController> {
   HomeView({super.key});
 
   final GlobalKey<ScaffoldState> _globalKey = GlobalKey();
+  final GlobalKey _captureKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -84,97 +86,101 @@ class HomeView extends GetView<HomeController> {
             // buttonColor: Colors.red,
           );
         },
-        child: Stack(
-          children: [
-            GetBuilder<HomeController>(
-                id: 'home_view_background_image',
-                builder: (controller) {
-                  Logger.instance.d(
-                      "useBackground: ${controller.useBackground} useLocalBackground: ${controller.useLocalBackground} backgroundImage: ${controller.backgroundImage}");
-                  if (controller.useBackground) {
-                    return Positioned.fill(
-                      child: controller.useLocalBackground &&
-                              !controller.backgroundImage.startsWith('http')
-                          ? Image.file(
-                              File(controller.backgroundImage.isNotEmpty
-                                  ? controller.backgroundImage
-                                  : 'assets/images/background.png'),
-                              fit: BoxFit.cover,
-                            )
-                          : CachedNetworkImage(
-                              imageUrl:
-                                  '${controller.useImageProxy ? cacheServer : ''}${controller.backgroundImage}',
-                              placeholder: (context, url) => const Center(
-                                  child: CircularProgressIndicator()),
-                              errorWidget: (context, url, error) => Image.asset(
-                                'assets/images/background.png',
+        child: RepaintBoundary(
+          key: _captureKey,
+          child: Stack(
+            children: [
+              GetBuilder<HomeController>(
+                  id: 'home_view_background_image',
+                  builder: (controller) {
+                    Logger.instance.d(
+                        "useBackground: ${controller.useBackground} useLocalBackground: ${controller.useLocalBackground} backgroundImage: ${controller.backgroundImage}");
+                    if (controller.useBackground) {
+                      return Positioned.fill(
+                        child: controller.useLocalBackground &&
+                                !controller.backgroundImage.startsWith('http')
+                            ? Image.file(
+                                File(controller.backgroundImage.isNotEmpty
+                                    ? controller.backgroundImage
+                                    : 'assets/images/background.png'),
                                 fit: BoxFit.cover,
+                              )
+                            : CachedNetworkImage(
+                                imageUrl:
+                                    '${controller.useImageProxy ? cacheServer : ''}${controller.backgroundImage}',
+                                placeholder: (context, url) => const Center(
+                                    child: CircularProgressIndicator()),
+                                errorWidget: (context, url, error) =>
+                                    Image.asset(
+                                  'assets/images/background.png',
+                                  fit: BoxFit.cover,
+                                ),
+                                fit: BoxFit.cover,
+                                cacheKey: controller.backgroundImage,
                               ),
-                              fit: BoxFit.cover,
-                              cacheKey: controller.backgroundImage,
-                            ),
-                    );
-                  }
-                  return SizedBox.shrink();
-                }),
-            Scaffold(
-              key: _globalKey,
-              backgroundColor: Colors.transparent,
-              extendBody: true,
-              appBar: AppBar(
-                backgroundColor:
-                    Theme.of(context).colorScheme.surface.withOpacity(0.5),
-                elevation: 0,
-                iconTheme: IconThemeData(
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                actions: <Widget>[
-                  _actionButtonList(context),
-                ],
-              ),
-              body: GetBuilder<HomeController>(builder: (controller) {
-                return Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (!controller.isPortrait)
-                      controller.isSmallHorizontalScreen
-                          ? SizedBox(
-                              width: 120,
-                              // height: double.infinity,
-                              child: _buildMenuBar(context),
-                            )
-                          : CustomCard(
-                              width: 200,
-                              // height: double.infinity,
-                              child: _buildMenuBar(context),
-                            ),
-                    Expanded(
-                        child: PageView(
-                      controller: controller.pageController,
-                      physics: const NeverScrollableScrollPhysics(),
-                      onPageChanged: (index) {
-                        // controller.initPage.value = index;
-                        // controller.update();
-                      },
-                      children: controller.pages,
-                    ))
+                      );
+                    }
+                    return SizedBox.shrink();
+                  }),
+              Scaffold(
+                key: _globalKey,
+                backgroundColor: Colors.transparent,
+                extendBody: true,
+                appBar: AppBar(
+                  backgroundColor:
+                      Theme.of(context).colorScheme.surface.withOpacity(0.5),
+                  elevation: 0,
+                  iconTheme: IconThemeData(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  actions: <Widget>[
+                    _actionButtonList(context),
                   ],
-                );
-              }),
-              drawer: controller.isPortrait
-                  ? SizedBox(
-                      width: 200,
-                      child: GFDrawer(
-                        semanticLabel: 'Harvest',
-                        elevation: 10,
-                        color: Theme.of(context).colorScheme.surface,
-                        child: _buildMenuBar(context),
-                      ),
-                    )
-                  : null,
-              drawerEdgeDragWidth: 100,
-            ),
-          ],
+                ),
+                body: GetBuilder<HomeController>(builder: (controller) {
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (!controller.isPortrait)
+                        controller.isSmallHorizontalScreen
+                            ? SizedBox(
+                                width: 120,
+                                // height: double.infinity,
+                                child: _buildMenuBar(context),
+                              )
+                            : CustomCard(
+                                width: 200,
+                                // height: double.infinity,
+                                child: _buildMenuBar(context),
+                              ),
+                      Expanded(
+                          child: PageView(
+                        controller: controller.pageController,
+                        physics: const NeverScrollableScrollPhysics(),
+                        onPageChanged: (index) {
+                          // controller.initPage.value = index;
+                          // controller.update();
+                        },
+                        children: controller.pages,
+                      ))
+                    ],
+                  );
+                }),
+                drawer: controller.isPortrait
+                    ? SizedBox(
+                        width: 200,
+                        child: GFDrawer(
+                          semanticLabel: 'Harvest',
+                          elevation: 10,
+                          color: Theme.of(context).colorScheme.surface,
+                          child: _buildMenuBar(context),
+                        ),
+                      )
+                    : null,
+                drawerEdgeDragWidth: 100,
+              ),
+            ],
+          ),
         ),
       );
     });
@@ -672,6 +678,17 @@ class HomeView extends GetView<HomeController> {
                           Get.snackbar('测速任务发送失败', '测速任务执行出错啦：${res.msg}',
                               colorText: Theme.of(context).colorScheme.error);
                         }
+                      },
+                    ),
+                    PopupMenuItem<String>(
+                      child: Text(
+                        '截图分享',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                      ),
+                      onTap: () async {
+                        await ScreenshotSaver.captureAndSave(_captureKey);
                       },
                     ),
                     PopupMenuItem<String>(
