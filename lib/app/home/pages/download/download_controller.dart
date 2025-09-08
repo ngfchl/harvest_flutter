@@ -320,19 +320,21 @@ class DownloadController extends GetxController {
   }
 
   getDownloaderListFromServer({bool withStatus = false}) async {
-    loading = true;
-    update();
+    if (!withStatus) {
+      loading = true;
+      update();
+    }
     CommonResponse response =
         await getDownloaderListApi(withStatus: withStatus);
     if (response.succeed) {
       dataList.clear();
       dataList = response.data;
       dataList.sort((a, b) => a.sortId.compareTo(b.sortId));
-      loading = false;
       _downloadStreamController.sink.add(dataList.toList());
     } else {
       Get.snackbar('出错啦', response.msg);
     }
+    loading = false;
     update();
   }
 

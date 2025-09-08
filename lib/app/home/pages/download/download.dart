@@ -69,25 +69,32 @@ class _DownloadPageState extends State<DownloadPage>
                               .getDownloaderListFromServer(withStatus: true),
                           child: Stack(
                             children: [
-                              SingleChildScrollView(
-                                child: Wrap(
-                                  alignment: WrapAlignment.start,
-                                  direction: Axis.horizontal,
-                                  crossAxisAlignment: WrapCrossAlignment.start,
-                                  runAlignment: WrapAlignment.start,
-                                  children: controller.dataList
-                                      .map((downloader) => FractionallySizedBox(
-                                            widthFactor:
-                                                getWidthFactor(context),
-                                            child:
-                                                buildDownloaderCard(downloader),
-                                          ))
-                                      .toList(),
+                              Positioned.fill(
+                                child: SingleChildScrollView(
+                                  child: Wrap(
+                                    alignment: WrapAlignment.start,
+                                    direction: Axis.horizontal,
+                                    crossAxisAlignment:
+                                        WrapCrossAlignment.start,
+                                    runAlignment: WrapAlignment.start,
+                                    children: controller.dataList
+                                        .map((downloader) =>
+                                            FractionallySizedBox(
+                                              widthFactor:
+                                                  getWidthFactor(context),
+                                              child: buildDownloaderCard(
+                                                  downloader),
+                                            ))
+                                        .toList(),
+                                  ),
                                 ),
                               ),
                               if (controller.loading)
                                 const Center(
-                                    child: CircularProgressIndicator()),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
                             ],
                           ));
                     });
