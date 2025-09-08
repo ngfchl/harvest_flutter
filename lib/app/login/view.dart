@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:app_service/app_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -189,6 +190,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     String cacheServer = 'https://images.weserv.nl/?url=';
     return GetBuilder<LoginController>(builder: (controller) {
+      CancelToken cancelToken = CancelToken();
       return Stack(
         children: [
           GetBuilder<LoginController>(
@@ -296,73 +298,111 @@ class _LoginPageState extends State<LoginPage> {
                       ]),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 36.0),
-                        child: ElevatedButton.icon(
-                          icon: controller.isLoading
-                              ? Center(
-                                  child: SizedBox(
-                                      height: 18,
-                                      width: 18,
-                                      child: CircularProgressIndicator(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ElevatedButton.icon(
+                              icon: controller.isLoading
+                                  ? Center(
+                                      child: SizedBox(
+                                        height: 18,
+                                        width: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
                                           color: Theme.of(context)
                                               .colorScheme
-                                              .primary)),
-                                )
-                              : Icon(Icons.link,
-                                  size: 18,
-                                  color: Theme.of(context).colorScheme.primary),
-                          label: Text(
-                            '连接服务器',
-                            style: TextStyle(
-                                color: Theme.of(context).colorScheme.primary),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                Theme.of(context).colorScheme.surface,
-                            // 设置背景颜色为绿色
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 40.0),
-                            // 调整内边距使得按钮更宽
-                            shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular(5.0), // 边角圆角大小可自定义
-                            ),
-                          ),
-                          onPressed: controller.hasSelectedServer
-                              ? () async {
-                                  // 连接服务器的操作逻辑
-                                  CommonResponse res =
-                                      await controller.doLogin();
+                                              .primary,
+                                        ),
+                                      ),
+                                    )
+                                  : Icon(Icons.link,
+                                      size: 18,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary),
+                              label: Text(
+                                '连接服务器',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.surface,
+                                // 设置背景颜色为绿色
+                                // padding: const EdgeInsets.symmetric(
+                                //     horizontal: 40.0),
+                                // 调整内边距使得按钮更宽
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(5.0), // 边角圆角大小可自定义
+                                ),
+                              ),
+                              onPressed: controller.hasSelectedServer
+                                  ? () async {
+                                      // 连接服务器的操作逻辑
+                                      CommonResponse res =
+                                          await controller.doLogin(cancelToken);
 
-                                  if (res.succeed) {
-                                    await Future.delayed(
-                                        Duration(milliseconds: 2500), () {
-                                      Get.offNamed(Routes.HOME);
-                                      Get.snackbar(
-                                        res.succeed ? '登录成功！' : '登录失败',
-                                        res.succeed
-                                            ? '登录成功！欢迎回来，${controller.selectedServer?.username}'
-                                            : res.msg,
-                                        colorText: res.succeed
-                                            ? Theme.of(context)
-                                                .colorScheme
-                                                .primary
-                                            : Theme.of(context)
-                                                .colorScheme
-                                                .error,
-                                      );
-                                    });
-                                  } else {
-                                    Get.snackbar(
-                                      '登录失败',
-                                      res.msg,
-                                      colorText:
-                                          Theme.of(context).colorScheme.error,
-                                    );
-                                  }
-                                  controller.isLoading = false;
-                                  controller.update();
-                                }
-                              : null,
+                                      if (res.succeed) {
+                                        await Future.delayed(
+                                            Duration(milliseconds: 1500), () {
+                                          Get.offNamed(Routes.HOME);
+                                          Get.snackbar(
+                                            res.succeed ? '登录成功！' : '登录失败',
+                                            res.succeed
+                                                ? '登录成功！欢迎回来，${controller.selectedServer?.username}'
+                                                : res.msg,
+                                            colorText: res.succeed
+                                                ? Theme.of(context)
+                                                    .colorScheme
+                                                    .primary
+                                                : Theme.of(context)
+                                                    .colorScheme
+                                                    .error,
+                                          );
+                                        });
+                                      } else {
+                                        Get.snackbar(
+                                          '登录失败',
+                                          res.msg,
+                                          colorText: Theme.of(context)
+                                              .colorScheme
+                                              .error,
+                                        );
+                                      }
+                                      controller.isLoading = false;
+                                      controller.update();
+                                    }
+                                  : null,
+                            ),
+                            if (controller.isLoading)
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  cancelToken.cancel();
+                                },
+                                icon: Icon(Icons.cancel),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.error,
+                                  // 设置背景颜色为绿色
+                                  // padding: const EdgeInsets.symmetric(
+                                  //     horizontal: 40.0),
+                                  // 调整内边距使得按钮更宽
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                        5.0), // 边角圆角大小可自定义
+                                  ),
+                                ),
+                                label: Text(
+                                  '取消',
+                                  style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.onError,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     ],
@@ -390,6 +430,7 @@ class _LoginPageState extends State<LoginPage> {
         TextEditingController(text: serverToEdit?.username ?? 'admin');
     TextEditingController passwordController =
         TextEditingController(text: serverToEdit?.password ?? 'adminadmin');
+    CancelToken cancelToken = CancelToken();
     await Get.bottomSheet(
       enableDrag: true,
       GetBuilder<LoginController>(builder: (controller) {
@@ -491,8 +532,15 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         onPressed: () {
                           // 清理表单控制器
-                          nameController.clear();
-                          entryController.clear();
+                          try {
+                            cancelToken.cancel();
+                            nameController.clear();
+                            entryController.clear();
+                          } catch (e, trace) {
+                            Logger.instance.e(e.toString());
+                            Logger.instance.d(trace);
+                          }
+
                           // 关闭底部表单
                           Navigator.pop(context);
                         },
@@ -515,7 +563,8 @@ class _LoginPageState extends State<LoginPage> {
                             );
 
                             CommonResponse flag =
-                                await controller.testServerConnection(server);
+                                await controller.testServerConnection(server,
+                                    cancelToken: cancelToken);
                             if (flag.succeed) {
                               CommonResponse result =
                                   await controller.saveServer(server);
@@ -582,7 +631,10 @@ class _LoginPageState extends State<LoginPage> {
           ),
         );
       }),
-    );
+    ).whenComplete(() {
+      controller.isLoading = false;
+      controller.update();
+    });
   }
 
   void connectToServer() async {

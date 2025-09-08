@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 import '../models/authinfo.dart';
 import '../models/common_response.dart';
 import '../models/login_user.dart';
@@ -9,10 +11,12 @@ import 'api.dart';
 /// 用户
 class UserAPI {
   /// 登录
-  static Future<CommonResponse> login(LoginUser loginUser) async {
+  static Future<CommonResponse> login(LoginUser loginUser,
+      {CancelToken? cancelToken}) async {
     var response = await DioUtil().post(
       Api.LOGIN_URL,
       formData: loginUser.toJson(),
+      cancelToken: cancelToken,
     );
     if (response.statusCode != 200) {
       return CommonResponse.error(msg: '网站访问失败！错误码：${response.statusCode}');

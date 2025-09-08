@@ -97,14 +97,16 @@ class LoginController extends GetxController {
   ////@title 测试服务器连接
   ///@description
   ///@updateTime
-  Future<CommonResponse> testServerConnection(Server server) async {
+  Future<CommonResponse> testServerConnection(Server server,
+      {CancelToken? cancelToken}) async {
     try {
       await dioUtil.initialize(server.entry);
       LoginUser loginUser = LoginUser(
         username: server.username,
         password: server.password,
       );
-      CommonResponse response = await connectToServer(loginUser);
+      CommonResponse response =
+          await connectToServer(loginUser, cancelToken: cancelToken);
       return response;
     } catch (e) {
       // 发生错误，如网络问题或服务器不可达
@@ -188,12 +190,14 @@ class LoginController extends GetxController {
   ///@title 登录服务器
   ///@description
   ///@updateTime
-  Future<CommonResponse> connectToServer(LoginUser loginUser) async {
+  Future<CommonResponse> connectToServer(LoginUser loginUser,
+      {CancelToken? cancelToken}) async {
     try {
       await SPUtil.remove('userinfo');
       SPUtil.setBool('isLogin', false);
       DioUtil.instance.clearAuthToken();
-      CommonResponse res = await UserAPI.login(loginUser);
+      CommonResponse res =
+          await UserAPI.login(loginUser, cancelToken: cancelToken);
       Logger.instance.i(res.code);
       Logger.instance.i(res.data);
       if (res.code == 0) {
@@ -211,7 +215,7 @@ class LoginController extends GetxController {
   ///@title 登录操作
   ///@description
   ///@updateTime
-  Future<CommonResponse> doLogin() async {
+  Future<CommonResponse> doLogin(CancelToken? cancelToken) async {
     isLoading = true;
     update();
 
@@ -229,7 +233,7 @@ class LoginController extends GetxController {
       username: selectedServer?.username,
       password: selectedServer?.password,
     );
-    return connectToServer(loginUser);
+    return connectToServer(loginUser, cancelToken: cancelToken);
   }
 
   ///@title 清除服务器记录
