@@ -147,7 +147,8 @@ class FileManagePage extends StatelessWidget {
                                       await controller.initSourceData();
                                       // controller.update(['file_manage']);
                                     } else {
-                                      Logger.instance.d('非文件夹');
+                                      Logger.instance.d(
+                                          '文件后缀名：${item.ext}，文件类型：${item.mimeType}');
                                       CommonResponse res = await controller
                                           .getFileSourceUrl(item.path);
                                       Logger.instance.d(res.toString());
@@ -163,12 +164,27 @@ class FileManagePage extends StatelessWidget {
                                             .startsWith('audio')) {
                                           showPlayer(res.data);
                                         } else {
-                                          Get.snackbar(
-                                            '提示',
-                                            '不支持的文件类型：${item.mimeType}，访问链接已复制到剪切板',
-                                            colorText: Theme.of(context)
-                                                .colorScheme
-                                                .primary,
+                                          Get.defaultDialog(
+                                            title: '文件操作',
+                                            content: CustomCard(
+                                              child: Wrap(
+                                                alignment:
+                                                    WrapAlignment.spaceAround,
+                                                spacing: 10,
+                                                runSpacing: 10,
+                                                children: [
+                                                  ElevatedButton.icon(
+                                                    onPressed: () async {
+                                                      await pickAndDownload(
+                                                          res.data);
+                                                    },
+                                                    icon: Icon(Icons
+                                                        .download_outlined),
+                                                    label: Text("下载"),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
                                           );
                                         }
                                       } else {
@@ -450,7 +466,7 @@ class FileManagePage extends StatelessWidget {
     // 1. 系统文件选择器（无需 Get.dialog）
     final savePath = await FilePicker.platform.saveFile(
       dialogTitle: '选择保存位置',
-      fileName: Uri.parse(url).queryParameters['path']?.split('/').last,
+      fileName: Uri.parse(url).pathSegments.last.split('/').last,
     );
     if (savePath == null) return; // 用户取消
 
@@ -503,7 +519,8 @@ class FileManagePage extends StatelessWidget {
                     minScale: PhotoViewComputedScale.contained,
                     initialScale: PhotoViewComputedScale.contained, // 默认显示整个图片
                     imageProvider: CachedNetworkImageProvider(url,
-                        cacheKey: Uri.parse(url).queryParameters['path']),
+                        cacheKey:
+                            Uri.parse(url).pathSegments.last.split('/').last),
                   ),
                 ),
               ),
@@ -542,9 +559,9 @@ class FileManagePage extends StatelessWidget {
                           // 1. 先下到临时目录
                           final tempDir = await getTemporaryDirectory();
                           final tempFile = File(
-                              '${tempDir.path}/${Uri.parse(url).queryParameters['path']}');
+                              '${tempDir.path}/${Uri.parse(url).pathSegments.last.split('/').last}');
                           Logger.instance.d(
-                              '临时文件URL: ${Uri.parse(url).queryParameters['path']}');
+                              '临时文件URL: ${Uri.parse(url).pathSegments.last.split('/').last}');
                           Logger.instance.d('临时文件保存路径: ${tempFile.path}');
                           await Dio().download(url, tempFile.path);
 
