@@ -104,11 +104,18 @@ class DioUtil {
   }
 
   // 请求方法
-  Future<Response<T>> get<T>(String url,
-      {Map<String, dynamic>? queryParameters, Options? options}) async {
-    return await dio.get<T>(url,
-        queryParameters: queryParameters,
-        options: options ?? await _buildRequestOptions());
+  Future<Response<T>> get<T>(
+    String url, {
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  }) async {
+    return await dio.get<T>(
+      url,
+      queryParameters: queryParameters,
+      options: options ?? await _buildRequestOptions(),
+      cancelToken: cancelToken,
+    );
   }
 
   Future<Response> post(
@@ -116,16 +123,19 @@ class DioUtil {
     Map<String, dynamic>? queryParameters,
     dynamic formData,
     Options? options,
+    CancelToken? cancelToken,
   }) async {
     final mergedOptions = options ?? await _buildRequestOptions();
     if (formData is FormData) {
       mergedOptions.headers?.remove('Content-Type');
     }
+
     return await dio.post(
       url,
       queryParameters: queryParameters,
       data: formData,
       options: mergedOptions,
+      cancelToken: cancelToken,
     );
   }
 
@@ -134,12 +144,14 @@ class DioUtil {
     Map<String, dynamic>? queryParameters,
     Map<String, dynamic>? formData,
     Options? options,
+    CancelToken? cancelToken,
   }) async {
     return await dio.put(
       url,
       queryParameters: queryParameters,
       data: formData,
       options: options ?? await _buildRequestOptions(),
+      cancelToken: cancelToken,
     );
   }
 
@@ -148,12 +160,14 @@ class DioUtil {
     Map<String, dynamic>? queryParameters,
     Map<String, dynamic>? formData,
     Options? options,
+    CancelToken? cancelToken,
   }) async {
     return await dio.delete(
       url,
       queryParameters: queryParameters,
       data: formData != null ? FormData.fromMap(formData) : null,
       options: options ?? await _buildRequestOptions(),
+      cancelToken: cancelToken,
     );
   }
 
