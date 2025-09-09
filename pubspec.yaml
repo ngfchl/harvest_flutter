@@ -17,7 +17,7 @@ dependencies:
   transmission_api: ^0.0.2
   easy_refresh: ^3.4.0
   url_launcher: ^6.3.2
-  intl: ^0.20.2
+  #  intl: ^0.20.2
   tmdb_api: ^2.2.3
   dio_smart_retry: ^7.0.1
   path: ^1.9.0
@@ -58,6 +58,7 @@ dependencies:
   flutter_vlc_player: ^7.4.2
   video_player: ^2.10.0
   photo_view: ^0.15.0
+  shadcn_ui: 0.27.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -65,4 +66,4 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-  - assets/images/
+    - assets/images/

@@ -7,6 +7,7 @@ import 'package:harvest/utils/dio_util.dart';
 import 'package:harvest/utils/storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import 'app/routes/app_pages.dart';
 
@@ -78,41 +79,50 @@ class MyApp extends StatelessWidget {
     final appService = Get.find<AppService>();
     appService.followSystem.value =
         SPUtil.getBool('followSystemDark', defaultValue: true);
-    return GetMaterialApp(
-      title: "Harvest",
-      defaultTransition: Transition.cupertino,
-      debugShowCheckedModeBanner: Get.testMode,
-      initialRoute: AppPages.INITIAL,
-      navigatorKey: Get.key,
-      theme: appService.currentTheme,
-      getPages: AppPages.routes,
-      builder: (context, child) {
-        // 处理 MediaQuery 异常问题，特别是小米澎湃系统
-        MediaQueryData mediaQuery = MediaQuery.of(context);
-        double safeTop = mediaQuery.padding.top;
+    return ShadApp.custom(
+        themeMode: ThemeMode.dark,
+        darkTheme: ShadThemeData(
+          brightness: Brightness.dark,
+          colorScheme: const ShadSlateColorScheme.dark(),
+        ),
+        appBuilder: (context) {
+          return GetMaterialApp(
+            title: "Harvest",
+            defaultTransition: Transition.cupertino,
+            debugShowCheckedModeBanner: Get.testMode,
+            initialRoute: AppPages.INITIAL,
+            navigatorKey: Get.key,
+            theme: appService.currentTheme,
+            getPages: AppPages.routes,
+            builder: (context, child) {
+              // 处理 MediaQuery 异常问题，特别是小米澎湃系统
+              MediaQueryData mediaQuery = MediaQuery.of(context);
+              double safeTop = mediaQuery.padding.top;
 
-        // 如果出现异常值，使用默认值替代
-        if (safeTop > 80 || safeTop < 0) {
-          print('Detected abnormal top padding: $safeTop, using fallback.');
-          safeTop = 24.0; // 合理默认值
-        }
+              // 如果出现异常值，使用默认值替代
+              if (safeTop > 80 || safeTop < 0) {
+                print(
+                    'Detected abnormal top padding: $safeTop, using fallback.');
+                safeTop = 24.0; // 合理默认值
+              }
 
-        return MediaQuery(
-          data: mediaQuery.copyWith(
-            padding: mediaQuery.padding.copyWith(top: safeTop),
-          ),
-          child: child ?? const SizedBox.shrink(),
-        );
-      },
-      translations: Messages([
-        AppServiceMessages().keys,
-      ]),
-      locale: const Locale('zh', 'CN'),
-      fallbackLocale: const Locale('en', 'US'),
-      onInit: () async {
-        await onInit(context);
-      },
-    );
+              return MediaQuery(
+                data: mediaQuery.copyWith(
+                  padding: mediaQuery.padding.copyWith(top: safeTop),
+                ),
+                child: child ?? const SizedBox.shrink(),
+              );
+            },
+            translations: Messages([
+              AppServiceMessages().keys,
+            ]),
+            locale: const Locale('zh', 'CN'),
+            fallbackLocale: const Locale('en', 'US'),
+            onInit: () async {
+              await onInit(context);
+            },
+          );
+        });
   }
 }
 
