@@ -203,11 +203,12 @@ class HomeView extends GetView<HomeController> {
               selectedIconTheme: Theme.of(context)
                   .iconTheme
                   .copyWith(color: Theme.of(context).colorScheme.primary),
-              unselectedLabelTextStyle:
-                  TextStyle(color: Theme.of(context).colorScheme.secondary),
-              unselectedIconTheme: Theme.of(context)
-                  .iconTheme
-                  .copyWith(color: Theme.of(context).colorScheme.secondary),
+              unselectedLabelTextStyle: TextStyle(
+                  color:
+                      Theme.of(context).colorScheme.primary.withOpacity(0.7)),
+              unselectedIconTheme: Theme.of(context).iconTheme.copyWith(
+                  color:
+                      Theme.of(context).colorScheme.primary.withOpacity(0.7)),
               backgroundColor: Colors.transparent,
               onDestinationSelected: (index) => controller.changePage(index),
               labelType: controller.isSmallHorizontalScreen
