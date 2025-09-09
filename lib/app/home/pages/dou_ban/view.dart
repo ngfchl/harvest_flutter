@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/models/common_response.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../utils/logger_helper.dart';
@@ -414,10 +415,10 @@ class _DouBanPageState extends State<DouBanPage>
                                                             right: 0,
                                                             child: Center(
                                                               child: Container(
-                                                                color: Theme.of(
+                                                                color: ShadTheme.of(
                                                                         context)
                                                                     .colorScheme
-                                                                    .surface,
+                                                                    .background,
                                                                 width: 30,
                                                                 child: Text(
                                                                   e.rank,
@@ -428,10 +429,10 @@ class _DouBanPageState extends State<DouBanPage>
                                                                       TextAlign
                                                                           .center,
                                                                   style: TextStyle(
-                                                                      color: Theme.of(
+                                                                      color: ShadTheme.of(
                                                                               context)
                                                                           .colorScheme
-                                                                          .onSurface,
+                                                                          .foreground,
                                                                       fontSize:
                                                                           12),
                                                                 ),
@@ -441,10 +442,10 @@ class _DouBanPageState extends State<DouBanPage>
                                                           Positioned(
                                                             bottom: 0,
                                                             child: Container(
-                                                              color: Theme.of(
+                                                              color: ShadTheme.of(
                                                                       context)
                                                                   .colorScheme
-                                                                  .surface,
+                                                                   .background,
                                                               width: 100,
                                                               child: Text(
                                                                 e.title,
@@ -455,10 +456,10 @@ class _DouBanPageState extends State<DouBanPage>
                                                                     TextAlign
                                                                         .center,
                                                                 style: TextStyle(
-                                                                    color: Theme.of(
+                                                                    color: ShadTheme.of(
                                                                             context)
                                                                         .colorScheme
-                                                                        .onSurface,
+                                                                         .foreground,
                                                                     fontSize:
                                                                         12),
                                                               ),
@@ -483,7 +484,7 @@ class _DouBanPageState extends State<DouBanPage>
                                                                   GFTypographyType
                                                                       .typo5,
                                                               dividerHeight: 0,
-                                                              textColor: Theme.of(
+                                                              textColor: ShadTheme.of(
                                                                       context)
                                                                   .colorScheme
                                                                   .primary,
@@ -555,7 +556,7 @@ class _DouBanPageState extends State<DouBanPage>
                                                                     emptyColor:
                                                                         Colors
                                                                             .redAccent,
-                                                                    filledColor: Theme.of(
+                                                                    filledColor: ShadTheme.of(
                                                                             context)
                                                                         .colorScheme
                                                                         .primary,
@@ -580,7 +581,7 @@ class _DouBanPageState extends State<DouBanPage>
                                                                   GFTypographyType
                                                                       .typo5,
                                                               dividerHeight: 0,
-                                                              textColor: Theme.of(
+                                                              textColor: ShadTheme.of(
                                                                       context)
                                                                   .colorScheme
                                                                   .secondary,
@@ -642,10 +643,10 @@ class _DouBanPageState extends State<DouBanPage>
                                                             top: 0,
                                                             right: 0,
                                                             child: Container(
-                                                              color: Theme.of(
+                                                              color: ShadTheme.of(
                                                                       context)
                                                                   .colorScheme
-                                                                  .surface,
+                                                                  .background,
                                                               width: 20,
                                                               child: Text(
                                                                 e.rank
@@ -657,10 +658,10 @@ class _DouBanPageState extends State<DouBanPage>
                                                                     TextAlign
                                                                         .center,
                                                                 style: TextStyle(
-                                                                    color: Theme.of(
+                                                                    color: ShadTheme.of(
                                                                             context)
                                                                         .colorScheme
-                                                                        .onSurface,
+                                                                        .foreground,
                                                                     fontSize:
                                                                         12),
                                                               ),
@@ -669,10 +670,10 @@ class _DouBanPageState extends State<DouBanPage>
                                                           Positioned(
                                                             bottom: 0,
                                                             child: Container(
-                                                              color: Theme.of(
+                                                              color: ShadTheme.of(
                                                                       context)
                                                                   .colorScheme
-                                                                  .surface,
+                                                                   .background,
                                                               width: 100,
                                                               child: Text(
                                                                 e.title,
@@ -683,10 +684,10 @@ class _DouBanPageState extends State<DouBanPage>
                                                                     TextAlign
                                                                         .center,
                                                                 style: TextStyle(
-                                                                    color: Theme.of(
+                                                                    color: ShadTheme.of(
                                                                             context)
                                                                         .colorScheme
-                                                                        .onSurface,
+                                                                         .foreground,
                                                                     fontSize:
                                                                         12),
                                                               ),
@@ -711,7 +712,7 @@ class _DouBanPageState extends State<DouBanPage>
                                                                   GFTypographyType
                                                                       .typo5,
                                                               dividerHeight: 0,
-                                                              textColor: Theme.of(
+                                                              textColor: ShadTheme.of(
                                                                       context)
                                                                   .colorScheme
                                                                   .primary,
@@ -761,7 +762,7 @@ class _DouBanPageState extends State<DouBanPage>
                                                                     emptyColor:
                                                                         Colors
                                                                             .redAccent,
-                                                                    filledColor: Theme.of(
+                                                                    filledColor: ShadTheme.of(
                                                                             context)
                                                                         .colorScheme
                                                                         .primary,
@@ -872,7 +873,7 @@ class _DouBanPageState extends State<DouBanPage>
                             Text(
                               '${videoDetail.title}${videoDetail.year}',
                               style: TextStyle(
-                                  color: Theme.of(context).colorScheme.primary,
+                                  color: ShadTheme.of(context).colorScheme.primary,
                                   fontSize: 20,
                                   fontWeight: FontWeight.w700),
                               maxLines: 2,
@@ -913,7 +914,7 @@ class _DouBanPageState extends State<DouBanPage>
                                         filledIcon: Icons.star,
                                         emptyIcon: Icons.star_border,
                                         emptyColor: Colors.redAccent,
-                                        filledColor: Theme.of(context)
+                                        filledColor: ShadTheme.of(context)
                                             .colorScheme
                                             .primary,
                                         halfFilledColor: Colors.amberAccent,
@@ -1085,7 +1086,7 @@ class _DouBanPageState extends State<DouBanPage>
                   onPressed: () => controller.goSearchPage(videoDetail),
                   icon: Icon(
                     Icons.search,
-                    color: Theme.of(context).colorScheme.onSurface,
+                    color: ShadTheme.of(context).colorScheme.foreground,
                   ),
                   label: const Text('搜索'),
                 ),
@@ -1095,7 +1096,7 @@ class _DouBanPageState extends State<DouBanPage>
                   },
                   icon: Icon(
                     Icons.info_outline,
-                    color: Theme.of(context).colorScheme.onSurface,
+                    color: ShadTheme.of(context).colorScheme.foreground,
                   ),
                   label: const Text('详情'),
                 ),
@@ -1121,7 +1122,7 @@ class _DouBanPageState extends State<DouBanPage>
       if (!await launchUrl(Uri.parse(url),
           mode: LaunchMode.externalApplication)) {
         Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
-            colorText: Theme.of(context).colorScheme.primary);
+            colorText: ShadTheme.of(context).colorScheme.primary);
       }
     } else {
       Logger.instance.i('WebView');

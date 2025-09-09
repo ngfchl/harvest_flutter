@@ -11,6 +11,7 @@ import 'package:harvest/app/home/pages/agg_search/models/torrent_info.dart';
 import 'package:harvest/utils/logger_helper.dart';
 import 'package:html/parser.dart';
 import 'package:http/http.dart' as http;
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:xpath_selector_html_parser/xpath_selector_html_parser.dart';
 
@@ -137,10 +138,10 @@ class _WebViewPageState extends State<WebViewPage> {
                           Clipboard.setData(ClipboardData(text: cookies));
                           Get.snackbar('获取 UID和 Cookie 成功',
                               '你的 UID 是：${regex.firstMatch(result.attr!.trim())?.group(0)}，Cookie已复制到剪切板',
-                              colorText: Theme.of(context).colorScheme.primary);
+                              colorText:  ShadTheme.of(context).colorScheme.primary);
                         } catch (e) {
                           Get.snackbar('获取 UID 失败', '请手动填写站点 UID',
-                              colorText: Theme.of(context).colorScheme.error);
+                              colorText:  ShadTheme.of(context).colorScheme.ring);
                           controller.mySite =
                               controller.mySite?.copyWith(userId: '');
                         }
@@ -157,7 +158,7 @@ class _WebViewPageState extends State<WebViewPage> {
                         Clipboard.setData(
                             ClipboardData(text: controller.info!.magnetUrl));
                         Get.snackbar('复制下载链接', '种子下载链接已复制到剪切板！',
-                            colorText: Theme.of(context).colorScheme.error);
+                            colorText:  ShadTheme.of(context).colorScheme.ring);
                       },
                       type: GFButtonType.transparent,
                     ),
@@ -216,7 +217,7 @@ class _WebViewPageState extends State<WebViewPage> {
                             );
                           } catch (e) {
                             Get.snackbar('获取 UID 失败', '请手动填写站点 UID',
-                                colorText: Theme.of(context).colorScheme.error);
+                                colorText:  ShadTheme.of(context).colorScheme.ring);
                           }
                         }
                         if (controller.mySite?.passkey == null ||
@@ -237,7 +238,7 @@ class _WebViewPageState extends State<WebViewPage> {
                             '保存成功！',
                             response.msg!,
                             snackPosition: SnackPosition.TOP,
-                            colorText: Theme.of(context).colorScheme.primary,
+                            colorText:  ShadTheme.of(context).colorScheme.primary,
                             duration: const Duration(seconds: 3),
                           );
                         } else {
@@ -245,7 +246,7 @@ class _WebViewPageState extends State<WebViewPage> {
                             '保存出错啦！',
                             response.msg!,
                             snackPosition: SnackPosition.TOP,
-                            colorText: Theme.of(context).colorScheme.error,
+                            colorText:  ShadTheme.of(context).colorScheme.ring,
                             duration: const Duration(seconds: 3),
                           );
                         }
@@ -265,7 +266,7 @@ class _WebViewPageState extends State<WebViewPage> {
                 if (!await launchUrl(uri,
                     mode: LaunchMode.externalApplication)) {
                   Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
-                      colorText: Theme.of(context).colorScheme.error);
+                      colorText:  ShadTheme.of(context).colorScheme.ring);
                 }
               },
               type: GFButtonType.transparent,

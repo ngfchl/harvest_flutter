@@ -16,6 +16,7 @@ import 'package:harvest/utils/date_time_utils.dart';
 import 'package:intl/intl.dart';
 import 'package:multi_select_flutter/chip_field/multi_select_chip_field.dart';
 import 'package:multi_select_flutter/util/multi_select_item.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -64,8 +65,6 @@ class _MySitePagePageState extends State<MySitePage>
             child: Column(
               children: [
                 CustomCard(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
                   child: Column(
@@ -82,7 +81,8 @@ class _MySitePagePageState extends State<MySitePage>
                               '当前为缓存数据，正在从服务器加载',
                               style: TextStyle(
                                 fontSize: 10,
-                                color: Theme.of(context).colorScheme.primary,
+                                color:
+                                    ShadTheme.of(context).colorScheme.primary,
                               ),
                             ),
                           ],
@@ -132,7 +132,7 @@ class _MySitePagePageState extends State<MySitePage>
                                           prefixIcon: Icon(
                                             Icons.search,
                                             size: 14,
-                                            color: Theme.of(context)
+                                            color: ShadTheme.of(context)
                                                 .colorScheme
                                                 .primary,
                                           ),
@@ -209,7 +209,7 @@ class _MySitePagePageState extends State<MySitePage>
                                         loaderIconOne: Icon(
                                           Icons.circle_outlined,
                                           size: 16,
-                                          color: Theme.of(context)
+                                          color: ShadTheme.of(context)
                                               .colorScheme
                                               .primary
                                               .withOpacity(0.8),
@@ -217,7 +217,7 @@ class _MySitePagePageState extends State<MySitePage>
                                       )
                                     : Icon(Icons.backspace_outlined,
                                         size: 18,
-                                        color: Theme.of(context)
+                                        color: ShadTheme.of(context)
                                             .colorScheme
                                             .primary
                                             .withOpacity(0.8)))
@@ -246,7 +246,7 @@ class _MySitePagePageState extends State<MySitePage>
                                       Icon(
                                         Icons.filter_tilt_shift,
                                         size: 18,
-                                        color: Theme.of(context)
+                                        color: ShadTheme.of(context)
                                             .colorScheme
                                             .primary,
                                       ),
@@ -259,7 +259,7 @@ class _MySitePagePageState extends State<MySitePage>
                                             .name,
                                         style: TextStyle(
                                           fontSize: 14,
-                                          color: Theme.of(context)
+                                          color: ShadTheme.of(context)
                                               .colorScheme
                                               .primary,
                                         ),
@@ -284,7 +284,7 @@ class _MySitePagePageState extends State<MySitePage>
                                       Icon(
                                         Icons.sort_by_alpha_outlined,
                                         size: 18,
-                                        color: Theme.of(context)
+                                        color: ShadTheme.of(context)
                                             .colorScheme
                                             .primary,
                                       ),
@@ -297,7 +297,7 @@ class _MySitePagePageState extends State<MySitePage>
                                             .name,
                                         style: TextStyle(
                                           fontSize: 14,
-                                          color: Theme.of(context)
+                                          color: ShadTheme.of(context)
                                               .colorScheme
                                               .primary,
                                         ),
@@ -325,14 +325,14 @@ class _MySitePagePageState extends State<MySitePage>
                                           ? Icon(
                                               Icons.sim_card_download_sharp,
                                               size: 18,
-                                              color: Theme.of(context)
+                                              color: ShadTheme.of(context)
                                                   .colorScheme
                                                   .primary,
                                             )
                                           : Icon(
                                               Icons.upload_file_sharp,
                                               size: 18,
-                                              color: Theme.of(context)
+                                              color: ShadTheme.of(context)
                                                   .colorScheme
                                                   .primary,
                                             ),
@@ -342,7 +342,7 @@ class _MySitePagePageState extends State<MySitePage>
                                               '正序',
                                               style: TextStyle(
                                                 fontSize: 14,
-                                                color: Theme.of(context)
+                                                color: ShadTheme.of(context)
                                                     .colorScheme
                                                     .primary,
                                               ),
@@ -351,7 +351,7 @@ class _MySitePagePageState extends State<MySitePage>
                                               '倒序',
                                               style: TextStyle(
                                                 fontSize: 14,
-                                                color: Theme.of(context)
+                                                color: ShadTheme.of(context)
                                                     .colorScheme
                                                     .primary,
                                               ),
@@ -362,8 +362,9 @@ class _MySitePagePageState extends State<MySitePage>
                               ),
                               CustomPopup(
                                 contentDecoration: BoxDecoration(
-                                  color:
-                                      Theme.of(context).colorScheme.background,
+                                  color: ShadTheme.of(context)
+                                      .colorScheme
+                                      .background,
                                 ),
                                 content: SingleChildScrollView(
                                   scrollDirection: Axis.vertical,
@@ -379,7 +380,7 @@ class _MySitePagePageState extends State<MySitePage>
                                         child: Text(
                                           '全部',
                                           style: TextStyle(
-                                            color: Theme.of(context)
+                                            color: ShadTheme.of(context)
                                                 .colorScheme
                                                 .primary,
                                           ),
@@ -397,7 +398,7 @@ class _MySitePagePageState extends State<MySitePage>
                                                 child: Text(
                                                   item,
                                                   style: TextStyle(
-                                                    color: Theme.of(context)
+                                                    color: ShadTheme.of(context)
                                                         .colorScheme
                                                         .primary,
                                                   ),
@@ -424,7 +425,7 @@ class _MySitePagePageState extends State<MySitePage>
                                       Icon(
                                         Icons.tag,
                                         size: 18,
-                                        color: Theme.of(context)
+                                        color: ShadTheme.of(context)
                                             .colorScheme
                                             .primary,
                                       ),
@@ -432,7 +433,7 @@ class _MySitePagePageState extends State<MySitePage>
                                         '【${controller.selectTag}】',
                                         style: TextStyle(
                                           fontSize: 14,
-                                          color: Theme.of(context)
+                                          color: ShadTheme.of(context)
                                               .colorScheme
                                               .primary,
                                         ),
@@ -455,7 +456,7 @@ class _MySitePagePageState extends State<MySitePage>
                             loaderIconOne: Icon(
                               Icons.circle_outlined,
                               size: 18,
-                              color: Theme.of(context)
+                              color: ShadTheme.of(context)
                                   .colorScheme
                                   .primary
                                   .withOpacity(0.8),
@@ -523,7 +524,7 @@ class _MySitePagePageState extends State<MySitePage>
   _buildBottomButtonBarFloat() {
     return CustomPopup(
         contentDecoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.background,
+          color: ShadTheme.of(context).colorScheme.background,
         ),
         content: SingleChildScrollView(
           scrollDirection: Axis.vertical,
@@ -647,7 +648,7 @@ class _MySitePagePageState extends State<MySitePage>
         ),
         child: Icon(
           Icons.settings_outlined,
-          color: Theme.of(context).colorScheme.primary,
+          color: ShadTheme.of(context).colorScheme.primary,
           size: 28,
         ));
   }
@@ -676,7 +677,7 @@ class _MySitePagePageState extends State<MySitePage>
       Uri uri = Uri.parse(url);
       if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
         Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
-            colorText: Theme.of(context).colorScheme.primary);
+            colorText: ShadTheme.of(context).colorScheme.primary);
       }
     } else {
       Logger.instance.d('使用内置浏览器打开');
@@ -697,7 +698,6 @@ class _MySitePagePageState extends State<MySitePage>
     if (website == null) {
       return CustomCard(
         key: Key("${mySite.id}-${mySite.site}"),
-        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         child: ListTile(
           dense: true,
           contentPadding:
@@ -726,7 +726,7 @@ class _MySitePagePageState extends State<MySitePage>
               },
               icon: Icon(
                 Icons.edit,
-                color: Theme.of(context).colorScheme.primary,
+                color: ShadTheme.of(context).colorScheme.primary,
               )),
         ),
       );
@@ -770,7 +770,6 @@ class _MySitePagePageState extends State<MySitePage>
         .add(Duration(days: (nextLevel?.days ?? 0) * 7));
     return CustomCard(
       key: Key("${mySite.id}-${mySite.site}"),
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Column(children: [
         ListTile(
           dense: true,
@@ -865,7 +864,7 @@ class _MySitePagePageState extends State<MySitePage>
                 CustomPopup(
                   showArrow: true,
                   barrierColor: Colors.transparent,
-                  backgroundColor: Theme.of(context).colorScheme.surface,
+                  backgroundColor: ShadTheme.of(context).colorScheme.background,
                   content: SingleChildScrollView(
                     child: SizedBox(
                         width: 200,
@@ -878,8 +877,9 @@ class _MySitePagePageState extends State<MySitePage>
                                 child: Text("下一等级：${nextLevel.level}",
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
+                                      color: ShadTheme.of(context)
+                                          .colorScheme
+                                          .primary,
                                     )),
                               ),
                               // if (status.uploaded < nextLevelToUploadedByte)
@@ -892,8 +892,10 @@ class _MySitePagePageState extends State<MySitePage>
                                       color: status.uploaded <
                                               max(nextLevelToUploadedByte,
                                                   calcToUploaded)
-                                          ? Theme.of(context).colorScheme.error
-                                          : Theme.of(context)
+                                          ? ShadTheme.of(context)
+                                              .colorScheme
+                                              .ring
+                                          : ShadTheme.of(context)
                                               .colorScheme
                                               .primary,
                                     )),
@@ -907,8 +909,10 @@ class _MySitePagePageState extends State<MySitePage>
                                       fontSize: 10,
                                       color: status.downloaded <
                                               nextLevelToDownloadedByte
-                                          ? Theme.of(context).colorScheme.error
-                                          : Theme.of(context)
+                                          ? ShadTheme.of(context)
+                                              .colorScheme
+                                              .ring
+                                          : ShadTheme.of(context)
                                               .colorScheme
                                               .primary,
                                     )),
@@ -922,7 +926,7 @@ class _MySitePagePageState extends State<MySitePage>
                               //         style: TextStyle(
                               //           fontSize: 10,
                               //           color:
-                              //               Theme.of(context).colorScheme.error,
+                              //               ShadTheme.of(context).colorScheme.ring,
                               //         )),
                               //   ),
                               if (nextLevel.torrents > 0)
@@ -934,10 +938,10 @@ class _MySitePagePageState extends State<MySitePage>
                                         fontSize: 10,
                                         color: status.published <
                                                 nextLevel.torrents
-                                            ? Theme.of(context)
+                                            ? ShadTheme.of(context)
                                                 .colorScheme
-                                                .error
-                                            : Theme.of(context)
+                                                .ring
+                                            : ShadTheme.of(context)
                                                 .colorScheme
                                                 .primary,
                                       )),
@@ -950,10 +954,10 @@ class _MySitePagePageState extends State<MySitePage>
                                       style: TextStyle(
                                         fontSize: 10,
                                         color: status.myScore < nextLevel.score
-                                            ? Theme.of(context)
+                                            ? ShadTheme.of(context)
                                                 .colorScheme
-                                                .error
-                                            : Theme.of(context)
+                                                .ring
+                                            : ShadTheme.of(context)
                                                 .colorScheme
                                                 .primary,
                                       )),
@@ -966,10 +970,10 @@ class _MySitePagePageState extends State<MySitePage>
                                       style: TextStyle(
                                         fontSize: 10,
                                         color: status.myBonus < nextLevel.bonus
-                                            ? Theme.of(context)
+                                            ? ShadTheme.of(context)
                                                 .colorScheme
-                                                .error
-                                            : Theme.of(context)
+                                                .ring
+                                            : ShadTheme.of(context)
                                                 .colorScheme
                                                 .primary,
                                       )),
@@ -983,10 +987,10 @@ class _MySitePagePageState extends State<MySitePage>
                                         fontSize: 10,
                                         color: DateTime.now()
                                                 .isBefore(toUpgradeTime)
-                                            ? Theme.of(context)
+                                            ? ShadTheme.of(context)
                                                 .colorScheme
-                                                .error
-                                            : Theme.of(context)
+                                                .ring
+                                            : ShadTheme.of(context)
                                                 .colorScheme
                                                 .primary,
                                       )),
@@ -998,8 +1002,9 @@ class _MySitePagePageState extends State<MySitePage>
                                   child: Text('保留账号：${nextLevel.keepAccount}',
                                       style: TextStyle(
                                         fontSize: 10,
-                                        color:
-                                            Theme.of(context).colorScheme.error,
+                                        color: ShadTheme.of(context)
+                                            .colorScheme
+                                            .ring,
                                       )),
                                 ),
                               if (level.graduation != true &&
@@ -1009,8 +1014,9 @@ class _MySitePagePageState extends State<MySitePage>
                                   child: Text('毕业：${nextLevel.graduation}',
                                       style: TextStyle(
                                         fontSize: 10,
-                                        color:
-                                            Theme.of(context).colorScheme.error,
+                                        color: ShadTheme.of(context)
+                                            .colorScheme
+                                            .ring,
                                       )),
                                 ),
                               PopupMenuItem<String>(
@@ -1018,8 +1024,9 @@ class _MySitePagePageState extends State<MySitePage>
                                 child: Text('即将获得：${nextLevel.rights}',
                                     style: TextStyle(
                                       fontSize: 10,
-                                      color:
-                                          Theme.of(context).colorScheme.error,
+                                      color: ShadTheme.of(context)
+                                          .colorScheme
+                                          .ring,
                                     )),
                               ),
                             ],
@@ -1035,7 +1042,7 @@ class _MySitePagePageState extends State<MySitePage>
                                             fontSize: 10,
                                             color: item.graduation
                                                 ? Colors.orange
-                                                : Theme.of(context)
+                                                : ShadTheme.of(context)
                                                     .colorScheme
                                                     .primary,
                                           )),
@@ -1047,7 +1054,7 @@ class _MySitePagePageState extends State<MySitePage>
                     website.level?[status.myLevel]?.level ?? status.myLevel,
                     style: TextStyle(
                       fontSize: 11,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: ShadTheme.of(context).colorScheme.primary,
                     ),
                   ),
                 ),
@@ -1302,7 +1309,7 @@ class _MySitePagePageState extends State<MySitePage>
       showArrow: true,
       // contentPadding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
       barrierColor: Colors.transparent,
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: ShadTheme.of(context).colorScheme.background,
       content: SizedBox(
           width: 100,
           child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -1314,7 +1321,7 @@ class _MySitePagePageState extends State<MySitePage>
                   CommonResponse res = await signIn(mySite.id);
                   if (res.succeed) {
                     Get.snackbar('签到成功', '${mySite.nickname} 签到信息：${res.msg}',
-                        colorText: Theme.of(context).colorScheme.primary);
+                        colorText: ShadTheme.of(context).colorScheme.primary);
                     SignInInfo? info =
                         SignInInfo(updatedAt: getTodayString(), info: res.msg);
                     Map<String, SignInInfo>? signInInfo = mySite.signInInfo;
@@ -1333,7 +1340,7 @@ class _MySitePagePageState extends State<MySitePage>
                   } else {
                     Get.snackbar(
                         '签到失败', '${mySite.nickname} 签到任务执行出错啦：${res.msg}',
-                        colorText: Theme.of(context).colorScheme.error);
+                        colorText: ShadTheme.of(context).colorScheme.ring);
                   }
                   siteRefreshing.value = false;
                 },
@@ -1345,7 +1352,7 @@ class _MySitePagePageState extends State<MySitePage>
                 CommonResponse res = await getNewestStatus(mySite.id);
                 if (res.succeed) {
                   Get.snackbar('站点数据刷新成功', '${mySite.nickname} 数据刷新：${res.msg}',
-                      colorText: Theme.of(context).colorScheme.primary);
+                      colorText: ShadTheme.of(context).colorScheme.primary);
                   StatusInfo? status = StatusInfo.fromJson(res.data);
                   Map<String, StatusInfo>? statusInfo = mySite.statusInfo;
                   statusInfo.assign(getTodayString(), status);
@@ -1370,7 +1377,7 @@ class _MySitePagePageState extends State<MySitePage>
                 } else {
                   Get.snackbar(
                       '站点数据刷新失败', '${mySite.nickname} 数据刷新出错啦：${res.msg}',
-                      colorText: Theme.of(context).colorScheme.error);
+                      colorText: ShadTheme.of(context).colorScheme.ring);
                 }
                 siteRefreshing.value = false;
               },
@@ -1383,11 +1390,11 @@ class _MySitePagePageState extends State<MySitePage>
 
                   if (res.succeed) {
                     Get.snackbar('辅种任务发送成功', '${mySite.nickname} ${res.msg}',
-                        colorText: Theme.of(context).colorScheme.primary);
+                        colorText: ShadTheme.of(context).colorScheme.primary);
                   } else {
                     Get.snackbar(
                         '辅种任务发送失败', '${mySite.nickname} 辅种出错啦：${res.msg}',
-                        colorText: Theme.of(context).colorScheme.error);
+                        colorText: ShadTheme.of(context).colorScheme.ring);
                   }
                 },
               ),
@@ -1418,7 +1425,7 @@ class _MySitePagePageState extends State<MySitePage>
                 child: Center(
                   child: GFLoader(
                     size: 28,
-                    loaderColorOne: Theme.of(context).colorScheme.primary,
+                    loaderColorOne: ShadTheme.of(context).colorScheme.primary,
                   ),
                 ))
             : Icon(
@@ -1435,7 +1442,7 @@ class _MySitePagePageState extends State<MySitePage>
       CommonResponse res = await getMySiteByIdApi(mySite.id);
       if (!res.succeed) {
         Get.snackbar('获取站点信息失败', "获取站点信息失败，请更新站点列表后重试！${res.msg}",
-            colorText: Theme.of(context).colorScheme.error);
+            colorText: ShadTheme.of(context).colorScheme.ring);
         return;
       }
       mySite = res.data;
@@ -1515,8 +1522,8 @@ class _MySitePagePageState extends State<MySitePage>
             ListTile(
               title: Text(
                 mySite != null ? '编辑站点：${mySite.nickname}' : '添加站点',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
+                style: ShadTheme.of(context).textTheme.h3.copyWith(
+                      color: ShadTheme.of(context).colorScheme.primary,
                     ),
               ),
               trailing: Obx(() {
@@ -1547,12 +1554,12 @@ class _MySitePagePageState extends State<MySitePage>
                         icon: Icon(
                           Icons.cloud_download_outlined,
                           size: 18,
-                          color: Theme.of(context).colorScheme.primary,
+                          color: ShadTheme.of(context).colorScheme.primary,
                         ),
                         label: Text(
                           '刷新站点列表',
                           style: TextStyle(
-                            color: Theme.of(context).colorScheme.primary,
+                            color: ShadTheme.of(context).colorScheme.primary,
                           ),
                         ),
                       );
@@ -1576,9 +1583,7 @@ class _MySitePagePageState extends State<MySitePage>
                               decoration: InputDecoration(
                                 labelText: '选择站点',
                                 filled: true,
-                                fillColor: Theme.of(context)
-                                    .inputDecorationTheme
-                                    .fillColor,
+                                fillColor: Colors.transparent,
                               ),
                             ),
                             popupProps: PopupProps.menu(
@@ -1587,14 +1592,15 @@ class _MySitePagePageState extends State<MySitePage>
                               itemBuilder: (ctx, item, isSelected, _) {
                                 return ListTile(
                                   leading: CircleAvatar(
-                                    backgroundColor:
-                                        Theme.of(context).colorScheme.primary,
+                                    backgroundColor: ShadTheme.of(context)
+                                        .colorScheme
+                                        .primary,
                                     child: Text(
                                       item.name[0],
                                       style: TextStyle(
-                                        color: Theme.of(context)
+                                        color: ShadTheme.of(context)
                                             .colorScheme
-                                            .onPrimary,
+                                            .primaryForeground,
                                       ),
                                     ),
                                   ),
@@ -1602,8 +1608,9 @@ class _MySitePagePageState extends State<MySitePage>
                                   title: Text(
                                     item.name,
                                     style: TextStyle(
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
+                                      color: ShadTheme.of(context)
+                                          .colorScheme
+                                          .primary,
                                     ),
                                   ),
                                 );
@@ -1706,16 +1713,17 @@ class _MySitePagePageState extends State<MySitePage>
                                     .toList(),
                                 textStyle: TextStyle(
                                     fontSize: 11,
-                                    color: Theme.of(context)
+                                    color: ShadTheme.of(context)
                                         .colorScheme
-                                        .onSurface),
+                                        .foreground),
                                 selectedTextStyle: TextStyle(
                                     fontSize: 10,
-                                    color: Theme.of(context)
+                                    color: ShadTheme.of(context)
                                         .colorScheme
-                                        .onSurface),
-                                chipColor:
-                                    Theme.of(context).colorScheme.surface,
+                                        .foreground),
+                                chipColor: ShadTheme.of(context)
+                                    .colorScheme
+                                    .background,
                                 initialValue: [...tags],
                                 title: Text(
                                   "站点标签",
@@ -1873,17 +1881,20 @@ class _MySitePagePageState extends State<MySitePage>
                           borderRadius: BorderRadius.circular(5.0)),
                     ),
                     backgroundColor: WidgetStateProperty.all(
-                        Theme.of(context).colorScheme.primary),
+                        ShadTheme.of(context).colorScheme.primary),
                   ),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  icon: Icon(Icons.cancel,
-                      color: Theme.of(context).colorScheme.onPrimary),
+                  icon: Icon(
+                    Icons.cancel,
+                    color: ShadTheme.of(context).colorScheme.primaryForeground,
+                  ),
                   label: Text(
                     '取消',
                     style: TextStyle(
-                      color: Theme.of(context).colorScheme.onPrimary,
+                      color:
+                          ShadTheme.of(context).colorScheme.primaryForeground,
                     ),
                   ),
                 ),
@@ -1895,7 +1906,7 @@ class _MySitePagePageState extends State<MySitePage>
                             borderRadius: BorderRadius.circular(5.0)),
                       ),
                       backgroundColor: WidgetStateProperty.all(
-                          Theme.of(context).colorScheme.error),
+                          ShadTheme.of(context).colorScheme.ring),
                     ),
                     onPressed: () async {
                       Get.defaultDialog(
@@ -1921,8 +1932,9 @@ class _MySitePagePageState extends State<MySitePage>
                                   Get.snackbar(
                                     '删除站点',
                                     res.msg.toString(),
-                                    colorText:
-                                        Theme.of(context).colorScheme.primary,
+                                    colorText: ShadTheme.of(context)
+                                        .colorScheme
+                                        .primary,
                                   );
                                   await controller.getSiteStatusFromServer();
                                 } else {
@@ -1931,7 +1943,7 @@ class _MySitePagePageState extends State<MySitePage>
                                     '删除站点',
                                     res.msg.toString(),
                                     colorText:
-                                        Theme.of(context).colorScheme.error,
+                                        ShadTheme.of(context).colorScheme.ring,
                                   );
                                 }
                               },
@@ -1942,7 +1954,8 @@ class _MySitePagePageState extends State<MySitePage>
                     child: Text(
                       '删除',
                       style: TextStyle(
-                        color: Theme.of(context).colorScheme.onError,
+                        color:
+                            ShadTheme.of(context).colorScheme.primaryForeground,
                       ),
                     ),
                   ),
@@ -1954,22 +1967,25 @@ class _MySitePagePageState extends State<MySitePage>
                             borderRadius: BorderRadius.circular(5.0)),
                       ),
                       backgroundColor: WidgetStateProperty.all(
-                          Theme.of(context).colorScheme.tertiary),
+                          ShadTheme.of(context).colorScheme.primaryForeground),
                     ),
                     icon: Obx(() {
                       return doSaveLoading.value
                           ? GFLoader(
                               size: 20,
                               loaderColorOne:
-                                  Theme.of(context).colorScheme.tertiary,
+                                  ShadTheme.of(context).colorScheme.primary,
                             )
                           : Icon(Icons.save,
-                              color: Theme.of(context).colorScheme.onTertiary);
+                              color: ShadTheme.of(context)
+                                  .colorScheme
+                                  .primaryForeground);
                     }),
                     label: Text(
                       '保存',
                       style: TextStyle(
-                        color: Theme.of(context).colorScheme.onTertiary,
+                        color:
+                            ShadTheme.of(context).colorScheme.primaryForeground,
                       ),
                     ),
                     onPressed: () async {
@@ -2139,7 +2155,7 @@ class _MySitePagePageState extends State<MySitePage>
     if (!res.succeed) {
       Logger.instance.e('获取站点信息失败');
       Get.snackbar('获取站点信息失败', res.msg,
-          colorText: Theme.of(context).colorScheme.error);
+          colorText: ShadTheme.of(context).colorScheme.ring);
       return;
     }
     mySite = res.data;
@@ -2171,7 +2187,9 @@ class _MySitePagePageState extends State<MySitePage>
                                   fontSize: 12,
                                   color: signKey == today
                                       ? Colors.amber
-                                      : Theme.of(context).colorScheme.primary),
+                                      : ShadTheme.of(context)
+                                          .colorScheme
+                                          .primary),
                             ),
                             subtitle: Text(
                               item.updatedAt,
@@ -2179,7 +2197,9 @@ class _MySitePagePageState extends State<MySitePage>
                                   fontSize: 10,
                                   color: signKey == today
                                       ? Colors.amber
-                                      : Theme.of(context).colorScheme.primary),
+                                      : ShadTheme.of(context)
+                                          .colorScheme
+                                          .primary),
                             ),
                             selected: signKey == today,
                             selectedColor: Colors.amber,
@@ -2195,7 +2215,7 @@ class _MySitePagePageState extends State<MySitePage>
     if (!res.succeed) {
       Logger.instance.e('获取站点信息失败');
       Get.snackbar('获取站点信息失败', res.msg,
-          colorText: Theme.of(context).colorScheme.error);
+          colorText: ShadTheme.of(context).colorScheme.ring);
       return;
     }
     mySite = res.data;

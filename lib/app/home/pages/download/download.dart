@@ -17,6 +17,7 @@ import 'package:harvest/app/home/pages/download/tr_tree_file_view.dart';
 import 'package:intl/intl.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart' as qb;
 import 'package:random_color/random_color.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../../../../common/card_view.dart';
@@ -121,7 +122,7 @@ class _DownloadPageState extends State<DownloadPage>
             //   icon: Icon(
             //     controller.isTimerActive ? Icons.pause : Icons.play_arrow,
             //     size: 20,
-            //     color: Theme.of(context).colorScheme.primary,
+            //     color: ShadTheme.of(context).colorScheme.primary,
             //   ),
             //   onPressed: () => controller.toggleRealTimeState(),
             // ),
@@ -129,7 +130,7 @@ class _DownloadPageState extends State<DownloadPage>
               icon: Icon(
                 controller.isLoading ? Icons.pause : Icons.play_arrow,
                 size: 20,
-                color: Theme.of(context).colorScheme.primary,
+                color: ShadTheme.of(context).colorScheme.primary,
               ),
               onPressed: () => controller.toggleFetchStatus(),
             ),
@@ -137,7 +138,7 @@ class _DownloadPageState extends State<DownloadPage>
                 icon: Icon(
                   Icons.settings,
                   size: 20,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: ShadTheme.of(context).colorScheme.primary,
                 ),
                 onPressed: () {
                   Get.bottomSheet(
@@ -155,8 +156,9 @@ class _DownloadPageState extends State<DownloadPage>
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w700,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
+                                    color: ShadTheme.of(context)
+                                        .colorScheme
+                                        .primary,
                                   ),
                                 ),
                                 value: controller.realTimeState,
@@ -177,7 +179,7 @@ class _DownloadPageState extends State<DownloadPage>
                                 child: Row(
                                   children: [
                                     CustomTextTag(
-                                        backgroundColor: Theme.of(context)
+                                        backgroundColor: ShadTheme.of(context)
                                             .colorScheme
                                             .primary,
                                         labelText:
@@ -229,7 +231,7 @@ class _DownloadPageState extends State<DownloadPage>
                                 child: Row(
                                   children: [
                                     CustomTextTag(
-                                        backgroundColor: Theme.of(context)
+                                        backgroundColor: ShadTheme.of(context)
                                             .colorScheme
                                             .primary,
                                         labelText:
@@ -280,7 +282,7 @@ class _DownloadPageState extends State<DownloadPage>
                                 child: Row(
                                   children: [
                                     CustomTextTag(
-                                        backgroundColor: Theme.of(context)
+                                        backgroundColor: ShadTheme.of(context)
                                             .colorScheme
                                             .primary,
                                         labelText:
@@ -345,7 +347,7 @@ class _DownloadPageState extends State<DownloadPage>
               icon: Icon(
                 Icons.add,
                 size: 20,
-                color: Theme.of(context).colorScheme.primary,
+                color: ShadTheme.of(context).colorScheme.primary,
               ),
               onPressed: () async {
                 _showEditBottomSheet();
@@ -375,9 +377,9 @@ class _DownloadPageState extends State<DownloadPage>
       return GFLoader(
         type: GFLoaderType.square,
         loaderstrokeWidth: 2,
-        loaderColorOne: Theme.of(context).colorScheme.primary,
-        loaderColorTwo: Theme.of(context).colorScheme.primary,
-        loaderColorThree: Theme.of(context).colorScheme.primary,
+        loaderColorOne: ShadTheme.of(context).colorScheme.primary,
+        loaderColorTwo: ShadTheme.of(context).colorScheme.primary,
+        loaderColorThree: ShadTheme.of(context).colorScheme.primary,
         size: 16,
       );
     }
@@ -392,7 +394,7 @@ class _DownloadPageState extends State<DownloadPage>
           padding: const EdgeInsets.all(1),
           decoration: BoxDecoration(
             border: Border.all(width: 2),
-            color: Theme.of(context).colorScheme.surface,
+            color: ShadTheme.of(context).colorScheme.background,
           ),
           child: Text(
             '${series.name}: ${FileSizeConvert.parseToFileSize(point.y)}',
@@ -609,7 +611,6 @@ class _DownloadPageState extends State<DownloadPage>
     var pathDownloader =
         '${downloader.protocol}://${downloader.host}:${downloader.port}';
     return CustomCard(
-      margin: const EdgeInsets.only(left: 8, right: 8, top: 6, bottom: 2),
       child: Slidable(
         key: ValueKey('${downloader.id}_${downloader.name}'),
         startActionPane: ActionPane(
@@ -623,10 +624,10 @@ class _DownloadPageState extends State<DownloadPage>
                     controller.reseedDownloader(downloader.id!);
                 if (res.code == 0) {
                   Get.snackbar('辅种通知', res.msg.toString(),
-                      colorText: Theme.of(context).colorScheme.primary);
+                      colorText: ShadTheme.of(context).colorScheme.primary);
                 } else {
                   Get.snackbar('辅种通知', res.msg.toString(),
-                      colorText: Theme.of(context).colorScheme.error);
+                      colorText: ShadTheme.of(context).colorScheme.ring);
                 }
               },
               backgroundColor: const Color(0xFF0A9D96),
@@ -677,10 +678,12 @@ class _DownloadPageState extends State<DownloadPage>
                             await controller.removeDownloader(downloader);
                         if (res.code == 0) {
                           Get.snackbar('删除通知', res.msg.toString(),
-                              colorText: Theme.of(context).colorScheme.primary);
+                              colorText:
+                                  ShadTheme.of(context).colorScheme.primary);
                         } else {
                           Get.snackbar('删除通知', res.msg.toString(),
-                              colorText: Theme.of(context).colorScheme.error);
+                              colorText:
+                                  ShadTheme.of(context).colorScheme.ring);
                         }
                         await controller.getDownloaderListFromServer(
                             withStatus: true);
@@ -716,7 +719,7 @@ class _DownloadPageState extends State<DownloadPage>
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: ShadTheme.of(context).colorScheme.primary,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -724,7 +727,7 @@ class _DownloadPageState extends State<DownloadPage>
                   pathDownloader,
                   style: TextStyle(
                     fontSize: 11,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: ShadTheme.of(context).colorScheme.primary,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -755,7 +758,8 @@ class _DownloadPageState extends State<DownloadPage>
                           Icons.bolt,
                           size: 12,
                         ),
-                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        backgroundColor:
+                            ShadTheme.of(context).colorScheme.primary,
                       )
                     : IconButton(
                         onPressed: () async {
@@ -765,7 +769,7 @@ class _DownloadPageState extends State<DownloadPage>
                             Get.snackbar(
                               '下载器连接失败',
                               '下载器 ${res.msg}',
-                              colorText: Theme.of(context).colorScheme.error,
+                              colorText: ShadTheme.of(context).colorScheme.ring,
                             );
                           } else {
                             await controller.getDownloaderListFromServer(
@@ -774,7 +778,7 @@ class _DownloadPageState extends State<DownloadPage>
                         },
                         icon: Icon(
                           Icons.offline_bolt_outlined,
-                          color: Theme.of(context).colorScheme.error,
+                          color: ShadTheme.of(context).colorScheme.ring,
                           size: 12,
                         ),
                       ),
@@ -796,7 +800,7 @@ class _DownloadPageState extends State<DownloadPage>
                         icon: Icon(
                           Icons.list_alt_outlined,
                           size: 18,
-                          color: Theme.of(context).colorScheme.primary,
+                          color: ShadTheme.of(context).colorScheme.primary,
                         )),
                     IconButton(
                         onPressed: () => isQb
@@ -805,7 +809,7 @@ class _DownloadPageState extends State<DownloadPage>
                         icon: Icon(
                           Icons.settings_outlined,
                           size: 18,
-                          color: Theme.of(context).colorScheme.primary,
+                          color: ShadTheme.of(context).colorScheme.primary,
                         )),
                     (downloader.status.isNotEmpty &&
                             (isQb
@@ -818,7 +822,7 @@ class _DownloadPageState extends State<DownloadPage>
                             icon: Icon(
                               Icons.nordic_walking_sharp,
                               size: 18,
-                              color: Theme.of(context).colorScheme.error,
+                              color: ShadTheme.of(context).colorScheme.ring,
                             ))
                         : IconButton(
                             onPressed: () =>
@@ -826,14 +830,14 @@ class _DownloadPageState extends State<DownloadPage>
                             icon: Icon(
                               Icons.electric_bolt_outlined,
                               size: 18,
-                              color: Theme.of(context).colorScheme.primary,
+                              color: ShadTheme.of(context).colorScheme.primary,
                             )),
                     // IconButton(
                     //     onPressed: () {},
                     //     icon: Icon(
                     //       Icons.speed_outlined,
                     //       size: 18,
-                    //       color: Theme.of(context).colorScheme.primary,
+                    //       color: ShadTheme.of(context).colorScheme.primary,
                     //     )),
                     IconButton(
                         onPressed: () =>
@@ -841,7 +845,7 @@ class _DownloadPageState extends State<DownloadPage>
                         icon: Icon(
                           Icons.add_outlined,
                           size: 18,
-                          color: Theme.of(context).colorScheme.primary,
+                          color: ShadTheme.of(context).colorScheme.primary,
                         )),
                   ],
                 ),
@@ -1080,7 +1084,7 @@ class _DownloadPageState extends State<DownloadPage>
         '获取种子文件夹出错啦！',
         response.msg!,
         snackPosition: SnackPosition.TOP,
-        colorText: Theme.of(context).colorScheme.error,
+        colorText: ShadTheme.of(context).colorScheme.ring,
         duration: const Duration(seconds: 3),
       );
     }
@@ -1095,8 +1099,8 @@ class _DownloadPageState extends State<DownloadPage>
                 text: downloader != null ? '编辑下载器：${downloader.name}' : '添加下载器',
                 icon: const Icon(Icons.add),
                 dividerWidth: 0,
-                textColor: Theme.of(context).colorScheme.onSurface,
-                dividerColor: Theme.of(context).colorScheme.onSurface,
+                textColor: ShadTheme.of(context).colorScheme.foreground,
+                dividerColor: ShadTheme.of(context).colorScheme.foreground,
               ),
             ),
             Expanded(
@@ -1176,7 +1180,7 @@ class _DownloadPageState extends State<DownloadPage>
                 ElevatedButton(
                   style: ButtonStyle(
                     backgroundColor: WidgetStateProperty.all(
-                        Theme.of(context).colorScheme.secondary),
+                        ShadTheme.of(context).colorScheme.secondary),
                   ),
                   onPressed: () {
                     Navigator.of(context).pop();
@@ -1191,7 +1195,7 @@ class _DownloadPageState extends State<DownloadPage>
                 ElevatedButton(
                   style: ButtonStyle(
                     backgroundColor: WidgetStateProperty.all(
-                        Theme.of(context).colorScheme.primary),
+                        ShadTheme.of(context).colorScheme.primary),
                   ),
                   child: const Text(
                     '保存',
@@ -1242,7 +1246,7 @@ class _DownloadPageState extends State<DownloadPage>
                         '保存成功！',
                         response.msg,
                         snackPosition: SnackPosition.TOP,
-                        colorText: Theme.of(context).colorScheme.primary,
+                        colorText: ShadTheme.of(context).colorScheme.primary,
                         duration: const Duration(seconds: 3),
                       );
                       await controller.getDownloaderListFromServer();
@@ -1255,7 +1259,7 @@ class _DownloadPageState extends State<DownloadPage>
                         '保存出错啦！',
                         response.msg,
                         snackPosition: SnackPosition.TOP,
-                        colorText: Theme.of(context).colorScheme.error,
+                        colorText: ShadTheme.of(context).colorScheme.ring,
                         duration: const Duration(seconds: 3),
                       );
                     }
@@ -1286,7 +1290,7 @@ class _DownloadPageState extends State<DownloadPage>
           '提示',
           '下载器连接失败啦，请检查配置信息！',
           snackPosition: SnackPosition.TOP,
-          colorText: Theme.of(context).colorScheme.error,
+          colorText: ShadTheme.of(context).colorScheme.ring,
         );
         return;
       }
@@ -1332,7 +1336,8 @@ class _DownloadPageState extends State<DownloadPage>
                         icon: const Icon(Icons.exit_to_app_outlined)),
                     CustomPopup(
                         showArrow: false,
-                        backgroundColor: Theme.of(context).colorScheme.surface,
+                        backgroundColor:
+                            ShadTheme.of(context).colorScheme.background,
                         barrierColor: Colors.transparent,
                         content: SizedBox(
                           width: 120,
@@ -1344,8 +1349,9 @@ class _DownloadPageState extends State<DownloadPage>
                                   child: Text(
                                     '清除红种',
                                     style: TextStyle(
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
+                                      color: ShadTheme.of(context)
+                                          .colorScheme
+                                          .primary,
                                     ),
                                   ),
                                 ),
@@ -1358,8 +1364,9 @@ class _DownloadPageState extends State<DownloadPage>
                                   child: Text(
                                     '重置排序',
                                     style: TextStyle(
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
+                                      color: ShadTheme.of(context)
+                                          .colorScheme
+                                          .primary,
                                     ),
                                   ),
                                 ),
@@ -1375,7 +1382,7 @@ class _DownloadPageState extends State<DownloadPage>
                                     child: Text(
                                   '替换Tracker',
                                   style: TextStyle(
-                                      color: Theme.of(context)
+                                      color: ShadTheme.of(context)
                                           .colorScheme
                                           .primary),
                                 )),
@@ -1387,7 +1394,7 @@ class _DownloadPageState extends State<DownloadPage>
                                   child: Text(
                                     '添加种子',
                                     style: TextStyle(
-                                      color: Theme.of(context)
+                                      color: ShadTheme.of(context)
                                           .colorScheme
                                           .secondary,
                                     ),
@@ -1427,8 +1434,9 @@ class _DownloadPageState extends State<DownloadPage>
                                   child: Text(
                                   '暂无数据',
                                   style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
+                                    color: ShadTheme.of(context)
+                                        .colorScheme
+                                        .primary,
                                   ),
                                 ))
                               : ListView.builder(
@@ -1544,7 +1552,7 @@ class _DownloadPageState extends State<DownloadPage>
       Get.snackbar(
         '出错啦！',
         message,
-        colorText: Theme.of(context).colorScheme.primary,
+        colorText: ShadTheme.of(context).colorScheme.primary,
       );
       await controller.stopFetchTorrents();
     }
@@ -1566,8 +1574,8 @@ class _DownloadPageState extends State<DownloadPage>
               text: '添加种子',
               icon: const Icon(Icons.add),
               dividerWidth: 0,
-              textColor: Theme.of(context).colorScheme.onSurface,
-              dividerColor: Theme.of(context).colorScheme.onSurface,
+              textColor: ShadTheme.of(context).colorScheme.foreground,
+              dividerColor: ShadTheme.of(context).colorScheme.foreground,
             ),
           ),
           Expanded(
@@ -1644,7 +1652,8 @@ class _DownloadPageState extends State<DownloadPage>
                           if (torrentHashes.isEmpty) {
                             Get.snackbar('Tracker替换ing',
                                 '本下载器没有 ${keyController.text} 站点的种子！',
-                                colorText: Theme.of(context).colorScheme.error);
+                                colorText:
+                                    ShadTheme.of(context).colorScheme.ring);
                             return;
                           }
                           Get.defaultDialog(
@@ -1677,12 +1686,12 @@ class _DownloadPageState extends State<DownloadPage>
                                   }
                                   Get.snackbar('Tracker通知', res.msg,
                                       colorText: res.succeed
-                                          ? Theme.of(context)
+                                          ? ShadTheme.of(context)
                                               .colorScheme
                                               .primary
-                                          : Theme.of(context)
+                                          : ShadTheme.of(context)
                                               .colorScheme
-                                              .error);
+                                              .ring);
                                   controller.update();
                                 },
                                 child: const Text('确认'),
@@ -1744,7 +1753,7 @@ class _DownloadPageState extends State<DownloadPage>
                 return Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
+                    color: ShadTheme.of(context).colorScheme.background,
                     border: Border.all(width: 1),
                   ),
                   child: Text(
@@ -1805,17 +1814,18 @@ class _DownloadPageState extends State<DownloadPage>
                 icon: Icon(
                   Icons.sort_by_alpha,
                   size: 18,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: ShadTheme.of(context).colorScheme.primary,
                 ),
                 dividerWidth: 0,
-                textColor: Theme.of(context).colorScheme.primary,
-                dividerColor: Theme.of(context).colorScheme.primary,
+                textColor: ShadTheme.of(context).colorScheme.primary,
+                dividerColor: ShadTheme.of(context).colorScheme.primary,
               ),
               collapsedTitleBackgroundColor:
-                  Theme.of(context).colorScheme.surface,
+                  ShadTheme.of(context).colorScheme.background,
               expandedTitleBackgroundColor:
-                  Theme.of(context).colorScheme.surface,
-              contentBackgroundColor: Theme.of(context).colorScheme.surface,
+                  ShadTheme.of(context).colorScheme.background,
+              contentBackgroundColor:
+                  ShadTheme.of(context).colorScheme.background,
               titlePadding: EdgeInsets.zero,
               contentChild: SizedBox(
                 height: 200,
@@ -1833,9 +1843,9 @@ class _DownloadPageState extends State<DownloadPage>
                           ),
                           style: ListTileStyle.list,
                           titleTextStyle: TextStyle(
-                              color: Theme.of(context).colorScheme.primary),
+                              color: ShadTheme.of(context).colorScheme.primary),
                           selected: isSelected,
-                          selectedColor: Theme.of(context).colorScheme.error,
+                          selectedColor: ShadTheme.of(context).colorScheme.ring,
                           selectedTileColor: Colors.amber,
                           onTap: () {
                             Get.back();
@@ -1861,17 +1871,18 @@ class _DownloadPageState extends State<DownloadPage>
                 icon: Icon(
                   Icons.category,
                   size: 18,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: ShadTheme.of(context).colorScheme.primary,
                 ),
                 dividerWidth: 0,
-                textColor: Theme.of(context).colorScheme.primary,
-                dividerColor: Theme.of(context).colorScheme.primary,
+                textColor: ShadTheme.of(context).colorScheme.primary,
+                dividerColor: ShadTheme.of(context).colorScheme.primary,
               ),
               collapsedTitleBackgroundColor:
-                  Theme.of(context).colorScheme.surface,
+                  ShadTheme.of(context).colorScheme.background,
               expandedTitleBackgroundColor:
-                  Theme.of(context).colorScheme.surface,
-              contentBackgroundColor: Theme.of(context).colorScheme.surface,
+                  ShadTheme.of(context).colorScheme.background,
+              contentBackgroundColor:
+                  ShadTheme.of(context).colorScheme.background,
               titlePadding: EdgeInsets.zero,
               contentChild: SizedBox(
                 height: 200,
@@ -1903,9 +1914,9 @@ class _DownloadPageState extends State<DownloadPage>
                             '$c($count)',
                           ),
                           titleTextStyle: TextStyle(
-                              color: Theme.of(context).colorScheme.primary),
+                              color: ShadTheme.of(context).colorScheme.primary),
                           selected: selected,
-                          selectedColor: Theme.of(context).colorScheme.error,
+                          selectedColor: ShadTheme.of(context).colorScheme.ring,
                           onTap: () {
                             Get.back();
                             controller.selectedCategory =
@@ -1926,17 +1937,18 @@ class _DownloadPageState extends State<DownloadPage>
                 icon: Icon(
                   Icons.category,
                   size: 18,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: ShadTheme.of(context).colorScheme.primary,
                 ),
                 dividerWidth: 0,
-                textColor: Theme.of(context).colorScheme.primary,
-                dividerColor: Theme.of(context).colorScheme.primary,
+                textColor: ShadTheme.of(context).colorScheme.primary,
+                dividerColor: ShadTheme.of(context).colorScheme.primary,
               ),
               collapsedTitleBackgroundColor:
-                  Theme.of(context).colorScheme.surface,
+                  ShadTheme.of(context).colorScheme.background,
               expandedTitleBackgroundColor:
-                  Theme.of(context).colorScheme.surface,
-              contentBackgroundColor: Theme.of(context).colorScheme.surface,
+                  ShadTheme.of(context).colorScheme.background,
+              contentBackgroundColor:
+                  ShadTheme.of(context).colorScheme.background,
               titlePadding: EdgeInsets.zero,
               contentChild: SizedBox(
                 height: 200,
@@ -1962,9 +1974,9 @@ class _DownloadPageState extends State<DownloadPage>
                             '$tag($count)',
                           ),
                           titleTextStyle: TextStyle(
-                              color: Theme.of(context).colorScheme.primary),
+                              color: ShadTheme.of(context).colorScheme.primary),
                           selected: selected,
-                          selectedColor: Theme.of(context).colorScheme.error,
+                          selectedColor: ShadTheme.of(context).colorScheme.ring,
                           onTap: () {
                             Get.back();
                             controller.selectedTag = tag;
@@ -1982,17 +1994,18 @@ class _DownloadPageState extends State<DownloadPage>
                 icon: Icon(
                   Icons.info,
                   size: 18,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: ShadTheme.of(context).colorScheme.primary,
                 ),
                 dividerWidth: 0,
-                textColor: Theme.of(context).colorScheme.primary,
-                dividerColor: Theme.of(context).colorScheme.primary,
+                textColor: ShadTheme.of(context).colorScheme.primary,
+                dividerColor: ShadTheme.of(context).colorScheme.primary,
               ),
               collapsedTitleBackgroundColor:
-                  Theme.of(context).colorScheme.surface,
+                  ShadTheme.of(context).colorScheme.background,
               expandedTitleBackgroundColor:
-                  Theme.of(context).colorScheme.surface,
-              contentBackgroundColor: Theme.of(context).colorScheme.surface,
+                  ShadTheme.of(context).colorScheme.background,
+              contentBackgroundColor:
+                  ShadTheme.of(context).colorScheme.background,
               titlePadding: EdgeInsets.zero,
               contentChild: SizedBox(
                 height: 200,
@@ -2024,10 +2037,10 @@ class _DownloadPageState extends State<DownloadPage>
                             '${state.name}(${torrentsMatchingState.length})',
                           ),
                           titleTextStyle: TextStyle(
-                              color: Theme.of(context).colorScheme.primary),
+                              color: ShadTheme.of(context).colorScheme.primary),
                           style: ListTileStyle.list,
                           selected: controller.trTorrentState == state.value,
-                          selectedColor: Theme.of(context).colorScheme.error,
+                          selectedColor: ShadTheme.of(context).colorScheme.ring,
                           onTap: () {
                             Get.back();
                             controller.trTorrentState = state.value;
@@ -2047,17 +2060,18 @@ class _DownloadPageState extends State<DownloadPage>
                 icon: Icon(
                   Icons.language,
                   size: 18,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: ShadTheme.of(context).colorScheme.primary,
                 ),
                 dividerWidth: 0,
-                textColor: Theme.of(context).colorScheme.primary,
-                dividerColor: Theme.of(context).colorScheme.primary,
+                textColor: ShadTheme.of(context).colorScheme.primary,
+                dividerColor: ShadTheme.of(context).colorScheme.primary,
               ),
               collapsedTitleBackgroundColor:
-                  Theme.of(context).colorScheme.surface,
+                  ShadTheme.of(context).colorScheme.background,
               expandedTitleBackgroundColor:
-                  Theme.of(context).colorScheme.surface,
-              contentBackgroundColor: Theme.of(context).colorScheme.surface,
+                  ShadTheme.of(context).colorScheme.background,
+              contentBackgroundColor:
+                  ShadTheme.of(context).colorScheme.background,
               titlePadding: EdgeInsets.zero,
               contentChild: SizedBox(
                 height: 300,
@@ -2093,12 +2107,13 @@ class _DownloadPageState extends State<DownloadPage>
                                   '${key.trim()}(${key == '全部' ? controller.torrents.length : hashList?.length})',
                                 ),
                                 titleTextStyle: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.primary),
+                                    color: ShadTheme.of(context)
+                                        .colorScheme
+                                        .primary),
                                 style: ListTileStyle.list,
                                 selected: controller.selectedTracker == key,
                                 selectedColor:
-                                    Theme.of(context).colorScheme.error,
+                                    ShadTheme.of(context).colorScheme.ring,
                                 onTap: () {
                                   Get.back();
                                   // controller.torrentState = null;
@@ -2120,17 +2135,18 @@ class _DownloadPageState extends State<DownloadPage>
                 icon: Icon(
                   Icons.warning,
                   size: 18,
-                  color: Theme.of(context).colorScheme.error,
+                  color: ShadTheme.of(context).colorScheme.ring,
                 ),
                 dividerWidth: 0,
-                textColor: Theme.of(context).colorScheme.primary,
-                dividerColor: Theme.of(context).colorScheme.primary,
+                textColor: ShadTheme.of(context).colorScheme.primary,
+                dividerColor: ShadTheme.of(context).colorScheme.primary,
               ),
               collapsedTitleBackgroundColor:
-                  Theme.of(context).colorScheme.surface,
+                  ShadTheme.of(context).colorScheme.background,
               expandedTitleBackgroundColor:
-                  Theme.of(context).colorScheme.surface,
-              contentBackgroundColor: Theme.of(context).colorScheme.surface,
+                  ShadTheme.of(context).colorScheme.background,
+              contentBackgroundColor:
+                  ShadTheme.of(context).colorScheme.background,
               titlePadding: EdgeInsets.zero,
               contentChild: SizedBox(
                 height: 200,
@@ -2159,9 +2175,9 @@ class _DownloadPageState extends State<DownloadPage>
                             '$error($count)',
                           ),
                           titleTextStyle: TextStyle(
-                              color: Theme.of(context).colorScheme.primary),
+                              color: ShadTheme.of(context).colorScheme.primary),
                           selected: selected,
-                          selectedColor: Theme.of(context).colorScheme.error,
+                          selectedColor: ShadTheme.of(context).colorScheme.ring,
                           onTap: () {
                             Get.back();
                             controller.selectedError = error;
@@ -2178,7 +2194,7 @@ class _DownloadPageState extends State<DownloadPage>
           dense: true,
           contentPadding: const EdgeInsets.all(0),
           titleTextStyle:
-              TextStyle(color: Theme.of(context).colorScheme.primary),
+              TextStyle(color: ShadTheme.of(context).colorScheme.primary),
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -2279,7 +2295,7 @@ class _DownloadPageState extends State<DownloadPage>
                     return Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface,
+                        color: ShadTheme.of(context).colorScheme.background,
                         border: Border.all(width: 1),
                       ),
                       child: Text(
@@ -2341,18 +2357,18 @@ class _DownloadPageState extends State<DownloadPage>
                       icon: Icon(
                         Icons.sort_by_alpha,
                         size: 18,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: ShadTheme.of(context).colorScheme.primary,
                       ),
                       dividerWidth: 0,
-                      textColor: Theme.of(context).colorScheme.primary,
-                      dividerColor: Theme.of(context).colorScheme.primary,
+                      textColor: ShadTheme.of(context).colorScheme.primary,
+                      dividerColor: ShadTheme.of(context).colorScheme.primary,
                     ),
                     collapsedTitleBackgroundColor:
-                        Theme.of(context).colorScheme.surface,
+                        ShadTheme.of(context).colorScheme.background,
                     expandedTitleBackgroundColor:
-                        Theme.of(context).colorScheme.surface,
+                        ShadTheme.of(context).colorScheme.background,
                     contentBackgroundColor:
-                        Theme.of(context).colorScheme.surface,
+                        ShadTheme.of(context).colorScheme.background,
                     titlePadding: EdgeInsets.zero,
                     contentChild: SizedBox(
                       height: 200,
@@ -2370,8 +2386,9 @@ class _DownloadPageState extends State<DownloadPage>
                                 dense: true,
                                 title: Text(item.name),
                                 titleTextStyle: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.primary),
+                                    color: ShadTheme.of(context)
+                                        .colorScheme
+                                        .primary),
                                 style: ListTileStyle.list,
                                 // trailing: Icon(
                                 //   isSelected
@@ -2380,7 +2397,7 @@ class _DownloadPageState extends State<DownloadPage>
                                 // ),
                                 selected: isSelected,
                                 selectedColor:
-                                    Theme.of(context).colorScheme.error,
+                                    ShadTheme.of(context).colorScheme.ring,
                                 selectedTileColor: Colors.amber,
                                 onTap: () {
                                   Get.back();
@@ -2406,18 +2423,18 @@ class _DownloadPageState extends State<DownloadPage>
                       icon: Icon(
                         Icons.category,
                         size: 18,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: ShadTheme.of(context).colorScheme.primary,
                       ),
                       dividerWidth: 0,
-                      textColor: Theme.of(context).colorScheme.primary,
-                      dividerColor: Theme.of(context).colorScheme.primary,
+                      textColor: ShadTheme.of(context).colorScheme.primary,
+                      dividerColor: ShadTheme.of(context).colorScheme.primary,
                     ),
                     collapsedTitleBackgroundColor:
-                        Theme.of(context).colorScheme.surface,
+                        ShadTheme.of(context).colorScheme.background,
                     expandedTitleBackgroundColor:
-                        Theme.of(context).colorScheme.surface,
+                        ShadTheme.of(context).colorScheme.background,
                     contentBackgroundColor:
-                        Theme.of(context).colorScheme.surface,
+                        ShadTheme.of(context).colorScheme.background,
                     titlePadding: EdgeInsets.zero,
                     contentChild: SizedBox(
                       height: 200,
@@ -2452,11 +2469,12 @@ class _DownloadPageState extends State<DownloadPage>
                                 dense: true,
                                 title: Text('$c($count)'),
                                 titleTextStyle: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.primary),
+                                    color: ShadTheme.of(context)
+                                        .colorScheme
+                                        .primary),
                                 selected: selected,
                                 selectedColor:
-                                    Theme.of(context).colorScheme.error,
+                                    ShadTheme.of(context).colorScheme.ring,
                                 onTap: () {
                                   Get.back();
                                   controller.torrentFilter = 0;
@@ -2478,18 +2496,18 @@ class _DownloadPageState extends State<DownloadPage>
                       icon: Icon(
                         Icons.category,
                         size: 18,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: ShadTheme.of(context).colorScheme.primary,
                       ),
                       dividerWidth: 0,
-                      textColor: Theme.of(context).colorScheme.primary,
-                      dividerColor: Theme.of(context).colorScheme.primary,
+                      textColor: ShadTheme.of(context).colorScheme.primary,
+                      dividerColor: ShadTheme.of(context).colorScheme.primary,
                     ),
                     collapsedTitleBackgroundColor:
-                        Theme.of(context).colorScheme.surface,
+                        ShadTheme.of(context).colorScheme.background,
                     expandedTitleBackgroundColor:
-                        Theme.of(context).colorScheme.surface,
+                        ShadTheme.of(context).colorScheme.background,
                     contentBackgroundColor:
-                        Theme.of(context).colorScheme.surface,
+                        ShadTheme.of(context).colorScheme.background,
                     titlePadding: EdgeInsets.zero,
                     contentChild: SizedBox(
                       height: 200,
@@ -2517,11 +2535,12 @@ class _DownloadPageState extends State<DownloadPage>
                                   '$tag($count)',
                                 ),
                                 titleTextStyle: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.primary),
+                                    color: ShadTheme.of(context)
+                                        .colorScheme
+                                        .primary),
                                 selected: selected,
                                 selectedColor:
-                                    Theme.of(context).colorScheme.error,
+                                    ShadTheme.of(context).colorScheme.ring,
                                 onTap: () {
                                   Get.back();
                                   controller.selectedTag = tag;
@@ -2539,18 +2558,18 @@ class _DownloadPageState extends State<DownloadPage>
                       icon: Icon(
                         Icons.info,
                         size: 18,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: ShadTheme.of(context).colorScheme.primary,
                       ),
                       dividerWidth: 0,
-                      textColor: Theme.of(context).colorScheme.primary,
-                      dividerColor: Theme.of(context).colorScheme.primary,
+                      textColor: ShadTheme.of(context).colorScheme.primary,
+                      dividerColor: ShadTheme.of(context).colorScheme.primary,
                     ),
                     collapsedTitleBackgroundColor:
-                        Theme.of(context).colorScheme.surface,
+                        ShadTheme.of(context).colorScheme.background,
                     expandedTitleBackgroundColor:
-                        Theme.of(context).colorScheme.surface,
+                        ShadTheme.of(context).colorScheme.background,
                     contentBackgroundColor:
-                        Theme.of(context).colorScheme.surface,
+                        ShadTheme.of(context).colorScheme.background,
                     titlePadding: EdgeInsets.zero,
                     contentChild: SizedBox(
                       height: 200,
@@ -2587,13 +2606,14 @@ class _DownloadPageState extends State<DownloadPage>
                                   '${state.name}(${torrentsMatchingState.length})',
                                 ),
                                 titleTextStyle: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.primary),
+                                    color: ShadTheme.of(context)
+                                        .colorScheme
+                                        .primary),
                                 style: ListTileStyle.list,
                                 selected:
                                     controller.torrentState == state.value,
                                 selectedColor:
-                                    Theme.of(context).colorScheme.error,
+                                    ShadTheme.of(context).colorScheme.ring,
                                 onTap: () {
                                   Get.back();
                                   controller.torrentState = state.value;
@@ -2613,18 +2633,18 @@ class _DownloadPageState extends State<DownloadPage>
                       icon: Icon(
                         Icons.language,
                         size: 18,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: ShadTheme.of(context).colorScheme.primary,
                       ),
                       dividerWidth: 0,
-                      textColor: Theme.of(context).colorScheme.primary,
-                      dividerColor: Theme.of(context).colorScheme.primary,
+                      textColor: ShadTheme.of(context).colorScheme.primary,
+                      dividerColor: ShadTheme.of(context).colorScheme.primary,
                     ),
                     collapsedTitleBackgroundColor:
-                        Theme.of(context).colorScheme.surface,
+                        ShadTheme.of(context).colorScheme.background,
                     expandedTitleBackgroundColor:
-                        Theme.of(context).colorScheme.surface,
+                        ShadTheme.of(context).colorScheme.background,
                     contentBackgroundColor:
-                        Theme.of(context).colorScheme.surface,
+                        ShadTheme.of(context).colorScheme.background,
                     titlePadding: EdgeInsets.zero,
                     contentChild: SizedBox(
                       height: 300,
@@ -2640,10 +2660,12 @@ class _DownloadPageState extends State<DownloadPage>
                             dense: true,
                             title: Text('全部'),
                             titleTextStyle: TextStyle(
-                                color: Theme.of(context).colorScheme.primary),
+                                color:
+                                    ShadTheme.of(context).colorScheme.primary),
                             style: ListTileStyle.list,
                             selected: controller.selectedTracker == '全部',
-                            selectedColor: Theme.of(context).colorScheme.error,
+                            selectedColor:
+                                ShadTheme.of(context).colorScheme.ring,
                             onTap: () {
                               Get.back();
                               controller.selectedTracker = '全部';
@@ -2675,14 +2697,15 @@ class _DownloadPageState extends State<DownloadPage>
                                         '${key.trim()}(${key == '全部' ? controller.torrents.length : hashList?.length})',
                                       ),
                                       titleTextStyle: TextStyle(
-                                          color: Theme.of(context)
+                                          color: ShadTheme.of(context)
                                               .colorScheme
                                               .primary),
                                       style: ListTileStyle.list,
                                       selected:
                                           controller.selectedTracker == key,
-                                      selectedColor:
-                                          Theme.of(context).colorScheme.error,
+                                      selectedColor: ShadTheme.of(context)
+                                          .colorScheme
+                                          .ring,
                                       onTap: () {
                                         Get.back();
                                         controller.selectedTracker = key;
@@ -2704,7 +2727,7 @@ class _DownloadPageState extends State<DownloadPage>
               dense: true,
               contentPadding: const EdgeInsets.all(0),
               titleTextStyle:
-                  TextStyle(color: Theme.of(context).colorScheme.primary),
+                  TextStyle(color: ShadTheme.of(context).colorScheme.primary),
               title: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -2760,7 +2783,7 @@ class _DownloadPageState extends State<DownloadPage>
     var response = await controller.getPrefs(downloader);
     if (!response.succeed) {
       Get.snackbar('出错啦！', '获取下载器设置失败',
-          colorText: Theme.of(context).colorScheme.error);
+          colorText: ShadTheme.of(context).colorScheme.ring);
       return;
     }
     controller.currentPrefs = QbittorrentPreferences.fromJson(response.data);
@@ -5386,7 +5409,7 @@ class _DownloadPageState extends State<DownloadPage>
     var response = await controller.getPrefs(downloader);
     if (!response.succeed) {
       Get.snackbar('出错啦！', '获取下载器设置失败',
-          colorText: Theme.of(context).colorScheme.error);
+          colorText: ShadTheme.of(context).colorScheme.ring);
       return;
     }
     controller.currentPrefs = TransmissionConfig.fromJson(response.data);
@@ -6135,8 +6158,9 @@ class _DownloadPageState extends State<DownloadPage>
                               leading: const Icon(Icons.category_outlined),
                               trailing: CustomPopup(
                                 showArrow: false,
-                                backgroundColor:
-                                    Theme.of(context).colorScheme.surface,
+                                backgroundColor: ShadTheme.of(context)
+                                    .colorScheme
+                                    .background,
                                 barrierColor: Colors.transparent,
                                 content: SizedBox(
                                   width: 200,
@@ -6201,8 +6225,9 @@ class _DownloadPageState extends State<DownloadPage>
                                 leading: const Icon(Icons.category_outlined),
                                 trailing: CustomPopup(
                                   showArrow: false,
-                                  backgroundColor:
-                                      Theme.of(context).colorScheme.surface,
+                                  backgroundColor: ShadTheme.of(context)
+                                      .colorScheme
+                                      .background,
                                   barrierColor: Colors.transparent,
                                   content: SizedBox(
                                     width: 200,
@@ -6320,7 +6345,7 @@ class _DownloadPageState extends State<DownloadPage>
                                         text: controller
                                             .selectedTorrent.infohashV1));
                                     Get.snackbar('复制种子HASH', '种子HASH复制成功！',
-                                        colorText: Theme.of(context)
+                                        colorText: ShadTheme.of(context)
                                             .colorScheme
                                             .primary);
                                   },
@@ -6659,7 +6684,7 @@ class _DownloadPageState extends State<DownloadPage>
                                                     },
                                                     child: CustomTextTag(
                                                       backgroundColor:
-                                                          Theme.of(context)
+                                                          ShadTheme.of(context)
                                                               .colorScheme
                                                               .primary,
                                                       labelText: controller
@@ -6683,9 +6708,9 @@ class _DownloadPageState extends State<DownloadPage>
                                                 ),
                                                 CustomTextTag(
                                                     backgroundColor:
-                                                        Theme.of(context)
+                                                        ShadTheme.of(context)
                                                             .colorScheme
-                                                            .scrim,
+                                                            .background,
                                                     icon: const Icon(
                                                         Icons.download_done,
                                                         size: 10,
@@ -6694,9 +6719,9 @@ class _DownloadPageState extends State<DownloadPage>
                                                         '完成：${e.numDownloaded! > 0 ? e.numDownloaded.toString() : '0'}'),
                                                 CustomTextTag(
                                                     backgroundColor:
-                                                        Theme.of(context)
+                                                        ShadTheme.of(context)
                                                             .colorScheme
-                                                            .tertiary,
+                                                            .background,
                                                     icon: const Icon(
                                                         Icons.download_outlined,
                                                         size: 10,
@@ -6705,9 +6730,9 @@ class _DownloadPageState extends State<DownloadPage>
                                                         '下载：${e.numLeeches.toString()}'),
                                                 CustomTextTag(
                                                     backgroundColor:
-                                                        Theme.of(context)
+                                                        ShadTheme.of(context)
                                                             .colorScheme
-                                                            .surfaceTint,
+                                                            .background,
                                                     icon: const Icon(
                                                         Icons.insert_link,
                                                         size: 10,
@@ -6716,7 +6741,7 @@ class _DownloadPageState extends State<DownloadPage>
                                                         '连接：${e.numPeers.toString()}'),
                                                 CustomTextTag(
                                                     backgroundColor:
-                                                        Theme.of(context)
+                                                        ShadTheme.of(context)
                                                             .colorScheme
                                                             .secondary,
                                                     icon: const Icon(
@@ -7102,7 +7127,8 @@ class _DownloadPageState extends State<DownloadPage>
                                 controller.selectedTorrent.errorString,
                                 style: TextStyle(
                                     fontSize: 8,
-                                    color: Theme.of(context).colorScheme.error),
+                                    color:
+                                        ShadTheme.of(context).colorScheme.ring),
                               ),
                             ),
                           // CustomCard(
@@ -7124,7 +7150,7 @@ class _DownloadPageState extends State<DownloadPage>
                           //     trailing: CustomPopup(
                           //       showArrow: false,
                           //       backgroundColor:
-                          //           Theme.of(context).colorScheme.background,
+                          //           ShadTheme.of(context).colorScheme.background,
                           //       barrierColor: Colors.transparent,
                           //       content: SingleChildScrollView(
                           //         child: Column(
@@ -7218,7 +7244,7 @@ class _DownloadPageState extends State<DownloadPage>
                                         text: controller
                                             .selectedTorrent.hashString));
                                     Get.snackbar('复制种子HASH', '种子HASH复制成功！',
-                                        colorText: Theme.of(context)
+                                        colorText: ShadTheme.of(context)
                                             .colorScheme
                                             .primary);
                                   },
@@ -7468,7 +7494,7 @@ class _DownloadPageState extends State<DownloadPage>
                           //                         message: e.url.toString(),
                           //                         child: CustomTextTag(
                           //                           backgroundColor:
-                          //                               Theme.of(context)
+                          //                               ShadTheme.of(context)
                           //                                   .colorScheme
                           //                                   .primary,
                           //                           labelText: controller
@@ -7491,7 +7517,7 @@ class _DownloadPageState extends State<DownloadPage>
                           //                       ),
                           //                       CustomTextTag(
                           //                           backgroundColor:
-                          //                               Theme.of(context)
+                          //                               ShadTheme.of(context)
                           //                                   .colorScheme
                           //                                   .scrim,
                           //                           icon: const Icon(
@@ -7502,7 +7528,7 @@ class _DownloadPageState extends State<DownloadPage>
                           //                               '完成：${e.numDownloaded! > 0 ? e.numDownloaded.toString() : '0'}'),
                           //                       CustomTextTag(
                           //                           backgroundColor:
-                          //                               Theme.of(context)
+                          //                               ShadTheme.of(context)
                           //                                   .colorScheme
                           //                                   .tertiary,
                           //                           icon: const Icon(
@@ -7513,7 +7539,7 @@ class _DownloadPageState extends State<DownloadPage>
                           //                               '下载：${e.numLeeches.toString()}'),
                           //                       CustomTextTag(
                           //                           backgroundColor:
-                          //                               Theme.of(context)
+                          //                               ShadTheme.of(context)
                           //                                   .colorScheme
                           //                                   .surfaceTint,
                           //                           icon: const Icon(
@@ -7524,7 +7550,7 @@ class _DownloadPageState extends State<DownloadPage>
                           //                               '连接：${e.numPeers.toString()}'),
                           //                       CustomTextTag(
                           //                           backgroundColor:
-                          //                               Theme.of(context)
+                          //                               ShadTheme.of(context)
                           //                                   .colorScheme
                           //                                   .secondary,
                           //                           icon: const Icon(
@@ -7764,7 +7790,7 @@ class _DownloadPageState extends State<DownloadPage>
       logger_helper.Logger.instance.i(toRemoveTorrentList.length);
       if (toRemoveTorrentList.isEmpty) {
         Get.snackbar('清理红种', '没有需要清理的种子！',
-            colorText: Theme.of(context).colorScheme.primary);
+            colorText: ShadTheme.of(context).colorScheme.primary);
         return;
       }
 
@@ -7796,7 +7822,7 @@ class _DownloadPageState extends State<DownloadPage>
                     (element) => toRemoveTorrentList.contains(element.hash));
                 String msg = '清理出错种子成功，本次共清理${toRemoveTorrentList.length}个种子！';
                 Get.snackbar('删除通知', msg,
-                    colorText: Theme.of(context).colorScheme.primary);
+                    colorText: ShadTheme.of(context).colorScheme.primary);
                 controller.update();
               }
             },
@@ -7829,7 +7855,7 @@ class _DownloadPageState extends State<DownloadPage>
       logger_helper.Logger.instance.i(toRemoveTorrentList.length);
       if (toRemoveTorrentList.isEmpty) {
         Get.snackbar('清理红种', '没有需要清理的种子！',
-            colorText: Theme.of(context).colorScheme.primary);
+            colorText: ShadTheme.of(context).colorScheme.primary);
         return;
       }
       Get.defaultDialog(
@@ -7860,7 +7886,7 @@ class _DownloadPageState extends State<DownloadPage>
                     toRemoveTorrentList.contains(element.hashString));
                 String msg = '清理出错种子成功，本次共清理${toRemoveTorrentList.length}个种子！';
                 Get.snackbar('删除通知', msg,
-                    colorText: Theme.of(context).colorScheme.primary);
+                    colorText: ShadTheme.of(context).colorScheme.primary);
                 controller.update();
               }
             },
@@ -7901,7 +7927,6 @@ class ShowTorrentWidget extends StatelessWidget {
 
     return CustomCard(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-      margin: const EdgeInsets.all(2.5),
       child: GetBuilder<DownloadController>(builder: (controller) {
         return Slidable(
           key: ValueKey(torrentInfo.infohashV1),
@@ -8028,8 +8053,8 @@ class ShowTorrentWidget extends StatelessWidget {
                 },
                 flex: 2,
                 backgroundColor: autoTmm.value
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.error,
+                    ? ShadTheme.of(context).colorScheme.primary
+                    : ShadTheme.of(context).colorScheme.ring,
                 foregroundColor: Colors.white,
                 icon: autoTmm.value ? Icons.auto_awesome : Icons.man,
                 label: autoTmm.value ? '自动' : '手动',
@@ -8461,8 +8486,9 @@ class ShowTorrentWidget extends StatelessWidget {
                               leading: const Icon(Icons.category_outlined),
                               trailing: CustomPopup(
                                 showArrow: false,
-                                backgroundColor:
-                                    Theme.of(context).colorScheme.surface,
+                                backgroundColor: ShadTheme.of(context)
+                                    .colorScheme
+                                    .background,
                                 barrierColor: Colors.transparent,
                                 content: SizedBox(
                                   width: 200,
@@ -8527,8 +8553,9 @@ class ShowTorrentWidget extends StatelessWidget {
                                 leading: const Icon(Icons.category_outlined),
                                 trailing: CustomPopup(
                                   showArrow: false,
-                                  backgroundColor:
-                                      Theme.of(context).colorScheme.surface,
+                                  backgroundColor: ShadTheme.of(context)
+                                      .colorScheme
+                                      .background,
                                   barrierColor: Colors.transparent,
                                   content: SizedBox(
                                     width: 200,
@@ -8646,7 +8673,7 @@ class ShowTorrentWidget extends StatelessWidget {
                                         text: controller
                                             .selectedTorrent.infohashV1));
                                     Get.snackbar('复制种子HASH', '种子HASH复制成功！',
-                                        colorText: Theme.of(context)
+                                        colorText: ShadTheme.of(context)
                                             .colorScheme
                                             .primary);
                                   },
@@ -8985,7 +9012,7 @@ class ShowTorrentWidget extends StatelessWidget {
                                                     },
                                                     child: CustomTextTag(
                                                       backgroundColor:
-                                                          Theme.of(context)
+                                                          ShadTheme.of(context)
                                                               .colorScheme
                                                               .primary,
                                                       labelText: controller
@@ -9009,9 +9036,9 @@ class ShowTorrentWidget extends StatelessWidget {
                                                 ),
                                                 CustomTextTag(
                                                     backgroundColor:
-                                                        Theme.of(context)
+                                                        ShadTheme.of(context)
                                                             .colorScheme
-                                                            .scrim,
+                                                            .background,
                                                     icon: const Icon(
                                                         Icons.download_done,
                                                         size: 10,
@@ -9020,9 +9047,9 @@ class ShowTorrentWidget extends StatelessWidget {
                                                         '完成：${e.numDownloaded! > 0 ? e.numDownloaded.toString() : '0'}'),
                                                 CustomTextTag(
                                                     backgroundColor:
-                                                        Theme.of(context)
+                                                        ShadTheme.of(context)
                                                             .colorScheme
-                                                            .tertiary,
+                                                            .background,
                                                     icon: const Icon(
                                                         Icons.download_outlined,
                                                         size: 10,
@@ -9031,9 +9058,9 @@ class ShowTorrentWidget extends StatelessWidget {
                                                         '下载：${e.numLeeches.toString()}'),
                                                 CustomTextTag(
                                                     backgroundColor:
-                                                        Theme.of(context)
+                                                        ShadTheme.of(context)
                                                             .colorScheme
-                                                            .surfaceTint,
+                                                            .background,
                                                     icon: const Icon(
                                                         Icons.insert_link,
                                                         size: 10,
@@ -9042,7 +9069,7 @@ class ShowTorrentWidget extends StatelessWidget {
                                                         '连接：${e.numPeers.toString()}'),
                                                 CustomTextTag(
                                                     backgroundColor:
-                                                        Theme.of(context)
+                                                        ShadTheme.of(context)
                                                             .colorScheme
                                                             .secondary,
                                                     icon: const Icon(
@@ -9265,7 +9292,6 @@ class ShowTorrentWidget extends StatelessWidget {
       String host = Uri.parse(tracker).host;
       return CustomCard(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-        margin: const EdgeInsets.all(2.5),
         child: Slidable(
           key: ValueKey(torrentInfo.id.toString()),
           startActionPane: ActionPane(
@@ -9435,10 +9461,10 @@ class ShowTorrentWidget extends StatelessWidget {
                 _openTrTorrentInfoDetail(downloader, torrentInfo, context);
               },
               // onLongPress: () {
-              //   Get.snackbar('长按', '长按！',colorText: Theme.of(context).colorScheme.primary);
+              //   Get.snackbar('长按', '长按！',colorText: ShadTheme.of(context).colorScheme.primary);
               // },
               // onDoubleTap: () {
-              //   Get.snackbar('双击', '双击！',colorText: Theme.of(context).colorScheme.primary);
+              //   Get.snackbar('双击', '双击！',colorText: ShadTheme.of(context).colorScheme.primary);
               // },
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -9480,9 +9506,9 @@ class ShowTorrentWidget extends StatelessWidget {
                                     torrentInfo.totalSize),
                                 style: TextStyle(
                                     fontSize: 10,
-                                    color: Theme.of(context)
+                                    color: ShadTheme.of(context)
                                         .colorScheme
-                                        .onSurface),
+                                        .background),
                               ),
                               SizedBox(
                                 height: 12,
@@ -9490,9 +9516,9 @@ class ShowTorrentWidget extends StatelessWidget {
                                   '${controller.trStatus.firstWhere((element) => element.value == torrentInfo.status, orElse: () => MetaDataItem(name: "未知状态", value: null)).name}[${torrentInfo.status}]',
                                   style: TextStyle(
                                       fontSize: 10,
-                                      color: Theme.of(context)
+                                      color: ShadTheme.of(context)
                                           .colorScheme
-                                          .onSurface),
+                                          .foreground),
                                 ),
                               ),
                             ],
@@ -9511,8 +9537,9 @@ class ShowTorrentWidget extends StatelessWidget {
                               torrentInfo.name,
                               style: TextStyle(
                                   fontSize: 11,
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface,
+                                  color: ShadTheme.of(context)
+                                      .colorScheme
+                                      .foreground,
                                   fontWeight: FontWeight.bold),
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
@@ -9525,7 +9552,8 @@ class ShowTorrentWidget extends StatelessWidget {
                               : '未分类',
                           style: TextStyle(
                               fontSize: 10,
-                              color: Theme.of(context).colorScheme.onSurface),
+                              color:
+                                  ShadTheme.of(context).colorScheme.foreground),
                         ),
                       ],
                     ),
@@ -9541,34 +9569,34 @@ class ShowTorrentWidget extends StatelessWidget {
                                 children: [
                                   Icon(Icons.upload,
                                       size: 12,
-                                      color: Theme.of(context)
+                                      color: ShadTheme.of(context)
                                           .colorScheme
-                                          .onSurface),
+                                          .foreground),
                                   Text(
                                       FileSizeConvert.parseToFileSize(
                                           torrentInfo.rateUpload),
                                       style: TextStyle(
                                           fontSize: 10,
-                                          color: Theme.of(context)
+                                          color: ShadTheme.of(context)
                                               .colorScheme
-                                              .onSurface))
+                                              .foreground))
                                 ],
                               ),
                               Row(
                                 children: [
                                   Icon(Icons.cloud_upload,
                                       size: 12,
-                                      color: Theme.of(context)
+                                      color: ShadTheme.of(context)
                                           .colorScheme
-                                          .onSurface),
+                                          .foreground),
                                   Text(
                                       FileSizeConvert.parseToFileSize(
                                           torrentInfo.uploadedEver as int?),
                                       style: TextStyle(
                                           fontSize: 10,
-                                          color: Theme.of(context)
+                                          color: ShadTheme.of(context)
                                               .colorScheme
-                                              .onSurface))
+                                              .foreground))
                                 ],
                               ),
                             ],
@@ -9583,34 +9611,34 @@ class ShowTorrentWidget extends StatelessWidget {
                                 children: [
                                   Icon(Icons.download,
                                       size: 12,
-                                      color: Theme.of(context)
+                                      color: ShadTheme.of(context)
                                           .colorScheme
-                                          .onSurface),
+                                          .foreground),
                                   Text(
                                       FileSizeConvert.parseToFileSize(
                                           torrentInfo.rateDownload),
                                       style: TextStyle(
                                           fontSize: 10,
-                                          color: Theme.of(context)
+                                          color: ShadTheme.of(context)
                                               .colorScheme
-                                              .onSurface))
+                                              .foreground))
                                 ],
                               ),
                               Row(
                                 children: [
                                   Icon(Icons.cloud_download,
                                       size: 12,
-                                      color: Theme.of(context)
+                                      color: ShadTheme.of(context)
                                           .colorScheme
-                                          .onSurface),
+                                          .foreground),
                                   Text(
                                       FileSizeConvert.parseToFileSize(
                                           torrentInfo.downloadedEver),
                                       style: TextStyle(
                                           fontSize: 10,
-                                          color: Theme.of(context)
+                                          color: ShadTheme.of(context)
                                               .colorScheme
-                                              .onSurface))
+                                              .foreground))
                                 ],
                               ),
                             ],
@@ -9626,8 +9654,9 @@ class ShowTorrentWidget extends StatelessWidget {
                                   Icon(
                                     Icons.timer,
                                     size: 12,
-                                    color:
-                                        Theme.of(context).colorScheme.onSurface,
+                                    color: ShadTheme.of(context)
+                                        .colorScheme
+                                        .foreground,
                                   ),
                                   EllipsisText(
                                     text:
@@ -9635,9 +9664,9 @@ class ShowTorrentWidget extends StatelessWidget {
                                             .toString(),
                                     style: TextStyle(
                                         fontSize: 10,
-                                        color: Theme.of(context)
+                                        color: ShadTheme.of(context)
                                             .colorScheme
-                                            .onSurface),
+                                            .foreground),
                                     maxLines: 1,
                                     ellipsis: '...',
                                   )
@@ -9648,8 +9677,9 @@ class ShowTorrentWidget extends StatelessWidget {
                                   Icon(
                                     Icons.timer,
                                     size: 12,
-                                    color:
-                                        Theme.of(context).colorScheme.onSurface,
+                                    color: ShadTheme.of(context)
+                                        .colorScheme
+                                        .foreground,
                                   ),
                                   EllipsisText(
                                     text: DateFormat('yyyy-MM-dd HH:mm:ss')
@@ -9659,9 +9689,9 @@ class ShowTorrentWidget extends StatelessWidget {
                                         .toString(),
                                     style: TextStyle(
                                         fontSize: 10,
-                                        color: Theme.of(context)
+                                        color: ShadTheme.of(context)
                                             .colorScheme
-                                            .onSurface),
+                                            .foreground),
                                     maxLines: 1,
                                     ellipsis: '...',
                                   )
@@ -9680,7 +9710,8 @@ class ShowTorrentWidget extends StatelessWidget {
                           '${(torrentInfo.percentDone * 100).toStringAsFixed(2)}%',
                           style: TextStyle(
                               fontSize: 10,
-                              color: Theme.of(context).colorScheme.onSurface),
+                              color:
+                                  ShadTheme.of(context).colorScheme.foreground),
                           textAlign: TextAlign.center,
                         ),
                         alignment: MainAxisAlignment.center,
@@ -9692,7 +9723,7 @@ class ShowTorrentWidget extends StatelessWidget {
                         ellipsis: '...',
                         maxLines: 1,
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
+                          color: ShadTheme.of(context).colorScheme.ring,
                           fontSize: 10,
                         ),
                       )
@@ -9877,7 +9908,8 @@ class ShowTorrentWidget extends StatelessWidget {
                                 controller.selectedTorrent.errorString,
                                 style: TextStyle(
                                     fontSize: 8,
-                                    color: Theme.of(context).colorScheme.error),
+                                    color:
+                                        ShadTheme.of(context).colorScheme.ring),
                               ),
                             ),
                           // CustomCard(
@@ -9899,7 +9931,7 @@ class ShowTorrentWidget extends StatelessWidget {
                           //     trailing: CustomPopup(
                           //       showArrow: false,
                           //       backgroundColor:
-                          //           Theme.of(context).colorScheme.background,
+                          //           ShadTheme.of(context).colorScheme.background,
                           //       barrierColor: Colors.transparent,
                           //       content: SingleChildScrollView(
                           //         child: Column(
@@ -9993,7 +10025,7 @@ class ShowTorrentWidget extends StatelessWidget {
                                         text: controller
                                             .selectedTorrent.hashString));
                                     Get.snackbar('复制种子HASH', '种子HASH复制成功！',
-                                        colorText: Theme.of(context)
+                                        colorText: ShadTheme.of(context)
                                             .colorScheme
                                             .primary);
                                   },
@@ -10243,7 +10275,7 @@ class ShowTorrentWidget extends StatelessWidget {
                           //                         message: e.url.toString(),
                           //                         child: CustomTextTag(
                           //                           backgroundColor:
-                          //                               Theme.of(context)
+                          //                               ShadTheme.of(context)
                           //                                   .colorScheme
                           //                                   .primary,
                           //                           labelText: controller
@@ -10266,7 +10298,7 @@ class ShowTorrentWidget extends StatelessWidget {
                           //                       ),
                           //                       CustomTextTag(
                           //                           backgroundColor:
-                          //                               Theme.of(context)
+                          //                               ShadTheme.of(context)
                           //                                   .colorScheme
                           //                                   .scrim,
                           //                           icon: const Icon(
@@ -10277,7 +10309,7 @@ class ShowTorrentWidget extends StatelessWidget {
                           //                               '完成：${e.numDownloaded! > 0 ? e.numDownloaded.toString() : '0'}'),
                           //                       CustomTextTag(
                           //                           backgroundColor:
-                          //                               Theme.of(context)
+                          //                               ShadTheme.of(context)
                           //                                   .colorScheme
                           //                                   .tertiary,
                           //                           icon: const Icon(
@@ -10288,7 +10320,7 @@ class ShowTorrentWidget extends StatelessWidget {
                           //                               '下载：${e.numLeeches.toString()}'),
                           //                       CustomTextTag(
                           //                           backgroundColor:
-                          //                               Theme.of(context)
+                          //                               ShadTheme.of(context)
                           //                                   .colorScheme
                           //                                   .surfaceTint,
                           //                           icon: const Icon(
@@ -10299,7 +10331,7 @@ class ShowTorrentWidget extends StatelessWidget {
                           //                               '连接：${e.numPeers.toString()}'),
                           //                       CustomTextTag(
                           //                           backgroundColor:
-                          //                               Theme.of(context)
+                          //                               ShadTheme.of(context)
                           //                                   .colorScheme
                           //                                   .secondary,
                           //                           icon: const Icon(

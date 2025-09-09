@@ -8,6 +8,7 @@ import 'package:harvest/app/home/pages/models/website.dart';
 import 'package:harvest/app/home/pages/my_site/controller.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/utils/calc_weeks.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:timelines_plus/timelines_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -61,9 +62,9 @@ class SiteMap extends StatelessWidget {
                             child: GFTypography(
                               text: '站点图谱',
                               type: GFTypographyType.typo3,
-                              textColor: Theme.of(context).colorScheme.primary,
+                              textColor: ShadTheme.of(context).colorScheme.primary,
                               dividerColor:
-                                  Theme.of(context).colorScheme.primary,
+                                  ShadTheme.of(context).colorScheme.primary,
                               dividerWidth: 75,
                             ),
                           ),
@@ -127,7 +128,7 @@ class SiteMap extends StatelessWidget {
                                             country,
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: Theme.of(context)
+                                              color: ShadTheme.of(context)
                                                   .colorScheme
                                                   .secondary,
                                             ),
@@ -136,7 +137,7 @@ class SiteMap extends StatelessWidget {
                                             mySite?.nickname ?? webSite.name,
                                             style: TextStyle(
                                               fontSize: 14,
-                                              color: Theme.of(context)
+                                              color: ShadTheme.of(context)
                                                   .colorScheme
                                                   .primary,
                                             ),
@@ -151,7 +152,7 @@ class SiteMap extends StatelessWidget {
                                           '[${webSite.tags}]',
                                           style: TextStyle(
                                             fontSize: 11,
-                                            color: Theme.of(context)
+                                            color: ShadTheme.of(context)
                                                 .colorScheme
                                                 .secondary,
                                           ),
@@ -188,7 +189,7 @@ class SiteMap extends StatelessWidget {
                                                               Get.snackbar(
                                                                   '打开网页出错',
                                                                   '打开网页出错，不支持的客户端？',
-                                                                  colorText: Theme.of(
+                                                                  colorText: ShadTheme.of(
                                                                           context)
                                                                       .colorScheme
                                                                       .primary);
@@ -274,7 +275,7 @@ class SiteMap extends StatelessWidget {
                                             calcWeeksDays(mySite.timeJoin),
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: Theme.of(context)
+                                              color: ShadTheme.of(context)
                                                   .colorScheme
                                                   .secondary,
                                             ),
@@ -283,7 +284,7 @@ class SiteMap extends StatelessWidget {
                                             '[${status?.myLevel}]',
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: Theme.of(context)
+                                              color: ShadTheme.of(context)
                                                   .colorScheme
                                                   .primary,
                                             ),
@@ -292,7 +293,7 @@ class SiteMap extends StatelessWidget {
                                             '↑${FileSizeConvert.parseToFileSize(status?.uploaded ?? 0)} (${status?.seed ?? 0})',
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: Theme.of(context)
+                                              color: ShadTheme.of(context)
                                                   .colorScheme
                                                   .primary,
                                             ),
@@ -301,7 +302,7 @@ class SiteMap extends StatelessWidget {
                                             '↓${FileSizeConvert.parseToFileSize(status?.downloaded ?? 0)} (${status?.leech ?? 0})',
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: Theme.of(context)
+                                              color: ShadTheme.of(context)
                                                   .colorScheme
                                                   .primary,
                                             ),
@@ -310,7 +311,7 @@ class SiteMap extends StatelessWidget {
                                             '☁︎${FileSizeConvert.parseToFileSize(status?.seedVolume ?? 0)}',
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: Theme.of(context)
+                                              color: ShadTheme.of(context)
                                                   .colorScheme
                                                   .primary,
                                             ),

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 String formatCreatedTimeToDateString(item) {
   return DateFormat("MM-dd").format(item.createdAt);
@@ -61,7 +62,7 @@ List<int> getRandomIndices(int listLength, int count) {
 checkEditController(TextEditingController controller, String field, context) {
   if (controller.text.isEmpty) {
     Get.snackbar('字段检查', '$field 不能为空！',
-        colorText: Theme.of(context).colorScheme.error);
+        colorText: ShadTheme.of(context).colorScheme.ring);
     return false;
   }
   return true;

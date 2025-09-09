@@ -4,6 +4,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../../common/card_view.dart';
 import '../../../../common/form_widgets.dart';
@@ -116,13 +117,14 @@ class _SubscribePageState extends State<SubscribePage> {
                                 '删除通知',
                                 res.msg.toString(),
                                 colorText:
-                                    Theme.of(context).colorScheme.primary,
+                                    ShadTheme.of(context).colorScheme.primary,
                               );
                             } else {
                               Get.snackbar(
                                 '删除通知',
                                 res.msg.toString(),
-                                colorText: Theme.of(context).colorScheme.error,
+                                colorText:
+                                    ShadTheme.of(context).colorScheme.ring,
                               );
                             }
                           },
@@ -254,8 +256,8 @@ class _SubscribePageState extends State<SubscribePage> {
                 children: [
                   GFTypography(
                     text: controller.title,
-                    textColor: Theme.of(context).colorScheme.onSurface,
-                    dividerColor: Theme.of(context).colorScheme.onSurface,
+                    textColor: ShadTheme.of(context).colorScheme.foreground,
+                    dividerColor: ShadTheme.of(context).colorScheme.foreground,
                   ),
                   Expanded(
                     child: ListView(
@@ -283,12 +285,9 @@ class _SubscribePageState extends State<SubscribePage> {
                             itemAsString: (Downloader? item) => item!.name,
                             decoratorProps: DropDownDecoratorProps(
                               decoration: InputDecoration(
-                                labelText: '下载器',
-                                filled: true,
-                                fillColor: Theme.of(context)
-                                    .inputDecorationTheme
-                                    .fillColor,
-                              ),
+                                  labelText: '下载器',
+                                  filled: true,
+                                  fillColor: Colors.transparent),
                             ),
                             onChanged: (Downloader? item) async {
                               controller.downloaderCategoryController.clear();
@@ -303,7 +302,7 @@ class _SubscribePageState extends State<SubscribePage> {
                               if (!res.succeed) {
                                 Get.snackbar('出错啦！', res.msg,
                                     colorText:
-                                        Theme.of(context).colorScheme.error);
+                                        ShadTheme.of(context).colorScheme.ring);
                                 return;
                               }
                               controller.categories.value = res.data;
@@ -353,9 +352,9 @@ class _SubscribePageState extends State<SubscribePage> {
                                                     .text)));
                                     if (!res.succeed) {
                                       Get.snackbar('出错啦！', res.msg,
-                                          colorText: Theme.of(context)
+                                          colorText: ShadTheme.of(context)
                                               .colorScheme
-                                              .error);
+                                              .ring);
                                       return;
                                     }
                                     controller.categories.value = res.data;
@@ -479,9 +478,10 @@ class _SubscribePageState extends State<SubscribePage> {
                             type: GFTypographyType.typo6,
                             icon: const Icon(Icons.sort_by_alpha),
                             dividerWidth: 108,
-                            textColor: Theme.of(context).colorScheme.onSurface,
+                            textColor:
+                                ShadTheme.of(context).colorScheme.foreground,
                             dividerColor:
-                                Theme.of(context).colorScheme.onSurface,
+                                ShadTheme.of(context).colorScheme.foreground,
                           ),
                         ),
                         SizedBox(
@@ -583,10 +583,10 @@ class _SubscribePageState extends State<SubscribePage> {
       if (res.code == 0) {
         Get.back();
         Get.snackbar('保存成功！', res.msg,
-            colorText: Theme.of(context).colorScheme.primary);
+            colorText: ShadTheme.of(context).colorScheme.primary);
       } else {
         Get.snackbar('保存失败！', res.msg,
-            colorText: Theme.of(context).colorScheme.error);
+            colorText: ShadTheme.of(context).colorScheme.ring);
       }
     } finally {}
   }
@@ -713,10 +713,10 @@ class EditDialogController extends GetxController {
       if (res.code == 0) {
         Get.back();
         Get.snackbar('保存成功！', res.msg,
-            colorText: Theme.of(context).colorScheme.primary);
+            colorText: ShadTheme.of(context).colorScheme.primary);
       } else {
         Get.snackbar('保存失败！', res.msg,
-            colorText: Theme.of(context).colorScheme.error);
+            colorText: ShadTheme.of(context).colorScheme.ring);
       }
     } finally {}
   }

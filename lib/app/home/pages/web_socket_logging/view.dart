@@ -6,6 +6,7 @@ import 'package:flutter_floating/floating/manager/floating_manager.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../../common/card_view.dart';
 import 'controller.dart';
@@ -19,7 +20,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
       child: Icon(
         Icons.waves_sharp,
         size: 20,
-        color: Theme.of(context).colorScheme.primary,
+        color: ShadTheme.of(context).colorScheme.primary,
       ),
       onTap: () {
         final WebSocketLoggingController controller =
@@ -63,7 +64,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
                 size: 24,
                 color: controller.wrapText
                     ? Colors.orange
-                    : Theme.of(context).colorScheme.primary,
+                    : ShadTheme.of(context).colorScheme.primary,
               ),
               onPressed: () {
                 controller.wrapText = !controller.wrapText;
@@ -72,7 +73,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
             ),
             // IconButton(
             //   icon: Icon(Icons.remove_red_eye_outlined,
-            //       color: Theme.of(context).colorScheme.error),
+            //       color: ShadTheme.of(context).colorScheme.error),
             //   onPressed: () {
             //     controller.floating.hideFloating();
             //     controller.update();
@@ -82,7 +83,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
 
             CustomPopup(
               showArrow: false,
-              backgroundColor: Theme.of(context).colorScheme.surface,
+              backgroundColor: ShadTheme.of(context).colorScheme.background,
               barrierColor: Colors.transparent,
               content: SizedBox(
                 width: 100,
@@ -94,7 +95,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
                         child: Text(
                           l.key.toUpperCase(),
                           style: TextStyle(
-                            color: Theme.of(context).colorScheme.secondary,
+                            color: ShadTheme.of(context).colorScheme.secondary,
                           ),
                         ),
                         onTap: () async {
@@ -108,7 +109,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
               child: Icon(
                 Icons.event_note,
                 size: 24,
-                color: Theme.of(context).colorScheme.primary,
+                color: ShadTheme.of(context).colorScheme.primary,
               ),
             ),
             controller.isLoading
@@ -123,7 +124,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
                     icon: Icon(
                       Icons.play_arrow_outlined,
                       size: 24,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: ShadTheme.of(context).colorScheme.primary,
                     ),
                     onPressed: () {
                       controller.fetchingWebSocketLogList();
@@ -134,7 +135,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
               icon: Icon(
                 Icons.exit_to_app_outlined,
                 size: 24,
-                color: Theme.of(context).colorScheme.error,
+                color: ShadTheme.of(context).colorScheme.ring,
               ),
               onPressed: () {
                 controller.floating.close();
@@ -143,7 +144,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
           ],
         ),
         body: CustomCard(
-          color: Theme.of(context).colorScheme.surface,
+          color: ShadTheme.of(context).colorScheme.background,
           child: GetBuilder<WebSocketLoggingController>(builder: (controller) {
             return ListView.builder(
                 itemCount: controller.showLogList.length,
@@ -170,9 +171,9 @@ class WebSocketLoggingWidget extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           letterSpacing: 1.5,
-                          color: Theme.of(context)
+                          color: ShadTheme.of(context)
                               .colorScheme
-                              .onSurface
+                              .background
                               .withOpacity(0.8),
                           overflow: TextOverflow.visible,
                         ),

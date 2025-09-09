@@ -4,6 +4,7 @@ import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../../common/card_view.dart';
 import '../../../../common/form_widgets.dart';
@@ -83,8 +84,6 @@ class TaskPage extends StatelessWidget {
                   ) {
                     TaskItem item = controller.taskItemList[index];
                     return CustomCard(
-                      margin: const EdgeInsets.only(
-                          left: 8, right: 8, top: 6, bottom: 2),
                       child: Slidable(
                         key: ValueKey(item.uuid),
                         endActionPane: item.state?.toLowerCase() == 'success' ||
@@ -145,15 +144,17 @@ class TaskPage extends StatelessWidget {
                                               if (res.code == 0) {
                                                 Get.snackbar(
                                                     '删除通知', res.msg.toString(),
-                                                    colorText: Theme.of(context)
-                                                        .colorScheme
-                                                        .primary);
+                                                    colorText:
+                                                        ShadTheme.of(context)
+                                                            .colorScheme
+                                                            .primary);
                                               } else {
                                                 Get.snackbar(
                                                     '删除通知', res.msg.toString(),
-                                                    colorText: Theme.of(context)
-                                                        .colorScheme
-                                                        .error);
+                                                    colorText:
+                                                        ShadTheme.of(context)
+                                                            .colorScheme
+                                                            .ring);
                                               }
                                             },
                                             child: const Text('确认'),
@@ -194,15 +195,17 @@ class TaskPage extends StatelessWidget {
                                               if (res.code == 0) {
                                                 Get.snackbar(
                                                     '删除通知', res.msg.toString(),
-                                                    colorText: Theme.of(context)
-                                                        .colorScheme
-                                                        .primary);
+                                                    colorText:
+                                                        ShadTheme.of(context)
+                                                            .colorScheme
+                                                            .primary);
                                               } else {
                                                 Get.snackbar(
                                                     '删除通知', res.msg.toString(),
-                                                    colorText: Theme.of(context)
-                                                        .colorScheme
-                                                        .error);
+                                                    colorText:
+                                                        ShadTheme.of(context)
+                                                            .colorScheme
+                                                            .ring);
                                               }
                                             },
                                             child: const Text('确认'),
@@ -223,7 +226,8 @@ class TaskPage extends StatelessWidget {
                             item.name ?? 'unknown',
                             style: TextStyle(
                                 fontSize: 10,
-                                color: Theme.of(context).colorScheme.primary),
+                                color:
+                                    ShadTheme.of(context).colorScheme.primary),
                           ),
                           subtitle: item.succeeded != null
                               ? Text(
@@ -275,7 +279,8 @@ class TaskPage extends StatelessWidget {
                                             true, // ⬅️ 每个 \n 都当作 <br> 处理
                                         styleSheet:
                                             MarkdownStyleSheet.fromTheme(
-                                                Theme.of(context)),
+                                                ShadTheme.of(context)
+                                                    as ThemeData),
                                       ),
                                     ),
                                   );
@@ -297,7 +302,6 @@ class TaskPage extends StatelessWidget {
     return GetBuilder<TaskController>(builder: (controller) {
       RxBool isRunning = false.obs;
       return CustomCard(
-        margin: const EdgeInsets.only(top: 8, left: 5, right: 5),
         child: Slidable(
           key: ValueKey('${item.id}_${item.name}'),
           startActionPane: ActionPane(
@@ -345,10 +349,11 @@ class TaskPage extends StatelessWidget {
                           if (res.code == 0) {
                             Get.snackbar('任务删除通知', res.msg.toString(),
                                 colorText:
-                                    Theme.of(context).colorScheme.primary);
+                                    ShadTheme.of(context).colorScheme.primary);
                           } else {
                             Get.snackbar('任务删除通知', res.msg.toString(),
-                                colorText: Theme.of(context).colorScheme.error);
+                                colorText:
+                                    ShadTheme.of(context).colorScheme.ring);
                           }
                         },
                         child: const Text('确认'),
@@ -391,11 +396,11 @@ class TaskPage extends StatelessWidget {
                 if (res.code == 0) {
                   Get.snackbar(title, res.msg.toString(),
                       snackStyle: SnackStyle.FLOATING,
-                      colorText: Theme.of(context).colorScheme.primary);
+                      colorText: ShadTheme.of(context).colorScheme.primary);
                 } else {
                   Get.snackbar(title, res.msg.toString(),
                       snackStyle: SnackStyle.FLOATING,
-                      colorText: Theme.of(context).colorScheme.error);
+                      colorText: ShadTheme.of(context).colorScheme.ring);
                 }
                 controller.update();
               },
@@ -412,10 +417,12 @@ class TaskPage extends StatelessWidget {
                         CommonResponse res = await controller.execTask(item);
                         if (res.code == 0) {
                           Get.snackbar('任务执行通知', res.msg.toString(),
-                              colorText: Theme.of(context).colorScheme.primary);
+                              colorText:
+                                  ShadTheme.of(context).colorScheme.primary);
                         } else {
                           Get.snackbar('任务执行通知', res.msg.toString(),
-                              colorText: Theme.of(context).colorScheme.error);
+                              colorText:
+                                  ShadTheme.of(context).colorScheme.ring);
                         }
                         isRunning.value = false;
                         controller.update();
@@ -472,7 +479,7 @@ class TaskPage extends StatelessWidget {
                   Text(
                     task != null ? '编辑任务' : '添加任务',
                     style: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
+                      color: ShadTheme.of(context).colorScheme.primary,
                       fontWeight: FontWeight.w500,
                       fontSize: 20,
                     ),

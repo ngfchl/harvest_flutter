@@ -7,6 +7,7 @@ import 'package:getwidget/components/loader/gf_loader.dart';
 import 'package:getwidget/components/typography/gf_typography.dart';
 import 'package:harvest/app/home/pages/user/UserModel.dart';
 import 'package:harvest/common/card_view.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../../common/form_widgets.dart';
 import '../../../../models/common_response.dart';
@@ -29,7 +30,7 @@ class UserWidget extends StatelessWidget {
               icon: Icon(
                 Icons.add,
                 size: 20,
-                color: Theme.of(context).colorScheme.primary,
+                color: ShadTheme.of(context).colorScheme.primary,
               ),
               onPressed: () async {
                 _showEditBottomSheet(context: context);
@@ -103,15 +104,15 @@ class UserWidget extends StatelessWidget {
                                               if (res.code == 0) {
                                                 Get.snackbar(
                                                     '删除通知', res.msg.toString(),
-                                                    colorText: Theme.of(context)
+                                                    colorText: ShadTheme.of(context)
                                                         .colorScheme
                                                         .primary);
                                               } else {
                                                 Get.snackbar(
                                                     '删除通知', res.msg.toString(),
-                                                    colorText: Theme.of(context)
+                                                    colorText: ShadTheme.of(context)
                                                         .colorScheme
-                                                        .error);
+                                                        .ring);
                                               }
                                             },
                                             child: const Text('确认'),
@@ -133,7 +134,7 @@ class UserWidget extends StatelessWidget {
                                 style: TextStyle(
                                     fontSize: 20,
                                     color:
-                                        Theme.of(context).colorScheme.primary),
+                                        ShadTheme.of(context).colorScheme.primary),
                               ),
                               icon: Text(
                                 controller.userinfo?.user == user.username
@@ -142,17 +143,17 @@ class UserWidget extends StatelessWidget {
                                 style: TextStyle(
                                     fontSize: 12,
                                     color:
-                                        Theme.of(context).colorScheme.primary),
+                                        ShadTheme.of(context).colorScheme.primary),
                               ),
                               subTitle: Text(
                                 user.isStaff ? '管理员' : '观影账号',
                                 style: TextStyle(
                                     fontSize: 12,
-                                    color: Theme.of(context)
+                                    color: ShadTheme.of(context)
                                         .colorScheme
                                         .secondary),
                               ),
-                              hoverColor: Theme.of(context).colorScheme.error,
+                              hoverColor: ShadTheme.of(context).colorScheme.ring,
                               avatar: Text(
                                 user.isStaff ? '👑' : '🎩',
                                 style: const TextStyle(
@@ -189,8 +190,8 @@ class UserWidget extends StatelessWidget {
                 text: user != null ? '编辑用户：${user.username}' : '添加用户',
                 icon: const Icon(Icons.add),
                 dividerWidth: 200,
-                textColor: Theme.of(context).colorScheme.onSurface,
-                dividerColor: Theme.of(context).colorScheme.onSurface,
+                textColor: ShadTheme.of(context).colorScheme.foreground,
+                dividerColor: ShadTheme.of(context).colorScheme.foreground,
               ),
             ),
             Expanded(
@@ -332,7 +333,7 @@ class UserWidget extends StatelessWidget {
                 ElevatedButton(
                   style: ButtonStyle(
                     backgroundColor: WidgetStateProperty.all(
-                        Theme.of(context).colorScheme.secondary),
+                        ShadTheme.of(context).colorScheme.secondary),
                   ),
                   onPressed: () {
                     Navigator.of(context).pop();
@@ -347,14 +348,14 @@ class UserWidget extends StatelessWidget {
                 ElevatedButton(
                   style: ButtonStyle(
                     backgroundColor: WidgetStateProperty.all(
-                        Theme.of(context).colorScheme.primary),
+                        ShadTheme.of(context).colorScheme.primary),
                   ),
                   onPressed: () async {
                     if (usernameController.text.isEmpty) {
                       Get.snackbar(
                         '用户名校验',
                         '用户名不能为空！',
-                        colorText: Theme.of(context).colorScheme.error,
+                        colorText: ShadTheme.of(context).colorScheme.ring,
                       );
                       return;
                     }
@@ -362,7 +363,7 @@ class UserWidget extends StatelessWidget {
                       Get.snackbar(
                         '密码校验错误',
                         '两次输入的密码不一致！',
-                        colorText: Theme.of(context).colorScheme.error,
+                        colorText: ShadTheme.of(context).colorScheme.ring,
                       );
                       return;
                     }
@@ -389,7 +390,7 @@ class UserWidget extends StatelessWidget {
                         '保存成功！',
                         response.msg,
                         snackPosition: SnackPosition.TOP,
-                        colorText: Theme.of(context).colorScheme.primary,
+                        colorText: ShadTheme.of(context).colorScheme.primary,
                         duration: const Duration(seconds: 3),
                       );
                       if (controller.userinfo?.user == user?.username) {
@@ -403,7 +404,7 @@ class UserWidget extends StatelessWidget {
                         '保存出错啦！',
                         response.msg,
                         snackPosition: SnackPosition.TOP,
-                        colorText: Theme.of(context).colorScheme.error,
+                        colorText: ShadTheme.of(context).colorScheme.ring,
                         duration: const Duration(seconds: 3),
                       );
                     }

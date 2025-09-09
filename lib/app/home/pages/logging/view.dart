@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/utils/storage.dart';
 import 'package:logger/logger.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../../utils/logger_helper.dart' as logger_helper;
 import 'controller.dart';
@@ -48,13 +49,13 @@ class LoggingPage extends StatelessWidget {
                             },
                             icon: Icon(
                               Icons.refresh,
-                              color: Theme.of(context).colorScheme.primary,
+                              color: ShadTheme.of(context).colorScheme.primary,
                             ),
                           ),
                           CustomPopup(
                             showArrow: false,
                             backgroundColor:
-                                Theme.of(context).colorScheme.surface,
+                                ShadTheme.of(context).colorScheme.background,
                             barrierColor: Colors.transparent,
                             content: SizedBox(
                               width: 100,
@@ -66,7 +67,7 @@ class LoggingPage extends StatelessWidget {
                                       child: Text(
                                         l.name.toUpperCase(),
                                         style: TextStyle(
-                                          color: Theme.of(context)
+                                          color: ShadTheme.of(context)
                                               .colorScheme
                                               .secondary,
                                         ),
@@ -83,7 +84,7 @@ class LoggingPage extends StatelessWidget {
                             child: Icon(
                               Icons.event_note,
                               size: 24,
-                              color: Theme.of(context).colorScheme.primary,
+                              color: ShadTheme.of(context).colorScheme.primary,
                             ),
                           ),
                           const SizedBox(width: 20)
@@ -276,7 +277,7 @@ class LoggingPage extends StatelessWidget {
                   await controller.webController?.reload();
                 },
                 icon: Icon(Icons.cached_sharp,
-                    size: 28, color: Theme.of(context).colorScheme.primary),
+                    size: 28, color: ShadTheme.of(context).colorScheme.primary),
               ),
             ],
           ),

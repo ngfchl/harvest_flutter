@@ -1,16 +1,15 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../utils/storage.dart';
 
 class CustomCard extends StatelessWidget {
   final Widget child;
-  final EdgeInsetsGeometry margin;
-  final EdgeInsetsGeometry? padding;
+  final EdgeInsets? padding;
   final Color? color;
-  final BorderRadiusGeometry borderRadius;
-  final List<BoxShadow>? boxShadow;
+  final BorderRadius borderRadius;
   final double? height;
   final double? maxHeight;
   final double? width;
@@ -18,8 +17,6 @@ class CustomCard extends StatelessWidget {
   const CustomCard({
     super.key,
     required this.child,
-    this.margin = const EdgeInsets.all(4),
-    this.padding = const EdgeInsets.all(4),
     this.color,
     this.maxHeight,
     this.borderRadius = const BorderRadius.only(
@@ -28,27 +25,24 @@ class CustomCard extends StatelessWidget {
       bottomRight: Radius.circular(8.0),
       topRight: Radius.circular(8.0),
     ),
-    this.boxShadow,
     this.height,
     this.width,
+    this.padding = const EdgeInsets.all(2.0),
   });
 
   @override
   Widget build(BuildContext context) {
     double opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
-    return Container(
+    return ShadCard(
       height: height,
       width: width,
-      margin: margin,
       padding: padding,
-      constraints: BoxConstraints(
-          minWidth: 100, maxHeight: maxHeight ?? double.infinity),
-      decoration: BoxDecoration(
-        color:
-            color ?? Theme.of(context).colorScheme.surface.withOpacity(opacity),
-        borderRadius: borderRadius,
-        boxShadow: boxShadow,
-      ),
+      radius: borderRadius,
+      backgroundColor: color ??
+          ShadTheme.of(context)
+              .colorScheme
+              .background
+              .withValues(alpha: opacity * 255.0),
       child: child,
     );
   }
@@ -238,7 +232,7 @@ class FilterItem extends StatelessWidget {
                 name,
                 style: TextStyle(
                   fontSize: 12,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: ShadTheme.of(context).colorScheme.primary,
                 ),
               ),
             ),
@@ -254,11 +248,11 @@ class FilterItem extends StatelessWidget {
                       label: Text(
                         e.toString().isNotEmpty ? e.toString() : "无",
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.onPrimary,
+                          color: ShadTheme.of(context).colorScheme.primaryForeground,
                         ),
                       ),
                       selected: selected.contains(e.toString()),
-                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      backgroundColor: ShadTheme.of(context).colorScheme.primary,
                       labelStyle:
                           const TextStyle(fontSize: 12, color: Colors.white),
                       selectedColor: Colors.green,

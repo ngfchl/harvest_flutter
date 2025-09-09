@@ -7,6 +7,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../utils/logger_helper.dart' as logger_helper;
@@ -19,13 +20,12 @@ class LoggingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      child: Icon(
+    return ShadIconButton.ghost(
+      icon: Icon(
         Icons.event_note_sharp,
         size: 20,
-        color: Theme.of(context).colorScheme.primary,
       ),
-      onTap: () {
+      onPressed: () {
         _showLoggingDialog(context);
       },
     );
@@ -68,13 +68,13 @@ class LoggingView extends StatelessWidget {
                               },
                               icon: Icon(
                                 Icons.refresh,
-                                color: Theme.of(context).colorScheme.primary,
+                                color: ShadTheme.of(context).colorScheme.primary,
                               ),
                             ),
                             CustomPopup(
                               showArrow: false,
                               backgroundColor:
-                                  Theme.of(context).colorScheme.surface,
+                                  ShadTheme.of(context).colorScheme.background,
                               barrierColor: Colors.transparent,
                               content: SizedBox(
                                 width: 100,
@@ -86,7 +86,7 @@ class LoggingView extends StatelessWidget {
                                         child: Text(
                                           l.name.toUpperCase(),
                                           style: TextStyle(
-                                            color: Theme.of(context)
+                                            color: ShadTheme.of(context)
                                                 .colorScheme
                                                 .secondary,
                                           ),
@@ -103,13 +103,13 @@ class LoggingView extends StatelessWidget {
                               child: Icon(
                                 Icons.event_note,
                                 size: 24,
-                                color: Theme.of(context).colorScheme.primary,
+                                color: ShadTheme.of(context).colorScheme.primary,
                               ),
                             ),
                             const SizedBox(width: 10),
                             IconButton(
                               icon: Icon(Icons.exit_to_app_outlined,
-                                  color: Theme.of(context).colorScheme.error),
+                                  color: ShadTheme.of(context).colorScheme.ring),
                               onPressed: () {
                                 Floating floating = floatingManager
                                     .getFloating("inTimeAPPLogFloatingWindows");

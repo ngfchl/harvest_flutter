@@ -6,6 +6,7 @@ import 'package:getwidget/getwidget.dart';
 import 'package:harvest/api/option.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/models/common_response.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../../common/form_widgets.dart';
 import '../../../../common/meta_item.dart';
@@ -54,13 +55,13 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                       Get.snackbar(
                         '执行成功',
                         res.msg.toString(),
-                        colorText: Theme.of(context).colorScheme.primary,
+                        colorText: ShadTheme.of(context).colorScheme.primary,
                       );
                     } else {
                       Get.snackbar(
                         '执行失败',
                         res.msg.toString(),
-                        colorText: Theme.of(context).colorScheme.primary,
+                        colorText: ShadTheme.of(context).colorScheme.primary,
                       );
                     }
                   },
@@ -135,10 +136,12 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                         CommonResponse res = await controller.removeSubTag(tag);
                         if (res.code == 0) {
                           Get.snackbar('删除通知', res.msg.toString(),
-                              colorText: Theme.of(context).colorScheme.primary);
+                              colorText:
+                                  ShadTheme.of(context).colorScheme.primary);
                         } else {
                           Get.snackbar('删除通知', res.msg.toString(),
-                              colorText: Theme.of(context).colorScheme.error);
+                              colorText:
+                                  ShadTheme.of(context).colorScheme.ring);
                         }
                       },
                       child: const Text('确认'),
@@ -207,8 +210,8 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
             children: [
               GFTypography(
                 text: title,
-                textColor: Theme.of(context).colorScheme.onSurface,
-                dividerColor: Theme.of(context).colorScheme.onSurface,
+                textColor: ShadTheme.of(context).colorScheme.foreground,
+                dividerColor: ShadTheme.of(context).colorScheme.foreground,
               ),
               Expanded(
                 child: ListView(
@@ -319,10 +322,10 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
       if (res.code == 0) {
         Get.back();
         Get.snackbar('标签保存成功！', res.msg,
-            colorText: Theme.of(context).colorScheme.primary);
+            colorText: ShadTheme.of(context).colorScheme.primary);
       } else {
         Get.snackbar('标签保存失败！', res.msg,
-            colorText: Theme.of(context).colorScheme.error);
+            colorText: ShadTheme.of(context).colorScheme.ring);
       }
     } finally {}
   }

@@ -13,6 +13,7 @@ import 'package:harvest/app/home/pages/web_socket_logging/view.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/form_widgets.dart';
 import 'package:harvest/utils/logger_helper.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../api/mysite.dart';
 import '../../api/option.dart';
@@ -127,12 +128,11 @@ class HomeView extends GetView<HomeController> {
                 backgroundColor: Colors.transparent,
                 extendBody: true,
                 appBar: AppBar(
-                  backgroundColor:
-                      Theme.of(context).colorScheme.surface.withOpacity(0.5),
+                  backgroundColor: ShadTheme.of(context)
+                      .colorScheme
+                      .background
+                      .withValues(alpha: 0.7 * 255),
                   elevation: 0,
-                  iconTheme: IconThemeData(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
                   actions: <Widget>[
                     _actionButtonList(context),
                   ],
@@ -172,7 +172,7 @@ class HomeView extends GetView<HomeController> {
                         child: GFDrawer(
                           semanticLabel: 'Harvest',
                           elevation: 10,
-                          color: Theme.of(context).colorScheme.surface,
+                          color: ShadTheme.of(context).colorScheme.background,
                           child: _buildMenuBar(context),
                         ),
                       )
@@ -199,16 +199,20 @@ class HomeView extends GetView<HomeController> {
               extended: !controller.isSmallHorizontalScreen,
               selectedIndex: controller.initPage,
               selectedLabelTextStyle:
-                  TextStyle(color: Theme.of(context).colorScheme.primary),
+                  TextStyle(color: ShadTheme.of(context).colorScheme.primary),
               selectedIconTheme: Theme.of(context)
                   .iconTheme
-                  .copyWith(color: Theme.of(context).colorScheme.primary),
+                  .copyWith(color: ShadTheme.of(context).colorScheme.primary),
               unselectedLabelTextStyle: TextStyle(
-                  color:
-                      Theme.of(context).colorScheme.primary.withOpacity(0.7)),
+                  color: ShadTheme.of(context)
+                      .colorScheme
+                      .primary
+                      .withOpacity(0.7)),
               unselectedIconTheme: Theme.of(context).iconTheme.copyWith(
-                  color:
-                      Theme.of(context).colorScheme.primary.withOpacity(0.7)),
+                  color: ShadTheme.of(context)
+                      .colorScheme
+                      .primary
+                      .withOpacity(0.7)),
               backgroundColor: Colors.transparent,
               onDestinationSelected: (index) => controller.changePage(index),
               labelType: controller.isSmallHorizontalScreen
@@ -241,8 +245,9 @@ class HomeView extends GetView<HomeController> {
                                 '${controller.userinfo?.isStaff == true ? '👑' : '🎩'}${controller.userinfo?.user.toString()}',
                                 style: TextStyle(
                                     fontSize: 12,
-                                    color:
-                                        Theme.of(context).colorScheme.primary),
+                                    color: ShadTheme.of(context)
+                                        .colorScheme
+                                        .primary),
                               ),
                               IconButton(
                                 onPressed: () {
@@ -251,8 +256,9 @@ class HomeView extends GetView<HomeController> {
                                 },
                                 icon: Icon(Icons.exit_to_app,
                                     size: 16,
-                                    color:
-                                        Theme.of(context).colorScheme.primary),
+                                    color: ShadTheme.of(context)
+                                        .colorScheme
+                                        .primary),
                               ),
                             ],
                           ),
@@ -261,13 +267,17 @@ class HomeView extends GetView<HomeController> {
                               'VIP: ${controller.authInfo?.username.toString()}',
                               style: TextStyle(
                                   fontSize: 12,
-                                  color: Theme.of(context).colorScheme.primary),
+                                  color: ShadTheme.of(context)
+                                      .colorScheme
+                                      .primary),
                             ),
                             Text(
                               'Expire: ${controller.authInfo?.timeExpire.toString()}',
                               style: TextStyle(
                                   fontSize: 12,
-                                  color: Theme.of(context).colorScheme.primary),
+                                  color: ShadTheme.of(context)
+                                      .colorScheme
+                                      .primary),
                             )
                           ],
                           InkWell(
@@ -280,7 +290,9 @@ class HomeView extends GetView<HomeController> {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                   fontSize: 12,
-                                  color: Theme.of(context).colorScheme.primary),
+                                  color: ShadTheme.of(context)
+                                      .colorScheme
+                                      .primary),
                             ),
                           ),
                         ],
@@ -315,7 +327,7 @@ class HomeView extends GetView<HomeController> {
               child: Icon(
                 Icons.map,
                 size: 20,
-                color: Theme.of(context).colorScheme.primary,
+                color: ShadTheme.of(context).colorScheme.primary,
               ),
             ),
             const SizedBox(width: 15),
@@ -323,7 +335,7 @@ class HomeView extends GetView<HomeController> {
           // const Wen(),
 
           DarkModeSwitch(
-            borderColor: Theme.of(context).colorScheme.primary,
+            borderColor: ShadTheme.of(context).colorScheme.primary,
             height: 24,
             slideSize: 19,
             borderWidth: 2,
@@ -341,7 +353,7 @@ class HomeView extends GetView<HomeController> {
             const SizedBox(width: 15),
             CustomPopup(
               showArrow: false,
-              backgroundColor: Theme.of(context).colorScheme.surface,
+              backgroundColor: ShadTheme.of(context).colorScheme.background,
               barrierColor: Colors.transparent,
               content: SizedBox(
                 width: 100,
@@ -352,7 +364,7 @@ class HomeView extends GetView<HomeController> {
                       child: Text(
                         '全员签到',
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.secondary,
+                          color: ShadTheme.of(context).colorScheme.secondary,
                         ),
                       ),
                       onTap: () async {
@@ -363,7 +375,7 @@ class HomeView extends GetView<HomeController> {
                       child: Text(
                         '站点数据',
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.secondary,
+                          color: ShadTheme.of(context).colorScheme.secondary,
                         ),
                       ),
                       onTap: () async {
@@ -374,7 +386,7 @@ class HomeView extends GetView<HomeController> {
                       child: Text(
                         '批量操作',
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.secondary,
+                          color: ShadTheme.of(context).colorScheme.secondary,
                         ),
                       ),
                       onTap: () async {
@@ -469,9 +481,10 @@ class HomeView extends GetView<HomeController> {
                                         children: [
                                           CustomTextTag(
                                               labelText: "慎用，清理后数据无法恢复",
-                                              backgroundColor: Theme.of(context)
-                                                  .colorScheme
-                                                  .error),
+                                              backgroundColor:
+                                                  ShadTheme.of(context)
+                                                      .colorScheme
+                                                      .ring),
                                           FullWidthButton(
                                               text: "精简历史数据",
                                               onPressed: () async {
@@ -627,7 +640,7 @@ class HomeView extends GetView<HomeController> {
                         child: Text(
                           '自定义UA',
                           style: TextStyle(
-                            color: Theme.of(context).colorScheme.secondary,
+                            color: ShadTheme.of(context).colorScheme.secondary,
                           ),
                         ),
                       ),
@@ -637,7 +650,7 @@ class HomeView extends GetView<HomeController> {
                         child: Text(
                           '试用邀请',
                           style: TextStyle(
-                            color: Theme.of(context).colorScheme.secondary,
+                            color: ShadTheme.of(context).colorScheme.secondary,
                           ),
                         ),
                       ),
@@ -646,7 +659,7 @@ class HomeView extends GetView<HomeController> {
                       child: Text(
                         'PTPP',
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.secondary,
+                          color: ShadTheme.of(context).colorScheme.secondary,
                         ),
                       ),
                       onTap: () async => pickAndUpload(),
@@ -655,7 +668,7 @@ class HomeView extends GetView<HomeController> {
                       child: Text(
                         'CC 同步',
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.secondary,
+                          color: ShadTheme.of(context).colorScheme.secondary,
                         ),
                       ),
                       onTap: () async {
@@ -666,7 +679,7 @@ class HomeView extends GetView<HomeController> {
                       child: Text(
                         'CF 测速',
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.secondary,
+                          color: ShadTheme.of(context).colorScheme.secondary,
                         ),
                       ),
                       onTap: () async {
@@ -674,10 +687,12 @@ class HomeView extends GetView<HomeController> {
                         if (res.code == 0) {
                           Get.back();
                           Get.snackbar('测速任务发送成功', res.msg,
-                              colorText: Theme.of(context).colorScheme.primary);
+                              colorText:
+                                  ShadTheme.of(context).colorScheme.primary);
                         } else {
                           Get.snackbar('测速任务发送失败', '测速任务执行出错啦：${res.msg}',
-                              colorText: Theme.of(context).colorScheme.error);
+                              colorText:
+                                  ShadTheme.of(context).colorScheme.ring);
                         }
                       },
                     ),
@@ -685,7 +700,7 @@ class HomeView extends GetView<HomeController> {
                       child: Text(
                         '截图分享',
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.secondary,
+                          color: ShadTheme.of(context).colorScheme.secondary,
                         ),
                       ),
                       onTap: () async {
@@ -696,7 +711,7 @@ class HomeView extends GetView<HomeController> {
                       child: Text(
                         '退出登录',
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.secondary,
+                          color: ShadTheme.of(context).colorScheme.secondary,
                         ),
                       ),
                       onTap: () async {
@@ -709,7 +724,7 @@ class HomeView extends GetView<HomeController> {
               child: Icon(
                 Icons.add_box_outlined,
                 size: 24,
-                color: Theme.of(context).colorScheme.primary,
+                color: ShadTheme.of(context).colorScheme.primary,
               ),
             )
           ],

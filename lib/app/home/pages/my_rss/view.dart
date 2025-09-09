@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/getwidget.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../../common/card_view.dart';
 import '../../../../common/form_widgets.dart';
@@ -115,10 +116,11 @@ class _MyRssPageState extends State<MyRssPage> {
                       CommonResponse res = await controller.removeMyRss(rss);
                       if (res.code == 0) {
                         Get.snackbar('删除通知', res.msg.toString(),
-                            colorText: Theme.of(context).colorScheme.primary);
+                            colorText:
+                                ShadTheme.of(context).colorScheme.primary);
                       } else {
                         Get.snackbar('删除通知', res.msg.toString(),
-                            colorText: Theme.of(context).colorScheme.error);
+                            colorText: ShadTheme.of(context).colorScheme.ring);
                       }
                     },
                     child: const Text('确认'),
@@ -203,8 +205,8 @@ class _MyRssPageState extends State<MyRssPage> {
                   padding: const EdgeInsets.all(8),
                   child: GFTypography(
                     text: title,
-                    textColor: Theme.of(context).colorScheme.onSurface,
-                    dividerColor: Theme.of(context).colorScheme.onSurface,
+                    textColor: ShadTheme.of(context).colorScheme.foreground,
+                    dividerColor: ShadTheme.of(context).colorScheme.foreground,
                   )),
               Expanded(
                 child: ListView(
@@ -257,8 +259,9 @@ class _MyRssPageState extends State<MyRssPage> {
                                   ? null
                                   : BoxDecoration(
                                       border: Border.all(
-                                          color:
-                                              Theme.of(context).primaryColor),
+                                          color: ShadTheme.of(context)
+                                              .colorScheme
+                                              .primary),
                                       borderRadius: BorderRadius.circular(5),
                                     ),
                               child: ListTile(
@@ -369,10 +372,10 @@ class _MyRssPageState extends State<MyRssPage> {
       if (res.code == 0) {
         Get.back();
         Get.snackbar('标签保存成功！', res.msg,
-            colorText: Theme.of(context).colorScheme.primary);
+            colorText: ShadTheme.of(context).colorScheme.primary);
       } else {
         Get.snackbar('标签保存失败！', res.msg,
-            colorText: Theme.of(context).colorScheme.error);
+            colorText: ShadTheme.of(context).colorScheme.ring);
       }
     } finally {}
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../api/api.dart';
 import '../api/hooks.dart';
@@ -80,23 +81,20 @@ class InviteUser extends StatelessWidget {
         Get.snackbar(
           '邀请成功',
           response.msg,
-          colorText: Colors.white70,
-          backgroundColor: Theme.of(context).colorScheme.primary,
+          colorText: ShadTheme.of(context).colorScheme.primary,
         );
       } else {
         Get.snackbar(
           '邀请失败',
           response.msg,
-          colorText: Colors.white70,
-          backgroundColor: Theme.of(context).colorScheme.error,
+          colorText: ShadTheme.of(context).colorScheme.ring,
         );
       }
     } else {
       Get.snackbar(
         '邀请失败',
         '邮箱不能为空！',
-        colorText: Colors.white70,
-        backgroundColor: Theme.of(context).colorScheme.error,
+        colorText: ShadTheme.of(context).colorScheme.ring,
       );
     }
   }

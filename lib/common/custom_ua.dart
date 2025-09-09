@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harvest/common/utils.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../utils/storage.dart';
 import 'form_widgets.dart';
@@ -12,9 +13,9 @@ class CustomUAWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      child: child,
-      onTap: () {
+    return ShadIconButton.ghost(
+      icon: child,
+      onPressed: () {
         _showCustomUADialog(context);
       },
     );
@@ -83,14 +84,14 @@ class CustomUAWidget extends StatelessWidget {
         '保存成功',
         '自定义 APP 请求头设置成功！',
         colorText: Colors.white70,
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: ShadTheme.of(context).colorScheme.primary,
       );
     } else {
       Get.snackbar(
         '保存失败',
         'APP 请求头不能为空！',
         colorText: Colors.white70,
-        backgroundColor: Theme.of(context).colorScheme.error,
+        backgroundColor: ShadTheme.of(context).colorScheme.ring,
       );
     }
   }

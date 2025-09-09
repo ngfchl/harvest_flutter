@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../app/home/controller/home_controller.dart';
 
@@ -14,7 +15,7 @@ class CustomUpgradeWidget extends StatelessWidget {
           if (controller.updateLogState == null) {
             await controller.initUpdateLogState();
             Get.snackbar('请稍后', '更新日志获取中，请稍后...',
-                colorText: Theme.of(context).colorScheme.primary);
+                colorText: ShadTheme.of(context).colorScheme.primary);
           }
           controller.initUpdateLogState();
           Get.bottomSheet(
@@ -41,52 +42,51 @@ class CustomUpgradeWidget extends StatelessWidget {
                               children: [
                                 Expanded(
                                   child: ListView(
-                                    children:
-                                        controller.updateLogState!.updateNotes
-                                            .map((note) => CheckboxListTile(
-                                                  dense: true,
-                                                  value: controller
-                                                          .updateLogState
-                                                          ?.localLogs
-                                                          .hex ==
-                                                      note.hex,
-                                                  selected: controller
-                                                          .updateLogState
-                                                          ?.localLogs
-                                                          .hex ==
-                                                      note.hex,
-                                                  onChanged: null,
-                                                  title: Text(
-                                                    note.data.trimRight(),
-                                                    style: TextStyle(
-                                                        fontSize: 12,
-                                                        color: controller
-                                                                        .updateLogState
-                                                                        ?.update ==
-                                                                    true &&
-                                                                note.date.compareTo(controller
+                                    children: controller
+                                        .updateLogState!.updateNotes
+                                        .map((note) => CheckboxListTile(
+                                              dense: true,
+                                              value: controller.updateLogState
+                                                      ?.localLogs.hex ==
+                                                  note.hex,
+                                              selected: controller
+                                                      .updateLogState
+                                                      ?.localLogs
+                                                      .hex ==
+                                                  note.hex,
+                                              onChanged: null,
+                                              title: Text(
+                                                note.data.trimRight(),
+                                                style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: controller
+                                                                    .updateLogState
+                                                                    ?.update ==
+                                                                true &&
+                                                            note.date.compareTo(
+                                                                    controller
                                                                         .updateLogState!
                                                                         .localLogs
                                                                         .date) >
-                                                                    0
-                                                            ? Colors.red
-                                                            : Theme.of(context)
-                                                                .colorScheme
-                                                                .primary,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  ),
-                                                  subtitle: Text(
-                                                    note.date,
-                                                    style: TextStyle(
-                                                        fontSize: 10,
-                                                        color: Theme.of(context)
+                                                                0
+                                                        ? Colors.red
+                                                        : ShadTheme.of(context)
                                                             .colorScheme
-                                                            .onSurface
-                                                            .withOpacity(0.8)),
-                                                  ),
-                                                ))
-                                            .toList(),
+                                                            .primary,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                              subtitle: Text(
+                                                note.date,
+                                                style: TextStyle(
+                                                    fontSize: 10,
+                                                    color: ShadTheme.of(context)
+                                                        .colorScheme
+                                                        .background
+                                                        .withOpacity(0.8)),
+                                              ),
+                                            ))
+                                        .toList(),
                                   ),
                                 ),
                                 Row(
@@ -110,7 +110,7 @@ class CustomUpgradeWidget extends StatelessWidget {
                                               await controller.doDockerUpdate();
                                           Get.back();
                                           Get.snackbar('更新通知', res.msg,
-                                              colorText: Theme.of(context)
+                                              colorText: ShadTheme.of(context)
                                                   .colorScheme
                                                   .primary);
                                         },
@@ -157,7 +157,7 @@ class CustomUpgradeWidget extends StatelessWidget {
                                   final res = await controller.doDockerUpdate();
                                   Get.back();
                                   Get.snackbar('更新通知', res.msg,
-                                      colorText: Theme.of(context)
+                                      colorText: ShadTheme.of(context)
                                           .colorScheme
                                           .primary);
                                 },
@@ -177,7 +177,7 @@ class CustomUpgradeWidget extends StatelessWidget {
                                   final res = await controller.doWebUIUpdate();
                                   Get.back();
                                   Get.snackbar('更新通知', res.msg,
-                                      colorText: Theme.of(context)
+                                      colorText: ShadTheme.of(context)
                                           .colorScheme
                                           .primary);
                                 },
@@ -197,7 +197,7 @@ class CustomUpgradeWidget extends StatelessWidget {
                                   final res = await controller.doSitesUpdate();
                                   Get.back();
                                   Get.snackbar('更新通知', res.msg,
-                                      colorText: Theme.of(context)
+                                      colorText: ShadTheme.of(context)
                                           .colorScheme
                                           .primary);
                                 },
@@ -218,7 +218,7 @@ class CustomUpgradeWidget extends StatelessWidget {
             size: 24,
             color: controller.updateLogState?.update == true
                 ? Colors.red
-                : Theme.of(context).colorScheme.primary),
+                : ShadTheme.of(context).colorScheme.primary),
       );
     });
   }

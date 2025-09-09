@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_pickers/pickers.dart';
 import 'package:flutter_pickers/style/picker_style.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 class SwitchTile extends StatelessWidget {
   final String title;
@@ -24,7 +25,7 @@ class SwitchTile extends StatelessWidget {
         title,
         style: TextStyle(
           fontSize: 14,
-          color: Theme.of(context).colorScheme.primary,
+          color: ShadTheme.of(context).colorScheme.primary,
         ),
       ),
       trailing: Transform.scale(
@@ -87,10 +88,11 @@ class CustomTextField extends StatelessWidget {
         inputFormatters: inputFormatters,
         scrollPhysics: const NeverScrollableScrollPhysics(),
         style: TextStyle(
-            fontSize: 13, color: Theme.of(context).colorScheme.primary),
+            fontSize: 13, color: ShadTheme.of(context).colorScheme.primary),
         decoration: InputDecoration(
           labelText: labelText,
-          labelStyle: const TextStyle(fontSize: 12),
+          labelStyle: TextStyle(
+              fontSize: 12, color: ShadTheme.of(context).colorScheme.primary),
           contentPadding: const EdgeInsets.symmetric(horizontal: 8),
           enabledBorder: const UnderlineInputBorder(
             borderSide: BorderSide(color: Color(0x19000000)),
@@ -106,11 +108,11 @@ class CustomTextField extends StatelessWidget {
           prefixIcon: prefixIcon,
           suffixText: suffixText,
           helperStyle: TextStyle(
-              fontSize: 12, color: Theme.of(context).colorScheme.primary),
+              fontSize: 12, color: ShadTheme.of(context).colorScheme.primary),
           prefixStyle: TextStyle(
-              fontSize: 12, color: Theme.of(context).colorScheme.primary),
+              fontSize: 12, color: ShadTheme.of(context).colorScheme.primary),
           suffixStyle: TextStyle(
-              fontSize: 12, color: Theme.of(context).colorScheme.primary),
+              fontSize: 12, color: ShadTheme.of(context).colorScheme.primary),
         ),
       ),
     );
@@ -221,10 +223,11 @@ class CustomPickerField extends StatelessWidget {
                   pickerStyle: PickerStyle(
                     showTitleBar: true,
                     textSize: 14,
-                    textColor: Theme.of(context).colorScheme.onSurface,
-                    backgroundColor: Theme.of(context).colorScheme.surface,
+                    textColor: ShadTheme.of(context).colorScheme.foreground,
+                    backgroundColor:
+                        ShadTheme.of(context).colorScheme.background,
                     headDecoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface),
+                        color: ShadTheme.of(context).colorScheme.background),
                   ),
                   onConfirm: (p, position) {
                     controller.text = p;

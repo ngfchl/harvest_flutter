@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/form_widgets.dart';
 import 'package:harvest/utils/platform.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../../utils/logger_helper.dart';
 import 'controller.dart';
@@ -72,9 +73,9 @@ class SshWidget extends StatelessWidget {
           child: SwitchListTile(
               title: const Text('记住密码'),
               value: controller.remember,
-              selectedTileColor: Theme.of(context).colorScheme.primary,
+              selectedTileColor: ShadTheme.of(context).colorScheme.primary,
               inactiveTrackColor: Colors.transparent,
-              inactiveThumbColor: Theme.of(context).colorScheme.primary,
+              inactiveThumbColor: ShadTheme.of(context).colorScheme.primary,
               onChanged: (bool value) {
                 controller.remember = value;
                 controller.update();
@@ -83,8 +84,8 @@ class SshWidget extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: FullWidthButton(
-            labelColor: Theme.of(context).colorScheme.onPrimary,
-            backgroundColor: Theme.of(context).colorScheme.primary,
+            labelColor: ShadTheme.of(context).colorScheme.primaryForeground,
+            backgroundColor: ShadTheme.of(context).colorScheme.primary,
             onPressed: () async {
               await controller.connect();
               try {
@@ -133,7 +134,7 @@ class SshWidget extends StatelessWidget {
                         '发送',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Theme.of(context).colorScheme.primary,
+                          color: ShadTheme.of(context).colorScheme.primary,
                         ),
                       )),
                   ElevatedButton(
@@ -144,7 +145,7 @@ class SshWidget extends StatelessWidget {
                       '清除',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: ShadTheme.of(context).colorScheme.primary,
                       ),
                     ),
                   ),
@@ -156,7 +157,7 @@ class SshWidget extends StatelessWidget {
                       '刷新',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: ShadTheme.of(context).colorScheme.primary,
                       ),
                     ),
                   ),
@@ -168,7 +169,7 @@ class SshWidget extends StatelessWidget {
                       '断开',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: ShadTheme.of(context).colorScheme.primary,
                       ),
                     ),
                   ),
@@ -205,9 +206,9 @@ class SshWidget extends StatelessWidget {
                         style: TextStyle(
                             fontSize: 12,
                             letterSpacing: 1.5,
-                            color: Theme.of(context)
+                            color: ShadTheme.of(context)
                                 .colorScheme
-                                .onSurface
+                                .foreground
                                 .withOpacity(0.8)),
                       ));
                 })),
@@ -302,8 +303,8 @@ class SshWidget extends StatelessWidget {
                   Get.defaultDialog(
                     title: '重建容器',
                     middleText: '本操作会删除旧容器并使用原来的配置重建容器，具有一定的风险性，请谨慎操作',
-                    middleTextStyle:
-                        TextStyle(color: Theme.of(context).colorScheme.error),
+                    middleTextStyle: TextStyle(
+                        color: ShadTheme.of(context).colorScheme.ring),
                     onConfirm: () {
                       controller.rebuildContainer(container.name.toString(),
                           container.image.toString());
@@ -369,7 +370,7 @@ class SshWidget extends StatelessWidget {
                                         text: container.name.toString(),
                                         style: TextStyle(
                                           fontSize: 13,
-                                          color: Theme.of(context)
+                                          color: ShadTheme.of(context)
                                               .colorScheme
                                               .primary,
                                         ),
@@ -384,8 +385,10 @@ class SshWidget extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 11,
                                   color: isRunning
-                                      ? Theme.of(context).colorScheme.primary
-                                      : Theme.of(context).colorScheme.error,
+                                      ? ShadTheme.of(context)
+                                          .colorScheme
+                                          .primary
+                                      : ShadTheme.of(context).colorScheme.ring,
                                 ),
                               ),
                             ],
@@ -399,8 +402,9 @@ class SshWidget extends StatelessWidget {
                                   text: imageText,
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
+                                    color: ShadTheme.of(context)
+                                        .colorScheme
+                                        .primary,
                                   ),
                                   ellipsis: '...',
                                 ),
@@ -430,17 +434,17 @@ class SshWidget extends StatelessWidget {
                       Text("CPU: ${stats.cPUPerc}",
                           style: TextStyle(
                             fontSize: 12,
-                            color: Theme.of(context).colorScheme.primary,
+                            color: ShadTheme.of(context).colorScheme.primary,
                           )),
                       Text("Mem: ${stats.memUsage} ${stats.memPerc}",
                           style: TextStyle(
                             fontSize: 12,
-                            color: Theme.of(context).colorScheme.primary,
+                            color: ShadTheme.of(context).colorScheme.primary,
                           )),
                       Text("BlockIO: ${stats.blockIO}",
                           style: TextStyle(
                             fontSize: 12,
-                            color: Theme.of(context).colorScheme.primary,
+                            color: ShadTheme.of(context).colorScheme.primary,
                           )),
                     ],
                   )

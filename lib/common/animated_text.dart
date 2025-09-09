@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 class ContinuousGradientText extends StatefulWidget {
   final String text;
@@ -37,7 +38,7 @@ class _ContinuousGradientTextState extends State<ContinuousGradientText>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final brightness = Theme.of(context).brightness;
+    final brightness = ShadTheme.of(context).brightness;
     _colors = brightness == Brightness.dark
         ? widget.darkColors ??
         const [

@@ -93,7 +93,6 @@ class _AggSearchPageState extends State<AggSearchPage>
                 body: Column(
                   children: [
                     CustomCard(
-                      margin: EdgeInsets.zero,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
