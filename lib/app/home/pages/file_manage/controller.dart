@@ -27,7 +27,7 @@ class FileManageController extends GetxController {
     }
     isLoading = false;
     Logger.instance.d('当前路径: $currentPath，当前路径下文件数量: ${items.length}');
-    update();
+    update(['file_manage']);
   }
 
   getFileSourceUrl(String path) async {
