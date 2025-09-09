@@ -292,35 +292,32 @@ class FileManagePage extends StatelessWidget {
   Map<String, String> buildSchemes(String url) {
     final schemes = <String, String>{};
 
+    var encodeUrl = Uri.encodeComponent(url);
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       schemes.addAll({
-        'VLC': 'vlc://$url',
-        'VidHub': 'vidhub://$url',
-        'Infuse':
-            'infuse://x-callback-url/play?url=${Uri.encodeComponent(url)}',
-        'nPlayer': 'nplayer-$url', // 会自动转为 nplayer-http://
-        'PlayerXtreme': 'playerxtreme://$url',
-        'OPlayer': 'oplayer://$url',
-        'KMPlayer': 'kmplayer://$url',
-        'MXPlayer': 'mxplayer://$url',
+        'VLC': 'vlc://$encodeUrl',
+        'VidHub': 'open-vidhub://x-callback-url/open?url=$encodeUrl',
+        'FileBar': 'filebox://play?url=$encodeUrl',
+        'SenPlayer': 'SenPlayer://x-callback-url/play?url=$encodeUrl',
+        'Infuse': 'infuse://x-callback-url/play?url=$encodeUrl',
       });
     } else if (defaultTargetPlatform == TargetPlatform.macOS) {
       // macOS 上常见播放器只能通过 open -a 调用
       schemes.addAll({
-        'IINA': 'iina://weblink?url=${Uri.encodeComponent(url)}',
-        'VLC': 'vlc://$url', // 部分版本支持
-        'Infuse': 'Infuse://$url', // 部分版本支持
+        'IINA': 'iina://weblink?url=$encodeUrl',
+        'VLC': 'vlc://$encodeUrl', // 部分版本支持
+        'Infuse': 'Infuse://$encodeUrl', // 部分版本支持
       });
     } else if (defaultTargetPlatform == TargetPlatform.windows) {
       // Windows 常用 PotPlayer / VLC
       schemes.addAll({
-        'VLC': 'vlc://$url', // 仅部分版本支持
-        'PotPlayer': 'potplayer://$url', // PotPlayer 支持 URL Scheme
+        'VLC': 'vlc://$encodeUrl', // 仅部分版本支持
+        'PotPlayer': 'potplayer://$encodeUrl', // PotPlayer 支持 URL Scheme
       });
     } else if (defaultTargetPlatform == TargetPlatform.linux) {
       schemes.addAll({
-        'VLC': 'vlc://$url',
-        'MPV': 'mpv://$url',
+        'VLC': 'vlc://$encodeUrl',
+        'MPV': 'mpv://$encodeUrl',
       });
     }
 
