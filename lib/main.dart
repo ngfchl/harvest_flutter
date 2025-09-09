@@ -10,6 +10,7 @@ import 'package:window_manager/window_manager.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 import 'app/routes/app_pages.dart';
+import 'theme/theme_controller.dart';
 
 void main() async {
   // 初始化插件前需要在runApp之前调用初始化代码
@@ -19,7 +20,7 @@ void main() async {
   await SPUtil.getInstance();
   await initDependencies();
   Get.testMode = false;
-
+  Get.put(ThemeController()); // 注入主题控制器
   // 注册 HomeController 控制器
   String? server = SPUtil.getLocalStorage('server');
   if (server == null || server.length <= 10) {
@@ -77,52 +78,54 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appService = Get.find<AppService>();
+    final themeController = Get.find<ThemeController>();
     appService.followSystem.value =
         SPUtil.getBool('followSystemDark', defaultValue: true);
-    return ShadApp.custom(
-        themeMode: ThemeMode.dark,
-        darkTheme: ShadThemeData(
-          brightness: Brightness.dark,
-          colorScheme: const ShadSlateColorScheme.dark(),
-        ),
-        appBuilder: (context) {
-          return GetMaterialApp(
-            title: "Harvest",
-            defaultTransition: Transition.cupertino,
-            debugShowCheckedModeBanner: Get.testMode,
-            initialRoute: AppPages.INITIAL,
-            navigatorKey: Get.key,
-            theme: appService.currentTheme,
-            getPages: AppPages.routes,
-            builder: (context, child) {
-              // 处理 MediaQuery 异常问题，特别是小米澎湃系统
-              MediaQueryData mediaQuery = MediaQuery.of(context);
-              double safeTop = mediaQuery.padding.top;
+    return Obx(() {
+      return ShadApp.custom(
+          darkTheme: themeController.darkTheme,
+          theme: themeController.lightTheme,
+          themeMode:
+              themeController.isDark.value ? ThemeMode.dark : ThemeMode.light,
+          appBuilder: (context) {
+            return GetMaterialApp(
+              title: "Harvest",
+              defaultTransition: Transition.cupertino,
+              debugShowCheckedModeBanner: Get.testMode,
+              initialRoute: AppPages.INITIAL,
+              navigatorKey: Get.key,
+              theme: appService.currentTheme,
+              getPages: AppPages.routes,
+              builder: (context, child) {
+                // 处理 MediaQuery 异常问题，特别是小米澎湃系统
+                MediaQueryData mediaQuery = MediaQuery.of(context);
+                double safeTop = mediaQuery.padding.top;
 
-              // 如果出现异常值，使用默认值替代
-              if (safeTop > 80 || safeTop < 0) {
-                print(
-                    'Detected abnormal top padding: $safeTop, using fallback.');
-                safeTop = 24.0; // 合理默认值
-              }
+                // 如果出现异常值，使用默认值替代
+                if (safeTop > 80 || safeTop < 0) {
+                  print(
+                      'Detected abnormal top padding: $safeTop, using fallback.');
+                  safeTop = 24.0; // 合理默认值
+                }
 
-              return MediaQuery(
-                data: mediaQuery.copyWith(
-                  padding: mediaQuery.padding.copyWith(top: safeTop),
-                ),
-                child: child ?? const SizedBox.shrink(),
-              );
-            },
-            translations: Messages([
-              AppServiceMessages().keys,
-            ]),
-            locale: const Locale('zh', 'CN'),
-            fallbackLocale: const Locale('en', 'US'),
-            onInit: () async {
-              await onInit(context);
-            },
-          );
-        });
+                return MediaQuery(
+                  data: mediaQuery.copyWith(
+                    padding: mediaQuery.padding.copyWith(top: safeTop),
+                  ),
+                  child: child ?? const SizedBox.shrink(),
+                );
+              },
+              translations: Messages([
+                AppServiceMessages().keys,
+              ]),
+              locale: const Locale('zh', 'CN'),
+              fallbackLocale: const Locale('en', 'US'),
+              onInit: () async {
+                await onInit(context);
+              },
+            );
+          });
+    });
   }
 }
 
