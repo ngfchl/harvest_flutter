@@ -17,6 +17,7 @@ import '../../../../api/option.dart';
 import '../../../../common/image_helper.dart';
 import '../../../../common/utils.dart';
 import '../../../../models/common_response.dart';
+import '../../../../theme/theme_view.dart';
 import '../../../../utils/logger_helper.dart';
 import '../models/option.dart';
 import 'setting_controller.dart';
@@ -152,14 +153,15 @@ class SettingPage extends StatelessWidget {
             '跟随系统',
             style: TextStyle(color: Theme.of(context).colorScheme.primary),
           ),
-          leading: IconButton(
-              icon: appService.followSystem.value
-                  ? const Icon(Icons.brightness_auto_outlined)
-                  : appService.isDarkMode.value
-                      ? const Icon(Icons.brightness_4_outlined)
-                      : const Icon(Icons.brightness_5_outlined),
-              onPressed: () {}),
-          // secondary: const Text('跟随系统主题'),
+          // leading: IconButton(
+          //     icon: appService.followSystem.value
+          //         ? const Icon(Icons.brightness_auto_outlined)
+          //         : appService.isDarkMode.value
+          //             ? const Icon(Icons.brightness_4_outlined)
+          //             : const Icon(Icons.brightness_5_outlined),
+          //     onPressed: () {}),
+          // // secondary: const Text('跟随系统主题'),
+          leading: ThemeTag(),
           trailing: Switch(
               value: appService.followSystem.value,
               onChanged: (bool v) async {
