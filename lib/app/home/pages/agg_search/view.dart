@@ -80,6 +80,11 @@ class _AggSearchPageState extends State<AggSearchPage>
                     color: backgroundColor, // 背景色
                     child: TabBar(
                       controller: controller.tabController,
+                      labelColor: Theme.of(context).colorScheme.primary,
+                      unselectedLabelColor: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withOpacity(0.7),
                       onTap: (int index) => controller.changeTab(index),
                       tabs: controller.tabs,
                     ),
@@ -100,7 +105,10 @@ class _AggSearchPageState extends State<AggSearchPage>
                               decoration: InputDecoration(
                                 isDense: true,
                                 hintText: '请输入搜索关键字',
-                                hintStyle: const TextStyle(fontSize: 14),
+                                hintStyle: TextStyle(
+                                  fontSize: 12,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
                                 contentPadding: const EdgeInsets.symmetric(
                                     vertical: 8, horizontal: 5),
                                 fillColor: Colors.transparent,
@@ -114,8 +122,11 @@ class _AggSearchPageState extends State<AggSearchPage>
                                   gapPadding: 0.0, // 移除边框与hintText之间的间距
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderSide: const BorderSide(
-                                      width: 1.0, color: Colors.black),
+                                  borderSide: BorderSide(
+                                    width: 1.0,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
                                   // 仅在聚焦时绘制底部边框
                                   borderRadius: BorderRadius.circular(0.0),
                                 ),
@@ -228,7 +239,10 @@ class _AggSearchPageState extends State<AggSearchPage>
                               child: Container(
                                 width: 36,
                                 height: 36,
-                                color: Theme.of(context).colorScheme.primary,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(4),
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
                                 child: controller.isLoading
                                     ? InkWell(
                                         onTap: () => controller.cancelSearch(),
@@ -243,7 +257,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                       )
                                     : Icon(
                                         Icons.search,
-                                        size: 28,
+                                        size: 22,
                                         color: Theme.of(context)
                                             .colorScheme
                                             .onPrimary,
@@ -361,16 +375,34 @@ class _AggSearchPageState extends State<AggSearchPage>
                                                         .colorScheme
                                                         .error,
                                                   )),
-                                              onSelected: (bool value) {},
-                                              onDeleted: () {
+                                              onSelected: (bool value) {
                                                 Get.defaultDialog(
                                                   title: '提示',
+                                                  titleStyle: TextStyle(
+                                                    fontSize: 16,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .primary,
+                                                  ),
                                                   middleText: '确定要删除全部搜索记录吗？',
+                                                  middleTextStyle: TextStyle(
+                                                    fontSize: 16,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .primary,
+                                                  ),
                                                   cancel: TextButton(
                                                     onPressed: () {
                                                       Get.back();
                                                     },
-                                                    child: Text('取消'),
+                                                    child: Text('取消',
+                                                        style: TextStyle(
+                                                          fontSize: 16,
+                                                          color:
+                                                              Theme.of(context)
+                                                                  .colorScheme
+                                                                  .error,
+                                                        )),
                                                   ),
                                                   confirm: TextButton(
                                                     onPressed: () {
@@ -382,10 +414,41 @@ class _AggSearchPageState extends State<AggSearchPage>
                                                               .searchHistory);
                                                       controller.update();
                                                     },
-                                                    child: Text('确定'),
+                                                    child: Text('确定',
+                                                        style: TextStyle(
+                                                          fontSize: 16,
+                                                          color:
+                                                              Theme.of(context)
+                                                                  .colorScheme
+                                                                  .primary,
+                                                        )),
                                                   ),
                                                 );
                                               },
+                                              // onDeleted: () {
+                                              //   Get.defaultDialog(
+                                              //     title: '提示',
+                                              //     middleText: '确定要删除全部搜索记录吗？',
+                                              //     cancel: TextButton(
+                                              //       onPressed: () {
+                                              //         Get.back();
+                                              //       },
+                                              //       child: Text('取消'),
+                                              //     ),
+                                              //     confirm: TextButton(
+                                              //       onPressed: () {
+                                              //         controller.searchHistory
+                                              //             .clear();
+                                              //         SPUtil.setStringList(
+                                              //             'search_history',
+                                              //             controller
+                                              //                 .searchHistory);
+                                              //         controller.update();
+                                              //       },
+                                              //       child: Text('确定'),
+                                              //     ),
+                                              //   );
+                                              // },
                                             ),
                                           ...controller.searchHistory.map(
                                             (el) => FilterChip(
@@ -403,7 +466,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                                     fontSize: 16,
                                                     color: Theme.of(context)
                                                         .colorScheme
-                                                        .onSurface,
+                                                        .primary,
                                                   )),
                                               onSelected: (bool value) {
                                                 controller.searchKeyController
@@ -428,8 +491,8 @@ class _AggSearchPageState extends State<AggSearchPage>
                       ),
                     ),
                     if (!kIsWeb && Platform.isIOS) const SizedBox(height: 10),
-                    if (controller.tabController.index == 1)
-                      const SizedBox(height: 50),
+                    // if (controller.tabController.index == 1)
+                    //   const SizedBox(height: 50),
                   ],
                 ),
               ),
@@ -590,7 +653,6 @@ class _AggSearchPageState extends State<AggSearchPage>
                           errorWidget: (context, url, error) => const Image(
                               image: AssetImage('assets/images/avatar.png')),
                           fit: BoxFit.fitWidth,
-                          cacheKey: posterPath,
                         ),
                       ),
                     ));
@@ -2077,7 +2139,6 @@ class _AggSearchPageState extends State<AggSearchPage>
 
   void _showTMDBDetail(info) async {
     var mediaInfo = await controller.getTMDBDetail(info);
-    bool isMovie = info.mediaType == 'movie';
     String urlPrefix = 'https://media.themoviedb.org/t/p/w94_and_h141_bestv2';
     String posterPath = '$urlPrefix${mediaInfo.posterPath}';
     LoggerHelper.Logger.instance.d(mediaInfo);
