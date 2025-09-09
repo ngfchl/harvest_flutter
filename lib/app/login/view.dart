@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../api/api.dart';
 import '../../common/card_view.dart';
@@ -227,11 +228,11 @@ class _LoginPageState extends State<LoginPage> {
                   Theme.of(context).colorScheme.surface.withOpacity(0.5),
               title: Text(
                 '服务器列表',
-                style: TextStyle(color: Theme.of(context).colorScheme.primary),
+                style: Theme.of(context).textTheme.headlineSmall,
               ),
               actions: [
                 ...[
-                  IconButton(
+                  ShadIconButton.ghost(
                       onPressed: () async {
                         final CommonResponse res =
                             await controller.clearServerCache();
@@ -256,28 +257,13 @@ class _LoginPageState extends State<LoginPage> {
                       icon: Icon(
                         Icons.cleaning_services_outlined,
                         size: 18,
-                        color: Theme.of(context).colorScheme.primary,
                       )),
                   const LoggingView(),
-                  const SizedBox(width: 15),
-                  DarkModeSwitch(
-                    borderColor: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(width: 15),
-                  const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: ThemeModal(
-                      itemSize: 28,
-                    ),
-                  ),
-                  const SizedBox(width: 15)
                 ],
                 CustomUAWidget(
                   child: Icon(
                     Icons.settings,
                     size: 20,
-                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
                 const SizedBox(width: 15),
@@ -298,112 +284,63 @@ class _LoginPageState extends State<LoginPage> {
                       ]),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 36.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            ElevatedButton.icon(
-                              icon: controller.isLoading
-                                  ? Center(
-                                      child: SizedBox(
-                                        height: 18,
-                                        width: 18,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primary,
-                                        ),
-                                      ),
-                                    )
-                                  : Icon(Icons.link,
-                                      size: 18,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .primary),
-                              label: Text(
-                                '连接服务器',
-                                style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.primary),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    Theme.of(context).colorScheme.surface,
-                                // 设置背景颜色为绿色
-                                // padding: const EdgeInsets.symmetric(
-                                //     horizontal: 40.0),
-                                // 调整内边距使得按钮更宽
-                                shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(5.0), // 边角圆角大小可自定义
-                                ),
-                              ),
-                              onPressed: controller.hasSelectedServer
-                                  ? () async {
-                                      // 连接服务器的操作逻辑
-                                      CommonResponse res =
-                                          await controller.doLogin(cancelToken);
-
-                                      if (res.succeed) {
-                                        await Future.delayed(
-                                            Duration(milliseconds: 1500), () {
-                                          Get.offNamed(Routes.HOME);
-                                          Get.snackbar(
-                                            res.succeed ? '登录成功！' : '登录失败',
-                                            res.succeed
-                                                ? '登录成功！欢迎回来，${controller.selectedServer?.username}'
-                                                : res.msg,
-                                            colorText: res.succeed
-                                                ? Theme.of(context)
-                                                    .colorScheme
-                                                    .primary
-                                                : Theme.of(context)
-                                                    .colorScheme
-                                                    .error,
-                                          );
-                                        });
-                                      } else {
-                                        Get.snackbar(
-                                          '登录失败',
-                                          res.msg,
-                                          colorText: Theme.of(context)
-                                              .colorScheme
-                                              .error,
-                                        );
-                                      }
-                                      controller.isLoading = false;
-                                      controller.update();
-                                    }
-                                  : null,
-                            ),
-                            if (controller.isLoading)
-                              ElevatedButton.icon(
+                        child: controller.isLoading
+                            ? ShadButton(
                                 onPressed: () {
                                   cancelToken.cancel();
                                 },
-                                icon: Icon(Icons.cancel),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      Theme.of(context).colorScheme.error,
-                                  // 设置背景颜色为绿色
-                                  // padding: const EdgeInsets.symmetric(
-                                  //     horizontal: 40.0),
-                                  // 调整内边距使得按钮更宽
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        5.0), // 边角圆角大小可自定义
+                                leading: SizedBox.square(
+                                  dimension: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: ShadTheme.of(context)
+                                        .colorScheme
+                                        .primaryForeground,
                                   ),
                                 ),
-                                label: Text(
-                                  '取消',
-                                  style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.onError,
-                                  ),
-                                ),
+                                child: const Text('连接中，点击取消'),
+                              )
+                            : ShadButton(
+                                onPressed: !controller.hasSelectedServer
+                                    ? null
+                                    : () async {
+                                        // 连接服务器的操作逻辑
+                                        CommonResponse res = await controller
+                                            .doLogin(cancelToken);
+
+                                        if (res.succeed) {
+                                          await Future.delayed(
+                                              Duration(milliseconds: 1500), () {
+                                            Get.offNamed(Routes.HOME);
+                                            Get.snackbar(
+                                              res.succeed ? '登录成功！' : '登录失败',
+                                              res.succeed
+                                                  ? '登录成功！欢迎回来，${controller.selectedServer?.username}'
+                                                  : res.msg,
+                                              colorText: res.succeed
+                                                  ? Theme.of(context)
+                                                      .colorScheme
+                                                      .primary
+                                                  : Theme.of(context)
+                                                      .colorScheme
+                                                      .error,
+                                            );
+                                          });
+                                        } else {
+                                          Get.snackbar(
+                                            '登录失败',
+                                            res.msg,
+                                            colorText: Theme.of(context)
+                                                .colorScheme
+                                                .error,
+                                          );
+                                        }
+                                        controller.isLoading = false;
+                                        controller.update();
+                                      },
+                                leading: const Icon(LucideIcons.link),
+                                child: const Text('连接服务器'),
                               ),
-                          ],
-                        ),
                       ),
                     ],
                   ),
