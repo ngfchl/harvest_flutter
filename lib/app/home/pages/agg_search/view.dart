@@ -237,181 +237,179 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                       ),
                     ),
                     Expanded(
-                      child: CustomCard(
-                        child: TabBarView(controller: controller.tabController, children: [
-                          Column(
-                            children: [
-                              if (controller.results.isNotEmpty)
-                                Expanded(
-                                  child: ListView.builder(
-                                      itemCount: controller.results.length,
-                                      itemBuilder: (context, int index) => mediaItemCard(controller.results[index])),
+                      child: TabBarView(controller: controller.tabController, children: [
+                        Column(
+                          children: [
+                            if (controller.results.isNotEmpty)
+                              Expanded(
+                                child: ListView.builder(
+                                    itemCount: controller.results.length,
+                                    itemBuilder: (context, int index) => mediaItemCard(controller.results[index])),
+                              ),
+                            if (controller.showDouBanResults.isNotEmpty)
+                              Expanded(
+                                child: ListView.builder(
+                                  itemCount: controller.showDouBanResults.length,
+                                  itemBuilder: (BuildContext context, int index) {
+                                    DouBanSearchResult info = controller.showDouBanResults[index];
+                                    return showDouBanSearchInfo(info);
+                                  },
                                 ),
-                              if (controller.showDouBanResults.isNotEmpty)
-                                Expanded(
-                                  child: ListView.builder(
-                                    itemCount: controller.showDouBanResults.length,
-                                    itemBuilder: (BuildContext context, int index) {
-                                      DouBanSearchResult info = controller.showDouBanResults[index];
-                                      return showDouBanSearchInfo(info);
-                                    },
+                              ),
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            if (controller.searchMsg.isNotEmpty)
+                              ShadAccordion(
+                                children: [
+                                  ShadAccordionItem(
+                                    value: 'accordion',
+                                    title: Text(
+                                        '失败$failedCount个站点，$succeedCount个站点共${controller.searchResults.length}个种子，筛选结果：${controller.showResults.length}个',
+                                        style: TextStyle(
+                                            fontSize: 12, color: ShadTheme.of(context).colorScheme.foreground)),
+                                    child: SizedBox(
+                                      height: 100,
+                                      child: ListView.builder(
+                                        itemCount: controller.searchMsg.length,
+                                        itemBuilder: (BuildContext context, int index) {
+                                          String info = controller.searchMsg[index]['msg'];
+                                          return Text(info,
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: ShadTheme.of(context).colorScheme.foreground,
+                                              ));
+                                        },
+                                      ),
+                                    ),
                                   ),
-                                ),
-                            ],
-                          ),
-                          Column(
-                            children: [
-                              if (controller.searchMsg.isNotEmpty)
-                                ShadAccordion(
+                                ],
+                              ),
+                            Expanded(
+                              child: ListView.builder(
+                                itemCount: controller.showResults.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  SearchTorrentInfo info = controller.showResults[index];
+                                  return showTorrentInfo(info);
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        GetBuilder<AggSearchController>(
+                            id: Key('agg_search_history'),
+                            builder: (controller) {
+                              return SingleChildScrollView(
+                                child: Wrap(
+                                  runSpacing: 8,
+                                  spacing: 8,
                                   children: [
-                                    ShadAccordionItem(
-                                      value: 'accordion',
-                                      title: Text(
-                                          '失败$failedCount个站点，$succeedCount个站点共${controller.searchResults.length}个种子，筛选结果：${controller.showResults.length}个',
-                                          style: TextStyle(
-                                              fontSize: 12, color: ShadTheme.of(context).colorScheme.foreground)),
-                                      child: SizedBox(
-                                        height: 100,
-                                        child: ListView.builder(
-                                          itemCount: controller.searchMsg.length,
-                                          itemBuilder: (BuildContext context, int index) {
-                                            String info = controller.searchMsg[index]['msg'];
-                                            return Text(info,
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: ShadTheme.of(context).colorScheme.foreground,
-                                                ));
-                                          },
+                                    if (controller.searchHistory.isNotEmpty)
+                                      FilterChip(
+                                        backgroundColor: backgroundColor,
+                                        deleteIcon: Icon(
+                                          Icons.clear,
+                                          color: ShadTheme.of(context).colorScheme.destructive,
                                         ),
+                                        deleteButtonTooltipMessage: '确定要删除全部搜索记录吗？',
+                                        label: Text('一键清理',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              color: ShadTheme.of(context).colorScheme.destructive,
+                                            )),
+                                        onSelected: (bool value) {
+                                          Get.defaultDialog(
+                                            title: '提示',
+                                            backgroundColor:
+                                                ShadTheme.of(context).colorScheme.background.withOpacity(opacity),
+                                            titleStyle: TextStyle(
+                                              fontSize: 16,
+                                              color: ShadTheme.of(context).colorScheme.foreground,
+                                            ),
+                                            middleText: '确定要删除全部搜索记录吗？',
+                                            middleTextStyle: TextStyle(
+                                              fontSize: 16,
+                                              color: ShadTheme.of(context).colorScheme.foreground,
+                                            ),
+                                            cancel: ShadButton.ghost(
+                                              onPressed: () {
+                                                Get.back();
+                                              },
+                                              child: Text('取消',
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    color: ShadTheme.of(context).colorScheme.destructive,
+                                                  )),
+                                            ),
+                                            confirm: ShadButton.ghost(
+                                              onPressed: () {
+                                                controller.searchHistory.clear();
+                                                SPUtil.setStringList('search_history', controller.searchHistory);
+                                                controller.update();
+                                              },
+                                              child: Text('确定',
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    color: ShadTheme.of(context).colorScheme.primary,
+                                                  )),
+                                            ),
+                                          );
+                                        },
+                                        // onDeleted: () {
+                                        //   Get.defaultDialog(
+                                        //     title: '提示',
+                                        //     middleText: '确定要删除全部搜索记录吗？',
+                                        //     cancel: TextButton(
+                                        //       onPressed: () {
+                                        //         Get.back();
+                                        //       },
+                                        //       child: Text('取消'),
+                                        //     ),
+                                        //     confirm: TextButton(
+                                        //       onPressed: () {
+                                        //         controller.searchHistory
+                                        //             .clear();
+                                        //         SPUtil.setStringList(
+                                        //             'search_history',
+                                        //             controller
+                                        //                 .searchHistory);
+                                        //         controller.update();
+                                        //       },
+                                        //       child: Text('确定'),
+                                        //     ),
+                                        //   );
+                                        // },
+                                      ),
+                                    ...controller.searchHistory.map(
+                                      (el) => FilterChip(
+                                        backgroundColor: backgroundColor,
+                                        deleteIcon: Icon(
+                                          Icons.clear,
+                                          color: ShadTheme.of(context).colorScheme.destructive,
+                                        ),
+                                        deleteButtonTooltipMessage: '确定要删除记录吗？',
+                                        label: Text(el,
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              color: ShadTheme.of(context).colorScheme.foreground,
+                                            )),
+                                        onSelected: (bool value) {
+                                          controller.searchKeyController.text = el;
+                                          controller.doWebsocketSearch();
+                                        },
+                                        onDeleted: () {
+                                          controller.searchHistory.remove(el);
+                                          SPUtil.setStringList('search_history', controller.searchHistory);
+                                          controller.update();
+                                        },
                                       ),
                                     ),
                                   ],
                                 ),
-                              Expanded(
-                                child: ListView.builder(
-                                  itemCount: controller.showResults.length,
-                                  itemBuilder: (BuildContext context, int index) {
-                                    SearchTorrentInfo info = controller.showResults[index];
-                                    return showTorrentInfo(info);
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                          GetBuilder<AggSearchController>(
-                              id: Key('agg_search_history'),
-                              builder: (controller) {
-                                return SingleChildScrollView(
-                                  child: Wrap(
-                                    runSpacing: 8,
-                                    spacing: 8,
-                                    children: [
-                                      if (controller.searchHistory.isNotEmpty)
-                                        FilterChip(
-                                          backgroundColor: backgroundColor,
-                                          deleteIcon: Icon(
-                                            Icons.clear,
-                                            color: ShadTheme.of(context).colorScheme.destructive,
-                                          ),
-                                          deleteButtonTooltipMessage: '确定要删除全部搜索记录吗？',
-                                          label: Text('一键清理',
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                color: ShadTheme.of(context).colorScheme.destructive,
-                                              )),
-                                          onSelected: (bool value) {
-                                            Get.defaultDialog(
-                                              title: '提示',
-                                              backgroundColor:
-                                                  ShadTheme.of(context).colorScheme.background.withOpacity(opacity),
-                                              titleStyle: TextStyle(
-                                                fontSize: 16,
-                                                color: ShadTheme.of(context).colorScheme.foreground,
-                                              ),
-                                              middleText: '确定要删除全部搜索记录吗？',
-                                              middleTextStyle: TextStyle(
-                                                fontSize: 16,
-                                                color: ShadTheme.of(context).colorScheme.foreground,
-                                              ),
-                                              cancel: ShadButton.ghost(
-                                                onPressed: () {
-                                                  Get.back();
-                                                },
-                                                child: Text('取消',
-                                                    style: TextStyle(
-                                                      fontSize: 16,
-                                                      color: ShadTheme.of(context).colorScheme.destructive,
-                                                    )),
-                                              ),
-                                              confirm: ShadButton.ghost(
-                                                onPressed: () {
-                                                  controller.searchHistory.clear();
-                                                  SPUtil.setStringList('search_history', controller.searchHistory);
-                                                  controller.update();
-                                                },
-                                                child: Text('确定',
-                                                    style: TextStyle(
-                                                      fontSize: 16,
-                                                      color: ShadTheme.of(context).colorScheme.primary,
-                                                    )),
-                                              ),
-                                            );
-                                          },
-                                          // onDeleted: () {
-                                          //   Get.defaultDialog(
-                                          //     title: '提示',
-                                          //     middleText: '确定要删除全部搜索记录吗？',
-                                          //     cancel: TextButton(
-                                          //       onPressed: () {
-                                          //         Get.back();
-                                          //       },
-                                          //       child: Text('取消'),
-                                          //     ),
-                                          //     confirm: TextButton(
-                                          //       onPressed: () {
-                                          //         controller.searchHistory
-                                          //             .clear();
-                                          //         SPUtil.setStringList(
-                                          //             'search_history',
-                                          //             controller
-                                          //                 .searchHistory);
-                                          //         controller.update();
-                                          //       },
-                                          //       child: Text('确定'),
-                                          //     ),
-                                          //   );
-                                          // },
-                                        ),
-                                      ...controller.searchHistory.map(
-                                        (el) => FilterChip(
-                                          backgroundColor: backgroundColor,
-                                          deleteIcon: Icon(
-                                            Icons.clear,
-                                            color: ShadTheme.of(context).colorScheme.destructive,
-                                          ),
-                                          deleteButtonTooltipMessage: '确定要删除记录吗？',
-                                          label: Text(el,
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                color: ShadTheme.of(context).colorScheme.foreground,
-                                              )),
-                                          onSelected: (bool value) {
-                                            controller.searchKeyController.text = el;
-                                            controller.doWebsocketSearch();
-                                          },
-                                          onDeleted: () {
-                                            controller.searchHistory.remove(el);
-                                            SPUtil.setStringList('search_history', controller.searchHistory);
-                                            controller.update();
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              })
-                        ]),
-                      ),
+                              );
+                            })
+                      ]),
                     ),
                     if (!kIsWeb && Platform.isIOS) const SizedBox(height: 10),
                     // if (controller.tabController.index == 1)

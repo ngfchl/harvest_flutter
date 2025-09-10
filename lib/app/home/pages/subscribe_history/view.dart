@@ -21,34 +21,25 @@ class _SubscribeHistoryPageState extends State<SubscribeHistoryPage> {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<SubscribeHistoryController>(builder: (controller) {
-      return Column(
-        children: [
-          Expanded(
-            child: ListView(
-              children: controller.subHistory.map((SubHistory history) => _buildSubHistory(history)).toList(),
-            ),
-          ),
-          CustomCard(
-            child: ListTile(
-                dense: true,
-                title: const Text(
-                  '订阅历史',
-                  style: TextStyle(
-                    fontSize: 16,
-                  ),
+      return Scaffold(
+        backgroundColor: Colors.transparent,
+        floatingActionButton: IconButton(
+            onPressed: () => controller.getSubHistoryFromServer(),
+            icon: const Icon(
+              Icons.refresh,
+              color: Colors.green,
+            )),
+        body: GetBuilder<SubscribeHistoryController>(builder: (controller) {
+          return Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  children: controller.subHistory.map((SubHistory history) => _buildSubHistory(history)).toList(),
                 ),
-                leading: IconButton(
-                    onPressed: () => controller.getSubHistoryFromServer(),
-                    icon: const Icon(
-                      Icons.refresh,
-                      color: Colors.green,
-                    )),
-                trailing: Text(
-                  '${controller.subHistory.length} 条',
-                  style: const TextStyle(fontSize: 16),
-                )),
-          ),
-        ],
+              ),
+            ],
+          );
+        }),
       );
     });
   }
@@ -108,11 +99,18 @@ class _SubscribeHistoryPageState extends State<SubscribeHistoryPage> {
         children: [
           ListTile(
             dense: true,
-            title: Text('${history.subscribe?.name}'),
+            title: Text(
+              '${history.subscribe?.name}',
+              style: TextStyle(
+                fontSize: 10,
+                color: ShadTheme.of(context).colorScheme.foreground,
+              ),
+            ),
             subtitle: Text(
               history.site!.site.toString(),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 10,
+                color: ShadTheme.of(context).colorScheme.foreground,
               ),
             ),
             leading: history.pushed == true
@@ -140,8 +138,9 @@ class _SubscribeHistoryPageState extends State<SubscribeHistoryPage> {
               padding: const EdgeInsets.only(bottom: 12, left: 12, right: 12),
               child: Text(
                 history.message.toString(),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
+                  color: ShadTheme.of(context).colorScheme.foreground,
                 ),
               )),
         ],

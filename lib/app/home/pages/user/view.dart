@@ -36,113 +36,110 @@ class UserWidget extends StatelessWidget {
               },
             )
           : null,
-      body: CustomCard(
-        height: double.infinity,
-        child: GetBuilder<UserController>(builder: (controller) {
-          return EasyRefresh(
-            onRefresh: () => controller.getUserListFromServer(),
-            child: SingleChildScrollView(
-              child: ListView.builder(
-                  physics: const ScrollPhysics(),
-                  shrinkWrap: true,
-                  scrollDirection: Axis.vertical,
-                  itemCount: controller.userList.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    UserModel user = controller.userList[index];
-                    return CustomCard(
-                      child: Slidable(
-                        key: ValueKey('${user.id}_${user.username}'),
-                        endActionPane: ActionPane(
-                          motion: const ScrollMotion(),
-                          extentRatio: 0.25,
-                          children: [
+      body: GetBuilder<UserController>(builder: (controller) {
+        return EasyRefresh(
+          onRefresh: () => controller.getUserListFromServer(),
+          child: SingleChildScrollView(
+            child: ListView.builder(
+                physics: const ScrollPhysics(),
+                shrinkWrap: true,
+                scrollDirection: Axis.vertical,
+                itemCount: controller.userList.length,
+                itemBuilder: (BuildContext context, int index) {
+                  UserModel user = controller.userList[index];
+                  return CustomCard(
+                    child: Slidable(
+                      key: ValueKey('${user.id}_${user.username}'),
+                      endActionPane: ActionPane(
+                        motion: const ScrollMotion(),
+                        extentRatio: 0.25,
+                        children: [
+                          SlidableAction(
+                            flex: 1,
+                            icon: Icons.edit,
+                            borderRadius: const BorderRadius.all(Radius.circular(8)),
+                            onPressed: (context) async {
+                              _showEditBottomSheet(user: user, context: context);
+                            },
+                            backgroundColor: const Color(0xFF0392CF),
+                            foregroundColor: Colors.white,
+                            // icon: Icons.edit,
+                            label: '编辑',
+                          ),
+                          if (!user.isStaff && user.username != controller.userinfo?.user)
                             SlidableAction(
                               flex: 1,
-                              icon: Icons.edit,
                               borderRadius: const BorderRadius.all(Radius.circular(8)),
                               onPressed: (context) async {
-                                _showEditBottomSheet(user: user, context: context);
+                                Get.defaultDialog(
+                                  title: '确认',
+                                  radius: 5,
+                                  titleStyle: const TextStyle(
+                                      fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
+                                  middleText: '确定要删除用户吗？',
+                                  actions: [
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        Get.back(result: false);
+                                      },
+                                      child: const Text('取消'),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () async {
+                                        Get.back(result: true);
+                                        controller.userList.remove(user);
+                                        controller.update();
+                                        CommonResponse res = await controller.removeUserModel(user);
+                                        if (res.code == 0) {
+                                          Get.snackbar('删除通知', res.msg.toString(),
+                                              colorText: shadColorScheme.foreground);
+                                        } else {
+                                          Get.snackbar('删除通知', res.msg.toString(),
+                                              colorText: shadColorScheme.destructive);
+                                        }
+                                      },
+                                      child: const Text('确认'),
+                                    ),
+                                  ],
+                                );
                               },
-                              backgroundColor: const Color(0xFF0392CF),
+                              icon: Icons.delete_outline,
+                              backgroundColor: const Color(0xFFFE4A49),
                               foregroundColor: Colors.white,
-                              // icon: Icons.edit,
-                              label: '编辑',
+                              // icon: Icons.delete,
+                              label: '删除',
                             ),
-                            if (!user.isStaff && user.username != controller.userinfo?.user)
-                              SlidableAction(
-                                flex: 1,
-                                borderRadius: const BorderRadius.all(Radius.circular(8)),
-                                onPressed: (context) async {
-                                  Get.defaultDialog(
-                                    title: '确认',
-                                    radius: 5,
-                                    titleStyle: const TextStyle(
-                                        fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
-                                    middleText: '确定要删除用户吗？',
-                                    actions: [
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          Get.back(result: false);
-                                        },
-                                        child: const Text('取消'),
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () async {
-                                          Get.back(result: true);
-                                          controller.userList.remove(user);
-                                          controller.update();
-                                          CommonResponse res = await controller.removeUserModel(user);
-                                          if (res.code == 0) {
-                                            Get.snackbar('删除通知', res.msg.toString(),
-                                                colorText: shadColorScheme.foreground);
-                                          } else {
-                                            Get.snackbar('删除通知', res.msg.toString(),
-                                                colorText: shadColorScheme.destructive);
-                                          }
-                                        },
-                                        child: const Text('确认'),
-                                      ),
-                                    ],
-                                  );
-                                },
-                                icon: Icons.delete_outline,
-                                backgroundColor: const Color(0xFFFE4A49),
-                                foregroundColor: Colors.white,
-                                // icon: Icons.delete,
-                                label: '删除',
-                              ),
-                          ],
+                        ],
+                      ),
+                      child: ListTile(
+                        title: Text(
+                          user.username,
+                          style: TextStyle(fontSize: 20, color: shadColorScheme.foreground),
                         ),
-                        child: ListTile(
-                          title: Text(
-                            user.username,
-                            style: TextStyle(fontSize: 20, color: shadColorScheme.foreground),
+                        trailing: Text(
+                          controller.userinfo?.user == user.username ? 'me' : '',
+                          style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
+                        ),
+                        subtitle: Text(
+                          user.isStaff ? '管理员' : '观影账号',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: shadColorScheme.foreground.withValues(alpha: opacity * 255),
                           ),
-                          trailing: Text(
-                            controller.userinfo?.user == user.username ? 'me' : '',
-                            style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
-                          ),
-                          subtitle: Text(
-                            user.isStaff ? '管理员' : '观影账号',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: shadColorScheme.foreground.withValues(alpha: opacity * 255),
-                            ),
-                          ),
-                          leading: Text(
-                            user.isStaff ? '👑' : '🎩',
-                            style: const TextStyle(
-                              fontSize: 36,
-                            ),
+                        ),
+                        leading: Text(
+                          user.isStaff ? '👑' : '🎩',
+                          style: const TextStyle(
+                            fontSize: 36,
                           ),
                         ),
                       ),
-                    );
-                  }),
-            ),
-          );
-        }),
-      ),
+                    ),
+                  );
+                }),
+          ),
+        );
+      }),
     );
   }
 

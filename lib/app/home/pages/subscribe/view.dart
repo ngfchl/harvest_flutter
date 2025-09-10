@@ -3,6 +3,7 @@ import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
+import 'package:harvest/app/home/pages/subscribe_history/controller.dart';
 import 'package:harvest/utils/storage.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -30,31 +31,33 @@ class _SubscribePageState extends State<SubscribePage> {
   Widget build(BuildContext context) {
     var colorScheme = ShadTheme.of(context).colorScheme;
     double opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      floatingActionButton: ShadIconButton.ghost(
-        icon: Icon(
-          Icons.add,
-          size: 20,
-          color: colorScheme.foreground,
+    return GetBuilder<SubscribeHistoryController>(builder: (controller) {
+      return Scaffold(
+        backgroundColor: Colors.transparent,
+        floatingActionButton: ShadIconButton.ghost(
+          icon: Icon(
+            Icons.add,
+            size: 20,
+            color: colorScheme.foreground,
+          ),
+          onPressed: () async {
+            // await _openEditDialog(null);
+            await _openEditDialogX(null);
+          },
         ),
-        onPressed: () async {
-          // await _openEditDialog(null);
-          await _openEditDialogX(null);
-        },
-      ),
-      body: CustomCard(
-        height: double.infinity,
-        child: GetBuilder<SubscribeController>(builder: (controller) {
-          return EasyRefresh(
-            onRefresh: () => controller.getSubscribeFromServer(),
-            child: ListView(
-              children: controller.subList.map((Subscribe sub) => _buildSub(sub)).toList(),
-            ),
-          );
-        }),
-      ),
-    );
+        body: CustomCard(
+          height: double.infinity,
+          child: GetBuilder<SubscribeController>(builder: (controller) {
+            return EasyRefresh(
+              onRefresh: () => controller.getSubscribeFromServer(),
+              child: ListView(
+                children: controller.subList.map((Subscribe sub) => _buildSub(sub)).toList(),
+              ),
+            );
+          }),
+        ),
+      );
+    });
   }
 
   Widget _buildSub(Subscribe sub) {

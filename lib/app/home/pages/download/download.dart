@@ -54,52 +54,50 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: CustomCard(
-          child: Column(
-            children: [
-              Expanded(
-                child: GetBuilder<DownloadController>(builder: (controller) {
-                  return StreamBuilder<List<Downloader>>(
-                      stream: controller.downloadStream,
-                      // initialData: controller.dataList,
-                      builder: (context, snapshot) {
-                        // controller.isLoaded = snapshot.hasData;
-                        return EasyRefresh(
-                            controller: EasyRefreshController(),
-                            onRefresh: () => controller.getDownloaderListFromServer(withStatus: true),
-                            child: Stack(
-                              children: [
-                                Positioned.fill(
-                                  child: SingleChildScrollView(
-                                    child: Wrap(
-                                      alignment: WrapAlignment.start,
-                                      direction: Axis.horizontal,
-                                      crossAxisAlignment: WrapCrossAlignment.start,
-                                      runAlignment: WrapAlignment.start,
-                                      children: controller.dataList
-                                          .map((downloader) => FractionallySizedBox(
-                                                widthFactor: getWidthFactor(context),
-                                                child: buildDownloaderCard(downloader),
-                                              ))
-                                          .toList(),
-                                    ),
+        body: Column(
+          children: [
+            Expanded(
+              child: GetBuilder<DownloadController>(builder: (controller) {
+                return StreamBuilder<List<Downloader>>(
+                    stream: controller.downloadStream,
+                    // initialData: controller.dataList,
+                    builder: (context, snapshot) {
+                      // controller.isLoaded = snapshot.hasData;
+                      return EasyRefresh(
+                          controller: EasyRefreshController(),
+                          onRefresh: () => controller.getDownloaderListFromServer(withStatus: true),
+                          child: Stack(
+                            children: [
+                              Positioned.fill(
+                                child: SingleChildScrollView(
+                                  child: Wrap(
+                                    alignment: WrapAlignment.start,
+                                    direction: Axis.horizontal,
+                                    crossAxisAlignment: WrapCrossAlignment.start,
+                                    runAlignment: WrapAlignment.start,
+                                    children: controller.dataList
+                                        .map((downloader) => FractionallySizedBox(
+                                              widthFactor: getWidthFactor(context),
+                                              child: buildDownloaderCard(downloader),
+                                            ))
+                                        .toList(),
                                   ),
                                 ),
-                                if (controller.loading)
-                                  const Center(
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
+                              ),
+                              if (controller.loading)
+                                const Center(
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
                                   ),
-                              ],
-                            ));
-                      });
-                }),
-              ),
-              if (!kIsWeb && Platform.isIOS) const SizedBox(height: 10),
-              const SizedBox(height: 50),
-            ],
-          ),
+                                ),
+                            ],
+                          ));
+                    });
+              }),
+            ),
+            if (!kIsWeb && Platform.isIOS) const SizedBox(height: 10),
+            const SizedBox(height: 50),
+          ],
         ),
         floatingActionButton: _buildBottomButtonBar(),
         floatingActionButtonLocation: FloatingActionButtonLocation.miniCenterDocked,

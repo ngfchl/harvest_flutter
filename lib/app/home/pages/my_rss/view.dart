@@ -38,19 +38,16 @@ class _MyRssPageState extends State<MyRssPage> {
             _openEditDialog(null);
           },
         ),
-        body: CustomCard(
-          height: double.infinity,
-          child: GetBuilder<MyRssController>(builder: (controller) {
-            return EasyRefresh(
-              onRefresh: () => controller.getMyRssFromServer(),
-              child: SingleChildScrollView(
-                child: Wrap(
-                  children: controller.rssList.map((MyRss rss) => _buildMyRss(rss)).toList(),
-                ),
+        body: GetBuilder<MyRssController>(builder: (controller) {
+          return EasyRefresh(
+            onRefresh: () => controller.getMyRssFromServer(),
+            child: SingleChildScrollView(
+              child: Wrap(
+                children: controller.rssList.map((MyRss rss) => _buildMyRss(rss)).toList(),
               ),
-            );
-          }),
-        ),
+            ),
+          );
+        }),
       );
     });
   }
