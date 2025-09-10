@@ -1,12 +1,14 @@
+import 'package:dio/dio.dart';
+
 import '../models/common_response.dart';
 import '../utils/dio_util.dart';
 import '../utils/logger_helper.dart';
 
 Future<CommonResponse<List<T>>> fetchDataList<T>(
     String apiEndpoint, T Function(Map<String, dynamic>) fromJson,
-    {Map<String, dynamic>? queryParameters}) async {
-  final response =
-      await DioUtil().get(apiEndpoint, queryParameters: queryParameters);
+    {Map<String, dynamic>? queryParameters, CancelToken? cancelToken}) async {
+  final response = await DioUtil().get(apiEndpoint,
+      queryParameters: queryParameters, cancelToken: cancelToken);
   if (response.statusCode == 200) {
     // Logger.instance.d(response.data['data']);
     final dataList = (response.data['data'] as List)
@@ -23,9 +25,9 @@ Future<CommonResponse<List<T>>> fetchDataList<T>(
 }
 
 Future<CommonResponse<List?>> fetchBasicList<T>(String apiEndpoint,
-    {Map<String, dynamic>? queryParameters}) async {
-  final response =
-      await DioUtil().get(apiEndpoint, queryParameters: queryParameters);
+    {Map<String, dynamic>? queryParameters, CancelToken? cancelToken}) async {
+  final response = await DioUtil().get(apiEndpoint,
+      queryParameters: queryParameters, cancelToken: cancelToken);
   if (response.statusCode == 200) {
     if (response.data['data'] != null) {
       final dataList = response.data['data'] as List;
@@ -42,9 +44,9 @@ Future<CommonResponse<List?>> fetchBasicList<T>(String apiEndpoint,
 }
 
 Future<CommonResponse> fetchBasicData<T>(String apiEndpoint,
-    {Map<String, dynamic>? queryParameters}) async {
-  final response =
-      await DioUtil().get(apiEndpoint, queryParameters: queryParameters);
+    {Map<String, dynamic>? queryParameters, CancelToken? cancelToken}) async {
+  final response = await DioUtil().get(apiEndpoint,
+      queryParameters: queryParameters, cancelToken: cancelToken);
   if (response.statusCode == 200) {
     return CommonResponse.fromJson(
         response.data, (p0) => p0 != null ? p0 as Map<String, dynamic> : p0);
@@ -55,9 +57,9 @@ Future<CommonResponse> fetchBasicData<T>(String apiEndpoint,
 }
 
 Future<CommonResponse> fetchData<T>(String apiEndpoint,
-    {Map<String, dynamic>? queryParameters}) async {
-  final response =
-      await DioUtil().get(apiEndpoint, queryParameters: queryParameters);
+    {Map<String, dynamic>? queryParameters, CancelToken? cancelToken}) async {
+  final response = await DioUtil().get(apiEndpoint,
+      queryParameters: queryParameters, cancelToken: cancelToken);
   if (response.statusCode == 200) {
     return CommonResponse.fromJson(response.data, (p0) => p0);
   } else {
@@ -66,10 +68,13 @@ Future<CommonResponse> fetchData<T>(String apiEndpoint,
   }
 }
 
-Future<CommonResponse> editData<T>(
-    String apiUrl, Map<String, dynamic> formData) async {
+Future<CommonResponse> editData<T>(String apiUrl, Map<String, dynamic> formData,
+    {Map<String, dynamic>? queryParameters, CancelToken? cancelToken}) async {
   try {
-    final response = await DioUtil().put(apiUrl, formData: formData);
+    final response = await DioUtil().put(apiUrl,
+        formData: formData,
+        queryParameters: queryParameters,
+        cancelToken: cancelToken);
     if (response.statusCode == 200) {
       return CommonResponse.fromJson(response.data, (p0) => null);
     } else {
@@ -83,12 +88,13 @@ Future<CommonResponse> editData<T>(
 }
 
 Future<CommonResponse> addData(String apiUrl, Map<String, dynamic>? data,
-    {Map<String, dynamic>? queryParameters}) async {
+    {Map<String, dynamic>? queryParameters, CancelToken? cancelToken}) async {
   try {
     final response = await DioUtil().post(
       apiUrl,
       formData: data?..remove('id'),
       queryParameters: queryParameters,
+      cancelToken: cancelToken,
     );
     if (response.statusCode == 200) {
       return CommonResponse.fromJson(response.data, (p0) => null);
@@ -104,9 +110,9 @@ Future<CommonResponse> addData(String apiUrl, Map<String, dynamic>? data,
 }
 
 Future<CommonResponse> removeData(String apiUrl,
-    {Map<String, dynamic>? queryParameters}) async {
-  final response =
-      await DioUtil().delete(apiUrl, queryParameters: queryParameters);
+    {Map<String, dynamic>? queryParameters, CancelToken? cancelToken}) async {
+  final response = await DioUtil().delete(apiUrl,
+      queryParameters: queryParameters, cancelToken: cancelToken);
   if (response.statusCode == 200) {
     return CommonResponse.fromJson(response.data, (p0) => null);
   } else {
