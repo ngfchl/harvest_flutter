@@ -16,6 +16,7 @@ import 'package:harvest/models/common_response.dart';
 import 'package:harvest/utils/storage.dart';
 import 'package:intl/intl.dart';
 import 'package:random_color/random_color.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../common/card_view.dart';
@@ -62,7 +63,7 @@ class _AggSearchPageState extends State<AggSearchPage>
         // controller.update();
         return GetBuilder<AggSearchController>(builder: (controller) {
           var backgroundColor =
-              Theme.of(context).colorScheme.surface.withOpacity(opacity);
+              ShadTheme.of(context).colorScheme.background.withOpacity(opacity);
           return DefaultTabController(
             length: controller.tabs.length,
             child: SafeArea(
@@ -80,8 +81,8 @@ class _AggSearchPageState extends State<AggSearchPage>
                     color: backgroundColor, // 背景色
                     child: TabBar(
                       controller: controller.tabController,
-                      labelColor: Theme.of(context).colorScheme.primary,
-                      unselectedLabelColor: Theme.of(context)
+                      labelColor: ShadTheme.of(context).colorScheme.primary,
+                      unselectedLabelColor: ShadTheme.of(context)
                           .colorScheme
                           .primary
                           .withOpacity(0.7),
@@ -99,14 +100,17 @@ class _AggSearchPageState extends State<AggSearchPage>
                           Expanded(
                             child: TextField(
                               style: TextStyle(
-                                  color: Theme.of(context).colorScheme.primary),
+                                  color: ShadTheme.of(context)
+                                      .colorScheme
+                                      .primary),
                               controller: controller.searchKeyController,
                               decoration: InputDecoration(
                                 isDense: true,
                                 hintText: '请输入搜索关键字',
                                 hintStyle: TextStyle(
                                   fontSize: 12,
-                                  color: Theme.of(context).colorScheme.primary,
+                                  color:
+                                      ShadTheme.of(context).colorScheme.primary,
                                 ),
                                 contentPadding: const EdgeInsets.symmetric(
                                     vertical: 8, horizontal: 5),
@@ -123,8 +127,9 @@ class _AggSearchPageState extends State<AggSearchPage>
                                 focusedBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
                                     width: 1.0,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
+                                    color: ShadTheme.of(context)
+                                        .colorScheme
+                                        .primary,
                                   ),
                                   // 仅在聚焦时绘制底部边框
                                   borderRadius: BorderRadius.circular(0.0),
@@ -141,7 +146,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                             return CustomPopup(
                               showArrow: false,
                               backgroundColor:
-                                  Theme.of(context).colorScheme.surface,
+                                  ShadTheme.of(context).colorScheme.background,
                               barrierColor: Colors.transparent,
                               content: SizedBox(
                                 width: 100,
@@ -153,7 +158,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                       child: Text(
                                         'T M D B',
                                         style: TextStyle(
-                                          color: Theme.of(context)
+                                          color: ShadTheme.of(context)
                                               .colorScheme
                                               .secondary,
                                         ),
@@ -164,7 +169,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                       child: Text(
                                         '来自豆瓣',
                                         style: TextStyle(
-                                          color: Theme.of(context)
+                                          color: ShadTheme.of(context)
                                               .colorScheme
                                               .secondary,
                                         ),
@@ -177,7 +182,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                       child: Text(
                                         '清理tmdb',
                                         style: TextStyle(
-                                          color: Theme.of(context)
+                                          color: ShadTheme.of(context)
                                               .colorScheme
                                               .secondary,
                                         ),
@@ -191,7 +196,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                       child: Text(
                                         '清理豆瓣',
                                         style: TextStyle(
-                                          color: Theme.of(context)
+                                          color: ShadTheme.of(context)
                                               .colorScheme
                                               .secondary,
                                         ),
@@ -205,7 +210,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                       child: Text(
                                         '搜索资源',
                                         style: TextStyle(
-                                          color: Theme.of(context)
+                                          color: ShadTheme.of(context)
                                               .colorScheme
                                               .secondary,
                                         ),
@@ -223,7 +228,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                       child: Text(
                                         '站点[◉${controller.maxCount}]',
                                         style: TextStyle(
-                                          color: Theme.of(context)
+                                          color: ShadTheme.of(context)
                                               .colorScheme
                                               .secondary,
                                         ),
@@ -240,7 +245,8 @@ class _AggSearchPageState extends State<AggSearchPage>
                                 height: 36,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(4),
-                                  color: Theme.of(context).colorScheme.primary,
+                                  color:
+                                      ShadTheme.of(context).colorScheme.primary,
                                 ),
                                 child: controller.isLoading
                                     ? InkWell(
@@ -248,18 +254,18 @@ class _AggSearchPageState extends State<AggSearchPage>
                                         child: Padding(
                                           padding: const EdgeInsets.all(8),
                                           child: CircularProgressIndicator(
-                                            color: Theme.of(context)
+                                            color: ShadTheme.of(context)
                                                 .colorScheme
-                                                .onPrimary,
+                                                .foreground,
                                           ),
                                         ),
                                       )
                                     : Icon(
                                         Icons.search,
                                         size: 22,
-                                        color: Theme.of(context)
+                                        color: ShadTheme.of(context)
                                             .colorScheme
-                                            .onPrimary,
+                                            .primaryForeground,
                                       ),
                               ),
                             );
@@ -305,7 +311,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                           '失败$failedCount个站点，$succeedCount个站点共${controller.searchResults.length}个种子，筛选结果：${controller.showResults.length}个',
                                           style: TextStyle(
                                               fontSize: 12,
-                                              color: Theme.of(context)
+                                              color: ShadTheme.of(context)
                                                   .colorScheme
                                                   .primary)),
                                       titlePadding: EdgeInsets.zero,
@@ -326,7 +332,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                             return Text(info,
                                                 style: TextStyle(
                                                   fontSize: 12,
-                                                  color: Theme.of(context)
+                                                  color: ShadTheme.of(context)
                                                       .colorScheme
                                                       .primary,
                                                 ));
@@ -361,32 +367,32 @@ class _AggSearchPageState extends State<AggSearchPage>
                                               backgroundColor: backgroundColor,
                                               deleteIcon: Icon(
                                                 Icons.clear,
-                                                color: Theme.of(context)
+                                                color: ShadTheme.of(context)
                                                     .colorScheme
-                                                    .error,
+                                                    .ring,
                                               ),
                                               deleteButtonTooltipMessage:
                                                   '确定要删除全部搜索记录吗？',
                                               label: Text('一键清理',
                                                   style: TextStyle(
                                                     fontSize: 16,
-                                                    color: Theme.of(context)
+                                                    color: ShadTheme.of(context)
                                                         .colorScheme
-                                                        .error,
+                                                        .ring,
                                                   )),
                                               onSelected: (bool value) {
                                                 Get.defaultDialog(
                                                   title: '提示',
                                                   titleStyle: TextStyle(
                                                     fontSize: 16,
-                                                    color: Theme.of(context)
+                                                    color: ShadTheme.of(context)
                                                         .colorScheme
                                                         .primary,
                                                   ),
                                                   middleText: '确定要删除全部搜索记录吗？',
                                                   middleTextStyle: TextStyle(
                                                     fontSize: 16,
-                                                    color: Theme.of(context)
+                                                    color: ShadTheme.of(context)
                                                         .colorScheme
                                                         .primary,
                                                   ),
@@ -397,10 +403,10 @@ class _AggSearchPageState extends State<AggSearchPage>
                                                     child: Text('取消',
                                                         style: TextStyle(
                                                           fontSize: 16,
-                                                          color:
-                                                              Theme.of(context)
-                                                                  .colorScheme
-                                                                  .error,
+                                                          color: ShadTheme.of(
+                                                                  context)
+                                                              .colorScheme
+                                                              .ring,
                                                         )),
                                                   ),
                                                   confirm: TextButton(
@@ -416,10 +422,10 @@ class _AggSearchPageState extends State<AggSearchPage>
                                                     child: Text('确定',
                                                         style: TextStyle(
                                                           fontSize: 16,
-                                                          color:
-                                                              Theme.of(context)
-                                                                  .colorScheme
-                                                                  .primary,
+                                                          color: ShadTheme.of(
+                                                                  context)
+                                                              .colorScheme
+                                                              .primary,
                                                         )),
                                                   ),
                                                 );
@@ -454,16 +460,16 @@ class _AggSearchPageState extends State<AggSearchPage>
                                               backgroundColor: backgroundColor,
                                               deleteIcon: Icon(
                                                 Icons.clear,
-                                                color: Theme.of(context)
+                                                color: ShadTheme.of(context)
                                                     .colorScheme
-                                                    .error,
+                                                    .ring,
                                               ),
                                               deleteButtonTooltipMessage:
                                                   '确定要删除记录吗？',
                                               label: Text(el,
                                                   style: TextStyle(
                                                     fontSize: 16,
-                                                    color: Theme.of(context)
+                                                    color: ShadTheme.of(context)
                                                         .colorScheme
                                                         .primary,
                                                   )),
@@ -515,7 +521,7 @@ class _AggSearchPageState extends State<AggSearchPage>
             icon: Icon(
               Icons.remove_circle_outline,
               size: 16,
-              color: Theme.of(context).colorScheme.onSecondary,
+              color: ShadTheme.of(context).colorScheme.foreground,
             ),
             style: ButtonStyle(
               shape: WidgetStateProperty.all<RoundedRectangleBorder>(
@@ -526,12 +532,12 @@ class _AggSearchPageState extends State<AggSearchPage>
                   const EdgeInsets.symmetric(horizontal: 8)),
               side: WidgetStateProperty.all(BorderSide.none),
               backgroundColor: WidgetStateProperty.all(
-                  Theme.of(context).colorScheme.secondary),
+                  ShadTheme.of(context).colorScheme.secondary),
             ),
             label: Text(
               '清除',
-              style:
-                  TextStyle(color: Theme.of(context).colorScheme.onSecondary),
+              style: TextStyle(
+                  color: ShadTheme.of(context).colorScheme.foreground),
             ),
           ),
           ElevatedButton.icon(
@@ -541,7 +547,7 @@ class _AggSearchPageState extends State<AggSearchPage>
             icon: Icon(
               Icons.sort_by_alpha_sharp,
               size: 16,
-              color: Theme.of(context).colorScheme.onSecondary,
+              color: ShadTheme.of(context).colorScheme.foreground,
             ),
             style: ButtonStyle(
                 shape: WidgetStateProperty.all<RoundedRectangleBorder>(
@@ -552,11 +558,11 @@ class _AggSearchPageState extends State<AggSearchPage>
                     const EdgeInsets.symmetric(horizontal: 8)),
                 side: WidgetStateProperty.all(BorderSide.none),
                 backgroundColor: WidgetStateProperty.all(
-                    Theme.of(context).colorScheme.secondary)),
+                    ShadTheme.of(context).colorScheme.secondary)),
             label: Text(
               '排序',
-              style:
-                  TextStyle(color: Theme.of(context).colorScheme.onSecondary),
+              style: TextStyle(
+                  color: ShadTheme.of(context).colorScheme.foreground),
             ),
           ),
           ElevatedButton.icon(
@@ -564,7 +570,7 @@ class _AggSearchPageState extends State<AggSearchPage>
               _openFilterSheet();
             },
             icon: Icon(Icons.filter_tilt_shift,
-                size: 16, color: Theme.of(context).colorScheme.onSecondary),
+                size: 16, color: ShadTheme.of(context).colorScheme.foreground),
             style: ButtonStyle(
               shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                 RoundedRectangleBorder(
@@ -574,12 +580,12 @@ class _AggSearchPageState extends State<AggSearchPage>
                   const EdgeInsets.symmetric(horizontal: 8)),
               side: WidgetStateProperty.all(BorderSide.none),
               backgroundColor: WidgetStateProperty.all(
-                  Theme.of(context).colorScheme.secondary),
+                  ShadTheme.of(context).colorScheme.secondary),
             ),
             label: Text(
               '筛选',
-              style:
-                  TextStyle(color: Theme.of(context).colorScheme.onSecondary),
+              style: TextStyle(
+                  color: ShadTheme.of(context).colorScheme.foreground),
             ),
           ),
         ],
@@ -683,11 +689,12 @@ class _AggSearchPageState extends State<AggSearchPage>
                         //   size: 9,
                         //   color: Colors.white70,
                         // ),
-                        backgroundColor: Theme.of(context)
+                        backgroundColor: ShadTheme.of(context)
                             .colorScheme
                             .primary
                             .withOpacity(opacity),
-                        labelColor: Theme.of(context).colorScheme.onPrimary,
+                        labelColor:
+                            ShadTheme.of(context).colorScheme.primaryForeground,
                       ),
                     ),
                   ],
@@ -706,7 +713,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                       maxLines: 1,
                       style: TextStyle(
                         fontSize: 13,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: ShadTheme.of(context).colorScheme.primary,
                       ),
                     ),
                     subtitle: Row(
@@ -716,7 +723,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                           media.releaseDate,
                           style: TextStyle(
                             fontSize: 13,
-                            color: Theme.of(context).colorScheme.primary,
+                            color: ShadTheme.of(context).colorScheme.primary,
                           ),
                         ),
                         media.voteCount == 0 || media.voteAverage == null
@@ -736,8 +743,9 @@ class _AggSearchPageState extends State<AggSearchPage>
                                       filledIcon: Icons.star,
                                       emptyIcon: Icons.star_border,
                                       emptyColor: Colors.redAccent,
-                                      filledColor:
-                                          Theme.of(context).colorScheme.primary,
+                                      filledColor: ShadTheme.of(context)
+                                          .colorScheme
+                                          .primary,
                                       halfFilledColor: Colors.amberAccent,
                                       halfFilledIcon: Icons.star_half,
                                       maxRating: 5,
@@ -747,7 +755,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                   Text(
                                     media.voteAverage.toString(),
                                     style: TextStyle(
-                                      color: Theme.of(context)
+                                      color: ShadTheme.of(context)
                                           .colorScheme
                                           .secondary,
                                       fontSize: 14,
@@ -757,7 +765,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                   Text(
                                     "(${media.voteCount}评分)",
                                     style: TextStyle(
-                                      color: Theme.of(context)
+                                      color: ShadTheme.of(context)
                                           .colorScheme
                                           .secondary,
                                       fontSize: 10,
@@ -784,7 +792,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                       ellipsis: '...',
                       style: TextStyle(
                         fontSize: 11,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: ShadTheme.of(context).colorScheme.primary,
                       ),
                     ),
                   ),
@@ -825,7 +833,7 @@ class _AggSearchPageState extends State<AggSearchPage>
           Uri uri = Uri.parse(url);
           if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
             Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
-                colorText: Theme.of(context).colorScheme.error);
+                colorText: ShadTheme.of(context).colorScheme.ring);
           }
         } else {
           LoggerHelper.Logger.instance.d('内置浏览器打开');
@@ -905,11 +913,13 @@ class _AggSearchPageState extends State<AggSearchPage>
                         ),
                         CustomTextTag(
                           labelText: website.name.toString(),
-                          backgroundColor: Theme.of(context)
+                          backgroundColor: ShadTheme.of(context)
                               .colorScheme
                               .primary
                               .withOpacity(opacity),
-                          labelColor: Theme.of(context).colorScheme.onPrimary,
+                          labelColor: ShadTheme.of(context)
+                              .colorScheme
+                              .primaryForeground,
                         ),
                       ]),
                 ),
@@ -920,7 +930,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                 maxLines: 1,
                 style: TextStyle(
                   fontSize: 13,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: ShadTheme.of(context).colorScheme.primary,
                 ),
               ),
               subTitle: Padding(
@@ -931,7 +941,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                   maxLines: 1,
                   style: TextStyle(
                     fontSize: 10,
-                    color: Theme.of(context).colorScheme.secondary,
+                    color: ShadTheme.of(context).colorScheme.secondary,
                   ),
                 ),
               ),
@@ -944,7 +954,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                       children: [
                         Icon(
                           Icons.timer,
-                          color: Theme.of(context).colorScheme.primary,
+                          color: ShadTheme.of(context).colorScheme.primary,
                           size: 12,
                         ),
                         const SizedBox(
@@ -956,7 +966,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                   .format(info.published)
                               : info.published.toString(),
                           style: TextStyle(
-                            color: Theme.of(context).colorScheme.primary,
+                            color: ShadTheme.of(context).colorScheme.primary,
                             fontSize: 10,
                           ),
                         ),
@@ -975,7 +985,8 @@ class _AggSearchPageState extends State<AggSearchPage>
                             Text(
                               info.seeders.toString(),
                               style: TextStyle(
-                                color: Theme.of(context).colorScheme.secondary,
+                                color:
+                                    ShadTheme.of(context).colorScheme.secondary,
                                 fontSize: 10,
                               ),
                             ),
@@ -991,7 +1002,8 @@ class _AggSearchPageState extends State<AggSearchPage>
                             Text(
                               info.leechers.toString(),
                               style: TextStyle(
-                                color: Theme.of(context).colorScheme.secondary,
+                                color:
+                                    ShadTheme.of(context).colorScheme.secondary,
                                 fontSize: 10,
                               ),
                             ),
@@ -1007,7 +1019,8 @@ class _AggSearchPageState extends State<AggSearchPage>
                             Text(
                               info.completers.toString(),
                               style: TextStyle(
-                                color: Theme.of(context).colorScheme.secondary,
+                                color:
+                                    ShadTheme.of(context).colorScheme.secondary,
                                 fontSize: 10,
                               ),
                             ),
@@ -1136,7 +1149,9 @@ class _AggSearchPageState extends State<AggSearchPage>
                           child: Text(
                             '${controller.sites.isEmpty ? '全选' : '清除'} ${canSearchList.length}',
                             style: TextStyle(
-                                color: Theme.of(context).colorScheme.onPrimary),
+                                color: ShadTheme.of(context)
+                                    .colorScheme
+                                    .primaryForeground),
                           ));
                     }),
                     GetBuilder<AggSearchController>(builder: (controller) {
@@ -1153,7 +1168,9 @@ class _AggSearchPageState extends State<AggSearchPage>
                           child: Text(
                             '随机',
                             style: TextStyle(
-                                color: Theme.of(context).colorScheme.onPrimary),
+                                color: ShadTheme.of(context)
+                                    .colorScheme
+                                    .primaryForeground),
                           ));
                     }),
                     GetBuilder<AggSearchController>(builder: (controller) {
@@ -1185,8 +1202,9 @@ class _AggSearchPageState extends State<AggSearchPage>
                             child: Text(
                               '默认${controller.maxCount}',
                               style: TextStyle(
-                                  color:
-                                      Theme.of(context).colorScheme.onPrimary),
+                                  color: ShadTheme.of(context)
+                                      .colorScheme
+                                      .primaryForeground),
                             ),
                           ),
                           InkWell(
@@ -1248,13 +1266,14 @@ class _AggSearchPageState extends State<AggSearchPage>
                               label: Text(
                                 capitalize(mySite.nickname),
                                 style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.onPrimary,
+                                    color: ShadTheme.of(context)
+                                        .colorScheme
+                                        .primaryForeground,
                                     fontSize: 12),
                               ),
                               selected: controller.sites.contains(mySite.id),
                               labelPadding: EdgeInsets.zero,
-                              backgroundColor: Theme.of(context)
+                              backgroundColor: ShadTheme.of(context)
                                   .colorScheme
                                   .primary
                                   .withOpacity(opacity),
@@ -1316,7 +1335,8 @@ class _AggSearchPageState extends State<AggSearchPage>
               title: Text(
                 item.name,
                 style: TextStyle(
-                    fontSize: 13, color: Theme.of(context).colorScheme.primary),
+                    fontSize: 13,
+                    color: ShadTheme.of(context).colorScheme.primary),
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8.0),
@@ -1328,13 +1348,13 @@ class _AggSearchPageState extends State<AggSearchPage>
                 controller.sortReversed
                     ? Icons.trending_up
                     : Icons.trending_down,
-                color: Theme.of(context).colorScheme.primary,
+                color: ShadTheme.of(context).colorScheme.primary,
               ),
               trailing: Icon(
                 controller.sortKey == item.value
                     ? Icons.check_box_outlined
                     : Icons.check_box_outline_blank_rounded,
-                color: Theme.of(context).colorScheme.primary,
+                color: ShadTheme.of(context).colorScheme.primary,
               ),
               onTap: () {
                 if (controller.sortKey == item.value) {
@@ -1367,9 +1387,8 @@ class _AggSearchPageState extends State<AggSearchPage>
                     child: Text(
                       '种子筛选',
                       style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontSize:
-                            Theme.of(context).textTheme.titleMedium?.fontSize,
+                        color: ShadTheme.of(context).colorScheme.primary,
+                        fontSize: ShadTheme.of(context).textTheme.h3.fontSize,
                       ),
                     )),
                 CustomCard(
@@ -1404,7 +1423,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                               //           fontSize: 12,
                               //           color: controller.calcSize == 1024
                               //               ? Colors.orange
-                              //               : Theme.of(context)
+                              //               : ShadTheme.of(context)
                               //                   .colorScheme
                               //                   .primary),
                               //     )),
@@ -1427,7 +1446,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                       fontSize: 12,
                                       color: controller.calcSize == 1024 * 1024
                                           ? Colors.orange
-                                          : Theme.of(context)
+                                          : ShadTheme.of(context)
                                               .colorScheme
                                               .primary),
                                 ),
@@ -1454,7 +1473,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                       color: controller.calcSize ==
                                               1024 * 1024 * 1024
                                           ? Colors.orange
-                                          : Theme.of(context)
+                                          : ShadTheme.of(context)
                                               .colorScheme
                                               .primary),
                                 ),
@@ -1484,7 +1503,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                         color: controller.calcSize ==
                                                 1024 * 1024 * 1024 * 1024
                                             ? Colors.orange
-                                            : Theme.of(context)
+                                            : ShadTheme.of(context)
                                                 .colorScheme
                                                 .primary),
                                   )),
@@ -1595,7 +1614,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                         '排除 HR',
                         style: TextStyle(
                             fontSize: 12,
-                            color: Theme.of(context).colorScheme.primary),
+                            color: ShadTheme.of(context).colorScheme.primary),
                       ),
                       onChanged: (val) {
                         controller.hrKey = val;
@@ -1683,7 +1702,8 @@ class _AggSearchPageState extends State<AggSearchPage>
                             Text(
                               '${controller.selectVideoDetail.title}${controller.selectVideoDetail.year}',
                               style: TextStyle(
-                                  color: Theme.of(context).colorScheme.primary,
+                                  color:
+                                      ShadTheme.of(context).colorScheme.primary,
                                   fontSize: 20,
                                   fontWeight: FontWeight.w700),
                               maxLines: 2,
@@ -1727,7 +1747,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                         filledIcon: Icons.star,
                                         emptyIcon: Icons.star_border,
                                         emptyColor: Colors.redAccent,
-                                        filledColor: Theme.of(context)
+                                        filledColor: ShadTheme.of(context)
                                             .colorScheme
                                             .primary,
                                         halfFilledColor: Colors.amberAccent,
@@ -1917,7 +1937,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                   },
                   icon: Icon(
                     Icons.search,
-                    color: Theme.of(context).colorScheme.onSurface,
+                    color: ShadTheme.of(context).colorScheme.foreground,
                   ),
                   label: const Text('搜索'),
                 ),
@@ -1927,7 +1947,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                   },
                   icon: Icon(
                     Icons.info_outline,
-                    color: Theme.of(context).colorScheme.onSurface,
+                    color: ShadTheme.of(context).colorScheme.foreground,
                   ),
                   label: const Text('详情'),
                 ),
@@ -1947,7 +1967,7 @@ class _AggSearchPageState extends State<AggSearchPage>
       if (!await launchUrl(Uri.parse(url),
           mode: LaunchMode.externalApplication)) {
         Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
-            colorText: Theme.of(context).colorScheme.primary);
+            colorText: ShadTheme.of(context).colorScheme.primary);
       }
     } else {
       Logger.instance.i('WebView');
@@ -2047,11 +2067,13 @@ class _AggSearchPageState extends State<AggSearchPage>
                         ),
                         CustomTextTag(
                           labelText: info.typeName,
-                          backgroundColor: Theme.of(context)
+                          backgroundColor: ShadTheme.of(context)
                               .colorScheme
                               .primary
                               .withOpacity(opacity),
-                          labelColor: Theme.of(context).colorScheme.onPrimary,
+                          labelColor: ShadTheme.of(context)
+                              .colorScheme
+                              .primaryForeground,
                         ),
                       ]),
                 ),
@@ -2062,7 +2084,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                 maxLines: 1,
                 style: TextStyle(
                   fontSize: 13,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: ShadTheme.of(context).colorScheme.primary,
                 ),
               ),
               subTitle: info.target.rating.count > 0
@@ -2081,7 +2103,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                   emptyIcon: Icons.star_border,
                                   emptyColor: Colors.redAccent,
                                   filledColor:
-                                      Theme.of(context).colorScheme.primary,
+                                      ShadTheme.of(context).colorScheme.primary,
                                   halfFilledColor: Colors.amberAccent,
                                   halfFilledIcon: Icons.star_half,
                                   maxRating: info.target.rating.max ~/ 2,
@@ -2091,8 +2113,9 @@ class _AggSearchPageState extends State<AggSearchPage>
                               Text(
                                 info.target.rating.value.toString(),
                                 style: TextStyle(
-                                  color:
-                                      Theme.of(context).colorScheme.secondary,
+                                  color: ShadTheme.of(context)
+                                      .colorScheme
+                                      .secondary,
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -2100,8 +2123,9 @@ class _AggSearchPageState extends State<AggSearchPage>
                               Text(
                                 "(${info.target.rating.count.toString()}评分)",
                                 style: TextStyle(
-                                  color:
-                                      Theme.of(context).colorScheme.secondary,
+                                  color: ShadTheme.of(context)
+                                      .colorScheme
+                                      .secondary,
                                   fontSize: 10,
                                 ),
                               ),
@@ -2113,7 +2137,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                   : Text(
                       "暂无评分",
                       style: TextStyle(
-                        color: Theme.of(context).colorScheme.secondary,
+                        color: ShadTheme.of(context).colorScheme.secondary,
                         fontSize: 10,
                       ),
                     ),
@@ -2123,7 +2147,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                   info.target.cardSubtitle,
                   maxLines: 3,
                   style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
+                    color: ShadTheme.of(context).colorScheme.primary,
                     fontSize: 10,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -2208,8 +2232,9 @@ class _AggSearchPageState extends State<AggSearchPage>
                                 Text(
                                   '${mediaInfo.title}${mediaInfo.releaseDate}',
                                   style: TextStyle(
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
+                                      color: ShadTheme.of(context)
+                                          .colorScheme
+                                          .primary,
                                       fontSize: 20,
                                       fontWeight: FontWeight.w700),
                                   maxLines: 2,
@@ -2256,7 +2281,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                             filledIcon: Icons.star,
                                             emptyIcon: Icons.star_border,
                                             emptyColor: Colors.redAccent,
-                                            filledColor: Theme.of(context)
+                                            filledColor: ShadTheme.of(context)
                                                 .colorScheme
                                                 .primary,
                                             halfFilledColor: Colors.amberAccent,
@@ -2303,7 +2328,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                       },
                       icon: Icon(
                         Icons.search,
-                        color: Theme.of(context).colorScheme.onSurface,
+                        color: ShadTheme.of(context).colorScheme.foreground,
                       ),
                       label: const Text('搜索'),
                     ),
@@ -2313,7 +2338,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                       },
                       icon: Icon(
                         Icons.info_outline,
-                        color: Theme.of(context).colorScheme.onSurface,
+                        color: ShadTheme.of(context).colorScheme.foreground,
                       ),
                       label: const Text('详情'),
                     ),
@@ -2337,7 +2362,7 @@ class _AggSearchPageState extends State<AggSearchPage>
         Get.snackbar(
           '警告',
           '${response.msg}，从豆瓣获取信息...',
-          colorText: Theme.of(context).colorScheme.error,
+          colorText: ShadTheme.of(context).colorScheme.ring,
         );
         await controller.doDouBanSearch();
       }

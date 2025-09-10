@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:app_service/app_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -132,6 +131,8 @@ class HomeView extends GetView<HomeController> {
                       .colorScheme
                       .background
                       .withValues(alpha: 0.7 * 255),
+                  iconTheme: IconThemeData(
+                      color: ShadTheme.of(context).colorScheme.primary),
                   elevation: 0,
                   actions: <Widget>[
                     _actionButtonList(context),
@@ -154,14 +155,18 @@ class HomeView extends GetView<HomeController> {
                                 child: _buildMenuBar(context),
                               ),
                       Expanded(
-                          child: PageView(
-                        controller: controller.pageController,
-                        physics: const NeverScrollableScrollPhysics(),
-                        onPageChanged: (index) {
-                          // controller.initPage.value = index;
-                          // controller.update();
-                        },
-                        children: controller.pages,
+                          child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 2.0, horizontal: 3),
+                        child: PageView(
+                          controller: controller.pageController,
+                          physics: const NeverScrollableScrollPhysics(),
+                          onPageChanged: (index) {
+                            // controller.initPage.value = index;
+                            // controller.update();
+                          },
+                          children: controller.pages,
+                        ),
                       ))
                     ],
                   );
@@ -330,25 +335,7 @@ class HomeView extends GetView<HomeController> {
                 color: ShadTheme.of(context).colorScheme.primary,
               ),
             ),
-            const SizedBox(width: 15),
           ],
-          // const Wen(),
-
-          DarkModeSwitch(
-            borderColor: ShadTheme.of(context).colorScheme.primary,
-            height: 24,
-            slideSize: 19,
-            borderWidth: 2,
-          ),
-
-          const SizedBox(width: 15),
-          const SizedBox(
-            height: 24,
-            width: 24,
-            child: ThemeModal(
-              itemSize: 32,
-            ),
-          ),
           if (controller.userinfo?.isStaff == true) ...[
             const SizedBox(width: 15),
             CustomPopup(
@@ -728,7 +715,7 @@ class HomeView extends GetView<HomeController> {
               ),
             )
           ],
-          const SizedBox(width: 20)
+          const SizedBox(width: 15)
         ],
       );
     });

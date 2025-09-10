@@ -847,7 +847,7 @@ class _DashBoardPageState extends State<DashBoardPage>
         child: Column(
           children: <Widget>[
             Padding(
-              padding: const EdgeInsets.only(left: 16, right: 16),
+              padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
               child: Row(
                 children: <Widget>[
                   Expanded(
@@ -1128,7 +1128,7 @@ class _DashBoardPageState extends State<DashBoardPage>
               padding: EdgeInsets.only(
                   left: 24,
                   right: 24,
-                  top: (controller.cardHeight - 236) / 2,
+                  top: (controller.cardHeight - 226) / 2,
                   bottom: 0),
               child: Container(
                 height: 2,
@@ -1411,7 +1411,7 @@ class _DashBoardPageState extends State<DashBoardPage>
               padding: EdgeInsets.only(
                   left: 24,
                   right: 24,
-                  top: (controller.cardHeight - 236) / 2,
+                  top: (controller.cardHeight - 226) / 2,
                   bottom: 0),
               child: Container(
                 height: 2,

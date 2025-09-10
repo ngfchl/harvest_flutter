@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:app_service/app_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/foundation.dart';
@@ -49,7 +48,7 @@ class SettingPage extends StatelessWidget {
               children: [
                 ...[
                   _versionCard(context),
-                  _followSystemDarkForm(context),
+                  _followSystemDarkForm(),
                   _noticeTestForm(context),
                   _telegramWebHookForm(context),
                   _backgroundImageForm(context),
@@ -152,37 +151,8 @@ class SettingPage extends StatelessWidget {
     );
   }
 
-  _followSystemDarkForm(context) {
-    final appService = Get.find<AppService>();
-    return Obx(() {
-      return CustomCard(
-        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
-        child: ListTile(
-          dense: true,
-          contentPadding: EdgeInsets.zero,
-          title: Text(
-            '跟随系统',
-            style: TextStyle(color: ShadTheme.of(context).colorScheme.primary),
-          ),
-          // leading: IconButton(
-          //     icon: appService.followSystem.value
-          //         ? const Icon(Icons.brightness_auto_outlined)
-          //         : appService.isDarkMode.value
-          //             ? const Icon(Icons.brightness_4_outlined)
-          //             : const Icon(Icons.brightness_5_outlined),
-          //     onPressed: () {}),
-          // // secondary: const Text('跟随系统主题'),
-          leading: ThemeTag(),
-          trailing: Switch(
-              value: appService.followSystem.value,
-              onChanged: (bool v) async {
-                appService.followSystem.value = v;
-                await SPUtil.setBool('followSystemDark', v);
-                Logger.instance.d('系统主题跟随状态: $v');
-              }),
-        ),
-      );
-    });
+  ThemeTag _followSystemDarkForm() {
+    return ThemeTag();
   }
 
   Widget _autoImportTagsForm(Option? option, context) {

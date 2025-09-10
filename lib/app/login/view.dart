@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:app_service/app_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -39,7 +38,7 @@ class _LoginPageState extends State<LoginPage> {
       if (server.selected) {
         decoration = BoxDecoration(
           border: Border.all(
-              color:  ShadTheme.of(context).colorScheme.primary, width: 2),
+              color: ShadTheme.of(context).colorScheme.primary, width: 2),
           borderRadius: BorderRadius.circular(8),
         );
       }
@@ -64,7 +63,7 @@ class _LoginPageState extends State<LoginPage> {
                   '删除',
                   '服务器已成功删除',
                   snackPosition: SnackPosition.BOTTOM,
-                  colorText:  ShadTheme.of(context).colorScheme.primary,
+                  colorText: ShadTheme.of(context).colorScheme.primary,
                   duration: const Duration(seconds: 3),
                 );
               } else {
@@ -72,7 +71,7 @@ class _LoginPageState extends State<LoginPage> {
                   '删除',
                   '删除服务器失败',
                   snackPosition: SnackPosition.BOTTOM,
-                  colorText:  ShadTheme.of(context).colorScheme.ring,
+                  colorText: ShadTheme.of(context).colorScheme.ring,
                   duration: const Duration(seconds: 3),
                 );
               }
@@ -96,7 +95,8 @@ class _LoginPageState extends State<LoginPage> {
                 Padding(
                   padding: EdgeInsets.all(8),
                   child: Icon(Icons.computer,
-                      size: 32, color:  ShadTheme.of(context).colorScheme.primary),
+                      size: 32,
+                      color: ShadTheme.of(context).colorScheme.primary),
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -106,8 +106,8 @@ class _LoginPageState extends State<LoginPage> {
                       child: Text(
                         server.name,
                         textAlign: TextAlign.center,
-                        style:  ShadTheme.of(context).textTheme.h4.copyWith(
-                            color:  ShadTheme.of(context).colorScheme.primary),
+                        style: ShadTheme.of(context).textTheme.h4.copyWith(
+                            color: ShadTheme.of(context).colorScheme.primary),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -116,8 +116,8 @@ class _LoginPageState extends State<LoginPage> {
                       child: Text(
                         '${Uri.parse(server.entry).host}:${Uri.parse(server.entry).port}',
                         textAlign: TextAlign.center,
-                        style:  ShadTheme.of(context).textTheme.p.copyWith(
-                            color:  ShadTheme.of(context).colorScheme.primary),
+                        style: ShadTheme.of(context).textTheme.p.copyWith(
+                            color: ShadTheme.of(context).colorScheme.primary),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -148,7 +148,7 @@ class _LoginPageState extends State<LoginPage> {
                 child: Icon(
                   Icons.add_circle_outline,
                   size: 32,
-                  color:  ShadTheme.of(context).colorScheme.primary,
+                  color: ShadTheme.of(context).colorScheme.primary,
                 ),
               ),
               Column(
@@ -160,11 +160,8 @@ class _LoginPageState extends State<LoginPage> {
                         Text(
                           '添加服务器',
                           textAlign: TextAlign.center,
-                          style:  ShadTheme.of(context)
-                              .textTheme
-                              .h4
-                              ?.copyWith(
-                                  color:  ShadTheme.of(context).colorScheme.primary),
+                          style: ShadTheme.of(context).textTheme.h4?.copyWith(
+                              color: ShadTheme.of(context).colorScheme.primary),
                         ),
                       ],
                     ),
@@ -174,7 +171,7 @@ class _LoginPageState extends State<LoginPage> {
                     child: Text(
                       '',
                       textAlign: TextAlign.center,
-                      style:  ShadTheme.of(context).textTheme.p,
+                      style: ShadTheme.of(context).textTheme.p,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -225,10 +222,10 @@ class _LoginPageState extends State<LoginPage> {
             backgroundColor: Colors.transparent,
             appBar: AppBar(
               backgroundColor:
-                   ShadTheme.of(context).colorScheme.background.withOpacity(0.5),
+                  ShadTheme.of(context).colorScheme.background.withOpacity(0.5),
               title: Text(
                 '服务器列表',
-                style:  ShadTheme.of(context).textTheme.h4,
+                style: ShadTheme.of(context).textTheme.h4,
               ),
               actions: [
                 ...[
@@ -241,7 +238,8 @@ class _LoginPageState extends State<LoginPage> {
                             '清除缓存服务器',
                             '服务器缓存已成功清除',
                             snackPosition: SnackPosition.BOTTOM,
-                            colorText:  ShadTheme.of(context).colorScheme.primary,
+                            colorText:
+                                ShadTheme.of(context).colorScheme.primary,
                             duration: const Duration(seconds: 3),
                           );
                         } else {
@@ -249,7 +247,7 @@ class _LoginPageState extends State<LoginPage> {
                             '清除服务器',
                             '清除服务器缓存失败',
                             snackPosition: SnackPosition.BOTTOM,
-                            colorText:  ShadTheme.of(context).colorScheme.ring,
+                            colorText: ShadTheme.of(context).colorScheme.ring,
                             duration: const Duration(seconds: 3),
                           );
                         }
@@ -318,10 +316,10 @@ class _LoginPageState extends State<LoginPage> {
                                                   ? '登录成功！欢迎回来，${controller.selectedServer?.username}'
                                                   : res.msg,
                                               colorText: res.succeed
-                                                  ?  ShadTheme.of(context)
+                                                  ? ShadTheme.of(context)
                                                       .colorScheme
                                                       .primary
-                                                  :  ShadTheme.of(context)
+                                                  : ShadTheme.of(context)
                                                       .colorScheme
                                                       .ring,
                                             );
@@ -330,7 +328,7 @@ class _LoginPageState extends State<LoginPage> {
                                           Get.snackbar(
                                             '登录失败',
                                             res.msg,
-                                            colorText:  ShadTheme.of(context)
+                                            colorText: ShadTheme.of(context)
                                                 .colorScheme
                                                 .ring,
                                           );
@@ -402,7 +400,7 @@ class _LoginPageState extends State<LoginPage> {
                       maxLines: 1,
                       style: TextStyle(
                         fontSize: 13,
-                        color:  ShadTheme.of(context).colorScheme.primary,
+                        color: ShadTheme.of(context).colorScheme.primary,
                       ),
                       decoration: InputDecoration(
                         labelText: '密码',
@@ -425,7 +423,7 @@ class _LoginPageState extends State<LoginPage> {
                                 ? Icons.visibility
                                 : Icons.visibility_off,
                             size: 18,
-                            color:  ShadTheme.of(context).colorScheme.primary,
+                            color: ShadTheme.of(context).colorScheme.primary,
                           ),
                           onPressed: () {
                             controller.showPassword = !controller.showPassword;
@@ -448,19 +446,18 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       // 新增取消按钮
                       ElevatedButton.icon(
-                        icon: Icon(
-                          Icons.cancel_outlined,
-                          size: 18,
-                          color:  ShadTheme.of(context).colorScheme.ring
-                        ),
+                        icon: Icon(Icons.cancel_outlined,
+                            size: 18,
+                            color: ShadTheme.of(context).colorScheme.ring),
                         label: Text(
                           '取消',
                           style: TextStyle(
-                            color:  ShadTheme.of(context).colorScheme.ring,
+                            color: ShadTheme.of(context).colorScheme.ring,
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:  ShadTheme.of(context).colorScheme.ring,
+                          backgroundColor:
+                              ShadTheme.of(context).colorScheme.ring,
                           // 设置背景颜色为绿色
                           shape: RoundedRectangleBorder(
                             borderRadius:
@@ -510,20 +507,23 @@ class _LoginPageState extends State<LoginPage> {
                                   // snackPosition: SnackPosition.BOTTOM,
                                   duration: const Duration(seconds: 3),
                                   colorText: server.id == 0
-                                      ?  ShadTheme.of(context).colorScheme.primary
-                                      :  ShadTheme.of(context).colorScheme.ring);
+                                      ? ShadTheme.of(context)
+                                          .colorScheme
+                                          .primary
+                                      : ShadTheme.of(context).colorScheme.ring);
                               Navigator.pop(context);
                             } else {
                               Get.snackbar('测试失败', flag.msg,
                                   colorText:
-                                       ShadTheme.of(context).colorScheme.ring);
+                                      ShadTheme.of(context).colorScheme.ring);
                               controller.isLoading = false;
                               controller.update();
                             }
                           } else {
                             Get.snackbar('出错啦', '服务器信息校验失败！',
                                 duration: const Duration(seconds: 3),
-                                colorText:  ShadTheme.of(context).colorScheme.ring);
+                                colorText:
+                                    ShadTheme.of(context).colorScheme.ring);
                           }
                           controller.isLoading = false;
                           controller.update();
@@ -534,7 +534,7 @@ class _LoginPageState extends State<LoginPage> {
                                     height: 18,
                                     width: 18,
                                     child: CircularProgressIndicator(
-                                      color:  ShadTheme.of(context)
+                                      color: ShadTheme.of(context)
                                           .colorScheme
                                           .primaryForeground,
                                     )),
@@ -542,17 +542,21 @@ class _LoginPageState extends State<LoginPage> {
                             : Icon(
                                 Icons.autorenew,
                                 size: 18,
-                                color:  ShadTheme.of(context).colorScheme.primaryForeground,
+                                color: ShadTheme.of(context)
+                                    .colorScheme
+                                    .primaryForeground,
                               ),
                         label: Text(
                           controller.isLoading ? '测试...' : '保存',
                           style: TextStyle(
-                            color:  ShadTheme.of(context).colorScheme.primaryForeground,
+                            color: ShadTheme.of(context)
+                                .colorScheme
+                                .primaryForeground,
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
-                               ShadTheme.of(context).colorScheme.primary,
+                              ShadTheme.of(context).colorScheme.primary,
                           // 设置背景颜色为绿色
                           shape: RoundedRectangleBorder(
                             borderRadius:
@@ -587,7 +591,7 @@ class _LoginPageState extends State<LoginPage> {
         '服务器信息设置有误',
         '无法连接到服务器，请检查用户名和密码',
         snackPosition: SnackPosition.BOTTOM,
-        colorText:  ShadTheme.of(context).colorScheme.ring,
+        colorText: ShadTheme.of(context).colorScheme.ring,
         duration: const Duration(seconds: 3),
       );
       return;
@@ -614,7 +618,7 @@ class _LoginPageState extends State<LoginPage> {
         Get.snackbar(
           '登录成功！',
           "欢迎 ${loginUser.username} 回来",
-          colorText:  ShadTheme.of(context).colorScheme.primary,
+          colorText: ShadTheme.of(context).colorScheme.primary,
         );
         Get.offNamed(Routes.HOME);
         return true;
@@ -622,14 +626,14 @@ class _LoginPageState extends State<LoginPage> {
       Get.snackbar(
         '登录失败',
         res.data['msg'],
-        colorText:  ShadTheme.of(context).colorScheme.ring,
+        colorText: ShadTheme.of(context).colorScheme.ring,
       );
     } catch (e, stackTrace) {
       Logger.instance.e(stackTrace.toString());
       Get.snackbar(
         '登录失败',
         e.toString(),
-        colorText:  ShadTheme.of(context).colorScheme.ring,
+        colorText: ShadTheme.of(context).colorScheme.ring,
       );
     }
     SPUtil.setBool('isLogin', false);

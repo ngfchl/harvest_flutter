@@ -503,7 +503,12 @@ class _MySitePagePageState extends State<MySitePage>
                                 itemBuilder: (BuildContext context, int index) {
                                   MySite mySite =
                                       controller.showStatusList[index];
-                                  return showSiteDataInfo(mySite);
+                                  return Padding(
+                                    key: Key("${mySite.id}-${mySite.site}"),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 2.5),
+                                    child: showSiteDataInfo(mySite),
+                                  );
                                 },
                               );
                             }),
@@ -697,7 +702,6 @@ class _MySitePagePageState extends State<MySitePage>
     // Logger.instance.d('${mySite.nickname} - ${website?.name}');
     if (website == null) {
       return CustomCard(
-        key: Key("${mySite.id}-${mySite.site}"),
         child: ListTile(
           dense: true,
           contentPadding:
@@ -709,14 +713,15 @@ class _MySitePagePageState extends State<MySitePage>
           ),
           title: Text(
             mySite.nickname,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
+              color: ShadTheme.of(context).colorScheme.primary,
             ),
           ),
           subtitle: Text(
             '没有找到这个站点的配置文件，请清理站点配置缓存后重新加载数据！',
             style: TextStyle(
-              color: Colors.red.shade200,
+              color: ShadTheme.of(context).colorScheme.ring,
               fontSize: 10,
             ),
           ),
@@ -769,7 +774,6 @@ class _MySitePagePageState extends State<MySitePage>
     var toUpgradeTime = DateTime.parse(mySite.timeJoin)
         .add(Duration(days: (nextLevel?.days ?? 0) * 7));
     return CustomCard(
-      key: Key("${mySite.id}-${mySite.site}"),
       child: Column(children: [
         ListTile(
           dense: true,
@@ -812,28 +816,32 @@ class _MySitePagePageState extends State<MySitePage>
                           '最后访问时间：${calculateTimeElapsed(mySite.latestActive.toString())}',
                       child: Text(
                         mySite.nickname,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
+                          color: ShadTheme.of(context).colorScheme.primary,
                         ),
                       ),
                     )
                   : Text(
                       mySite.nickname,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
+                        color: ShadTheme.of(context).colorScheme.primary,
                       ),
                     ),
               if (mySite.mail! > 0)
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.mail,
                       size: 12,
+                      color: ShadTheme.of(context).colorScheme.primary,
                     ),
                     Text(
                       '${mySite.mail}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10,
+                        color: ShadTheme.of(context).colorScheme.primary,
                       ),
                     ),
                   ],
@@ -841,14 +849,16 @@ class _MySitePagePageState extends State<MySitePage>
               if (mySite.notice! > 0)
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.notifications,
                       size: 12,
+                      color: ShadTheme.of(context).colorScheme.primary,
                     ),
                     Text(
                       '${mySite.notice}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10,
+                        color: ShadTheme.of(context).colorScheme.primary,
                       ),
                     ),
                   ],
@@ -856,8 +866,9 @@ class _MySitePagePageState extends State<MySitePage>
               if (status != null && level == null)
                 Text(
                   website.level?[status.myLevel]?.level ?? status.myLevel,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
+                    color: ShadTheme.of(context).colorScheme.primary,
                   ),
                 ),
               if (status != null && level != null)
@@ -1064,7 +1075,7 @@ class _MySitePagePageState extends State<MySitePage>
               ? Text(
                   '新站点，还没有数据哦',
                   style: TextStyle(
-                    color: Colors.red.shade200,
+                    color: ShadTheme.of(context).colorScheme.foreground,
                     fontSize: 10,
                   ),
                 )
@@ -1074,15 +1085,16 @@ class _MySitePagePageState extends State<MySitePage>
                     DateTime.parse(mySite.timeJoin) != DateTime(2024, 2, 1)
                         ? Text(
                             '⌚️${calcWeeksDays(mySite.timeJoin)}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 10,
+                              color: ShadTheme.of(context).colorScheme.primary,
                             ),
                           )
-                        : const Text(
+                        : Text(
                             '⌚️获取失败！',
                             style: TextStyle(
                               fontSize: 10,
-                              color: Colors.red,
+                              color: ShadTheme.of(context).colorScheme.primary,
                             ),
                           ),
                     if (level?.keepAccount == true)
@@ -1104,14 +1116,16 @@ class _MySitePagePageState extends State<MySitePage>
                     if (status.invitation > 0)
                       Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.person_add_alt_outlined,
                             size: 12,
+                            color: ShadTheme.of(context).colorScheme.primary,
                           ),
                           Text(
                             '${status.invitation}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 10,
+                              color: ShadTheme.of(context).colorScheme.primary,
                             ),
                           ),
                         ],
@@ -1144,8 +1158,10 @@ class _MySitePagePageState extends State<MySitePage>
                               const SizedBox(width: 2),
                               Text(
                                 '${FileSizeConvert.parseToFileSize(status.uploaded)} (${status.seed})',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
+                                  color:
+                                      ShadTheme.of(context).colorScheme.primary,
                                 ),
                               ),
                             ],
@@ -1161,8 +1177,10 @@ class _MySitePagePageState extends State<MySitePage>
                               const SizedBox(width: 2),
                               Text(
                                 '${FileSizeConvert.parseToFileSize(status.downloaded)} (${status.leech})',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
+                                  color:
+                                      ShadTheme.of(context).colorScheme.primary,
                                 ),
                               ),
                             ],
@@ -1179,8 +1197,9 @@ class _MySitePagePageState extends State<MySitePage>
                             children: [
                               Icon(
                                 Icons.ios_share,
-                                color:
-                                    status.ratio > 1 ? null : Colors.deepOrange,
+                                color: status.ratio > 1
+                                    ? ShadTheme.of(context).colorScheme.primary
+                                    : Colors.deepOrange,
                                 size: 14,
                               ),
                               const SizedBox(width: 2),
@@ -1189,7 +1208,9 @@ class _MySitePagePageState extends State<MySitePage>
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: status.ratio > 1
-                                      ? null
+                                      ? ShadTheme.of(context)
+                                          .colorScheme
+                                          .primary
                                       : Colors.deepOrange,
                                 ),
                               ),
@@ -1198,16 +1219,20 @@ class _MySitePagePageState extends State<MySitePage>
                           const SizedBox(height: 2),
                           Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.cloud_upload_outlined,
                                 size: 14,
+                                color:
+                                    ShadTheme.of(context).colorScheme.primary,
                               ),
                               const SizedBox(width: 2),
                               Text(
                                 FileSizeConvert.parseToFileSize(
                                     status.seedVolume),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
+                                  color:
+                                      ShadTheme.of(context).colorScheme.primary,
                                 ),
                               ),
                             ],
@@ -1223,24 +1248,31 @@ class _MySitePagePageState extends State<MySitePage>
                           Row(
                             textBaseline: TextBaseline.ideographic,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.timer_outlined,
                                 size: 14,
+                                color:
+                                    ShadTheme.of(context).colorScheme.primary,
                               ),
                               const SizedBox(width: 2),
                               Text(
                                 formatNumber(status.bonusHour),
                                 // '(${  status.siteSpFull != null && status.siteSpFull! > 0 ? ((status.statusBonusHour! / status.siteSpFull!) * 100).toStringAsFixed(2) : '0'}%)',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
+                                  color:
+                                      ShadTheme.of(context).colorScheme.primary,
                                 ),
                               ),
                               if (website.spFull > 0 && status.bonusHour > 0)
                                 Text(
                                   // formatNumber(status.bonusHour),
                                   '(${((status.bonusHour / website.spFull) * 100).toStringAsFixed((status.bonusHour / website.spFull) * 100 > 1 ? 0 : 2)}%)',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 12,
+                                    color: ShadTheme.of(context)
+                                        .colorScheme
+                                        .primary,
                                   ),
                                 ),
                             ],
@@ -1249,15 +1281,19 @@ class _MySitePagePageState extends State<MySitePage>
                           Row(
                             textBaseline: TextBaseline.ideographic,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.score,
                                 size: 14,
+                                color:
+                                    ShadTheme.of(context).colorScheme.primary,
                               ),
                               const SizedBox(width: 2),
                               Text(
                                 '${formatNumber(status.myBonus, fixed: 0)}(${formatNumber(status.myScore, fixed: 0)})',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
+                                  color:
+                                      ShadTheme.of(context).colorScheme.primary,
                                 ),
                               ),
                             ],
@@ -1274,8 +1310,9 @@ class _MySitePagePageState extends State<MySitePage>
                     Text(
                       '最近更新：${calculateTimeElapsed(status.updatedAt.toString())}',
                       textAlign: TextAlign.right,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10.5,
+                        color: ShadTheme.of(context).colorScheme.primary,
                       ),
                     ),
                     if (status.myHr != '' && status.myHr != "0")

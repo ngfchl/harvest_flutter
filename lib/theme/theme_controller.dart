@@ -64,8 +64,8 @@ class ThemeController extends GetxController {
     _saveTheme();
   }
 
-  void toggleFollowSystem() {
-    followSystem.value = !followSystem.value;
+  void toggleFollowSystem(bool value) {
+    followSystem.value = value;
     if (followSystem.value) {
       isDark.value = Get.isDarkMode;
       toggleDarkMode();

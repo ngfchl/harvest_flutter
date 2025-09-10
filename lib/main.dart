@@ -1,4 +1,3 @@
-import 'package:app_service/app_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -77,10 +76,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appService = Get.find<AppService>();
     final themeController = Get.find<ThemeController>();
-    appService.followSystem.value =
-        SPUtil.getBool('followSystemDark', defaultValue: true);
+
     return Obx(() {
       return ShadApp.custom(
           darkTheme: themeController.darkTheme,
@@ -94,7 +91,6 @@ class MyApp extends StatelessWidget {
               debugShowCheckedModeBanner: Get.testMode,
               initialRoute: AppPages.INITIAL,
               navigatorKey: Get.key,
-              theme: appService.currentTheme,
               getPages: AppPages.routes,
               builder: (context, child) {
                 // 处理 MediaQuery 异常问题，特别是小米澎湃系统
@@ -115,9 +111,6 @@ class MyApp extends StatelessWidget {
                   child: child ?? const SizedBox.shrink(),
                 );
               },
-              translations: Messages([
-                AppServiceMessages().keys,
-              ]),
               locale: const Locale('zh', 'CN'),
               fallbackLocale: const Locale('en', 'US'),
               onInit: () async {
@@ -132,31 +125,4 @@ class MyApp extends StatelessWidget {
 Future<void> initDependencies() async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   Get.put<SharedPreferences>(prefs);
-
-  // 应用管理
-  Get.lazyPut<AppService>(
-    () => AppService(
-      Get.find<SharedPreferences>(),
-      supportedLanguages: const [
-        LanguageEnum.zh,
-        LanguageEnum.zhHk,
-        LanguageEnum.zhMO,
-        LanguageEnum.zhTW,
-        LanguageEnum.en,
-        LanguageEnum.enUK,
-        LanguageEnum.enUS,
-        LanguageEnum.de,
-        LanguageEnum.ru,
-        LanguageEnum.uk,
-        LanguageEnum.be,
-        LanguageEnum.kk,
-        LanguageEnum.sr,
-        LanguageEnum.fr,
-        LanguageEnum.ja,
-        LanguageEnum.ko,
-        LanguageEnum.ar,
-      ],
-    ),
-    fenix: true,
-  );
 }

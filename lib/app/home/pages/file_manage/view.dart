@@ -19,6 +19,7 @@ import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../utils/logger_helper.dart';
@@ -42,7 +43,7 @@ class FileManagePage extends StatelessWidget {
                 // Text(
                 //   '文件管理',
                 //   style: TextStyle(
-                //     color: Get.theme.colorScheme.primary,
+                //     color: ShadTheme.of(context).colorScheme.primary,
                 //   ),
                 // ),
                 CustomCard(
@@ -50,7 +51,7 @@ class FileManagePage extends StatelessWidget {
                     controller.currentPath,
                     style: TextStyle(
                       fontSize: 10,
-                      color: Get.theme.colorScheme.primary,
+                      color: ShadTheme.of(context).colorScheme.primary,
                     ),
                   ),
                 ),
@@ -66,7 +67,7 @@ class FileManagePage extends StatelessWidget {
                         },
                         icon: Icon(
                           Icons.home_outlined,
-                          color: Get.theme.colorScheme.primary,
+                          color: ShadTheme.of(context).colorScheme.primary,
                         ),
                       ),
                       IconButton(
@@ -77,7 +78,7 @@ class FileManagePage extends StatelessWidget {
                         },
                         icon: Icon(
                           Icons.refresh,
-                          color: Get.theme.colorScheme.primary,
+                          color: ShadTheme.of(context).colorScheme.primary,
                         ),
                       ),
                       IconButton(
@@ -94,7 +95,7 @@ class FileManagePage extends StatelessWidget {
                         },
                         icon: Icon(
                           Icons.arrow_upward_outlined,
-                          color: Get.theme.colorScheme.primary,
+                          color: ShadTheme.of(context).colorScheme.primary,
                         ),
                       ),
                     ],
@@ -113,7 +114,9 @@ class FileManagePage extends StatelessWidget {
                                     '暂无文件',
                                     style: TextStyle(
                                       fontSize: 16,
-                                      color: Get.theme.colorScheme.primary,
+                                      color: ShadTheme.of(context)
+                                          .colorScheme
+                                          .primary,
                                     ),
                                   ),
                                 ),
@@ -217,7 +220,7 @@ class FileManagePage extends StatelessWidget {
                                                       // await controller.removeDownloader(downloader);
                                                       // if (res.code == 0) {
                                                       //   Get.snackbar('删除通知', res.msg.toString(),
-                                                      //       colorText: Get.theme.colorScheme.primary);
+                                                      //       colorText: ShadTheme.of(context).colorScheme.primary);
                                                       // } else {
                                                       //   Get.snackbar('删除通知', res.msg.toString(),
                                                       //       colorText: Get.theme.colorScheme.error);
@@ -242,8 +245,9 @@ class FileManagePage extends StatelessWidget {
                                         title: Text(
                                           item.name,
                                           style: TextStyle(
-                                            color:
-                                                Get.theme.colorScheme.primary,
+                                            color: ShadTheme.of(context)
+                                                .colorScheme
+                                                .primary,
                                           ),
                                         ),
                                         subtitle: Row(
@@ -254,8 +258,9 @@ class FileManagePage extends StatelessWidget {
                                               item.modified,
                                               style: TextStyle(
                                                 fontSize: 12,
-                                                color: Get
-                                                    .theme.colorScheme.primary,
+                                                color: ShadTheme.of(context)
+                                                    .colorScheme
+                                                    .primary,
                                               ),
                                             ),
                                             if (!item.isDir)
@@ -264,7 +269,8 @@ class FileManagePage extends StatelessWidget {
                                                     item.size),
                                                 style: TextStyle(
                                                   fontSize: 12,
-                                                  color: Get.theme.colorScheme
+                                                  color: ShadTheme.of(context)
+                                                      .colorScheme
                                                       .primary,
                                                 ),
                                               ),
@@ -275,15 +281,18 @@ class FileManagePage extends StatelessWidget {
                                           child: item.isDir
                                               ? Icon(
                                                   Icons.folder,
-                                                  color: Get.theme.colorScheme
+                                                  color: ShadTheme.of(context)
+                                                      .colorScheme
                                                       .primary,
                                                 )
                                               : Text(
                                                   item.ext.toString(),
                                                   style: TextStyle(
-                                                      fontSize: 12,
-                                                      color: Get.theme
-                                                          .colorScheme.primary),
+                                                    fontSize: 12,
+                                                    color: ShadTheme.of(context)
+                                                        .colorScheme
+                                                        .primary,
+                                                  ),
                                                 ),
                                         ),
                                         onLongPress: () {
