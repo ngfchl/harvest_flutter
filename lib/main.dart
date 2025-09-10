@@ -108,7 +108,7 @@ class MyApp extends StatelessWidget {
                   data: mediaQuery.copyWith(
                     padding: mediaQuery.padding.copyWith(top: safeTop),
                   ),
-                  child: child ?? const SizedBox.shrink(),
+                  child: ShadToaster(child: child ?? const SizedBox.shrink()),
                 );
               },
               locale: const Locale('zh', 'CN'),
