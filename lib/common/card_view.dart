@@ -8,6 +8,7 @@ import '../utils/storage.dart';
 class CustomCard extends StatelessWidget {
   final Widget child;
   final EdgeInsets? padding;
+  final EdgeInsets? margin;
   final Color? color;
   final BorderRadius borderRadius;
   final double? height;
@@ -27,23 +28,23 @@ class CustomCard extends StatelessWidget {
     ),
     this.height,
     this.width,
-    this.padding = const EdgeInsets.all(2.0),
+    this.padding = const EdgeInsets.all(4.0),
+    this.margin = const EdgeInsets.all(4.0),
   });
 
   @override
   Widget build(BuildContext context) {
     double opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
-    return ShadCard(
-      height: height,
-      width: width,
-      padding: padding,
-      radius: borderRadius,
-      backgroundColor: color ??
-          ShadTheme.of(context)
-              .colorScheme
-              .background
-              .withValues(alpha: opacity * 255.0),
-      child: child,
+    return Container(
+      margin: margin,
+      child: ShadCard(
+        height: height,
+        width: width,
+        padding: padding,
+        radius: borderRadius,
+        backgroundColor: color ?? ShadTheme.of(context).colorScheme.background.withOpacity(opacity),
+        child: child,
+      ),
     );
   }
 }
@@ -69,41 +70,24 @@ class CurvePainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 14;
     final shdowPaintCenter = Offset(size.width / 2, size.height / 2);
-    final shdowPaintRadius =
-        math.min(size.width / 2, size.height / 2) - (14 / 2);
-    canvas.drawArc(
-        Rect.fromCircle(center: shdowPaintCenter, radius: shdowPaintRadius),
-        degreeToRadians(278),
-        degreeToRadians(360 - (365 - angle!)),
-        false,
-        shdowPaint);
+    final shdowPaintRadius = math.min(size.width / 2, size.height / 2) - (14 / 2);
+    canvas.drawArc(Rect.fromCircle(center: shdowPaintCenter, radius: shdowPaintRadius), degreeToRadians(278),
+        degreeToRadians(360 - (365 - angle!)), false, shdowPaint);
 
     shdowPaint.color = Colors.grey.withOpacity(0.3);
     shdowPaint.strokeWidth = 16;
-    canvas.drawArc(
-        Rect.fromCircle(center: shdowPaintCenter, radius: shdowPaintRadius),
-        degreeToRadians(278),
-        degreeToRadians(360 - (365 - angle!)),
-        false,
-        shdowPaint);
+    canvas.drawArc(Rect.fromCircle(center: shdowPaintCenter, radius: shdowPaintRadius), degreeToRadians(278),
+        degreeToRadians(360 - (365 - angle!)), false, shdowPaint);
 
     shdowPaint.color = Colors.grey.withOpacity(0.2);
     shdowPaint.strokeWidth = 20;
-    canvas.drawArc(
-        Rect.fromCircle(center: shdowPaintCenter, radius: shdowPaintRadius),
-        degreeToRadians(278),
-        degreeToRadians(360 - (365 - angle!)),
-        false,
-        shdowPaint);
+    canvas.drawArc(Rect.fromCircle(center: shdowPaintCenter, radius: shdowPaintRadius), degreeToRadians(278),
+        degreeToRadians(360 - (365 - angle!)), false, shdowPaint);
 
     shdowPaint.color = Colors.grey.withOpacity(0.1);
     shdowPaint.strokeWidth = 22;
-    canvas.drawArc(
-        Rect.fromCircle(center: shdowPaintCenter, radius: shdowPaintRadius),
-        degreeToRadians(278),
-        degreeToRadians(360 - (365 - angle!)),
-        false,
-        shdowPaint);
+    canvas.drawArc(Rect.fromCircle(center: shdowPaintCenter, radius: shdowPaintRadius), degreeToRadians(278),
+        degreeToRadians(360 - (365 - angle!)), false, shdowPaint);
 
     final rect = Rect.fromLTWH(0.0, 0.0, size.width, size.width);
     final gradient = SweepGradient(
@@ -120,12 +104,8 @@ class CurvePainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = math.min(size.width / 2, size.height / 2) - (14 / 2);
 
-    canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        degreeToRadians(278),
-        degreeToRadians(360 - (365 - angle!)),
-        false,
-        paint);
+    canvas.drawArc(Rect.fromCircle(center: center, radius: radius), degreeToRadians(278),
+        degreeToRadians(360 - (365 - angle!)), false, paint);
 
     const gradient1 = SweepGradient(
       tileMode: TileMode.repeated,
@@ -232,7 +212,7 @@ class FilterItem extends StatelessWidget {
                 name,
                 style: TextStyle(
                   fontSize: 12,
-                  color: ShadTheme.of(context).colorScheme.primary,
+                  color: ShadTheme.of(context).colorScheme.foreground,
                 ),
               ),
             ),
@@ -253,8 +233,7 @@ class FilterItem extends StatelessWidget {
                       ),
                       selected: selected.contains(e.toString()),
                       backgroundColor: ShadTheme.of(context).colorScheme.primary,
-                      labelStyle:
-                          const TextStyle(fontSize: 12, color: Colors.white),
+                      labelStyle: const TextStyle(fontSize: 12, color: Colors.white),
                       selectedColor: Colors.green,
                       selectedShadowColor: Colors.blue,
                       pressElevation: 5,

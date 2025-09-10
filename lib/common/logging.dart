@@ -24,6 +24,7 @@ class LoggingView extends StatelessWidget {
       icon: Icon(
         Icons.event_note_sharp,
         size: 20,
+        color: ShadTheme.of(context).colorScheme.foreground,
       ),
       onPressed: () {
         _showLoggingDialog(context);
@@ -68,13 +69,12 @@ class LoggingView extends StatelessWidget {
                               },
                               icon: Icon(
                                 Icons.refresh,
-                                color: ShadTheme.of(context).colorScheme.primary,
+                                color: ShadTheme.of(context).colorScheme.foreground,
                               ),
                             ),
                             CustomPopup(
                               showArrow: false,
-                              backgroundColor:
-                                  ShadTheme.of(context).colorScheme.background,
+                              backgroundColor: ShadTheme.of(context).colorScheme.background,
                               barrierColor: Colors.transparent,
                               content: SizedBox(
                                 width: 100,
@@ -86,9 +86,7 @@ class LoggingView extends StatelessWidget {
                                         child: Text(
                                           l.name.toUpperCase(),
                                           style: TextStyle(
-                                            color: ShadTheme.of(context)
-                                                .colorScheme
-                                                .secondary,
+                                            color: ShadTheme.of(context).colorScheme.secondary,
                                           ),
                                         ),
                                         onTap: () async {
@@ -103,16 +101,15 @@ class LoggingView extends StatelessWidget {
                               child: Icon(
                                 Icons.event_note,
                                 size: 24,
-                                color: ShadTheme.of(context).colorScheme.primary,
+                                color: ShadTheme.of(context).colorScheme.foreground,
                               ),
                             ),
                             const SizedBox(width: 10),
                             IconButton(
                               icon: Icon(Icons.exit_to_app_outlined,
-                                  color: ShadTheme.of(context).colorScheme.ring),
+                                  color: ShadTheme.of(context).colorScheme.destructive),
                               onPressed: () {
-                                Floating floating = floatingManager
-                                    .getFloating("inTimeAPPLogFloatingWindows");
+                                Floating floating = floatingManager.getFloating("inTimeAPPLogFloatingWindows");
                                 floating.close();
                                 Get.delete<LoggingController>();
                                 Get.back();
@@ -125,14 +122,10 @@ class LoggingView extends StatelessWidget {
                           physics: const NeverScrollableScrollPhysics(),
                           children: [
                             ValueListenableBuilder<List<OutputEvent>>(
-                                valueListenable:
-                                    logger_helper.memoryLogOutput.logsNotifier,
+                                valueListenable: logger_helper.memoryLogOutput.logsNotifier,
                                 builder: (context, logs, child) {
-                                  final filteredLogs = logs
-                                      .where((log) =>
-                                          log.level.index >=
-                                          controller.filterLevel.index)
-                                      .toList();
+                                  final filteredLogs =
+                                      logs.where((log) => log.level.index >= controller.filterLevel.index).toList();
                                   return ListView.builder(
                                     padding: const EdgeInsets.all(8),
                                     controller: controller.scrollController,
@@ -150,14 +143,12 @@ class LoggingView extends StatelessWidget {
                                 }),
                             GetPlatform.isWeb
                                 ? Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
+                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                                     children: [
                                       ElevatedButton(
                                           onPressed: () async {
                                             Get.back();
-                                            String url =
-                                                '$server/api/flower/tasks';
+                                            String url = '$server/api/flower/tasks';
                                             await openUrl(url);
                                           },
                                           child: const Text('任务列表')),
@@ -175,20 +166,15 @@ class LoggingView extends StatelessWidget {
                                       if (controller.progress < 100)
                                         LinearProgressIndicator(
                                           value: controller.progress / 100,
-                                          backgroundColor:
-                                              Colors.grey.withAlpha(33),
-                                          valueColor:
-                                              const AlwaysStoppedAnimation(
-                                                  Colors.blue),
+                                          backgroundColor: Colors.grey.withAlpha(33),
+                                          valueColor: const AlwaysStoppedAnimation(Colors.blue),
                                         ),
                                       Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceAround,
+                                        mainAxisAlignment: MainAxisAlignment.spaceAround,
                                         children: [
                                           ElevatedButton(
                                               onPressed: () {
-                                                controller.currentLog =
-                                                    'logging';
+                                                controller.currentLog = 'logging';
                                                 controller.switchLogging();
                                               },
                                               child: const Text('服务')),
@@ -208,8 +194,7 @@ class LoggingView extends StatelessWidget {
                                           //     child: const Text('Log')),
                                           ElevatedButton(
                                               onPressed: () {
-                                                controller.currentLog =
-                                                    'accessLog';
+                                                controller.currentLog = 'accessLog';
                                                 controller.switchLogging();
                                               },
                                               child: const Text('Web')),
@@ -219,43 +204,30 @@ class LoggingView extends StatelessWidget {
                                         child: CustomCard(
                                           child: InAppWebView(
                                             key: webViewKey,
-                                            initialUrlRequest: URLRequest(
-                                                url: WebUri(
-                                                    controller.accessUrl)),
-                                            initialSettings:
-                                                InAppWebViewSettings(
+                                            initialUrlRequest: URLRequest(url: WebUri(controller.accessUrl)),
+                                            initialSettings: InAppWebViewSettings(
                                               isInspectable: kDebugMode,
-                                              mediaPlaybackRequiresUserGesture:
-                                                  false,
+                                              mediaPlaybackRequiresUserGesture: false,
                                               allowsInlineMediaPlayback: true,
                                               iframeAllow: "camera; microphone",
                                               iframeAllowFullscreen: true,
                                               defaultFontSize: 24,
                                             ),
-                                            onWebViewCreated:
-                                                (inAppWebViewController) async {
-                                              controller.webController =
-                                                  inAppWebViewController;
+                                            onWebViewCreated: (inAppWebViewController) async {
+                                              controller.webController = inAppWebViewController;
                                               controller.isLoading = true;
                                               controller.update();
                                             },
-                                            onLoadStart:
-                                                (inAppWebViewController,
-                                                    _) async {
+                                            onLoadStart: (inAppWebViewController, _) async {
                                               controller.isLoading = true;
                                               controller.update();
                                             },
-                                            onLoadStop: (inAppWebViewController,
-                                                webUri) async {
-                                              logger_helper.Logger.instance.d(
-                                                  (await inAppWebViewController
-                                                      .getTitle())!);
+                                            onLoadStop: (inAppWebViewController, webUri) async {
+                                              logger_helper.Logger.instance
+                                                  .d((await inAppWebViewController.getTitle())!);
                                               controller.isLoading = false;
-                                              if (!controller.accessUrl
-                                                  .contains('flower')) {
-                                                await controller.webController
-                                                    ?.evaluateJavascript(
-                                                        source: """
+                                              if (!controller.accessUrl.contains('flower')) {
+                                                await controller.webController?.evaluateJavascript(source: """
                                           document.getElementsByTagName('body')[0].style.fontSize = '${controller.fontSize}px';
                                           document.getElementsByTagName('body')[0].style.lineHeight = '1.8';
                                           document.getElementsByTagName('pre')[0].style.wordWrap = 'break-word';
@@ -264,17 +236,12 @@ class LoggingView extends StatelessWidget {
                                               }
                                               controller.update();
                                             },
-                                            onProgressChanged:
-                                                (inAppWebViewController,
-                                                    progress) async {
-                                              logger_helper.Logger.instance
-                                                  .i('当前进度: $progress');
+                                            onProgressChanged: (inAppWebViewController, progress) async {
+                                              logger_helper.Logger.instance.i('当前进度: $progress');
                                               controller.progress = progress;
                                               controller.update();
                                             },
-                                            onReceivedError:
-                                                (inAppWebViewController, _,
-                                                    err) {
+                                            onReceivedError: (inAppWebViewController, _, err) {
                                               // inAppWebViewController.reload();
                                             },
                                           ),
@@ -320,34 +287,23 @@ class LoggingView extends StatelessWidget {
                                             Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                Text(
-                                                    '页面字体大小：${controller.fontSize}'),
+                                                Text('页面字体大小：${controller.fontSize}'),
                                                 Expanded(
                                                   child: Slider(
                                                       min: 12,
                                                       max: 36,
-                                                      value:
-                                                          controller.fontSize /
-                                                              1,
+                                                      value: controller.fontSize / 1,
                                                       onChanged: (value) async {
-                                                        controller.fontSize =
-                                                            value.toInt();
-                                                        SPUtil.setLocalStorage(
-                                                            'loggingFontSize',
-                                                            controller
-                                                                .fontSize);
+                                                        controller.fontSize = value.toInt();
+                                                        SPUtil.setLocalStorage('loggingFontSize', controller.fontSize);
                                                         // 初始化时或页面加载完成后设置字体大小
-                                                        var res = await controller
-                                                            .webController
-                                                            ?.evaluateJavascript(
-                                                                source: """
+                                                        var res = await controller.webController
+                                                            ?.evaluateJavascript(source: """
                                           document.getElementsByTagName('body')[0].style.fontSize = '${controller.fontSize}px';
                                         """);
                                                         controller.update();
 
-                                                        logger_helper
-                                                            .Logger.instance
-                                                            .i(res.toString());
+                                                        logger_helper.Logger.instance.i(res.toString());
                                                       }),
                                                 ),
                                               ],

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
-import 'package:getwidget/getwidget.dart';
 import 'package:harvest/app/home/pages/models/my_site.dart';
 import 'package:harvest/utils/format_number.dart';
 import 'package:harvest/utils/platform.dart';
@@ -34,8 +33,7 @@ class DashBoardPage extends StatefulWidget {
   State<DashBoardPage> createState() => _DashBoardPageState();
 }
 
-class _DashBoardPageState extends State<DashBoardPage>
-    with AutomaticKeepAliveClientMixin, TickerProviderStateMixin {
+class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveClientMixin, TickerProviderStateMixin {
   final controller = Get.put(DashBoardController());
   AnimationController? animationController;
   final GlobalKey _captureKey = GlobalKey();
@@ -45,8 +43,7 @@ class _DashBoardPageState extends State<DashBoardPage>
 
   @override
   void initState() {
-    animationController = AnimationController(
-        duration: const Duration(milliseconds: 600), vsync: this);
+    animationController = AnimationController(duration: const Duration(milliseconds: 600), vsync: this);
     super.initState();
   }
 
@@ -62,17 +59,14 @@ class _DashBoardPageState extends State<DashBoardPage>
           body: GetBuilder<DashBoardController>(builder: (controller) {
             return _showAllInfo();
           }),
-          floatingActionButton: controller.userinfo?.isStaff == true
-              ? _buildBottomButtonBarFloat()
-              : null,
-          floatingActionButtonLocation:
-              FloatingActionButtonLocation.miniEndFloat,
+          floatingActionButton: controller.userinfo?.isStaff == true ? _buildBottomButtonBarFloat() : null,
+          floatingActionButtonLocation: FloatingActionButtonLocation.miniEndFloat,
         ),
       );
     });
   }
 
-  _buildBottomButtonBarFloat() {
+  CustomPopup _buildBottomButtonBarFloat() {
     List<MetaDataItem> cacheList = [
       {"name": "豆瓣缓存数据", "value": "*douban*"},
       {"name": "RSS缓存数据", "value": "rss_data_list"},
@@ -106,20 +100,17 @@ class _DashBoardPageState extends State<DashBoardPage>
                 icon: Icon(
                   Icons.refresh,
                   size: 12,
-                  color: ShadTheme.of(context).colorScheme.primary,
+                  color: ShadTheme.of(context).colorScheme.foreground,
                 ),
                 style: ButtonStyle(
                   shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5.0)),
+                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                   ),
                   side: WidgetStateProperty.all(BorderSide.none),
                 ),
                 label: Text(
                   '更新',
-                  style: TextStyle(
-                      color: ShadTheme.of(context).colorScheme.primary,
-                      fontSize: 12),
+                  style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground, fontSize: 12),
                 ),
               ),
               ElevatedButton.icon(
@@ -130,20 +121,17 @@ class _DashBoardPageState extends State<DashBoardPage>
                 icon: Icon(
                   Icons.credit_score,
                   size: 12,
-                  color: ShadTheme.of(context).colorScheme.primary,
+                  color: ShadTheme.of(context).colorScheme.foreground,
                 ),
                 style: ButtonStyle(
                   shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5.0)),
+                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                   ),
                   side: WidgetStateProperty.all(BorderSide.none),
                 ),
                 label: Text(
                   '签到',
-                  style: TextStyle(
-                      color: ShadTheme.of(context).colorScheme.primary,
-                      fontSize: 12),
+                  style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground, fontSize: 12),
                 ),
               ),
               if (!kIsWeb)
@@ -155,20 +143,17 @@ class _DashBoardPageState extends State<DashBoardPage>
                   icon: Icon(
                     Icons.camera_alt_outlined,
                     size: 12,
-                    color: ShadTheme.of(context).colorScheme.primary,
+                    color: ShadTheme.of(context).colorScheme.foreground,
                   ),
                   style: ButtonStyle(
                     shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                      RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5.0)),
+                      RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                     ),
                     side: WidgetStateProperty.all(BorderSide.none),
                   ),
                   label: Text(
                     '截图',
-                    style: TextStyle(
-                        color: ShadTheme.of(context).colorScheme.primary,
-                        fontSize: 12),
+                    style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground, fontSize: 12),
                   ),
                 ),
               CustomPopup(
@@ -184,8 +169,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                             child: Text(
                               item.name,
                               style: TextStyle(
-                                color:
-                                    ShadTheme.of(context).colorScheme.primary,
+                                color: ShadTheme.of(context).colorScheme.foreground,
                               ),
                             ),
                             onTap: () async {
@@ -201,30 +185,23 @@ class _DashBoardPageState extends State<DashBoardPage>
                   icon: Icon(
                     Icons.cleaning_services_rounded,
                     size: 12,
-                    color: ShadTheme.of(context).colorScheme.primary,
+                    color: ShadTheme.of(context).colorScheme.foreground,
                   ),
                   onPressed: null,
                   style: ButtonStyle(
                     shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                      RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5.0)),
+                      RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                     ),
                     side: WidgetStateProperty.all(BorderSide.none),
-                    backgroundColor:
-                        WidgetStateProperty.resolveWith<Color>((states) {
+                    backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
                       if (states.contains(WidgetState.disabled)) {
-                        return ShadTheme.of(context)
-                            .colorScheme
-                            .background; // 禁用时背景色
+                        return ShadTheme.of(context).colorScheme.background; // 禁用时背景色
                       }
                       return Colors.grey; // 正常背景色
                     }),
-                    foregroundColor:
-                        WidgetStateProperty.resolveWith<Color>((states) {
+                    foregroundColor: WidgetStateProperty.resolveWith<Color>((states) {
                       if (states.contains(WidgetState.disabled)) {
-                        return ShadTheme.of(context)
-                            .colorScheme
-                            .primary; // 禁用时文字色
+                        return ShadTheme.of(context).colorScheme.primary; // 禁用时文字色
                       }
                       return Colors.white;
                     }),
@@ -232,9 +209,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                   ),
                   label: Text(
                     '缓存',
-                    style: TextStyle(
-                        color: ShadTheme.of(context).colorScheme.primary,
-                        fontSize: 12),
+                    style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground, fontSize: 12),
                   ),
                 ),
               ),
@@ -250,20 +225,17 @@ class _DashBoardPageState extends State<DashBoardPage>
                 icon: Icon(
                   Icons.cloud_download,
                   size: 12,
-                  color: ShadTheme.of(context).colorScheme.primary,
+                  color: ShadTheme.of(context).colorScheme.foreground,
                 ),
                 style: ButtonStyle(
                   shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5.0)),
+                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                   ),
                   side: WidgetStateProperty.all(BorderSide.none),
                 ),
                 label: Text(
                   '加载',
-                  style: TextStyle(
-                      color: ShadTheme.of(context).colorScheme.primary,
-                      fontSize: 12),
+                  style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground, fontSize: 12),
                 ),
               ),
             ],
@@ -271,7 +243,7 @@ class _DashBoardPageState extends State<DashBoardPage>
         ),
         child: Icon(
           Icons.settings_outlined,
-          color: ShadTheme.of(context).colorScheme.primary,
+          color: ShadTheme.of(context).colorScheme.foreground,
           size: 28,
         ));
   }
@@ -281,13 +253,11 @@ class _DashBoardPageState extends State<DashBoardPage>
       return CustomCard(
         height: controller.cardHeight,
         child: SfCircularChart(
-          palette:
-              Get.isDarkMode ? controller.darkColors : controller.lightColors,
+          palette: Get.isDarkMode ? controller.darkColors : controller.lightColors,
           title: ChartTitle(
             text:
                 '今日下载增量：${FileSizeConvert.parseToFileSize(controller.todayDownloadIncrement)}【${controller.downloadIncrementDataList.length}个站点】',
-            textStyle: TextStyle(
-                fontSize: 11, color: ShadTheme.of(context).colorScheme.primary),
+            textStyle: TextStyle(fontSize: 11, color: ShadTheme.of(context).colorScheme.foreground),
           ),
           legend: Legend(
             position: LegendPosition.left,
@@ -301,16 +271,15 @@ class _DashBoardPageState extends State<DashBoardPage>
             isResponsive: true,
             textStyle: TextStyle(
               fontSize: 8,
-              color: ShadTheme.of(context).colorScheme.primary,
+              color: ShadTheme.of(context).colorScheme.foreground,
             ),
           ),
           series: <DoughnutSeries<MetaDataItem, String>>[
             DoughnutSeries<MetaDataItem, String>(
               name: '今日下载数据汇总',
               dataSource: controller.downloadIncrementDataList,
-              xValueMapper: (MetaDataItem data, _) => controller.privateMode
-                  ? "${data.name.substring(0, 1)}**"
-                  : data.name,
+              xValueMapper: (MetaDataItem data, _) =>
+                  controller.privateMode ? "${data.name.substring(0, 1)}**" : data.name,
               yValueMapper: (MetaDataItem data, _) => data.value,
               dataLabelMapper: (MetaDataItem data, _) {
                 return '${controller.privateMode ? "${data.name.substring(0, 1)}**" : data.name}: ${FileSizeConvert.parseToFileSize(data.value)}';
@@ -328,7 +297,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                 labelPosition: ChartDataLabelPosition.outside,
                 textStyle: TextStyle(
                   fontSize: 8,
-                  color: ShadTheme.of(context).colorScheme.primary,
+                  color: ShadTheme.of(context).colorScheme.foreground,
                 ),
                 showZeroValue: false,
                 connectorLineSettings: const ConnectorLineSettings(
@@ -345,11 +314,9 @@ class _DashBoardPageState extends State<DashBoardPage>
             canShowMarker: false,
             activationMode: ActivationMode.singleTap,
             shouldAlwaysShow: false,
-            builder: (dynamic data, dynamic point, dynamic series,
-                int pointIndex, int seriesIndex) {
+            builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
               // 验证索引是否有效
-              if (pointIndex < 0 ||
-                  pointIndex >= controller.downloadIncrementDataList.length) {
+              if (pointIndex < 0 || pointIndex >= controller.downloadIncrementDataList.length) {
                 return const SizedBox.shrink(); // 无效索引时返回空组件
               }
 
@@ -360,7 +327,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                   '${point.x}: ${FileSizeConvert.parseToFileSize(point.y ?? 0)}',
                   style: TextStyle(
                     fontSize: 14,
-                    color: ShadTheme.of(context).colorScheme.primary,
+                    color: ShadTheme.of(context).colorScheme.foreground,
                   ),
                 ),
               );
@@ -376,13 +343,11 @@ class _DashBoardPageState extends State<DashBoardPage>
       return CustomCard(
         height: controller.cardHeight,
         child: SfCircularChart(
-          palette:
-              Get.isDarkMode ? controller.darkColors : controller.lightColors,
+          palette: Get.isDarkMode ? controller.darkColors : controller.lightColors,
           title: ChartTitle(
             text:
                 '今日上传增量：${FileSizeConvert.parseToFileSize(controller.todayUploadIncrement)}【${controller.uploadIncrementDataList.length}个站点】',
-            textStyle: TextStyle(
-                fontSize: 11, color: ShadTheme.of(context).colorScheme.primary),
+            textStyle: TextStyle(fontSize: 11, color: ShadTheme.of(context).colorScheme.foreground),
           ),
           legend: Legend(
             position: LegendPosition.left,
@@ -396,16 +361,15 @@ class _DashBoardPageState extends State<DashBoardPage>
             isResponsive: true,
             textStyle: TextStyle(
               fontSize: 8,
-              color: ShadTheme.of(context).colorScheme.primary,
+              color: ShadTheme.of(context).colorScheme.foreground,
             ),
           ),
           series: <DoughnutSeries<MetaDataItem, String>>[
             DoughnutSeries<MetaDataItem, String>(
               name: '今日上传数据汇总',
               dataSource: controller.uploadIncrementDataList,
-              xValueMapper: (MetaDataItem data, _) => controller.privateMode
-                  ? "${data.name.substring(0, 1)}**"
-                  : data.name,
+              xValueMapper: (MetaDataItem data, _) =>
+                  controller.privateMode ? "${data.name.substring(0, 1)}**" : data.name,
               yValueMapper: (MetaDataItem data, _) => data.value,
               dataLabelMapper: (MetaDataItem data, _) {
                 return '${controller.privateMode ? "${data.name.substring(0, 1)}*" : data.name}: ${FileSizeConvert.parseToFileSize(data.value)}';
@@ -423,7 +387,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                 labelPosition: ChartDataLabelPosition.outside,
                 textStyle: TextStyle(
                   fontSize: 8,
-                  color: ShadTheme.of(context).colorScheme.primary,
+                  color: ShadTheme.of(context).colorScheme.foreground,
                 ),
                 showZeroValue: false,
                 connectorLineSettings: const ConnectorLineSettings(
@@ -440,11 +404,9 @@ class _DashBoardPageState extends State<DashBoardPage>
             canShowMarker: false,
             activationMode: ActivationMode.singleTap,
             shouldAlwaysShow: false,
-            builder: (dynamic data, dynamic point, dynamic series,
-                int pointIndex, int seriesIndex) {
+            builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
               // 验证索引是否有效
-              if (pointIndex < 0 ||
-                  pointIndex >= controller.uploadIncrementDataList.length) {
+              if (pointIndex < 0 || pointIndex >= controller.uploadIncrementDataList.length) {
                 return const SizedBox.shrink(); // 无效索引时返回空组件
               }
 
@@ -455,7 +417,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                   '${point.x}: ${FileSizeConvert.parseToFileSize(point.y ?? 0)}',
                   style: TextStyle(
                     fontSize: 14,
-                    color: ShadTheme.of(context).colorScheme.primary,
+                    color: ShadTheme.of(context).colorScheme.foreground,
                   ),
                 ),
               );
@@ -467,6 +429,7 @@ class _DashBoardPageState extends State<DashBoardPage>
   }
 
   Widget _showAllInfo() {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     return GetBuilder<DashBoardController>(builder: (controller) {
       return InteractiveViewer(
         minScale: 0.5,
@@ -487,14 +450,20 @@ class _DashBoardPageState extends State<DashBoardPage>
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        const Center(
-                            child: GFLoader(size: 8, loaderstrokeWidth: 2)),
+                        SizedBox(
+                            width: 10,
+                            height: 10,
+                            child: Center(
+                                child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: shadColorScheme.foreground,
+                            ))),
                         const SizedBox(width: 5),
                         Text(
                           '当前为缓存数据，正在从服务器加载',
                           style: TextStyle(
                             fontSize: 10,
-                            color: ShadTheme.of(context).colorScheme.primary,
+                            color: shadColorScheme.foreground,
                           ),
                         ),
                       ],
@@ -510,13 +479,11 @@ class _DashBoardPageState extends State<DashBoardPage>
                         Get.defaultDialog(
                           title: '小部件',
                           radius: 5,
-                          titleStyle: const TextStyle(
-                              fontSize: 14, fontWeight: FontWeight.w900),
+                          titleStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900),
                           content: SizedBox(
                               height: controller.cardHeight,
                               width: 280,
-                              child: GetBuilder<DashBoardController>(
-                                  builder: (controller) {
+                              child: GetBuilder<DashBoardController>(builder: (controller) {
                                 return ListView(
                                   children: [
                                     // CheckboxListTile(
@@ -535,8 +502,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                       storageKey: 'privateMode',
                                       onUpdate: (bool newValue) async {
                                         controller.privateMode = newValue;
-                                        Logger.instance.d(
-                                            "privateMode: ${controller.privateMode}");
+                                        Logger.instance.d("privateMode: ${controller.privateMode}");
                                         await controller.loadCacheDashData();
                                         controller.update();
                                       },
@@ -546,8 +512,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                       value: controller.buildAccountInfoCard,
                                       storageKey: 'buildAccountInfoCard',
                                       onUpdate: (bool newValue) {
-                                        controller.buildAccountInfoCard =
-                                            newValue;
+                                        controller.buildAccountInfoCard = newValue;
                                         controller.update();
                                       },
                                     ),
@@ -565,8 +530,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                       value: controller.buildPublishedPieChart,
                                       storageKey: 'buildPublishedPieChart',
                                       onUpdate: (bool newValue) {
-                                        controller.buildPublishedPieChart =
-                                            newValue;
+                                        controller.buildPublishedPieChart = newValue;
                                         controller.update();
                                       },
                                     ),
@@ -575,8 +539,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                       value: controller.buildSeedVolumePieChart,
                                       storageKey: 'buildSeedVolumePieChart',
                                       onUpdate: (bool newValue) {
-                                        controller.buildSeedVolumePieChart =
-                                            newValue;
+                                        controller.buildSeedVolumePieChart = newValue;
                                         controller.update();
                                       },
                                     ),
@@ -585,8 +548,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                       value: controller.buildSmartLabelPieChart,
                                       storageKey: 'buildSmartLabelPieChart',
                                       onUpdate: (bool newValue) {
-                                        controller.buildSmartLabelPieChart =
-                                            newValue;
+                                        controller.buildSmartLabelPieChart = newValue;
                                         controller.update();
                                       },
                                     ),
@@ -602,25 +564,19 @@ class _DashBoardPageState extends State<DashBoardPage>
                                     ),
                                     CustomCheckboxListTile(
                                       title: '今日上传增量',
-                                      value:
-                                          controller.showTodayUploadedIncrement,
+                                      value: controller.showTodayUploadedIncrement,
                                       storageKey: 'showTodayUploadedIncrement',
                                       onUpdate: (bool newValue) {
-                                        controller.showTodayUploadedIncrement =
-                                            newValue;
+                                        controller.showTodayUploadedIncrement = newValue;
                                         controller.update();
                                       },
                                     ),
                                     CustomCheckboxListTile(
                                       title: '今日下载增量',
-                                      value: controller
-                                          .showTodayDownloadedIncrement,
-                                      storageKey:
-                                          'showTodayDownloadedIncrement',
+                                      value: controller.showTodayDownloadedIncrement,
+                                      storageKey: 'showTodayDownloadedIncrement',
                                       onUpdate: (bool newValue) {
-                                        controller
-                                                .showTodayDownloadedIncrement =
-                                            newValue;
+                                        controller.showTodayDownloadedIncrement = newValue;
                                         controller.update();
                                       },
                                     ),
@@ -629,8 +585,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                       value: controller.buildMonthPublishedBar,
                                       storageKey: 'buildMonthPublishedBar',
                                       onUpdate: (bool newValue) {
-                                        controller.buildMonthPublishedBar =
-                                            newValue;
+                                        controller.buildMonthPublishedBar = newValue;
                                         controller.update();
                                       },
                                     ),
@@ -639,8 +594,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                       value: controller.buildMonthStackedBar,
                                       storageKey: 'buildMonthStackedBar',
                                       onUpdate: (bool newValue) {
-                                        controller.buildMonthStackedBar =
-                                            newValue;
+                                        controller.buildMonthStackedBar = newValue;
                                         controller.update();
                                       },
                                     ),
@@ -649,8 +603,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                       value: controller.buildMonthDownloadedBar,
                                       storageKey: 'buildMonthDownloadedBar',
                                       onUpdate: (bool newValue) {
-                                        controller.buildMonthDownloadedBar =
-                                            newValue;
+                                        controller.buildMonthDownloadedBar = newValue;
                                         controller.update();
                                       },
                                     ),
@@ -664,20 +617,13 @@ class _DashBoardPageState extends State<DashBoardPage>
                                       },
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 12.0),
+                                      padding: const EdgeInsets.symmetric(horizontal: 12.0),
                                       child: Row(
                                         children: [
-                                          CustomTextTag(
-                                              backgroundColor:
-                                                  ShadTheme.of(context)
-                                                      .colorScheme
-                                                      .primary,
-                                              labelText: '卡片高度'),
+                                          CustomTextTag(backgroundColor: shadColorScheme.foreground, labelText: '卡片高度'),
                                           Expanded(
                                             child: Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 12.0),
+                                              padding: const EdgeInsets.only(left: 12.0),
                                               child: Row(
                                                 children: [
                                                   // InkWell(
@@ -695,25 +641,12 @@ class _DashBoardPageState extends State<DashBoardPage>
                                                         min: 240,
                                                         max: 500,
                                                         divisions: 13,
-                                                        activeColor:
-                                                            ShadTheme.of(
-                                                                    context)
-                                                                .colorScheme
-                                                                .primary,
-                                                        label: controller
-                                                            .cardHeight
-                                                            .toInt()
-                                                            .toString(),
-                                                        value: controller
-                                                            .cardHeight,
-                                                        onChanged:
-                                                            (value) async {
-                                                          controller
-                                                                  .cardHeight =
-                                                              value.toDouble();
-                                                          await SPUtil.setDouble(
-                                                              'buildCardHeight',
-                                                              value);
+                                                        activeColor: shadColorScheme.foreground,
+                                                        label: controller.cardHeight.toInt().toString(),
+                                                        value: controller.cardHeight,
+                                                        onChanged: (value) async {
+                                                          controller.cardHeight = value.toDouble();
+                                                          await SPUtil.setDouble('buildCardHeight', value);
                                                           // await controller.loadCacheDashData();
                                                           controller.update();
                                                         }),
@@ -740,62 +673,32 @@ class _DashBoardPageState extends State<DashBoardPage>
                               })),
                         );
                       },
-                      child: GetBuilder<DashBoardController>(
-                          builder: (controller) {
+                      child: GetBuilder<DashBoardController>(builder: (controller) {
                         return SingleChildScrollView(
                           child: controller.isCacheLoading
-                              ? Center(
-                                  child: GFLoader(
-                                    type: GFLoaderType.custom,
-                                    loaderIconOne: Icon(
-                                      Icons.circle_outlined,
-                                      size: 18,
-                                      color: ShadTheme.of(context)
-                                          .colorScheme
-                                          .primary
-                                          .withValues(alpha: 0.8),
-                                    ),
-                                  ),
-                                )
+                              ? Center(child: const CircularProgressIndicator())
                               : RepaintBoundary(
                                   key: _captureKey,
                                   child: Wrap(
                                       alignment: WrapAlignment.spaceAround,
                                       direction: Axis.horizontal,
-                                      runSpacing: 8,
-                                      spacing: 8,
                                       children: [
-                                        if (controller.buildSiteInfoCard)
-                                          _buildSiteInfoCard(),
-                                        if (controller.buildAccountInfoCard)
-                                          _buildAccountInfoCard(),
-                                        if (controller.buildSiteInfo &&
-                                            controller.statusList.isNotEmpty)
+                                        if (controller.buildSiteInfoCard) _buildSiteInfoCard(),
+                                        if (controller.buildAccountInfoCard) _buildAccountInfoCard(),
+                                        if (controller.buildSiteInfo && controller.statusList.isNotEmpty)
                                           _buildSiteInfo(),
-                                        if (controller.buildPublishedPieChart)
-                                          _buildPublishedPieChart(),
-                                        if (controller.buildSeedVolumePieChart)
-                                          _buildSeedVolumePieChart(),
-                                        if (controller.buildSmartLabelPieChart)
-                                          _buildSmartLabelPieChart(),
-                                        if (controller.buildStackedBar)
-                                          _buildStackedBar(),
-                                        if (controller
-                                            .showTodayUploadedIncrement)
-                                          _showTodayUploadedIncrement(),
-                                        if (controller
-                                            .showTodayDownloadedIncrement)
-                                          _showTodayDownloadedIncrement(),
-                                        if (controller.buildMonthPublishedBar)
-                                          _buildMonthPublishedBar(),
-                                        if (controller.buildMonthStackedBar)
-                                          _buildMonthStackedBar(),
-                                        if (controller.buildMonthDownloadedBar)
-                                          _buildMonthDownloadedBar(),
+                                        if (controller.buildPublishedPieChart) _buildPublishedPieChart(),
+                                        if (controller.buildSeedVolumePieChart) _buildSeedVolumePieChart(),
+                                        if (controller.buildSmartLabelPieChart) _buildSmartLabelPieChart(),
+                                        if (controller.buildStackedBar) _buildStackedBar(),
+                                        if (controller.showTodayUploadedIncrement) _showTodayUploadedIncrement(),
+                                        if (controller.showTodayDownloadedIncrement) _showTodayDownloadedIncrement(),
+                                        if (controller.buildMonthPublishedBar) _buildMonthPublishedBar(),
+                                        if (controller.buildMonthStackedBar) _buildMonthStackedBar(),
+                                        if (controller.buildMonthDownloadedBar) _buildMonthDownloadedBar(),
                                       ]
                                           .map((item) => FractionallySizedBox(
-                                                widthFactor:
-                                                    getWidthFactor(context),
+                                                widthFactor: getWidthFactor(context),
                                                 child: item,
                                               ))
                                           .toList()),
@@ -833,8 +736,7 @@ class _DashBoardPageState extends State<DashBoardPage>
     return GetBuilder<DashBoardController>(builder: (controller) {
       // Rx<MySite?> earliestSite = controller.earliestSite.obs;
 
-      RxBool showDescTitle =
-          SPUtil.getBool("showDescTitle", defaultValue: true).obs;
+      RxBool showDescTitle = SPUtil.getBool("showDescTitle", defaultValue: true).obs;
       RxBool showYear = SPUtil.getBool("showYear", defaultValue: true).obs;
       return CustomCard(
         height: controller.cardHeight,
@@ -862,8 +764,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 width: 2,
                                 decoration: BoxDecoration(
                                   color: HexColor('#87A0E5').withOpacity(0.5),
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(4.0)),
+                                  borderRadius: const BorderRadius.all(Radius.circular(4.0)),
                                 ),
                               ),
                               Padding(
@@ -873,8 +774,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
                                     Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 4, bottom: 2),
+                                      padding: const EdgeInsets.only(left: 4, bottom: 2),
                                       child: Text(
                                         '上传量',
                                         textAlign: TextAlign.center,
@@ -882,17 +782,13 @@ class _DashBoardPageState extends State<DashBoardPage>
                                           fontWeight: FontWeight.w500,
                                           fontSize: 11,
                                           letterSpacing: -0.1,
-                                          color: ShadTheme.of(context)
-                                              .colorScheme
-                                              .primary,
+                                          color: ShadTheme.of(context).colorScheme.foreground,
                                         ),
                                       ),
                                     ),
                                     Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
                                       children: <Widget>[
                                         const SizedBox(
                                           width: 15,
@@ -904,24 +800,19 @@ class _DashBoardPageState extends State<DashBoardPage>
                                           ),
                                         ),
                                         Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 4),
+                                          padding: const EdgeInsets.only(left: 4),
                                           child: Text(
-                                            FileSizeConvert.parseToFileSize(
-                                                controller.totalUploaded),
+                                            FileSizeConvert.parseToFileSize(controller.totalUploaded),
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                               fontWeight: FontWeight.w600,
                                               fontSize: 11,
-                                              color: ShadTheme.of(context)
-                                                  .colorScheme
-                                                  .primary,
+                                              color: ShadTheme.of(context).colorScheme.foreground,
                                             ),
                                           ),
                                         ),
                                         Padding(
-                                          padding: const EdgeInsets.only(
-                                              left: 4, bottom: 3),
+                                          padding: const EdgeInsets.only(left: 4, bottom: 3),
                                           child: Text(
                                             '',
                                             textAlign: TextAlign.center,
@@ -929,10 +820,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                               fontWeight: FontWeight.w600,
                                               fontSize: 12,
                                               letterSpacing: -0.2,
-                                              color: ShadTheme.of(context)
-                                                  .colorScheme
-                                                  .primary
-                                                  .withOpacity(0.8),
+                                              color: ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
                                             ),
                                           ),
                                         ),
@@ -951,8 +839,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 width: 2,
                                 decoration: BoxDecoration(
                                   color: HexColor('#F56E98').withOpacity(0.5),
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(4.0)),
+                                  borderRadius: const BorderRadius.all(Radius.circular(4.0)),
                                 ),
                               ),
                               Padding(
@@ -962,8 +849,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
                                     Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 4, bottom: 2),
+                                      padding: const EdgeInsets.only(left: 4, bottom: 2),
                                       child: Text(
                                         '下载量',
                                         textAlign: TextAlign.center,
@@ -971,17 +857,13 @@ class _DashBoardPageState extends State<DashBoardPage>
                                           fontWeight: FontWeight.w500,
                                           fontSize: 11,
                                           letterSpacing: -0.1,
-                                          color: ShadTheme.of(context)
-                                              .colorScheme
-                                              .primary,
+                                          color: ShadTheme.of(context).colorScheme.foreground,
                                         ),
                                       ),
                                     ),
                                     Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
                                       children: <Widget>[
                                         const SizedBox(
                                           width: 15,
@@ -993,24 +875,19 @@ class _DashBoardPageState extends State<DashBoardPage>
                                           ),
                                         ),
                                         Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 4),
+                                          padding: const EdgeInsets.only(left: 4),
                                           child: Text(
-                                            FileSizeConvert.parseToFileSize(
-                                                controller.totalDownloaded),
+                                            FileSizeConvert.parseToFileSize(controller.totalDownloaded),
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                               fontWeight: FontWeight.w600,
                                               fontSize: 11,
-                                              color: ShadTheme.of(context)
-                                                  .colorScheme
-                                                  .primary,
+                                              color: ShadTheme.of(context).colorScheme.foreground,
                                             ),
                                           ),
                                         ),
                                         Padding(
-                                          padding: const EdgeInsets.only(
-                                              left: 8, bottom: 3),
+                                          padding: const EdgeInsets.only(left: 8, bottom: 3),
                                           child: Text(
                                             '',
                                             textAlign: TextAlign.center,
@@ -1018,10 +895,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                               fontWeight: FontWeight.w600,
                                               fontSize: 12,
                                               letterSpacing: -0.2,
-                                              color: ShadTheme.of(context)
-                                                  .colorScheme
-                                                  .primary
-                                                  .withOpacity(0.8),
+                                              color: ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
                                             ),
                                           ),
                                         ),
@@ -1078,13 +952,10 @@ class _DashBoardPageState extends State<DashBoardPage>
                                     Obx(() {
                                       return showDescTitle.value
                                           ? ContinuousGradientText(
-                                              text: controller.getDesignation(
-                                                  controller.siteCount),
-                                              lightColors:
-                                                  controller.lightColors,
+                                              text: controller.getDesignation(controller.siteCount),
+                                              lightColors: controller.lightColors,
                                               darkColors: controller.darkColors,
-                                              duration:
-                                                  const Duration(seconds: 4),
+                                              duration: const Duration(seconds: 4),
                                             )
                                           : Text(
                                               '🌍站点数',
@@ -1092,10 +963,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                               style: TextStyle(
                                                 fontWeight: FontWeight.w600,
                                                 fontSize: 14,
-                                                color: ShadTheme.of(context)
-                                                    .colorScheme
-                                                    .primary
-                                                    .withOpacity(0.8),
+                                                color: ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
                                               ),
                                             );
                                     }),
@@ -1125,11 +993,7 @@ class _DashBoardPageState extends State<DashBoardPage>
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(
-                  left: 24,
-                  right: 24,
-                  top: (controller.cardHeight - 226) / 2,
-                  bottom: 0),
+              padding: EdgeInsets.only(left: 24, right: 24, top: (controller.cardHeight - 226) / 2, bottom: 0),
               child: Container(
                 height: 2,
                 decoration: const BoxDecoration(
@@ -1138,8 +1002,7 @@ class _DashBoardPageState extends State<DashBoardPage>
               ),
             ),
             Padding(
-              padding:
-                  const EdgeInsets.only(left: 24, right: 24, top: 0, bottom: 0),
+              padding: const EdgeInsets.only(left: 24, right: 24, top: 0, bottom: 0),
               child: Row(
                 children: <Widget>[
                   Expanded(
@@ -1154,7 +1017,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                             fontWeight: FontWeight.w500,
                             fontSize: 11,
                             letterSpacing: -0.2,
-                            color: ShadTheme.of(context).colorScheme.primary,
+                            color: ShadTheme.of(context).colorScheme.foreground,
                           ),
                         ),
                         Padding(
@@ -1164,8 +1027,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                             width: 50,
                             decoration: BoxDecoration(
                               color: HexColor('#87D0E5').withOpacity(0.2),
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(4.0)),
+                              borderRadius: const BorderRadius.all(Radius.circular(4.0)),
                             ),
                             child: Row(
                               children: <Widget>[
@@ -1177,8 +1039,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                       HexColor('#87D0E5'),
                                       HexColor('#87D0E5').withOpacity(0.5),
                                     ]),
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(4.0)),
+                                    borderRadius: const BorderRadius.all(Radius.circular(4.0)),
                                   ),
                                 )
                               ],
@@ -1193,10 +1054,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 11,
-                              color: ShadTheme.of(context)
-                                  .colorScheme
-                                  .primary
-                                  .withOpacity(0.8),
+                              color: ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
                             ),
                           ),
                         ),
@@ -1215,7 +1073,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                             fontWeight: FontWeight.w500,
                             fontSize: 11,
                             letterSpacing: -0.2,
-                            color: ShadTheme.of(context).colorScheme.primary,
+                            color: ShadTheme.of(context).colorScheme.foreground,
                           ),
                         ),
                         Padding(
@@ -1225,8 +1083,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                             width: 50,
                             decoration: BoxDecoration(
                               color: HexColor('#89A0E5').withOpacity(0.2),
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(4.0)),
+                              borderRadius: const BorderRadius.all(Radius.circular(4.0)),
                             ),
                             child: Row(
                               children: <Widget>[
@@ -1238,8 +1095,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                       HexColor('#89A0E5'),
                                       HexColor('#89A0E5').withOpacity(0.5),
                                     ]),
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(4.0)),
+                                    borderRadius: const BorderRadius.all(Radius.circular(4.0)),
                                   ),
                                 )
                               ],
@@ -1249,18 +1105,14 @@ class _DashBoardPageState extends State<DashBoardPage>
                         Padding(
                           padding: const EdgeInsets.only(top: 6),
                           child: Text(
-                            FileSizeConvert.parseToFileSize(
-                                controller.totalSeedVol, 2),
+                            FileSizeConvert.parseToFileSize(controller.totalSeedVol, 2),
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               letterSpacing: -1,
                               wordSpacing: -1,
                               fontSize: 11,
-                              color: ShadTheme.of(context)
-                                  .colorScheme
-                                  .primary
-                                  .withOpacity(0.8),
+                              color: ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
                             ),
                           ),
                         ),
@@ -1283,8 +1135,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 fontWeight: FontWeight.w500,
                                 fontSize: 11,
                                 letterSpacing: -0.2,
-                                color:
-                                    ShadTheme.of(context).colorScheme.primary,
+                                color: ShadTheme.of(context).colorScheme.foreground,
                               ),
                             ),
                             Padding(
@@ -1294,22 +1145,19 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 width: 50,
                                 decoration: BoxDecoration(
                                   color: HexColor('#F56E98').withOpacity(0.2),
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(4.0)),
+                                  borderRadius: const BorderRadius.all(Radius.circular(4.0)),
                                 ),
                                 child: Row(
                                   children: <Widget>[
                                     Container(
-                                      width: ((60 / 2) *
-                                          animationController!.value),
+                                      width: ((60 / 2) * animationController!.value),
                                       height: 4,
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(colors: [
                                           HexColor('#F56E98').withOpacity(0.1),
                                           HexColor('#F56E98'),
                                         ]),
-                                        borderRadius: const BorderRadius.all(
-                                            Radius.circular(4.0)),
+                                        borderRadius: const BorderRadius.all(Radius.circular(4.0)),
                                       ),
                                     ),
                                   ],
@@ -1324,10 +1172,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 11,
-                                  color: ShadTheme.of(context)
-                                      .colorScheme
-                                      .primary
-                                      .withOpacity(0.8),
+                                  color: ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
                                 ),
                               ),
                             ),
@@ -1351,8 +1196,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 fontWeight: FontWeight.w500,
                                 fontSize: 11,
                                 letterSpacing: -0.2,
-                                color:
-                                    ShadTheme.of(context).colorScheme.primary,
+                                color: ShadTheme.of(context).colorScheme.foreground,
                               ),
                             ),
                             Padding(
@@ -1362,22 +1206,19 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 width: 50,
                                 decoration: BoxDecoration(
                                   color: HexColor('#F1B440').withOpacity(0.2),
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(4.0)),
+                                  borderRadius: const BorderRadius.all(Radius.circular(4.0)),
                                 ),
                                 child: Row(
                                   children: <Widget>[
                                     Container(
-                                      width: ((60 / 2.5) *
-                                          animationController!.value),
+                                      width: ((60 / 2.5) * animationController!.value),
                                       height: 4,
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(colors: [
                                           HexColor('#F1B440').withOpacity(0.1),
                                           HexColor('#F1B440'),
                                         ]),
-                                        borderRadius: const BorderRadius.all(
-                                            Radius.circular(4.0)),
+                                        borderRadius: const BorderRadius.all(Radius.circular(4.0)),
                                       ),
                                     ),
                                   ],
@@ -1392,10 +1233,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 11,
-                                  color: ShadTheme.of(context)
-                                      .colorScheme
-                                      .primary
-                                      .withOpacity(0.8),
+                                  color: ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
                                 ),
                               ),
                             ),
@@ -1408,11 +1246,7 @@ class _DashBoardPageState extends State<DashBoardPage>
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(
-                  left: 24,
-                  right: 24,
-                  top: (controller.cardHeight - 226) / 2,
-                  bottom: 0),
+              padding: EdgeInsets.only(left: 24, right: 24, top: (controller.cardHeight - 226) / 2, bottom: 0),
               child: Container(
                 height: 2,
                 decoration: const BoxDecoration(
@@ -1434,10 +1268,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 11,
-                          color: ShadTheme.of(context)
-                              .colorScheme
-                              .primary
-                              .withOpacity(0.8),
+                          color: ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
                         ),
                       ),
                       controller.earliestSite == null
@@ -1450,20 +1281,14 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 },
                                 child: Text(
                                   showYear.value
-                                      ? calcWeeksDays(
-                                          controller.earliestSite!.timeJoin)
-                                      : calculateTimeElapsed(
-                                              controller.earliestSite!.timeJoin)
-                                          .replaceAll('前', ''),
+                                      ? calcWeeksDays(controller.earliestSite!.timeJoin)
+                                      : calculateTimeElapsed(controller.earliestSite!.timeJoin).replaceAll('前', ''),
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontWeight: FontWeight.normal,
                                     fontSize: 11,
                                     letterSpacing: 0.0,
-                                    color: ShadTheme.of(context)
-                                        .colorScheme
-                                        .primary
-                                        .withOpacity(0.8),
+                                    color: ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
                                   ),
                                 ),
                               );
@@ -1478,18 +1303,13 @@ class _DashBoardPageState extends State<DashBoardPage>
                               fontWeight: FontWeight.w500,
                               fontSize: 11,
                               letterSpacing: -0.2,
-                              color:
-                                  ShadTheme.of(context).colorScheme.primary)),
-                      Text(
-                          controller.updatedAt.isNotEmpty
-                              ? controller.updatedAt.substring(2, 19)
-                              : '',
+                              color: ShadTheme.of(context).colorScheme.foreground)),
+                      Text(controller.updatedAt.isNotEmpty ? controller.updatedAt.substring(2, 19) : '',
                           style: TextStyle(
                               fontWeight: FontWeight.w500,
                               fontSize: 11,
                               letterSpacing: -0.2,
-                              color:
-                                  ShadTheme.of(context).colorScheme.primary)),
+                              color: ShadTheme.of(context).colorScheme.foreground)),
                     ],
                   )
                 ],
@@ -1541,8 +1361,7 @@ class _DashBoardPageState extends State<DashBoardPage>
           bottomRight: Radius.circular(8.0),
           topRight: Radius.circular(8.0),
         ),
-        padding:
-            const EdgeInsets.only(left: 24, right: 24, top: 16, bottom: 16),
+        padding: const EdgeInsets.only(left: 24, right: 24, top: 16, bottom: 16),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
@@ -1560,7 +1379,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                       fontWeight: FontWeight.w500,
                       fontSize: 11,
                       letterSpacing: -0.2,
-                      color: ShadTheme.of(context).colorScheme.primary,
+                      color: ShadTheme.of(context).colorScheme.foreground,
                     ),
                   ),
                   Padding(
@@ -1570,8 +1389,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                       width: 70,
                       decoration: BoxDecoration(
                         color: HexColor('#89A0E5').withOpacity(0.2),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(4.0)),
+                        borderRadius: const BorderRadius.all(Radius.circular(4.0)),
                       ),
                       child: Row(
                         children: <Widget>[
@@ -1583,8 +1401,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 HexColor('#89A0E5'),
                                 HexColor('#89A0E5').withOpacity(0.5),
                               ]),
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(4.0)),
+                              borderRadius: const BorderRadius.all(Radius.circular(4.0)),
                             ),
                           )
                         ],
@@ -1600,10 +1417,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 11,
-                          color: ShadTheme.of(context)
-                              .colorScheme
-                              .primary
-                              .withOpacity(0.8),
+                          color: ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
                         ),
                       ),
                     ),
@@ -1630,8 +1444,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                           HexColor('#7C8B9A'),
                           HexColor('#B9B8B7').withOpacity(0.5),
                         ]),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(4.0)),
+                        borderRadius: const BorderRadius.all(Radius.circular(4.0)),
                       ),
                     )
                   ],
@@ -1651,7 +1464,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                       fontWeight: FontWeight.w500,
                       fontSize: 11,
                       letterSpacing: -0.2,
-                      color: ShadTheme.of(context).colorScheme.primary,
+                      color: ShadTheme.of(context).colorScheme.foreground,
                     ),
                   ),
                   Padding(
@@ -1661,8 +1474,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                       width: 70,
                       decoration: BoxDecoration(
                         color: HexColor('#87D0E5').withOpacity(0.2),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(4.0)),
+                        borderRadius: const BorderRadius.all(Radius.circular(4.0)),
                       ),
                       child: Row(
                         children: <Widget>[
@@ -1674,8 +1486,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 HexColor('#87D0E5'),
                                 HexColor('#87D0E5').withOpacity(0.5),
                               ]),
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(4.0)),
+                              borderRadius: const BorderRadius.all(Radius.circular(4.0)),
                             ),
                           )
                         ],
@@ -1691,10 +1502,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 11,
-                          color: ShadTheme.of(context)
-                              .colorScheme
-                              .primary
-                              .withOpacity(0.8),
+                          color: ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
                         ),
                       ),
                     ),
@@ -1719,7 +1527,7 @@ class _DashBoardPageState extends State<DashBoardPage>
             Text('站点数据',
                 style: TextStyle(
                   fontSize: 12,
-                  color: ShadTheme.of(context).colorScheme.primary,
+                  color: ShadTheme.of(context).colorScheme.foreground,
                 )),
             const SizedBox(height: 5),
             Expanded(child: Center(child: Text('暂无站点信息'))),
@@ -1727,17 +1535,12 @@ class _DashBoardPageState extends State<DashBoardPage>
         ),
       );
     }
-    int maxUploaded = controller.statusList
-        .map((item) => item.value['uploaded'])
-        .reduce((a, b) => a > b ? a : b);
+    int maxUploaded = controller.statusList.map((item) => item.value['uploaded']).reduce((a, b) => a > b ? a : b);
 
-    int maxDownloaded = controller.statusList
-        .map((item) => item.value['downloaded'])
-        .reduce((a, b) => a > b ? a : b);
+    int maxDownloaded = controller.statusList.map((item) => item.value['downloaded']).reduce((a, b) => a > b ? a : b);
 
     var uploadColor = RandomColor().randomColor(
-        colorHue: ColorHue.multiple(colorHues: [ColorHue.green, ColorHue.blue]),
-        colorBrightness: ColorBrightness.dark);
+        colorHue: ColorHue.multiple(colorHues: [ColorHue.green, ColorHue.blue]), colorBrightness: ColorBrightness.dark);
     var downloadColor = RandomColor().randomColor(
         colorHue: ColorHue.multiple(colorHues: [ColorHue.red, ColorHue.orange]),
         colorBrightness: ColorBrightness.dark,
@@ -1751,7 +1554,7 @@ class _DashBoardPageState extends State<DashBoardPage>
             Text('站点数据',
                 style: TextStyle(
                   fontSize: 12,
-                  color: ShadTheme.of(context).colorScheme.primary,
+                  color: ShadTheme.of(context).colorScheme.foreground,
                 )),
             const SizedBox(height: 5),
             Expanded(
@@ -1775,13 +1578,10 @@ class _DashBoardPageState extends State<DashBoardPage>
                                     SizedBox(
                                       width: 60,
                                       child: Text(
-                                        FileSizeConvert.parseToFileSize(
-                                            status.uploaded),
+                                        FileSizeConvert.parseToFileSize(status.uploaded),
                                         style: TextStyle(
                                           fontSize: 10,
-                                          color: ShadTheme.of(context)
-                                              .colorScheme
-                                              .primary,
+                                          color: ShadTheme.of(context).colorScheme.foreground,
                                         ),
                                         textAlign: TextAlign.right,
                                       ),
@@ -1798,24 +1598,18 @@ class _DashBoardPageState extends State<DashBoardPage>
                                           showLabels: false,
                                           animateAxis: true,
                                           isAxisInversed: true,
-                                          axisTrackStyle:
-                                              const LinearAxisTrackStyle(
-                                                  thickness: 8,
-                                                  edgeStyle:
-                                                      LinearEdgeStyle.bothCurve,
-                                                  // ✅ 圆角
-                                                  borderWidth: 1,
-                                                  borderColor:
-                                                      Color(0xff898989),
-                                                  color: Colors.transparent),
+                                          axisTrackStyle: const LinearAxisTrackStyle(
+                                              thickness: 8,
+                                              edgeStyle: LinearEdgeStyle.bothCurve,
+                                              // ✅ 圆角
+                                              borderWidth: 1,
+                                              borderColor: Color(0xff898989),
+                                              color: Colors.transparent),
                                           barPointers: <LinearBarPointer>[
                                             LinearBarPointer(
-                                              value: (status.uploaded) /
-                                                  maxUploaded *
-                                                  100,
+                                              value: (status.uploaded) / maxUploaded * 100,
                                               thickness: 8,
-                                              edgeStyle: LinearEdgeStyle
-                                                  .bothCurve, // ✅ 圆角
+                                              edgeStyle: LinearEdgeStyle.bothCurve, // ✅ 圆角
                                               color: uploadColor,
                                             )
                                           ],
@@ -1829,14 +1623,10 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   width: 70,
                                   child: Center(
                                       child: EllipsisText(
-                                    text: controller.privateMode
-                                        ? "${data.name.substring(0, 1)}**"
-                                        : data.name,
+                                    text: controller.privateMode ? "${data.name.substring(0, 1)}**" : data.name,
                                     style: TextStyle(
                                       fontSize: 10,
-                                      color: ShadTheme.of(context)
-                                          .colorScheme
-                                          .primary,
+                                      color: ShadTheme.of(context).colorScheme.foreground,
                                     ),
                                     ellipsis: '...',
                                     maxLines: 1,
@@ -1853,24 +1643,18 @@ class _DashBoardPageState extends State<DashBoardPage>
                                             showTicks: false,
                                             showLabels: false,
                                             animateAxis: true,
-                                            axisTrackStyle:
-                                                const LinearAxisTrackStyle(
+                                            axisTrackStyle: const LinearAxisTrackStyle(
                                               thickness: 8,
-                                              edgeStyle:
-                                                  LinearEdgeStyle.bothCurve,
+                                              edgeStyle: LinearEdgeStyle.bothCurve,
                                               borderWidth: 1,
                                               borderColor: Color(0xff898989),
                                               color: Colors.transparent,
                                             ),
                                             barPointers: <LinearBarPointer>[
                                               LinearBarPointer(
-                                                  value:
-                                                      (status.downloaded ?? 0) /
-                                                          maxDownloaded *
-                                                          100,
+                                                  value: (status.downloaded ?? 0) / maxDownloaded * 100,
                                                   thickness: 8,
-                                                  edgeStyle:
-                                                      LinearEdgeStyle.bothCurve,
+                                                  edgeStyle: LinearEdgeStyle.bothCurve,
                                                   color: downloadColor),
                                             ],
                                           )),
@@ -1881,13 +1665,10 @@ class _DashBoardPageState extends State<DashBoardPage>
                                     SizedBox(
                                         width: 60,
                                         child: Text(
-                                          FileSizeConvert.parseToFileSize(
-                                              status.downloaded ?? 0),
+                                          FileSizeConvert.parseToFileSize(status.downloaded ?? 0),
                                           style: TextStyle(
                                             fontSize: 10,
-                                            color: ShadTheme.of(context)
-                                                .colorScheme
-                                                .primary,
+                                            color: ShadTheme.of(context).colorScheme.foreground,
                                           ),
                                         )),
                                   ],
@@ -1912,13 +1693,12 @@ class _DashBoardPageState extends State<DashBoardPage>
         height: controller.cardHeight,
         padding: const EdgeInsets.only(left: 10),
         child: SfCircularChart(
-          palette:
-              Get.isDarkMode ? controller.darkColors : controller.lightColors,
+          palette: Get.isDarkMode ? controller.darkColors : controller.lightColors,
           title: ChartTitle(
               text: '上传数据',
               textStyle: TextStyle(
                 fontSize: 11,
-                color: ShadTheme.of(context).colorScheme.primary,
+                color: ShadTheme.of(context).colorScheme.foreground,
               )),
           centerX: '47%',
           centerY: '45%',
@@ -1934,7 +1714,7 @@ class _DashBoardPageState extends State<DashBoardPage>
               isResponsive: true,
               textStyle: TextStyle(
                 fontSize: 8,
-                color: ShadTheme.of(context).colorScheme.primary,
+                color: ShadTheme.of(context).colorScheme.foreground,
               )),
           series: _getSmartLabelPieSeries(),
           tooltipBehavior: TooltipBehavior(
@@ -1942,8 +1722,7 @@ class _DashBoardPageState extends State<DashBoardPage>
             header: '',
             canShowMarker: false,
             activationMode: ActivationMode.singleTap,
-            builder: (dynamic data, dynamic point, dynamic series,
-                int pointIndex, int seriesIndex) {
+            builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
               return Container(
                 color: ShadTheme.of(context).colorScheme.background,
                 padding: const EdgeInsets.all(8.0),
@@ -1951,7 +1730,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                   '${data.name}: ${FileSizeConvert.parseToFileSize(data.value.uploaded ?? 0)}',
                   style: TextStyle(
                     fontSize: 11,
-                    color: ShadTheme.of(context).colorScheme.primary,
+                    color: ShadTheme.of(context).colorScheme.foreground,
                   ),
                 ),
               );
@@ -1969,13 +1748,12 @@ class _DashBoardPageState extends State<DashBoardPage>
         height: controller.cardHeight,
         padding: const EdgeInsets.only(left: 10),
         child: SfCircularChart(
-          palette:
-              Get.isDarkMode ? controller.darkColors : controller.lightColors,
+          palette: Get.isDarkMode ? controller.darkColors : controller.lightColors,
           title: ChartTitle(
               text: '发种数据',
               textStyle: TextStyle(
                 fontSize: 11,
-                color: ShadTheme.of(context).colorScheme.primary,
+                color: ShadTheme.of(context).colorScheme.foreground,
               )),
           centerX: '47%',
           centerY: '45%',
@@ -1991,22 +1769,18 @@ class _DashBoardPageState extends State<DashBoardPage>
               isResponsive: true,
               textStyle: TextStyle(
                 fontSize: 8,
-                color: ShadTheme.of(context).colorScheme.primary,
+                color: ShadTheme.of(context).colorScheme.foreground,
               )),
           series: <PieSeries<MetaDataItem, String>>[
             PieSeries<MetaDataItem, String>(
               name: '站点发种数据汇总',
               dataSource: controller.statusList
-                  .map((item) => MetaDataItem(
-                      name: item.name,
-                      value: TrafficDelta.fromJson(item.value)))
+                  .map((item) => MetaDataItem(name: item.name, value: TrafficDelta.fromJson(item.value)))
                   .where((item) => item.value.published > 0)
-                  .sorted(
-                      (a, b) => b.value.published.compareTo(a.value.published))
+                  .sorted((a, b) => b.value.published.compareTo(a.value.published))
                   .toList(),
-              xValueMapper: (MetaDataItem data, _) => controller.privateMode
-                  ? "${data.name.substring(0, 1)}**"
-                  : data.name,
+              xValueMapper: (MetaDataItem data, _) =>
+                  controller.privateMode ? "${data.name.substring(0, 1)}**" : data.name,
               yValueMapper: (MetaDataItem data, _) => data.value.published ?? 0,
               dataLabelMapper: (MetaDataItem data, _) =>
                   '${controller.privateMode ? "${data.name.substring(0, 1)}**" : data.name}: ${data.value.published}',
@@ -2022,7 +1796,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                 labelPosition: ChartDataLabelPosition.outside,
                 textStyle: TextStyle(
                   fontSize: 8,
-                  color: ShadTheme.of(context).colorScheme.primary,
+                  color: ShadTheme.of(context).colorScheme.foreground,
                 ),
                 showZeroValue: false,
                 connectorLineSettings: const ConnectorLineSettings(
@@ -2038,8 +1812,7 @@ class _DashBoardPageState extends State<DashBoardPage>
             header: '',
             canShowMarker: false,
             activationMode: ActivationMode.singleTap,
-            builder: (dynamic data, dynamic point, dynamic series,
-                int pointIndex, int seriesIndex) {
+            builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
               return Container(
                 color: ShadTheme.of(context).colorScheme.background,
                 padding: const EdgeInsets.all(8.0),
@@ -2047,7 +1820,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                   '${data.name}: ${formatNumber(data.value.published, fixed: 0)}',
                   style: TextStyle(
                     fontSize: 11,
-                    color: ShadTheme.of(context).colorScheme.primary,
+                    color: ShadTheme.of(context).colorScheme.foreground,
                   ),
                 ),
               );
@@ -2065,14 +1838,12 @@ class _DashBoardPageState extends State<DashBoardPage>
         height: controller.cardHeight,
         padding: const EdgeInsets.only(left: 10),
         child: SfCircularChart(
-          palette:
-              Get.isDarkMode ? controller.darkColors : controller.lightColors,
+          palette: Get.isDarkMode ? controller.darkColors : controller.lightColors,
           title: ChartTitle(
-              text:
-                  '做种总量：${FileSizeConvert.parseToFileSize(controller.totalSeedVol)}',
+              text: '做种总量：${FileSizeConvert.parseToFileSize(controller.totalSeedVol)}',
               textStyle: TextStyle(
                 fontSize: 11,
-                color: ShadTheme.of(context).colorScheme.primary,
+                color: ShadTheme.of(context).colorScheme.foreground,
               )),
           centerX: '47%',
           centerY: '45%',
@@ -2088,7 +1859,7 @@ class _DashBoardPageState extends State<DashBoardPage>
               isResponsive: true,
               textStyle: TextStyle(
                 fontSize: 8,
-                color: ShadTheme.of(context).colorScheme.primary,
+                color: ShadTheme.of(context).colorScheme.foreground,
               )),
           series: _getSeedVolumePieSeries(),
           tooltipBehavior: TooltipBehavior(
@@ -2096,8 +1867,7 @@ class _DashBoardPageState extends State<DashBoardPage>
             header: '',
             canShowMarker: false,
             activationMode: ActivationMode.singleTap,
-            builder: (dynamic data, dynamic point, dynamic series,
-                int pointIndex, int seriesIndex) {
+            builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
               return Container(
                 color: ShadTheme.of(context).colorScheme.background,
                 padding: const EdgeInsets.all(8.0),
@@ -2105,7 +1875,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                   '${data.name}: ${FileSizeConvert.parseToFileSize(data.value ?? 0)}',
                   style: TextStyle(
                     fontSize: 11,
-                    color: ShadTheme.of(context).colorScheme.primary,
+                    color: ShadTheme.of(context).colorScheme.foreground,
                   ),
                 ),
               );
@@ -2122,12 +1892,9 @@ class _DashBoardPageState extends State<DashBoardPage>
       PieSeries<MetaDataItem, String>(
         name: '站点上传数据汇总',
         dataSource: controller.statusList
-            .map((item) => MetaDataItem(
-                name: item.name, value: TrafficDelta.fromJson(item.value)))
+            .map((item) => MetaDataItem(name: item.name, value: TrafficDelta.fromJson(item.value)))
             .toList(),
-        xValueMapper: (MetaDataItem data, _) => controller.privateMode
-            ? "${data.name.substring(0, 1)}**"
-            : data.name,
+        xValueMapper: (MetaDataItem data, _) => controller.privateMode ? "${data.name.substring(0, 1)}**" : data.name,
         yValueMapper: (MetaDataItem data, _) => data.value.uploaded ?? 0,
         dataLabelMapper: (MetaDataItem data, _) =>
             '${controller.privateMode ? "${data.name.substring(0, 1)}**" : data.name}: ${FileSizeConvert.parseToFileSize(data.value.uploaded ?? 0)}',
@@ -2143,7 +1910,7 @@ class _DashBoardPageState extends State<DashBoardPage>
           labelPosition: ChartDataLabelPosition.outside,
           textStyle: TextStyle(
             fontSize: 8,
-            color: ShadTheme.of(context).colorScheme.primary,
+            color: ShadTheme.of(context).colorScheme.foreground,
           ),
           showZeroValue: false,
           connectorLineSettings: const ConnectorLineSettings(
@@ -2161,9 +1928,7 @@ class _DashBoardPageState extends State<DashBoardPage>
       PieSeries<MetaDataItem, String>(
         name: '站点做种数据汇总',
         dataSource: controller.seedDataList,
-        xValueMapper: (MetaDataItem data, _) => controller.privateMode
-            ? "${data.name.substring(0, 1)}**"
-            : data.name,
+        xValueMapper: (MetaDataItem data, _) => controller.privateMode ? "${data.name.substring(0, 1)}**" : data.name,
         yValueMapper: (MetaDataItem data, _) => data.value ?? 0,
         dataLabelMapper: (MetaDataItem data, _) =>
             '${controller.privateMode ? "${data.name.substring(0, 1)}**" : data.name}: ${FileSizeConvert.parseToFileSize(data.value ?? 0)}',
@@ -2179,7 +1944,7 @@ class _DashBoardPageState extends State<DashBoardPage>
           labelPosition: ChartDataLabelPosition.outside,
           textStyle: TextStyle(
             fontSize: 8,
-            color: ShadTheme.of(context).colorScheme.primary,
+            color: ShadTheme.of(context).colorScheme.foreground,
           ),
           showZeroValue: false,
           connectorLineSettings: const ConnectorLineSettings(
@@ -2201,14 +1966,10 @@ class _DashBoardPageState extends State<DashBoardPage>
             children: [
               Expanded(
                 child: SfCartesianChart(
-                    palette: Get.isDarkMode
-                        ? controller.darkColors
-                        : controller.lightColors,
+                    palette: Get.isDarkMode ? controller.darkColors : controller.lightColors,
                     title: ChartTitle(
                         text: '每日上传增量',
-                        textStyle: TextStyle(
-                            fontSize: 11,
-                            color: ShadTheme.of(context).colorScheme.primary)),
+                        textStyle: TextStyle(fontSize: 11, color: ShadTheme.of(context).colorScheme.foreground)),
                     isTransposed: true,
                     margin: const EdgeInsets.all(15),
                     legend: Legend(
@@ -2219,7 +1980,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                         itemPadding: 5,
                         textStyle: TextStyle(
                           fontSize: 8,
-                          color: ShadTheme.of(context).colorScheme.primary,
+                          color: ShadTheme.of(context).colorScheme.foreground,
                         )),
                     enableSideBySideSeriesPlacement: false,
                     plotAreaBorderWidth: 0,
@@ -2240,8 +2001,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                       duration: 0,
                       activationMode: ActivationMode.singleTap,
                       tooltipPosition: TooltipPosition.auto,
-                      builder: (dynamic data, dynamic point, dynamic series,
-                          int pointIndex, int seriesIndex) {
+                      builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
                         return Container(
                           color: ShadTheme.of(context).colorScheme.background,
                           padding: const EdgeInsets.all(8),
@@ -2252,18 +2012,14 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   point.x,
                                   style: TextStyle(
                                     fontSize: 13,
-                                    color: ShadTheme.of(context)
-                                        .colorScheme
-                                        .primary,
+                                    color: ShadTheme.of(context).colorScheme.foreground,
                                   ),
                                 ),
                                 Text(
                                   '${series.name}: ${FileSizeConvert.parseToFileSize(point.y)}',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: ShadTheme.of(context)
-                                        .colorScheme
-                                        .secondary,
+                                    color: ShadTheme.of(context).colorScheme.secondary,
                                   ),
                                 ),
                               ],
@@ -2279,7 +2035,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                           details.text,
                           TextStyle(
                             fontSize: 10,
-                            color: ShadTheme.of(context).colorScheme.primary,
+                            color: ShadTheme.of(context).colorScheme.foreground,
                           ),
                         );
                       },
@@ -2288,44 +2044,36 @@ class _DashBoardPageState extends State<DashBoardPage>
                       axisLine: const AxisLine(width: 0),
                       axisLabelFormatter: (AxisLabelRenderDetails details) {
                         return ChartAxisLabel(
-                          FileSizeConvert.parseToFileSize(
-                              details.value.toInt()),
+                          FileSizeConvert.parseToFileSize(details.value.toInt()),
                           TextStyle(
                             fontSize: 10,
-                            color: ShadTheme.of(context).colorScheme.primary,
+                            color: ShadTheme.of(context).colorScheme.foreground,
                           ),
                         );
                       },
                       majorTickLines: const MajorTickLines(size: 0),
                     ),
-                    series: List.generate(controller.stackChartDataList.length,
-                        (index) {
-                      MetaDataItem siteData =
-                          controller.stackChartDataList[index];
+                    series: List.generate(controller.stackChartDataList.length, (index) {
+                      MetaDataItem siteData = controller.stackChartDataList[index];
                       // Logger.instance.d('当前站点每日数据长度：${siteData.value.length}');
                       List<TrafficDelta> displayData = siteData.value;
                       if (displayData.length > controller.days) {
-                        displayData = displayData
-                            .sublist(displayData.length - controller.days);
+                        displayData = displayData.sublist(displayData.length - controller.days);
                       }
                       // Logger.instance.d('处理后每日数据长度：${displayData.length}');
                       return StackedBarSeries<TrafficDelta?, String>(
-                        name: controller.privateMode
-                            ? "${siteData.name.toString().substring(0, 1)}**"
-                            : siteData.name,
+                        name: controller.privateMode ? "${siteData.name.toString().substring(0, 1)}**" : siteData.name,
                         width: 0.15,
-                        borderRadius:
-                            index == controller.stackChartDataList.length - 1
-                                ? const BorderRadius.only(
-                                    topLeft: Radius.circular(10),
-                                    topRight: Radius.circular(10),
-                                  )
-                                : const BorderRadius.all(Radius.zero),
+                        borderRadius: index == controller.stackChartDataList.length - 1
+                            ? const BorderRadius.only(
+                                topLeft: Radius.circular(10),
+                                topRight: Radius.circular(10),
+                              )
+                            : const BorderRadius.all(Radius.zero),
                         legendIconType: LegendIconType.circle,
                         dataSource: displayData,
                         // isVisibleInLegend: true,
-                        xValueMapper: (TrafficDelta? status, loop) =>
-                            formatCreatedTimeToDateString(status!),
+                        xValueMapper: (TrafficDelta? status, loop) => formatCreatedTimeToDateString(status!),
                         yValueMapper: (TrafficDelta? status, loop) {
                           return status?.uploaded ?? 0;
                         },
@@ -2335,9 +2083,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                           mode: EmptyPointMode.drop,
                         ),
                         dataLabelMapper: (TrafficDelta? status, _) =>
-                            controller.privateMode
-                                ? siteData.name.toString().substring(0, 1)
-                                : siteData.name,
+                            controller.privateMode ? siteData.name.toString().substring(0, 1) : siteData.name,
                         // color: RandomColor().randomColor(),
                         // enableTooltip: true,
                       );
@@ -2348,30 +2094,16 @@ class _DashBoardPageState extends State<DashBoardPage>
                 child: Row(
                   children: [
                     CustomTextTag(
-                        backgroundColor:
-                            ShadTheme.of(context).colorScheme.primary,
+                        backgroundColor: ShadTheme.of(context).colorScheme.foreground,
                         labelText: '最近${controller.days}天'),
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.only(left: 12.0),
-                        child: GetBuilder<DashBoardController>(
-                            builder: (controller) {
+                        child: GetBuilder<DashBoardController>(builder: (controller) {
                           return Row(
                             children: [
                               controller.isStackedLoading
-                                  ? Center(
-                                      child: GFLoader(
-                                        type: GFLoaderType.custom,
-                                        loaderIconOne: Icon(
-                                          Icons.circle_outlined,
-                                          size: 18,
-                                          color: ShadTheme.of(context)
-                                              .colorScheme
-                                              .primary
-                                              .withValues(alpha: 0.8),
-                                        ),
-                                      ),
-                                    )
+                                  ? Center(child: const CircularProgressIndicator())
                                   : InkWell(
                                       onTap: () async {
                                         if (controller.days > 1) {
@@ -2385,9 +2117,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                       },
                                       child: Icon(
                                         Icons.remove,
-                                        color: ShadTheme.of(context)
-                                            .colorScheme
-                                            .primary,
+                                        color: ShadTheme.of(context).colorScheme.foreground,
                                       ),
                                     ),
                               Expanded(
@@ -2395,9 +2125,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                     min: 1,
                                     max: 14,
                                     divisions: 14,
-                                    activeColor: ShadTheme.of(context)
-                                        .colorScheme
-                                        .primary,
+                                    activeColor: ShadTheme.of(context).colorScheme.foreground,
                                     label: controller.days.toString(),
                                     value: controller.days.toDouble(),
                                     onChanged: (value) async {
@@ -2407,19 +2135,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                     }),
                               ),
                               controller.isStackedLoading
-                                  ? Center(
-                                      child: GFLoader(
-                                        type: GFLoaderType.custom,
-                                        loaderIconOne: Icon(
-                                          Icons.circle_outlined,
-                                          size: 18,
-                                          color: ShadTheme.of(context)
-                                              .colorScheme
-                                              .primary
-                                              .withValues(alpha: 0.8),
-                                        ),
-                                      ),
-                                    )
+                                  ? Center(child: const CircularProgressIndicator())
                                   : InkWell(
                                       onTap: () async {
                                         if (controller.days < 14) {
@@ -2433,9 +2149,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                       },
                                       child: Icon(
                                         Icons.add,
-                                        color: ShadTheme.of(context)
-                                            .colorScheme
-                                            .primary,
+                                        color: ShadTheme.of(context).colorScheme.foreground,
                                       ),
                                     ),
                             ],
@@ -2466,14 +2180,10 @@ class _DashBoardPageState extends State<DashBoardPage>
             children: [
               Expanded(
                 child: SfCartesianChart(
-                    palette: Get.isDarkMode
-                        ? controller.darkColors
-                        : controller.lightColors,
+                    palette: Get.isDarkMode ? controller.darkColors : controller.lightColors,
                     title: ChartTitle(
                         text: '月度上传增量',
-                        textStyle: TextStyle(
-                            fontSize: 11,
-                            color: ShadTheme.of(context).colorScheme.primary)),
+                        textStyle: TextStyle(fontSize: 11, color: ShadTheme.of(context).colorScheme.foreground)),
                     isTransposed: true,
                     margin: const EdgeInsets.all(15),
                     legend: Legend(
@@ -2484,7 +2194,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                         itemPadding: 5,
                         textStyle: TextStyle(
                           fontSize: 8,
-                          color: ShadTheme.of(context).colorScheme.primary,
+                          color: ShadTheme.of(context).colorScheme.foreground,
                         )),
                     enableSideBySideSeriesPlacement: false,
                     plotAreaBorderWidth: 0,
@@ -2505,8 +2215,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                       duration: 0,
                       activationMode: ActivationMode.singleTap,
                       tooltipPosition: TooltipPosition.auto,
-                      builder: (dynamic data, dynamic point, dynamic series,
-                          int pointIndex, int seriesIndex) {
+                      builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
                         // Logger.instance.d(data);
                         return Container(
                           color: ShadTheme.of(context).colorScheme.background,
@@ -2518,18 +2227,14 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   point.x,
                                   style: TextStyle(
                                     fontSize: 13,
-                                    color: ShadTheme.of(context)
-                                        .colorScheme
-                                        .primary,
+                                    color: ShadTheme.of(context).colorScheme.foreground,
                                   ),
                                 ),
                                 Text(
                                   '${series.name}: ${FileSizeConvert.parseToFileSize(point.y)}',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: ShadTheme.of(context)
-                                        .colorScheme
-                                        .secondary,
+                                    color: ShadTheme.of(context).colorScheme.secondary,
                                   ),
                                 ),
                               ],
@@ -2545,7 +2250,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                           details.text,
                           TextStyle(
                             fontSize: 10,
-                            color: ShadTheme.of(context).colorScheme.primary,
+                            color: ShadTheme.of(context).colorScheme.foreground,
                           ),
                         );
                       },
@@ -2554,40 +2259,31 @@ class _DashBoardPageState extends State<DashBoardPage>
                       axisLine: const AxisLine(width: 0),
                       axisLabelFormatter: (AxisLabelRenderDetails details) {
                         return ChartAxisLabel(
-                          FileSizeConvert.parseToFileSize(
-                              details.value.toInt()),
+                          FileSizeConvert.parseToFileSize(details.value.toInt()),
                           TextStyle(
                             fontSize: 10,
-                            color: ShadTheme.of(context).colorScheme.primary,
+                            color: ShadTheme.of(context).colorScheme.foreground,
                           ),
                         );
                       },
                       majorTickLines: const MajorTickLines(size: 0),
                     ),
-                    series: List.generate(
-                        controller.uploadMonthIncrementDataList.length,
-                        (index) {
-                      MetaDataItem siteData =
-                          controller.uploadMonthIncrementDataList[index];
-                      List<TrafficDelta?> dataSource =
-                          siteData.value.whereType<TrafficDelta?>().toList();
+                    series: List.generate(controller.uploadMonthIncrementDataList.length, (index) {
+                      MetaDataItem siteData = controller.uploadMonthIncrementDataList[index];
+                      List<TrafficDelta?> dataSource = siteData.value.whereType<TrafficDelta?>().toList();
                       return StackedBarSeries<TrafficDelta?, String>(
-                        name: controller.privateMode
-                            ? "${siteData.name.toString().substring(0, 1)}**"
-                            : siteData.name,
+                        name: controller.privateMode ? "${siteData.name.toString().substring(0, 1)}**" : siteData.name,
                         width: 0.15,
-                        borderRadius:
-                            index == controller.stackChartDataList.length - 1
-                                ? const BorderRadius.only(
-                                    topLeft: Radius.circular(10),
-                                    topRight: Radius.circular(10),
-                                  )
-                                : const BorderRadius.all(Radius.zero),
+                        borderRadius: index == controller.stackChartDataList.length - 1
+                            ? const BorderRadius.only(
+                                topLeft: Radius.circular(10),
+                                topRight: Radius.circular(10),
+                              )
+                            : const BorderRadius.all(Radius.zero),
                         legendIconType: LegendIconType.circle,
                         dataSource: dataSource,
                         // isVisibleInLegend: true,
-                        xValueMapper: (TrafficDelta? status, loop) =>
-                            formatCreatedTimeToMonthString(status!),
+                        xValueMapper: (TrafficDelta? status, loop) => formatCreatedTimeToMonthString(status!),
                         yValueMapper: (TrafficDelta? status, loop) {
                           return status?.uploaded;
                         },
@@ -2596,10 +2292,8 @@ class _DashBoardPageState extends State<DashBoardPage>
                         emptyPointSettings: const EmptyPointSettings(
                           mode: EmptyPointMode.drop,
                         ),
-                        dataLabelMapper: (TrafficDelta? status, _) => controller
-                                .privateMode
-                            ? "${siteData.name.toString().substring(0, 1)}**"
-                            : siteData.name,
+                        dataLabelMapper: (TrafficDelta? status, _) =>
+                            controller.privateMode ? "${siteData.name.toString().substring(0, 1)}**" : siteData.name,
                         // color: RandomColor().randomColor(),
                         // enableTooltip: true,
                       );
@@ -2609,10 +2303,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 child: Row(
                   children: [
-                    CustomTextTag(
-                        backgroundColor:
-                            ShadTheme.of(context).colorScheme.primary,
-                        labelText: '最近12月'),
+                    CustomTextTag(backgroundColor: ShadTheme.of(context).colorScheme.foreground, labelText: '最近12月'),
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.only(left: 12.0),
@@ -2635,8 +2326,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   divisions: 12,
                                   // label: controller.days.toString(),
                                   value: 12,
-                                  activeColor:
-                                      ShadTheme.of(context).colorScheme.primary,
+                                  activeColor: ShadTheme.of(context).colorScheme.foreground,
                                   onChanged: (value) async {
                                     // controller.days = value.toInt();
                                     // await controller.initChartData();
@@ -2681,14 +2371,10 @@ class _DashBoardPageState extends State<DashBoardPage>
             children: [
               Expanded(
                 child: SfCartesianChart(
-                    palette: Get.isDarkMode
-                        ? controller.darkColors
-                        : controller.lightColors,
+                    palette: Get.isDarkMode ? controller.darkColors : controller.lightColors,
                     title: ChartTitle(
                         text: '月度下载增量',
-                        textStyle: TextStyle(
-                            fontSize: 11,
-                            color: ShadTheme.of(context).colorScheme.primary)),
+                        textStyle: TextStyle(fontSize: 11, color: ShadTheme.of(context).colorScheme.foreground)),
                     isTransposed: true,
                     margin: const EdgeInsets.all(15),
                     legend: Legend(
@@ -2699,7 +2385,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                         itemPadding: 5,
                         textStyle: TextStyle(
                           fontSize: 8,
-                          color: ShadTheme.of(context).colorScheme.primary,
+                          color: ShadTheme.of(context).colorScheme.foreground,
                         )),
                     enableSideBySideSeriesPlacement: false,
                     plotAreaBorderWidth: 0,
@@ -2720,8 +2406,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                       duration: 0,
                       activationMode: ActivationMode.singleTap,
                       tooltipPosition: TooltipPosition.auto,
-                      builder: (dynamic data, dynamic point, dynamic series,
-                          int pointIndex, int seriesIndex) {
+                      builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
                         // Logger.instance.d(data);
                         return Container(
                           color: ShadTheme.of(context).colorScheme.background,
@@ -2733,18 +2418,14 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   point.x,
                                   style: TextStyle(
                                     fontSize: 13,
-                                    color: ShadTheme.of(context)
-                                        .colorScheme
-                                        .primary,
+                                    color: ShadTheme.of(context).colorScheme.foreground,
                                   ),
                                 ),
                                 Text(
                                   '${series.name}: ${FileSizeConvert.parseToFileSize(point.y)}',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: ShadTheme.of(context)
-                                        .colorScheme
-                                        .secondary,
+                                    color: ShadTheme.of(context).colorScheme.secondary,
                                   ),
                                 ),
                               ],
@@ -2760,7 +2441,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                           details.text,
                           TextStyle(
                             fontSize: 10,
-                            color: ShadTheme.of(context).colorScheme.primary,
+                            color: ShadTheme.of(context).colorScheme.foreground,
                           ),
                         );
                       },
@@ -2769,40 +2450,31 @@ class _DashBoardPageState extends State<DashBoardPage>
                       axisLine: const AxisLine(width: 0),
                       axisLabelFormatter: (AxisLabelRenderDetails details) {
                         return ChartAxisLabel(
-                          FileSizeConvert.parseToFileSize(
-                              details.value.toInt()),
+                          FileSizeConvert.parseToFileSize(details.value.toInt()),
                           TextStyle(
                             fontSize: 10,
-                            color: ShadTheme.of(context).colorScheme.primary,
+                            color: ShadTheme.of(context).colorScheme.foreground,
                           ),
                         );
                       },
                       majorTickLines: const MajorTickLines(size: 0),
                     ),
-                    series: List.generate(
-                        controller.uploadMonthIncrementDataList.length,
-                        (index) {
-                      MetaDataItem siteData =
-                          controller.uploadMonthIncrementDataList[index];
-                      List<TrafficDelta?> dataSource =
-                          siteData.value.whereType<TrafficDelta?>().toList();
+                    series: List.generate(controller.uploadMonthIncrementDataList.length, (index) {
+                      MetaDataItem siteData = controller.uploadMonthIncrementDataList[index];
+                      List<TrafficDelta?> dataSource = siteData.value.whereType<TrafficDelta?>().toList();
                       return StackedBarSeries<TrafficDelta?, String>(
-                        name: controller.privateMode
-                            ? "${siteData.name.toString().substring(0, 1)}**"
-                            : siteData.name,
+                        name: controller.privateMode ? "${siteData.name.toString().substring(0, 1)}**" : siteData.name,
                         width: 0.15,
-                        borderRadius:
-                            index == controller.stackChartDataList.length - 1
-                                ? const BorderRadius.only(
-                                    topLeft: Radius.circular(10),
-                                    topRight: Radius.circular(10),
-                                  )
-                                : const BorderRadius.all(Radius.zero),
+                        borderRadius: index == controller.stackChartDataList.length - 1
+                            ? const BorderRadius.only(
+                                topLeft: Radius.circular(10),
+                                topRight: Radius.circular(10),
+                              )
+                            : const BorderRadius.all(Radius.zero),
                         legendIconType: LegendIconType.circle,
                         dataSource: dataSource,
                         // isVisibleInLegend: true,
-                        xValueMapper: (TrafficDelta? status, loop) =>
-                            formatCreatedTimeToMonthString(status!),
+                        xValueMapper: (TrafficDelta? status, loop) => formatCreatedTimeToMonthString(status!),
                         yValueMapper: (TrafficDelta? status, loop) {
                           return status?.downloaded ?? 0;
                         },
@@ -2811,10 +2483,8 @@ class _DashBoardPageState extends State<DashBoardPage>
                         emptyPointSettings: const EmptyPointSettings(
                           mode: EmptyPointMode.drop,
                         ),
-                        dataLabelMapper: (TrafficDelta? status, _) => controller
-                                .privateMode
-                            ? "${siteData.name.toString().substring(0, 1)}**"
-                            : siteData.name,
+                        dataLabelMapper: (TrafficDelta? status, _) =>
+                            controller.privateMode ? "${siteData.name.toString().substring(0, 1)}**" : siteData.name,
                         // color: RandomColor().randomColor(),
                         // enableTooltip: true,
                       );
@@ -2824,10 +2494,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 child: Row(
                   children: [
-                    CustomTextTag(
-                        backgroundColor:
-                            ShadTheme.of(context).colorScheme.primary,
-                        labelText: '最近12月'),
+                    CustomTextTag(backgroundColor: ShadTheme.of(context).colorScheme.foreground, labelText: '最近12月'),
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.only(left: 12.0),
@@ -2850,8 +2517,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   divisions: 12,
                                   // label: controller.days.toString(),
                                   value: 12,
-                                  activeColor:
-                                      ShadTheme.of(context).colorScheme.primary,
+                                  activeColor: ShadTheme.of(context).colorScheme.foreground,
                                   onChanged: (value) async {
                                     // controller.days = value.toInt();
                                     // await controller.initChartData();
@@ -2896,14 +2562,10 @@ class _DashBoardPageState extends State<DashBoardPage>
             children: [
               Expanded(
                 child: SfCartesianChart(
-                    palette: Get.isDarkMode
-                        ? controller.darkColors
-                        : controller.lightColors,
+                    palette: Get.isDarkMode ? controller.darkColors : controller.lightColors,
                     title: ChartTitle(
                         text: '月度发种增量',
-                        textStyle: TextStyle(
-                            fontSize: 11,
-                            color: ShadTheme.of(context).colorScheme.primary)),
+                        textStyle: TextStyle(fontSize: 11, color: ShadTheme.of(context).colorScheme.foreground)),
                     isTransposed: true,
                     margin: const EdgeInsets.all(15),
                     legend: Legend(
@@ -2914,7 +2576,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                         itemPadding: 5,
                         textStyle: TextStyle(
                           fontSize: 8,
-                          color: ShadTheme.of(context).colorScheme.primary,
+                          color: ShadTheme.of(context).colorScheme.foreground,
                         )),
                     enableSideBySideSeriesPlacement: false,
                     plotAreaBorderWidth: 0,
@@ -2935,8 +2597,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                       duration: 0,
                       activationMode: ActivationMode.singleTap,
                       tooltipPosition: TooltipPosition.auto,
-                      builder: (dynamic data, dynamic point, dynamic series,
-                          int pointIndex, int seriesIndex) {
+                      builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
                         // Logger.instance.d(data);
                         return Container(
                           color: ShadTheme.of(context).colorScheme.background,
@@ -2948,18 +2609,14 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   point.x,
                                   style: TextStyle(
                                     fontSize: 13,
-                                    color: ShadTheme.of(context)
-                                        .colorScheme
-                                        .primary,
+                                    color: ShadTheme.of(context).colorScheme.foreground,
                                   ),
                                 ),
                                 Text(
                                   '${series.name}: ${formatNumber(point.y, fixed: 0)}',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: ShadTheme.of(context)
-                                        .colorScheme
-                                        .secondary,
+                                    color: ShadTheme.of(context).colorScheme.secondary,
                                   ),
                                 ),
                               ],
@@ -2975,7 +2632,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                           details.text,
                           TextStyle(
                             fontSize: 10,
-                            color: ShadTheme.of(context).colorScheme.primary,
+                            color: ShadTheme.of(context).colorScheme.foreground,
                           ),
                         );
                       },
@@ -2987,36 +2644,28 @@ class _DashBoardPageState extends State<DashBoardPage>
                           formatNumber(details.value.toInt(), fixed: 0),
                           TextStyle(
                             fontSize: 10,
-                            color: ShadTheme.of(context).colorScheme.primary,
+                            color: ShadTheme.of(context).colorScheme.foreground,
                           ),
                         );
                       },
                       majorTickLines: const MajorTickLines(size: 0),
                     ),
-                    series: List.generate(
-                        controller.uploadMonthIncrementDataList.length,
-                        (index) {
-                      MetaDataItem siteData =
-                          controller.uploadMonthIncrementDataList[index];
-                      List<TrafficDelta?> dataSource =
-                          siteData.value.whereType<TrafficDelta?>().toList();
+                    series: List.generate(controller.uploadMonthIncrementDataList.length, (index) {
+                      MetaDataItem siteData = controller.uploadMonthIncrementDataList[index];
+                      List<TrafficDelta?> dataSource = siteData.value.whereType<TrafficDelta?>().toList();
                       return StackedBarSeries<TrafficDelta?, String>(
-                        name: controller.privateMode
-                            ? "${siteData.name.toString().substring(0, 1)}**"
-                            : siteData.name,
+                        name: controller.privateMode ? "${siteData.name.toString().substring(0, 1)}**" : siteData.name,
                         width: 0.15,
-                        borderRadius:
-                            index == controller.stackChartDataList.length - 1
-                                ? const BorderRadius.only(
-                                    topLeft: Radius.circular(10),
-                                    topRight: Radius.circular(10),
-                                  )
-                                : const BorderRadius.all(Radius.zero),
+                        borderRadius: index == controller.stackChartDataList.length - 1
+                            ? const BorderRadius.only(
+                                topLeft: Radius.circular(10),
+                                topRight: Radius.circular(10),
+                              )
+                            : const BorderRadius.all(Radius.zero),
                         legendIconType: LegendIconType.circle,
                         dataSource: dataSource,
                         // isVisibleInLegend: true,
-                        xValueMapper: (TrafficDelta? status, loop) =>
-                            formatCreatedTimeToMonthString(status!),
+                        xValueMapper: (TrafficDelta? status, loop) => formatCreatedTimeToMonthString(status!),
                         yValueMapper: (TrafficDelta? status, loop) {
                           return status?.published ?? 0;
                         },
@@ -3025,10 +2674,8 @@ class _DashBoardPageState extends State<DashBoardPage>
                         emptyPointSettings: const EmptyPointSettings(
                           mode: EmptyPointMode.drop,
                         ),
-                        dataLabelMapper: (TrafficDelta? status, _) => controller
-                                .privateMode
-                            ? "${siteData.name.toString().substring(0, 1)}**"
-                            : siteData.name,
+                        dataLabelMapper: (TrafficDelta? status, _) =>
+                            controller.privateMode ? "${siteData.name.toString().substring(0, 1)}**" : siteData.name,
                         // color: RandomColor().randomColor(),
                         // enableTooltip: true,
                       );
@@ -3038,10 +2685,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 child: Row(
                   children: [
-                    CustomTextTag(
-                        backgroundColor:
-                            ShadTheme.of(context).colorScheme.primary,
-                        labelText: '最近12月'),
+                    CustomTextTag(backgroundColor: ShadTheme.of(context).colorScheme.foreground, labelText: '最近12月'),
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.only(left: 12.0),
@@ -3064,8 +2708,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   divisions: 12,
                                   // label: controller.days.toString(),
                                   value: 12,
-                                  activeColor:
-                                      ShadTheme.of(context).colorScheme.primary,
+                                  activeColor: ShadTheme.of(context).colorScheme.foreground,
                                   onChanged: (value) async {
                                     // controller.days = value.toInt();
                                     // await controller.initChartData();
@@ -3129,11 +2772,10 @@ class CustomCheckboxListTile extends StatelessWidget {
     return CheckboxListTile(
       title: Text(
         title,
-        style: TextStyle(
-            fontSize: 12, color: ShadTheme.of(context).colorScheme.primary),
+        style: TextStyle(fontSize: 12, color: ShadTheme.of(context).colorScheme.foreground),
       ),
       value: value,
-      activeColor: ShadTheme.of(context).colorScheme.primary,
+      activeColor: ShadTheme.of(context).colorScheme.foreground,
       onChanged: (bool? newValue) {
         if (newValue == null) return;
         onUpdate(newValue);

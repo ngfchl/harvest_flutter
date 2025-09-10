@@ -2,8 +2,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:getwidget/components/typography/gf_typography.dart';
-import 'package:getwidget/types/gf_typography_type.dart';
 import 'package:harvest/app/home/pages/models/website.dart';
 import 'package:harvest/app/home/pages/my_site/controller.dart';
 import 'package:harvest/common/card_view.dart';
@@ -42,11 +40,9 @@ class SiteMap extends StatelessWidget {
               .where((item) => item.alive && item.type.toLowerCase() == 'pt')
               .toList()
               .obs
-            ..sort(
-                (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+            ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
           Get.bottomSheet(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5.0)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
               isScrollControlled: true,
               enableDrag: true,
               CustomCard(
@@ -59,13 +55,9 @@ class SiteMap extends StatelessWidget {
                         children: [
                           SizedBox(
                             width: 120,
-                            child: GFTypography(
-                              text: '站点图谱',
-                              type: GFTypographyType.typo3,
-                              textColor: ShadTheme.of(context).colorScheme.primary,
-                              dividerColor:
-                                  ShadTheme.of(context).colorScheme.primary,
-                              dividerWidth: 75,
+                            child: Text(
+                              '站点图谱',
+                              style: ShadTheme.of(context).textTheme.h1Large,
                             ),
                           ),
                           // Obx(() {
@@ -110,51 +102,39 @@ class SiteMap extends StatelessWidget {
                                 status = mySite?.latestStatusInfo;
                               }
                               bool flag = index % 2 != 0;
-                              String country =
-                                  getFlagEmojiFromCountryName(webSite.nation);
+                              String country = getFlagEmojiFromCountryName(webSite.nation);
                               return TimelineNode(
                                 indicator: Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     ListTile(
                                       dense: true,
                                       title: Row(
-                                        mainAxisAlignment: flag
-                                            ? MainAxisAlignment.end
-                                            : MainAxisAlignment.start,
+                                        mainAxisAlignment: flag ? MainAxisAlignment.end : MainAxisAlignment.start,
                                         children: [
                                           Text(
                                             country,
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: ShadTheme.of(context)
-                                                  .colorScheme
-                                                  .secondary,
+                                              color: ShadTheme.of(context).colorScheme.secondary,
                                             ),
                                           ),
                                           Text(
                                             mySite?.nickname ?? webSite.name,
                                             style: TextStyle(
                                               fontSize: 14,
-                                              color: ShadTheme.of(context)
-                                                  .colorScheme
-                                                  .primary,
+                                              color: ShadTheme.of(context).colorScheme.foreground,
                                             ),
                                           ),
                                         ],
                                       ),
                                       subtitle: Align(
-                                        alignment: flag
-                                            ? Alignment.centerRight
-                                            : Alignment.centerLeft,
+                                        alignment: flag ? Alignment.centerRight : Alignment.centerLeft,
                                         child: Text(
                                           '[${webSite.tags}]',
                                           style: TextStyle(
                                             fontSize: 11,
-                                            color: ShadTheme.of(context)
-                                                .colorScheme
-                                                .secondary,
+                                            color: ShadTheme.of(context).colorScheme.secondary,
                                           ),
                                         ),
                                       ),
@@ -170,43 +150,26 @@ class SiteMap extends StatelessWidget {
                                                         title: Text(u),
                                                         onTap: () async {
                                                           Get.back();
-                                                          if (u.contains(
-                                                              'm-team')) {
-                                                            u = u.replaceFirst(
-                                                                "api", "xp");
+                                                          if (u.contains('m-team')) {
+                                                            u = u.replaceFirst("api", "xp");
                                                           }
-                                                          if (kIsWeb ||
-                                                              !controller
-                                                                  .openByInnerExplorer) {
-                                                            Logger.instance
-                                                                .d('使用外部浏览器打开');
-                                                            Uri uri =
-                                                                Uri.parse(u);
-                                                            if (!await launchUrl(
-                                                                uri,
-                                                                mode: LaunchMode
-                                                                    .externalApplication)) {
-                                                              Get.snackbar(
-                                                                  '打开网页出错',
-                                                                  '打开网页出错，不支持的客户端？',
-                                                                  colorText: ShadTheme.of(
-                                                                          context)
-                                                                      .colorScheme
-                                                                      .primary);
+                                                          if (kIsWeb || !controller.openByInnerExplorer) {
+                                                            Logger.instance.d('使用外部浏览器打开');
+                                                            Uri uri = Uri.parse(u);
+                                                            if (!await launchUrl(uri,
+                                                                mode: LaunchMode.externalApplication)) {
+                                                              Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
+                                                                  colorText:
+                                                                      ShadTheme.of(context).colorScheme.foreground);
                                                             }
                                                           } else {
-                                                            Logger.instance
-                                                                .d('使用内置浏览器打开');
-                                                            Get.toNamed(
-                                                                Routes.WEBVIEW,
-                                                                arguments: {
-                                                                  'url': u,
-                                                                  'info': null,
-                                                                  'mySite':
-                                                                      mySite,
-                                                                  'website':
-                                                                      webSite
-                                                                });
+                                                            Logger.instance.d('使用内置浏览器打开');
+                                                            Get.toNamed(Routes.WEBVIEW, arguments: {
+                                                              'url': u,
+                                                              'info': null,
+                                                              'mySite': mySite,
+                                                              'website': webSite
+                                                            });
                                                           }
                                                         },
                                                       ))
@@ -216,25 +179,18 @@ class SiteMap extends StatelessWidget {
                                       trailing: !flag
                                           ? null
                                           : ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
+                                              borderRadius: BorderRadius.circular(10),
                                               child: CachedNetworkImage(
-                                                imageUrl: webSite.logo
-                                                        .startsWith('http')
+                                                imageUrl: webSite.logo.startsWith('http')
                                                     ? webSite.logo
                                                     : '${mySite?.mirror}${webSite.logo}',
                                                 fit: BoxFit.fill,
                                                 httpHeaders: {
-                                                  "user-agent":
-                                                      mySite?.userAgent ?? '',
-                                                  "Cookie":
-                                                      mySite?.cookie ?? '',
+                                                  "user-agent": mySite?.userAgent ?? '',
+                                                  "Cookie": mySite?.cookie ?? '',
                                                 },
-                                                errorWidget: (context, url,
-                                                        error) =>
-                                                    const Image(
-                                                        image: AssetImage(
-                                                            'assets/images/avatar.png')),
+                                                errorWidget: (context, url, error) =>
+                                                    const Image(image: AssetImage('assets/images/avatar.png')),
                                                 width: 32,
                                                 height: 32,
                                               ),
@@ -242,25 +198,18 @@ class SiteMap extends StatelessWidget {
                                       leading: flag
                                           ? null
                                           : ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
+                                              borderRadius: BorderRadius.circular(10),
                                               child: CachedNetworkImage(
-                                                imageUrl: webSite.logo
-                                                        .startsWith('http')
+                                                imageUrl: webSite.logo.startsWith('http')
                                                     ? webSite.logo
                                                     : '${mySite?.mirror}${webSite.logo}',
                                                 fit: BoxFit.fill,
                                                 httpHeaders: {
-                                                  "user-agent":
-                                                      mySite?.userAgent ?? '',
-                                                  "Cookie":
-                                                      mySite?.cookie ?? '',
+                                                  "user-agent": mySite?.userAgent ?? '',
+                                                  "Cookie": mySite?.cookie ?? '',
                                                 },
-                                                errorWidget: (context, url,
-                                                        error) =>
-                                                    const Image(
-                                                        image: AssetImage(
-                                                            'assets/images/avatar.png')),
+                                                errorWidget: (context, url, error) =>
+                                                    const Image(image: AssetImage('assets/images/avatar.png')),
                                                 width: 32,
                                                 height: 32,
                                               ),
@@ -275,45 +224,35 @@ class SiteMap extends StatelessWidget {
                                             calcWeeksDays(mySite.timeJoin),
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: ShadTheme.of(context)
-                                                  .colorScheme
-                                                  .secondary,
+                                              color: ShadTheme.of(context).colorScheme.secondary,
                                             ),
                                           ),
                                           Text(
                                             '[${status?.myLevel}]',
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: ShadTheme.of(context)
-                                                  .colorScheme
-                                                  .primary,
+                                              color: ShadTheme.of(context).colorScheme.foreground,
                                             ),
                                           ),
                                           Text(
                                             '↑${FileSizeConvert.parseToFileSize(status?.uploaded ?? 0)} (${status?.seed ?? 0})',
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: ShadTheme.of(context)
-                                                  .colorScheme
-                                                  .primary,
+                                              color: ShadTheme.of(context).colorScheme.foreground,
                                             ),
                                           ),
                                           Text(
                                             '↓${FileSizeConvert.parseToFileSize(status?.downloaded ?? 0)} (${status?.leech ?? 0})',
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: ShadTheme.of(context)
-                                                  .colorScheme
-                                                  .primary,
+                                              color: ShadTheme.of(context).colorScheme.foreground,
                                             ),
                                           ),
                                           Text(
                                             '☁︎${FileSizeConvert.parseToFileSize(status?.seedVolume ?? 0)}',
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: ShadTheme.of(context)
-                                                  .colorScheme
-                                                  .primary,
+                                              color: ShadTheme.of(context).colorScheme.foreground,
                                             ),
                                           ),
                                         ],

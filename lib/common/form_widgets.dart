@@ -25,7 +25,7 @@ class SwitchTile extends StatelessWidget {
         title,
         style: TextStyle(
           fontSize: 14,
-          color: ShadTheme.of(context).colorScheme.primary,
+          color: ShadTheme.of(context).colorScheme.foreground,
         ),
       ),
       trailing: Transform.scale(
@@ -43,8 +43,9 @@ class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
   final String labelText;
   final String? prefixText;
-  final Icon? prefixIcon;
+  final Widget? prefixIcon;
   final String? suffixText;
+  final Widget? suffixIcon;
   final String? helperText;
   final List<TextInputFormatter> inputFormatters;
   final TextInputType? keyboardType;
@@ -52,8 +53,10 @@ class CustomTextField extends StatelessWidget {
   final int? maxLength;
   final bool autofocus;
   final bool readOnly;
+  final bool obscureText;
   final Function(String)? onChanged;
   final Function()? onTap;
+  final FormFieldValidator<String>? validator;
 
   const CustomTextField({
     super.key,
@@ -66,33 +69,37 @@ class CustomTextField extends StatelessWidget {
     this.prefixText,
     this.prefixIcon,
     this.suffixText,
+    this.suffixIcon,
     this.onChanged,
     this.onTap,
+    this.validator,
     this.maxLength,
     this.autofocus = false,
     this.readOnly = false,
+    this.obscureText = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    var scheme = ShadTheme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8),
-      child: TextField(
+      child: TextFormField(
         autofocus: autofocus,
         controller: controller,
         onChanged: onChanged,
         maxLength: maxLength,
         onTap: onTap,
+        validator: validator,
         maxLines: maxLines,
         readOnly: readOnly,
+        obscureText: obscureText,
         inputFormatters: inputFormatters,
         scrollPhysics: const NeverScrollableScrollPhysics(),
-        style: TextStyle(
-            fontSize: 13, color: ShadTheme.of(context).colorScheme.primary),
+        style: TextStyle(fontSize: 13, color: scheme.foreground),
         decoration: InputDecoration(
           labelText: labelText,
-          labelStyle: TextStyle(
-              fontSize: 12, color: ShadTheme.of(context).colorScheme.primary),
+          labelStyle: TextStyle(fontSize: 12, color: scheme.foreground),
           contentPadding: const EdgeInsets.symmetric(horizontal: 8),
           enabledBorder: const UnderlineInputBorder(
             borderSide: BorderSide(color: Color(0x19000000)),
@@ -107,12 +114,10 @@ class CustomTextField extends StatelessWidget {
           prefixText: prefixText,
           prefixIcon: prefixIcon,
           suffixText: suffixText,
-          helperStyle: TextStyle(
-              fontSize: 12, color: ShadTheme.of(context).colorScheme.primary),
-          prefixStyle: TextStyle(
-              fontSize: 12, color: ShadTheme.of(context).colorScheme.primary),
-          suffixStyle: TextStyle(
-              fontSize: 12, color: ShadTheme.of(context).colorScheme.primary),
+          suffixIcon: suffixIcon,
+          helperStyle: TextStyle(fontSize: 12, color: scheme.foreground),
+          prefixStyle: TextStyle(fontSize: 12, color: scheme.foreground),
+          suffixStyle: TextStyle(fontSize: 12, color: scheme.foreground),
         ),
       ),
     );
@@ -224,10 +229,8 @@ class CustomPickerField extends StatelessWidget {
                     showTitleBar: true,
                     textSize: 14,
                     textColor: ShadTheme.of(context).colorScheme.foreground,
-                    backgroundColor:
-                        ShadTheme.of(context).colorScheme.background,
-                    headDecoration: BoxDecoration(
-                        color: ShadTheme.of(context).colorScheme.background),
+                    backgroundColor: ShadTheme.of(context).colorScheme.background,
+                    headDecoration: BoxDecoration(color: ShadTheme.of(context).colorScheme.background),
                   ),
                   onConfirm: (p, position) {
                     controller.text = p;

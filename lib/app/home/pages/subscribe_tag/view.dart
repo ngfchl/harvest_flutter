@@ -2,7 +2,6 @@ import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
-import 'package:getwidget/getwidget.dart';
 import 'package:harvest/api/option.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/models/common_response.dart';
@@ -34,9 +33,7 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
               return EasyRefresh(
                 onRefresh: () => controller.initData(),
                 child: ListView(
-                  children: controller.tags
-                      .map((SubTag tag) => _buildTag(tag))
-                      .toList(),
+                  children: controller.tags.map((SubTag tag) => _buildTag(tag)).toList(),
                 ),
               );
             }),
@@ -55,13 +52,13 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                       Get.snackbar(
                         '执行成功',
                         res.msg.toString(),
-                        colorText: ShadTheme.of(context).colorScheme.primary,
+                        colorText: ShadTheme.of(context).colorScheme.foreground,
                       );
                     } else {
                       Get.snackbar(
                         '执行失败',
                         res.msg.toString(),
-                        colorText: ShadTheme.of(context).colorScheme.primary,
+                        colorText: ShadTheme.of(context).colorScheme.foreground,
                       );
                     }
                   },
@@ -120,8 +117,7 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                 Get.defaultDialog(
                   title: '确认',
                   radius: 5,
-                  titleStyle: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w900),
+                  titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                   middleText: '确定要删除标签吗？',
                   actions: [
                     ElevatedButton(
@@ -136,12 +132,10 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                         CommonResponse res = await controller.removeSubTag(tag);
                         if (res.code == 0) {
                           Get.snackbar('删除通知', res.msg.toString(),
-                              colorText:
-                                  ShadTheme.of(context).colorScheme.primary);
+                              colorText: ShadTheme.of(context).colorScheme.foreground);
                         } else {
                           Get.snackbar('删除通知', res.msg.toString(),
-                              colorText:
-                                  ShadTheme.of(context).colorScheme.ring);
+                              colorText: ShadTheme.of(context).colorScheme.destructive);
                         }
                       },
                       child: const Text('确认'),
@@ -192,10 +186,9 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
   }
 
   _openEditDialog(SubTag? tag) {
-    final TextEditingController nameController =
-        TextEditingController(text: tag != null ? tag.name : '');
-    final TextEditingController categoryController = TextEditingController(
-        text: tag != null ? tag.category : controller.tagCategoryList[0].value);
+    final TextEditingController nameController = TextEditingController(text: tag != null ? tag.name : '');
+    final TextEditingController categoryController =
+        TextEditingController(text: tag != null ? tag.category : controller.tagCategoryList[0].value);
 
     RxBool available = true.obs;
     final isLoading = false.obs;
@@ -208,10 +201,9 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
           height: 300,
           child: Column(
             children: [
-              GFTypography(
-                text: title,
-                textColor: ShadTheme.of(context).colorScheme.foreground,
-                dividerColor: ShadTheme.of(context).colorScheme.foreground,
+              Text(
+                title,
+                style: ShadTheme.of(context).textTheme.h4,
               ),
               Expanded(
                 child: ListView(
@@ -229,14 +221,13 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                           categoryController.text = newValue!;
                         },
                         items: controller.tagCategoryList
-                            .map<DropdownMenuItem<String>>(
-                                (MetaDataItem item) => DropdownMenuItem<String>(
-                                      value: item.value,
-                                      child: Text(
-                                        item.name,
-                                        style: const TextStyle(fontSize: 14),
-                                      ),
-                                    ))
+                            .map<DropdownMenuItem<String>>((MetaDataItem item) => DropdownMenuItem<String>(
+                                  value: item.value,
+                                  child: Text(
+                                    item.name,
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                ))
                             .toList(),
                       ),
                     ),
@@ -269,11 +260,9 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                       Get.back();
                     },
                     style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all(
-                          Colors.redAccent.withAlpha(150)),
+                      backgroundColor: WidgetStateProperty.all(Colors.redAccent.withAlpha(150)),
                     ),
-                    icon:
-                        const Icon(Icons.cancel_outlined, color: Colors.white),
+                    icon: const Icon(Icons.cancel_outlined, color: Colors.white),
                     label: const Text(
                       '取消',
                       style: TextStyle(color: Colors.white),
@@ -301,9 +290,7 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                         submitForm(newTag);
                         isLoading.value = false;
                       },
-                      icon: isLoading.value
-                          ? const GFLoader(size: 18)
-                          : const Icon(Icons.save),
+                      icon: isLoading.value ? Center(child: const CircularProgressIndicator()) : const Icon(Icons.save),
                       label: const Text('保存'),
                     );
                   }),
@@ -321,11 +308,9 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
       Logger.instance.i(res.msg);
       if (res.code == 0) {
         Get.back();
-        Get.snackbar('标签保存成功！', res.msg,
-            colorText: ShadTheme.of(context).colorScheme.primary);
+        Get.snackbar('标签保存成功！', res.msg, colorText: ShadTheme.of(context).colorScheme.foreground);
       } else {
-        Get.snackbar('标签保存失败！', res.msg,
-            colorText: ShadTheme.of(context).colorScheme.ring);
+        Get.snackbar('标签保存失败！', res.msg, colorText: ShadTheme.of(context).colorScheme.destructive);
       }
     } finally {}
   }

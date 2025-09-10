@@ -14,6 +14,7 @@ import 'package:get/get.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/form_widgets.dart';
 import 'package:harvest/models/common_response.dart';
+import 'package:harvest/utils/storage.dart';
 import 'package:harvest/utils/string_utils.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -43,7 +44,7 @@ class FileManagePage extends StatelessWidget {
                 // Text(
                 //   '文件管理',
                 //   style: TextStyle(
-                //     color: ShadTheme.of(context).colorScheme.primary,
+                //     color: ShadTheme.of(context).colorScheme.foreground,
                 //   ),
                 // ),
                 CustomCard(
@@ -51,7 +52,7 @@ class FileManagePage extends StatelessWidget {
                     controller.currentPath,
                     style: TextStyle(
                       fontSize: 10,
-                      color: ShadTheme.of(context).colorScheme.primary,
+                      color: ShadTheme.of(context).colorScheme.foreground,
                     ),
                   ),
                 ),
@@ -67,7 +68,7 @@ class FileManagePage extends StatelessWidget {
                         },
                         icon: Icon(
                           Icons.home_outlined,
-                          color: ShadTheme.of(context).colorScheme.primary,
+                          color: ShadTheme.of(context).colorScheme.foreground,
                         ),
                       ),
                       IconButton(
@@ -78,7 +79,7 @@ class FileManagePage extends StatelessWidget {
                         },
                         icon: Icon(
                           Icons.refresh,
-                          color: ShadTheme.of(context).colorScheme.primary,
+                          color: ShadTheme.of(context).colorScheme.foreground,
                         ),
                       ),
                       IconButton(
@@ -95,7 +96,7 @@ class FileManagePage extends StatelessWidget {
                         },
                         icon: Icon(
                           Icons.arrow_upward_outlined,
-                          color: ShadTheme.of(context).colorScheme.primary,
+                          color: ShadTheme.of(context).colorScheme.foreground,
                         ),
                       ),
                     ],
@@ -114,9 +115,7 @@ class FileManagePage extends StatelessWidget {
                                     '暂无文件',
                                     style: TextStyle(
                                       fontSize: 16,
-                                      color: ShadTheme.of(context)
-                                          .colorScheme
-                                          .primary,
+                                      color: ShadTheme.of(context).colorScheme.foreground,
                                     ),
                                   ),
                                 ),
@@ -136,16 +135,11 @@ class FileManagePage extends StatelessWidget {
                                             flex: 1,
                                             // padding: EdgeInsets.all(8),
                                             icon: Icons.delete_outline,
-                                            borderRadius:
-                                                const BorderRadius.only(
-                                                    topLeft: Radius.circular(8),
-                                                    bottomLeft:
-                                                        Radius.circular(8)),
+                                            borderRadius: const BorderRadius.only(
+                                                topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
                                             onPressed: (context) async {
-                                              TextEditingController
-                                                  nameController =
-                                                  TextEditingController(
-                                                      text: item.name);
+                                              TextEditingController nameController =
+                                                  TextEditingController(text: item.name);
                                               Get.defaultDialog(
                                                 title: '重命名',
                                                 radius: 5,
@@ -154,9 +148,7 @@ class FileManagePage extends StatelessWidget {
                                                     fontWeight: FontWeight.w900,
                                                     color: Colors.deepPurple),
                                                 middleText: '确定要重新命名吗？',
-                                                content: CustomTextField(
-                                                    controller: nameController,
-                                                    labelText: "重命名为"),
+                                                content: CustomTextField(controller: nameController, labelText: "重命名为"),
                                                 actions: [
                                                   ElevatedButton(
                                                     onPressed: () {
@@ -167,18 +159,14 @@ class FileManagePage extends StatelessWidget {
                                                   ElevatedButton(
                                                     onPressed: () async {
                                                       Get.back(result: true);
-                                                      doFileAction(item.path,
-                                                          'rename_dir',
-                                                          newFileName:
-                                                              "newFileName");
+                                                      doFileAction(item.path, 'rename_dir', newFileName: "newFileName");
                                                     },
                                                     child: const Text('确认'),
                                                   ),
                                                 ],
                                               );
                                             },
-                                            backgroundColor:
-                                                const Color(0xFF0A9D96),
+                                            backgroundColor: const Color(0xFF0A9D96),
                                             foregroundColor: Colors.white,
                                             label: '重命名',
                                           ),
@@ -191,12 +179,8 @@ class FileManagePage extends StatelessWidget {
                                           SlidableAction(
                                             flex: 1,
                                             icon: Icons.delete_outline,
-                                            borderRadius:
-                                                const BorderRadius.only(
-                                                    topRight:
-                                                        Radius.circular(8),
-                                                    bottomRight:
-                                                        Radius.circular(8)),
+                                            borderRadius: const BorderRadius.only(
+                                                topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
                                             onPressed: (context) async {
                                               Get.defaultDialog(
                                                 title: '确认',
@@ -220,7 +204,7 @@ class FileManagePage extends StatelessWidget {
                                                       // await controller.removeDownloader(downloader);
                                                       // if (res.code == 0) {
                                                       //   Get.snackbar('删除通知', res.msg.toString(),
-                                                      //       colorText: ShadTheme.of(context).colorScheme.primary);
+                                                      //       colorText: ShadTheme.of(context).colorScheme.foreground);
                                                       // } else {
                                                       //   Get.snackbar('删除通知', res.msg.toString(),
                                                       //       colorText: Get.theme.colorScheme.error);
@@ -233,8 +217,7 @@ class FileManagePage extends StatelessWidget {
                                                 ],
                                               );
                                             },
-                                            backgroundColor:
-                                                const Color(0xFFFE4A49),
+                                            backgroundColor: const Color(0xFFFE4A49),
                                             foregroundColor: Colors.white,
                                             // icon: Icons.delete,
                                             label: '删除',
@@ -245,33 +228,25 @@ class FileManagePage extends StatelessWidget {
                                         title: Text(
                                           item.name,
                                           style: TextStyle(
-                                            color: ShadTheme.of(context)
-                                                .colorScheme
-                                                .primary,
+                                            color: ShadTheme.of(context).colorScheme.foreground,
                                           ),
                                         ),
                                         subtitle: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
                                             Text(
                                               item.modified,
                                               style: TextStyle(
                                                 fontSize: 12,
-                                                color: ShadTheme.of(context)
-                                                    .colorScheme
-                                                    .primary,
+                                                color: ShadTheme.of(context).colorScheme.foreground,
                                               ),
                                             ),
                                             if (!item.isDir)
                                               Text(
-                                                FileSizeConvert.parseToFileSize(
-                                                    item.size),
+                                                FileSizeConvert.parseToFileSize(item.size),
                                                 style: TextStyle(
                                                   fontSize: 12,
-                                                  color: ShadTheme.of(context)
-                                                      .colorScheme
-                                                      .primary,
+                                                  color: ShadTheme.of(context).colorScheme.foreground,
                                                 ),
                                               ),
                                           ],
@@ -281,17 +256,13 @@ class FileManagePage extends StatelessWidget {
                                           child: item.isDir
                                               ? Icon(
                                                   Icons.folder,
-                                                  color: ShadTheme.of(context)
-                                                      .colorScheme
-                                                      .primary,
+                                                  color: ShadTheme.of(context).colorScheme.foreground,
                                                 )
                                               : Text(
                                                   item.ext.toString(),
                                                   style: TextStyle(
                                                     fontSize: 12,
-                                                    color: ShadTheme.of(context)
-                                                        .colorScheme
-                                                        .primary,
+                                                    color: ShadTheme.of(context).colorScheme.foreground,
                                                   ),
                                                 ),
                                         ),
@@ -300,8 +271,7 @@ class FileManagePage extends StatelessWidget {
                                             title: '常用操作',
                                             content: CustomCard(
                                               child: Wrap(
-                                                alignment:
-                                                    WrapAlignment.spaceAround,
+                                                alignment: WrapAlignment.spaceAround,
                                                 spacing: 10,
                                                 runSpacing: 10,
                                                 children: [
@@ -312,29 +282,22 @@ class FileManagePage extends StatelessWidget {
                                                   // ),
                                                   ElevatedButton.icon(
                                                     onPressed: () async {
-                                                      doFileAction(item.path,
-                                                          'search_tmdb');
+                                                      doFileAction(item.path, 'search_tmdb');
                                                     },
-                                                    icon: Icon(Icons
-                                                        .movie_filter_outlined),
+                                                    icon: Icon(Icons.movie_filter_outlined),
                                                     label: Text("刮削资源"),
                                                   ),
                                                   ElevatedButton.icon(
                                                     onPressed: () async {
-                                                      doFileAction(item.path,
-                                                          'search_seed');
+                                                      doFileAction(item.path, 'search_seed');
                                                     },
-                                                    icon: Icon(Icons
-                                                        .local_movies_outlined),
+                                                    icon: Icon(Icons.local_movies_outlined),
                                                     label: Text("查询做种"),
                                                   ),
 
                                                   ElevatedButton.icon(
                                                     onPressed: () async {
-                                                      doFileAction(item.path,
-                                                          'hard_link',
-                                                          newFileName:
-                                                              "newFileName");
+                                                      doFileAction(item.path, 'hard_link', newFileName: "newFileName");
                                                     },
                                                     icon: Icon(Icons.hardware),
                                                     label: Text("硬链接"),
@@ -351,42 +314,31 @@ class FileManagePage extends StatelessWidget {
                                             controller.currentPath = item.path;
                                             await controller.initSourceData();
                                           } else {
-                                            Logger.instance.d(
-                                                '文件后缀名：${item.ext}，文件类型：${item.mimeType}');
-                                            CommonResponse res =
-                                                await controller
-                                                    .getFileSourceUrl(
-                                                        item.path);
+                                            Logger.instance.d('文件后缀名：${item.ext}，文件类型：${item.mimeType}');
+                                            CommonResponse res = await controller.getFileSourceUrl(item.path);
                                             Logger.instance.d(res.toString());
                                             if (res.succeed) {
-                                              Clipboard.setData(ClipboardData(
-                                                  text: res.data));
-                                              if (item.mimeType
-                                                  .startsWith('image')) {
+                                              Clipboard.setData(ClipboardData(text: res.data));
+                                              if (item.mimeType.startsWith('image')) {
                                                 showImage(res.data);
-                                              } else if (item.mimeType
-                                                  .startsWith('video')) {
-                                                showPlayer(res.data);
-                                              } else if (item.mimeType
-                                                  .startsWith('audio')) {
-                                                showPlayer(res.data);
+                                              } else if (item.mimeType.startsWith('video')) {
+                                                showPlayer(res.data, context);
+                                              } else if (item.mimeType.startsWith('audio')) {
+                                                showPlayer(res.data, context);
                                               } else {
                                                 Get.defaultDialog(
                                                   title: '文件操作',
                                                   content: CustomCard(
                                                     child: Wrap(
-                                                      alignment: WrapAlignment
-                                                          .spaceAround,
+                                                      alignment: WrapAlignment.spaceAround,
                                                       spacing: 10,
                                                       runSpacing: 10,
                                                       children: [
                                                         ElevatedButton.icon(
                                                           onPressed: () async {
-                                                            await pickAndDownload(
-                                                                res.data);
+                                                            await pickAndDownload(res.data);
                                                           },
-                                                          icon: Icon(Icons
-                                                              .download_outlined),
+                                                          icon: Icon(Icons.download_outlined),
                                                           label: Text("下载"),
                                                         ),
                                                       ],
@@ -398,8 +350,7 @@ class FileManagePage extends StatelessWidget {
                                               Get.snackbar(
                                                 '提示',
                                                 res.msg,
-                                                colorText:
-                                                    Get.theme.colorScheme.error,
+                                                colorText: Get.theme.colorScheme.error,
                                               );
                                             }
                                           }
@@ -496,14 +447,12 @@ class FileManagePage extends StatelessWidget {
       // Windows: 直接调用可执行文件 (需在 PATH 或已知安装路径)
       switch (player.toLowerCase()) {
         case 'vlc':
-          Uri encodedUrl =
-              Uri.parse('vlc-x-callback://${Uri.encodeComponent(url)}');
+          Uri encodedUrl = Uri.parse('vlc-x-callback://${Uri.encodeComponent(url)}');
           Logger.instance.d(await canLaunchUrl(encodedUrl));
           if (await canLaunchUrl(encodedUrl)) {
             await launchUrl(encodedUrl, mode: LaunchMode.externalApplication);
           } else {
-            await Process.start(
-                'C:\\Program Files\\VideoLAN\\VLC\\vlc.exe', [url]);
+            await Process.start('C:\\Program Files\\VideoLAN\\VLC\\vlc.exe', [url]);
           }
           break;
         case 'potplayer':
@@ -541,134 +490,128 @@ class FileManagePage extends StatelessWidget {
     }
   }
 
-  void showPlayer(String url) async {
+  void showPlayer(String url, BuildContext context) async {
     final schemes = buildSchemes(url);
+    var opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.defaultDialog(
       title: '打开方式',
-      content: CustomCard(
-        child: Wrap(
-          alignment: WrapAlignment.spaceAround,
-          spacing: 10,
-          runSpacing: 10,
-          children: [
-            if (defaultTargetPlatform == TargetPlatform.iOS)
-              ...schemes.entries.toList().map(
-                    (entry) => ElevatedButton.icon(
-                      onPressed: () async {
-                        final uri = Uri.parse(entry.value);
-                        if (!await launchUrl(uri,
-                            mode: LaunchMode.externalApplication)) {
-                          Logger.instance.w('无法使用${entry.key}外部播放器');
-                        }
-                      },
-                      label: Text(
-                        entry.key.toString(),
-                      ),
+      titleStyle: TextStyle(color: shadColorScheme.foreground),
+      backgroundColor: shadColorScheme.background.withOpacity(opacity),
+      content: Wrap(
+        alignment: WrapAlignment.spaceAround,
+        spacing: 10,
+        runSpacing: 10,
+        children: [
+          if (defaultTargetPlatform == TargetPlatform.iOS)
+            ...schemes.entries.toList().map(
+                  (entry) => ElevatedButton.icon(
+                    onPressed: () async {
+                      final uri = Uri.parse(entry.value);
+                      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                        Logger.instance.w('无法使用${entry.key}外部播放器');
+                      }
+                    },
+                    label: Text(
+                      entry.key.toString(),
                     ),
                   ),
-            if (defaultTargetPlatform == TargetPlatform.android)
-              ElevatedButton.icon(
-                onPressed: () async {
-                  final intent = AndroidIntent(
-                    action: 'action_view',
-                    data: url,
-                    type: 'video/*',
-                  );
-                  intent.launch();
-                },
-                icon: Icon(Icons.open_in_new_rounded),
-                label: Text('打开'),
-              ),
-            if (defaultTargetPlatform == TargetPlatform.linux ||
-                defaultTargetPlatform == TargetPlatform.macOS ||
-                defaultTargetPlatform == TargetPlatform.windows)
-              ...schemes.entries.toList().map(
-                    (entry) => ElevatedButton.icon(
-                      onPressed: () async {
-                        openWithPlayer(entry.key, url);
-                      },
-                      label: Text(
-                        entry.key.toString(),
-                      ),
-                    ),
-                  ),
-            if (defaultTargetPlatform == TargetPlatform.android ||
-                defaultTargetPlatform == TargetPlatform.iOS)
-              ElevatedButton.icon(
-                onPressed: () async {
-                  VlcPlayerController vlcController =
-                      VlcPlayerController.network(
-                    url,
-                    hwAcc: HwAcc.full,
-                    autoPlay: true,
-                    options: VlcPlayerOptions(),
-                  );
-
-                  Get.dialog(
-                    CustomCard(
-                      width: double.infinity,
-                      height: Get.height * 0.7,
-                      child: Stack(
-                        children: [
-                          Positioned.fill(
-                            child: VlcPlayer(
-                              controller: vlcController,
-                              aspectRatio: 16 / 9,
-                              placeholder:
-                                  Center(child: CircularProgressIndicator()),
-                            ),
-                          ),
-                          Positioned(
-                            bottom: 2,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              spacing: 10,
-                              children: [
-                                IconButton(
-                                    onPressed: () {
-                                      vlcController.play();
-                                    },
-                                    icon: Icon(Icons.play_arrow_outlined)),
-                                IconButton(
-                                    onPressed: () {
-                                      vlcController.pause();
-                                    },
-                                    icon: Icon(Icons.pause_outlined)),
-                                IconButton(
-                                    onPressed: () {
-                                      Get.back();
-                                    },
-                                    icon: Icon(Icons.exit_to_app_outlined)),
-                                IconButton(
-                                    onPressed: () {},
-                                    icon: Icon(Icons.fullscreen_outlined)),
-                                IconButton(
-                                    onPressed: () {},
-                                    icon: Icon(Icons.fullscreen_exit_outlined)),
-                              ],
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                    barrierDismissible: false,
-                  ).whenComplete(() {
-                    vlcController.stop();
-                    vlcController.dispose();
-                  });
-                },
-                icon: Icon(Icons.play_arrow_outlined),
-                label: Text("播放"),
-              ),
+                ),
+          if (defaultTargetPlatform == TargetPlatform.android)
             ElevatedButton.icon(
               onPressed: () async {
-                await pickAndDownload(url);
+                final intent = AndroidIntent(
+                  action: 'action_view',
+                  data: url,
+                  type: 'video/*',
+                );
+                intent.launch();
               },
-              icon: Icon(Icons.download_outlined),
-              label: Text("下载"),
+              icon: Icon(Icons.open_in_new_rounded),
+              label: Text('打开'),
             ),
-          ],
-        ),
+          if (defaultTargetPlatform == TargetPlatform.linux ||
+              defaultTargetPlatform == TargetPlatform.macOS ||
+              defaultTargetPlatform == TargetPlatform.windows)
+            ...schemes.entries.toList().map(
+                  (entry) => ShadButton.outline(
+                    onPressed: () async {
+                      openWithPlayer(entry.key, url);
+                    },
+                    child: Text(
+                      entry.key.toString(),
+                    ),
+                  ),
+                ),
+          if (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS)
+            ElevatedButton.icon(
+              onPressed: () async {
+                VlcPlayerController vlcController = VlcPlayerController.network(
+                  url,
+                  hwAcc: HwAcc.full,
+                  autoPlay: true,
+                  options: VlcPlayerOptions(),
+                );
+
+                Get.dialog(
+                  CustomCard(
+                    width: double.infinity,
+                    height: Get.height * 0.7,
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: VlcPlayer(
+                            controller: vlcController,
+                            aspectRatio: 16 / 9,
+                            placeholder: Center(child: CircularProgressIndicator()),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 2,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            spacing: 10,
+                            children: [
+                              IconButton(
+                                  onPressed: () {
+                                    vlcController.play();
+                                  },
+                                  icon: Icon(Icons.play_arrow_outlined)),
+                              IconButton(
+                                  onPressed: () {
+                                    vlcController.pause();
+                                  },
+                                  icon: Icon(Icons.pause_outlined)),
+                              IconButton(
+                                  onPressed: () {
+                                    Get.back();
+                                  },
+                                  icon: Icon(Icons.exit_to_app_outlined)),
+                              IconButton(onPressed: () {}, icon: Icon(Icons.fullscreen_outlined)),
+                              IconButton(onPressed: () {}, icon: Icon(Icons.fullscreen_exit_outlined)),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                  barrierDismissible: false,
+                ).whenComplete(() {
+                  vlcController.stop();
+                  vlcController.dispose();
+                });
+              },
+              icon: Icon(Icons.play_arrow_outlined),
+              label: Text("播放"),
+            ),
+          ShadButton.outline(
+            onPressed: () async {
+              await pickAndDownload(url);
+            },
+            leading: Icon(Icons.download_outlined),
+            child: Text("下载"),
+          ),
+        ],
       ),
     );
   }
@@ -687,8 +630,7 @@ class FileManagePage extends StatelessWidget {
 
     /// 选择保存位置并下载
     // 1. 系统文件选择器（无需 Get.dialog）
-    Logger.instance
-        .w('文件名: ${Uri.parse(url).pathSegments.last.split('/').last}');
+    Logger.instance.w('文件名: ${Uri.parse(url).pathSegments.last.split('/').last}');
     final savePath = await FilePicker.platform.saveFile(
       dialogTitle: '选择保存位置',
       fileName: Uri.parse(url).pathSegments.last.split('/').last,
@@ -743,9 +685,8 @@ class FileManagePage extends StatelessWidget {
                     maxScale: PhotoViewComputedScale.covered * 5, // 允许用户放大
                     minScale: PhotoViewComputedScale.contained,
                     initialScale: PhotoViewComputedScale.contained, // 默认显示整个图片
-                    imageProvider: CachedNetworkImageProvider(url,
-                        cacheKey:
-                            Uri.parse(url).pathSegments.last.split('/').last),
+                    imageProvider:
+                        CachedNetworkImageProvider(url, cacheKey: Uri.parse(url).pathSegments.last.split('/').last),
                   ),
                 ),
               ),
@@ -783,16 +724,13 @@ class FileManagePage extends StatelessWidget {
                         try {
                           // 1. 先下到临时目录
                           final tempDir = await getTemporaryDirectory();
-                          final tempFile = File(
-                              '${tempDir.path}/${Uri.parse(url).pathSegments.last.split('/').last}');
-                          Logger.instance.d(
-                              '临时文件URL: ${Uri.parse(url).pathSegments.last.split('/').last}');
+                          final tempFile = File('${tempDir.path}/${Uri.parse(url).pathSegments.last.split('/').last}');
+                          Logger.instance.d('临时文件URL: ${Uri.parse(url).pathSegments.last.split('/').last}');
                           Logger.instance.d('临时文件保存路径: ${tempFile.path}');
                           await Dio().download(url, tempFile.path);
 
                           // 2. 写相册（自动区分 iOS/Android）
-                          final result = await ImageGallerySaverPlus.saveFile(
-                              tempFile.path);
+                          final result = await ImageGallerySaverPlus.saveFile(tempFile.path);
                           Get.back(); // 关闭加载圈
 
                           if (result['isSuccess'] == true) {

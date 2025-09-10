@@ -17,7 +17,8 @@ class MySiteController extends GetxController {
   String filterKey = 'available';
   List<MySite> mySiteList = <MySite>[];
   List<MySite> showStatusList = <MySite>[];
-  bool isLoaded = false;
+  bool loading = false;
+  bool singleLoading = false;
   bool initFlag = false;
   bool loadingFromServer = false;
   bool openByInnerExplorer = true;
@@ -81,10 +82,9 @@ class MySiteController extends GetxController {
     filterKey = 'available';
     sortKey = SPUtil.getString('mySite-sortKey', defaultValue: 'mySiteSortId');
     sortReversed = SPUtil.getBool('mySite-sortReversed', defaultValue: false);
-    openByInnerExplorer =
-        SPUtil.getBool('openByInnerExplorer', defaultValue: true);
+    openByInnerExplorer = SPUtil.getBool('openByInnerExplorer', defaultValue: true);
     baseUrl = SPUtil.getString('server');
-    isLoaded = true;
+    loading = true;
     loadingFromServer = true;
     update();
     await initData();
@@ -112,8 +112,7 @@ class MySiteController extends GetxController {
   }
 
   Map<String, WebSite> buildTrackerToWebSite() {
-    return webSiteList.values.toList().asMap().entries.fold({},
-        (result, entry) {
+    return webSiteList.values.toList().asMap().entries.fold({}, (result, entry) {
       result[entry.value.tracker] = entry.value;
       return result;
     });
@@ -143,37 +142,27 @@ class MySiteController extends GetxController {
       Map mySiteListMap = await SPUtil.getCache('$baseUrl - mySiteList');
 
       if (webSiteListMap.isNotEmpty) {
-        Logger.instance
-            .d('共获取到站点配置缓存：${webSiteListMap['webSiteList'].length} 条');
-        List<WebSite> webSiteObjectList = webSiteListMap['webSiteList']
-            .map((item) => WebSite.fromJson(item))
-            .toList()
-            .cast<WebSite>();
-        webSiteList =
-            webSiteObjectList.asMap().entries.fold({}, (result, entry) {
+        Logger.instance.d('共获取到站点配置缓存：${webSiteListMap['webSiteList'].length} 条');
+        List<WebSite> webSiteObjectList =
+            webSiteListMap['webSiteList'].map((item) => WebSite.fromJson(item)).toList().cast<WebSite>();
+        webSiteList = webSiteObjectList.asMap().entries.fold({}, (result, entry) {
           result[entry.value.name] = entry.value;
           return result;
         });
-        Logger.instance.d(
-            '获取站点配置缓存耗时: ${DateTime.now().difference(startTime).inMilliseconds} 毫秒');
+        Logger.instance.d('获取站点配置缓存耗时: ${DateTime.now().difference(startTime).inMilliseconds} 毫秒');
       }
 
       if (mySiteListMap.isNotEmpty) {
         try {
-          Logger.instance
-              .d('共获取站点信息缓存：${mySiteListMap['mySiteList'].length} 条');
-          mySiteList = mySiteListMap['mySiteList']
-              ?.map((item) => MySite.fromJson(item))
-              .toList()
-              .cast<MySite>();
+          Logger.instance.d('共获取站点信息缓存：${mySiteListMap['mySiteList'].length} 条');
+          mySiteList = mySiteListMap['mySiteList']?.map((item) => MySite.fromJson(item)).toList().cast<MySite>();
           for (var site in mySiteList) {
             tagList.addAll(site.tags);
           }
           updateTagList();
 
-          if (mySiteList.isNotEmpty) isLoaded = false;
-          Logger.instance.d(
-              '获取站点信息缓存耗时: ${DateTime.now().difference(startTime).inMilliseconds} 毫秒');
+          if (mySiteList.isNotEmpty) loading = false;
+          Logger.instance.d('获取站点信息缓存耗时: ${DateTime.now().difference(startTime).inMilliseconds} 毫秒');
         } catch (e, trace) {
           Logger.instance.e(e);
           Logger.instance.d(trace);
@@ -223,7 +212,7 @@ class MySiteController extends GetxController {
       }
       updateTagList();
       filterByKey();
-      isLoaded = false;
+      loading = false;
     } else {
       Logger.instance.e(res.msg);
       Get.snackbar(
@@ -281,21 +270,16 @@ class MySiteController extends GetxController {
     // 拆分数据为有消息和无消息两组
     // 有消息的数据
     List<MySite> mailStatusList = showStatusList
-        .where((item) =>
-            item.statusInfo.isNotEmpty &&
-            (item.mail ?? 0) + (item.notice ?? 0) > 0)
+        .where((item) => item.statusInfo.isNotEmpty && (item.mail ?? 0) + (item.notice ?? 0) > 0)
         .toList();
     // 对有消息的数据排序
     if (mailStatusList.isNotEmpty) {
-      mailStatusList
-          .sort((a, b) => (b.mail! + b.notice!).compareTo(a.mail! + a.notice!));
+      mailStatusList.sort((a, b) => (b.mail! + b.notice!).compareTo(a.mail! + a.notice!));
     }
     // 无消息的数据
     List<MySite> otherStatusList = showStatusList
         .where((item) =>
-            item.statusInfo.isEmpty ||
-            (item.statusInfo.isNotEmpty &&
-                (item.mail ?? 0) + (item.notice ?? 0) <= 0))
+            item.statusInfo.isEmpty || (item.statusInfo.isNotEmpty && (item.mail ?? 0) + (item.notice ?? 0) <= 0))
         .toList();
     // 根据不同的排序键调用不同的排序方法
     switch (sortKey) {
@@ -315,61 +299,53 @@ class MySiteController extends GetxController {
         otherStatusList.sort((a, b) => a.timeJoin.compareTo(b.timeJoin));
         break;
       case 'updatedAt':
-        otherStatusList.sort((a, b) =>
-            a.latestStatusInfo?.updatedAt
-                .compareTo(b.latestStatusInfo?.updatedAt ?? DateTime(2012)) ??
-            0);
+        otherStatusList.sort(
+            (a, b) => a.latestStatusInfo?.updatedAt.compareTo(b.latestStatusInfo?.updatedAt ?? DateTime(2012)) ?? 0);
         break;
       case 'siteUrl':
         otherStatusList.sort((a, b) => a.mirror!.compareTo(b.mirror!));
         break;
       case 'latestActive':
-        otherStatusList.sort((a, b) => (a.latestActive ?? DateTime(2012))
-            .compareTo(b.latestActive ?? DateTime(2012)));
+        otherStatusList.sort((a, b) => (a.latestActive ?? DateTime(2012)).compareTo(b.latestActive ?? DateTime(2012)));
         break;
       case 'statusSeedVolume':
-        otherStatusList.sort((a, b) => (a.latestStatusInfo?.seedVolume ?? 0)
-            .compareTo(b.latestStatusInfo?.seedVolume ?? 0));
+        otherStatusList
+            .sort((a, b) => (a.latestStatusInfo?.seedVolume ?? 0).compareTo(b.latestStatusInfo?.seedVolume ?? 0));
         break;
       case 'statusMyBonus':
-        otherStatusList.sort((a, b) => (a.latestStatusInfo?.myBonus ?? 0)
-            .compareTo(b.latestStatusInfo?.myBonus ?? 0));
+        otherStatusList.sort((a, b) => (a.latestStatusInfo?.myBonus ?? 0).compareTo(b.latestStatusInfo?.myBonus ?? 0));
         break;
       case 'statusMyScore':
-        otherStatusList.sort((a, b) => (a.latestStatusInfo?.myScore ?? 0)
-            .compareTo(b.latestStatusInfo?.myScore ?? 0));
+        otherStatusList.sort((a, b) => (a.latestStatusInfo?.myScore ?? 0).compareTo(b.latestStatusInfo?.myScore ?? 0));
         break;
       case 'statusDownloaded':
-        otherStatusList.sort((a, b) => (a.latestStatusInfo?.downloaded ?? 0)
-            .compareTo(b.latestStatusInfo?.downloaded ?? 0));
+        otherStatusList
+            .sort((a, b) => (a.latestStatusInfo?.downloaded ?? 0).compareTo(b.latestStatusInfo?.downloaded ?? 0));
         break;
       case 'statusUploaded':
-        otherStatusList.sort((a, b) => (a.latestStatusInfo?.uploaded ?? 0)
-            .compareTo(b.latestStatusInfo?.uploaded ?? 0));
+        otherStatusList
+            .sort((a, b) => (a.latestStatusInfo?.uploaded ?? 0).compareTo(b.latestStatusInfo?.uploaded ?? 0));
         break;
       case 'statusPublished':
-        otherStatusList.sort((a, b) => (a.latestStatusInfo?.published ?? 0)
-            .compareTo(b.latestStatusInfo?.published ?? 0));
+        otherStatusList
+            .sort((a, b) => (a.latestStatusInfo?.published ?? 0).compareTo(b.latestStatusInfo?.published ?? 0));
         break;
       case 'statusBonusHour':
-        otherStatusList.sort((a, b) => (a.latestStatusInfo?.bonusHour ?? 0)
-            .compareTo(b.latestStatusInfo?.bonusHour ?? 0));
+        otherStatusList
+            .sort((a, b) => (a.latestStatusInfo?.bonusHour ?? 0).compareTo(b.latestStatusInfo?.bonusHour ?? 0));
         break;
       case 'statusInvitation':
-        otherStatusList.sort((a, b) => (a.latestStatusInfo?.invitation ?? 0)
-            .compareTo(b.latestStatusInfo?.invitation ?? 0));
+        otherStatusList
+            .sort((a, b) => (a.latestStatusInfo?.invitation ?? 0).compareTo(b.latestStatusInfo?.invitation ?? 0));
         break;
       case 'statusLeech':
-        otherStatusList.sort((a, b) => (a.latestStatusInfo?.leech ?? 0)
-            .compareTo(b.latestStatusInfo?.leech ?? 0));
+        otherStatusList.sort((a, b) => (a.latestStatusInfo?.leech ?? 0).compareTo(b.latestStatusInfo?.leech ?? 0));
         break;
       case 'statusSeed':
-        otherStatusList.sort((a, b) => (a.latestStatusInfo?.seed ?? 0)
-            .compareTo(b.latestStatusInfo?.seed ?? 0));
+        otherStatusList.sort((a, b) => (a.latestStatusInfo?.seed ?? 0).compareTo(b.latestStatusInfo?.seed ?? 0));
         break;
       case 'statusRatio':
-        otherStatusList.sort((a, b) => (a.latestStatusInfo?.ratio ?? 0)
-            .compareTo(b.latestStatusInfo?.ratio ?? 0));
+        otherStatusList.sort((a, b) => (a.latestStatusInfo?.ratio ?? 0).compareTo(b.latestStatusInfo?.ratio ?? 0));
         break;
     }
 
@@ -387,11 +363,9 @@ class MySiteController extends GetxController {
       return toSearchList.where((site) {
         var lowerCaseSearchKey = searchKey.toLowerCase();
         return site.nickname.toLowerCase().contains(lowerCaseSearchKey) ||
-            (site.username?.toLowerCase().contains(lowerCaseSearchKey) ??
-                false) ||
+            (site.username?.toLowerCase().contains(lowerCaseSearchKey) ?? false) ||
             (site.email?.toLowerCase().contains(lowerCaseSearchKey) ?? false) ||
-            (site.mirror?.toLowerCase().contains(lowerCaseSearchKey) ??
-                false) ||
+            (site.mirror?.toLowerCase().contains(lowerCaseSearchKey) ?? false) ||
             site.site.toLowerCase().contains(lowerCaseSearchKey);
       }).toList();
     } else {
@@ -402,8 +376,7 @@ class MySiteController extends GetxController {
   void filterByKey() {
     StatusInfo? getLatestStatusInfo(MySite item) {
       if (item.statusInfo.isEmpty) return null;
-      final latestDate =
-          item.statusInfo.keys.reduce((a, b) => a.compareTo(b) > 0 ? a : b);
+      final latestDate = item.statusInfo.keys.reduce((a, b) => a.compareTo(b) > 0 ? a : b);
       return item.statusInfo[latestDate];
     }
 
@@ -423,17 +396,12 @@ class MySiteController extends GetxController {
       'mail': (item) => item.mail != null && item.mail! > 0,
       'notice': (item) => item.notice != null && item.notice! > 0,
       'signInInfo': (item) =>
-          item.available &&
-          webSiteList[item.site]?.signIn == true &&
-          item.signIn &&
-          item.signInInfo.isEmpty,
+          item.available && webSiteList[item.site]?.signIn == true && item.signIn && item.signInInfo.isEmpty,
       'statusInfo': (item) => item.statusInfo.isEmpty,
-      'signIn': (item) =>
-          item.available && item.signIn && item.signInInfo[today] == null,
+      'signIn': (item) => item.available && item.signIn && item.signInInfo[today] == null,
       'status': (item) {
         final info = item.statusInfo[today];
-        return item.available &&
-            (info == null || !isToday(info.updatedAt.toString()));
+        return item.available && (info == null || !isToday(info.updatedAt.toString()));
       },
       'userId': (item) => item.userId == null || item.userId!.isEmpty,
       'username': (item) => item.username == null || item.username!.isEmpty,
@@ -466,8 +434,7 @@ class MySiteController extends GetxController {
 
     // 标签筛选
     if (selectTag != '全部') {
-      filtered =
-          filtered.where((item) => item.tags.contains(selectTag)).toList();
+      filtered = filtered.where((item) => item.tags.contains(selectTag)).toList();
     }
 
     // 搜索关键词筛选

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:harvest/app/home/pages/models/SubHistory.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../../common/card_view.dart';
 import '../../../../models/common_response.dart';
@@ -24,9 +25,7 @@ class _SubscribeHistoryPageState extends State<SubscribeHistoryPage> {
         children: [
           Expanded(
             child: ListView(
-              children: controller.subHistory
-                  .map((SubHistory history) => _buildSubHistory(history))
-                  .toList(),
+              children: controller.subHistory.map((SubHistory history) => _buildSubHistory(history)).toList(),
             ),
           ),
           CustomCard(
@@ -67,8 +66,7 @@ class _SubscribeHistoryPageState extends State<SubscribeHistoryPage> {
               Get.defaultDialog(
                 title: '确认',
                 radius: 5,
-                titleStyle:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+                titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                 middleText: '确定要删除吗？',
                 actions: [
                   ElevatedButton(
@@ -79,16 +77,15 @@ class _SubscribeHistoryPageState extends State<SubscribeHistoryPage> {
                   ),
                   ElevatedButton(
                     onPressed: () async {
-                      CommonResponse res =
-                          await controller.removeHistory(history);
+                      CommonResponse res = await controller.removeHistory(history);
                       if (res.succeed) {
                         Get.snackbar('删除通知', res.msg.toString(),
-                            colorText: Get.context?.theme.colorScheme.primary);
+                            colorText: ShadTheme.of(context).colorScheme.foreground);
                         controller.subHistory.remove(history);
                         await controller.initData();
                       } else {
                         Get.snackbar('删除通知', res.msg.toString(),
-                            colorText: Get.context?.theme.colorScheme.error);
+                            colorText: ShadTheme.of(context).colorScheme.destructive);
                       }
                       Get.back(result: true);
                     },

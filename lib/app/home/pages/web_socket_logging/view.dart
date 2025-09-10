@@ -5,7 +5,6 @@ import 'package:flutter_floating/floating/floating.dart';
 import 'package:flutter_floating/floating/manager/floating_manager.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
-import 'package:getwidget/getwidget.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../../common/card_view.dart';
@@ -20,11 +19,10 @@ class WebSocketLoggingWidget extends StatelessWidget {
       child: Icon(
         Icons.waves_sharp,
         size: 20,
-        color: ShadTheme.of(context).colorScheme.primary,
+        color: ShadTheme.of(context).colorScheme.foreground,
       ),
       onTap: () {
-        final WebSocketLoggingController controller =
-            Get.put(WebSocketLoggingController());
+        final WebSocketLoggingController controller = Get.put(WebSocketLoggingController());
         double width = MediaQuery.of(context).size.width * 0.75;
         double height = MediaQuery.of(context).size.height * 0.5;
         if (GetPlatform.isDesktop) {
@@ -35,10 +33,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
             controller.inTimeAPILogFloatingKey,
             Floating(
               GetBuilder<WebSocketLoggingController>(builder: (controller) {
-                return SizedBox(
-                    height: height,
-                    width: width,
-                    child: _showLoggingDialog(context));
+                return SizedBox(height: height, width: width, child: _showLoggingDialog(context));
               }),
               slideType: FloatingSlideType.onLeftAndTop,
               isShowLog: false,
@@ -62,9 +57,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
               icon: Icon(
                 Icons.wrap_text_outlined,
                 size: 24,
-                color: controller.wrapText
-                    ? Colors.orange
-                    : ShadTheme.of(context).colorScheme.primary,
+                color: controller.wrapText ? Colors.orange : ShadTheme.of(context).colorScheme.foreground,
               ),
               onPressed: () {
                 controller.wrapText = !controller.wrapText;
@@ -109,12 +102,12 @@ class WebSocketLoggingWidget extends StatelessWidget {
               child: Icon(
                 Icons.event_note,
                 size: 24,
-                color: ShadTheme.of(context).colorScheme.primary,
+                color: ShadTheme.of(context).colorScheme.foreground,
               ),
             ),
             controller.isLoading
                 ? IconButton(
-                    icon: const GFLoader(size: 24),
+                    icon: Center(child: const CircularProgressIndicator()),
                     onPressed: () {
                       controller.stopFetchLog();
                       controller.update();
@@ -124,7 +117,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
                     icon: Icon(
                       Icons.play_arrow_outlined,
                       size: 24,
-                      color: ShadTheme.of(context).colorScheme.primary,
+                      color: ShadTheme.of(context).colorScheme.foreground,
                     ),
                     onPressed: () {
                       controller.fetchingWebSocketLogList();
@@ -135,7 +128,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
               icon: Icon(
                 Icons.exit_to_app_outlined,
                 size: 24,
-                color: ShadTheme.of(context).colorScheme.ring,
+                color: ShadTheme.of(context).colorScheme.destructive,
               ),
               onPressed: () {
                 controller.floating.close();
@@ -152,29 +145,22 @@ class WebSocketLoggingWidget extends StatelessWidget {
                 itemBuilder: (context, index) {
                   String res = controller.showLogList[index];
                   return CustomCard(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
                       width: MediaQuery.of(context).size.width,
                       child: SelectableText(
-                        onSelectionChanged: (TextSelection select,
-                            SelectionChangedCause? cause) {
+                        onSelectionChanged: (TextSelection select, SelectionChangedCause? cause) {
                           Clipboard.setData(ClipboardData(
                               text: res.toString().trim().substring(
                                     select.start,
                                     select.end,
-                                  ))).then((_) {
-                            GFToast.showToast("已复制", context);
-                          });
+                                  ))).then((_) {});
                         },
                         res.toString().trim(),
                         maxLines: controller.wrapText ? null : 1,
                         style: TextStyle(
                           fontSize: 12,
                           letterSpacing: 1.5,
-                          color: ShadTheme.of(context)
-                              .colorScheme
-                              .background
-                              .withOpacity(0.8),
+                          color: ShadTheme.of(context).colorScheme.background.withOpacity(0.8),
                           overflow: TextOverflow.visible,
                         ),
                       ));

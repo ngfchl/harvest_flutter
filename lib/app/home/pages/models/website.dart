@@ -236,8 +236,7 @@ class WebSite {
         hrRate: (json['hr_rate'] as num?)?.toInt() ?? 0,
         hrTime: (json['hr_time'] as num?)?.toInt() ?? 0,
         level: json.containsKey('level')
-            ? (json['level'] as Map<String, dynamic>)
-                .map((key, value) => MapEntry(key, LevelInfo.fromJson(value)))
+            ? (json['level'] as Map<String, dynamic>).map((key, value) => MapEntry(key, LevelInfo.fromJson(value)))
             : null,
         myInvitationRule: json['my_invitation_rule'] ?? '',
         myTimeJoinRule: json['my_time_join_rule'] ?? '',
@@ -300,6 +299,13 @@ class WebSite {
       rethrow; // 重新抛出异常以便上层处理
     }
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is WebSite && runtimeType == other.runtimeType && name == other.name;
+
+  @override
+  int get hashCode => name.hashCode;
 
   @override
   String toString() => '站点信息：$name - $nickname';

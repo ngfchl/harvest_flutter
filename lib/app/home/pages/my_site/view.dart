@@ -6,10 +6,10 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
-import 'package:getwidget/getwidget.dart';
 import 'package:harvest/app/home/pages/dash_board/controller.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:harvest/utils/date_time_utils.dart';
@@ -28,6 +28,7 @@ import '../../../../common/utils.dart';
 import '../../../../utils/calc_weeks.dart';
 import '../../../../utils/format_number.dart';
 import '../../../../utils/logger_helper.dart';
+import '../../../../utils/storage.dart';
 import '../../../../utils/string_utils.dart';
 import '../../../routes/app_pages.dart';
 import '../models/my_site.dart';
@@ -41,8 +42,7 @@ class MySitePage extends StatefulWidget {
   State<MySitePage> createState() => _MySitePagePageState();
 }
 
-class _MySitePagePageState extends State<MySitePage>
-    with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
+class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
   final controller = Get.put(MySiteController());
   FocusNode blankNode = FocusNode();
 
@@ -52,6 +52,7 @@ class _MySitePagePageState extends State<MySitePage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     return GetBuilder<MySiteController>(builder: (controller) {
       return SafeArea(
         bottom: false,
@@ -65,8 +66,7 @@ class _MySitePagePageState extends State<MySitePage>
             child: Column(
               children: [
                 CustomCard(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
                   child: Column(
                     children: [
                       if (controller.loadingFromServer)
@@ -74,15 +74,20 @@ class _MySitePagePageState extends State<MySitePage>
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            const Center(
-                                child: GFLoader(size: 8, loaderstrokeWidth: 2)),
+                            SizedBox(
+                                width: 10,
+                                height: 10,
+                                child: Center(
+                                    child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: shadColorScheme.foreground,
+                                ))),
                             const SizedBox(width: 5),
                             Text(
                               '当前为缓存数据，正在从服务器加载',
                               style: TextStyle(
                                 fontSize: 10,
-                                color:
-                                    ShadTheme.of(context).colorScheme.primary,
+                                color: shadColorScheme.foreground,
                               ),
                             ),
                           ],
@@ -95,15 +100,13 @@ class _MySitePagePageState extends State<MySitePage>
                                 return Expanded(
                                   child: InkWell(
                                     onTap: () {
-                                      FocusScope.of(context)
-                                          .requestFocus(blankNode);
+                                      FocusScope.of(context).requestFocus(blankNode);
                                     },
                                     child: SizedBox(
                                       height: 32,
                                       child: TextField(
                                         focusNode: blankNode,
-                                        scrollPhysics:
-                                            const NeverScrollableScrollPhysics(),
+                                        scrollPhysics: const NeverScrollableScrollPhysics(),
                                         // 禁止滚动
                                         maxLines: 1,
 
@@ -112,8 +115,7 @@ class _MySitePagePageState extends State<MySitePage>
                                         ],
                                         controller: controller.searchController,
                                         style: const TextStyle(fontSize: 12),
-                                        textAlignVertical:
-                                            TextAlignVertical.center,
+                                        textAlignVertical: TextAlignVertical.center,
                                         decoration: InputDecoration(
                                           // labelText: '搜索',
                                           isDense: true,
@@ -122,52 +124,36 @@ class _MySitePagePageState extends State<MySitePage>
                                           hoverColor: Colors.transparent,
                                           focusColor: Colors.transparent,
                                           hintText: '输入关键词...',
-                                          labelStyle:
-                                              const TextStyle(fontSize: 12),
-                                          hintStyle:
-                                              const TextStyle(fontSize: 12),
-                                          contentPadding:
-                                              const EdgeInsets.symmetric(
-                                                  vertical: 8, horizontal: 5),
+                                          labelStyle: const TextStyle(fontSize: 12),
+                                          hintStyle: const TextStyle(fontSize: 12),
+                                          contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
                                           prefixIcon: Icon(
                                             Icons.search,
                                             size: 14,
-                                            color: ShadTheme.of(context)
-                                                .colorScheme
-                                                .primary,
+                                            color: shadColorScheme.foreground,
                                           ),
                                           // suffix: ,
                                           suffixIcon: Padding(
-                                            padding: const EdgeInsets.only(
-                                                right: 8.0),
+                                            padding: const EdgeInsets.only(right: 8.0),
                                             child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
+                                              mainAxisAlignment: MainAxisAlignment.center,
                                               children: [
-                                                Text(
-                                                    '计数：${controller.showStatusList.length}',
-                                                    style: const TextStyle(
-                                                        fontSize: 12,
-                                                        color: Colors.orange)),
+                                                Text('计数：${controller.showStatusList.length}',
+                                                    style: const TextStyle(fontSize: 12, color: Colors.orange)),
                                               ],
                                             ),
                                           ),
                                           border: OutlineInputBorder(
                                             borderSide: BorderSide.none,
                                             // 不绘制边框
-                                            borderRadius:
-                                                BorderRadius.circular(0.0),
+                                            borderRadius: BorderRadius.circular(0.0),
                                             // 确保角落没有圆角
-                                            gapPadding:
-                                                0.0, // 移除边框与hintText之间的间距
+                                            gapPadding: 0.0, // 移除边框与hintText之间的间距
                                           ),
                                           focusedBorder: OutlineInputBorder(
-                                            borderSide: const BorderSide(
-                                                width: 1.0,
-                                                color: Colors.black),
+                                            borderSide: const BorderSide(width: 1.0, color: Colors.black),
                                             // 仅在聚焦时绘制底部边框
-                                            borderRadius:
-                                                BorderRadius.circular(0.0),
+                                            borderRadius: BorderRadius.circular(0.0),
                                           ),
                                         ),
                                         onSubmitted: (value) async {
@@ -175,8 +161,7 @@ class _MySitePagePageState extends State<MySitePage>
                                           controller.update();
                                           Logger.instance.d('搜索框内容变化：$value');
                                           controller.searchKey = value;
-                                          await Future.delayed(
-                                              Duration(milliseconds: 300));
+                                          await Future.delayed(Duration(milliseconds: 300));
                                           controller.filterByKey();
                                           controller.searching = false;
                                           controller.update();
@@ -189,38 +174,16 @@ class _MySitePagePageState extends State<MySitePage>
                           if (controller.searchKey.isNotEmpty)
                             IconButton(
                                 onPressed: () {
-                                  controller.searchController.text = controller
-                                      .searchController.text
-                                      .substring(
-                                          0,
-                                          controller.searchController.text
-                                                  .length -
-                                              1);
-                                  controller.searchKey =
-                                      controller.searchController.text;
+                                  controller.searchController.text = controller.searchController.text
+                                      .substring(0, controller.searchController.text.length - 1);
+                                  controller.searchKey = controller.searchController.text;
                                   controller.filterByKey();
                                   controller.update();
                                 },
                                 icon: controller.searching
-                                    ? GFLoader(
-                                        type: GFLoaderType.custom,
-                                        duration:
-                                            const Duration(milliseconds: 120),
-                                        loaderIconOne: Icon(
-                                          Icons.circle_outlined,
-                                          size: 16,
-                                          color: ShadTheme.of(context)
-                                              .colorScheme
-                                              .primary
-                                              .withOpacity(0.8),
-                                        ),
-                                      )
+                                    ? Center(child: const CircularProgressIndicator())
                                     : Icon(Icons.backspace_outlined,
-                                        size: 18,
-                                        color: ShadTheme.of(context)
-                                            .colorScheme
-                                            .primary
-                                            .withOpacity(0.8)))
+                                        size: 18, color: shadColorScheme.primary.withOpacity(0.8)))
                         ],
                       ),
                       SingleChildScrollView(
@@ -230,38 +193,30 @@ class _MySitePagePageState extends State<MySitePage>
                             // mainAxisAlignment: MainAxisAlignment.spaceAround,
                             // crossAxisAlignment: CrossAxisAlignment.center,
                             direction: Axis.horizontal,
-                            spacing: 15,
+                            // spacing: 15,
                             children: [
                               InkWell(
                                 onTap: () => _showFilterBottomSheet(),
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0, vertical: 3),
+                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(
                                         Icons.filter_tilt_shift,
-                                        size: 18,
-                                        color: ShadTheme.of(context)
-                                            .colorScheme
-                                            .primary,
+                                        size: 13,
+                                        color: shadColorScheme.foreground,
                                       ),
                                       SizedBox(width: 3),
                                       Text(
                                         controller.filterOptions
-                                            .firstWhere((item) =>
-                                                item.value ==
-                                                controller.filterKey)
+                                            .firstWhere((item) => item.value == controller.filterKey)
                                             .name,
                                         style: TextStyle(
-                                          fontSize: 14,
-                                          color: ShadTheme.of(context)
-                                              .colorScheme
-                                              .primary,
+                                          fontSize: 12,
+                                          color: shadColorScheme.foreground,
                                         ),
                                       ),
                                     ],
@@ -273,33 +228,25 @@ class _MySitePagePageState extends State<MySitePage>
                                   _showSortBottomSheet();
                                 },
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0, vertical: 3),
+                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(
                                         Icons.sort_by_alpha_outlined,
-                                        size: 18,
-                                        color: ShadTheme.of(context)
-                                            .colorScheme
-                                            .primary,
+                                        size: 13,
+                                        color: shadColorScheme.foreground,
                                       ),
                                       SizedBox(width: 3),
                                       Text(
                                         controller.siteSortOptions
-                                            .firstWhere((item) =>
-                                                item.value ==
-                                                controller.sortKey)
+                                            .firstWhere((item) => item.value == controller.sortKey)
                                             .name,
                                         style: TextStyle(
-                                          fontSize: 14,
-                                          color: ShadTheme.of(context)
-                                              .colorScheme
-                                              .primary,
+                                          fontSize: 12,
+                                          color: shadColorScheme.foreground,
                                         ),
                                       ),
                                     ],
@@ -308,52 +255,41 @@ class _MySitePagePageState extends State<MySitePage>
                               ),
                               InkWell(
                                 onTap: () {
-                                  controller.sortReversed =
-                                      !controller.sortReversed;
+                                  controller.sortReversed = !controller.sortReversed;
                                   controller.sortStatusList();
                                 },
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0, vertical: 3),
+                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       controller.sortReversed
                                           ? Icon(
                                               Icons.sim_card_download_sharp,
-                                              size: 18,
-                                              color: ShadTheme.of(context)
-                                                  .colorScheme
-                                                  .primary,
+                                              size: 13,
+                                              color: shadColorScheme.foreground,
                                             )
                                           : Icon(
                                               Icons.upload_file_sharp,
-                                              size: 18,
-                                              color: ShadTheme.of(context)
-                                                  .colorScheme
-                                                  .primary,
+                                              size: 13,
+                                              color: shadColorScheme.foreground,
                                             ),
                                       SizedBox(width: 3),
                                       controller.sortReversed
                                           ? Text(
                                               '正序',
                                               style: TextStyle(
-                                                fontSize: 14,
-                                                color: ShadTheme.of(context)
-                                                    .colorScheme
-                                                    .primary,
+                                                fontSize: 12,
+                                                color: shadColorScheme.foreground,
                                               ),
                                             )
                                           : Text(
                                               '倒序',
                                               style: TextStyle(
-                                                fontSize: 14,
-                                                color: ShadTheme.of(context)
-                                                    .colorScheme
-                                                    .primary,
+                                                fontSize: 12,
+                                                color: shadColorScheme.foreground,
                                               ),
                                             ),
                                     ],
@@ -362,9 +298,7 @@ class _MySitePagePageState extends State<MySitePage>
                               ),
                               CustomPopup(
                                 contentDecoration: BoxDecoration(
-                                  color: ShadTheme.of(context)
-                                      .colorScheme
-                                      .background,
+                                  color: shadColorScheme.background,
                                 ),
                                 content: SingleChildScrollView(
                                   scrollDirection: Axis.vertical,
@@ -380,9 +314,7 @@ class _MySitePagePageState extends State<MySitePage>
                                         child: Text(
                                           '全部',
                                           style: TextStyle(
-                                            color: ShadTheme.of(context)
-                                                .colorScheme
-                                                .primary,
+                                            color: shadColorScheme.foreground,
                                           ),
                                         ),
                                         onTap: () async {
@@ -392,50 +324,41 @@ class _MySitePagePageState extends State<MySitePage>
                                           // await controller.mySiteController.initData();
                                         },
                                       ),
-                                      ...controller.tagList
-                                          .map((item) => PopupMenuItem<String>(
-                                                height: 32,
-                                                child: Text(
-                                                  item,
-                                                  style: TextStyle(
-                                                    color: ShadTheme.of(context)
-                                                        .colorScheme
-                                                        .primary,
-                                                  ),
-                                                ),
-                                                onTap: () async {
-                                                  Get.back();
-                                                  controller.selectTag = item;
-                                                  controller.filterByKey();
-                                                  // await controller.mySiteController.initData();
-                                                },
-                                              )),
+                                      ...controller.tagList.map((item) => PopupMenuItem<String>(
+                                            height: 32,
+                                            child: Text(
+                                              item,
+                                              style: TextStyle(
+                                                color: shadColorScheme.foreground,
+                                              ),
+                                            ),
+                                            onTap: () async {
+                                              Get.back();
+                                              controller.selectTag = item;
+                                              controller.filterByKey();
+                                              // await controller.mySiteController.initData();
+                                            },
+                                          )),
                                     ],
                                   ),
                                 ),
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0, vertical: 3),
+                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(
                                         Icons.tag,
-                                        size: 18,
-                                        color: ShadTheme.of(context)
-                                            .colorScheme
-                                            .primary,
+                                        size: 13,
+                                        color: shadColorScheme.foreground,
                                       ),
                                       Text(
                                         '【${controller.selectTag}】',
                                         style: TextStyle(
-                                          fontSize: 14,
-                                          color: ShadTheme.of(context)
-                                              .colorScheme
-                                              .primary,
+                                          fontSize: 12,
+                                          color: shadColorScheme.foreground,
                                         ),
                                       )
                                     ],
@@ -449,66 +372,53 @@ class _MySitePagePageState extends State<MySitePage>
                 ),
 
                 Expanded(
-                  child: controller.isLoaded
-                      ? Center(
-                          child: GFLoader(
-                            type: GFLoaderType.custom,
-                            loaderIconOne: Icon(
-                              Icons.circle_outlined,
-                              size: 18,
-                              color: ShadTheme.of(context)
-                                  .colorScheme
-                                  .primary
-                                  .withOpacity(0.8),
-                            ),
-                          ),
-                        )
+                  child: controller.loading
+                      ? Center(child: const CircularProgressIndicator())
                       : controller.showStatusList.isEmpty
                           ? ListView(
-                              children: const [
-                                Center(child: Text('没有符合条件的数据！'))
-                              ],
+                              children: const [Center(child: Text('没有符合条件的数据！'))],
                             )
                           : GetBuilder<MySiteController>(builder: (controller) {
                               return ReorderableListView.builder(
                                 onReorder: (int oldIndex, int newIndex) async {
-                                  final item = controller.showStatusList
-                                      .removeAt(oldIndex);
+                                  final item = controller.showStatusList.removeAt(oldIndex);
                                   Logger.instance.d('本站排序 ID：${item.sortId}');
                                   if (oldIndex < newIndex) {
                                     newIndex -= 1; // 移动时修正索引，因为item已被移除
                                   }
 
-                                  final nextItem =
-                                      controller.showStatusList[newIndex];
+                                  final nextItem = controller.showStatusList[newIndex];
                                   MySite newItem;
                                   if (controller.sortReversed) {
-                                    newItem = item.copyWith(
-                                        sortId: nextItem.sortId - 1 > 0
-                                            ? nextItem.sortId - 1
-                                            : 0);
+                                    newItem = item.copyWith(sortId: nextItem.sortId - 1 > 0 ? nextItem.sortId - 1 : 0);
                                   } else {
-                                    newItem = item.copyWith(
-                                        sortId: nextItem.sortId + 1);
+                                    newItem = item.copyWith(sortId: nextItem.sortId + 1);
                                   }
-                                  controller.showStatusList
-                                      .insert(newIndex, item);
+                                  controller.showStatusList.insert(newIndex, item);
                                   controller.update();
-                                  if (await controller
-                                      .saveMySiteToServer(newItem)) {
+                                  if (await controller.saveMySiteToServer(newItem)) {
                                     await controller.getSiteStatusFromServer();
                                   }
                                 },
                                 itemCount: controller.showStatusList.length,
                                 itemBuilder: (BuildContext context, int index) {
-                                  MySite mySite =
-                                      controller.showStatusList[index];
-                                  return Padding(
-                                    key: Key("${mySite.id}-${mySite.site}"),
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 2.5),
-                                    child: showSiteDataInfo(mySite),
-                                  );
+                                  MySite mySite = controller.showStatusList[index];
+                                  return GetBuilder<MySiteController>(
+                                      id: "SingleSite-${mySite.id}",
+                                      key: ValueKey("SingleSite-${mySite.id}"),
+                                      builder: (controller) {
+                                        return Stack(
+                                          children: [
+                                            showSiteDataInfo(mySite),
+                                            if (controller.singleLoading)
+                                              Center(
+                                                  child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: shadColorScheme.foreground,
+                                              )),
+                                          ],
+                                        );
+                                      });
                                 },
                               );
                             }),
@@ -526,10 +436,11 @@ class _MySitePagePageState extends State<MySitePage>
     });
   }
 
-  _buildBottomButtonBarFloat() {
+  CustomPopup _buildBottomButtonBarFloat() {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     return CustomPopup(
         contentDecoration: BoxDecoration(
-          color: ShadTheme.of(context).colorScheme.background,
+          color: shadColorScheme.background,
         ),
         content: SingleChildScrollView(
           scrollDirection: Axis.vertical,
@@ -551,8 +462,7 @@ class _MySitePagePageState extends State<MySitePage>
                 ),
                 style: ButtonStyle(
                   shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5.0)),
+                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                   ),
                   side: WidgetStateProperty.all(BorderSide.none),
                 ),
@@ -569,8 +479,7 @@ class _MySitePagePageState extends State<MySitePage>
                 ),
                 style: ButtonStyle(
                   shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5.0)),
+                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                   ),
                   side: WidgetStateProperty.all(BorderSide.none),
                 ),
@@ -593,14 +502,11 @@ class _MySitePagePageState extends State<MySitePage>
                       ),
                 style: ButtonStyle(
                   shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5.0)),
+                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                   ),
                   side: WidgetStateProperty.all(BorderSide.none),
                 ),
-                label: controller.sortReversed
-                    ? const Text('正序')
-                    : const Text('倒序'),
+                label: controller.sortReversed ? const Text('正序') : const Text('倒序'),
               ),
               ElevatedButton.icon(
                 onPressed: () async {
@@ -613,8 +519,7 @@ class _MySitePagePageState extends State<MySitePage>
                 ),
                 style: ButtonStyle(
                   shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5.0)),
+                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                   ),
                   side: WidgetStateProperty.all(BorderSide.none),
                 ),
@@ -641,8 +546,7 @@ class _MySitePagePageState extends State<MySitePage>
                 ),
                 style: ButtonStyle(
                   shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5.0)),
+                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                   ),
                   side: WidgetStateProperty.all(BorderSide.none),
                 ),
@@ -653,7 +557,7 @@ class _MySitePagePageState extends State<MySitePage>
         ),
         child: Icon(
           Icons.settings_outlined,
-          color: ShadTheme.of(context).colorScheme.primary,
+          color: shadColorScheme.foreground,
           size: 28,
         ));
   }
@@ -664,16 +568,15 @@ class _MySitePagePageState extends State<MySitePage>
     super.dispose();
   }
 
-  _openSitePage(
-      MySite mySite, WebSite website, bool openByInnerExplorer) async {
+  _openSitePage(MySite mySite, WebSite website, bool openByInnerExplorer) async {
     String path;
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     if (mySite.mail! > 0 && !website.pageMessage.contains('api')) {
       path = website.pageMessage.replaceFirst("{}", mySite.userId.toString());
     } else {
       path = website.pageIndex;
     }
-    String url =
-        '${mySite.mirror!.endsWith('/') ? mySite.mirror : '${mySite.mirror}/'}$path';
+    String url = '${mySite.mirror!.endsWith('/') ? mySite.mirror : '${mySite.mirror}/'}$path';
     if (mySite.mirror!.contains('m-team')) {
       url = url.replaceFirst("api", "xp");
     }
@@ -681,17 +584,11 @@ class _MySitePagePageState extends State<MySitePage>
       Logger.instance.d('使用外部浏览器打开');
       Uri uri = Uri.parse(url);
       if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-        Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
-            colorText: ShadTheme.of(context).colorScheme.primary);
+        Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？', colorText: shadColorScheme.foreground);
       }
     } else {
       Logger.instance.d('使用内置浏览器打开');
-      Get.toNamed(Routes.WEBVIEW, arguments: {
-        'url': url,
-        'info': null,
-        'mySite': mySite,
-        'website': website
-      });
+      Get.toNamed(Routes.WEBVIEW, arguments: {'url': url, 'info': null, 'mySite': mySite, 'website': website});
     }
   }
 
@@ -700,12 +597,13 @@ class _MySitePagePageState extends State<MySitePage>
     WebSite? website = controller.webSiteList[mySite.site];
 
     // Logger.instance.d('${mySite.nickname} - ${website?.name}');
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     if (website == null) {
       return CustomCard(
+        key: Key("${mySite.id}-${mySite.site}"),
         child: ListTile(
           dense: true,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
           leading: const Image(
             image: AssetImage('assets/images/avatar.png'),
             width: 32,
@@ -715,13 +613,13 @@ class _MySitePagePageState extends State<MySitePage>
             mySite.nickname,
             style: TextStyle(
               fontSize: 13,
-              color: ShadTheme.of(context).colorScheme.primary,
+              color: shadColorScheme.foreground,
             ),
           ),
           subtitle: Text(
             '没有找到这个站点的配置文件，请清理站点配置缓存后重新加载数据！',
             style: TextStyle(
-              color: ShadTheme.of(context).colorScheme.ring,
+              color: shadColorScheme.destructive,
               fontSize: 10,
             ),
           ),
@@ -731,7 +629,7 @@ class _MySitePagePageState extends State<MySitePage>
               },
               icon: Icon(
                 Icons.edit,
-                color: ShadTheme.of(context).colorScheme.primary,
+                color: shadColorScheme.foreground,
               )),
         ),
       );
@@ -749,36 +647,26 @@ class _MySitePagePageState extends State<MySitePage>
       rights = [...?website.level?.values];
     } else if (level == null) {
     } else {
-      rights = [
-        ...?website.level?.values
-            .where((item) => item.levelId > 0 && item.levelId <= level.levelId)
-      ];
+      rights = [...?website.level?.values.where((item) => item.levelId > 0 && item.levelId <= level.levelId)];
       rights.sort((a, b) => b.levelId.compareTo(a.levelId));
-      nextLevel = website.level?.values
-          .firstWhereOrNull((item) => item.levelId == level.levelId + 1);
+      nextLevel = website.level?.values.firstWhereOrNull((item) => item.levelId == level.levelId + 1);
     }
 
-    int nextLevelToDownloadedByte =
-        FileSizeConvert.parseToByte(nextLevel?.downloaded ?? "0");
-    int nextLevelToUploadedByte =
-        FileSizeConvert.parseToByte(nextLevel?.uploaded ?? "0");
-    int calcToUploaded =
-        (max(nextLevelToDownloadedByte, status?.downloaded ?? 0) *
-                (nextLevel?.ratio ?? 0))
-            .toInt();
+    int nextLevelToDownloadedByte = FileSizeConvert.parseToByte(nextLevel?.downloaded ?? "0");
+    int nextLevelToUploadedByte = FileSizeConvert.parseToByte(nextLevel?.uploaded ?? "0");
+    int calcToUploaded = (max(nextLevelToDownloadedByte, status?.downloaded ?? 0) * (nextLevel?.ratio ?? 0)).toInt();
     nextLevelToUploadedByte = max(nextLevelToUploadedByte, calcToUploaded);
     // Logger.instance.d(
     //     '${FileSizeConvert.parseToFileSize(status?.uploaded)}(${status?.uploaded})/${FileSizeConvert.parseToFileSize(nextLevelToUploadedByte)}($nextLevelToUploadedByte)');
     String iconUrl = '${controller.baseUrl}/local/icons/${website.name}.png';
-    Logger.instance.d('${website.name} - $iconUrl');
-    var toUpgradeTime = DateTime.parse(mySite.timeJoin)
-        .add(Duration(days: (nextLevel?.days ?? 0) * 7));
+    // Logger.instance.d('${website.name} - $iconUrl');
+    var toUpgradeTime = DateTime.parse(mySite.timeJoin).add(Duration(days: (nextLevel?.days ?? 0) * 7));
     return CustomCard(
+      key: Key("${mySite.id}-${mySite.site}"),
       child: Column(children: [
         ListTile(
           dense: true,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
           leading: InkWell(
             onTap: () => _openSitePage(mySite, website, true),
             child: ClipRRect(
@@ -788,16 +676,13 @@ class _MySitePagePageState extends State<MySitePage>
                 cacheKey: iconUrl,
                 fit: BoxFit.fill,
                 errorWidget: (context, url, error) => CachedNetworkImage(
-                  imageUrl: website.logo.startsWith('http')
-                      ? website.logo
-                      : '${mySite.mirror}${website.logo}',
+                  imageUrl: website.logo.startsWith('http') ? website.logo : '${mySite.mirror}${website.logo}',
                   fit: BoxFit.fill,
                   httpHeaders: {
                     "user-agent": mySite.userAgent.toString(),
                     "Cookie": mySite.cookie.toString(),
                   },
-                  errorWidget: (context, url, error) => const Image(
-                      image: AssetImage('assets/images/avatar.png')),
+                  errorWidget: (context, url, error) => const Image(image: AssetImage('assets/images/avatar.png')),
                   width: 32,
                   height: 32,
                 ),
@@ -812,13 +697,12 @@ class _MySitePagePageState extends State<MySitePage>
             children: [
               mySite.latestActive != null
                   ? Tooltip(
-                      message:
-                          '最后访问时间：${calculateTimeElapsed(mySite.latestActive.toString())}',
+                      message: '最后访问时间：${calculateTimeElapsed(mySite.latestActive.toString())}',
                       child: Text(
                         mySite.nickname,
                         style: TextStyle(
                           fontSize: 13,
-                          color: ShadTheme.of(context).colorScheme.primary,
+                          color: shadColorScheme.foreground,
                         ),
                       ),
                     )
@@ -826,7 +710,7 @@ class _MySitePagePageState extends State<MySitePage>
                       mySite.nickname,
                       style: TextStyle(
                         fontSize: 13,
-                        color: ShadTheme.of(context).colorScheme.primary,
+                        color: shadColorScheme.foreground,
                       ),
                     ),
               if (mySite.mail! > 0)
@@ -835,13 +719,13 @@ class _MySitePagePageState extends State<MySitePage>
                     Icon(
                       Icons.mail,
                       size: 12,
-                      color: ShadTheme.of(context).colorScheme.primary,
+                      color: shadColorScheme.foreground,
                     ),
                     Text(
                       '${mySite.mail}',
                       style: TextStyle(
                         fontSize: 10,
-                        color: ShadTheme.of(context).colorScheme.primary,
+                        color: shadColorScheme.foreground,
                       ),
                     ),
                   ],
@@ -852,13 +736,13 @@ class _MySitePagePageState extends State<MySitePage>
                     Icon(
                       Icons.notifications,
                       size: 12,
-                      color: ShadTheme.of(context).colorScheme.primary,
+                      color: shadColorScheme.foreground,
                     ),
                     Text(
                       '${mySite.notice}',
                       style: TextStyle(
                         fontSize: 10,
-                        color: ShadTheme.of(context).colorScheme.primary,
+                        color: shadColorScheme.foreground,
                       ),
                     ),
                   ],
@@ -868,14 +752,14 @@ class _MySitePagePageState extends State<MySitePage>
                   website.level?[status.myLevel]?.level ?? status.myLevel,
                   style: TextStyle(
                     fontSize: 10,
-                    color: ShadTheme.of(context).colorScheme.primary,
+                    color: shadColorScheme.foreground,
                   ),
                 ),
               if (status != null && level != null)
                 CustomPopup(
                   showArrow: true,
                   barrierColor: Colors.transparent,
-                  backgroundColor: ShadTheme.of(context).colorScheme.background,
+                  backgroundColor: shadColorScheme.background,
                   content: SingleChildScrollView(
                     child: SizedBox(
                         width: 200,
@@ -888,9 +772,7 @@ class _MySitePagePageState extends State<MySitePage>
                                 child: Text("下一等级：${nextLevel.level}",
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: ShadTheme.of(context)
-                                          .colorScheme
-                                          .primary,
+                                      color: shadColorScheme.foreground,
                                     )),
                               ),
                               // if (status.uploaded < nextLevelToUploadedByte)
@@ -900,15 +782,9 @@ class _MySitePagePageState extends State<MySitePage>
                                     '上传量：${FileSizeConvert.parseToFileSize(status.uploaded)}/${FileSizeConvert.parseToFileSize(nextLevelToUploadedByte)}',
                                     style: TextStyle(
                                       fontSize: 10,
-                                      color: status.uploaded <
-                                              max(nextLevelToUploadedByte,
-                                                  calcToUploaded)
-                                          ? ShadTheme.of(context)
-                                              .colorScheme
-                                              .ring
-                                          : ShadTheme.of(context)
-                                              .colorScheme
-                                              .primary,
+                                      color: status.uploaded < max(nextLevelToUploadedByte, calcToUploaded)
+                                          ? shadColorScheme.destructive
+                                          : shadColorScheme.foreground,
                                     )),
                               ),
                               // if (status.downloaded < nextLevelToDownloadedByte)
@@ -918,14 +794,9 @@ class _MySitePagePageState extends State<MySitePage>
                                     '下载量：${FileSizeConvert.parseToFileSize(status.downloaded)}/${FileSizeConvert.parseToFileSize(nextLevelToDownloadedByte)}',
                                     style: TextStyle(
                                       fontSize: 10,
-                                      color: status.downloaded <
-                                              nextLevelToDownloadedByte
-                                          ? ShadTheme.of(context)
-                                              .colorScheme
-                                              .ring
-                                          : ShadTheme.of(context)
-                                              .colorScheme
-                                              .primary,
+                                      color: status.downloaded < nextLevelToDownloadedByte
+                                          ? shadColorScheme.destructive
+                                          : shadColorScheme.foreground,
                                     )),
                               ),
                               // if (status.uploaded / status.downloaded <
@@ -937,56 +808,40 @@ class _MySitePagePageState extends State<MySitePage>
                               //         style: TextStyle(
                               //           fontSize: 10,
                               //           color:
-                              //               ShadTheme.of(context).colorScheme.ring,
+                              //               ShadTheme.of(context).colorScheme.destructive,
                               //         )),
                               //   ),
                               if (nextLevel.torrents > 0)
                                 PopupMenuItem<String>(
                                   height: 13,
-                                  child: Text(
-                                      '需发种数量：${status.published}/${nextLevel.torrents}',
+                                  child: Text('需发种数量：${status.published}/${nextLevel.torrents}',
                                       style: TextStyle(
                                         fontSize: 10,
-                                        color: status.published <
-                                                nextLevel.torrents
-                                            ? ShadTheme.of(context)
-                                                .colorScheme
-                                                .ring
-                                            : ShadTheme.of(context)
-                                                .colorScheme
-                                                .primary,
+                                        color: status.published < nextLevel.torrents
+                                            ? shadColorScheme.destructive
+                                            : shadColorScheme.foreground,
                                       )),
                                 ),
                               if (nextLevel.score > 0)
                                 PopupMenuItem<String>(
                                   height: 13,
-                                  child: Text(
-                                      '做种积分：${formatNumber(status.myScore)}/${formatNumber(nextLevel.score)}',
+                                  child: Text('做种积分：${formatNumber(status.myScore)}/${formatNumber(nextLevel.score)}',
                                       style: TextStyle(
                                         fontSize: 10,
                                         color: status.myScore < nextLevel.score
-                                            ? ShadTheme.of(context)
-                                                .colorScheme
-                                                .ring
-                                            : ShadTheme.of(context)
-                                                .colorScheme
-                                                .primary,
+                                            ? shadColorScheme.destructive
+                                            : shadColorScheme.foreground,
                                       )),
                                 ),
                               if (nextLevel.bonus > 0)
                                 PopupMenuItem<String>(
                                   height: 13,
-                                  child: Text(
-                                      '魔力值：${formatNumber(status.myBonus)}/${formatNumber(nextLevel.bonus)}',
+                                  child: Text('魔力值：${formatNumber(status.myBonus)}/${formatNumber(nextLevel.bonus)}',
                                       style: TextStyle(
                                         fontSize: 10,
                                         color: status.myBonus < nextLevel.bonus
-                                            ? ShadTheme.of(context)
-                                                .colorScheme
-                                                .ring
-                                            : ShadTheme.of(context)
-                                                .colorScheme
-                                                .primary,
+                                            ? shadColorScheme.destructive
+                                            : shadColorScheme.foreground,
                                       )),
                                 ),
                               if (nextLevel.days > 0)
@@ -996,38 +851,27 @@ class _MySitePagePageState extends State<MySitePage>
                                       '升级日期：${DateFormat('yyyy-MM-dd').format(DateTime.now())}/${DateFormat('yyyy-MM-dd').format(toUpgradeTime)}',
                                       style: TextStyle(
                                         fontSize: 10,
-                                        color: DateTime.now()
-                                                .isBefore(toUpgradeTime)
-                                            ? ShadTheme.of(context)
-                                                .colorScheme
-                                                .ring
-                                            : ShadTheme.of(context)
-                                                .colorScheme
-                                                .primary,
+                                        color: DateTime.now().isBefore(toUpgradeTime)
+                                            ? shadColorScheme.destructive
+                                            : shadColorScheme.foreground,
                                       )),
                                 ),
-                              if (level.keepAccount != true &&
-                                  nextLevel.keepAccount)
+                              if (level.keepAccount != true && nextLevel.keepAccount)
                                 PopupMenuItem<String>(
                                   height: 13,
                                   child: Text('保留账号：${nextLevel.keepAccount}',
                                       style: TextStyle(
                                         fontSize: 10,
-                                        color: ShadTheme.of(context)
-                                            .colorScheme
-                                            .ring,
+                                        color: shadColorScheme.destructive,
                                       )),
                                 ),
-                              if (level.graduation != true &&
-                                  nextLevel.graduation)
+                              if (level.graduation != true && nextLevel.graduation)
                                 PopupMenuItem<String>(
                                   height: 13,
                                   child: Text('毕业：${nextLevel.graduation}',
                                       style: TextStyle(
                                         fontSize: 10,
-                                        color: ShadTheme.of(context)
-                                            .colorScheme
-                                            .ring,
+                                        color: shadColorScheme.destructive,
                                       )),
                                 ),
                               PopupMenuItem<String>(
@@ -1035,9 +879,7 @@ class _MySitePagePageState extends State<MySitePage>
                                 child: Text('即将获得：${nextLevel.rights}',
                                     style: TextStyle(
                                       fontSize: 10,
-                                      color: ShadTheme.of(context)
-                                          .colorScheme
-                                          .ring,
+                                      color: shadColorScheme.destructive,
                                     )),
                               ),
                             ],
@@ -1051,11 +893,7 @@ class _MySitePagePageState extends State<MySitePage>
                                       child: Text(item.rights,
                                           style: TextStyle(
                                             fontSize: 10,
-                                            color: item.graduation
-                                                ? Colors.orange
-                                                : ShadTheme.of(context)
-                                                    .colorScheme
-                                                    .primary,
+                                            color: item.graduation ? Colors.orange : shadColorScheme.foreground,
                                           )),
                                     ))
                           ],
@@ -1065,7 +903,7 @@ class _MySitePagePageState extends State<MySitePage>
                     website.level?[status.myLevel]?.level ?? status.myLevel,
                     style: TextStyle(
                       fontSize: 11,
-                      color: ShadTheme.of(context).colorScheme.primary,
+                      color: shadColorScheme.foreground,
                     ),
                   ),
                 ),
@@ -1075,7 +913,7 @@ class _MySitePagePageState extends State<MySitePage>
               ? Text(
                   '新站点，还没有数据哦',
                   style: TextStyle(
-                    color: ShadTheme.of(context).colorScheme.foreground,
+                    color: shadColorScheme.foreground,
                     fontSize: 10,
                   ),
                 )
@@ -1087,14 +925,14 @@ class _MySitePagePageState extends State<MySitePage>
                             '⌚️${calcWeeksDays(mySite.timeJoin)}',
                             style: TextStyle(
                               fontSize: 10,
-                              color: ShadTheme.of(context).colorScheme.primary,
+                              color: shadColorScheme.foreground,
                             ),
                           )
                         : Text(
                             '⌚️获取失败！',
                             style: TextStyle(
                               fontSize: 10,
-                              color: ShadTheme.of(context).colorScheme.primary,
+                              color: shadColorScheme.foreground,
                             ),
                           ),
                     if (level?.keepAccount == true)
@@ -1119,13 +957,13 @@ class _MySitePagePageState extends State<MySitePage>
                           Icon(
                             Icons.person_add_alt_outlined,
                             size: 12,
-                            color: ShadTheme.of(context).colorScheme.primary,
+                            color: shadColorScheme.foreground,
                           ),
                           Text(
                             '${status.invitation}',
                             style: TextStyle(
                               fontSize: 10,
-                              color: ShadTheme.of(context).colorScheme.primary,
+                              color: shadColorScheme.foreground,
                             ),
                           ),
                         ],
@@ -1160,8 +998,7 @@ class _MySitePagePageState extends State<MySitePage>
                                 '${FileSizeConvert.parseToFileSize(status.uploaded)} (${status.seed})',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color:
-                                      ShadTheme.of(context).colorScheme.primary,
+                                  color: shadColorScheme.foreground,
                                 ),
                               ),
                             ],
@@ -1179,8 +1016,7 @@ class _MySitePagePageState extends State<MySitePage>
                                 '${FileSizeConvert.parseToFileSize(status.downloaded)} (${status.leech})',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color:
-                                      ShadTheme.of(context).colorScheme.primary,
+                                  color: shadColorScheme.foreground,
                                 ),
                               ),
                             ],
@@ -1197,9 +1033,7 @@ class _MySitePagePageState extends State<MySitePage>
                             children: [
                               Icon(
                                 Icons.ios_share,
-                                color: status.ratio > 1
-                                    ? ShadTheme.of(context).colorScheme.primary
-                                    : Colors.deepOrange,
+                                color: status.ratio > 1 ? shadColorScheme.foreground : Colors.deepOrange,
                                 size: 14,
                               ),
                               const SizedBox(width: 2),
@@ -1207,11 +1041,7 @@ class _MySitePagePageState extends State<MySitePage>
                                 '${status.published}(${formatNumber(status.ratio, fixed: status.ratio >= 1000 ? 0 : 2)})',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: status.ratio > 1
-                                      ? ShadTheme.of(context)
-                                          .colorScheme
-                                          .primary
-                                      : Colors.deepOrange,
+                                  color: status.ratio > 1 ? shadColorScheme.foreground : Colors.deepOrange,
                                 ),
                               ),
                             ],
@@ -1222,17 +1052,14 @@ class _MySitePagePageState extends State<MySitePage>
                               Icon(
                                 Icons.cloud_upload_outlined,
                                 size: 14,
-                                color:
-                                    ShadTheme.of(context).colorScheme.primary,
+                                color: shadColorScheme.foreground,
                               ),
                               const SizedBox(width: 2),
                               Text(
-                                FileSizeConvert.parseToFileSize(
-                                    status.seedVolume),
+                                FileSizeConvert.parseToFileSize(status.seedVolume),
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color:
-                                      ShadTheme.of(context).colorScheme.primary,
+                                  color: shadColorScheme.foreground,
                                 ),
                               ),
                             ],
@@ -1251,8 +1078,7 @@ class _MySitePagePageState extends State<MySitePage>
                               Icon(
                                 Icons.timer_outlined,
                                 size: 14,
-                                color:
-                                    ShadTheme.of(context).colorScheme.primary,
+                                color: shadColorScheme.foreground,
                               ),
                               const SizedBox(width: 2),
                               Text(
@@ -1260,8 +1086,7 @@ class _MySitePagePageState extends State<MySitePage>
                                 // '(${  status.siteSpFull != null && status.siteSpFull! > 0 ? ((status.statusBonusHour! / status.siteSpFull!) * 100).toStringAsFixed(2) : '0'}%)',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color:
-                                      ShadTheme.of(context).colorScheme.primary,
+                                  color: shadColorScheme.foreground,
                                 ),
                               ),
                               if (website.spFull > 0 && status.bonusHour > 0)
@@ -1270,9 +1095,7 @@ class _MySitePagePageState extends State<MySitePage>
                                   '(${((status.bonusHour / website.spFull) * 100).toStringAsFixed((status.bonusHour / website.spFull) * 100 > 1 ? 0 : 2)}%)',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: ShadTheme.of(context)
-                                        .colorScheme
-                                        .primary,
+                                    color: shadColorScheme.foreground,
                                   ),
                                 ),
                             ],
@@ -1284,16 +1107,14 @@ class _MySitePagePageState extends State<MySitePage>
                               Icon(
                                 Icons.score,
                                 size: 14,
-                                color:
-                                    ShadTheme.of(context).colorScheme.primary,
+                                color: shadColorScheme.foreground,
                               ),
                               const SizedBox(width: 2),
                               Text(
                                 '${formatNumber(status.myBonus, fixed: 0)}(${formatNumber(status.myScore, fixed: 0)})',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color:
-                                      ShadTheme.of(context).colorScheme.primary,
+                                  color: shadColorScheme.foreground,
                                 ),
                               ),
                             ],
@@ -1312,7 +1133,7 @@ class _MySitePagePageState extends State<MySitePage>
                       textAlign: TextAlign.right,
                       style: TextStyle(
                         fontSize: 10.5,
-                        color: ShadTheme.of(context).colorScheme.primary,
+                        color: shadColorScheme.foreground,
                       ),
                     ),
                     if (status.myHr != '' && status.myHr != "0")
@@ -1342,31 +1163,32 @@ class _MySitePagePageState extends State<MySitePage>
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     bool signed = mySite.getSignMaxKey() == today || mySite.signIn == false;
     RxBool siteRefreshing = false.obs;
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     return CustomPopup(
       showArrow: true,
       // contentPadding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
       barrierColor: Colors.transparent,
-      backgroundColor: ShadTheme.of(context).colorScheme.background,
+      backgroundColor: shadColorScheme.background,
       content: SizedBox(
           width: 100,
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             if (website.signIn && mySite.signIn && !signed)
               PopupMenuItem<String>(
-                child: const Text('我要签到'),
+                child: Text(
+                  '我要签到',
+                  style: TextStyle(color: shadColorScheme.foreground),
+                ),
                 onTap: () async {
                   siteRefreshing.value = true;
                   CommonResponse res = await signIn(mySite.id);
                   if (res.succeed) {
-                    Get.snackbar('签到成功', '${mySite.nickname} 签到信息：${res.msg}',
-                        colorText: ShadTheme.of(context).colorScheme.primary);
-                    SignInInfo? info =
-                        SignInInfo(updatedAt: getTodayString(), info: res.msg);
+                    Get.snackbar('签到成功', '${mySite.nickname} 签到信息：${res.msg}', colorText: shadColorScheme.foreground);
+                    SignInInfo? info = SignInInfo(updatedAt: getTodayString(), info: res.msg);
                     Map<String, SignInInfo>? signInInfo = mySite.signInInfo;
                     signInInfo.assign(getTodayString(), info);
                     Logger.instance.d(signInInfo);
                     MySite newSite = mySite.copyWith(signInInfo: signInInfo);
-                    controller.mySiteList =
-                        controller.mySiteList.map<MySite>((item) {
+                    controller.mySiteList = controller.mySiteList.map<MySite>((item) {
                       if (item.id == mySite.id) {
                         return newSite;
                       }
@@ -1375,28 +1197,28 @@ class _MySitePagePageState extends State<MySitePage>
                     // controller.filterByKey();
                     controller.update();
                   } else {
-                    Get.snackbar(
-                        '签到失败', '${mySite.nickname} 签到任务执行出错啦：${res.msg}',
-                        colorText: ShadTheme.of(context).colorScheme.ring);
+                    Get.snackbar('签到失败', '${mySite.nickname} 签到任务执行出错啦：${res.msg}',
+                        colorText: shadColorScheme.destructive);
                   }
                   siteRefreshing.value = false;
                 },
               ),
             PopupMenuItem<String>(
-              child: const Text('更新数据'),
+              child: Text(
+                '更新数据',
+                style: TextStyle(color: shadColorScheme.foreground),
+              ),
               onTap: () async {
                 siteRefreshing.value = true;
                 CommonResponse res = await getNewestStatus(mySite.id);
                 if (res.succeed) {
-                  Get.snackbar('站点数据刷新成功', '${mySite.nickname} 数据刷新：${res.msg}',
-                      colorText: ShadTheme.of(context).colorScheme.primary);
+                  Get.snackbar('站点数据刷新成功', '${mySite.nickname} 数据刷新：${res.msg}', colorText: shadColorScheme.foreground);
                   StatusInfo? status = StatusInfo.fromJson(res.data);
                   Map<String, StatusInfo>? statusInfo = mySite.statusInfo;
                   statusInfo.assign(getTodayString(), status);
                   Logger.instance.d(statusInfo);
                   MySite newSite = mySite.copyWith(statusInfo: statusInfo);
-                  controller.mySiteList =
-                      controller.mySiteList.map<MySite>((item) {
+                  controller.mySiteList = controller.mySiteList.map<MySite>((item) {
                     if (item.id == mySite.id) {
                       return newSite;
                     }
@@ -1412,44 +1234,53 @@ class _MySitePagePageState extends State<MySitePage>
                     dController.update();
                   });
                 } else {
-                  Get.snackbar(
-                      '站点数据刷新失败', '${mySite.nickname} 数据刷新出错啦：${res.msg}',
-                      colorText: ShadTheme.of(context).colorScheme.ring);
+                  Get.snackbar('站点数据刷新失败', '${mySite.nickname} 数据刷新出错啦：${res.msg}',
+                      colorText: shadColorScheme.destructive);
                 }
                 siteRefreshing.value = false;
               },
             ),
             if (website.repeatTorrents && mySite.repeatTorrents)
               PopupMenuItem<String>(
-                child: const Text('本站辅种'),
+                child: Text(
+                  '本站辅种',
+                  style: TextStyle(color: shadColorScheme.foreground),
+                ),
                 onTap: () async {
                   CommonResponse res = await repeatSite(mySite.id);
 
                   if (res.succeed) {
-                    Get.snackbar('辅种任务发送成功', '${mySite.nickname} ${res.msg}',
-                        colorText: ShadTheme.of(context).colorScheme.primary);
+                    Get.snackbar('辅种任务发送成功', '${mySite.nickname} ${res.msg}', colorText: shadColorScheme.foreground);
                   } else {
-                    Get.snackbar(
-                        '辅种任务发送失败', '${mySite.nickname} 辅种出错啦：${res.msg}',
-                        colorText: ShadTheme.of(context).colorScheme.ring);
+                    Get.snackbar('辅种任务发送失败', '${mySite.nickname} 辅种出错啦：${res.msg}',
+                        colorText: shadColorScheme.destructive);
                   }
                 },
               ),
             if (website.signIn && mySite.signIn)
               PopupMenuItem<String>(
-                child: const Text('签到历史'),
+                child: Text(
+                  '签到历史',
+                  style: TextStyle(color: shadColorScheme.foreground),
+                ),
                 onTap: () async {
                   _showSignHistory(mySite);
                 },
               ),
             PopupMenuItem<String>(
-              child: const Text('历史数据'),
+              child: Text(
+                '历史数据',
+                style: TextStyle(color: shadColorScheme.foreground),
+              ),
               onTap: () async {
                 _showStatusHistory(mySite);
               },
             ),
             PopupMenuItem<String>(
-              child: const Text('编辑站点'),
+              child: Text(
+                '编辑站点',
+                style: TextStyle(color: shadColorScheme.foreground),
+              ),
               onTap: () async {
                 await _showEditBottomSheet(mySite: mySite);
               },
@@ -1459,12 +1290,8 @@ class _MySitePagePageState extends State<MySitePage>
         () => siteRefreshing.value
             ? SizedBox(
                 width: 36,
-                child: Center(
-                  child: GFLoader(
-                    size: 28,
-                    loaderColorOne: ShadTheme.of(context).colorScheme.primary,
-                  ),
-                ))
+                child: Center(child: const CircularProgressIndicator()),
+              )
             : Icon(
                 Icons.widgets_outlined,
                 size: 36,
@@ -1475,78 +1302,69 @@ class _MySitePagePageState extends State<MySitePage>
   }
 
   Future<void> _showEditBottomSheet({MySite? mySite}) async {
+    var shadThemeData = ShadTheme.of(context);
+    double opacity = SPUtil.getDouble("cardOpacity", defaultValue: 0.7);
+    var shadColorScheme = shadThemeData.colorScheme;
     if (mySite != null) {
+      controller.singleLoading = true;
+      controller.update(["SingleSite-${mySite.id}"]);
       CommonResponse res = await getMySiteByIdApi(mySite.id);
+      controller.singleLoading = false;
+      controller.update(["SingleSite-${mySite.id}"]);
       if (!res.succeed) {
-        Get.snackbar('获取站点信息失败', "获取站点信息失败，请更新站点列表后重试！${res.msg}",
-            colorText: ShadTheme.of(context).colorScheme.ring);
+        Get.snackbar('获取站点信息失败', "获取站点信息失败，请更新站点列表后重试！${res.msg}", colorText: shadColorScheme.destructive);
         return;
       }
       mySite = res.data;
     }
 
     // 获取已添加的站点名称
-    List<String> hasKeys =
-        controller.mySiteList.map((element) => element.site).toList();
+    List<String> hasKeys = controller.mySiteList.map((element) => element.site).toList();
     // 筛选活着的和未添加过的站点
-    List<WebSite> webSiteList =
-        controller.webSiteList.values.where((item) => item.alive).toList();
+    List<WebSite> webSiteList = controller.webSiteList.values.where((item) => item.alive).toList();
     // 如果是编辑模式，
     if (mySite == null) {
       webSiteList.removeWhere((item) => hasKeys.contains(item.name));
     }
-    webSiteList
-        .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    webSiteList.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     final siteController = TextEditingController(text: mySite?.site ?? '');
     final apiKeyController = TextEditingController(text: mySite?.authKey ?? '');
-    final sortIdController =
-        TextEditingController(text: mySite?.sortId.toString() ?? '1');
+    final sortIdController = TextEditingController(text: mySite?.sortId.toString() ?? '1');
     RxBool isLoading = false.obs;
-    final nicknameController =
-        TextEditingController(text: mySite?.nickname ?? '');
-    final passkeyController =
-        TextEditingController(text: mySite?.passkey ?? '');
+    final nicknameController = TextEditingController(text: mySite?.nickname ?? '');
+    final passkeyController = TextEditingController(text: mySite?.passkey ?? '');
     final userIdController = TextEditingController(text: mySite?.userId ?? '');
-    final usernameController =
-        TextEditingController(text: mySite?.username ?? '');
+    final usernameController = TextEditingController(text: mySite?.username ?? '');
     final emailController = TextEditingController(text: mySite?.email ?? '');
     final userAgentController = TextEditingController(
         text: mySite?.userAgent ??
             'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.0.0');
     final rssController = TextEditingController(text: mySite?.rss ?? '');
     final proxyController = TextEditingController(text: mySite?.proxy ?? '');
-    final torrentsController =
-        TextEditingController(text: mySite?.torrents ?? '');
+    final torrentsController = TextEditingController(text: mySite?.torrents ?? '');
     final cookieController = TextEditingController(text: mySite?.cookie ?? '');
     final mirrorController = TextEditingController(text: mySite?.mirror ?? '');
     final tagController = TextEditingController(text: '');
-    Rx<WebSite?> selectedSite = (mySite != null
-            ? controller.webSiteList[mySite.site]
-            : (webSiteList.isNotEmpty ? webSiteList.first : null))
-        .obs;
-    RxList<String>? urlList = selectedSite.value != null
-        ? selectedSite.value?.url.obs
-        : <String>[].obs;
+    Rx<WebSite?> selectedSite =
+        (mySite != null ? controller.webSiteList[mySite.site] : (webSiteList.isNotEmpty ? webSiteList.first : null))
+            .obs;
+    RxList<String>? urlList = selectedSite.value != null ? selectedSite.value?.url.obs : <String>[].obs;
     RxBool getInfo = mySite != null ? mySite.getInfo.obs : true.obs;
-    RxBool available = mySite != null
-        ? mySite.available.obs
-        : (selectedSite.value?.alive ?? false).obs;
-    RxList<String> tags = mySite != null
-        ? mySite.tags.obs
-        : (selectedSite.value?.tags.split(',') ?? []).obs;
+    RxBool available = mySite != null ? mySite.available.obs : (selectedSite.value?.alive ?? false).obs;
+    RxList<String> tags = mySite != null ? mySite.tags.obs : (selectedSite.value?.tags.split(',') ?? []).obs;
     Logger.instance.d(tags);
     RxBool signIn = mySite != null ? mySite.signIn.obs : true.obs;
     RxBool brushRss = mySite != null ? mySite.brushRss.obs : false.obs;
     RxBool brushFree = mySite != null ? mySite.brushFree.obs : false.obs;
     RxBool packageFile = mySite != null ? mySite.packageFile.obs : false.obs;
-    RxBool repeatTorrents =
-        mySite != null ? mySite.repeatTorrents.obs : true.obs;
+    RxBool repeatTorrents = mySite != null ? mySite.repeatTorrents.obs : true.obs;
     RxBool hrDiscern = mySite != null ? mySite.hrDiscern.obs : false.obs;
     RxBool showInDash = mySite != null ? mySite.showInDash.obs : true.obs;
-    RxBool searchTorrents =
-        mySite != null ? mySite.searchTorrents.obs : true.obs;
+    RxBool searchTorrents = mySite != null ? mySite.searchTorrents.obs : true.obs;
     RxBool manualInput = false.obs;
     RxBool doSaveLoading = false.obs;
+    final RxList<WebSite> filteredList = <WebSite>[].obs;
+    filteredList.value = webSiteList;
     final GlobalKey<FormFieldState> chipFieldKey = GlobalKey();
     Get.bottomSheet(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
@@ -1559,18 +1377,13 @@ class _MySitePagePageState extends State<MySitePage>
             ListTile(
               title: Text(
                 mySite != null ? '编辑站点：${mySite.nickname}' : '添加站点',
-                style: ShadTheme.of(context).textTheme.h3.copyWith(
-                      color: ShadTheme.of(context).colorScheme.primary,
-                    ),
+                style: shadThemeData.textTheme.h4.copyWith(
+                  color: shadColorScheme.foreground,
+                ),
               ),
               trailing: Obx(() {
                 return isLoading.value
-                    ? const Align(
-                        alignment: Alignment.centerRight,
-                        child: GFLoader(
-                          size: 18,
-                        ),
-                      )
+                    ? const Align(alignment: Alignment.centerRight, child: Center(child: CircularProgressIndicator()))
                     : ElevatedButton.icon(
                         onPressed: () async {
                           isLoading.value = true;
@@ -1579,24 +1392,21 @@ class _MySitePagePageState extends State<MySitePage>
                           isLoading.value = false;
                         },
                         style: ButtonStyle(
-                          shape:
-                              WidgetStateProperty.all<RoundedRectangleBorder>(
-                            RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5.0)),
+                          shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                            RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                           ),
-                          padding: WidgetStateProperty.all(
-                              const EdgeInsets.symmetric(horizontal: 5)),
+                          padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 5)),
                           side: WidgetStateProperty.all(BorderSide.none),
                         ),
                         icon: Icon(
                           Icons.cloud_download_outlined,
                           size: 18,
-                          color: ShadTheme.of(context).colorScheme.primary,
+                          color: shadColorScheme.foreground,
                         ),
                         label: Text(
                           '刷新站点列表',
                           style: TextStyle(
-                            color: ShadTheme.of(context).colorScheme.primary,
+                            color: shadColorScheme.foreground,
                           ),
                         ),
                       );
@@ -1609,74 +1419,104 @@ class _MySitePagePageState extends State<MySitePage>
                     return Column(
                       children: [
                         Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 4.0, horizontal: 8),
-                          child: DropdownSearch<WebSite>(
-                            items: (String filter, _) => webSiteList,
-                            selectedItem: selectedSite.value,
-                            compareFn: (item, sItem) => item.name == sItem.name,
-                            itemAsString: (WebSite? item) => item!.name,
-                            decoratorProps: DropDownDecoratorProps(
-                              decoration: InputDecoration(
-                                labelText: '选择站点',
-                                filled: true,
-                                fillColor: Colors.transparent,
-                              ),
-                            ),
-                            popupProps: PopupProps.menu(
-                              showSearchBox: true,
-                              showSelectedItems: true,
-                              itemBuilder: (ctx, item, isSelected, _) {
-                                return ListTile(
-                                  leading: CircleAvatar(
-                                    backgroundColor: ShadTheme.of(context)
-                                        .colorScheme
-                                        .primary,
-                                    child: Text(
-                                      item.name[0],
-                                      style: TextStyle(
-                                        color: ShadTheme.of(context)
-                                            .colorScheme
-                                            .primaryForeground,
-                                      ),
-                                    ),
-                                  ),
-                                  selected: isSelected,
-                                  title: Text(
-                                    item.name,
+                          padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8),
+                          child: LayoutBuilder(builder: (context, constraints) {
+                            // constraints.maxWidth 就是控件自身宽度
+                            double popupWidth = constraints.maxWidth;
+                            return Obx(() {
+                              return SizedBox(
+                                width: Get.width,
+                                child: ShadSelect<WebSite>.withSearch(
+                                  searchPlaceholder: Text(
+                                    '搜索站点',
                                     style: TextStyle(
-                                      color: ShadTheme.of(context)
-                                          .colorScheme
-                                          .primary,
+                                      color: shadColorScheme.foreground,
                                     ),
                                   ),
-                                );
-                              },
-                            ),
-                            onChanged: (WebSite? item) async {
-                              siteController.text = item!.name;
-                              selectedSite.value = item;
-                              urlList?.value = selectedSite.value!.url;
-                              mirrorController.text = urlList![0];
-                              nicknameController.text =
-                                  selectedSite.value!.name;
-                              signIn.value = selectedSite.value!.signIn;
-                              getInfo.value = selectedSite.value!.getInfo;
-                              repeatTorrents.value =
-                                  selectedSite.value!.repeatTorrents;
-                              searchTorrents.value =
-                                  selectedSite.value!.searchTorrents;
-                              available.value = selectedSite.value!.alive;
-                              tags.value = selectedSite.value!.tags
-                                  .split(',')
-                                  .map((item) => item.trim())
-                                  .where((el) => el.isNotEmpty)
-                                  .toList();
-                              chipFieldKey.currentState?.reset();
-                              controller.update();
-                            },
-                          ),
+                                  placeholder: Text(
+                                    '请选择站点',
+                                    style: TextStyle(
+                                      color: shadColorScheme.foreground,
+                                    ),
+                                  ),
+                                  decoration: ShadDecoration(
+                                    color: shadColorScheme.background.withOpacity(opacity),
+                                  ),
+                                  initialValue: selectedSite.value,
+                                  itemCount: filteredList.length,
+                                  minWidth: 200,
+                                  // 弹窗最小宽度
+                                  maxWidth: popupWidth,
+                                  // 弹窗最大宽度
+                                  maxHeight: 400,
+                                  // 弹窗最大高度
+                                  optionsBuilder: (BuildContext context, int index) {
+                                    var item = filteredList[index];
+                                    return ShadOption(
+                                      value: item,
+                                      child: ListTile(
+                                        leading: CircleAvatar(
+                                          backgroundColor: shadColorScheme.background,
+                                          child: Text(
+                                            item.name.substring(0, 1),
+                                            style: TextStyle(
+                                              color: shadColorScheme.foreground,
+                                            ),
+                                          ),
+                                        ),
+                                        // selected: isSelected,
+                                        title: Text(
+                                          item.name,
+                                          style: TextStyle(
+                                            color: shadColorScheme.foreground,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  selectedOptionBuilder: (BuildContext context, WebSite website) {
+                                    return Text(
+                                      website.name,
+                                      style: TextStyle(
+                                        color: shadColorScheme.foreground,
+                                      ),
+                                    );
+                                  },
+                                  onSearchChanged: (keyword) {
+                                    Logger.instance.d(keyword);
+                                    filteredList.value = webSiteList
+                                        .where((item) =>
+                                            item.name.toLowerCase().contains(keyword.toLowerCase()) ||
+                                            item.nickname.toLowerCase().contains(keyword.toLowerCase()) ||
+                                            item.url.any((e) => e.toLowerCase().contains(keyword.toLowerCase())))
+                                        .toList();
+                                    Logger.instance.d(filteredList.length);
+                                  },
+                                  onChanged: (item) {
+                                    if (item == null) return;
+                                    siteController.text = item.name;
+                                    selectedSite.value = item;
+                                    urlList?.value = selectedSite.value!.url;
+                                    mirrorController.text = urlList![0];
+                                    nicknameController.text = selectedSite.value!.name;
+                                    signIn.value = selectedSite.value!.signIn;
+                                    getInfo.value = selectedSite.value!.getInfo;
+                                    repeatTorrents.value = selectedSite.value!.repeatTorrents;
+                                    searchTorrents.value = selectedSite.value!.searchTorrents;
+                                    available.value = selectedSite.value!.alive;
+                                    tags.value = selectedSite.value!.tags
+                                        .split(',')
+                                        .map((item) => item.trim())
+                                        .where((el) => el.isNotEmpty)
+                                        .toList();
+                                    chipFieldKey.currentState?.reset();
+                                  },
+                                ),
+                              );
+                            });
+                          }),
                         ),
+
                         CustomTextField(
                           controller: nicknameController,
                           labelText: '站点昵称',
@@ -1698,9 +1538,7 @@ class _MySitePagePageState extends State<MySitePage>
                                     controller.update();
                                   },
                                   icon: Icon(
-                                    manualInput.value
-                                        ? Icons.back_hand_outlined
-                                        : Icons.front_hand,
+                                    manualInput.value ? Icons.back_hand_outlined : Icons.front_hand,
                                   ),
                                 )
                               ],
@@ -1739,39 +1577,22 @@ class _MySitePagePageState extends State<MySitePage>
 
                         GetBuilder<MySiteController>(builder: (controller) {
                           return Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 4.0, horizontal: 8),
+                            padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8),
                             child: Obx(() {
                               return MultiSelectChipField(
                                 key: chipFieldKey,
-                                items: controller.tagList
-                                    .map((tag) =>
-                                        MultiSelectItem<String?>(tag, tag))
-                                    .toList(),
-                                textStyle: TextStyle(
-                                    fontSize: 11,
-                                    color: ShadTheme.of(context)
-                                        .colorScheme
-                                        .foreground),
-                                selectedTextStyle: TextStyle(
-                                    fontSize: 10,
-                                    color: ShadTheme.of(context)
-                                        .colorScheme
-                                        .foreground),
-                                chipColor: ShadTheme.of(context)
-                                    .colorScheme
-                                    .background,
+                                items: controller.tagList.map((tag) => MultiSelectItem<String?>(tag, tag)).toList(),
+                                textStyle: TextStyle(fontSize: 11, color: shadColorScheme.foreground),
+                                selectedTextStyle: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
+                                chipColor: shadColorScheme.background,
                                 initialValue: [...tags],
                                 title: Text(
                                   "站点标签",
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w800),
+                                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
                                 ),
                                 headerColor: Colors.transparent,
                                 decoration: BoxDecoration(
-                                  border: Border.all(
-                                      color: Colors.blue.shade700, width: 0.8),
+                                  border: Border.all(color: Colors.blue.shade700, width: 0.8),
                                 ),
                                 // 关键设置：自定义 chipDisplay 实现自动换行
                                 scroll: false,
@@ -1780,10 +1601,7 @@ class _MySitePagePageState extends State<MySitePage>
                                 onTap: (List<String?> values) {
                                   Logger.instance.d(values);
                                   // tags.value = values;
-                                  tags.value = values
-                                      .where((value) => value != null)
-                                      .whereType<String>()
-                                      .toList();
+                                  tags.value = values.where((value) => value != null).whereType<String>().toList();
                                   tags.value = tags.toSet().toList();
                                   Logger.instance.d(tags);
                                 },
@@ -1845,21 +1663,16 @@ class _MySitePagePageState extends State<MySitePage>
                           selectedSite.value!.alive
                               ? ChoiceChip(
                                   label: const Text('可用'),
-                                  selected: selectedSite.value!.alive
-                                      ? available.value
-                                      : false,
+                                  selected: selectedSite.value!.alive ? available.value : false,
                                   onSelected: (value) {
-                                    selectedSite.value!.alive
-                                        ? available.value = value
-                                        : available.value = false;
+                                    selectedSite.value!.alive ? available.value = value : available.value = false;
                                   },
                                 )
                               : ChoiceChip(
                                   label: const Text('可用'),
                                   selected: false,
                                   onSelected: (value) {
-                                    Logger.instance.d(
-                                        "站点可用性：${selectedSite.value!.alive}");
+                                    Logger.instance.d("站点可用性：${selectedSite.value!.alive}");
                                     available.value = selectedSite.value!.alive;
                                   },
                                 ),
@@ -1914,24 +1727,21 @@ class _MySitePagePageState extends State<MySitePage>
                 ElevatedButton.icon(
                   style: ButtonStyle(
                     shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                      RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5.0)),
+                      RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                     ),
-                    backgroundColor: WidgetStateProperty.all(
-                        ShadTheme.of(context).colorScheme.primary),
+                    backgroundColor: WidgetStateProperty.all(shadColorScheme.foreground),
                   ),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
                   icon: Icon(
                     Icons.cancel,
-                    color: ShadTheme.of(context).colorScheme.primaryForeground,
+                    color: shadColorScheme.primaryForeground,
                   ),
                   label: Text(
                     '取消',
                     style: TextStyle(
-                      color:
-                          ShadTheme.of(context).colorScheme.primaryForeground,
+                      color: shadColorScheme.primaryForeground,
                     ),
                   ),
                 ),
@@ -1939,18 +1749,15 @@ class _MySitePagePageState extends State<MySitePage>
                   ElevatedButton(
                     style: ButtonStyle(
                       shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5.0)),
+                        RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                       ),
-                      backgroundColor: WidgetStateProperty.all(
-                          ShadTheme.of(context).colorScheme.ring),
+                      backgroundColor: WidgetStateProperty.all(shadColorScheme.destructive),
                     ),
                     onPressed: () async {
                       Get.defaultDialog(
                           title: '删除站点：${mySite?.nickname}',
                           radius: 5,
-                          titleStyle: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w900),
+                          titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                           middleText: '确定要删除吗？',
                           actions: [
                             ElevatedButton(
@@ -1963,15 +1770,12 @@ class _MySitePagePageState extends State<MySitePage>
                               onPressed: () async {
                                 Get.back(result: true);
                                 Navigator.of(context).pop();
-                                var res = await controller
-                                    .removeSiteFromServer(mySite!);
+                                var res = await controller.removeSiteFromServer(mySite!);
                                 if (res.succeed) {
                                   Get.snackbar(
                                     '删除站点',
                                     res.msg.toString(),
-                                    colorText: ShadTheme.of(context)
-                                        .colorScheme
-                                        .primary,
+                                    colorText: shadColorScheme.foreground,
                                   );
                                   await controller.getSiteStatusFromServer();
                                 } else {
@@ -1979,8 +1783,7 @@ class _MySitePagePageState extends State<MySitePage>
                                   Get.snackbar(
                                     '删除站点',
                                     res.msg.toString(),
-                                    colorText:
-                                        ShadTheme.of(context).colorScheme.ring,
+                                    colorText: shadColorScheme.destructive,
                                   );
                                 }
                               },
@@ -1991,8 +1794,7 @@ class _MySitePagePageState extends State<MySitePage>
                     child: Text(
                       '删除',
                       style: TextStyle(
-                        color:
-                            ShadTheme.of(context).colorScheme.primaryForeground,
+                        color: shadColorScheme.primaryForeground,
                       ),
                     ),
                   ),
@@ -2000,29 +1802,19 @@ class _MySitePagePageState extends State<MySitePage>
                   ElevatedButton.icon(
                     style: ButtonStyle(
                       shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5.0)),
+                        RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                       ),
-                      backgroundColor: WidgetStateProperty.all(
-                          ShadTheme.of(context).colorScheme.primaryForeground),
+                      backgroundColor: WidgetStateProperty.all(shadColorScheme.primaryForeground),
                     ),
                     icon: Obx(() {
                       return doSaveLoading.value
-                          ? GFLoader(
-                              size: 20,
-                              loaderColorOne:
-                                  ShadTheme.of(context).colorScheme.primary,
-                            )
-                          : Icon(Icons.save,
-                              color: ShadTheme.of(context)
-                                  .colorScheme
-                                  .primaryForeground);
+                          ? Center(child: const CircularProgressIndicator())
+                          : Icon(Icons.save, color: shadColorScheme.primaryForeground);
                     }),
                     label: Text(
                       '保存',
                       style: TextStyle(
-                        color:
-                            ShadTheme.of(context).colorScheme.primaryForeground,
+                        color: shadColorScheme.foreground,
                       ),
                     ),
                     onPressed: () async {
@@ -2115,6 +1907,7 @@ class _MySitePagePageState extends State<MySitePage>
   }
 
   void _showSortBottomSheet() {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.bottomSheet(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
         CustomCard(
@@ -2133,12 +1926,20 @@ class _MySitePagePageState extends State<MySitePage>
                         dense: true,
                         selectedColor: Colors.amber,
                         selected: controller.sortKey == item.value,
-                        leading: controller.sortReversed
-                            ? const Icon(Icons.trending_up)
-                            : const Icon(Icons.trending_down),
+                        titleTextStyle: TextStyle(
+                          fontSize: 13,
+                          color: shadColorScheme.foreground,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                         trailing: controller.sortKey == item.value
-                            ? const Icon(Icons.check_box_outlined)
-                            : const Icon(Icons.check_box_outline_blank_rounded),
+                            ? Icon(
+                                Icons.check_box_outlined,
+                                color: shadColorScheme.foreground,
+                              )
+                            : Icon(
+                                Icons.check_box_outline_blank_rounded,
+                                color: shadColorScheme.foreground,
+                              ),
                         onTap: () {
                           controller.sortKey = item.value!;
                           controller.sortStatusList();
@@ -2155,6 +1956,7 @@ class _MySitePagePageState extends State<MySitePage>
   }
 
   void _showFilterBottomSheet() {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.bottomSheet(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
         CustomCard(
@@ -2167,12 +1969,21 @@ class _MySitePagePageState extends State<MySitePage>
                     MetaDataItem item = controller.filterOptions[index];
                     return ListTile(
                         title: Text(item.name),
-                        contentPadding:
-                            const EdgeInsets.symmetric(horizontal: 16),
+                        titleTextStyle: TextStyle(
+                          fontSize: 13,
+                          color: shadColorScheme.foreground,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                         dense: true,
                         trailing: controller.filterKey == item.value
-                            ? const Icon(Icons.check_box_outlined)
-                            : const Icon(Icons.check_box_outline_blank_rounded),
+                            ? Icon(
+                                Icons.check_box_outlined,
+                                color: shadColorScheme.foreground,
+                              )
+                            : Icon(
+                                Icons.check_box_outline_blank_rounded,
+                                color: shadColorScheme.foreground,
+                              ),
                         selectedColor: Colors.amber,
                         selected: controller.filterKey == item.value,
                         onTap: () {
@@ -2191,17 +2002,14 @@ class _MySitePagePageState extends State<MySitePage>
     CommonResponse res = await getMySiteByIdApi(mySite.id);
     if (!res.succeed) {
       Logger.instance.e('获取站点信息失败');
-      Get.snackbar('获取站点信息失败', res.msg,
-          colorText: ShadTheme.of(context).colorScheme.ring);
+      Get.snackbar('获取站点信息失败', res.msg, colorText: ShadTheme.of(context).colorScheme.destructive);
       return;
     }
     mySite = res.data;
     List<String> signKeys = mySite.signInInfo.keys.toList();
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     signKeys.sort((a, b) => b.compareTo(a));
-    Get.bottomSheet(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-        isScrollControlled: true,
+    Get.bottomSheet(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)), isScrollControlled: true,
         GetBuilder<MySiteController>(builder: (controller) {
       return CustomCard(
           width: double.infinity,
@@ -2216,27 +2024,18 @@ class _MySitePagePageState extends State<MySitePage>
                     itemBuilder: (context, index) {
                       String signKey = signKeys[index];
                       SignInInfo? item = mySite.signInInfo[signKey];
+                      var scheme = ShadTheme.of(context).colorScheme;
                       return CustomCard(
                         child: ListTile(
                             title: Text(
                               item!.info,
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: signKey == today
-                                      ? Colors.amber
-                                      : ShadTheme.of(context)
-                                          .colorScheme
-                                          .primary),
+                              style:
+                                  TextStyle(fontSize: 12, color: signKey == today ? Colors.amber : scheme.foreground),
                             ),
                             subtitle: Text(
                               item.updatedAt,
-                              style: TextStyle(
-                                  fontSize: 10,
-                                  color: signKey == today
-                                      ? Colors.amber
-                                      : ShadTheme.of(context)
-                                          .colorScheme
-                                          .primary),
+                              style:
+                                  TextStyle(fontSize: 10, color: signKey == today ? Colors.amber : scheme.foreground),
                             ),
                             selected: signKey == today,
                             selectedColor: Colors.amber,
@@ -2251,22 +2050,18 @@ class _MySitePagePageState extends State<MySitePage>
     CommonResponse res = await getMySiteByIdApi(mySite.id);
     if (!res.succeed) {
       Logger.instance.e('获取站点信息失败');
-      Get.snackbar('获取站点信息失败', res.msg,
-          colorText: ShadTheme.of(context).colorScheme.ring);
+      Get.snackbar('获取站点信息失败', res.msg, colorText: ShadTheme.of(context).colorScheme.destructive);
       return;
     }
     mySite = res.data;
     List<StatusInfo> transformedData = mySite.statusInfo.values.toList();
     Logger.instance.d(transformedData);
-    Rx<RangeValues> rangeValues = RangeValues(
-            transformedData.length > 7 ? transformedData.length - 7 : 0,
-            transformedData.length.toDouble() - 1)
-        .obs;
+    Rx<RangeValues> rangeValues =
+        RangeValues(transformedData.length > 7 ? transformedData.length - 7 : 0, transformedData.length.toDouble() - 1)
+            .obs;
     Logger.instance.d(rangeValues.value);
-    RxList<StatusInfo> showData = transformedData
-        .sublist(
-            rangeValues.value.start.toInt(), rangeValues.value.end.toInt() + 1)
-        .obs;
+    RxList<StatusInfo> showData =
+        transformedData.sublist(rangeValues.value.start.toInt(), rangeValues.value.end.toInt() + 1).obs;
     Logger.instance.d(showData);
     Get.bottomSheet(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
@@ -2286,18 +2081,13 @@ class _MySitePagePageState extends State<MySitePage>
                       animationDuration: 100,
                       shouldAlwaysShow: false,
                       tooltipPosition: TooltipPosition.pointer,
-                      builder: (dynamic data, dynamic point, dynamic series,
-                          int pointIndex, int seriesIndex) {
-                        StatusInfo? lastData = pointIndex > 0
-                            ? series.dataSource[pointIndex - 1]
-                            : null;
+                      builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
+                        StatusInfo? lastData = pointIndex > 0 ? series.dataSource[pointIndex - 1] : null;
                         return Container(
                             color: Colors.white,
                             padding: const EdgeInsets.all(8),
                             width: 200,
-                            child: SingleChildScrollView(
-                                child: StatusToolTip(
-                                    data: data, lastData: lastData)));
+                            child: SingleChildScrollView(child: StatusToolTip(data: data, lastData: lastData)));
                       },
                     ),
                     zoomPanBehavior: ZoomPanBehavior(
@@ -2345,38 +2135,29 @@ class _MySitePagePageState extends State<MySitePage>
                           name: '做种体积',
                           yAxisName: 'PrimaryYAxis',
                           dataSource: showData,
-                          xValueMapper: (StatusInfo item, _) =>
-                              formatCreatedTimeToDateString(item),
-                          yValueMapper: (StatusInfo item, _) =>
-                              item.seedVolume),
+                          xValueMapper: (StatusInfo item, _) => formatCreatedTimeToDateString(item),
+                          yValueMapper: (StatusInfo item, _) => item.seedVolume),
                       LineSeries<StatusInfo, String>(
                           name: '上传量',
                           yAxisName: 'SecondaryYAxis',
                           dataSource: showData,
-                          xValueMapper: (StatusInfo item, _) =>
-                              formatCreatedTimeToDateString(item),
+                          xValueMapper: (StatusInfo item, _) => formatCreatedTimeToDateString(item),
                           yValueMapper: (StatusInfo item, _) => item.uploaded),
                       ColumnSeries<StatusInfo, String>(
                         name: '上传增量',
                         dataSource: showData,
                         yAxisName: 'ThirdYAxis',
-                        xValueMapper: (StatusInfo item, _) =>
-                            formatCreatedTimeToDateString(item),
-                        yValueMapper: (StatusInfo item, index) => index > 0 &&
-                                item.uploaded > showData[index - 1].uploaded
-                            ? item.uploaded - showData[index - 1].uploaded
-                            : 0,
+                        xValueMapper: (StatusInfo item, _) => formatCreatedTimeToDateString(item),
+                        yValueMapper: (StatusInfo item, index) =>
+                            index > 0 && item.uploaded > showData[index - 1].uploaded
+                                ? item.uploaded - showData[index - 1].uploaded
+                                : 0,
                         dataLabelSettings: DataLabelSettings(
                             isVisible: true,
                             textStyle: const TextStyle(fontSize: 10),
-                            builder: (dynamic data,
-                                dynamic point,
-                                dynamic series,
-                                int pointIndex,
-                                int seriesIndex) {
+                            builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
                               return point.y > 0
-                                  ? Text(FileSizeConvert.parseToFileSize(
-                                      (point.y).toInt()))
+                                  ? Text(FileSizeConvert.parseToFileSize((point.y).toInt()))
                                   : const SizedBox.shrink();
                             }),
                       ),
@@ -2384,53 +2165,44 @@ class _MySitePagePageState extends State<MySitePage>
                           name: '下载量',
                           yAxisName: 'SecondaryYAxis',
                           dataSource: showData,
-                          xValueMapper: (StatusInfo item, _) =>
-                              formatCreatedTimeToDateString(item),
-                          yValueMapper: (StatusInfo item, _) =>
-                              item.downloaded),
+                          xValueMapper: (StatusInfo item, _) => formatCreatedTimeToDateString(item),
+                          yValueMapper: (StatusInfo item, _) => item.downloaded),
                       LineSeries<StatusInfo, String>(
                           name: '时魔',
                           yAxisName: 'SecondaryYAxis',
                           dataSource: showData,
-                          xValueMapper: (StatusInfo item, _) =>
-                              formatCreatedTimeToDateString(item),
+                          xValueMapper: (StatusInfo item, _) => formatCreatedTimeToDateString(item),
                           yValueMapper: (StatusInfo item, _) => item.bonusHour),
                       LineSeries<StatusInfo, String>(
                           name: '做种积分',
                           yAxisName: 'PrimaryYAxis',
                           dataSource: showData,
-                          xValueMapper: (StatusInfo item, _) =>
-                              formatCreatedTimeToDateString(item),
+                          xValueMapper: (StatusInfo item, _) => formatCreatedTimeToDateString(item),
                           yValueMapper: (StatusInfo item, _) => item.myScore),
                       LineSeries<StatusInfo, String>(
                           name: '魔力值',
                           yAxisName: 'PrimaryYAxis',
                           dataSource: showData,
-                          xValueMapper: (StatusInfo item, _) =>
-                              formatCreatedTimeToDateString(item),
+                          xValueMapper: (StatusInfo item, _) => formatCreatedTimeToDateString(item),
                           yValueMapper: (StatusInfo item, _) => item.myBonus),
                       LineSeries<StatusInfo, String>(
                           name: '做种数量',
                           yAxisName: 'SecondaryYAxis',
                           dataSource: showData,
-                          xValueMapper: (StatusInfo item, _) =>
-                              formatCreatedTimeToDateString(item),
+                          xValueMapper: (StatusInfo item, _) => formatCreatedTimeToDateString(item),
                           yValueMapper: (StatusInfo item, _) => item.seed),
                       LineSeries<StatusInfo, String>(
                           name: '吸血数量',
                           yAxisName: 'SecondaryYAxis',
                           dataSource: showData,
-                          xValueMapper: (StatusInfo item, _) =>
-                              formatCreatedTimeToDateString(item),
+                          xValueMapper: (StatusInfo item, _) => formatCreatedTimeToDateString(item),
                           yValueMapper: (StatusInfo item, _) => item.leech),
                       LineSeries<StatusInfo, String>(
                           name: '邀请',
                           yAxisName: 'SecondaryYAxis',
                           dataSource: showData,
-                          xValueMapper: (StatusInfo item, _) =>
-                              formatCreatedTimeToDateString(item),
-                          yValueMapper: (StatusInfo item, _) =>
-                              item.invitation),
+                          xValueMapper: (StatusInfo item, _) => formatCreatedTimeToDateString(item),
+                          yValueMapper: (StatusInfo item, _) => item.invitation),
                     ]),
                 Text(
                   "${rangeValues.value.end.toInt() - rangeValues.value.start.toInt() + 1}日数据",
@@ -2440,16 +2212,13 @@ class _MySitePagePageState extends State<MySitePage>
                   max: transformedData.length * 1.0 - 1,
                   divisions: transformedData.length - 1,
                   labels: RangeLabels(
-                    formatCreatedTimeToDateString(
-                        transformedData[rangeValues.value.start.toInt()]),
-                    formatCreatedTimeToDateString(
-                        transformedData[rangeValues.value.end.toInt()]),
+                    formatCreatedTimeToDateString(transformedData[rangeValues.value.start.toInt()]),
+                    formatCreatedTimeToDateString(transformedData[rangeValues.value.end.toInt()]),
                   ),
                   onChanged: (value) {
                     rangeValues.value = value;
-                    showData.value = transformedData.sublist(
-                        rangeValues.value.start.toInt(),
-                        rangeValues.value.end.toInt() + 1);
+                    showData.value =
+                        transformedData.sublist(rangeValues.value.start.toInt(), rangeValues.value.end.toInt() + 1);
                   },
                   values: rangeValues.value,
                 ),
@@ -2479,15 +2248,11 @@ class StatusToolTip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int difference = (lastData == null || lastData!.uploaded > data.uploaded)
-        ? 0
-        : data.uploaded - lastData!.uploaded;
+    int difference = (lastData == null || lastData!.uploaded > data.uploaded) ? 0 : data.uploaded - lastData!.uploaded;
     return Column(
       children: [
-        _buildDataRow(
-            '创建时间', DateFormat('yyyy-MM-dd HH:mm:ss').format(data.createdAt)),
-        _buildDataRow(
-            '更新时间', DateFormat('yyyy-MM-dd HH:mm:ss').format(data.updatedAt)),
+        _buildDataRow('创建时间', DateFormat('yyyy-MM-dd HH:mm:ss').format(data.createdAt)),
+        _buildDataRow('更新时间', DateFormat('yyyy-MM-dd HH:mm:ss').format(data.updatedAt)),
         _buildDataRow('做种量', FileSizeConvert.parseToFileSize(data.seedVolume)),
         _buildDataRow('等级', data.myLevel),
         _buildDataRow('上传量', FileSizeConvert.parseToFileSize(data.uploaded)),
@@ -2496,8 +2261,7 @@ class StatusToolTip extends StatelessWidget {
         _buildDataRow('分享率', data.ratio.toStringAsFixed(3)),
         _buildDataRow('魔力', formatNumber(data.myBonus)),
         if (data.myScore > 0) _buildDataRow('积分', formatNumber(data.myScore)),
-        if (data.bonusHour > 0)
-          _buildDataRow('时魔', formatNumber(data.bonusHour)),
+        if (data.bonusHour > 0) _buildDataRow('时魔', formatNumber(data.bonusHour)),
         _buildDataRow('做种中', data.seed),
         _buildDataRow('吸血中', data.leech),
         if (data.invitation > 0) _buildDataRow('邀请', data.invitation),

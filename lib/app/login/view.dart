@@ -38,7 +38,7 @@ class _LoginPageState extends State<LoginPage> {
       var themeData = ShadTheme.of(context);
       if (server.selected) {
         decoration = BoxDecoration(
-          border: Border.all(color: themeData.colorScheme.primary, width: 2),
+          border: Border.all(color: themeData.colorScheme.foreground, width: 2),
           borderRadius: BorderRadius.circular(8),
         );
       }
@@ -63,7 +63,7 @@ class _LoginPageState extends State<LoginPage> {
                   '删除',
                   '服务器已成功删除',
                   snackPosition: SnackPosition.BOTTOM,
-                  colorText: themeData.colorScheme.primary,
+                  colorText: themeData.colorScheme.foreground,
                   duration: const Duration(seconds: 3),
                 );
               } else {
@@ -94,8 +94,7 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 Padding(
                   padding: EdgeInsets.all(8),
-                  child: Icon(Icons.computer,
-                      size: 32, color: themeData.colorScheme.primary),
+                  child: Icon(Icons.computer, size: 32, color: themeData.colorScheme.foreground),
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -105,8 +104,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: Text(
                         server.name,
                         textAlign: TextAlign.center,
-                        style: themeData.textTheme.h4
-                            .copyWith(color: themeData.colorScheme.primary),
+                        style: themeData.textTheme.h4.copyWith(color: themeData.colorScheme.foreground),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -115,8 +113,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: Text(
                         '${Uri.parse(server.entry).host}:${Uri.parse(server.entry).port}',
                         textAlign: TextAlign.center,
-                        style: themeData.textTheme.p
-                            .copyWith(color: themeData.colorScheme.primary),
+                        style: themeData.textTheme.p.copyWith(color: themeData.colorScheme.foreground),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -149,7 +146,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: Icon(
                     Icons.add_circle_outline,
                     size: 32,
-                    color: themeData.colorScheme.primary,
+                    color: themeData.colorScheme.foreground,
                   ),
                 ),
                 Column(
@@ -161,8 +158,7 @@ class _LoginPageState extends State<LoginPage> {
                           Text(
                             '添加服务器',
                             textAlign: TextAlign.center,
-                            style: themeData.textTheme.h4
-                                .copyWith(color: themeData.colorScheme.primary),
+                            style: themeData.textTheme.h4.copyWith(color: themeData.colorScheme.foreground),
                           ),
                         ],
                       ),
@@ -200,20 +196,16 @@ class _LoginPageState extends State<LoginPage> {
               builder: (controller) {
                 if (controller.useBackground) {
                   return Positioned.fill(
-                    child: controller.useLocalBackground &&
-                            !controller.backgroundImage.startsWith('http')
+                    child: controller.useLocalBackground && !controller.backgroundImage.startsWith('http')
                         ? Image.file(
                             File(controller.backgroundImage),
                             fit: BoxFit.cover,
                           )
                         : CachedNetworkImage(
-                            imageUrl:
-                                '${controller.useImageProxy ? cacheServer : ''}${controller.backgroundImage}',
-                            placeholder: (context, url) => const Center(
-                                child: CircularProgressIndicator()),
-                            errorWidget: (context, url, error) => Image.asset(
-                                'assets/images/background.png',
-                                fit: BoxFit.cover),
+                            imageUrl: '${controller.useImageProxy ? cacheServer : ''}${controller.backgroundImage}',
+                            placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                            errorWidget: (context, url, error) =>
+                                Image.asset('assets/images/background.png', fit: BoxFit.cover),
                             fit: BoxFit.cover,
                             cacheKey: controller.backgroundImage,
                           ),
@@ -225,8 +217,8 @@ class _LoginPageState extends State<LoginPage> {
           Scaffold(
             backgroundColor: Colors.transparent,
             appBar: AppBar(
-              backgroundColor: themeData.colorScheme.background
-                  .withValues(alpha: opacity * 255),
+              backgroundColor: themeData.colorScheme.background.withOpacity(opacity),
+              elevation: 1,
               title: Text(
                 '服务器列表',
                 style: themeData.textTheme.h4,
@@ -246,15 +238,13 @@ class _LoginPageState extends State<LoginPage> {
                             actions: [
                               ShadButton.destructive(
                                 child: const Text('取消'),
-                                onPressed: () =>
-                                    Navigator.of(context).pop(false),
+                                onPressed: () => Navigator.of(context).pop(false),
                               ),
                               ShadButton(
                                 child: const Text('清除'),
                                 onPressed: () async {
                                   Navigator.of(context).pop(true);
-                                  final CommonResponse res =
-                                      await controller.clearServerCache();
+                                  final CommonResponse res = await controller.clearServerCache();
                                   if (res.succeed) {
                                     controller.initServerList();
                                     ShadToaster.of(context).show(
@@ -265,8 +255,7 @@ class _LoginPageState extends State<LoginPage> {
                                   } else {
                                     ShadToaster.of(context).show(
                                       ShadToast.destructive(
-                                        description:
-                                            Text('清除服务器缓存失败：${res.msg}'),
+                                        description: Text('清除服务器缓存失败：${res.msg}'),
                                       ),
                                     );
                                   }
@@ -302,8 +291,7 @@ class _LoginPageState extends State<LoginPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           Wrap(spacing: 20, runSpacing: 20, children: [
-                            ...controller.serverList
-                                .map((server) => _buildGridTile(server)),
+                            ...controller.serverList.map((server) => _buildGridTile(server)),
                             _buildAddServerTile(),
                           ]),
                           Padding(
@@ -320,8 +308,7 @@ class _LoginPageState extends State<LoginPage> {
                                       dimension: 16,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        color: themeData
-                                            .colorScheme.destructiveForeground,
+                                        color: themeData.colorScheme.destructiveForeground,
                                       ),
                                     ),
                                     child: const Text('连接中，点击取消'),
@@ -331,20 +318,16 @@ class _LoginPageState extends State<LoginPage> {
                                         ? null
                                         : () async {
                                             // 连接服务器的操作逻辑
-                                            CommonResponse res =
-                                                await controller
-                                                    .doLogin(cancelToken);
+                                            CommonResponse res = await controller.doLogin(cancelToken);
 
                                             if (res.succeed) {
-                                              await Future.delayed(
-                                                  Duration(milliseconds: 1500),
-                                                  () {
+                                              await Future.delayed(Duration(milliseconds: 1500), () {
                                                 Get.offNamed(Routes.HOME);
 
                                                 ShadToaster.of(context).show(
                                                   ShadToast(
-                                                    description: Text(
-                                                        '登录成功！欢迎回来，${controller.selectedServer?.username}'),
+                                                    description:
+                                                        Text('登录成功！欢迎回来，${controller.selectedServer?.username}'),
                                                   ),
                                                 );
                                               });
@@ -367,8 +350,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-                  if (controller.switchServerLoading)
-                    Center(child: CircularProgressIndicator())
+                  if (controller.switchServerLoading) Center(child: CircularProgressIndicator())
                 ],
               ),
             ),
@@ -380,16 +362,11 @@ class _LoginPageState extends State<LoginPage> {
 
   void showEditOrCreateServerSheet(Server? serverToEdit) async {
     final formKey = GlobalKey<FormState>();
-    String defaultEntry =
-        kIsWeb ? Uri.base.origin : 'http://192.168.123.5:35173';
-    TextEditingController nameController =
-        TextEditingController(text: serverToEdit?.name ?? 'DefaultServer');
-    TextEditingController entryController =
-        TextEditingController(text: serverToEdit?.entry ?? defaultEntry);
-    TextEditingController usernameController =
-        TextEditingController(text: serverToEdit?.username ?? 'admin');
-    TextEditingController passwordController =
-        TextEditingController(text: serverToEdit?.password ?? 'adminadmin');
+    String defaultEntry = kIsWeb ? Uri.base.origin : 'http://192.168.123.5:35173';
+    TextEditingController nameController = TextEditingController(text: serverToEdit?.name ?? 'DefaultServer');
+    TextEditingController entryController = TextEditingController(text: serverToEdit?.entry ?? defaultEntry);
+    TextEditingController usernameController = TextEditingController(text: serverToEdit?.username ?? 'admin');
+    TextEditingController passwordController = TextEditingController(text: serverToEdit?.password ?? 'adminadmin');
     CancelToken cancelToken = CancelToken();
     await Get.bottomSheet(
       enableDrag: true,
@@ -419,24 +396,21 @@ class _LoginPageState extends State<LoginPage> {
                     labelText: '账号',
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 4.0, horizontal: 8),
+                    padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8),
                     child: TextFormField(
                       controller: passwordController,
                       maxLines: 1,
                       style: TextStyle(
                         fontSize: 13,
-                        color: themeData.colorScheme.primary,
+                        color: themeData.colorScheme.foreground,
                       ),
                       decoration: InputDecoration(
                         labelText: '密码',
                         focusColor: Colors.transparent,
                         hoverColor: Colors.transparent,
                         fillColor: Colors.transparent,
-                        labelStyle: const TextStyle(
-                            fontSize: 12, color: Colors.black54),
-                        contentPadding:
-                            const EdgeInsets.symmetric(horizontal: 8),
+                        labelStyle: const TextStyle(fontSize: 12, color: Colors.black54),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                         enabledBorder: const UnderlineInputBorder(
                           borderSide: BorderSide(color: Color(0x19000000)),
                         ),
@@ -445,11 +419,9 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            controller.showPassword
-                                ? Icons.visibility
-                                : Icons.visibility_off,
+                            controller.showPassword ? Icons.visibility : Icons.visibility_off,
                             size: 18,
-                            color: themeData.colorScheme.primary,
+                            color: themeData.colorScheme.foreground,
                           ),
                           onPressed: () {
                             controller.showPassword = !controller.showPassword;
@@ -472,9 +444,7 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       // 新增取消按钮
                       ElevatedButton.icon(
-                        icon: Icon(Icons.cancel_outlined,
-                            size: 18,
-                            color: themeData.colorScheme.destructiveForeground),
+                        icon: Icon(Icons.cancel_outlined, size: 18, color: themeData.colorScheme.destructiveForeground),
                         label: Text(
                           '取消',
                           style: TextStyle(
@@ -485,8 +455,7 @@ class _LoginPageState extends State<LoginPage> {
                           backgroundColor: themeData.colorScheme.destructive,
                           // 设置背景颜色为绿色
                           shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(5.0), // 边角圆角大小可自定义
+                            borderRadius: BorderRadius.circular(5.0), // 边角圆角大小可自定义
                           ),
                         ),
                         onPressed: () {
@@ -522,32 +491,25 @@ class _LoginPageState extends State<LoginPage> {
                             );
 
                             CommonResponse flag =
-                                await controller.testServerConnection(server,
-                                    cancelToken: cancelToken);
+                                await controller.testServerConnection(server, cancelToken: cancelToken);
                             if (flag.succeed) {
-                              CommonResponse result =
-                                  await controller.saveServer(server);
-                              Get.snackbar(server.id == 0 ? '保存结果' : '更新结果',
-                                  "服务器连接成功：${result.msg}",
+                              CommonResponse result = await controller.saveServer(server);
+                              Get.snackbar(server.id == 0 ? '保存结果' : '更新结果', "服务器连接成功：${result.msg}",
                                   // snackPosition: SnackPosition.BOTTOM,
                                   duration: const Duration(seconds: 3),
                                   colorText: server.id == 0
-                                      ? themeData.colorScheme.primary
-                                      : themeData
-                                          .colorScheme.destructiveForeground);
+                                      ? themeData.colorScheme.foreground
+                                      : themeData.colorScheme.destructiveForeground);
                               Navigator.pop(context);
                             } else {
-                              Get.snackbar('测试失败', flag.msg,
-                                  colorText: themeData
-                                      .colorScheme.destructiveForeground);
+                              Get.snackbar('测试失败', flag.msg, colorText: themeData.colorScheme.destructiveForeground);
                               controller.isLoading = false;
                               controller.update();
                             }
                           } else {
                             Get.snackbar('出错啦', '服务器信息校验失败！',
                                 duration: const Duration(seconds: 3),
-                                colorText: themeData
-                                    .colorScheme.destructiveForeground);
+                                colorText: themeData.colorScheme.destructiveForeground);
                           }
                           controller.isLoading = false;
                           controller.update();
@@ -558,8 +520,7 @@ class _LoginPageState extends State<LoginPage> {
                                     height: 18,
                                     width: 18,
                                     child: CircularProgressIndicator(
-                                      color: themeData
-                                          .colorScheme.primaryForeground,
+                                      color: themeData.colorScheme.primaryForeground,
                                     )),
                               )
                             : Icon(
@@ -574,11 +535,10 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: themeData.colorScheme.primary,
+                          backgroundColor: themeData.colorScheme.foreground,
                           // 设置背景颜色为绿色
                           shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(5.0), // 边角圆角大小可自定义
+                            borderRadius: BorderRadius.circular(5.0), // 边角圆角大小可自定义
                           ),
                         ),
                       ),
@@ -627,8 +587,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<bool> doLogin(LoginUser loginUser) async {
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     try {
-      var res = await controller.dioUtil
-          .post(Api.LOGIN_URL, formData: loginUser.toJson());
+      var res = await controller.dioUtil.post(Api.LOGIN_URL, formData: loginUser.toJson());
       Logger.instance.i(res.statusCode);
       Logger.instance.i(res.data);
       if (res.data['code'] == 0) {
@@ -637,7 +596,7 @@ class _LoginPageState extends State<LoginPage> {
         Get.snackbar(
           '登录成功！',
           "欢迎 ${loginUser.username} 回来",
-          colorText: shadColorScheme.primary,
+          colorText: shadColorScheme.foreground,
         );
         Get.offNamed(Routes.HOME);
         return true;

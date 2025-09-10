@@ -4,7 +4,6 @@ import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:getwidget/getwidget.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -22,8 +21,7 @@ class DouBanPage extends StatefulWidget {
   State<DouBanPage> createState() => _DouBanPageState();
 }
 
-class _DouBanPageState extends State<DouBanPage>
-    with SingleTickerProviderStateMixin {
+class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateMixin {
   final controller = Get.put(DouBanController());
   String cacheServer = 'https://images.weserv.nl/?url=';
 
@@ -39,8 +37,7 @@ class _DouBanPageState extends State<DouBanPage>
         length: tabs.length,
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          floatingActionButtonLocation:
-              FloatingActionButtonLocation.centerDocked,
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
           // floatingActionButton: _buildBottomButtonBar(),
           bottomNavigationBar: CustomCard(
               child: const TabBar(
@@ -75,8 +72,7 @@ class _DouBanPageState extends State<DouBanPage>
                                       onSelected: (bool value) {
                                         if (value == true) {
                                           controller.selectMovieTag = e;
-                                          controller.getDouBanMovieHot(
-                                              controller.selectMovieTag);
+                                          controller.getDouBanMovieHot(controller.selectMovieTag);
                                         }
                                       },
                                     ))
@@ -107,27 +103,20 @@ class _DouBanPageState extends State<DouBanPage>
                                         // Get.toNamed(Routes.WEBVIEW, arguments: {
                                         //   'url': e.url,
                                         // });
-                                        await controller
-                                            .getVideoDetail(e.douBanUrl);
+                                        await controller.getVideoDetail(e.douBanUrl);
                                       },
                                       child: SizedBox(
                                         width: 100,
                                         child: Stack(
                                           children: [
                                             ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(8.0),
+                                              borderRadius: BorderRadius.circular(8.0),
                                               child: CachedNetworkImage(
-                                                imageUrl:
-                                                    '$cacheServer${e.poster}',
+                                                imageUrl: '$cacheServer${e.poster}',
                                                 placeholder: (context, url) =>
-                                                    const Center(
-                                                        child:
-                                                            CircularProgressIndicator()),
-                                                errorWidget: (context, url,
-                                                        error) =>
-                                                    Image.asset(
-                                                        'assets/images/avatar.png'),
+                                                    const Center(child: CircularProgressIndicator()),
+                                                errorWidget: (context, url, error) =>
+                                                    Image.asset('assets/images/avatar.png'),
                                                 width: 100,
                                                 height: 150,
                                                 fit: BoxFit.fitWidth,
@@ -140,12 +129,9 @@ class _DouBanPageState extends State<DouBanPage>
                                                 width: 100,
                                                 child: Text(
                                                   e.title.trim(),
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
+                                                  overflow: TextOverflow.ellipsis,
                                                   textAlign: TextAlign.center,
-                                                  style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 12),
+                                                  style: const TextStyle(color: Colors.white, fontSize: 12),
                                                 ),
                                               ),
                                             ),
@@ -157,8 +143,7 @@ class _DouBanPageState extends State<DouBanPage>
                           ),
                         ),
                       ),
-                      if (controller.isLoading == true)
-                        const Center(child: CircularProgressIndicator())
+                      if (controller.isLoading == true) const Center(child: CircularProgressIndicator())
                     ],
                   ),
                 ),
@@ -190,8 +175,7 @@ class _DouBanPageState extends State<DouBanPage>
                                       onSelected: (bool value) {
                                         if (value == true) {
                                           controller.selectTvTag = e;
-                                          controller.getDouBanTvHot(
-                                              controller.selectTvTag);
+                                          controller.getDouBanTvHot(controller.selectTvTag);
                                         }
                                       },
                                     ))
@@ -228,19 +212,13 @@ class _DouBanPageState extends State<DouBanPage>
                                         child: Stack(
                                           children: [
                                             ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(8.0),
+                                              borderRadius: BorderRadius.circular(8.0),
                                               child: CachedNetworkImage(
-                                                imageUrl:
-                                                    '$cacheServer${e.poster}',
+                                                imageUrl: '$cacheServer${e.poster}',
                                                 placeholder: (context, url) =>
-                                                    const Center(
-                                                        child:
-                                                            CircularProgressIndicator()),
-                                                errorWidget: (context, url,
-                                                        error) =>
-                                                    Image.asset(
-                                                        'assets/images/avatar.png'),
+                                                    const Center(child: CircularProgressIndicator()),
+                                                errorWidget: (context, url, error) =>
+                                                    Image.asset('assets/images/avatar.png'),
                                                 width: 100,
                                                 height: 150,
                                                 fit: BoxFit.fitWidth,
@@ -253,12 +231,9 @@ class _DouBanPageState extends State<DouBanPage>
                                                 width: 100,
                                                 child: Text(
                                                   e.title.trim(),
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
+                                                  overflow: TextOverflow.ellipsis,
                                                   textAlign: TextAlign.center,
-                                                  style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 12),
+                                                  style: const TextStyle(color: Colors.white, fontSize: 12),
                                                 ),
                                               ),
                                             ),
@@ -270,8 +245,7 @@ class _DouBanPageState extends State<DouBanPage>
                           ),
                         ),
                       ),
-                      if (controller.isLoading == true)
-                        const Center(child: CircularProgressIndicator())
+                      if (controller.isLoading == true) const Center(child: CircularProgressIndicator())
                     ],
                   ),
                 ),
@@ -321,24 +295,20 @@ class _DouBanPageState extends State<DouBanPage>
                                 //     }
                                 //   },
                                 // ),
-                                ...controller.typeMap.entries
-                                    .map((e) => FilterChip(
-                                          labelPadding: EdgeInsets.zero,
-                                          label: Text(
-                                            e.key,
-                                            style:
-                                                const TextStyle(fontSize: 12),
-                                          ),
-                                          selected:
-                                              controller.selectTypeTag == e.key,
-                                          onSelected: (bool value) {
-                                            if (value == true) {
-                                              controller.selectTypeTag = e.key;
-                                              controller.getRankListByType(
-                                                  controller.selectTypeTag);
-                                            }
-                                          },
-                                        ))
+                                ...controller.typeMap.entries.map((e) => FilterChip(
+                                      labelPadding: EdgeInsets.zero,
+                                      label: Text(
+                                        e.key,
+                                        style: const TextStyle(fontSize: 12),
+                                      ),
+                                      selected: controller.selectTypeTag == e.key,
+                                      onSelected: (bool value) {
+                                        if (value == true) {
+                                          controller.selectTypeTag = e.key;
+                                          controller.getRankListByType(controller.selectTypeTag);
+                                        }
+                                      },
+                                    ))
                               ],
                             )),
                       ],
@@ -353,13 +323,11 @@ class _DouBanPageState extends State<DouBanPage>
                           EasyRefresh(
                             onRefresh: () async {
                               controller.initPage = 0;
-                              await controller
-                                  .getRankListByType(controller.selectTypeTag);
+                              await controller.getRankListByType(controller.selectTypeTag);
                             },
                             onLoad: () async {
                               if (controller.selectTypeTag == "TOP250") {
-                                await controller.getRankListByType(
-                                    controller.selectTypeTag);
+                                await controller.getRankListByType(controller.selectTypeTag);
                               }
                             },
                             child: SingleChildScrollView(
@@ -372,42 +340,28 @@ class _DouBanPageState extends State<DouBanPage>
                                                 },
                                                 onLongPress: () {
                                                   Logger.instance.i('WebView');
-                                                  Get.toNamed(Routes.WEBVIEW,
-                                                      arguments: {
-                                                        'url': e.douBanUrl,
-                                                      });
+                                                  Get.toNamed(Routes.WEBVIEW, arguments: {
+                                                    'url': e.douBanUrl,
+                                                  });
                                                 },
                                                 child: CustomCard(
                                                   color: Colors.transparent,
-                                                  padding:
-                                                      const EdgeInsets.all(8),
+                                                  padding: const EdgeInsets.all(8),
                                                   child: Row(
                                                     children: [
                                                       Stack(
                                                         children: [
                                                           ClipRRect(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        5.0),
-                                                            child:
-                                                                CachedNetworkImage(
-                                                              imageUrl:
-                                                                  '$cacheServer${e.poster}',
-                                                              placeholder: (context,
-                                                                      url) =>
-                                                                  const Center(
-                                                                      child:
-                                                                          CircularProgressIndicator()),
-                                                              errorWidget: (context,
-                                                                      url,
-                                                                      error) =>
-                                                                  Image.asset(
-                                                                      'assets/images/avatar.png'),
+                                                            borderRadius: BorderRadius.circular(5.0),
+                                                            child: CachedNetworkImage(
+                                                              imageUrl: '$cacheServer${e.poster}',
+                                                              placeholder: (context, url) =>
+                                                                  const Center(child: CircularProgressIndicator()),
+                                                              errorWidget: (context, url, error) =>
+                                                                  Image.asset('assets/images/avatar.png'),
                                                               width: 100,
                                                               height: 150,
-                                                              fit: BoxFit
-                                                                  .fitWidth,
+                                                              fit: BoxFit.fitWidth,
                                                             ),
                                                           ),
                                                           Positioned(
@@ -415,26 +369,16 @@ class _DouBanPageState extends State<DouBanPage>
                                                             right: 0,
                                                             child: Center(
                                                               child: Container(
-                                                                color: ShadTheme.of(
-                                                                        context)
-                                                                    .colorScheme
-                                                                    .background,
+                                                                color: ShadTheme.of(context).colorScheme.background,
                                                                 width: 30,
                                                                 child: Text(
                                                                   e.rank,
-                                                                  overflow:
-                                                                      TextOverflow
-                                                                          .ellipsis,
-                                                                  textAlign:
-                                                                      TextAlign
-                                                                          .center,
+                                                                  overflow: TextOverflow.ellipsis,
+                                                                  textAlign: TextAlign.center,
                                                                   style: TextStyle(
-                                                                      color: ShadTheme.of(
-                                                                              context)
-                                                                          .colorScheme
-                                                                          .foreground,
-                                                                      fontSize:
-                                                                          12),
+                                                                      color:
+                                                                          ShadTheme.of(context).colorScheme.foreground,
+                                                                      fontSize: 12),
                                                                 ),
                                                               ),
                                                             ),
@@ -442,26 +386,15 @@ class _DouBanPageState extends State<DouBanPage>
                                                           Positioned(
                                                             bottom: 0,
                                                             child: Container(
-                                                              color: ShadTheme.of(
-                                                                      context)
-                                                                  .colorScheme
-                                                                   .background,
+                                                              color: ShadTheme.of(context).colorScheme.background,
                                                               width: 100,
                                                               child: Text(
                                                                 e.title,
-                                                                overflow:
-                                                                    TextOverflow
-                                                                        .ellipsis,
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .center,
+                                                                overflow: TextOverflow.ellipsis,
+                                                                textAlign: TextAlign.center,
                                                                 style: TextStyle(
-                                                                    color: ShadTheme.of(
-                                                                            context)
-                                                                        .colorScheme
-                                                                         .foreground,
-                                                                    fontSize:
-                                                                        12),
+                                                                    color: ShadTheme.of(context).colorScheme.foreground,
+                                                                    fontSize: 12),
                                                               ),
                                                             ),
                                                           ),
@@ -469,122 +402,60 @@ class _DouBanPageState extends State<DouBanPage>
                                                       ),
                                                       Expanded(
                                                           child: Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .only(left: 12),
+                                                        padding: const EdgeInsets.only(left: 12),
                                                         child: Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
                                                           children: [
-                                                            GFTypography(
-                                                              text: e.subtitle
-                                                                  .toString(),
-                                                              type:
-                                                                  GFTypographyType
-                                                                      .typo5,
-                                                              dividerHeight: 0,
-                                                              textColor: ShadTheme.of(
-                                                                      context)
-                                                                  .colorScheme
-                                                                  .primary,
+                                                            Text(
+                                                              e.subtitle.toString(),
+                                                              style: ShadTheme.of(context).textTheme.h4,
                                                             ),
                                                             Tooltip(
-                                                              message: e.cast
-                                                                  .toString(),
-                                                              triggerMode:
-                                                                  TooltipTriggerMode
-                                                                      .tap,
-                                                              margin:
-                                                                  const EdgeInsets
-                                                                      .symmetric(
-                                                                      horizontal:
-                                                                          36),
+                                                              message: e.cast.toString(),
+                                                              triggerMode: TooltipTriggerMode.tap,
+                                                              margin: const EdgeInsets.symmetric(horizontal: 36),
                                                               child: Text(
                                                                 e.cast,
-                                                                style:
-                                                                    const TextStyle(
-                                                                        fontSize:
-                                                                            13),
+                                                                style: const TextStyle(fontSize: 13),
                                                                 maxLines: 2,
-                                                                overflow:
-                                                                    TextOverflow
-                                                                        .ellipsis,
+                                                                overflow: TextOverflow.ellipsis,
                                                               ),
                                                             ),
                                                             Tooltip(
-                                                              message: e.desc
-                                                                  .toString(),
-                                                              triggerMode:
-                                                                  TooltipTriggerMode
-                                                                      .tap,
-                                                              margin:
-                                                                  const EdgeInsets
-                                                                      .symmetric(
-                                                                      horizontal:
-                                                                          36),
+                                                              message: e.desc.toString(),
+                                                              triggerMode: TooltipTriggerMode.tap,
+                                                              margin: const EdgeInsets.symmetric(horizontal: 36),
                                                               child: Text(
                                                                 '${e.desc}',
-                                                                style:
-                                                                    const TextStyle(
-                                                                        fontSize:
-                                                                            13),
+                                                                style: const TextStyle(fontSize: 13),
                                                                 maxLines: 1,
-                                                                overflow:
-                                                                    TextOverflow
-                                                                        .ellipsis,
+                                                                overflow: TextOverflow.ellipsis,
                                                               ),
                                                             ),
                                                             Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .spaceBetween,
+                                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                               children: [
                                                                 Tooltip(
-                                                                  message:
-                                                                      '评分：${e.ratingNum}',
-                                                                  child: RatingBar
-                                                                      .readOnly(
-                                                                    initialRating:
-                                                                        double.parse(e.ratingNum) /
-                                                                            2,
-                                                                    filledIcon:
-                                                                        Icons
-                                                                            .star,
-                                                                    emptyIcon: Icons
-                                                                        .star_border,
-                                                                    emptyColor:
-                                                                        Colors
-                                                                            .redAccent,
-                                                                    filledColor: ShadTheme.of(
-                                                                            context)
-                                                                        .colorScheme
-                                                                        .primary,
-                                                                    halfFilledColor:
-                                                                        Colors
-                                                                            .amberAccent,
-                                                                    halfFilledIcon:
-                                                                        Icons
-                                                                            .star_half,
-                                                                    maxRating:
-                                                                        5,
+                                                                  message: '评分：${e.ratingNum}',
+                                                                  child: RatingBar.readOnly(
+                                                                    initialRating: double.parse(e.ratingNum) / 2,
+                                                                    filledIcon: Icons.star,
+                                                                    emptyIcon: Icons.star_border,
+                                                                    emptyColor: Colors.redAccent,
+                                                                    filledColor:
+                                                                        ShadTheme.of(context).colorScheme.foreground,
+                                                                    halfFilledColor: Colors.amberAccent,
+                                                                    halfFilledIcon: Icons.star_half,
+                                                                    maxRating: 5,
                                                                     size: 18,
                                                                   ),
                                                                 ),
-                                                                Text(e
-                                                                    .evaluateNum),
+                                                                Text(e.evaluateNum),
                                                               ],
                                                             ),
-                                                            GFTypography(
-                                                              text: e.quote,
-                                                              type:
-                                                                  GFTypographyType
-                                                                      .typo5,
-                                                              dividerHeight: 0,
-                                                              textColor: ShadTheme.of(
-                                                                      context)
-                                                                  .colorScheme
-                                                                  .secondary,
+                                                            Text(
+                                                              e.quote,
+                                                              style: ShadTheme.of(context).textTheme.h4,
                                                             ),
                                                           ],
                                                         ),
@@ -602,94 +473,57 @@ class _DouBanPageState extends State<DouBanPage>
                                                 },
                                                 onLongPress: () {
                                                   Logger.instance.i('WebView');
-                                                  Get.toNamed(Routes.WEBVIEW,
-                                                      arguments: {
-                                                        'url': e.douBanUrl,
-                                                      });
+                                                  Get.toNamed(Routes.WEBVIEW, arguments: {
+                                                    'url': e.douBanUrl,
+                                                  });
                                                 },
                                                 child: CustomCard(
-                                                  padding:
-                                                      const EdgeInsets.all(8),
+                                                  padding: const EdgeInsets.all(8),
                                                   child: Row(
                                                     children: [
                                                       Stack(
                                                         children: [
                                                           ClipRRect(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        5.0),
-                                                            child:
-                                                                CachedNetworkImage(
-                                                              imageUrl:
-                                                                  '$cacheServer${e.poster}',
-                                                              placeholder: (context,
-                                                                      url) =>
-                                                                  const Center(
-                                                                      child:
-                                                                          CircularProgressIndicator()),
-                                                              errorWidget: (context,
-                                                                      url,
-                                                                      error) =>
-                                                                  Image.asset(
-                                                                      'assets/images/avatar.png'),
+                                                            borderRadius: BorderRadius.circular(5.0),
+                                                            child: CachedNetworkImage(
+                                                              imageUrl: '$cacheServer${e.poster}',
+                                                              placeholder: (context, url) =>
+                                                                  const Center(child: CircularProgressIndicator()),
+                                                              errorWidget: (context, url, error) =>
+                                                                  Image.asset('assets/images/avatar.png'),
                                                               width: 100,
                                                               height: 150,
-                                                              fit: BoxFit
-                                                                  .fitWidth,
+                                                              fit: BoxFit.fitWidth,
                                                             ),
                                                           ),
                                                           Positioned(
                                                             top: 0,
                                                             right: 0,
                                                             child: Container(
-                                                              color: ShadTheme.of(
-                                                                      context)
-                                                                  .colorScheme
-                                                                  .background,
+                                                              color: ShadTheme.of(context).colorScheme.background,
                                                               width: 20,
                                                               child: Text(
-                                                                e.rank
-                                                                    .toString(),
-                                                                overflow:
-                                                                    TextOverflow
-                                                                        .ellipsis,
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .center,
+                                                                e.rank.toString(),
+                                                                overflow: TextOverflow.ellipsis,
+                                                                textAlign: TextAlign.center,
                                                                 style: TextStyle(
-                                                                    color: ShadTheme.of(
-                                                                            context)
-                                                                        .colorScheme
-                                                                        .foreground,
-                                                                    fontSize:
-                                                                        12),
+                                                                    color: ShadTheme.of(context).colorScheme.foreground,
+                                                                    fontSize: 12),
                                                               ),
                                                             ),
                                                           ),
                                                           Positioned(
                                                             bottom: 0,
                                                             child: Container(
-                                                              color: ShadTheme.of(
-                                                                      context)
-                                                                  .colorScheme
-                                                                   .background,
+                                                              color: ShadTheme.of(context).colorScheme.background,
                                                               width: 100,
                                                               child: Text(
                                                                 e.title,
-                                                                overflow:
-                                                                    TextOverflow
-                                                                        .ellipsis,
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .center,
+                                                                overflow: TextOverflow.ellipsis,
+                                                                textAlign: TextAlign.center,
                                                                 style: TextStyle(
-                                                                    color: ShadTheme.of(
-                                                                            context)
-                                                                        .colorScheme
-                                                                         .foreground,
-                                                                    fontSize:
-                                                                        12),
+                                                                    color: ShadTheme.of(context).colorScheme.foreground,
+                                                                    fontSize: 12),
                                                               ),
                                                             ),
                                                           ),
@@ -697,88 +531,44 @@ class _DouBanPageState extends State<DouBanPage>
                                                       ),
                                                       Expanded(
                                                           child: Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .only(left: 12),
+                                                        padding: const EdgeInsets.only(left: 12),
                                                         child: Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
                                                           children: [
-                                                            GFTypography(
-                                                              text: e.title
-                                                                  .toString(),
-                                                              type:
-                                                                  GFTypographyType
-                                                                      .typo5,
-                                                              dividerHeight: 0,
-                                                              textColor: ShadTheme.of(
-                                                                      context)
-                                                                  .colorScheme
-                                                                  .primary,
+                                                            Text(
+                                                              e.title.toString(),
+                                                              style: ShadTheme.of(context).textTheme.h4,
                                                             ),
                                                             Tooltip(
-                                                              message: e.actors
-                                                                  .toString(),
-                                                              triggerMode:
-                                                                  TooltipTriggerMode
-                                                                      .tap,
-                                                              margin:
-                                                                  const EdgeInsets
-                                                                      .symmetric(
-                                                                      horizontal:
-                                                                          36),
+                                                              message: e.actors.toString(),
+                                                              triggerMode: TooltipTriggerMode.tap,
+                                                              margin: const EdgeInsets.symmetric(horizontal: 36),
                                                               child: Text(
-                                                                e.actors
-                                                                    .toString(),
-                                                                style:
-                                                                    const TextStyle(
-                                                                        fontSize:
-                                                                            13),
+                                                                e.actors.toString(),
+                                                                style: const TextStyle(fontSize: 13),
                                                                 maxLines: 2,
-                                                                overflow:
-                                                                    TextOverflow
-                                                                        .ellipsis,
+                                                                overflow: TextOverflow.ellipsis,
                                                               ),
                                                             ),
                                                             Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .spaceBetween,
+                                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                               children: [
                                                                 Tooltip(
-                                                                  message:
-                                                                      '评分：${e.rating.first}',
-                                                                  child: RatingBar
-                                                                      .readOnly(
-                                                                    initialRating:
-                                                                        double.parse(e.rating.first) /
-                                                                            2,
-                                                                    filledIcon:
-                                                                        Icons
-                                                                            .star,
-                                                                    emptyIcon: Icons
-                                                                        .star_border,
-                                                                    emptyColor:
-                                                                        Colors
-                                                                            .redAccent,
-                                                                    filledColor: ShadTheme.of(
-                                                                            context)
-                                                                        .colorScheme
-                                                                        .primary,
-                                                                    halfFilledColor:
-                                                                        Colors
-                                                                            .amberAccent,
-                                                                    halfFilledIcon:
-                                                                        Icons
-                                                                            .star_half,
-                                                                    maxRating:
-                                                                        5,
+                                                                  message: '评分：${e.rating.first}',
+                                                                  child: RatingBar.readOnly(
+                                                                    initialRating: double.parse(e.rating.first) / 2,
+                                                                    filledIcon: Icons.star,
+                                                                    emptyIcon: Icons.star_border,
+                                                                    emptyColor: Colors.redAccent,
+                                                                    filledColor:
+                                                                        ShadTheme.of(context).colorScheme.foreground,
+                                                                    halfFilledColor: Colors.amberAccent,
+                                                                    halfFilledIcon: Icons.star_half,
+                                                                    maxRating: 5,
                                                                     size: 18,
                                                                   ),
                                                                 ),
-                                                                Text(e.voteCount
-                                                                    .toString()),
+                                                                Text(e.voteCount.toString()),
                                                               ],
                                                             ),
                                                           ],
@@ -791,8 +581,7 @@ class _DouBanPageState extends State<DouBanPage>
                                           .toList()),
                             ),
                           ),
-                          if (controller.isLoading == true)
-                            const Center(child: CircularProgressIndicator())
+                          if (controller.isLoading == true) const Center(child: CircularProgressIndicator())
                         ],
                       ),
                     ),
@@ -807,8 +596,7 @@ class _DouBanPageState extends State<DouBanPage>
   }
 
   Future<dynamic> _buildOperateDialog(mediaInfo) async {
-    CommonResponse detail =
-        await controller.getVideoDetail(mediaInfo.douBanUrl);
+    CommonResponse detail = await controller.getVideoDetail(mediaInfo.douBanUrl);
     if (!detail.succeed) {
       Logger.instance.e(detail.msg);
       return;
@@ -843,9 +631,7 @@ class _DouBanPageState extends State<DouBanPage>
                                 child: CachedNetworkImage(
                                   imageUrl: '$cacheServer${mediaInfo.poster}',
                                   errorWidget: (context, url, error) =>
-                                      const Image(
-                                          image: AssetImage(
-                                              'assets/images/avatar.png')),
+                                      const Image(image: AssetImage('assets/images/avatar.png')),
                                   fit: BoxFit.fitWidth,
                                 ),
                               ));
@@ -854,10 +640,8 @@ class _DouBanPageState extends State<DouBanPage>
                           borderRadius: BorderRadius.circular(8.0),
                           child: CachedNetworkImage(
                             imageUrl: '$cacheServer${mediaInfo.poster}',
-                            placeholder: (context, url) => const Center(
-                                child: CircularProgressIndicator()),
-                            errorWidget: (context, url, error) =>
-                                Image.asset('assets/images/avatar.png'),
+                            placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                            errorWidget: (context, url, error) => Image.asset('assets/images/avatar.png'),
                             width: 120,
                             height: 180,
                             fit: BoxFit.fitWidth,
@@ -873,7 +657,7 @@ class _DouBanPageState extends State<DouBanPage>
                             Text(
                               '${videoDetail.title}${videoDetail.year}',
                               style: TextStyle(
-                                  color: ShadTheme.of(context).colorScheme.primary,
+                                  color: ShadTheme.of(context).colorScheme.foreground,
                                   fontSize: 20,
                                   fontWeight: FontWeight.w700),
                               maxLines: 2,
@@ -902,21 +686,16 @@ class _DouBanPageState extends State<DouBanPage>
                             // Text(videoDetail.language.toString()),
                             // Text(videoDetail.season.toString()),
                             // Text(videoDetail.episode.toString()),
-                            videoDetail.rate != null &&
-                                    videoDetail.rate!.isNotEmpty
+                            videoDetail.rate != null && videoDetail.rate!.isNotEmpty
                                 ? Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       RatingBar.readOnly(
-                                        initialRating:
-                                            double.parse(videoDetail.rate!) / 2,
+                                        initialRating: double.parse(videoDetail.rate!) / 2,
                                         filledIcon: Icons.star,
                                         emptyIcon: Icons.star_border,
                                         emptyColor: Colors.redAccent,
-                                        filledColor: ShadTheme.of(context)
-                                            .colorScheme
-                                            .primary,
+                                        filledColor: ShadTheme.of(context).colorScheme.foreground,
                                         halfFilledColor: Colors.amberAccent,
                                         halfFilledIcon: Icons.star_half,
                                         maxRating: 5,
@@ -960,9 +739,7 @@ class _DouBanPageState extends State<DouBanPage>
                                       child: CachedNetworkImage(
                                         imageUrl: '$cacheServer$imgUrl',
                                         errorWidget: (context, url, error) =>
-                                            const Image(
-                                                image: AssetImage(
-                                                    'assets/images/avatar.png')),
+                                            const Image(image: AssetImage('assets/images/avatar.png')),
                                         fit: BoxFit.fitWidth,
                                       ),
                                     ));
@@ -971,10 +748,7 @@ class _DouBanPageState extends State<DouBanPage>
                                     borderRadius: BorderRadius.circular(8.0),
                                     child: CachedNetworkImage(
                                       imageUrl: '$cacheServer$imgUrl',
-                                      placeholder: (context, url) =>
-                                          const Center(
-                                              child:
-                                                  CircularProgressIndicator()),
+                                      placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
                                       height: 160,
                                       fit: BoxFit.fitWidth,
                                     ),
@@ -1001,30 +775,21 @@ class _DouBanPageState extends State<DouBanPage>
                                           Get.defaultDialog(
                                               title: '海报预览',
                                               content: InkWell(
-                                                onTap: () =>
-                                                    Navigator.of(context).pop(),
+                                                onTap: () => Navigator.of(context).pop(),
                                                 child: CachedNetworkImage(
-                                                  imageUrl:
-                                                      '$cacheServer${worker.imgUrl}',
-                                                  errorWidget: (context, url,
-                                                          error) =>
-                                                      const Image(
-                                                          image: AssetImage(
-                                                              'assets/images/avatar.png')),
+                                                  imageUrl: '$cacheServer${worker.imgUrl}',
+                                                  errorWidget: (context, url, error) =>
+                                                      const Image(image: AssetImage('assets/images/avatar.png')),
                                                   fit: BoxFit.fitWidth,
                                                 ),
                                               ));
                                         },
                                         child: ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(8.0),
+                                          borderRadius: BorderRadius.circular(8.0),
                                           child: CachedNetworkImage(
-                                            imageUrl:
-                                                '$cacheServer${worker.imgUrl}',
+                                            imageUrl: '$cacheServer${worker.imgUrl}',
                                             placeholder: (context, url) =>
-                                                const Center(
-                                                    child:
-                                                        CircularProgressIndicator()),
+                                                const Center(child: CircularProgressIndicator()),
                                             width: 100,
                                             height: 150,
                                             fit: BoxFit.fitWidth,
@@ -1119,10 +884,8 @@ class _DouBanPageState extends State<DouBanPage>
     await controller.getVideoDetail(url);
     if (kIsWeb) {
       Logger.instance.i('Explorer');
-      if (!await launchUrl(Uri.parse(url),
-          mode: LaunchMode.externalApplication)) {
-        Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
-            colorText: ShadTheme.of(context).colorScheme.primary);
+      if (!await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication)) {
+        Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？', colorText: ShadTheme.of(context).colorScheme.foreground);
       }
     } else {
       Logger.instance.i('WebView');

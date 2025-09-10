@@ -61,8 +61,7 @@ List<int> getRandomIndices(int listLength, int count) {
 
 checkEditController(TextEditingController controller, String field, context) {
   if (controller.text.isEmpty) {
-    Get.snackbar('字段检查', '$field 不能为空！',
-        colorText: ShadTheme.of(context).colorScheme.ring);
+    Get.snackbar('字段检查', '$field 不能为空！', colorText: ShadTheme.of(context).colorScheme.destructive);
     return false;
   }
   return true;

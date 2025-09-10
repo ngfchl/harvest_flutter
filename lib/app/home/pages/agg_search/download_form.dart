@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
 import 'package:get/get.dart';
-import 'package:getwidget/getwidget.dart';
 import 'package:harvest/api/downloader.dart';
 import 'package:harvest/app/home/pages/download/qbittorrent.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../../common/form_widgets.dart';
 import '../../../../models/download.dart';
@@ -50,9 +50,7 @@ class DownloadForm extends StatelessWidget {
     tagsController.text = info?.tags.join(',') ?? '';
     if (categories.isNotEmpty) {
       savePathController.text = categories.values.first.savePath ??
-          (downloader.category.toLowerCase() == 'qb'
-              ? downloader.prefs.savePath
-              : downloader.prefs.downloadDir);
+          (downloader.category.toLowerCase() == 'qb' ? downloader.prefs.savePath : downloader.prefs.downloadDir);
     }
   }
 
@@ -62,13 +60,10 @@ class DownloadForm extends StatelessWidget {
     categories.remove('全部');
     categories.remove('未分类');
     bool isQb = downloader.category.toLowerCase() == 'qb';
-    return CustomCard(
-        child: isQb
-            ? _buildQbittorrentForm(context)
-            : _buildTransmissionForm(context));
+    return CustomCard(child: isQb ? _buildQbittorrentForm(context) : _buildTransmissionForm(context));
   }
 
-  _buildQbittorrentForm(BuildContext context) {
+  Form _buildQbittorrentForm(BuildContext context) {
     QbittorrentPreferences prefs = downloader.prefs;
     if (savePathController.text.isEmpty) {
       savePathController.text = prefs.savePath;
@@ -76,10 +71,7 @@ class DownloadForm extends StatelessWidget {
     RxBool advancedConfig = false.obs;
     RxBool paused = prefs.startPausedEnabled.obs;
     Rx<String> contentLayout = prefs.torrentContentLayout.obs;
-    Rx<String?> stopCondition = (prefs.torrentStopCondition == 'None'
-            ? null
-            : prefs.torrentStopCondition)
-        .obs;
+    Rx<String?> stopCondition = (prefs.torrentStopCondition == 'None' ? null : prefs.torrentStopCondition).obs;
     Rx<bool> autoTMM = prefs.autoTmmEnabled.obs;
     RxBool firstLastPiecePrio = false.obs;
     RxBool isSkipChecking = false.obs;
@@ -96,8 +88,7 @@ class DownloadForm extends StatelessWidget {
               padding: const EdgeInsets.all(8.0),
               child: EllipsisText(
                 text: info!.subtitle.isNotEmpty ? info!.subtitle : info!.title,
-                style: TextStyle(
-                    fontSize: 12, color: Theme.of(context).colorScheme.primary),
+                style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.primary),
                 ellipsis: '...',
                 maxLines: 1,
               ),
@@ -116,8 +107,7 @@ class DownloadForm extends StatelessWidget {
                       data: categories.keys.toList(),
                       onChanged: (value, index) {
                         categoryController.text = value;
-                        savePathController.text = categories[value]?.savePath ??
-                            downloader.prefs.savePath;
+                        savePathController.text = categories[value]?.savePath ?? downloader.prefs.savePath;
                       },
                     )
                   : CustomTextField(
@@ -171,8 +161,7 @@ class DownloadForm extends StatelessWidget {
                         children: [
                           SwitchListTile(
                               dense: true,
-                              contentPadding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                               title: const Text(
                                 '添加到队列顶部',
                                 style: TextStyle(fontSize: 12),
@@ -183,11 +172,9 @@ class DownloadForm extends StatelessWidget {
                               }),
                           Obx(() {
                             return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16.0, vertical: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
                               child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   const Text('种子停止条件'),
                                   DropdownButton(
@@ -227,11 +214,9 @@ class DownloadForm extends StatelessWidget {
                           }),
                           Obx(() {
                             return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16.0, vertical: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
                               child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   const Text('内容布局'),
                                   DropdownButton(
@@ -270,8 +255,7 @@ class DownloadForm extends StatelessWidget {
                           Obx(() {
                             return SwitchListTile(
                                 dense: true,
-                                contentPadding:
-                                    const EdgeInsets.symmetric(horizontal: 8),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                                 title: const Text(
                                   '跳过哈希校验',
                                   style: TextStyle(
@@ -286,8 +270,7 @@ class DownloadForm extends StatelessWidget {
                           Obx(() {
                             return SwitchListTile(
                                 dense: true,
-                                contentPadding:
-                                    const EdgeInsets.symmetric(horizontal: 8),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                                 title: const Text(
                                   '自动管理',
                                   style: TextStyle(
@@ -302,8 +285,7 @@ class DownloadForm extends StatelessWidget {
                           Obx(() {
                             return SwitchListTile(
                                 dense: true,
-                                contentPadding:
-                                    const EdgeInsets.symmetric(horizontal: 8),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                                 title: const Text(
                                   '强制启动',
                                   style: TextStyle(
@@ -317,8 +299,7 @@ class DownloadForm extends StatelessWidget {
                           }),
                           SwitchListTile(
                               dense: true,
-                              contentPadding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                               title: const Text(
                                 '按顺序下载',
                                 style: TextStyle(fontSize: 12),
@@ -329,8 +310,7 @@ class DownloadForm extends StatelessWidget {
                               }),
                           SwitchListTile(
                               dense: true,
-                              contentPadding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                               title: const Text(
                                 '优先下载首尾数据块',
                                 style: TextStyle(fontSize: 12),
@@ -354,8 +334,7 @@ class DownloadForm extends StatelessWidget {
                             suffixText: 'MB/s',
                             inputFormatters: [
                               FilteringTextInputFormatter.digitsOnly,
-                              TextInputFormatter.withFunction(
-                                  (oldValue, newValue) {
+                              TextInputFormatter.withFunction((oldValue, newValue) {
                                 try {
                                   final int value = int.parse(newValue.text);
                                   if (value < -2) {
@@ -375,8 +354,7 @@ class DownloadForm extends StatelessWidget {
                             suffixText: 'MB/s',
                             inputFormatters: [
                               FilteringTextInputFormatter.digitsOnly,
-                              TextInputFormatter.withFunction(
-                                  (oldValue, newValue) {
+                              TextInputFormatter.withFunction((oldValue, newValue) {
                                 try {
                                   final int value = int.parse(newValue.text);
                                   if (value < -2) {
@@ -395,8 +373,7 @@ class DownloadForm extends StatelessWidget {
                             keyboardType: TextInputType.number,
                             inputFormatters: [
                               FilteringTextInputFormatter.digitsOnly,
-                              TextInputFormatter.withFunction(
-                                  (oldValue, newValue) {
+                              TextInputFormatter.withFunction((oldValue, newValue) {
                                 try {
                                   final int value = int.parse(newValue.text);
                                   if (value < -2) {
@@ -423,11 +400,9 @@ class DownloadForm extends StatelessWidget {
                 onPressed: () => cancelForm(context),
                 style: ButtonStyle(
                   shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5.0)),
+                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                   ),
-                  backgroundColor:
-                      WidgetStateProperty.all(Colors.redAccent.withAlpha(150)),
+                  backgroundColor: WidgetStateProperty.all(Colors.redAccent.withAlpha(150)),
                 ),
                 icon: const Icon(Icons.cancel_outlined, color: Colors.white),
                 label: const Text(
@@ -439,8 +414,7 @@ class DownloadForm extends StatelessWidget {
                 return ElevatedButton.icon(
                   onPressed: () async {
                     isLoading.value = true;
-                    double? ratioLimit =
-                        double.tryParse(ratioLimitController.text);
+                    double? ratioLimit = double.tryParse(ratioLimitController.text);
                     int? upLimit = int.tryParse(upLimitController.text);
                     int? dlLimit = int.tryParse(dlLimitController.text);
                     await submitForm({
@@ -454,28 +428,20 @@ class DownloadForm extends StatelessWidget {
                       'tags': tagsController.text,
                       'cookie': cookieController.text,
                       'content_layout': contentLayout.value,
-                      'stop_condition': stopCondition.value == 'None'
-                          ? null
-                          : stopCondition.value,
+                      'stop_condition': stopCondition.value == 'None' ? null : stopCondition.value,
                       'is_skip_checking': isSkipChecking.value,
                       'is_sequential_download': isSequentialDownload.value,
                       'is_first_last_piece_priority': firstLastPiecePrio.value,
                       'use_auto_torrent_management': autoTMM.value,
                       'add_to_top_of_queue': addToTopOfQueue.value,
                       'forced': forced.value,
-                      'upLimit': (upLimit != null && upLimit > 0)
-                          ? upLimit * 1024
-                          : null,
-                      'dlLimit': (dlLimit != null && dlLimit > 0)
-                          ? dlLimit * 1024
-                          : null,
+                      'upLimit': (upLimit != null && upLimit > 0) ? upLimit * 1024 : null,
+                      'dlLimit': (dlLimit != null && dlLimit > 0) ? dlLimit * 1024 : null,
                       'ratioLimit': ratioLimit,
                     }, context);
                     isLoading.value = false;
                   },
-                  icon: isLoading.value
-                      ? const GFLoader(size: 18)
-                      : const Icon(Icons.download),
+                  icon: isLoading.value ? Center(child: const CircularProgressIndicator()) : const Icon(Icons.download),
                   label: const Text('下载'),
                 );
               }),
@@ -499,8 +465,7 @@ class DownloadForm extends StatelessWidget {
             padding: const EdgeInsets.all(8.0),
             child: EllipsisText(
               text: info!.subtitle.isNotEmpty ? info!.subtitle : info!.title,
-              style: TextStyle(
-                  fontSize: 12, color: Theme.of(context).colorScheme.primary),
+              style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.primary),
               ellipsis: '...',
               maxLines: 1,
             ),
@@ -519,8 +484,7 @@ class DownloadForm extends StatelessWidget {
                     data: categories.keys.toList(),
                     onChanged: (value, index) {
                       categoryController.text = value;
-                      savePathController.text = categories[value]?.savePath ??
-                          downloader.prefs.downloadDir;
+                      savePathController.text = categories[value]?.savePath ?? downloader.prefs.downloadDir;
                     },
                   )
                 : CustomTextField(
@@ -584,8 +548,7 @@ class DownloadForm extends StatelessWidget {
                           suffixText: 'MB/s',
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
-                            TextInputFormatter.withFunction(
-                                (oldValue, newValue) {
+                            TextInputFormatter.withFunction((oldValue, newValue) {
                               try {
                                 final int value = int.parse(newValue.text);
                                 if (value < 0) {
@@ -605,8 +568,7 @@ class DownloadForm extends StatelessWidget {
                           suffixText: 'MB/s',
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
-                            TextInputFormatter.withFunction(
-                                (oldValue, newValue) {
+                            TextInputFormatter.withFunction((oldValue, newValue) {
                               try {
                                 final int value = int.parse(newValue.text);
                                 if (value < 0) {
@@ -625,8 +587,7 @@ class DownloadForm extends StatelessWidget {
                           keyboardType: TextInputType.number,
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
-                            TextInputFormatter.withFunction(
-                                (oldValue, newValue) {
+                            TextInputFormatter.withFunction((oldValue, newValue) {
                               try {
                                 final int value = int.parse(newValue.text);
                                 if (value < 0) {
@@ -653,11 +614,9 @@ class DownloadForm extends StatelessWidget {
               onPressed: () => cancelForm(context),
               style: ButtonStyle(
                 shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                  RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5.0)),
+                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                 ),
-                backgroundColor:
-                    WidgetStateProperty.all(Colors.redAccent.withAlpha(150)),
+                backgroundColor: WidgetStateProperty.all(Colors.redAccent.withAlpha(150)),
               ),
               icon: const Icon(Icons.cancel_outlined, color: Colors.white),
               label: const Text(
@@ -669,8 +628,7 @@ class DownloadForm extends StatelessWidget {
               return ElevatedButton.icon(
                 onPressed: () async {
                   isLoading.value = true;
-                  double? ratioLimit =
-                      double.tryParse(ratioLimitController.text);
+                  double? ratioLimit = double.tryParse(ratioLimitController.text);
                   int? upLimit = int.tryParse(upLimitController.text);
                   int? dlLimit = int.tryParse(dlLimitController.text);
                   await submitForm({
@@ -681,19 +639,13 @@ class DownloadForm extends StatelessWidget {
                     'tags': tagsController.text.split(','),
                     'cookie': cookieController.text,
                     'is_paused': paused.value,
-                    'upLimit': (upLimit != null && upLimit > 0)
-                        ? upLimit * 1024
-                        : null,
-                    'dlLimit': (dlLimit != null && dlLimit > 0)
-                        ? dlLimit * 1024
-                        : null,
+                    'upLimit': (upLimit != null && upLimit > 0) ? upLimit * 1024 : null,
+                    'dlLimit': (dlLimit != null && dlLimit > 0) ? dlLimit * 1024 : null,
                     'ratioLimit': ratioLimit,
                   }, context);
                   isLoading.value = false;
                 },
-                icon: isLoading.value
-                    ? const GFLoader(size: 18)
-                    : const Icon(Icons.download),
+                icon: isLoading.value ? Center(child: const CircularProgressIndicator()) : const Icon(Icons.download),
                 label: const Text('下载'),
               );
             }),
@@ -706,8 +658,7 @@ class DownloadForm extends StatelessWidget {
   Future<void> submitForm(Map<String, dynamic> formData, context) async {
     try {
       Logger.instance.i('提交表单: $formData');
-      CommonResponse res = await pushTorrentToDownloader(
-          downloaderId: downloader.id!, formData: formData);
+      CommonResponse res = await pushTorrentToDownloader(downloaderId: downloader.id!, formData: formData);
 
       Logger.instance.i(res.msg);
       if (res.succeed) {
@@ -715,13 +666,13 @@ class DownloadForm extends StatelessWidget {
         Get.snackbar(
           '种子推送成功！',
           res.msg,
-          colorText: Theme.of(context).colorScheme.primary,
+          colorText: ShadTheme.of(context).colorScheme.foreground,
         );
       } else {
         Get.snackbar(
           '种子推送失败！',
           res.msg,
-          colorText: Theme.of(context).colorScheme.error,
+          colorText: ShadTheme.of(context).colorScheme.destructive,
         );
       }
     } finally {}
@@ -774,8 +725,7 @@ openDownloaderListSheet(BuildContext context, SearchTorrentInfo info) async {
                       return ListTile(
                         title: Text(
                           downloader.name,
-                          style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary),
+                          style: TextStyle(color: Theme.of(context).colorScheme.primary),
                         ),
                         subtitle: Text(
                           '${downloader.protocol}://${downloader.host}:${downloader.port}',
@@ -790,8 +740,7 @@ openDownloaderListSheet(BuildContext context, SearchTorrentInfo info) async {
                             ? const CircularProgressIndicator()
                             : const SizedBox.shrink(),
                         onTap: () async {
-                          CommonResponse response = await controller
-                              .getDownloaderCategoryList(downloader);
+                          CommonResponse response = await controller.getDownloaderCategoryList(downloader);
                           if (!response.succeed) {
                             Get.snackbar(
                               '警告',
@@ -802,8 +751,7 @@ openDownloaderListSheet(BuildContext context, SearchTorrentInfo info) async {
                           }
                           Map<String, Category> categorise = response.data;
                           Get.bottomSheet(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5.0)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                             enableDrag: true,
                             CustomCard(
                               height: 400,
@@ -811,14 +759,9 @@ openDownloaderListSheet(BuildContext context, SearchTorrentInfo info) async {
                               child: Column(children: [
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
-                                  child: GFTypography(
-                                    text: '添加种子',
-                                    icon: const Icon(Icons.add),
-                                    dividerWidth: 108,
-                                    textColor:
-                                        Theme.of(context).colorScheme.onSurface,
-                                    dividerColor:
-                                        Theme.of(context).colorScheme.onSurface,
+                                  child: Text(
+                                    '添加种子',
+                                    style: ShadTheme.of(context).textTheme.h4,
                                   ),
                                 ),
                                 Expanded(

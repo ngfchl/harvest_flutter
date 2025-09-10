@@ -22,7 +22,7 @@ class ImagePickerRow extends StatelessWidget {
         '选择图片',
         style: TextStyle(
           fontSize: 14,
-          color: ShadTheme.of(context).colorScheme.primary,
+          color: ShadTheme.of(context).colorScheme.foreground,
         ),
       ),
       trailing: Row(
@@ -72,7 +72,7 @@ class ImagePickerRow extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8.0), // 圆角半径
               ),
-              backgroundColor: ShadTheme.of(context).colorScheme.primary,
+              backgroundColor: ShadTheme.of(context).colorScheme.background,
               textStyle: TextStyle(fontSize: 12, color: Colors.white70),
             ),
           ),
@@ -92,8 +92,7 @@ class ImagePickerRow extends StatelessWidget {
 
     // 复制到沙盒并重命名
     final dir = await getApplicationDocumentsDirectory();
-    final newName =
-        '${DateTime.now().millisecondsSinceEpoch}${p.extension(xFile.path)}';
+    final newName = '${DateTime.now().millisecondsSinceEpoch}${p.extension(xFile.path)}';
     final saved = await File(xFile.path).copy('${dir.path}/$newName');
 
     onImagePicked(saved.path);

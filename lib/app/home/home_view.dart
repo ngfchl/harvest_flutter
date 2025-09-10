@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
-import 'package:getwidget/getwidget.dart';
 import 'package:harvest/app/home/pages/web_socket_logging/view.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/form_widgets.dart';
@@ -37,6 +36,7 @@ class HomeView extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     String cacheServer = 'https://images.weserv.nl/?url=';
+    double opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
     return GetBuilder<HomeController>(builder: (controller) {
       return PopScope(
         canPop: false,
@@ -51,11 +51,9 @@ class HomeView extends GetView<HomeController> {
             cancel: ElevatedButton(
                 style: ButtonStyle(
                   shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5.0)),
+                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                   ),
-                  backgroundColor:
-                      WidgetStateProperty.all(Colors.blueAccent.withAlpha(250)),
+                  backgroundColor: WidgetStateProperty.all(Colors.blueAccent.withAlpha(250)),
                 ),
                 onPressed: () {
                   Navigator.of(context).pop(false);
@@ -67,11 +65,9 @@ class HomeView extends GetView<HomeController> {
             confirm: ElevatedButton(
                 style: ButtonStyle(
                   shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5.0)),
+                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                   ),
-                  backgroundColor:
-                      WidgetStateProperty.all(Colors.redAccent.withAlpha(250)),
+                  backgroundColor: WidgetStateProperty.all(Colors.redAccent.withAlpha(250)),
                 ),
                 onPressed: () {
                   exit(0);
@@ -93,12 +89,11 @@ class HomeView extends GetView<HomeController> {
               GetBuilder<HomeController>(
                   id: 'home_view_background_image',
                   builder: (controller) {
-                    Logger.instance.d(
-                        "useBackground: ${controller.useBackground} useLocalBackground: ${controller.useLocalBackground} backgroundImage: ${controller.backgroundImage}");
+                    // Logger.instance.d(
+                    //     "useBackground: ${controller.useBackground} useLocalBackground: ${controller.useLocalBackground} backgroundImage: ${controller.backgroundImage}");
                     if (controller.useBackground) {
                       return Positioned.fill(
-                        child: controller.useLocalBackground &&
-                                !controller.backgroundImage.startsWith('http')
+                        child: controller.useLocalBackground && !controller.backgroundImage.startsWith('http')
                             ? Image.file(
                                 File(controller.backgroundImage.isNotEmpty
                                     ? controller.backgroundImage
@@ -106,12 +101,9 @@ class HomeView extends GetView<HomeController> {
                                 fit: BoxFit.cover,
                               )
                             : CachedNetworkImage(
-                                imageUrl:
-                                    '${controller.useImageProxy ? cacheServer : ''}${controller.backgroundImage}',
-                                placeholder: (context, url) => const Center(
-                                    child: CircularProgressIndicator()),
-                                errorWidget: (context, url, error) =>
-                                    Image.asset(
+                                imageUrl: '${controller.useImageProxy ? cacheServer : ''}${controller.backgroundImage}',
+                                placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                                errorWidget: (context, url, error) => Image.asset(
                                   'assets/images/background.png',
                                   fit: BoxFit.cover,
                                 ),
@@ -127,12 +119,8 @@ class HomeView extends GetView<HomeController> {
                 backgroundColor: Colors.transparent,
                 extendBody: true,
                 appBar: AppBar(
-                  backgroundColor: ShadTheme.of(context)
-                      .colorScheme
-                      .background
-                      .withValues(alpha: 0.7 * 255),
-                  iconTheme: IconThemeData(
-                      color: ShadTheme.of(context).colorScheme.primary),
+                  backgroundColor: ShadTheme.of(context).colorScheme.background.withOpacity(opacity),
+                  iconTheme: IconThemeData(color: ShadTheme.of(context).colorScheme.foreground),
                   elevation: 0,
                   actions: <Widget>[
                     _actionButtonList(context),
@@ -156,8 +144,7 @@ class HomeView extends GetView<HomeController> {
                               ),
                       Expanded(
                           child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 2.0, horizontal: 3),
+                        padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 3),
                         child: PageView(
                           controller: controller.pageController,
                           physics: const NeverScrollableScrollPhysics(),
@@ -174,10 +161,10 @@ class HomeView extends GetView<HomeController> {
                 drawer: controller.isPortrait
                     ? SizedBox(
                         width: 200,
-                        child: GFDrawer(
+                        child: Drawer(
                           semanticLabel: 'Harvest',
                           elevation: 10,
-                          color: ShadTheme.of(context).colorScheme.background,
+                          backgroundColor: ShadTheme.of(context).colorScheme.background,
                           child: _buildMenuBar(context),
                         ),
                       )
@@ -191,51 +178,23 @@ class HomeView extends GetView<HomeController> {
     });
   }
 
-  Widget _buildMenuBar(context) {
+  Widget _buildMenuBar(BuildContext context) {
+    var colorScheme = ShadTheme.of(context).colorScheme;
     return GetBuilder<HomeController>(builder: (controller) {
-      return SingleChildScrollView(
-        child: IntrinsicHeight(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: MediaQuery.of(context).size.height, // 确保宽度适配屏幕
-            ),
-            child: NavigationRail(
-              useIndicator: true,
-              extended: !controller.isSmallHorizontalScreen,
-              selectedIndex: controller.initPage,
-              selectedLabelTextStyle:
-                  TextStyle(color: ShadTheme.of(context).colorScheme.primary),
-              selectedIconTheme: Theme.of(context)
-                  .iconTheme
-                  .copyWith(color: ShadTheme.of(context).colorScheme.primary),
-              unselectedLabelTextStyle: TextStyle(
-                  color: ShadTheme.of(context)
-                      .colorScheme
-                      .primary
-                      .withOpacity(0.7)),
-              unselectedIconTheme: Theme.of(context).iconTheme.copyWith(
-                  color: ShadTheme.of(context)
-                      .colorScheme
-                      .primary
-                      .withOpacity(0.7)),
-              backgroundColor: Colors.transparent,
-              onDestinationSelected: (index) => controller.changePage(index),
-              labelType: controller.isSmallHorizontalScreen
-                  ? NavigationRailLabelType.selected
-                  : NavigationRailLabelType.none,
-              leading: GetBuilder<HomeController>(builder: (controller) {
+      return IntrinsicHeight(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height, // 确保宽度适配屏幕
+          ),
+          child: Column(
+            children: [
+              GetBuilder<HomeController>(builder: (controller) {
                 if (!controller.isSmallHorizontalScreen) {
                   var baseUrl = SPUtil.getLocalStorage('server');
-                  return GFDrawerHeader(
-                    centerAlign: true,
-                    closeButton: const SizedBox.shrink(),
+
+                  return DrawerHeader(
                     decoration: const BoxDecoration(
                       color: Colors.transparent,
-                    ),
-                    currentAccountPicture: const GFAvatar(
-                      radius: 80.0,
-                      shape: GFAvatarShape.standard,
-                      backgroundImage: AssetImage('assets/images/avatar.png'),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.only(right: 20.0),
@@ -243,61 +202,43 @@ class HomeView extends GetView<HomeController> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: <Widget>[
+                          const ShadAvatar(
+                            'assets/images/avatar.png',
+                          ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
                                 '${controller.userinfo?.isStaff == true ? '👑' : '🎩'}${controller.userinfo?.user.toString()}',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: ShadTheme.of(context)
-                                        .colorScheme
-                                        .primary),
+                                style: TextStyle(fontSize: 12, color: colorScheme.foreground),
                               ),
                               IconButton(
                                 onPressed: () {
                                   controller.logout();
                                   controller.update();
                                 },
-                                icon: Icon(Icons.exit_to_app,
-                                    size: 16,
-                                    color: ShadTheme.of(context)
-                                        .colorScheme
-                                        .primary),
+                                icon: Icon(Icons.exit_to_app, size: 16, color: colorScheme.foreground),
                               ),
                             ],
                           ),
                           if (controller.authInfo != null) ...[
                             Text(
                               'VIP: ${controller.authInfo?.username.toString()}',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: ShadTheme.of(context)
-                                      .colorScheme
-                                      .primary),
+                              style: TextStyle(fontSize: 12, color: colorScheme.foreground),
                             ),
                             Text(
                               'Expire: ${controller.authInfo?.timeExpire.toString()}',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: ShadTheme.of(context)
-                                      .colorScheme
-                                      .primary),
+                              style: TextStyle(fontSize: 12, color: colorScheme.foreground),
                             )
                           ],
                           InkWell(
                             onTap: () async {
-                              await Clipboard.setData(
-                                  ClipboardData(text: baseUrl));
+                              await Clipboard.setData(ClipboardData(text: baseUrl));
                             },
                             child: Text(
                               '$baseUrl',
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: ShadTheme.of(context)
-                                      .colorScheme
-                                      .primary),
+                              style: TextStyle(fontSize: 12, color: colorScheme.foreground),
                             ),
                           ),
                         ],
@@ -307,15 +248,39 @@ class HomeView extends GetView<HomeController> {
                 }
                 return SizedBox.shrink();
               }),
-              destinations: controller.destinations,
-            ),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: IntrinsicHeight(
+                    child: NavigationRail(
+                      useIndicator: true,
+                      extended: !controller.isSmallHorizontalScreen,
+                      selectedIndex: controller.initPage,
+                      selectedLabelTextStyle: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                      selectedIconTheme: Theme.of(context)
+                          .iconTheme
+                          .copyWith(color: ShadTheme.of(context).colorScheme.primaryForeground),
+                      indicatorColor: ShadTheme.of(context).colorScheme.primary,
+                      unselectedLabelTextStyle: TextStyle(color: colorScheme.foreground.withOpacity(0.7)),
+                      unselectedIconTheme:
+                          Theme.of(context).iconTheme.copyWith(color: colorScheme.foreground.withOpacity(0.7)),
+                      backgroundColor: Colors.transparent,
+                      onDestinationSelected: (index) => controller.changePage(index),
+                      labelType: controller.isSmallHorizontalScreen
+                          ? NavigationRailLabelType.selected
+                          : NavigationRailLabelType.none,
+                      destinations: controller.destinations,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       );
     });
   }
 
-  Widget _actionButtonList(context) {
+  Widget _actionButtonList(BuildContext context) {
     return GetBuilder<HomeController>(builder: (controller) {
       return Row(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -332,7 +297,7 @@ class HomeView extends GetView<HomeController> {
               child: Icon(
                 Icons.map,
                 size: 20,
-                color: ShadTheme.of(context).colorScheme.primary,
+                color: ShadTheme.of(context).colorScheme.foreground,
               ),
             ),
           ],
@@ -381,14 +346,9 @@ class HomeView extends GetView<HomeController> {
                           Tab(text: '批量修改'),
                           Tab(text: '清理数据'),
                         ];
-                        TextEditingController keyController =
-                            TextEditingController(text: '');
-                        TextEditingController valueController =
-                            TextEditingController(text: '');
-                        Map<String, String> selectOptions = {
-                          "站点UA": "user_agent",
-                          "网络代理": "proxy"
-                        };
+                        TextEditingController keyController = TextEditingController(text: '');
+                        TextEditingController valueController = TextEditingController(text: '');
+                        Map<String, String> selectOptions = {"站点UA": "user_agent", "网络代理": "proxy"};
                         Get.bottomSheet(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(5.0), // 圆角半径
@@ -415,19 +375,14 @@ class HomeView extends GetView<HomeController> {
                                           //   keyController.text = selectOptions[p]!;
                                           // },
                                         ),
-                                        CustomTextField(
-                                            controller: valueController,
-                                            labelText: "替换为"),
+                                        CustomTextField(controller: valueController, labelText: "替换为"),
                                         Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceAround,
+                                          mainAxisAlignment: MainAxisAlignment.spaceAround,
                                           children: [
                                             ElevatedButton(
                                               style: OutlinedButton.styleFrom(
                                                 shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0), // 圆角半径
+                                                  borderRadius: BorderRadius.circular(8.0), // 圆角半径
                                                 ),
                                               ),
                                               onPressed: () {
@@ -438,19 +393,14 @@ class HomeView extends GetView<HomeController> {
                                             ElevatedButton(
                                               style: OutlinedButton.styleFrom(
                                                 shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0), // 圆角半径
+                                                  borderRadius: BorderRadius.circular(8.0), // 圆角半径
                                                 ),
                                               ),
                                               onPressed: () async {
                                                 Get.back(result: true);
                                                 await bulkUpgradeHandler({
-                                                  "key": selectOptions[
-                                                      keyController.text]!,
-                                                  "value": StringUtils
-                                                      .parseJsonOrReturnString(
-                                                          valueController.text),
+                                                  "key": selectOptions[keyController.text]!,
+                                                  "value": StringUtils.parseJsonOrReturnString(valueController.text),
                                                 });
                                               },
                                               child: const Text('确认'),
@@ -460,35 +410,24 @@ class HomeView extends GetView<HomeController> {
                                       ],
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 28.0),
+                                      padding: const EdgeInsets.symmetric(horizontal: 28.0),
                                       child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
+                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                         children: [
                                           CustomTextTag(
                                               labelText: "慎用，清理后数据无法恢复",
-                                              backgroundColor:
-                                                  ShadTheme.of(context)
-                                                      .colorScheme
-                                                      .ring),
+                                              backgroundColor: ShadTheme.of(context).colorScheme.destructive),
                                           FullWidthButton(
                                               text: "精简历史数据",
                                               onPressed: () async {
                                                 Get.defaultDialog(
                                                   title: "确认吗？",
-                                                  middleText:
-                                                      "本操作会精简站点数据，只保留最近15天的历史数据，确认精简数据吗？",
+                                                  middleText: "本操作会精简站点数据，只保留最近15天的历史数据，确认精简数据吗？",
                                                   actions: [
                                                     ElevatedButton(
-                                                      style: OutlinedButton
-                                                          .styleFrom(
-                                                        shape:
-                                                            RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      8.0), // 圆角半径
+                                                      style: OutlinedButton.styleFrom(
+                                                        shape: RoundedRectangleBorder(
+                                                          borderRadius: BorderRadius.circular(8.0), // 圆角半径
                                                         ),
                                                       ),
                                                       onPressed: () async {
@@ -497,14 +436,9 @@ class HomeView extends GetView<HomeController> {
                                                       child: const Text('取消'),
                                                     ),
                                                     ElevatedButton(
-                                                      style: OutlinedButton
-                                                          .styleFrom(
-                                                        shape:
-                                                            RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      8.0), // 圆角半径
+                                                      style: OutlinedButton.styleFrom(
+                                                        shape: RoundedRectangleBorder(
+                                                          borderRadius: BorderRadius.circular(8.0), // 圆角半径
                                                         ),
                                                       ),
                                                       onPressed: () async {
@@ -527,14 +461,9 @@ class HomeView extends GetView<HomeController> {
                                                   middleText: "确认清除站点历史数据吗？",
                                                   actions: [
                                                     ElevatedButton(
-                                                      style: OutlinedButton
-                                                          .styleFrom(
-                                                        shape:
-                                                            RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      8.0), // 圆角半径
+                                                      style: OutlinedButton.styleFrom(
+                                                        shape: RoundedRectangleBorder(
+                                                          borderRadius: BorderRadius.circular(8.0), // 圆角半径
                                                         ),
                                                       ),
                                                       onPressed: () async {
@@ -543,14 +472,9 @@ class HomeView extends GetView<HomeController> {
                                                       child: const Text('取消'),
                                                     ),
                                                     ElevatedButton(
-                                                      style: OutlinedButton
-                                                          .styleFrom(
-                                                        shape:
-                                                            RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      8.0), // 圆角半径
+                                                      style: OutlinedButton.styleFrom(
+                                                        shape: RoundedRectangleBorder(
+                                                          borderRadius: BorderRadius.circular(8.0), // 圆角半径
                                                         ),
                                                       ),
                                                       onPressed: () async {
@@ -573,14 +497,9 @@ class HomeView extends GetView<HomeController> {
                                                   middleText: "确认清除站点签到数据吗？",
                                                   actions: [
                                                     ElevatedButton(
-                                                      style: OutlinedButton
-                                                          .styleFrom(
-                                                        shape:
-                                                            RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      8.0), // 圆角半径
+                                                      style: OutlinedButton.styleFrom(
+                                                        shape: RoundedRectangleBorder(
+                                                          borderRadius: BorderRadius.circular(8.0), // 圆角半径
                                                         ),
                                                       ),
                                                       onPressed: () {
@@ -589,14 +508,9 @@ class HomeView extends GetView<HomeController> {
                                                       child: const Text('取消'),
                                                     ),
                                                     ElevatedButton(
-                                                      style: OutlinedButton
-                                                          .styleFrom(
-                                                        shape:
-                                                            RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      8.0), // 圆角半径
+                                                      style: OutlinedButton.styleFrom(
+                                                        shape: RoundedRectangleBorder(
+                                                          borderRadius: BorderRadius.circular(8.0), // 圆角半径
                                                         ),
                                                       ),
                                                       onPressed: () async {
@@ -673,13 +587,10 @@ class HomeView extends GetView<HomeController> {
                         CommonResponse res = await speedTestApi();
                         if (res.code == 0) {
                           Get.back();
-                          Get.snackbar('测速任务发送成功', res.msg,
-                              colorText:
-                                  ShadTheme.of(context).colorScheme.primary);
+                          Get.snackbar('测速任务发送成功', res.msg, colorText: ShadTheme.of(context).colorScheme.foreground);
                         } else {
                           Get.snackbar('测速任务发送失败', '测速任务执行出错啦：${res.msg}',
-                              colorText:
-                                  ShadTheme.of(context).colorScheme.ring);
+                              colorText: ShadTheme.of(context).colorScheme.destructive);
                         }
                       },
                     ),
@@ -711,7 +622,7 @@ class HomeView extends GetView<HomeController> {
               child: Icon(
                 Icons.add_box_outlined,
                 size: 24,
-                color: ShadTheme.of(context).colorScheme.primary,
+                color: ShadTheme.of(context).colorScheme.foreground,
               ),
             )
           ],
@@ -727,15 +638,14 @@ class HomeView extends GetView<HomeController> {
       content: Center(
         child: TextButton(
           onPressed: () async {
-            FilePickerResult? result = await FilePicker.platform
-                .pickFiles(type: FileType.custom, allowedExtensions: ['zip']);
+            FilePickerResult? result =
+                await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['zip']);
             if (result != null) {
               PlatformFile file = result.files.single;
               Logger.instance.d(result.files.single.path!);
               Logger.instance.d(file);
               Logger.instance.d(file.path);
-              if (!kIsWeb &&
-                  file.path?.contains('PT-Plugin-Plus-Backup') != true) {
+              if (!kIsWeb && file.path?.contains('PT-Plugin-Plus-Backup') != true) {
                 Get.snackbar(
                   '错误',
                   '请选择正确的PTPP备份文件【“PT-Plugin-Plus-Backup”开头的 ZIP 文件】！',
