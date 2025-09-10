@@ -35,10 +35,10 @@ class _LoginPageState extends State<LoginPage> {
       BoxDecoration decoration = BoxDecoration(
         border: Border.all(color: Colors.transparent),
       );
+      var themeData = ShadTheme.of(context);
       if (server.selected) {
         decoration = BoxDecoration(
-          border: Border.all(
-              color: ShadTheme.of(context).colorScheme.primary, width: 2),
+          border: Border.all(color: themeData.colorScheme.primary, width: 2),
           borderRadius: BorderRadius.circular(8),
         );
       }
@@ -63,7 +63,7 @@ class _LoginPageState extends State<LoginPage> {
                   '删除',
                   '服务器已成功删除',
                   snackPosition: SnackPosition.BOTTOM,
-                  colorText: ShadTheme.of(context).colorScheme.primary,
+                  colorText: themeData.colorScheme.primary,
                   duration: const Duration(seconds: 3),
                 );
               } else {
@@ -71,7 +71,7 @@ class _LoginPageState extends State<LoginPage> {
                   '删除',
                   '删除服务器失败',
                   snackPosition: SnackPosition.BOTTOM,
-                  colorText: ShadTheme.of(context).colorScheme.ring,
+                  colorText: themeData.colorScheme.destructiveForeground,
                   duration: const Duration(seconds: 3),
                 );
               }
@@ -95,8 +95,7 @@ class _LoginPageState extends State<LoginPage> {
                 Padding(
                   padding: EdgeInsets.all(8),
                   child: Icon(Icons.computer,
-                      size: 32,
-                      color: ShadTheme.of(context).colorScheme.primary),
+                      size: 32, color: themeData.colorScheme.primary),
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -106,8 +105,8 @@ class _LoginPageState extends State<LoginPage> {
                       child: Text(
                         server.name,
                         textAlign: TextAlign.center,
-                        style: ShadTheme.of(context).textTheme.h4.copyWith(
-                            color: ShadTheme.of(context).colorScheme.primary),
+                        style: themeData.textTheme.h4
+                            .copyWith(color: themeData.colorScheme.primary),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -116,8 +115,8 @@ class _LoginPageState extends State<LoginPage> {
                       child: Text(
                         '${Uri.parse(server.entry).host}:${Uri.parse(server.entry).port}',
                         textAlign: TextAlign.center,
-                        style: ShadTheme.of(context).textTheme.p.copyWith(
-                            color: ShadTheme.of(context).colorScheme.primary),
+                        style: themeData.textTheme.p
+                            .copyWith(color: themeData.colorScheme.primary),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -132,6 +131,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _buildAddServerTile() {
+    var themeData = ShadTheme.of(context);
     return GestureDetector(
       onTap: () {
         showEditOrCreateServerSheet(null);
@@ -140,44 +140,46 @@ class _LoginPageState extends State<LoginPage> {
         height: 150,
         width: 150,
         child: CustomCard(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Padding(
-                padding: EdgeInsets.all(8),
-                child: Icon(
-                  Icons.add_circle_outline,
-                  size: 32,
-                  color: ShadTheme.of(context).colorScheme.primary,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Icon(
+                    Icons.add_circle_outline,
+                    size: 32,
+                    color: themeData.colorScheme.primary,
+                  ),
                 ),
-              ),
-              Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Column(
-                      children: [
-                        Text(
-                          '添加服务器',
-                          textAlign: TextAlign.center,
-                          style: ShadTheme.of(context).textTheme.h4?.copyWith(
-                              color: ShadTheme.of(context).colorScheme.primary),
-                        ),
-                      ],
+                Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Column(
+                        children: [
+                          Text(
+                            '添加服务器',
+                            textAlign: TextAlign.center,
+                            style: themeData.textTheme.h4
+                                .copyWith(color: themeData.colorScheme.primary),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                    child: Text(
-                      '',
-                      textAlign: TextAlign.center,
-                      style: ShadTheme.of(context).textTheme.p,
-                      overflow: TextOverflow.ellipsis,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                      child: Text(
+                        '',
+                        textAlign: TextAlign.center,
+                        style: themeData.textTheme.p,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -187,8 +189,10 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     String cacheServer = 'https://images.weserv.nl/?url=';
+    double opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
     return GetBuilder<LoginController>(builder: (controller) {
       CancelToken cancelToken = CancelToken();
+      var themeData = ShadTheme.of(context);
       return Stack(
         children: [
           GetBuilder<LoginController>(
@@ -221,36 +225,56 @@ class _LoginPageState extends State<LoginPage> {
           Scaffold(
             backgroundColor: Colors.transparent,
             appBar: AppBar(
-              backgroundColor:
-                  ShadTheme.of(context).colorScheme.background.withOpacity(0.5),
+              backgroundColor: themeData.colorScheme.background
+                  .withValues(alpha: opacity * 255),
               title: Text(
                 '服务器列表',
-                style: ShadTheme.of(context).textTheme.h4,
+                style: themeData.textTheme.h4,
               ),
               actions: [
                 ...[
                   ShadIconButton.ghost(
                       onPressed: () async {
-                        final CommonResponse res =
-                            await controller.clearServerCache();
-                        if (res.succeed) {
-                          Get.snackbar(
-                            '清除缓存服务器',
-                            '服务器缓存已成功清除',
-                            snackPosition: SnackPosition.BOTTOM,
-                            colorText:
-                                ShadTheme.of(context).colorScheme.primary,
-                            duration: const Duration(seconds: 3),
-                          );
-                        } else {
-                          Get.snackbar(
-                            '清除服务器',
-                            '清除服务器缓存失败',
-                            snackPosition: SnackPosition.BOTTOM,
-                            colorText: ShadTheme.of(context).colorScheme.ring,
-                            duration: const Duration(seconds: 3),
-                          );
-                        }
+                        showShadDialog(
+                          context: context,
+                          builder: (context) => ShadDialog.alert(
+                            title: const Text('警告'),
+                            description: const Padding(
+                              padding: EdgeInsets.only(bottom: 8),
+                              child: Text('确认清除服务器列表？'),
+                            ),
+                            actions: [
+                              ShadButton.destructive(
+                                child: const Text('取消'),
+                                onPressed: () =>
+                                    Navigator.of(context).pop(false),
+                              ),
+                              ShadButton(
+                                child: const Text('清除'),
+                                onPressed: () async {
+                                  Navigator.of(context).pop(true);
+                                  final CommonResponse res =
+                                      await controller.clearServerCache();
+                                  if (res.succeed) {
+                                    controller.initServerList();
+                                    ShadToaster.of(context).show(
+                                      ShadToast(
+                                        description: Text('服务器缓存已成功清除'),
+                                      ),
+                                    );
+                                  } else {
+                                    ShadToaster.of(context).show(
+                                      ShadToast.destructive(
+                                        description:
+                                            Text('清除服务器缓存失败：${res.msg}'),
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        );
                       },
                       icon: Icon(
                         Icons.cleaning_services_outlined,
@@ -260,7 +284,7 @@ class _LoginPageState extends State<LoginPage> {
                 ],
                 CustomUAWidget(
                   child: Icon(
-                    Icons.settings,
+                    Icons.verified_user,
                     size: 20,
                   ),
                 ),
@@ -272,75 +296,76 @@ class _LoginPageState extends State<LoginPage> {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Wrap(spacing: 20, runSpacing: 20, children: [
-                        ...controller.serverList
-                            .map((server) => _buildGridTile(server)),
-                        _buildAddServerTile(),
-                      ]),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 36.0),
-                        child: controller.isLoading
-                            ? ShadButton(
-                                onPressed: () {
-                                  cancelToken.cancel();
-                                },
-                                leading: SizedBox.square(
-                                  dimension: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: ShadTheme.of(context)
-                                        .colorScheme
-                                        .primaryForeground,
-                                  ),
-                                ),
-                                child: const Text('连接中，点击取消'),
-                              )
-                            : ShadButton(
-                                onPressed: !controller.hasSelectedServer
-                                    ? null
-                                    : () async {
-                                        // 连接服务器的操作逻辑
-                                        CommonResponse res = await controller
-                                            .doLogin(cancelToken);
+                  Center(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          Wrap(spacing: 20, runSpacing: 20, children: [
+                            ...controller.serverList
+                                .map((server) => _buildGridTile(server)),
+                            _buildAddServerTile(),
+                          ]),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 36.0,
+                              vertical: 20,
+                            ),
+                            child: controller.isLoading
+                                ? ShadButton.destructive(
+                                    onPressed: () {
+                                      cancelToken.cancel();
+                                    },
+                                    leading: SizedBox.square(
+                                      dimension: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: themeData
+                                            .colorScheme.destructiveForeground,
+                                      ),
+                                    ),
+                                    child: const Text('连接中，点击取消'),
+                                  )
+                                : ShadButton(
+                                    onPressed: !controller.hasSelectedServer
+                                        ? null
+                                        : () async {
+                                            // 连接服务器的操作逻辑
+                                            CommonResponse res =
+                                                await controller
+                                                    .doLogin(cancelToken);
 
-                                        if (res.succeed) {
-                                          await Future.delayed(
-                                              Duration(milliseconds: 1500), () {
-                                            Get.offNamed(Routes.HOME);
-                                            Get.snackbar(
-                                              res.succeed ? '登录成功！' : '登录失败',
-                                              res.succeed
-                                                  ? '登录成功！欢迎回来，${controller.selectedServer?.username}'
-                                                  : res.msg,
-                                              colorText: res.succeed
-                                                  ? ShadTheme.of(context)
-                                                      .colorScheme
-                                                      .primary
-                                                  : ShadTheme.of(context)
-                                                      .colorScheme
-                                                      .ring,
-                                            );
-                                          });
-                                        } else {
-                                          Get.snackbar(
-                                            '登录失败',
-                                            res.msg,
-                                            colorText: ShadTheme.of(context)
-                                                .colorScheme
-                                                .ring,
-                                          );
-                                        }
-                                        controller.isLoading = false;
-                                        controller.update();
-                                      },
-                                leading: const Icon(LucideIcons.link),
-                                child: const Text('连接服务器'),
-                              ),
+                                            if (res.succeed) {
+                                              await Future.delayed(
+                                                  Duration(milliseconds: 1500),
+                                                  () {
+                                                Get.offNamed(Routes.HOME);
+
+                                                ShadToaster.of(context).show(
+                                                  ShadToast(
+                                                    description: Text(
+                                                        '登录成功！欢迎回来，${controller.selectedServer?.username}'),
+                                                  ),
+                                                );
+                                              });
+                                            } else {
+                                              ShadToaster.of(context).show(
+                                                ShadToast.destructive(
+                                                  description: Text(res.msg),
+                                                ),
+                                              );
+                                            }
+
+                                            controller.isLoading = false;
+                                            controller.update();
+                                          },
+                                    leading: const Icon(LucideIcons.link),
+                                    child: const Text('连接服务器'),
+                                  ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                   if (controller.switchServerLoading)
                     Center(child: CircularProgressIndicator())
@@ -369,6 +394,7 @@ class _LoginPageState extends State<LoginPage> {
     await Get.bottomSheet(
       enableDrag: true,
       GetBuilder<LoginController>(builder: (controller) {
+        var themeData = ShadTheme.of(context);
         return CustomCard(
           padding: const EdgeInsets.all(8),
           child: SingleChildScrollView(
@@ -400,7 +426,7 @@ class _LoginPageState extends State<LoginPage> {
                       maxLines: 1,
                       style: TextStyle(
                         fontSize: 13,
-                        color: ShadTheme.of(context).colorScheme.primary,
+                        color: themeData.colorScheme.primary,
                       ),
                       decoration: InputDecoration(
                         labelText: '密码',
@@ -423,7 +449,7 @@ class _LoginPageState extends State<LoginPage> {
                                 ? Icons.visibility
                                 : Icons.visibility_off,
                             size: 18,
-                            color: ShadTheme.of(context).colorScheme.primary,
+                            color: themeData.colorScheme.primary,
                           ),
                           onPressed: () {
                             controller.showPassword = !controller.showPassword;
@@ -448,16 +474,15 @@ class _LoginPageState extends State<LoginPage> {
                       ElevatedButton.icon(
                         icon: Icon(Icons.cancel_outlined,
                             size: 18,
-                            color: ShadTheme.of(context).colorScheme.ring),
+                            color: themeData.colorScheme.destructiveForeground),
                         label: Text(
                           '取消',
                           style: TextStyle(
-                            color: ShadTheme.of(context).colorScheme.ring,
+                            color: themeData.colorScheme.destructiveForeground,
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              ShadTheme.of(context).colorScheme.ring,
+                          backgroundColor: themeData.colorScheme.destructive,
                           // 设置背景颜色为绿色
                           shape: RoundedRectangleBorder(
                             borderRadius:
@@ -507,23 +532,22 @@ class _LoginPageState extends State<LoginPage> {
                                   // snackPosition: SnackPosition.BOTTOM,
                                   duration: const Duration(seconds: 3),
                                   colorText: server.id == 0
-                                      ? ShadTheme.of(context)
-                                          .colorScheme
-                                          .primary
-                                      : ShadTheme.of(context).colorScheme.ring);
+                                      ? themeData.colorScheme.primary
+                                      : themeData
+                                          .colorScheme.destructiveForeground);
                               Navigator.pop(context);
                             } else {
                               Get.snackbar('测试失败', flag.msg,
-                                  colorText:
-                                      ShadTheme.of(context).colorScheme.ring);
+                                  colorText: themeData
+                                      .colorScheme.destructiveForeground);
                               controller.isLoading = false;
                               controller.update();
                             }
                           } else {
                             Get.snackbar('出错啦', '服务器信息校验失败！',
                                 duration: const Duration(seconds: 3),
-                                colorText:
-                                    ShadTheme.of(context).colorScheme.ring);
+                                colorText: themeData
+                                    .colorScheme.destructiveForeground);
                           }
                           controller.isLoading = false;
                           controller.update();
@@ -534,29 +558,23 @@ class _LoginPageState extends State<LoginPage> {
                                     height: 18,
                                     width: 18,
                                     child: CircularProgressIndicator(
-                                      color: ShadTheme.of(context)
-                                          .colorScheme
-                                          .primaryForeground,
+                                      color: themeData
+                                          .colorScheme.primaryForeground,
                                     )),
                               )
                             : Icon(
                                 Icons.autorenew,
                                 size: 18,
-                                color: ShadTheme.of(context)
-                                    .colorScheme
-                                    .primaryForeground,
+                                color: themeData.colorScheme.primaryForeground,
                               ),
                         label: Text(
                           controller.isLoading ? '测试...' : '保存',
                           style: TextStyle(
-                            color: ShadTheme.of(context)
-                                .colorScheme
-                                .primaryForeground,
+                            color: themeData.colorScheme.primaryForeground,
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              ShadTheme.of(context).colorScheme.primary,
+                          backgroundColor: themeData.colorScheme.primary,
                           // 设置背景颜色为绿色
                           shape: RoundedRectangleBorder(
                             borderRadius:
@@ -591,7 +609,7 @@ class _LoginPageState extends State<LoginPage> {
         '服务器信息设置有误',
         '无法连接到服务器，请检查用户名和密码',
         snackPosition: SnackPosition.BOTTOM,
-        colorText: ShadTheme.of(context).colorScheme.ring,
+        colorText: ShadTheme.of(context).colorScheme.destructiveForeground,
         duration: const Duration(seconds: 3),
       );
       return;
@@ -607,6 +625,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<bool> doLogin(LoginUser loginUser) async {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     try {
       var res = await controller.dioUtil
           .post(Api.LOGIN_URL, formData: loginUser.toJson());
@@ -618,7 +637,7 @@ class _LoginPageState extends State<LoginPage> {
         Get.snackbar(
           '登录成功！',
           "欢迎 ${loginUser.username} 回来",
-          colorText: ShadTheme.of(context).colorScheme.primary,
+          colorText: shadColorScheme.primary,
         );
         Get.offNamed(Routes.HOME);
         return true;
@@ -626,14 +645,14 @@ class _LoginPageState extends State<LoginPage> {
       Get.snackbar(
         '登录失败',
         res.data['msg'],
-        colorText: ShadTheme.of(context).colorScheme.ring,
+        colorText: shadColorScheme.destructiveForeground,
       );
     } catch (e, stackTrace) {
       Logger.instance.e(stackTrace.toString());
       Get.snackbar(
         '登录失败',
         e.toString(),
-        colorText: ShadTheme.of(context).colorScheme.ring,
+        colorText: shadColorScheme.destructiveForeground,
       );
     }
     SPUtil.setBool('isLogin', false);

@@ -66,7 +66,7 @@ class LoginController extends GetxController {
   ///@title 初始化服务器列表
   ///@description 初始化服务器列表
   ///@updateTime
-  initServerList() {
+  void initServerList() {
     Logger.instance.i('开始读取服务器列表');
     serverList = serverRepository.serverList;
     Logger.instance.i('读取完毕，共有${serverList.length}个服务器');
@@ -239,7 +239,7 @@ class LoginController extends GetxController {
   ///@title 清除服务器记录
   ///@description TODO
   ///@updateTime
-  clearServerCache() async {
+  Future<CommonResponse> clearServerCache() async {
     return await serverRepository.clearServer();
   }
 }
