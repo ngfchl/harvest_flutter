@@ -135,7 +135,8 @@ class _AggSearchPageState extends State<AggSearchPage>
                               builder: (controller) {
                             return CustomPopup(
                               showArrow: false,
-                              backgroundColor: shadColorScheme.background,
+                              backgroundColor: shadColorScheme.background
+                                  .withOpacity(opacity),
                               barrierColor: Colors.transparent,
                               content: SizedBox(
                                 width: 100,
@@ -147,7 +148,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                       child: Text(
                                         'T M D B',
                                         style: TextStyle(
-                                          color: shadColorScheme.secondary,
+                                          color: shadColorScheme.foreground,
                                         ),
                                       ),
                                       onTap: () => _doTmdbSearch(),
@@ -156,7 +157,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                       child: Text(
                                         '来自豆瓣',
                                         style: TextStyle(
-                                          color: shadColorScheme.secondary,
+                                          color: shadColorScheme.foreground,
                                         ),
                                       ),
                                       onTap: () async {
@@ -167,7 +168,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                       child: Text(
                                         '清理tmdb',
                                         style: TextStyle(
-                                          color: shadColorScheme.secondary,
+                                          color: shadColorScheme.foreground,
                                         ),
                                       ),
                                       onTap: () async {
@@ -179,7 +180,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                       child: Text(
                                         '清理豆瓣',
                                         style: TextStyle(
-                                          color: shadColorScheme.secondary,
+                                          color: shadColorScheme.foreground,
                                         ),
                                       ),
                                       onTap: () async {
@@ -191,7 +192,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                       child: Text(
                                         '搜索资源',
                                         style: TextStyle(
-                                          color: shadColorScheme.secondary,
+                                          color: shadColorScheme.foreground,
                                         ),
                                       ),
                                       onTap: () async {
@@ -207,7 +208,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                       child: Text(
                                         '站点[◉${controller.maxCount}]',
                                         style: TextStyle(
-                                          color: shadColorScheme.secondary,
+                                          color: shadColorScheme.foreground,
                                         ),
                                       ),
                                       onTap: () async {
@@ -222,7 +223,7 @@ class _AggSearchPageState extends State<AggSearchPage>
                                 height: 36,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(4),
-                                  color: shadColorScheme.background,
+                                  color: Colors.transparent,
                                 ),
                                 child: controller.isLoading
                                     ? InkWell(
@@ -1016,6 +1017,8 @@ class _AggSearchPageState extends State<AggSearchPage>
             ? website.logo
             : '${mySite.mirror}${website.logo}';
 
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
+    String iconUrl = '${controller.baseUrl}/local/icons/${website.name}.png';
     return InkWell(
       onLongPress: () async {
         String url =
@@ -1026,7 +1029,7 @@ class _AggSearchPageState extends State<AggSearchPage>
           Uri uri = Uri.parse(url);
           if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
             Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
-                colorText: ShadTheme.of(context).colorScheme.destructive);
+                colorText: shadColorScheme.destructive);
           }
         } else {
           logger_helper.Logger.instance.d('内置浏览器打开');
@@ -1058,8 +1061,9 @@ class _AggSearchPageState extends State<AggSearchPage>
       child: CustomCard(
         child: Column(
           children: [
-            ShadCard(
-              padding: EdgeInsets.zero,
+            ListTile(
+              tileColor: Colors.transparent,
+              contentPadding: EdgeInsets.zero,
               leading: InkWell(
                 onTap: () {
                   Get.defaultDialog(
@@ -1089,30 +1093,36 @@ class _AggSearchPageState extends State<AggSearchPage>
                       alignment: AlignmentDirectional.bottomCenter,
                       children: [
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(5),
+                          borderRadius: BorderRadius.circular(10),
                           child: CachedNetworkImage(
-                            imageUrl: imgUrl,
-                            placeholder: (context, url) => const Center(
-                                child: CircularProgressIndicator()),
-                            errorWidget: (context, url, error) => const Image(
-                                image: AssetImage('assets/images/avatar.png'),
-                                fit: BoxFit.fitWidth),
-                            fit: BoxFit.fitWidth,
-                            httpHeaders: {
-                              "user-agent": mySite.userAgent.toString(),
-                              "Cookie": mySite.cookie.toString(),
-                            },
+                            imageUrl: iconUrl,
+                            cacheKey: iconUrl,
+                            fit: BoxFit.fill,
+                            errorWidget: (context, url, error) =>
+                                CachedNetworkImage(
+                              imageUrl: website.logo.startsWith('http')
+                                  ? website.logo
+                                  : '${mySite.mirror}${website.logo}',
+                              fit: BoxFit.fill,
+                              httpHeaders: {
+                                "user-agent": mySite.userAgent.toString(),
+                                "Cookie": mySite.cookie.toString(),
+                              },
+                              errorWidget: (context, url, error) => const Image(
+                                  image:
+                                      AssetImage('assets/images/avatar.png')),
+                              width: 32,
+                              height: 32,
+                            ),
+                            width: 32,
+                            height: 32,
                           ),
                         ),
                         CustomTextTag(
                           labelText: website.name.toString(),
-                          backgroundColor: ShadTheme.of(context)
-                              .colorScheme
-                              .primary
-                              .withOpacity(opacity),
-                          labelColor: ShadTheme.of(context)
-                              .colorScheme
-                              .primaryForeground,
+                          backgroundColor: shadColorScheme.primary
+                              .withOpacity(opacity * 0.8),
+                          labelColor: shadColorScheme.primaryForeground,
                         ),
                       ]),
                 ),
@@ -1123,10 +1133,10 @@ class _AggSearchPageState extends State<AggSearchPage>
                 maxLines: 1,
                 style: TextStyle(
                   fontSize: 13,
-                  color: ShadTheme.of(context).colorScheme.foreground,
+                  color: shadColorScheme.foreground,
                 ),
               ),
-              description: Padding(
+              subtitle: Padding(
                 padding: const EdgeInsets.only(top: 5.0),
                 child: EllipsisText(
                   text: info.subtitle.isNotEmpty ? info.subtitle : info.title,
@@ -1134,95 +1144,95 @@ class _AggSearchPageState extends State<AggSearchPage>
                   maxLines: 1,
                   style: TextStyle(
                     fontSize: 10,
-                    color: ShadTheme.of(context).colorScheme.secondary,
+                    color: shadColorScheme.foreground.withOpacity(0.8),
                   ),
                 ),
               ),
-              child: Padding(
-                padding: const EdgeInsets.only(top: 5.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.timer,
-                          color: ShadTheme.of(context).colorScheme.foreground,
-                          size: 12,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 5.0, left: 16, right: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.timer,
+                        color: shadColorScheme.foreground,
+                        size: 12,
+                      ),
+                      const SizedBox(
+                        width: 2,
+                      ),
+                      Text(
+                        info.published is DateTime
+                            ? DateFormat('yyyy-MM-dd HH:mm:ss')
+                                .format(info.published)
+                            : info.published.toString(),
+                        style: TextStyle(
+                          color: shadColorScheme.foreground,
+                          fontSize: 10,
                         ),
-                        const SizedBox(
-                          width: 2,
-                        ),
-                        Text(
-                          info.published is DateTime
-                              ? DateFormat('yyyy-MM-dd HH:mm:ss')
-                                  .format(info.published)
-                              : info.published.toString(),
-                          style: TextStyle(
-                            color: ShadTheme.of(context).colorScheme.foreground,
-                            fontSize: 10,
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.arrow_upward,
+                            color: Colors.green,
+                            size: 11,
                           ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.arrow_upward,
-                              color: Colors.green,
-                              size: 11,
+                          Text(
+                            info.seeders.toString(),
+                            style: TextStyle(
+                              color:
+                                  shadColorScheme.foreground.withOpacity(0.8),
+                              fontSize: 10,
                             ),
-                            Text(
-                              info.seeders.toString(),
-                              style: TextStyle(
-                                color:
-                                    ShadTheme.of(context).colorScheme.secondary,
-                                fontSize: 10,
-                              ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.arrow_downward,
+                            color: Colors.red,
+                            size: 11,
+                          ),
+                          Text(
+                            info.leechers.toString(),
+                            style: TextStyle(
+                              color:
+                                  shadColorScheme.foreground.withOpacity(0.8),
+                              fontSize: 10,
                             ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.arrow_downward,
-                              color: Colors.red,
-                              size: 11,
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.done,
+                            color: Colors.orange,
+                            size: 11,
+                          ),
+                          Text(
+                            info.completers.toString(),
+                            style: TextStyle(
+                              color:
+                                  shadColorScheme.foreground.withOpacity(0.8),
+                              fontSize: 10,
                             ),
-                            Text(
-                              info.leechers.toString(),
-                              style: TextStyle(
-                                color:
-                                    ShadTheme.of(context).colorScheme.secondary,
-                                fontSize: 10,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.done,
-                              color: Colors.orange,
-                              size: 11,
-                            ),
-                            Text(
-                              info.completers.toString(),
-                              style: TextStyle(
-                                color:
-                                    ShadTheme.of(context).colorScheme.secondary,
-                                fontSize: 10,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
             Padding(
@@ -2172,6 +2182,7 @@ class _AggSearchPageState extends State<AggSearchPage>
   }
 
   Widget showDouBanSearchInfo(DouBanSearchResult info) {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     return InkWell(
       onTap: () async {
         await _buildOperateDialog(info);
@@ -2223,134 +2234,114 @@ class _AggSearchPageState extends State<AggSearchPage>
         ),
         child: Column(
           children: [
-            ShadCard(
-              padding: EdgeInsets.zero,
-              leading: InkWell(
-                onTap: () {
-                  Get.defaultDialog(
-                      title: '海报预览',
-                      content: InkWell(
-                        onTap: () => Navigator.of(context).pop(),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(5),
-                          child: CachedNetworkImage(
-                            imageUrl: "$cacheServer${info.target.coverUrl}",
-                            placeholder: (context, url) => const Center(
-                                child: CircularProgressIndicator()),
-                            errorWidget: (context, url, error) => const Image(
-                                image: AssetImage('assets/images/avatar.png')),
-                            fit: BoxFit.fitWidth,
+            ListTile(
+                contentPadding: EdgeInsets.zero,
+                tileColor: Colors.transparent,
+                leading: InkWell(
+                  onTap: () {
+                    Get.defaultDialog(
+                        title: '海报预览',
+                        content: InkWell(
+                          onTap: () => Navigator.of(context).pop(),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(5),
+                            child: CachedNetworkImage(
+                              imageUrl: "$cacheServer${info.target.coverUrl}",
+                              placeholder: (context, url) => const Center(
+                                  child: CircularProgressIndicator()),
+                              errorWidget: (context, url, error) => const Image(
+                                  image:
+                                      AssetImage('assets/images/avatar.png')),
+                              fit: BoxFit.fitWidth,
+                            ),
                           ),
-                        ),
-                      ));
-                },
-                child: SizedBox(
-                  width: 55,
-                  child: Stack(
-                      alignment: AlignmentDirectional.bottomCenter,
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(5),
-                          child: CachedNetworkImage(
-                            imageUrl: "$cacheServer${info.target.coverUrl}",
-                            placeholder: (context, url) => const Center(
-                                child: CircularProgressIndicator()),
-                            errorWidget: (context, url, error) => const Image(
-                                image: AssetImage('assets/images/avatar.png'),
-                                fit: BoxFit.fitWidth),
-                            fit: BoxFit.fitWidth,
-                          ),
-                        ),
-                        CustomTextTag(
-                          labelText: info.typeName,
-                          backgroundColor: ShadTheme.of(context)
-                              .colorScheme
-                              .primary
-                              .withOpacity(opacity),
-                          labelColor: ShadTheme.of(context)
-                              .colorScheme
-                              .primaryForeground,
-                        ),
-                      ]),
-                ),
-              ),
-              title: EllipsisText(
-                text: "${info.target.title}[${info.target.year}]",
-                ellipsis: "...",
-                maxLines: 1,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: ShadTheme.of(context).colorScheme.foreground,
-                ),
-              ),
-              description: info.target.rating.count > 0
-                  ? Padding(
-                      padding: const EdgeInsets.only(top: 5.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
+                        ));
+                  },
+                  child: SizedBox(
+                    width: 55,
+                    child: Stack(
+                        alignment: AlignmentDirectional.bottomCenter,
                         children: [
-                          Row(
-                            children: [
-                              Tooltip(
-                                message: '评分：${info.target.rating.value}',
-                                child: RatingBar.readOnly(
-                                  initialRating: info.target.rating.value / 2,
-                                  filledIcon: Icons.star,
-                                  emptyIcon: Icons.star_border,
-                                  emptyColor: Colors.redAccent,
-                                  filledColor: ShadTheme.of(context)
-                                      .colorScheme
-                                      .foreground,
-                                  halfFilledColor: Colors.amberAccent,
-                                  halfFilledIcon: Icons.star_half,
-                                  maxRating: info.target.rating.max ~/ 2,
-                                  size: 18,
-                                ),
-                              ),
-                              Text(
-                                info.target.rating.value.toString(),
-                                style: TextStyle(
-                                  color: ShadTheme.of(context)
-                                      .colorScheme
-                                      .secondary,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              Text(
-                                "(${info.target.rating.count.toString()}评分)",
-                                style: TextStyle(
-                                  color: ShadTheme.of(context)
-                                      .colorScheme
-                                      .secondary,
-                                  fontSize: 10,
-                                ),
-                              ),
-                            ],
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(5),
+                            child: CachedNetworkImage(
+                              imageUrl: "$cacheServer${info.target.coverUrl}",
+                              placeholder: (context, url) => const Center(
+                                  child: CircularProgressIndicator()),
+                              errorWidget: (context, url, error) => const Image(
+                                  image: AssetImage('assets/images/avatar.png'),
+                                  fit: BoxFit.fitWidth),
+                              fit: BoxFit.fitWidth,
+                            ),
                           ),
-                        ],
-                      ),
-                    )
-                  : Text(
-                      "暂无评分",
-                      style: TextStyle(
-                        color: ShadTheme.of(context).colorScheme.secondary,
-                        fontSize: 10,
-                      ),
-                    ),
-              child: Padding(
-                padding: const EdgeInsets.only(top: 5.0),
-                child: Text(
-                  info.target.cardSubtitle,
-                  maxLines: 3,
-                  style: TextStyle(
-                    color: ShadTheme.of(context).colorScheme.foreground,
-                    fontSize: 10,
+                          CustomTextTag(
+                            labelText: info.typeName,
+                            backgroundColor:
+                                shadColorScheme.primary.withOpacity(opacity),
+                            labelColor: shadColorScheme.primaryForeground,
+                          ),
+                        ]),
                   ),
-                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ),
+                title: EllipsisText(
+                  text: "${info.target.title}[${info.target.year}]",
+                  ellipsis: "...",
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: shadColorScheme.foreground,
+                  ),
+                ),
+                subtitle: Padding(
+                  padding: const EdgeInsets.only(top: 5.0, right: 5.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      info.target.rating.count > 0
+                          ? Row(
+                              children: [
+                                Text(
+                                  '评分：${info.target.rating.value}',
+                                  style: TextStyle(
+                                    color: shadColorScheme.foreground
+                                        .withOpacity(0.8),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Text(
+                                  "(${info.target.rating.count.toString()}评分)",
+                                  style: TextStyle(
+                                    color: shadColorScheme.foreground
+                                        .withOpacity(0.8),
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Text(
+                              "暂无评分",
+                              style: TextStyle(
+                                color:
+                                    shadColorScheme.foreground.withOpacity(0.8),
+                                fontSize: 10,
+                              ),
+                            ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 5.0),
+                        child: Text(
+                          info.target.cardSubtitle,
+                          maxLines: 3,
+                          style: TextStyle(
+                            color: shadColorScheme.foreground,
+                            fontSize: 10,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
           ],
         ),
       )),
