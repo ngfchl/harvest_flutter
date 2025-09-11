@@ -16,7 +16,6 @@ dependencies:
   transmission_api: ^0.0.2
   easy_refresh: ^3.4.0
   url_launcher: ^6.3.2
-  #  intl: ^0.20.2
   tmdb_api: ^2.2.3
   dio_smart_retry: ^7.0.1
   path: ^1.9.0
@@ -44,7 +43,7 @@ dependencies:
   dartssh2_plus: ^3.0.0
   flutter_floating: ^1.0.8
   timelines_plus: null
-  file_picker: ^10.1.1
+  file_picker: ^9.0.0
   flutter_markdown_plus: ^1.0.3
   share_plus: ^11.0.0
   image_gallery_saver_plus: ^4.0.1
