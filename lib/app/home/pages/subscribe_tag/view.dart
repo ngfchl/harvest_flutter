@@ -26,58 +26,57 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<SubscribeTagController>(builder: (controller) {
-      return Column(
-        children: [
-          Expanded(
-            child: GetBuilder<SubscribeTagController>(builder: (controller) {
-              return EasyRefresh(
-                onRefresh: () => controller.initData(),
-                child: ListView(
-                  children: controller.tags.map((SubTag tag) => _buildTag(tag)).toList(),
-                ),
-              );
-            }),
-          ),
-          CustomCard(
-            child: ListTile(
-              dense: true,
-              title: const Text(
-                '订阅标签',
-                style: TextStyle(fontSize: 16),
+      return Scaffold(
+        backgroundColor: Colors.transparent,
+        floatingActionButton: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            IconButton(
+              icon: const Icon(
+                Icons.add,
+                size: 20,
               ),
-              leading: IconButton(
-                  onPressed: () async {
-                    CommonResponse res = await importBaseSubTag();
-                    if (res.code == 0) {
-                      Get.snackbar(
-                        '执行成功',
-                        res.msg.toString(),
-                        colorText: ShadTheme.of(context).colorScheme.foreground,
-                      );
-                    } else {
-                      Get.snackbar(
-                        '执行失败',
-                        res.msg.toString(),
-                        colorText: ShadTheme.of(context).colorScheme.foreground,
-                      );
-                    }
-                  },
-                  icon: const Icon(
-                    Icons.save_alt_outlined,
-                    color: Colors.orange,
-                  )),
-              trailing: IconButton(
-                icon: const Icon(
-                  Icons.add,
-                  size: 20,
-                ),
-                onPressed: () {
-                  _openEditDialog(null);
-                },
-              ),
+              onPressed: () {
+                _openEditDialog(null);
+              },
             ),
-          ),
-        ],
+            IconButton(
+                onPressed: () async {
+                  CommonResponse res = await importBaseSubTag();
+                  if (res.code == 0) {
+                    Get.snackbar(
+                      '执行成功',
+                      res.msg.toString(),
+                      colorText: ShadTheme.of(context).colorScheme.foreground,
+                    );
+                  } else {
+                    Get.snackbar(
+                      '执行失败',
+                      res.msg.toString(),
+                      colorText: ShadTheme.of(context).colorScheme.foreground,
+                    );
+                  }
+                },
+                icon: const Icon(
+                  Icons.save_alt_outlined,
+                  color: Colors.orange,
+                )),
+          ],
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              child: GetBuilder<SubscribeTagController>(builder: (controller) {
+                return EasyRefresh(
+                  onRefresh: () => controller.initData(),
+                  child: ListView(
+                    children: controller.tags.map((SubTag tag) => _buildTag(tag)).toList(),
+                  ),
+                );
+              }),
+            ),
+          ],
+        ),
       );
     });
   }

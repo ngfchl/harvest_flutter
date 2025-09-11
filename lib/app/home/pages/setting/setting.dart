@@ -36,7 +36,7 @@ class SettingPage extends StatelessWidget {
       child: Scaffold(
         backgroundColor: SPUtil.getBool('useBackground')
             ? Colors.transparent
-            : ShadTheme.of(context).colorScheme.background.withValues(alpha: opacity * 255),
+            : ShadTheme.of(context).colorScheme.background.withOpacity(opacity),
         body: GetBuilder<SettingController>(builder: (controller) {
           return EasyRefresh(
             onRefresh: controller.getOptionList,
@@ -52,35 +52,34 @@ class SettingPage extends StatelessWidget {
                       ? [const Center(child: CircularProgressIndicator())]
                       : _optionListView(context)),
                 ].map((item) => Padding(padding: EdgeInsets.all(2.0), child: item)),
-                const SizedBox(height: 50),
               ],
             ),
           );
         }),
-        floatingActionButtonLocation: FloatingActionButtonLocation.miniCenterDocked,
-        floatingActionButton: CustomCard(
-          padding: EdgeInsets.all(2.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              IconButton(
-                  onPressed: () {
-                    controller.getOptionList();
-                  },
-                  icon: const Icon(
-                    Icons.refresh,
-                    size: 18,
-                  )),
-              IconButton(
-                  onPressed: () {
-                    _openAddOptionForm(context);
-                  },
-                  icon: const Icon(
-                    Icons.add,
-                    size: 18,
-                  )),
-            ],
-          ),
+        // floatingActionButtonLocation: FloatingActionButtonLocation.miniCenterDocked,
+        floatingActionButton: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
+          spacing: 8,
+          children: [
+            ShadIconButton.ghost(
+                onPressed: () {
+                  controller.getOptionList();
+                },
+                icon: const Icon(
+                  Icons.refresh,
+                  size: 18,
+                )),
+            ShadIconButton.ghost(
+                onPressed: () {
+                  _openAddOptionForm(context);
+                },
+                icon: const Icon(
+                  Icons.add,
+                  size: 18,
+                )),
+            SizedBox(height: 26),
+          ],
         ),
       ),
     );

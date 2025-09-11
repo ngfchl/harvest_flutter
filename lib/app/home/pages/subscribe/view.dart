@@ -31,7 +31,7 @@ class _SubscribePageState extends State<SubscribePage> {
   Widget build(BuildContext context) {
     var colorScheme = ShadTheme.of(context).colorScheme;
     double opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
-    return GetBuilder<SubscribeHistoryController>(builder: (controller) {
+    return GetBuilder<SubscribeController>(builder: (controller) {
       return Scaffold(
         backgroundColor: Colors.transparent,
         floatingActionButton: ShadIconButton.ghost(
@@ -45,17 +45,14 @@ class _SubscribePageState extends State<SubscribePage> {
             await _openEditDialogX(null);
           },
         ),
-        body: CustomCard(
-          height: double.infinity,
-          child: GetBuilder<SubscribeController>(builder: (controller) {
-            return EasyRefresh(
-              onRefresh: () => controller.getSubscribeFromServer(),
-              child: ListView(
-                children: controller.subList.map((Subscribe sub) => _buildSub(sub)).toList(),
-              ),
-            );
-          }),
-        ),
+        body: GetBuilder<SubscribeController>(builder: (controller) {
+          return EasyRefresh(
+            onRefresh: () => controller.getSubscribeFromServer(),
+            child: ListView(
+              children: controller.subList.map((Subscribe sub) => _buildSub(sub)).toList(),
+            ),
+          );
+        }),
       );
     });
   }

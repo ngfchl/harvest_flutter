@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:harvest/models/authinfo.dart';
@@ -7,22 +8,46 @@ import 'package:harvest/utils/logger_helper.dart';
 import 'package:harvest/utils/storage.dart';
 
 class CustomInterceptors extends Interceptor {
+  // @override
+  // Future<void> onError(
+  //     DioException err, ErrorInterceptorHandler handler) async {
+  //   if ([401, 403].contains(err.response?.statusCode)) {
+  //     SPUtil.setBool("isLogin", false);
+  //     Get.offAndToNamed("/login");
+  //     handler.reject(DioException(
+  //       requestOptions: err.requestOptions,
+  //       error: "登录已过期，请重新登录！",
+  //       message: "登录已过期，请重新登录！",
+  //       type: DioExceptionType.badResponse,
+  //       response: err.response,
+  //     ));
+  //   } else {
+  //     return super.onError(err, handler);
+  //   }
+  // }
+
   @override
-  Future<void> onError(
-      DioException err, ErrorInterceptorHandler handler) async {
-    if ([401, 403].contains(err.response?.statusCode)) {
-      SPUtil.setBool("isLogin", false);
-      Get.offAndToNamed("/login");
-      handler.reject(DioException(
-        requestOptions: err.requestOptions,
-        error: "登录已过期，请重新登录！",
-        message: "登录已过期，请重新登录！",
-        type: DioExceptionType.badResponse,
-        response: err.response,
-      ));
-    } else {
-      return super.onError(err, handler);
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    debugPrint('CustomInterceptors.onError: status=${err.response?.statusCode}, url=${err.requestOptions.uri}');
+    final status = err.response?.statusCode ?? 0;
+    if (status == 401 || status == 403) {
+      // 如果 SPUtil.setBool 是异步，建议 await；若为同步可直接调用
+      // 若为 Future，则可以: await SPUtil.setBool(...); 但 onError 不是 async，这里用微任务
+      SPUtil.setBool('isLogin', false);
+
+      // 延后到下一个 microtask/post frame 去导航，避免在 build/渲染时立即导航的问题
+      Future.microtask(() {
+        // 使用 offAllNamed 更安全（替换所有路由）
+        Get.offAllNamed('/login');
+      });
+
+      // 将原始错误继续传递给调用方（也可以自定义错误信息）
+      handler.reject(err);
+      return;
     }
+
+    // 其他错误交由下一个拦截器或 Dio 处理
+    handler.next(err);
   }
 }
 
@@ -53,7 +78,8 @@ class DioUtil {
       receiveTimeout: const Duration(seconds: 90),
       responseType: ResponseType.json,
       validateStatus: (status) {
-        return status != null && status < 600; // 所有状态码都当作正常返回
+        Logger.instance.d('dio.status: $status');
+        return status != null && ![401, 403].contains(status); // 所有状态码都当作正常返回
       },
     ));
 
@@ -64,10 +90,9 @@ class DioUtil {
           token = await _loadTokenFromStorage();
         }
         if (token.isNotEmpty) {
-          options.headers['Authorization'] = 'Bearer $token';
+          options.headers['Authorization'] = 'Bearer $token   ';
         }
-        options.headers['User-Agent'] = SPUtil.getString("CustomUA",
-            defaultValue: "Harvest APP Client/1.0");
+        options.headers['User-Agent'] = SPUtil.getString("CustomUA", defaultValue: "Harvest APP Client/1.0");
         handler.next(options);
       },
     ));
@@ -84,11 +109,7 @@ class DioUtil {
       dio: dio,
       retries: 3,
       logPrint: (message) => Logger.instance.w(message),
-      retryDelays: const [
-        Duration(seconds: 1),
-        Duration(seconds: 2),
-        Duration(seconds: 3)
-      ],
+      retryDelays: const [Duration(seconds: 1), Duration(seconds: 2), Duration(seconds: 3)],
       retryEvaluator: (DioException err, int count) {
         if (err.response!.statusCode.toString().startsWith('5')) {
           return false;

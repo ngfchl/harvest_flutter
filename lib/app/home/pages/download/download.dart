@@ -105,7 +105,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
     );
   }
 
-  _buildBottomButtonBar() {
+  GetBuilder<DownloadController> _buildBottomButtonBar() {
     return GetBuilder<DownloadController>(builder: (controller) {
       return CustomCard(
         child: Row(
