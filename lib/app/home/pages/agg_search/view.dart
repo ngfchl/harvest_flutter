@@ -65,8 +65,6 @@ class _AggSearchPageState extends State<AggSearchPage>
             child: SafeArea(
               child: Scaffold(
                 backgroundColor: Colors.transparent,
-                floatingActionButtonLocation:
-                    FloatingActionButtonLocation.centerDocked,
                 floatingActionButton: controller.searchResults.isNotEmpty &&
                         controller.tabController.index == 1
                     ? _buildBottomButtonBar()
@@ -478,7 +476,7 @@ class _AggSearchPageState extends State<AggSearchPage>
     var shadColorScheme = ShadTheme.of(context).colorScheme;
 
     return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      mainAxisAlignment: MainAxisAlignment.end,
       crossAxisAlignment: CrossAxisAlignment.center,
       spacing: 15,
       children: [
@@ -493,30 +491,33 @@ class _AggSearchPageState extends State<AggSearchPage>
           ),
         ),
         CustomPopup(
-          backgroundColor: shadColorScheme.background.withOpacity(opacity),
+          backgroundColor:
+              shadColorScheme.background.withOpacity(opacity * 1.2),
           barrierColor: Colors.transparent,
           content: SizedBox(
             width: 100,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ...controller.sortKeyList.map(
-                  (item) => PopupMenuItem(
-                    height: 40,
-                    onTap: () {
-                      if (controller.sortKey == item.value) {
-                        controller.sortReversed = !controller.sortReversed;
-                      }
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ...controller.sortKeyList.map(
+                    (item) => PopupMenuItem(
+                      height: 40,
+                      onTap: () {
+                        if (controller.sortKey == item.value) {
+                          controller.sortReversed = !controller.sortReversed;
+                        }
 
-                      controller.sortKey = item.value;
-                      controller.sortResults();
+                        controller.sortKey = item.value;
+                        controller.sortResults();
 
-                      Navigator.of(context).pop();
-                    },
-                    child: Text(item.name, style: TextStyle(fontSize: 12)),
+                        Navigator.of(context).pop();
+                      },
+                      child: Text(item.name, style: TextStyle(fontSize: 12)),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           child: Icon(
@@ -532,106 +533,82 @@ class _AggSearchPageState extends State<AggSearchPage>
           content: SizedBox(
             width: 360,
             child: GetBuilder<AggSearchController>(builder: (controller) {
-              return Column(
-                children: [
-                  Padding(
+              return SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          '种子筛选',
+                          style: TextStyle(
+                            color: shadColorScheme.foreground,
+                            fontSize:
+                                ShadTheme.of(context).textTheme.h4.fontSize,
+                          ),
+                        )),
+                    CustomCard(
                       padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        '种子筛选',
-                        style: TextStyle(
-                          color: shadColorScheme.foreground,
-                          fontSize: ShadTheme.of(context).textTheme.h4.fontSize,
-                        ),
-                      )),
-                  CustomCard(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                                child: Text(
-                                    '大小【${FileSizeConvert.parseToFileSize(controller.minSize)}-${FileSizeConvert.parseToFileSize(controller.maxSize)}】')),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                // TextButton(
-                                //     onPressed: () {
-                                //       // todo 先计算出初始值，
-                                //       controller.maxSize = controller.maxSize /
-                                //           controller.calcSize *
-                                //           1024;
-                                //       controller.minSize = controller.minSize /
-                                //           controller.calcSize *
-                                //           1024;
-                                //       controller.calcSize = 1024;
-                                //       controller.filterResults();
-                                //       controller.filterResults();
-                                //     },
-                                //     child: Text(
-                                //       'KB',
-                                //       style: TextStyle(
-                                //           fontSize: 12,
-                                //           color: controller.calcSize == 1024
-                                //               ? Colors.orange
-                                //               : ShadTheme.of(context)
-                                //                   .colorScheme
-                                //                   .foreground),
-                                //     )),
-                                TextButton(
-                                  onPressed: () {
-                                    controller.maxSize = controller.maxSize /
-                                        controller.calcSize *
-                                        1024 *
-                                        1024;
-                                    controller.minSize = controller.minSize /
-                                        controller.calcSize *
-                                        1024 *
-                                        1024;
-                                    controller.calcSize = 1024 * 1024;
-                                    controller.filterResults();
-                                  },
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
                                   child: Text(
-                                    'MB',
-                                    style: TextStyle(
-                                        fontSize: 12,
-                                        color:
-                                            controller.calcSize == 1024 * 1024
-                                                ? Colors.orange
-                                                : shadColorScheme.foreground),
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    controller.maxSize = controller.maxSize /
-                                        controller.calcSize *
-                                        1024 *
-                                        1024 *
-                                        1024;
-                                    controller.minSize = controller.minSize /
-                                        controller.calcSize *
-                                        1024 *
-                                        1024 *
-                                        1024;
-                                    controller.calcSize = 1024 * 1024 * 1024;
-                                    controller.filterResults();
-                                  },
-                                  child: Text(
-                                    'GB',
-                                    style: TextStyle(
-                                        fontSize: 12,
-                                        color: controller.calcSize ==
-                                                1024 * 1024 * 1024
-                                            ? Colors.orange
-                                            : shadColorScheme.foreground),
-                                  ),
-                                ),
-                                TextButton(
+                                      '大小【${FileSizeConvert.parseToFileSize(controller.minSize)}-${FileSizeConvert.parseToFileSize(controller.maxSize)}】')),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  // TextButton(
+                                  //     onPressed: () {
+                                  //       // todo 先计算出初始值，
+                                  //       controller.maxSize = controller.maxSize /
+                                  //           controller.calcSize *
+                                  //           1024;
+                                  //       controller.minSize = controller.minSize /
+                                  //           controller.calcSize *
+                                  //           1024;
+                                  //       controller.calcSize = 1024;
+                                  //       controller.filterResults();
+                                  //       controller.filterResults();
+                                  //     },
+                                  //     child: Text(
+                                  //       'KB',
+                                  //       style: TextStyle(
+                                  //           fontSize: 12,
+                                  //           color: controller.calcSize == 1024
+                                  //               ? Colors.orange
+                                  //               : ShadTheme.of(context)
+                                  //                   .colorScheme
+                                  //                   .foreground),
+                                  //     )),
+                                  TextButton(
                                     onPressed: () {
                                       controller.maxSize = controller.maxSize /
                                           controller.calcSize *
                                           1024 *
+                                          1024;
+                                      controller.minSize = controller.minSize /
+                                          controller.calcSize *
+                                          1024 *
+                                          1024;
+                                      controller.calcSize = 1024 * 1024;
+                                      controller.filterResults();
+                                    },
+                                    child: Text(
+                                      'MB',
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          color:
+                                              controller.calcSize == 1024 * 1024
+                                                  ? Colors.orange
+                                                  : shadColorScheme.foreground),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      controller.maxSize = controller.maxSize /
+                                          controller.calcSize *
                                           1024 *
                                           1024 *
                                           1024;
@@ -639,141 +616,171 @@ class _AggSearchPageState extends State<AggSearchPage>
                                           controller.calcSize *
                                           1024 *
                                           1024 *
-                                          1024 *
                                           1024;
-                                      controller.calcSize =
-                                          1024 * 1024 * 1024 * 1024;
+                                      controller.calcSize = 1024 * 1024 * 1024;
                                       controller.filterResults();
                                     },
                                     child: Text(
-                                      'TB',
+                                      'GB',
                                       style: TextStyle(
                                           fontSize: 12,
                                           color: controller.calcSize ==
-                                                  1024 * 1024 * 1024 * 1024
+                                                  1024 * 1024 * 1024
                                               ? Colors.orange
                                               : shadColorScheme.foreground),
-                                    )),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Text('最小'),
-                            Expanded(
-                              child: Slider(
-                                  min: 0,
-                                  max: 10,
-                                  divisions: 20,
-                                  value:
-                                      controller.minSize / controller.calcSize,
-                                  label: FileSizeConvert.parseToFileSize(
-                                      controller.minSize),
-                                  onChanged: (value) async {
-                                    logger_helper.Logger.instance
-                                        .d('minSize：$value');
-                                    controller.minSize =
-                                        value * controller.calcSize;
-                                    // SPUtil.setDouble('searchFilterFileMinSize',
-                                    //     controller.minSize);
-                                    controller.filterResults();
-                                    controller.update();
-                                  }),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Text('最大'),
-                            Expanded(
-                              child: Slider(
-                                  min: 1,
-                                  max: 100,
-                                  divisions: 20,
-                                  value:
-                                      controller.maxSize / controller.calcSize,
-                                  label: FileSizeConvert.parseToFileSize(
-                                      controller.maxSize),
-                                  onChanged: (value) async {
-                                    logger_helper.Logger.instance
-                                        .d('maxSize：$value');
-                                    controller.maxSize =
-                                        value * controller.calcSize;
-                                    // SPUtil.setDouble('searchFilterFileMaxSize',
-                                    //     controller.maxSize);
-                                    controller.filterResults();
-                                    controller.update();
-                                  }),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (controller.succeedSiteList.isNotEmpty)
-                    FilterItem(
-                        name: '站点',
-                        value: controller.succeedSiteList,
-                        selected: controller.selectedSiteList,
-                        onUpdate: () {
-                          controller.filterResults();
-                          controller.update();
-                        }),
-                  if (controller.saleStatusList.isNotEmpty)
-                    FilterItem(
-                        name: '免费',
-                        value: controller.saleStatusList,
-                        selected: controller.selectedSaleStatusList,
-                        onUpdate: () {
-                          controller.filterResults();
-                          controller.update();
-                        }),
-                  if (controller.succeedCategories.isNotEmpty)
-                    FilterItem(
-                        name: '分类',
-                        value: controller.succeedCategories,
-                        selected: controller.selectedCategories,
-                        onUpdate: () {
-                          controller.filterResults();
-                          controller.update();
-                        }),
-                  if (controller.succeedResolution.isNotEmpty)
-                    FilterItem(
-                        name: '分辨率',
-                        value: controller.succeedResolution,
-                        selected: controller.selectedResolution,
-                        onUpdate: () {
-                          controller.filterResults();
-                          controller.update();
-                        }),
-                  if (controller.succeedTags.isNotEmpty)
-                    FilterItem(
-                        name: '标签',
-                        value: controller.succeedTags,
-                        selected: controller.selectedTags,
-                        onUpdate: () {
-                          controller.filterResults();
-                          controller.update();
-                        }),
-                  if (controller.hrResultList.isNotEmpty)
-                    CustomCard(
-                      child: SwitchListTile(
-                        title: Text(
-                          '排除 HR',
-                          style: TextStyle(
-                              fontSize: 12, color: shadColorScheme.foreground),
-                        ),
-                        onChanged: (val) {
-                          controller.hrKey = val;
-                          controller.filterResults();
-                          controller.update();
-                        },
-                        value: controller.hrKey,
-                        activeColor: Colors.green,
+                                    ),
+                                  ),
+                                  TextButton(
+                                      onPressed: () {
+                                        controller.maxSize =
+                                            controller.maxSize /
+                                                controller.calcSize *
+                                                1024 *
+                                                1024 *
+                                                1024 *
+                                                1024;
+                                        controller.minSize =
+                                            controller.minSize /
+                                                controller.calcSize *
+                                                1024 *
+                                                1024 *
+                                                1024 *
+                                                1024;
+                                        controller.calcSize =
+                                            1024 * 1024 * 1024 * 1024;
+                                        controller.filterResults();
+                                      },
+                                      child: Text(
+                                        'TB',
+                                        style: TextStyle(
+                                            fontSize: 12,
+                                            color: controller.calcSize ==
+                                                    1024 * 1024 * 1024 * 1024
+                                                ? Colors.orange
+                                                : shadColorScheme.foreground),
+                                      )),
+                                ],
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Text('最小'),
+                              Expanded(
+                                child: Slider(
+                                    min: 0,
+                                    max: 10,
+                                    divisions: 20,
+                                    value: controller.minSize /
+                                        controller.calcSize,
+                                    label: FileSizeConvert.parseToFileSize(
+                                        controller.minSize),
+                                    onChanged: (value) async {
+                                      logger_helper.Logger.instance
+                                          .d('minSize：$value');
+                                      controller.minSize =
+                                          value * controller.calcSize;
+                                      // SPUtil.setDouble('searchFilterFileMinSize',
+                                      //     controller.minSize);
+                                      controller.filterResults();
+                                      controller.update();
+                                    }),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Text('最大'),
+                              Expanded(
+                                child: Slider(
+                                    min: 1,
+                                    max: 100,
+                                    divisions: 20,
+                                    value: controller.maxSize /
+                                        controller.calcSize,
+                                    label: FileSizeConvert.parseToFileSize(
+                                        controller.maxSize),
+                                    onChanged: (value) async {
+                                      logger_helper.Logger.instance
+                                          .d('maxSize：$value');
+                                      controller.maxSize =
+                                          value * controller.calcSize;
+                                      // SPUtil.setDouble('searchFilterFileMaxSize',
+                                      //     controller.maxSize);
+                                      controller.filterResults();
+                                      controller.update();
+                                    }),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                ],
+                    if (controller.succeedSiteList.isNotEmpty)
+                      FilterItem(
+                          name: '站点',
+                          value: controller.succeedSiteList,
+                          selected: controller.selectedSiteList,
+                          onUpdate: () {
+                            controller.filterResults();
+                            controller.update();
+                          }),
+                    if (controller.saleStatusList.isNotEmpty)
+                      FilterItem(
+                          name: '免费',
+                          value: controller.saleStatusList,
+                          selected: controller.selectedSaleStatusList,
+                          onUpdate: () {
+                            controller.filterResults();
+                            controller.update();
+                          }),
+                    if (controller.succeedCategories.isNotEmpty)
+                      FilterItem(
+                          name: '分类',
+                          value: controller.succeedCategories,
+                          selected: controller.selectedCategories,
+                          onUpdate: () {
+                            controller.filterResults();
+                            controller.update();
+                          }),
+                    if (controller.succeedResolution.isNotEmpty)
+                      FilterItem(
+                          name: '分辨率',
+                          value: controller.succeedResolution,
+                          selected: controller.selectedResolution,
+                          onUpdate: () {
+                            controller.filterResults();
+                            controller.update();
+                          }),
+                    if (controller.succeedTags.isNotEmpty)
+                      FilterItem(
+                          name: '标签',
+                          value: controller.succeedTags,
+                          selected: controller.selectedTags,
+                          onUpdate: () {
+                            controller.filterResults();
+                            controller.update();
+                          }),
+                    if (controller.hrResultList.isNotEmpty)
+                      CustomCard(
+                        child: SwitchListTile(
+                          title: Text(
+                            '排除 HR',
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: shadColorScheme.foreground),
+                          ),
+                          onChanged: (val) {
+                            controller.hrKey = val;
+                            controller.filterResults();
+                            controller.update();
+                          },
+                          value: controller.hrKey,
+                          activeColor: Colors.green,
+                        ),
+                      ),
+                  ],
+                ),
               );
             }),
           ),

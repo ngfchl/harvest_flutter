@@ -93,7 +93,7 @@ class _DashBoardPageState extends State<DashBoardPage>
       children: [
         CustomPopup(
           showArrow: false,
-          backgroundColor: scheme.background.withOpacity(opacity),
+          backgroundColor: scheme.background.withOpacity(opacity * 1.2),
           barrierColor: Colors.transparent,
           content: SizedBox(
             width: 120,
@@ -125,7 +125,7 @@ class _DashBoardPageState extends State<DashBoardPage>
           ),
         ),
         CustomPopup(
-          backgroundColor: scheme.background.withOpacity(opacity),
+          backgroundColor: scheme.background.withOpacity(opacity * 1.2),
           barrierColor: Colors.transparent,
           content: SizedBox(
             width: 80,

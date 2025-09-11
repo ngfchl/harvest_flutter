@@ -226,7 +226,7 @@ class _MySitePagePageState extends State<MySitePage>
                             children: [
                               CustomPopup(
                                 backgroundColor: shadColorScheme.background
-                                    .withOpacity(opacity),
+                                    .withOpacity(opacity * 1.2),
                                 barrierColor: Colors.transparent,
                                 contentPadding: EdgeInsets.zero,
                                 content: SizedBox(
@@ -283,7 +283,7 @@ class _MySitePagePageState extends State<MySitePage>
                               ),
                               CustomPopup(
                                 backgroundColor: shadColorScheme.background
-                                    .withOpacity(opacity),
+                                    .withOpacity(opacity * 1.2),
                                 barrierColor: Colors.transparent,
                                 contentPadding: EdgeInsets.zero,
                                 content: SizedBox(
@@ -387,7 +387,8 @@ class _MySitePagePageState extends State<MySitePage>
                               ),
                               CustomPopup(
                                 contentDecoration: BoxDecoration(
-                                  color: shadColorScheme.background,
+                                  color: shadColorScheme.background
+                                      .withOpacity(opacity * 1.2),
                                 ),
                                 content: SingleChildScrollView(
                                   scrollDirection: Axis.vertical,
@@ -541,7 +542,7 @@ class _MySitePagePageState extends State<MySitePage>
   CustomPopup _buildBottomButtonBarFloat() {
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     return CustomPopup(
-        backgroundColor: shadColorScheme.background.withOpacity(opacity),
+        backgroundColor: shadColorScheme.background.withOpacity(opacity * 1.2),
         barrierColor: Colors.transparent,
         content: SizedBox(
           width: 80,
@@ -817,7 +818,8 @@ class _MySitePagePageState extends State<MySitePage>
                 CustomPopup(
                   showArrow: true,
                   barrierColor: Colors.transparent,
-                  backgroundColor: shadColorScheme.background,
+                  backgroundColor:
+                      shadColorScheme.background.withOpacity(opacity * 1.2),
                   content: SingleChildScrollView(
                     child: SizedBox(
                         width: 200,
@@ -1243,7 +1245,7 @@ class _MySitePagePageState extends State<MySitePage>
       showArrow: true,
       // contentPadding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
       barrierColor: Colors.transparent,
-      backgroundColor: shadColorScheme.background,
+      backgroundColor: shadColorScheme.background.withOpacity(opacity * 1.2),
       content: SizedBox(
           width: 100,
           child: Column(mainAxisSize: MainAxisSize.min, children: [
