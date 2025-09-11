@@ -49,6 +49,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
   @override
   bool get wantKeepAlive => true;
 
+  double get opacity => SPUtil.getDouble("cardOpacity", defaultValue: 0.7);
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -193,10 +195,32 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                             // mainAxisAlignment: MainAxisAlignment.spaceAround,
                             // crossAxisAlignment: CrossAxisAlignment.center,
                             direction: Axis.horizontal,
-                            // spacing: 15,
+                            spacing: 10,
                             children: [
-                              InkWell(
-                                onTap: () => _showFilterBottomSheet(),
+                              CustomPopup(
+                                backgroundColor: shadColorScheme.background.withOpacity(opacity),
+                                barrierColor: Colors.transparent,
+                                contentPadding: EdgeInsets.zero,
+                                content: SizedBox(
+                                  width: 100,
+                                  child: SingleChildScrollView(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        ...controller.filterOptions.map(
+                                          (item) => PopupMenuItem(
+                                            height: 40,
+                                            onTap: () {
+                                              controller.filterKey = item.value!;
+                                              controller.filterByKey();
+                                            },
+                                            child: Text(item.name, style: TextStyle(fontSize: 12)),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
                                   child: Row(
@@ -223,10 +247,30 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                   ),
                                 ),
                               ),
-                              InkWell(
-                                onTap: () {
-                                  _showSortBottomSheet();
-                                },
+                              CustomPopup(
+                                backgroundColor: shadColorScheme.background.withOpacity(opacity),
+                                barrierColor: Colors.transparent,
+                                contentPadding: EdgeInsets.zero,
+                                content: SizedBox(
+                                  width: 100,
+                                  child: SingleChildScrollView(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        ...controller.siteSortOptions.map(
+                                          (item) => PopupMenuItem(
+                                            height: 40,
+                                            onTap: () {
+                                              controller.sortKey = item.value!;
+                                              controller.filterByKey();
+                                            },
+                                            child: Text(item.name, style: TextStyle(fontSize: 12)),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
                                   child: Row(
@@ -302,12 +346,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                 ),
                                 content: SingleChildScrollView(
                                   scrollDirection: Axis.vertical,
-                                  child: Wrap(
-                                    alignment: WrapAlignment.spaceBetween,
-                                    // mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                    // crossAxisAlignment: CrossAxisAlignment.center,
-                                    direction: Axis.vertical,
-                                    // spacing: 15,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
                                     children: [
                                       PopupMenuItem<String>(
                                         height: 32,
@@ -439,94 +479,58 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
   CustomPopup _buildBottomButtonBarFloat() {
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     return CustomPopup(
-        contentDecoration: BoxDecoration(
-          color: shadColorScheme.background,
-        ),
-        content: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            // mainAxisAlignment: MainAxisAlignment.spaceAround,
-            // crossAxisAlignment: CrossAxisAlignment.center,
-            direction: Axis.vertical,
-            spacing: 15,
+        backgroundColor: shadColorScheme.background.withOpacity(opacity),
+        barrierColor: Colors.transparent,
+        content: SizedBox(
+          width: 80,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              ElevatedButton.icon(
-                onPressed: () {
+              PopupMenuItem(
+                height: 40,
+                onTap: () {
                   Get.back();
                   _showFilterBottomSheet();
                 },
-                icon: const Icon(
-                  Icons.filter_tilt_shift,
-                  size: 20,
+                child: const Text(
+                  '筛选',
+                  style: TextStyle(fontSize: 12),
                 ),
-                style: ButtonStyle(
-                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                  ),
-                  side: WidgetStateProperty.all(BorderSide.none),
-                ),
-                label: const Text('筛选'),
               ),
-              ElevatedButton.icon(
-                onPressed: () {
+              PopupMenuItem(
+                height: 40,
+                onTap: () {
                   Get.back();
                   _showSortBottomSheet();
                 },
-                icon: const Icon(
-                  Icons.swap_vert_circle_outlined,
-                  size: 20,
+                child: const Text(
+                  '排序',
+                  style: TextStyle(fontSize: 12),
                 ),
-                style: ButtonStyle(
-                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                  ),
-                  side: WidgetStateProperty.all(BorderSide.none),
-                ),
-                label: const Text('排序'),
               ),
-              ElevatedButton.icon(
-                onPressed: () {
+              PopupMenuItem(
+                height: 40,
+                onTap: () {
                   Get.back();
                   controller.sortReversed = !controller.sortReversed;
                   controller.sortStatusList();
                 },
-                icon: controller.sortReversed
-                    ? const Icon(
-                        Icons.upload_file_sharp,
-                        size: 20,
-                      )
-                    : const Icon(
-                        Icons.sim_card_download_sharp,
-                        size: 20,
-                      ),
-                style: ButtonStyle(
-                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                  ),
-                  side: WidgetStateProperty.all(BorderSide.none),
-                ),
-                label: controller.sortReversed ? const Text('正序') : const Text('倒序'),
+                child: controller.sortReversed ? const Text('正序') : const Text('倒序'),
               ),
-              ElevatedButton.icon(
-                onPressed: () async {
+              PopupMenuItem(
+                height: 40,
+                onTap: () async {
                   Get.back();
                   await _showEditBottomSheet();
                 },
-                icon: const Icon(
-                  Icons.add_circle_outline,
-                  size: 20,
+                child: const Text(
+                  '添加',
+                  style: TextStyle(fontSize: 12),
                 ),
-                style: ButtonStyle(
-                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                  ),
-                  side: WidgetStateProperty.all(BorderSide.none),
-                ),
-                label: const Text('添加'),
               ),
-              ElevatedButton.icon(
-                onPressed: () async {
+              PopupMenuItem(
+                height: 40,
+                onTap: () async {
                   Get.back();
                   Future.microtask(() async {
                     Logger.instance.i('开始从数据库加载数据...');
@@ -540,25 +544,17 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                     controller.update(); // UI 更新
                   });
                 },
-                icon: const Icon(
-                  Icons.cloud_download_outlined,
-                  size: 20,
+                child: const Text(
+                  '加载',
+                  style: TextStyle(fontSize: 12),
                 ),
-                style: ButtonStyle(
-                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                  ),
-                  side: WidgetStateProperty.all(BorderSide.none),
-                ),
-                label: const Text('加载'),
               ),
             ],
           ),
         ),
         child: Icon(
           Icons.settings_outlined,
-          color: shadColorScheme.foreground,
-          size: 28,
+          color: shadColorScheme.primary,
         ));
   }
 
@@ -568,7 +564,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     super.dispose();
   }
 
-  _openSitePage(MySite mySite, WebSite website, bool openByInnerExplorer) async {
+  Future<void> _openSitePage(MySite mySite, WebSite website, bool openByInnerExplorer) async {
     String path;
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     if (mySite.mail! > 0 && !website.pageMessage.contains('api')) {

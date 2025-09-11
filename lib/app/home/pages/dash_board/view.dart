@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:custom_popup/custom_popup.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -41,6 +42,8 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
   @override
   bool get wantKeepAlive => true;
 
+  double get opacity => SPUtil.getDouble("cardOpacity", defaultValue: 0.7);
+
   @override
   void initState() {
     animationController = AnimationController(duration: const Duration(milliseconds: 600), vsync: this);
@@ -66,7 +69,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
     });
   }
 
-  CustomPopup _buildBottomButtonBarFloat() {
+  Widget _buildBottomButtonBarFloat() {
     List<MetaDataItem> cacheList = [
       {"name": "豆瓣缓存数据", "value": "*douban*"},
       {"name": "RSS缓存数据", "value": "rss_data_list"},
@@ -79,142 +82,92 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
       {"name": "我的站点缓存", "value": "my_site_list"},
       {"name": "首页数据缓存", "value": "dashboard_data_*"},
     ].map((e) => MetaDataItem.fromJson(e)).toList();
-    return CustomPopup(
-        contentDecoration: BoxDecoration(
-          color: ShadTheme.of(context).colorScheme.background,
+    var scheme = ShadTheme.of(context).colorScheme;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.end,
+      spacing: 8,
+      children: [
+        CustomPopup(
+          showArrow: false,
+          backgroundColor: scheme.background.withOpacity(opacity),
+          barrierColor: Colors.transparent,
+          content: SizedBox(
+            width: 120,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ...cacheList.map((item) => PopupMenuItem<String>(
+                      height: 40,
+                      child: Text(
+                        item.name,
+                        style: TextStyle(
+                          fontSize: 12,
+                        ),
+                      ),
+                      onTap: () async {
+                        Get.back();
+                        await clearMyCacheButton(item.value);
+                        // await controller.mySiteController.initData();
+                      },
+                    )),
+              ],
+            ),
+          ),
+          child: Icon(
+            Icons.cleaning_services_rounded,
+            color: scheme.primary,
+          ),
         ),
-        content: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            // mainAxisAlignment: MainAxisAlignment.spaceAround,
-            // crossAxisAlignment: CrossAxisAlignment.center,
-            direction: Axis.vertical,
-            spacing: 15,
-            children: [
-              ElevatedButton.icon(
-                onPressed: () async {
+        CustomPopup(
+          backgroundColor: scheme.background.withOpacity(opacity),
+          barrierColor: Colors.transparent,
+          content: SizedBox(
+            width: 80,
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              PopupMenuItem(
+                height: 40,
+                onTap: () async {
                   Get.back();
                   await getAllStatusButton();
                 },
-                icon: Icon(
-                  Icons.refresh,
-                  size: 12,
-                  color: ShadTheme.of(context).colorScheme.foreground,
-                ),
-                style: ButtonStyle(
-                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                  ),
-                  side: WidgetStateProperty.all(BorderSide.none),
-                ),
-                label: Text(
+                child: Text(
                   '更新',
-                  style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground, fontSize: 12),
+                  style: TextStyle(
+                    fontSize: 12,
+                  ),
                 ),
               ),
-              ElevatedButton.icon(
-                onPressed: () async {
+              PopupMenuItem(
+                height: 40,
+                onTap: () async {
                   Get.back();
                   await signAllSiteButton();
                 },
-                icon: Icon(
-                  Icons.credit_score,
-                  size: 12,
-                  color: ShadTheme.of(context).colorScheme.foreground,
-                ),
-                style: ButtonStyle(
-                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                  ),
-                  side: WidgetStateProperty.all(BorderSide.none),
-                ),
-                label: Text(
+                child: Text(
                   '签到',
-                  style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground, fontSize: 12),
+                  style: TextStyle(
+                    fontSize: 12,
+                  ),
                 ),
               ),
               if (!kIsWeb)
-                ElevatedButton.icon(
-                  onPressed: () async {
+                PopupMenuItem(
+                  height: 40,
+                  onTap: () async {
                     Get.back();
                     await ScreenshotSaver.captureAndSave(_captureKey);
                   },
-                  icon: Icon(
-                    Icons.camera_alt_outlined,
-                    size: 12,
-                    color: ShadTheme.of(context).colorScheme.foreground,
-                  ),
-                  style: ButtonStyle(
-                    shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                      RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                    ),
-                    side: WidgetStateProperty.all(BorderSide.none),
-                  ),
-                  label: Text(
+                  child: Text(
                     '截图',
-                    style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground, fontSize: 12),
-                  ),
-                ),
-              CustomPopup(
-                showArrow: false,
-                backgroundColor: ShadTheme.of(context).colorScheme.background,
-                barrierColor: Colors.transparent,
-                content: SizedBox(
-                  width: 120,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ...cacheList.map((item) => PopupMenuItem<String>(
-                            child: Text(
-                              item.name,
-                              style: TextStyle(
-                                color: ShadTheme.of(context).colorScheme.foreground,
-                              ),
-                            ),
-                            onTap: () async {
-                              Get.back();
-                              await clearMyCacheButton(item.value);
-                              // await controller.mySiteController.initData();
-                            },
-                          )),
-                    ],
-                  ),
-                ),
-                child: ElevatedButton.icon(
-                  icon: Icon(
-                    Icons.cleaning_services_rounded,
-                    size: 12,
-                    color: ShadTheme.of(context).colorScheme.foreground,
-                  ),
-                  onPressed: null,
-                  style: ButtonStyle(
-                    shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                      RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+                    style: TextStyle(
+                      fontSize: 12,
                     ),
-                    side: WidgetStateProperty.all(BorderSide.none),
-                    backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
-                      if (states.contains(WidgetState.disabled)) {
-                        return ShadTheme.of(context).colorScheme.background; // 禁用时背景色
-                      }
-                      return Colors.grey; // 正常背景色
-                    }),
-                    foregroundColor: WidgetStateProperty.resolveWith<Color>((states) {
-                      if (states.contains(WidgetState.disabled)) {
-                        return ShadTheme.of(context).colorScheme.primary; // 禁用时文字色
-                      }
-                      return Colors.white;
-                    }),
-                    elevation: WidgetStateProperty.all(1),
-                  ),
-                  label: Text(
-                    '缓存',
-                    style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground, fontSize: 12),
                   ),
                 ),
-              ),
-              ElevatedButton.icon(
-                onPressed: () async {
+              PopupMenuItem(
+                height: 40,
+                onTap: () async {
                   Get.back();
                   controller.isLoading = true;
                   controller.update();
@@ -222,30 +175,22 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                   controller.isLoading = false;
                   controller.update();
                 },
-                icon: Icon(
-                  Icons.cloud_download,
-                  size: 12,
-                  color: ShadTheme.of(context).colorScheme.foreground,
-                ),
-                style: ButtonStyle(
-                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                  ),
-                  side: WidgetStateProperty.all(BorderSide.none),
-                ),
-                label: Text(
+                child: Text(
                   '加载',
-                  style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground, fontSize: 12),
+                  style: TextStyle(
+                    fontSize: 12,
+                  ),
                 ),
               ),
-            ],
+            ]),
+          ),
+          child: Icon(
+            Icons.settings_outlined,
+            color: scheme.primary,
           ),
         ),
-        child: Icon(
-          Icons.settings_outlined,
-          color: ShadTheme.of(context).colorScheme.foreground,
-          size: 28,
-        ));
+      ],
+    );
   }
 
   Widget _showTodayDownloadedIncrement() {
