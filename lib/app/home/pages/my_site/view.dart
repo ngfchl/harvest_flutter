@@ -2,18 +2,15 @@ import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
-import 'package:dropdown_search/dropdown_search.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:harvest/app/home/pages/dash_board/controller.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:harvest/utils/date_time_utils.dart';
-import 'package:intl/intl.dart';
 import 'package:multi_select_flutter/chip_field/multi_select_chip_field.dart';
 import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -42,7 +39,8 @@ class MySitePage extends StatefulWidget {
   State<MySitePage> createState() => _MySitePagePageState();
 }
 
-class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
+class _MySitePagePageState extends State<MySitePage>
+    with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
   final controller = Get.put(MySiteController());
   FocusNode blankNode = FocusNode();
 
@@ -68,7 +66,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
             child: Column(
               children: [
                 CustomCard(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
                   child: Column(
                     children: [
                       if (controller.loadingFromServer)
@@ -102,13 +101,15 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                 return Expanded(
                                   child: InkWell(
                                     onTap: () {
-                                      FocusScope.of(context).requestFocus(blankNode);
+                                      FocusScope.of(context)
+                                          .requestFocus(blankNode);
                                     },
                                     child: SizedBox(
                                       height: 32,
                                       child: TextField(
                                         focusNode: blankNode,
-                                        scrollPhysics: const NeverScrollableScrollPhysics(),
+                                        scrollPhysics:
+                                            const NeverScrollableScrollPhysics(),
                                         // 禁止滚动
                                         maxLines: 1,
 
@@ -117,7 +118,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                         ],
                                         controller: controller.searchController,
                                         style: const TextStyle(fontSize: 12),
-                                        textAlignVertical: TextAlignVertical.center,
+                                        textAlignVertical:
+                                            TextAlignVertical.center,
                                         decoration: InputDecoration(
                                           // labelText: '搜索',
                                           isDense: true,
@@ -126,9 +128,13 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                           hoverColor: Colors.transparent,
                                           focusColor: Colors.transparent,
                                           hintText: '输入关键词...',
-                                          labelStyle: const TextStyle(fontSize: 12),
-                                          hintStyle: const TextStyle(fontSize: 12),
-                                          contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
+                                          labelStyle:
+                                              const TextStyle(fontSize: 12),
+                                          hintStyle:
+                                              const TextStyle(fontSize: 12),
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                  vertical: 8, horizontal: 5),
                                           prefixIcon: Icon(
                                             Icons.search,
                                             size: 14,
@@ -136,26 +142,36 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                           ),
                                           // suffix: ,
                                           suffixIcon: Padding(
-                                            padding: const EdgeInsets.only(right: 8.0),
+                                            padding: const EdgeInsets.only(
+                                                right: 8.0),
                                             child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
                                               children: [
-                                                Text('计数：${controller.showStatusList.length}',
-                                                    style: const TextStyle(fontSize: 12, color: Colors.orange)),
+                                                Text(
+                                                    '计数：${controller.showStatusList.length}',
+                                                    style: const TextStyle(
+                                                        fontSize: 12,
+                                                        color: Colors.orange)),
                                               ],
                                             ),
                                           ),
                                           border: OutlineInputBorder(
                                             borderSide: BorderSide.none,
                                             // 不绘制边框
-                                            borderRadius: BorderRadius.circular(0.0),
+                                            borderRadius:
+                                                BorderRadius.circular(0.0),
                                             // 确保角落没有圆角
-                                            gapPadding: 0.0, // 移除边框与hintText之间的间距
+                                            gapPadding:
+                                                0.0, // 移除边框与hintText之间的间距
                                           ),
                                           focusedBorder: OutlineInputBorder(
-                                            borderSide: const BorderSide(width: 1.0, color: Colors.black),
+                                            borderSide: const BorderSide(
+                                                width: 1.0,
+                                                color: Colors.black),
                                             // 仅在聚焦时绘制底部边框
-                                            borderRadius: BorderRadius.circular(0.0),
+                                            borderRadius:
+                                                BorderRadius.circular(0.0),
                                           ),
                                         ),
                                         onSubmitted: (value) async {
@@ -163,7 +179,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                           controller.update();
                                           Logger.instance.d('搜索框内容变化：$value');
                                           controller.searchKey = value;
-                                          await Future.delayed(Duration(milliseconds: 300));
+                                          await Future.delayed(
+                                              Duration(milliseconds: 300));
                                           controller.filterByKey();
                                           controller.searching = false;
                                           controller.update();
@@ -176,16 +193,26 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                           if (controller.searchKey.isNotEmpty)
                             IconButton(
                                 onPressed: () {
-                                  controller.searchController.text = controller.searchController.text
-                                      .substring(0, controller.searchController.text.length - 1);
-                                  controller.searchKey = controller.searchController.text;
+                                  controller.searchController.text = controller
+                                      .searchController.text
+                                      .substring(
+                                          0,
+                                          controller.searchController.text
+                                                  .length -
+                                              1);
+                                  controller.searchKey =
+                                      controller.searchController.text;
                                   controller.filterByKey();
                                   controller.update();
                                 },
                                 icon: controller.searching
-                                    ? Center(child: const CircularProgressIndicator())
+                                    ? Center(
+                                        child:
+                                            const CircularProgressIndicator())
                                     : Icon(Icons.backspace_outlined,
-                                        size: 18, color: shadColorScheme.primary.withOpacity(0.8)))
+                                        size: 18,
+                                        color: shadColorScheme.primary
+                                            .withOpacity(0.8)))
                         ],
                       ),
                       SingleChildScrollView(
@@ -198,7 +225,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                             spacing: 10,
                             children: [
                               CustomPopup(
-                                backgroundColor: shadColorScheme.background.withOpacity(opacity),
+                                backgroundColor: shadColorScheme.background
+                                    .withOpacity(opacity),
                                 barrierColor: Colors.transparent,
                                 contentPadding: EdgeInsets.zero,
                                 content: SizedBox(
@@ -211,10 +239,12 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                           (item) => PopupMenuItem(
                                             height: 40,
                                             onTap: () {
-                                              controller.filterKey = item.value!;
+                                              controller.filterKey =
+                                                  item.value!;
                                               controller.filterByKey();
                                             },
-                                            child: Text(item.name, style: TextStyle(fontSize: 12)),
+                                            child: Text(item.name,
+                                                style: TextStyle(fontSize: 12)),
                                           ),
                                         ),
                                       ],
@@ -222,10 +252,12 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                   ),
                                 ),
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0, vertical: 3),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(
@@ -236,7 +268,9 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                       SizedBox(width: 3),
                                       Text(
                                         controller.filterOptions
-                                            .firstWhere((item) => item.value == controller.filterKey)
+                                            .firstWhere((item) =>
+                                                item.value ==
+                                                controller.filterKey)
                                             .name,
                                         style: TextStyle(
                                           fontSize: 12,
@@ -248,7 +282,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                 ),
                               ),
                               CustomPopup(
-                                backgroundColor: shadColorScheme.background.withOpacity(opacity),
+                                backgroundColor: shadColorScheme.background
+                                    .withOpacity(opacity),
                                 barrierColor: Colors.transparent,
                                 contentPadding: EdgeInsets.zero,
                                 content: SizedBox(
@@ -264,7 +299,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                               controller.sortKey = item.value!;
                                               controller.filterByKey();
                                             },
-                                            child: Text(item.name, style: TextStyle(fontSize: 12)),
+                                            child: Text(item.name,
+                                                style: TextStyle(fontSize: 12)),
                                           ),
                                         ),
                                       ],
@@ -272,10 +308,12 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                   ),
                                 ),
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0, vertical: 3),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(
@@ -286,7 +324,9 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                       SizedBox(width: 3),
                                       Text(
                                         controller.siteSortOptions
-                                            .firstWhere((item) => item.value == controller.sortKey)
+                                            .firstWhere((item) =>
+                                                item.value ==
+                                                controller.sortKey)
                                             .name,
                                         style: TextStyle(
                                           fontSize: 12,
@@ -299,14 +339,17 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                               ),
                               InkWell(
                                 onTap: () {
-                                  controller.sortReversed = !controller.sortReversed;
+                                  controller.sortReversed =
+                                      !controller.sortReversed;
                                   controller.sortStatusList();
                                 },
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0, vertical: 3),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       controller.sortReversed
@@ -326,14 +369,16 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                               '正序',
                                               style: TextStyle(
                                                 fontSize: 12,
-                                                color: shadColorScheme.foreground,
+                                                color:
+                                                    shadColorScheme.foreground,
                                               ),
                                             )
                                           : Text(
                                               '倒序',
                                               style: TextStyle(
                                                 fontSize: 12,
-                                                color: shadColorScheme.foreground,
+                                                color:
+                                                    shadColorScheme.foreground,
                                               ),
                                             ),
                                     ],
@@ -364,29 +409,33 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                           // await controller.mySiteController.initData();
                                         },
                                       ),
-                                      ...controller.tagList.map((item) => PopupMenuItem<String>(
-                                            height: 32,
-                                            child: Text(
-                                              item,
-                                              style: TextStyle(
-                                                color: shadColorScheme.foreground,
-                                              ),
-                                            ),
-                                            onTap: () async {
-                                              Get.back();
-                                              controller.selectTag = item;
-                                              controller.filterByKey();
-                                              // await controller.mySiteController.initData();
-                                            },
-                                          )),
+                                      ...controller.tagList
+                                          .map((item) => PopupMenuItem<String>(
+                                                height: 32,
+                                                child: Text(
+                                                  item,
+                                                  style: TextStyle(
+                                                    color: shadColorScheme
+                                                        .foreground,
+                                                  ),
+                                                ),
+                                                onTap: () async {
+                                                  Get.back();
+                                                  controller.selectTag = item;
+                                                  controller.filterByKey();
+                                                  // await controller.mySiteController.initData();
+                                                },
+                                              )),
                                     ],
                                   ),
                                 ),
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0, vertical: 3),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(
@@ -416,33 +465,44 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                       ? Center(child: const CircularProgressIndicator())
                       : controller.showStatusList.isEmpty
                           ? ListView(
-                              children: const [Center(child: Text('没有符合条件的数据！'))],
+                              children: const [
+                                Center(child: Text('没有符合条件的数据！'))
+                              ],
                             )
                           : GetBuilder<MySiteController>(builder: (controller) {
                               return ReorderableListView.builder(
                                 onReorder: (int oldIndex, int newIndex) async {
-                                  final item = controller.showStatusList.removeAt(oldIndex);
+                                  final item = controller.showStatusList
+                                      .removeAt(oldIndex);
                                   Logger.instance.d('本站排序 ID：${item.sortId}');
                                   if (oldIndex < newIndex) {
                                     newIndex -= 1; // 移动时修正索引，因为item已被移除
                                   }
 
-                                  final nextItem = controller.showStatusList[newIndex];
+                                  final nextItem =
+                                      controller.showStatusList[newIndex];
                                   MySite newItem;
                                   if (controller.sortReversed) {
-                                    newItem = item.copyWith(sortId: nextItem.sortId - 1 > 0 ? nextItem.sortId - 1 : 0);
+                                    newItem = item.copyWith(
+                                        sortId: nextItem.sortId - 1 > 0
+                                            ? nextItem.sortId - 1
+                                            : 0);
                                   } else {
-                                    newItem = item.copyWith(sortId: nextItem.sortId + 1);
+                                    newItem = item.copyWith(
+                                        sortId: nextItem.sortId + 1);
                                   }
-                                  controller.showStatusList.insert(newIndex, item);
+                                  controller.showStatusList
+                                      .insert(newIndex, item);
                                   controller.update();
-                                  if (await controller.saveMySiteToServer(newItem)) {
+                                  if (await controller
+                                      .saveMySiteToServer(newItem)) {
                                     await controller.getSiteStatusFromServer();
                                   }
                                 },
                                 itemCount: controller.showStatusList.length,
                                 itemBuilder: (BuildContext context, int index) {
-                                  MySite mySite = controller.showStatusList[index];
+                                  MySite mySite =
+                                      controller.showStatusList[index];
                                   return GetBuilder<MySiteController>(
                                       id: "SingleSite-${mySite.id}",
                                       key: ValueKey("SingleSite-${mySite.id}"),
@@ -452,9 +512,11 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                             showSiteDataInfo(mySite),
                                             if (controller.singleLoading)
                                               Center(
-                                                  child: CircularProgressIndicator(
+                                                  child:
+                                                      CircularProgressIndicator(
                                                 strokeWidth: 2,
-                                                color: shadColorScheme.foreground,
+                                                color:
+                                                    shadColorScheme.foreground,
                                               )),
                                           ],
                                         );
@@ -488,44 +550,16 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
             children: [
               PopupMenuItem(
                 height: 40,
-                onTap: () {
-                  Get.back();
-                  _showFilterBottomSheet();
-                },
-                child: const Text(
-                  '筛选',
-                  style: TextStyle(fontSize: 12),
-                ),
-              ),
-              PopupMenuItem(
-                height: 40,
-                onTap: () {
-                  Get.back();
-                  _showSortBottomSheet();
-                },
-                child: const Text(
-                  '排序',
-                  style: TextStyle(fontSize: 12),
-                ),
-              ),
-              PopupMenuItem(
-                height: 40,
-                onTap: () {
-                  Get.back();
-                  controller.sortReversed = !controller.sortReversed;
-                  controller.sortStatusList();
-                },
-                child: controller.sortReversed ? const Text('正序') : const Text('倒序'),
-              ),
-              PopupMenuItem(
-                height: 40,
                 onTap: () async {
                   Get.back();
                   await _showEditBottomSheet();
                 },
-                child: const Text(
+                child: Text(
                   '添加',
-                  style: TextStyle(fontSize: 12),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: shadColorScheme.primary,
+                  ),
                 ),
               ),
               PopupMenuItem(
@@ -544,9 +578,12 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                     controller.update(); // UI 更新
                   });
                 },
-                child: const Text(
+                child: Text(
                   '加载',
-                  style: TextStyle(fontSize: 12),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: shadColorScheme.primary,
+                  ),
                 ),
               ),
             ],
@@ -555,6 +592,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
         child: Icon(
           Icons.settings_outlined,
           color: shadColorScheme.primary,
+          size: 28,
         ));
   }
 
@@ -564,7 +602,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     super.dispose();
   }
 
-  Future<void> _openSitePage(MySite mySite, WebSite website, bool openByInnerExplorer) async {
+  Future<void> _openSitePage(
+      MySite mySite, WebSite website, bool openByInnerExplorer) async {
     String path;
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     if (mySite.mail! > 0 && !website.pageMessage.contains('api')) {
@@ -572,7 +611,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     } else {
       path = website.pageIndex;
     }
-    String url = '${mySite.mirror!.endsWith('/') ? mySite.mirror : '${mySite.mirror}/'}$path';
+    String url =
+        '${mySite.mirror!.endsWith('/') ? mySite.mirror : '${mySite.mirror}/'}$path';
     if (mySite.mirror!.contains('m-team')) {
       url = url.replaceFirst("api", "xp");
     }
@@ -580,11 +620,17 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
       Logger.instance.d('使用外部浏览器打开');
       Uri uri = Uri.parse(url);
       if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-        Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？', colorText: shadColorScheme.foreground);
+        Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
+            colorText: shadColorScheme.foreground);
       }
     } else {
       Logger.instance.d('使用内置浏览器打开');
-      Get.toNamed(Routes.WEBVIEW, arguments: {'url': url, 'info': null, 'mySite': mySite, 'website': website});
+      Get.toNamed(Routes.WEBVIEW, arguments: {
+        'url': url,
+        'info': null,
+        'mySite': mySite,
+        'website': website
+      });
     }
   }
 
@@ -599,7 +645,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
         key: Key("${mySite.id}-${mySite.site}"),
         child: ListTile(
           dense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
           leading: const Image(
             image: AssetImage('assets/images/avatar.png'),
             width: 32,
@@ -643,26 +690,37 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
       rights = [...?website.level?.values];
     } else if (level == null) {
     } else {
-      rights = [...?website.level?.values.where((item) => item.levelId > 0 && item.levelId <= level.levelId)];
+      rights = [
+        ...?website.level?.values
+            .where((item) => item.levelId > 0 && item.levelId <= level.levelId)
+      ];
       rights.sort((a, b) => b.levelId.compareTo(a.levelId));
-      nextLevel = website.level?.values.firstWhereOrNull((item) => item.levelId == level.levelId + 1);
+      nextLevel = website.level?.values
+          .firstWhereOrNull((item) => item.levelId == level.levelId + 1);
     }
 
-    int nextLevelToDownloadedByte = FileSizeConvert.parseToByte(nextLevel?.downloaded ?? "0");
-    int nextLevelToUploadedByte = FileSizeConvert.parseToByte(nextLevel?.uploaded ?? "0");
-    int calcToUploaded = (max(nextLevelToDownloadedByte, status?.downloaded ?? 0) * (nextLevel?.ratio ?? 0)).toInt();
+    int nextLevelToDownloadedByte =
+        FileSizeConvert.parseToByte(nextLevel?.downloaded ?? "0");
+    int nextLevelToUploadedByte =
+        FileSizeConvert.parseToByte(nextLevel?.uploaded ?? "0");
+    int calcToUploaded =
+        (max(nextLevelToDownloadedByte, status?.downloaded ?? 0) *
+                (nextLevel?.ratio ?? 0))
+            .toInt();
     nextLevelToUploadedByte = max(nextLevelToUploadedByte, calcToUploaded);
     // Logger.instance.d(
     //     '${FileSizeConvert.parseToFileSize(status?.uploaded)}(${status?.uploaded})/${FileSizeConvert.parseToFileSize(nextLevelToUploadedByte)}($nextLevelToUploadedByte)');
     String iconUrl = '${controller.baseUrl}/local/icons/${website.name}.png';
     // Logger.instance.d('${website.name} - $iconUrl');
-    var toUpgradeTime = DateTime.parse(mySite.timeJoin).add(Duration(days: (nextLevel?.days ?? 0) * 7));
+    var toUpgradeTime = DateTime.parse(mySite.timeJoin)
+        .add(Duration(days: (nextLevel?.days ?? 0) * 7));
     return CustomCard(
       key: Key("${mySite.id}-${mySite.site}"),
       child: Column(children: [
         ListTile(
           dense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
           leading: InkWell(
             onTap: () => _openSitePage(mySite, website, true),
             child: ClipRRect(
@@ -672,13 +730,16 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                 cacheKey: iconUrl,
                 fit: BoxFit.fill,
                 errorWidget: (context, url, error) => CachedNetworkImage(
-                  imageUrl: website.logo.startsWith('http') ? website.logo : '${mySite.mirror}${website.logo}',
+                  imageUrl: website.logo.startsWith('http')
+                      ? website.logo
+                      : '${mySite.mirror}${website.logo}',
                   fit: BoxFit.fill,
                   httpHeaders: {
                     "user-agent": mySite.userAgent.toString(),
                     "Cookie": mySite.cookie.toString(),
                   },
-                  errorWidget: (context, url, error) => const Image(image: AssetImage('assets/images/avatar.png')),
+                  errorWidget: (context, url, error) => const Image(
+                      image: AssetImage('assets/images/avatar.png')),
                   width: 32,
                   height: 32,
                 ),
@@ -693,7 +754,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
             children: [
               mySite.latestActive != null
                   ? Tooltip(
-                      message: '最后访问时间：${calculateTimeElapsed(mySite.latestActive.toString())}',
+                      message:
+                          '最后访问时间：${calculateTimeElapsed(mySite.latestActive.toString())}',
                       child: Text(
                         mySite.nickname,
                         style: TextStyle(
@@ -778,7 +840,9 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                     '上传量：${FileSizeConvert.parseToFileSize(status.uploaded)}/${FileSizeConvert.parseToFileSize(nextLevelToUploadedByte)}',
                                     style: TextStyle(
                                       fontSize: 10,
-                                      color: status.uploaded < max(nextLevelToUploadedByte, calcToUploaded)
+                                      color: status.uploaded <
+                                              max(nextLevelToUploadedByte,
+                                                  calcToUploaded)
                                           ? shadColorScheme.destructive
                                           : shadColorScheme.foreground,
                                     )),
@@ -790,7 +854,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                     '下载量：${FileSizeConvert.parseToFileSize(status.downloaded)}/${FileSizeConvert.parseToFileSize(nextLevelToDownloadedByte)}',
                                     style: TextStyle(
                                       fontSize: 10,
-                                      color: status.downloaded < nextLevelToDownloadedByte
+                                      color: status.downloaded <
+                                              nextLevelToDownloadedByte
                                           ? shadColorScheme.destructive
                                           : shadColorScheme.foreground,
                                     )),
@@ -810,10 +875,12 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                               if (nextLevel.torrents > 0)
                                 PopupMenuItem<String>(
                                   height: 13,
-                                  child: Text('需发种数量：${status.published}/${nextLevel.torrents}',
+                                  child: Text(
+                                      '需发种数量：${status.published}/${nextLevel.torrents}',
                                       style: TextStyle(
                                         fontSize: 10,
-                                        color: status.published < nextLevel.torrents
+                                        color: status.published <
+                                                nextLevel.torrents
                                             ? shadColorScheme.destructive
                                             : shadColorScheme.foreground,
                                       )),
@@ -821,7 +888,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                               if (nextLevel.score > 0)
                                 PopupMenuItem<String>(
                                   height: 13,
-                                  child: Text('做种积分：${formatNumber(status.myScore)}/${formatNumber(nextLevel.score)}',
+                                  child: Text(
+                                      '做种积分：${formatNumber(status.myScore)}/${formatNumber(nextLevel.score)}',
                                       style: TextStyle(
                                         fontSize: 10,
                                         color: status.myScore < nextLevel.score
@@ -832,7 +900,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                               if (nextLevel.bonus > 0)
                                 PopupMenuItem<String>(
                                   height: 13,
-                                  child: Text('魔力值：${formatNumber(status.myBonus)}/${formatNumber(nextLevel.bonus)}',
+                                  child: Text(
+                                      '魔力值：${formatNumber(status.myBonus)}/${formatNumber(nextLevel.bonus)}',
                                       style: TextStyle(
                                         fontSize: 10,
                                         color: status.myBonus < nextLevel.bonus
@@ -847,12 +916,14 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                       '升级日期：${DateFormat('yyyy-MM-dd').format(DateTime.now())}/${DateFormat('yyyy-MM-dd').format(toUpgradeTime)}',
                                       style: TextStyle(
                                         fontSize: 10,
-                                        color: DateTime.now().isBefore(toUpgradeTime)
+                                        color: DateTime.now()
+                                                .isBefore(toUpgradeTime)
                                             ? shadColorScheme.destructive
                                             : shadColorScheme.foreground,
                                       )),
                                 ),
-                              if (level.keepAccount != true && nextLevel.keepAccount)
+                              if (level.keepAccount != true &&
+                                  nextLevel.keepAccount)
                                 PopupMenuItem<String>(
                                   height: 13,
                                   child: Text('保留账号：${nextLevel.keepAccount}',
@@ -861,7 +932,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                         color: shadColorScheme.destructive,
                                       )),
                                 ),
-                              if (level.graduation != true && nextLevel.graduation)
+                              if (level.graduation != true &&
+                                  nextLevel.graduation)
                                 PopupMenuItem<String>(
                                   height: 13,
                                   child: Text('毕业：${nextLevel.graduation}',
@@ -889,7 +961,9 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                       child: Text(item.rights,
                                           style: TextStyle(
                                             fontSize: 10,
-                                            color: item.graduation ? Colors.orange : shadColorScheme.foreground,
+                                            color: item.graduation
+                                                ? Colors.orange
+                                                : shadColorScheme.foreground,
                                           )),
                                     ))
                           ],
@@ -1029,7 +1103,9 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                             children: [
                               Icon(
                                 Icons.ios_share,
-                                color: status.ratio > 1 ? shadColorScheme.foreground : Colors.deepOrange,
+                                color: status.ratio > 1
+                                    ? shadColorScheme.foreground
+                                    : Colors.deepOrange,
                                 size: 14,
                               ),
                               const SizedBox(width: 2),
@@ -1037,7 +1113,9 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                 '${status.published}(${formatNumber(status.ratio, fixed: status.ratio >= 1000 ? 0 : 2)})',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: status.ratio > 1 ? shadColorScheme.foreground : Colors.deepOrange,
+                                  color: status.ratio > 1
+                                      ? shadColorScheme.foreground
+                                      : Colors.deepOrange,
                                 ),
                               ),
                             ],
@@ -1052,7 +1130,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                               ),
                               const SizedBox(width: 2),
                               Text(
-                                FileSizeConvert.parseToFileSize(status.seedVolume),
+                                FileSizeConvert.parseToFileSize(
+                                    status.seedVolume),
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: shadColorScheme.foreground,
@@ -1178,13 +1257,16 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                   siteRefreshing.value = true;
                   CommonResponse res = await signIn(mySite.id);
                   if (res.succeed) {
-                    Get.snackbar('签到成功', '${mySite.nickname} 签到信息：${res.msg}', colorText: shadColorScheme.foreground);
-                    SignInInfo? info = SignInInfo(updatedAt: getTodayString(), info: res.msg);
+                    Get.snackbar('签到成功', '${mySite.nickname} 签到信息：${res.msg}',
+                        colorText: shadColorScheme.foreground);
+                    SignInInfo? info =
+                        SignInInfo(updatedAt: getTodayString(), info: res.msg);
                     Map<String, SignInInfo>? signInInfo = mySite.signInInfo;
                     signInInfo.assign(getTodayString(), info);
                     Logger.instance.d(signInInfo);
                     MySite newSite = mySite.copyWith(signInInfo: signInInfo);
-                    controller.mySiteList = controller.mySiteList.map<MySite>((item) {
+                    controller.mySiteList =
+                        controller.mySiteList.map<MySite>((item) {
                       if (item.id == mySite.id) {
                         return newSite;
                       }
@@ -1193,7 +1275,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                     // controller.filterByKey();
                     controller.update();
                   } else {
-                    Get.snackbar('签到失败', '${mySite.nickname} 签到任务执行出错啦：${res.msg}',
+                    Get.snackbar(
+                        '签到失败', '${mySite.nickname} 签到任务执行出错啦：${res.msg}',
                         colorText: shadColorScheme.destructive);
                   }
                   siteRefreshing.value = false;
@@ -1208,13 +1291,15 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                 siteRefreshing.value = true;
                 CommonResponse res = await getNewestStatus(mySite.id);
                 if (res.succeed) {
-                  Get.snackbar('站点数据刷新成功', '${mySite.nickname} 数据刷新：${res.msg}', colorText: shadColorScheme.foreground);
+                  Get.snackbar('站点数据刷新成功', '${mySite.nickname} 数据刷新：${res.msg}',
+                      colorText: shadColorScheme.foreground);
                   StatusInfo? status = StatusInfo.fromJson(res.data);
                   Map<String, StatusInfo>? statusInfo = mySite.statusInfo;
                   statusInfo.assign(getTodayString(), status);
                   Logger.instance.d(statusInfo);
                   MySite newSite = mySite.copyWith(statusInfo: statusInfo);
-                  controller.mySiteList = controller.mySiteList.map<MySite>((item) {
+                  controller.mySiteList =
+                      controller.mySiteList.map<MySite>((item) {
                     if (item.id == mySite.id) {
                       return newSite;
                     }
@@ -1230,7 +1315,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                     dController.update();
                   });
                 } else {
-                  Get.snackbar('站点数据刷新失败', '${mySite.nickname} 数据刷新出错啦：${res.msg}',
+                  Get.snackbar(
+                      '站点数据刷新失败', '${mySite.nickname} 数据刷新出错啦：${res.msg}',
                       colorText: shadColorScheme.destructive);
                 }
                 siteRefreshing.value = false;
@@ -1246,9 +1332,11 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                   CommonResponse res = await repeatSite(mySite.id);
 
                   if (res.succeed) {
-                    Get.snackbar('辅种任务发送成功', '${mySite.nickname} ${res.msg}', colorText: shadColorScheme.foreground);
+                    Get.snackbar('辅种任务发送成功', '${mySite.nickname} ${res.msg}',
+                        colorText: shadColorScheme.foreground);
                   } else {
-                    Get.snackbar('辅种任务发送失败', '${mySite.nickname} 辅种出错啦：${res.msg}',
+                    Get.snackbar(
+                        '辅种任务发送失败', '${mySite.nickname} 辅种出错啦：${res.msg}',
                         colorText: shadColorScheme.destructive);
                   }
                 },
@@ -1308,55 +1396,73 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
       controller.singleLoading = false;
       controller.update(["SingleSite-${mySite.id}"]);
       if (!res.succeed) {
-        Get.snackbar('获取站点信息失败', "获取站点信息失败，请更新站点列表后重试！${res.msg}", colorText: shadColorScheme.destructive);
+        Get.snackbar('获取站点信息失败', "获取站点信息失败，请更新站点列表后重试！${res.msg}",
+            colorText: shadColorScheme.destructive);
         return;
       }
       mySite = res.data;
     }
 
     // 获取已添加的站点名称
-    List<String> hasKeys = controller.mySiteList.map((element) => element.site).toList();
+    List<String> hasKeys =
+        controller.mySiteList.map((element) => element.site).toList();
     // 筛选活着的和未添加过的站点
-    List<WebSite> webSiteList = controller.webSiteList.values.where((item) => item.alive).toList();
+    List<WebSite> webSiteList =
+        controller.webSiteList.values.where((item) => item.alive).toList();
     // 如果是编辑模式，
     if (mySite == null) {
       webSiteList.removeWhere((item) => hasKeys.contains(item.name));
     }
-    webSiteList.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    webSiteList
+        .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     final siteController = TextEditingController(text: mySite?.site ?? '');
     final apiKeyController = TextEditingController(text: mySite?.authKey ?? '');
-    final sortIdController = TextEditingController(text: mySite?.sortId.toString() ?? '1');
+    final sortIdController =
+        TextEditingController(text: mySite?.sortId.toString() ?? '1');
     RxBool isLoading = false.obs;
-    final nicknameController = TextEditingController(text: mySite?.nickname ?? '');
-    final passkeyController = TextEditingController(text: mySite?.passkey ?? '');
+    final nicknameController =
+        TextEditingController(text: mySite?.nickname ?? '');
+    final passkeyController =
+        TextEditingController(text: mySite?.passkey ?? '');
     final userIdController = TextEditingController(text: mySite?.userId ?? '');
-    final usernameController = TextEditingController(text: mySite?.username ?? '');
+    final usernameController =
+        TextEditingController(text: mySite?.username ?? '');
     final emailController = TextEditingController(text: mySite?.email ?? '');
     final userAgentController = TextEditingController(
         text: mySite?.userAgent ??
             'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.0.0');
     final rssController = TextEditingController(text: mySite?.rss ?? '');
     final proxyController = TextEditingController(text: mySite?.proxy ?? '');
-    final torrentsController = TextEditingController(text: mySite?.torrents ?? '');
+    final torrentsController =
+        TextEditingController(text: mySite?.torrents ?? '');
     final cookieController = TextEditingController(text: mySite?.cookie ?? '');
     final mirrorController = TextEditingController(text: mySite?.mirror ?? '');
     final tagController = TextEditingController(text: '');
-    Rx<WebSite?> selectedSite =
-        (mySite != null ? controller.webSiteList[mySite.site] : (webSiteList.isNotEmpty ? webSiteList.first : null))
-            .obs;
-    RxList<String>? urlList = selectedSite.value != null ? selectedSite.value?.url.obs : <String>[].obs;
+    Rx<WebSite?> selectedSite = (mySite != null
+            ? controller.webSiteList[mySite.site]
+            : (webSiteList.isNotEmpty ? webSiteList.first : null))
+        .obs;
+    RxList<String>? urlList = selectedSite.value != null
+        ? selectedSite.value?.url.obs
+        : <String>[].obs;
     RxBool getInfo = mySite != null ? mySite.getInfo.obs : true.obs;
-    RxBool available = mySite != null ? mySite.available.obs : (selectedSite.value?.alive ?? false).obs;
-    RxList<String> tags = mySite != null ? mySite.tags.obs : (selectedSite.value?.tags.split(',') ?? []).obs;
+    RxBool available = mySite != null
+        ? mySite.available.obs
+        : (selectedSite.value?.alive ?? false).obs;
+    RxList<String> tags = mySite != null
+        ? mySite.tags.obs
+        : (selectedSite.value?.tags.split(',') ?? []).obs;
     Logger.instance.d(tags);
     RxBool signIn = mySite != null ? mySite.signIn.obs : true.obs;
     RxBool brushRss = mySite != null ? mySite.brushRss.obs : false.obs;
     RxBool brushFree = mySite != null ? mySite.brushFree.obs : false.obs;
     RxBool packageFile = mySite != null ? mySite.packageFile.obs : false.obs;
-    RxBool repeatTorrents = mySite != null ? mySite.repeatTorrents.obs : true.obs;
+    RxBool repeatTorrents =
+        mySite != null ? mySite.repeatTorrents.obs : true.obs;
     RxBool hrDiscern = mySite != null ? mySite.hrDiscern.obs : false.obs;
     RxBool showInDash = mySite != null ? mySite.showInDash.obs : true.obs;
-    RxBool searchTorrents = mySite != null ? mySite.searchTorrents.obs : true.obs;
+    RxBool searchTorrents =
+        mySite != null ? mySite.searchTorrents.obs : true.obs;
     RxBool manualInput = false.obs;
     RxBool doSaveLoading = false.obs;
     final RxList<WebSite> filteredList = <WebSite>[].obs;
@@ -1379,7 +1485,9 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
               ),
               trailing: Obx(() {
                 return isLoading.value
-                    ? const Align(alignment: Alignment.centerRight, child: Center(child: CircularProgressIndicator()))
+                    ? const Align(
+                        alignment: Alignment.centerRight,
+                        child: Center(child: CircularProgressIndicator()))
                     : ElevatedButton.icon(
                         onPressed: () async {
                           isLoading.value = true;
@@ -1388,10 +1496,13 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                           isLoading.value = false;
                         },
                         style: ButtonStyle(
-                          shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                            RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+                          shape:
+                              WidgetStateProperty.all<RoundedRectangleBorder>(
+                            RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5.0)),
                           ),
-                          padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 5)),
+                          padding: WidgetStateProperty.all(
+                              const EdgeInsets.symmetric(horizontal: 5)),
                           side: WidgetStateProperty.all(BorderSide.none),
                         ),
                         icon: Icon(
@@ -1415,7 +1526,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                     return Column(
                       children: [
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 4.0, horizontal: 8),
                           child: LayoutBuilder(builder: (context, constraints) {
                             // constraints.maxWidth 就是控件自身宽度
                             double popupWidth = constraints.maxWidth;
@@ -1436,7 +1548,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                     ),
                                   ),
                                   decoration: ShadDecoration(
-                                    color: shadColorScheme.background.withOpacity(opacity),
+                                    color: shadColorScheme.background
+                                        .withOpacity(opacity),
                                   ),
                                   initialValue: selectedSite.value,
                                   itemCount: filteredList.length,
@@ -1446,13 +1559,15 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                   // 弹窗最大宽度
                                   maxHeight: 400,
                                   // 弹窗最大高度
-                                  optionsBuilder: (BuildContext context, int index) {
+                                  optionsBuilder:
+                                      (BuildContext context, int index) {
                                     var item = filteredList[index];
                                     return ShadOption(
                                       value: item,
                                       child: ListTile(
                                         leading: CircleAvatar(
-                                          backgroundColor: shadColorScheme.background,
+                                          backgroundColor:
+                                              shadColorScheme.background,
                                           child: Text(
                                             item.name.substring(0, 1),
                                             style: TextStyle(
@@ -1470,7 +1585,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                       ),
                                     );
                                   },
-                                  selectedOptionBuilder: (BuildContext context, WebSite website) {
+                                  selectedOptionBuilder:
+                                      (BuildContext context, WebSite website) {
                                     return Text(
                                       website.name,
                                       style: TextStyle(
@@ -1482,9 +1598,16 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                     Logger.instance.d(keyword);
                                     filteredList.value = webSiteList
                                         .where((item) =>
-                                            item.name.toLowerCase().contains(keyword.toLowerCase()) ||
-                                            item.nickname.toLowerCase().contains(keyword.toLowerCase()) ||
-                                            item.url.any((e) => e.toLowerCase().contains(keyword.toLowerCase())))
+                                            item.name.toLowerCase().contains(
+                                                keyword.toLowerCase()) ||
+                                            item.nickname
+                                                .toLowerCase()
+                                                .contains(
+                                                    keyword.toLowerCase()) ||
+                                            item.url.any((e) => e
+                                                .toLowerCase()
+                                                .contains(
+                                                    keyword.toLowerCase())))
                                         .toList();
                                     Logger.instance.d(filteredList.length);
                                   },
@@ -1494,11 +1617,14 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                     selectedSite.value = item;
                                     urlList?.value = selectedSite.value!.url;
                                     mirrorController.text = urlList![0];
-                                    nicknameController.text = selectedSite.value!.name;
+                                    nicknameController.text =
+                                        selectedSite.value!.name;
                                     signIn.value = selectedSite.value!.signIn;
                                     getInfo.value = selectedSite.value!.getInfo;
-                                    repeatTorrents.value = selectedSite.value!.repeatTorrents;
-                                    searchTorrents.value = selectedSite.value!.searchTorrents;
+                                    repeatTorrents.value =
+                                        selectedSite.value!.repeatTorrents;
+                                    searchTorrents.value =
+                                        selectedSite.value!.searchTorrents;
                                     available.value = selectedSite.value!.alive;
                                     tags.value = selectedSite.value!.tags
                                         .split(',')
@@ -1534,7 +1660,9 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                     controller.update();
                                   },
                                   icon: Icon(
-                                    manualInput.value ? Icons.back_hand_outlined : Icons.front_hand,
+                                    manualInput.value
+                                        ? Icons.back_hand_outlined
+                                        : Icons.front_hand,
                                   ),
                                 )
                               ],
@@ -1573,22 +1701,33 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
 
                         GetBuilder<MySiteController>(builder: (controller) {
                           return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 4.0, horizontal: 8),
                             child: Obx(() {
                               return MultiSelectChipField(
                                 key: chipFieldKey,
-                                items: controller.tagList.map((tag) => MultiSelectItem<String?>(tag, tag)).toList(),
-                                textStyle: TextStyle(fontSize: 11, color: shadColorScheme.foreground),
-                                selectedTextStyle: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
+                                items: controller.tagList
+                                    .map((tag) =>
+                                        MultiSelectItem<String?>(tag, tag))
+                                    .toList(),
+                                textStyle: TextStyle(
+                                    fontSize: 11,
+                                    color: shadColorScheme.foreground),
+                                selectedTextStyle: TextStyle(
+                                    fontSize: 10,
+                                    color: shadColorScheme.foreground),
                                 chipColor: shadColorScheme.background,
                                 initialValue: [...tags],
                                 title: Text(
                                   "站点标签",
-                                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+                                  style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w800),
                                 ),
                                 headerColor: Colors.transparent,
                                 decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.blue.shade700, width: 0.8),
+                                  border: Border.all(
+                                      color: Colors.blue.shade700, width: 0.8),
                                 ),
                                 // 关键设置：自定义 chipDisplay 实现自动换行
                                 scroll: false,
@@ -1597,7 +1736,10 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                 onTap: (List<String?> values) {
                                   Logger.instance.d(values);
                                   // tags.value = values;
-                                  tags.value = values.where((value) => value != null).whereType<String>().toList();
+                                  tags.value = values
+                                      .where((value) => value != null)
+                                      .whereType<String>()
+                                      .toList();
                                   tags.value = tags.toSet().toList();
                                   Logger.instance.d(tags);
                                 },
@@ -1659,16 +1801,21 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                           selectedSite.value!.alive
                               ? ChoiceChip(
                                   label: const Text('可用'),
-                                  selected: selectedSite.value!.alive ? available.value : false,
+                                  selected: selectedSite.value!.alive
+                                      ? available.value
+                                      : false,
                                   onSelected: (value) {
-                                    selectedSite.value!.alive ? available.value = value : available.value = false;
+                                    selectedSite.value!.alive
+                                        ? available.value = value
+                                        : available.value = false;
                                   },
                                 )
                               : ChoiceChip(
                                   label: const Text('可用'),
                                   selected: false,
                                   onSelected: (value) {
-                                    Logger.instance.d("站点可用性：${selectedSite.value!.alive}");
+                                    Logger.instance.d(
+                                        "站点可用性：${selectedSite.value!.alive}");
                                     available.value = selectedSite.value!.alive;
                                   },
                                 ),
@@ -1723,9 +1870,11 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                 ElevatedButton.icon(
                   style: ButtonStyle(
                     shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                      RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+                      RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5.0)),
                     ),
-                    backgroundColor: WidgetStateProperty.all(shadColorScheme.foreground),
+                    backgroundColor:
+                        WidgetStateProperty.all(shadColorScheme.foreground),
                   ),
                   onPressed: () {
                     Navigator.of(context).pop();
@@ -1745,15 +1894,18 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                   ElevatedButton(
                     style: ButtonStyle(
                       shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+                        RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5.0)),
                       ),
-                      backgroundColor: WidgetStateProperty.all(shadColorScheme.destructive),
+                      backgroundColor:
+                          WidgetStateProperty.all(shadColorScheme.destructive),
                     ),
                     onPressed: () async {
                       Get.defaultDialog(
                           title: '删除站点：${mySite?.nickname}',
                           radius: 5,
-                          titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+                          titleStyle: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w900),
                           middleText: '确定要删除吗？',
                           actions: [
                             ElevatedButton(
@@ -1766,7 +1918,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                               onPressed: () async {
                                 Get.back(result: true);
                                 Navigator.of(context).pop();
-                                var res = await controller.removeSiteFromServer(mySite!);
+                                var res = await controller
+                                    .removeSiteFromServer(mySite!);
                                 if (res.succeed) {
                                   Get.snackbar(
                                     '删除站点',
@@ -1798,14 +1951,17 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                   ElevatedButton.icon(
                     style: ButtonStyle(
                       shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+                        RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5.0)),
                       ),
-                      backgroundColor: WidgetStateProperty.all(shadColorScheme.primaryForeground),
+                      backgroundColor: WidgetStateProperty.all(
+                          shadColorScheme.primaryForeground),
                     ),
                     icon: Obx(() {
                       return doSaveLoading.value
                           ? Center(child: const CircularProgressIndicator())
-                          : Icon(Icons.save, color: shadColorScheme.primaryForeground);
+                          : Icon(Icons.save,
+                              color: shadColorScheme.primaryForeground);
                     }),
                     label: Text(
                       '保存',
@@ -1926,7 +2082,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                           fontSize: 13,
                           color: shadColorScheme.foreground,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                        contentPadding:
+                            const EdgeInsets.symmetric(horizontal: 16),
                         trailing: controller.sortKey == item.value
                             ? Icon(
                                 Icons.check_box_outlined,
@@ -1969,7 +2126,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                           fontSize: 13,
                           color: shadColorScheme.foreground,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                        contentPadding:
+                            const EdgeInsets.symmetric(horizontal: 16),
                         dense: true,
                         trailing: controller.filterKey == item.value
                             ? Icon(
@@ -1998,14 +2156,17 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     CommonResponse res = await getMySiteByIdApi(mySite.id);
     if (!res.succeed) {
       Logger.instance.e('获取站点信息失败');
-      Get.snackbar('获取站点信息失败', res.msg, colorText: ShadTheme.of(context).colorScheme.destructive);
+      Get.snackbar('获取站点信息失败', res.msg,
+          colorText: ShadTheme.of(context).colorScheme.destructive);
       return;
     }
     mySite = res.data;
     List<String> signKeys = mySite.signInInfo.keys.toList();
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     signKeys.sort((a, b) => b.compareTo(a));
-    Get.bottomSheet(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)), isScrollControlled: true,
+    Get.bottomSheet(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+        isScrollControlled: true,
         GetBuilder<MySiteController>(builder: (controller) {
       return CustomCard(
           width: double.infinity,
@@ -2025,13 +2186,19 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         child: ListTile(
                             title: Text(
                               item!.info,
-                              style:
-                                  TextStyle(fontSize: 12, color: signKey == today ? Colors.amber : scheme.foreground),
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: signKey == today
+                                      ? Colors.amber
+                                      : scheme.foreground),
                             ),
                             subtitle: Text(
                               item.updatedAt,
-                              style:
-                                  TextStyle(fontSize: 10, color: signKey == today ? Colors.amber : scheme.foreground),
+                              style: TextStyle(
+                                  fontSize: 10,
+                                  color: signKey == today
+                                      ? Colors.amber
+                                      : scheme.foreground),
                             ),
                             selected: signKey == today,
                             selectedColor: Colors.amber,
@@ -2046,18 +2213,22 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     CommonResponse res = await getMySiteByIdApi(mySite.id);
     if (!res.succeed) {
       Logger.instance.e('获取站点信息失败');
-      Get.snackbar('获取站点信息失败', res.msg, colorText: ShadTheme.of(context).colorScheme.destructive);
+      Get.snackbar('获取站点信息失败', res.msg,
+          colorText: ShadTheme.of(context).colorScheme.destructive);
       return;
     }
     mySite = res.data;
     List<StatusInfo> transformedData = mySite.statusInfo.values.toList();
     Logger.instance.d(transformedData);
-    Rx<RangeValues> rangeValues =
-        RangeValues(transformedData.length > 7 ? transformedData.length - 7 : 0, transformedData.length.toDouble() - 1)
-            .obs;
+    Rx<RangeValues> rangeValues = RangeValues(
+            transformedData.length > 7 ? transformedData.length - 7 : 0,
+            transformedData.length.toDouble() - 1)
+        .obs;
     Logger.instance.d(rangeValues.value);
-    RxList<StatusInfo> showData =
-        transformedData.sublist(rangeValues.value.start.toInt(), rangeValues.value.end.toInt() + 1).obs;
+    RxList<StatusInfo> showData = transformedData
+        .sublist(
+            rangeValues.value.start.toInt(), rangeValues.value.end.toInt() + 1)
+        .obs;
     Logger.instance.d(showData);
     Get.bottomSheet(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
@@ -2077,13 +2248,18 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                       animationDuration: 100,
                       shouldAlwaysShow: false,
                       tooltipPosition: TooltipPosition.pointer,
-                      builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
-                        StatusInfo? lastData = pointIndex > 0 ? series.dataSource[pointIndex - 1] : null;
+                      builder: (dynamic data, dynamic point, dynamic series,
+                          int pointIndex, int seriesIndex) {
+                        StatusInfo? lastData = pointIndex > 0
+                            ? series.dataSource[pointIndex - 1]
+                            : null;
                         return Container(
                             color: Colors.white,
                             padding: const EdgeInsets.all(8),
                             width: 200,
-                            child: SingleChildScrollView(child: StatusToolTip(data: data, lastData: lastData)));
+                            child: SingleChildScrollView(
+                                child: StatusToolTip(
+                                    data: data, lastData: lastData)));
                       },
                     ),
                     zoomPanBehavior: ZoomPanBehavior(
@@ -2131,29 +2307,38 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                           name: '做种体积',
                           yAxisName: 'PrimaryYAxis',
                           dataSource: showData,
-                          xValueMapper: (StatusInfo item, _) => formatCreatedTimeToDateString(item),
-                          yValueMapper: (StatusInfo item, _) => item.seedVolume),
+                          xValueMapper: (StatusInfo item, _) =>
+                              formatCreatedTimeToDateString(item),
+                          yValueMapper: (StatusInfo item, _) =>
+                              item.seedVolume),
                       LineSeries<StatusInfo, String>(
                           name: '上传量',
                           yAxisName: 'SecondaryYAxis',
                           dataSource: showData,
-                          xValueMapper: (StatusInfo item, _) => formatCreatedTimeToDateString(item),
+                          xValueMapper: (StatusInfo item, _) =>
+                              formatCreatedTimeToDateString(item),
                           yValueMapper: (StatusInfo item, _) => item.uploaded),
                       ColumnSeries<StatusInfo, String>(
                         name: '上传增量',
                         dataSource: showData,
                         yAxisName: 'ThirdYAxis',
-                        xValueMapper: (StatusInfo item, _) => formatCreatedTimeToDateString(item),
-                        yValueMapper: (StatusInfo item, index) =>
-                            index > 0 && item.uploaded > showData[index - 1].uploaded
-                                ? item.uploaded - showData[index - 1].uploaded
-                                : 0,
+                        xValueMapper: (StatusInfo item, _) =>
+                            formatCreatedTimeToDateString(item),
+                        yValueMapper: (StatusInfo item, index) => index > 0 &&
+                                item.uploaded > showData[index - 1].uploaded
+                            ? item.uploaded - showData[index - 1].uploaded
+                            : 0,
                         dataLabelSettings: DataLabelSettings(
                             isVisible: true,
                             textStyle: const TextStyle(fontSize: 10),
-                            builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
+                            builder: (dynamic data,
+                                dynamic point,
+                                dynamic series,
+                                int pointIndex,
+                                int seriesIndex) {
                               return point.y > 0
-                                  ? Text(FileSizeConvert.parseToFileSize((point.y).toInt()))
+                                  ? Text(FileSizeConvert.parseToFileSize(
+                                      (point.y).toInt()))
                                   : const SizedBox.shrink();
                             }),
                       ),
@@ -2161,44 +2346,53 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                           name: '下载量',
                           yAxisName: 'SecondaryYAxis',
                           dataSource: showData,
-                          xValueMapper: (StatusInfo item, _) => formatCreatedTimeToDateString(item),
-                          yValueMapper: (StatusInfo item, _) => item.downloaded),
+                          xValueMapper: (StatusInfo item, _) =>
+                              formatCreatedTimeToDateString(item),
+                          yValueMapper: (StatusInfo item, _) =>
+                              item.downloaded),
                       LineSeries<StatusInfo, String>(
                           name: '时魔',
                           yAxisName: 'SecondaryYAxis',
                           dataSource: showData,
-                          xValueMapper: (StatusInfo item, _) => formatCreatedTimeToDateString(item),
+                          xValueMapper: (StatusInfo item, _) =>
+                              formatCreatedTimeToDateString(item),
                           yValueMapper: (StatusInfo item, _) => item.bonusHour),
                       LineSeries<StatusInfo, String>(
                           name: '做种积分',
                           yAxisName: 'PrimaryYAxis',
                           dataSource: showData,
-                          xValueMapper: (StatusInfo item, _) => formatCreatedTimeToDateString(item),
+                          xValueMapper: (StatusInfo item, _) =>
+                              formatCreatedTimeToDateString(item),
                           yValueMapper: (StatusInfo item, _) => item.myScore),
                       LineSeries<StatusInfo, String>(
                           name: '魔力值',
                           yAxisName: 'PrimaryYAxis',
                           dataSource: showData,
-                          xValueMapper: (StatusInfo item, _) => formatCreatedTimeToDateString(item),
+                          xValueMapper: (StatusInfo item, _) =>
+                              formatCreatedTimeToDateString(item),
                           yValueMapper: (StatusInfo item, _) => item.myBonus),
                       LineSeries<StatusInfo, String>(
                           name: '做种数量',
                           yAxisName: 'SecondaryYAxis',
                           dataSource: showData,
-                          xValueMapper: (StatusInfo item, _) => formatCreatedTimeToDateString(item),
+                          xValueMapper: (StatusInfo item, _) =>
+                              formatCreatedTimeToDateString(item),
                           yValueMapper: (StatusInfo item, _) => item.seed),
                       LineSeries<StatusInfo, String>(
                           name: '吸血数量',
                           yAxisName: 'SecondaryYAxis',
                           dataSource: showData,
-                          xValueMapper: (StatusInfo item, _) => formatCreatedTimeToDateString(item),
+                          xValueMapper: (StatusInfo item, _) =>
+                              formatCreatedTimeToDateString(item),
                           yValueMapper: (StatusInfo item, _) => item.leech),
                       LineSeries<StatusInfo, String>(
                           name: '邀请',
                           yAxisName: 'SecondaryYAxis',
                           dataSource: showData,
-                          xValueMapper: (StatusInfo item, _) => formatCreatedTimeToDateString(item),
-                          yValueMapper: (StatusInfo item, _) => item.invitation),
+                          xValueMapper: (StatusInfo item, _) =>
+                              formatCreatedTimeToDateString(item),
+                          yValueMapper: (StatusInfo item, _) =>
+                              item.invitation),
                     ]),
                 Text(
                   "${rangeValues.value.end.toInt() - rangeValues.value.start.toInt() + 1}日数据",
@@ -2208,13 +2402,16 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                   max: transformedData.length * 1.0 - 1,
                   divisions: transformedData.length - 1,
                   labels: RangeLabels(
-                    formatCreatedTimeToDateString(transformedData[rangeValues.value.start.toInt()]),
-                    formatCreatedTimeToDateString(transformedData[rangeValues.value.end.toInt()]),
+                    formatCreatedTimeToDateString(
+                        transformedData[rangeValues.value.start.toInt()]),
+                    formatCreatedTimeToDateString(
+                        transformedData[rangeValues.value.end.toInt()]),
                   ),
                   onChanged: (value) {
                     rangeValues.value = value;
-                    showData.value =
-                        transformedData.sublist(rangeValues.value.start.toInt(), rangeValues.value.end.toInt() + 1);
+                    showData.value = transformedData.sublist(
+                        rangeValues.value.start.toInt(),
+                        rangeValues.value.end.toInt() + 1);
                   },
                   values: rangeValues.value,
                 ),
@@ -2244,11 +2441,15 @@ class StatusToolTip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int difference = (lastData == null || lastData!.uploaded > data.uploaded) ? 0 : data.uploaded - lastData!.uploaded;
+    int difference = (lastData == null || lastData!.uploaded > data.uploaded)
+        ? 0
+        : data.uploaded - lastData!.uploaded;
     return Column(
       children: [
-        _buildDataRow('创建时间', DateFormat('yyyy-MM-dd HH:mm:ss').format(data.createdAt)),
-        _buildDataRow('更新时间', DateFormat('yyyy-MM-dd HH:mm:ss').format(data.updatedAt)),
+        _buildDataRow(
+            '创建时间', DateFormat('yyyy-MM-dd HH:mm:ss').format(data.createdAt)),
+        _buildDataRow(
+            '更新时间', DateFormat('yyyy-MM-dd HH:mm:ss').format(data.updatedAt)),
         _buildDataRow('做种量', FileSizeConvert.parseToFileSize(data.seedVolume)),
         _buildDataRow('等级', data.myLevel),
         _buildDataRow('上传量', FileSizeConvert.parseToFileSize(data.uploaded)),
@@ -2257,7 +2458,8 @@ class StatusToolTip extends StatelessWidget {
         _buildDataRow('分享率', data.ratio.toStringAsFixed(3)),
         _buildDataRow('魔力', formatNumber(data.myBonus)),
         if (data.myScore > 0) _buildDataRow('积分', formatNumber(data.myScore)),
-        if (data.bonusHour > 0) _buildDataRow('时魔', formatNumber(data.bonusHour)),
+        if (data.bonusHour > 0)
+          _buildDataRow('时魔', formatNumber(data.bonusHour)),
         _buildDataRow('做种中', data.seed),
         _buildDataRow('吸血中', data.leech),
         if (data.invitation > 0) _buildDataRow('邀请', data.invitation),

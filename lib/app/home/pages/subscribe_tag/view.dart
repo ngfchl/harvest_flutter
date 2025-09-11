@@ -32,15 +32,6 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             IconButton(
-              icon: const Icon(
-                Icons.add,
-                size: 20,
-              ),
-              onPressed: () {
-                _openEditDialog(null);
-              },
-            ),
-            IconButton(
                 onPressed: () async {
                   CommonResponse res = await importBaseSubTag();
                   if (res.code == 0) {
@@ -57,10 +48,21 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                     );
                   }
                 },
-                icon: const Icon(
+                icon: Icon(
                   Icons.save_alt_outlined,
-                  color: Colors.orange,
+                  color: ShadTheme.of(context).colorScheme.primary,
+                  size: 28,
                 )),
+            IconButton(
+              icon: Icon(
+                Icons.add,
+                size: 28,
+                color: ShadTheme.of(context).colorScheme.primary,
+              ),
+              onPressed: () {
+                _openEditDialog(null);
+              },
+            ),
           ],
         ),
         body: Column(
@@ -70,7 +72,9 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                 return EasyRefresh(
                   onRefresh: () => controller.initData(),
                   child: ListView(
-                    children: controller.tags.map((SubTag tag) => _buildTag(tag)).toList(),
+                    children: controller.tags
+                        .map((SubTag tag) => _buildTag(tag))
+                        .toList(),
                   ),
                 );
               }),
@@ -116,7 +120,8 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                 Get.defaultDialog(
                   title: '确认',
                   radius: 5,
-                  titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+                  titleStyle: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w900),
                   middleText: '确定要删除标签吗？',
                   actions: [
                     ElevatedButton(
@@ -131,10 +136,13 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                         CommonResponse res = await controller.removeSubTag(tag);
                         if (res.code == 0) {
                           Get.snackbar('删除通知', res.msg.toString(),
-                              colorText: ShadTheme.of(context).colorScheme.foreground);
+                              colorText:
+                                  ShadTheme.of(context).colorScheme.foreground);
                         } else {
                           Get.snackbar('删除通知', res.msg.toString(),
-                              colorText: ShadTheme.of(context).colorScheme.destructive);
+                              colorText: ShadTheme.of(context)
+                                  .colorScheme
+                                  .destructive);
                         }
                       },
                       child: const Text('确认'),
@@ -185,9 +193,10 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
   }
 
   _openEditDialog(SubTag? tag) {
-    final TextEditingController nameController = TextEditingController(text: tag != null ? tag.name : '');
-    final TextEditingController categoryController =
-        TextEditingController(text: tag != null ? tag.category : controller.tagCategoryList[0].value);
+    final TextEditingController nameController =
+        TextEditingController(text: tag != null ? tag.name : '');
+    final TextEditingController categoryController = TextEditingController(
+        text: tag != null ? tag.category : controller.tagCategoryList[0].value);
 
     RxBool available = true.obs;
     final isLoading = false.obs;
@@ -220,13 +229,14 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                           categoryController.text = newValue!;
                         },
                         items: controller.tagCategoryList
-                            .map<DropdownMenuItem<String>>((MetaDataItem item) => DropdownMenuItem<String>(
-                                  value: item.value,
-                                  child: Text(
-                                    item.name,
-                                    style: const TextStyle(fontSize: 14),
-                                  ),
-                                ))
+                            .map<DropdownMenuItem<String>>(
+                                (MetaDataItem item) => DropdownMenuItem<String>(
+                                      value: item.value,
+                                      child: Text(
+                                        item.name,
+                                        style: const TextStyle(fontSize: 14),
+                                      ),
+                                    ))
                             .toList(),
                       ),
                     ),
@@ -259,9 +269,11 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                       Get.back();
                     },
                     style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all(Colors.redAccent.withAlpha(150)),
+                      backgroundColor: WidgetStateProperty.all(
+                          Colors.redAccent.withAlpha(150)),
                     ),
-                    icon: const Icon(Icons.cancel_outlined, color: Colors.white),
+                    icon:
+                        const Icon(Icons.cancel_outlined, color: Colors.white),
                     label: const Text(
                       '取消',
                       style: TextStyle(color: Colors.white),
@@ -289,7 +301,9 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                         submitForm(newTag);
                         isLoading.value = false;
                       },
-                      icon: isLoading.value ? Center(child: const CircularProgressIndicator()) : const Icon(Icons.save),
+                      icon: isLoading.value
+                          ? Center(child: const CircularProgressIndicator())
+                          : const Icon(Icons.save),
                       label: const Text('保存'),
                     );
                   }),
@@ -307,9 +321,11 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
       Logger.instance.i(res.msg);
       if (res.code == 0) {
         Get.back();
-        Get.snackbar('标签保存成功！', res.msg, colorText: ShadTheme.of(context).colorScheme.foreground);
+        Get.snackbar('标签保存成功！', res.msg,
+            colorText: ShadTheme.of(context).colorScheme.foreground);
       } else {
-        Get.snackbar('标签保存失败！', res.msg, colorText: ShadTheme.of(context).colorScheme.destructive);
+        Get.snackbar('标签保存失败！', res.msg,
+            colorText: ShadTheme.of(context).colorScheme.destructive);
       }
     } finally {}
   }

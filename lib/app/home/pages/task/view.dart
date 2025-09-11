@@ -46,7 +46,7 @@ class TaskPage extends StatelessWidget {
               Scaffold(
                 backgroundColor: Colors.transparent,
                 floatingActionButton: IconButton(
-                  icon: const Icon(Icons.add, size: 20),
+                  icon: Icon(Icons.add, size: 28, color: colorScheme.primary),
                   onPressed: () {
                     editTask(null, context);
                   },
@@ -61,13 +61,18 @@ class TaskPage extends StatelessWidget {
                           },
                           child: controller.isLoading
                               ? ListView(
-                                  children: const [Center(child: CircularProgressIndicator())],
+                                  children: const [
+                                    Center(child: CircularProgressIndicator())
+                                  ],
                                 )
-                              : GetBuilder<TaskController>(builder: (controller) {
+                              : GetBuilder<TaskController>(
+                                  builder: (controller) {
                                   return ListView.builder(
                                     itemCount: controller.dataList.length,
-                                    itemBuilder: (BuildContext context, int index) {
-                                      Schedule task = controller.dataList[index];
+                                    itemBuilder:
+                                        (BuildContext context, int index) {
+                                      Schedule task =
+                                          controller.dataList[index];
                                       return _buildTaskView(task, context);
                                     },
                                   );
@@ -92,18 +97,21 @@ class TaskPage extends StatelessWidget {
                     return CustomCard(
                       child: Slidable(
                         key: ValueKey(item.uuid),
-                        endActionPane: item.state?.toLowerCase() == 'success' || item.state?.toLowerCase() == 'failed'
+                        endActionPane: item.state?.toLowerCase() == 'success' ||
+                                item.state?.toLowerCase() == 'failed'
                             ? ActionPane(
                                 motion: const ScrollMotion(),
                                 extentRatio: 0.25,
                                 children: [
                                   SlidableAction(
                                     flex: 1,
-                                    borderRadius: const BorderRadius.all(Radius.circular(8)),
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(8)),
                                     onPressed: (context) async {
                                       Get.defaultDialog(
                                         title: '任务执行结果',
-                                        content: item.state?.toLowerCase() == 'success'
+                                        content: item.state?.toLowerCase() ==
+                                                'success'
                                             ? Text(item.result!)
                                             : Text(item.traceback.toString()),
                                       );
@@ -121,13 +129,16 @@ class TaskPage extends StatelessWidget {
                                 children: [
                                   SlidableAction(
                                     flex: 1,
-                                    borderRadius: const BorderRadius.all(Radius.circular(8)),
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(8)),
                                     onPressed: (context) async {
                                       Get.defaultDialog(
                                         title: '确认',
                                         radius: 5,
                                         titleStyle: const TextStyle(
-                                            fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w900,
+                                            color: Colors.deepPurple),
                                         middleText: '确定要删除任务吗？',
                                         actions: [
                                           ElevatedButton(
@@ -139,13 +150,18 @@ class TaskPage extends StatelessWidget {
                                           ElevatedButton(
                                             onPressed: () async {
                                               Get.back(result: true);
-                                              var res = await controller.abortTask(item);
+                                              var res = await controller
+                                                  .abortTask(item);
                                               if (res.code == 0) {
-                                                Get.snackbar('删除通知', res.msg.toString(),
-                                                    colorText: colorScheme.foreground);
+                                                Get.snackbar(
+                                                    '删除通知', res.msg.toString(),
+                                                    colorText:
+                                                        colorScheme.foreground);
                                               } else {
-                                                Get.snackbar('删除通知', res.msg.toString(),
-                                                    colorText: colorScheme.destructive);
+                                                Get.snackbar(
+                                                    '删除通知', res.msg.toString(),
+                                                    colorText: colorScheme
+                                                        .destructive);
                                               }
                                             },
                                             child: const Text('确认'),
@@ -160,13 +176,16 @@ class TaskPage extends StatelessWidget {
                                   ),
                                   SlidableAction(
                                     flex: 1,
-                                    borderRadius: const BorderRadius.all(Radius.circular(8)),
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(8)),
                                     onPressed: (context) async {
                                       Get.defaultDialog(
                                         title: '确认',
                                         radius: 5,
                                         titleStyle: const TextStyle(
-                                            fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w900,
+                                            color: Colors.deepPurple),
                                         middleText: '确定要删除任务吗？',
                                         actions: [
                                           ElevatedButton(
@@ -178,13 +197,18 @@ class TaskPage extends StatelessWidget {
                                           ElevatedButton(
                                             onPressed: () async {
                                               Get.back(result: true);
-                                              var res = await controller.revokeTask(item);
+                                              var res = await controller
+                                                  .revokeTask(item);
                                               if (res.code == 0) {
-                                                Get.snackbar('删除通知', res.msg.toString(),
-                                                    colorText: colorScheme.foreground);
+                                                Get.snackbar(
+                                                    '删除通知', res.msg.toString(),
+                                                    colorText:
+                                                        colorScheme.foreground);
                                               } else {
-                                                Get.snackbar('删除通知', res.msg.toString(),
-                                                    colorText: colorScheme.destructive);
+                                                Get.snackbar(
+                                                    '删除通知', res.msg.toString(),
+                                                    colorText: colorScheme
+                                                        .destructive);
                                               }
                                             },
                                             child: const Text('确认'),
@@ -203,28 +227,34 @@ class TaskPage extends StatelessWidget {
                           dense: true,
                           title: Text(
                             item.name ?? 'unknown',
-                            style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
+                            style: TextStyle(
+                                fontSize: 10,
+                                color: shadColorScheme.foreground),
                           ),
                           subtitle: item.succeeded != null
                               ? Text(
                                   "完成时间：${DateTime.fromMillisecondsSinceEpoch((item.succeeded! * 1000).toInt())}",
-                                  style: TextStyle(fontSize: 8, color: Colors.green),
+                                  style: TextStyle(
+                                      fontSize: 8, color: Colors.green),
                                 )
                               : item.started != null
                                   ? Text(
                                       "开始时间：${DateTime.fromMillisecondsSinceEpoch((item.started! * 1000).toInt())}",
-                                      style: TextStyle(fontSize: 8, color: Colors.orange),
+                                      style: TextStyle(
+                                          fontSize: 8, color: Colors.orange),
                                     )
                                   : item.received != null
                                       ? Text(
                                           "接收时间：${DateTime.fromMillisecondsSinceEpoch((item.received! * 1000).toInt())}",
-                                          style: TextStyle(fontSize: 8, color: Colors.blue),
+                                          style: TextStyle(
+                                              fontSize: 8, color: Colors.blue),
                                         )
                                       : null,
                           trailing: SizedBox(
                               width: 60,
                               child: CustomTextTag(
-                                labelText: item.state?.toLowerCase() ?? 'unknown',
+                                labelText:
+                                    item.state?.toLowerCase() ?? 'unknown',
                               )),
                           onTap: () {
                             item.succeeded == null && item.failed == null
@@ -244,9 +274,15 @@ class TaskPage extends StatelessWidget {
                                       width: Get.width * 0.8,
                                       padding: const EdgeInsets.all(8),
                                       child: Markdown(
-                                        data: item.result?.substring(1, item.result!.length - 2) ?? '',
-                                        softLineBreak: true, // ⬅️ 每个 \n 都当作 <br> 处理
-                                        styleSheet: MarkdownStyleSheet.fromTheme(ShadTheme.of(context) as ThemeData),
+                                        data: item.result?.substring(
+                                                1, item.result!.length - 2) ??
+                                            '',
+                                        softLineBreak:
+                                            true, // ⬅️ 每个 \n 都当作 <br> 处理
+                                        styleSheet:
+                                            MarkdownStyleSheet.fromTheme(
+                                                ShadTheme.of(context)
+                                                    as ThemeData),
                                       ),
                                     ),
                                   );
@@ -314,12 +350,15 @@ class TaskPage extends StatelessWidget {
                       ElevatedButton(
                         onPressed: () async {
                           Get.back(result: true);
-                          CommonResponse res = await controller.removeTask(item);
+                          CommonResponse res =
+                              await controller.removeTask(item);
 
                           if (res.code == 0) {
-                            Get.snackbar('任务删除通知', res.msg.toString(), colorText: shadColorScheme.foreground);
+                            Get.snackbar('任务删除通知', res.msg.toString(),
+                                colorText: shadColorScheme.foreground);
                           } else {
-                            Get.snackbar('任务删除通知', res.msg.toString(), colorText: shadColorScheme.destructive);
+                            Get.snackbar('任务删除通知', res.msg.toString(),
+                                colorText: shadColorScheme.destructive);
                           }
                         },
                         child: const Text('确认'),
@@ -370,10 +409,12 @@ class TaskPage extends StatelessWidget {
                 String title = item.enabled == true ? '任务启用通知' : '任务禁用通知';
                 if (res.code == 0) {
                   Get.snackbar(title, res.msg.toString(),
-                      snackStyle: SnackStyle.FLOATING, colorText: shadColorScheme.foreground);
+                      snackStyle: SnackStyle.FLOATING,
+                      colorText: shadColorScheme.foreground);
                 } else {
                   Get.snackbar(title, res.msg.toString(),
-                      snackStyle: SnackStyle.FLOATING, colorText: shadColorScheme.destructive);
+                      snackStyle: SnackStyle.FLOATING,
+                      colorText: shadColorScheme.destructive);
                 }
                 controller.update();
               },
@@ -389,15 +430,18 @@ class TaskPage extends StatelessWidget {
                         // await Future.delayed(Duration(seconds: 2));
                         CommonResponse res = await controller.execTask(item);
                         if (res.code == 0) {
-                          Get.snackbar('任务执行通知', res.msg.toString(), colorText: shadColorScheme.foreground);
+                          Get.snackbar('任务执行通知', res.msg.toString(),
+                              colorText: shadColorScheme.foreground);
                         } else {
-                          Get.snackbar('任务执行通知', res.msg.toString(), colorText: shadColorScheme.destructive);
+                          Get.snackbar('任务执行通知', res.msg.toString(),
+                              colorText: shadColorScheme.destructive);
                         }
                         isRunning.value = false;
                         controller.update();
                       },
                       child: isRunning.value == false
-                          ? const Icon(Icons.play_circle_outline, color: Colors.green)
+                          ? const Icon(Icons.play_circle_outline,
+                              color: Colors.green)
                           : Center(child: const CircularProgressIndicator()),
                     );
                   })
@@ -410,21 +454,32 @@ class TaskPage extends StatelessWidget {
 
   void editTask(Schedule? task, context) {
     Crontab? cron = controller.crontabList[task?.crontab];
-    final taskController = TextEditingController(text: task != null ? task.task : '');
-    final nameController = TextEditingController(text: task != null ? task.name : '');
-    final minuteController = TextEditingController(text: task != null ? cron?.minute : '1');
-    final hourController = TextEditingController(text: task != null ? cron?.hour : '*');
-    final dayOfWeekController = TextEditingController(text: task != null ? cron?.dayOfWeek : '*');
-    final dayOfMonthController = TextEditingController(text: task != null ? cron?.dayOfMonth : '*');
-    final monthOfYearController = TextEditingController(text: task != null ? cron?.monthOfYear : '*');
-    final descriptionController = TextEditingController(text: task != null ? task.description : '');
-    final argsController = TextEditingController(text: task != null ? task.args : '[]');
-    final kwargsController = TextEditingController(text: task != null ? task.kwargs : '{}');
+    final taskController =
+        TextEditingController(text: task != null ? task.task : '');
+    final nameController =
+        TextEditingController(text: task != null ? task.name : '');
+    final minuteController =
+        TextEditingController(text: task != null ? cron?.minute : '1');
+    final hourController =
+        TextEditingController(text: task != null ? cron?.hour : '*');
+    final dayOfWeekController =
+        TextEditingController(text: task != null ? cron?.dayOfWeek : '*');
+    final dayOfMonthController =
+        TextEditingController(text: task != null ? cron?.dayOfMonth : '*');
+    final monthOfYearController =
+        TextEditingController(text: task != null ? cron?.monthOfYear : '*');
+    final descriptionController =
+        TextEditingController(text: task != null ? task.description : '');
+    final argsController =
+        TextEditingController(text: task != null ? task.args : '[]');
+    final kwargsController =
+        TextEditingController(text: task != null ? task.kwargs : '{}');
     Rx<bool?> enabled = (task != null ? task.enabled : true).obs;
     RxBool advance = false.obs;
     ShadColorScheme colorScheme = ShadTheme.of(context).colorScheme;
     Get.bottomSheet(
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(3))),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(3))),
       CustomCard(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -487,7 +542,8 @@ class TaskPage extends StatelessWidget {
                       labelText: '小时',
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 4.0, horizontal: 8),
                       child: SwitchListTile(
                         contentPadding: EdgeInsets.zero,
                         title: Text(
@@ -539,10 +595,14 @@ class TaskPage extends StatelessWidget {
                   ),
                   ElevatedButton.icon(
                     onPressed: () async {
-                      bool res1 = checkEditController(nameController, "任务名称", context);
-                      bool res2 = checkEditController(taskController, "计划任务", context);
-                      bool res3 = checkEditController(minuteController, "任务执行时间：分钟", context);
-                      bool res4 = checkEditController(hourController, "任务执行时间：小时", context);
+                      bool res1 =
+                          checkEditController(nameController, "任务名称", context);
+                      bool res2 =
+                          checkEditController(taskController, "计划任务", context);
+                      bool res3 = checkEditController(
+                          minuteController, "任务执行时间：分钟", context);
+                      bool res4 = checkEditController(
+                          hourController, "任务执行时间：小时", context);
                       if (!res1 || !res2 || !res3 || !res4) {
                         return;
                       }
