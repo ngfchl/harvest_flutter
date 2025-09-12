@@ -4,9 +4,10 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:harvest/utils/dio_util.dart';
 import 'package:harvest/utils/storage.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
-import 'package:shadcn_ui/shadcn_ui.dart';
 
 import 'app/routes/app_pages.dart';
 import 'theme/theme_controller.dart';
@@ -15,6 +16,8 @@ void main() async {
   // 初始化插件前需要在runApp之前调用初始化代码
   WidgetsFlutterBinding.ensureInitialized();
 
+  /// 必须调用这行！
+  MediaKit.ensureInitialized();
   // 初始化 持久化数据信息
   await SPUtil.getInstance();
   await initDependencies();

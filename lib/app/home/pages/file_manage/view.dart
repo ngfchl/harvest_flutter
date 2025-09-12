@@ -23,6 +23,7 @@ import 'package:photo_view/photo_view.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../common/video_player_page/video_page.dart';
 import '../../../../utils/logger_helper.dart';
 import 'controller.dart';
 
@@ -300,39 +301,38 @@ class FileManagePage extends StatelessWidget {
                                               spacing: 10,
                                               runSpacing: 10,
                                               children: [
-                                                // ElevatedButton.icon(
+                                                //  ShadButton.ghost(
                                                 //   onPressed: () async {},
                                                 //   icon: Icon(Icons.open_in_new),
                                                 //   label: Text("打开目录"),
                                                 // ),
-                                                ElevatedButton.icon(
+                                                ShadButton.ghost(
                                                   onPressed: () async {
                                                     doFileAction(item.path,
                                                         'search_tmdb');
                                                   },
-                                                  icon: Icon(Icons
+                                                  leading: Icon(Icons
                                                       .movie_filter_outlined),
-                                                  label: Text("刮削资源"),
+                                                  child: Text("刮削资源"),
                                                 ),
-                                                ElevatedButton.icon(
+                                                ShadButton.ghost(
                                                   onPressed: () async {
                                                     doFileAction(item.path,
                                                         'search_seed');
                                                   },
-                                                  icon: Icon(Icons
+                                                  leading: Icon(Icons
                                                       .local_movies_outlined),
-                                                  label: Text("查询做种"),
+                                                  child: Text("查询做种"),
                                                 ),
-
-                                                ElevatedButton.icon(
+                                                ShadButton.ghost(
                                                   onPressed: () async {
                                                     doFileAction(
                                                         item.path, 'hard_link',
                                                         newFileName:
                                                             "newFileName");
                                                   },
-                                                  icon: Icon(Icons.hardware),
-                                                  label: Text("硬链接"),
+                                                  leading: Icon(Icons.hardware),
+                                                  child: Text("硬链接"),
                                                 ),
                                               ],
                                             ),
@@ -373,14 +373,14 @@ class FileManagePage extends StatelessWidget {
                                                     spacing: 10,
                                                     runSpacing: 10,
                                                     children: [
-                                                      ElevatedButton.icon(
+                                                      ShadButton.ghost(
                                                         onPressed: () async {
                                                           await pickAndDownload(
                                                               res.data);
                                                         },
-                                                        icon: Icon(Icons
+                                                        leading: Icon(Icons
                                                             .download_outlined),
-                                                        label: Text("下载"),
+                                                        child: Text("下载"),
                                                       ),
                                                     ],
                                                   ),
@@ -548,7 +548,7 @@ class FileManagePage extends StatelessWidget {
         children: [
           if (defaultTargetPlatform == TargetPlatform.iOS)
             ...schemes.entries.toList().map(
-                  (entry) => ElevatedButton.icon(
+                  (entry) => ShadButton.ghost(
                     onPressed: () async {
                       final uri = Uri.parse(entry.value);
                       if (!await launchUrl(uri,
@@ -556,13 +556,13 @@ class FileManagePage extends StatelessWidget {
                         Logger.instance.w('无法使用${entry.key}外部播放器');
                       }
                     },
-                    label: Text(
+                    child: Text(
                       entry.key.toString(),
                     ),
                   ),
                 ),
           if (defaultTargetPlatform == TargetPlatform.android)
-            ElevatedButton.icon(
+            ShadButton.ghost(
               onPressed: () async {
                 final intent = AndroidIntent(
                   action: 'action_view',
@@ -571,8 +571,8 @@ class FileManagePage extends StatelessWidget {
                 );
                 intent.launch();
               },
-              icon: Icon(Icons.open_in_new_rounded),
-              label: Text('打开'),
+              leading: Icon(Icons.open_in_new_rounded),
+              child: Text('打开'),
             ),
           if (defaultTargetPlatform == TargetPlatform.linux ||
               defaultTargetPlatform == TargetPlatform.macOS ||
@@ -587,9 +587,19 @@ class FileManagePage extends StatelessWidget {
                     ),
                   ),
                 ),
+          ShadButton.ghost(
+            onPressed: () async {
+              Get.dialog(CustomCard(
+                  child: VideoPlayerPage(
+                initialUrl: url,
+              )));
+            },
+            leading: Icon(Icons.play_circle),
+            child: Text('MediaKit'),
+          ),
           if (defaultTargetPlatform == TargetPlatform.android ||
               defaultTargetPlatform == TargetPlatform.iOS)
-            ElevatedButton.icon(
+            ShadButton.ghost(
               onPressed: () async {
                 VlcPlayerController vlcController = VlcPlayerController.network(
                   url,
@@ -651,8 +661,8 @@ class FileManagePage extends StatelessWidget {
                   vlcController.dispose();
                 });
               },
-              icon: Icon(Icons.play_arrow_outlined),
-              label: Text("播放"),
+              leading: Icon(Icons.play_arrow_outlined),
+              child: Text("播放"),
             ),
           ShadButton.outline(
             onPressed: () async {
