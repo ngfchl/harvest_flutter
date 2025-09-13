@@ -23,27 +23,34 @@ class SshWidget extends StatelessWidget {
       return Scaffold(
         backgroundColor: Colors.transparent,
         body: CustomCard(
-          child: controller.connected ? commandWidget(context) : loginWidget(context),
+          child: controller.connected
+              ? commandWidget(context)
+              : loginWidget(context),
         ),
       );
     });
   }
 
   Widget loginWidget(BuildContext context) {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        const Padding(
+        Padding(
           padding: EdgeInsets.all(8.0),
           child: CustomTextTag(
             labelText: 'SSH 连接设备为危险操作，请你一定要知晓每一个 SSH 命令的含义确认操作',
-            backgroundColor: Colors.orange,
+            backgroundColor: shadColorScheme.destructive,
+            labelColor: shadColorScheme.destructiveForeground,
           ),
         ),
-        const Padding(
+        Padding(
           padding: EdgeInsets.all(8.0),
           child: Text(
             '本功能仅支持使用 root 账户登录或者不使用 root账户可以直接操作的设备。已知不可用设备：群晖、极空间，',
+            style: TextStyle(
+              color: shadColorScheme.foreground,
+            ),
           ),
         ),
         CustomTextField(
@@ -69,11 +76,20 @@ class SshWidget extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: SwitchListTile(
-              title: const Text('记住密码'),
+              dense: true,
+              title: Text(
+                '记住密码',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: shadColorScheme.foreground,
+                ),
+              ),
+              contentPadding:
+                  const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8),
               value: controller.remember,
-              selectedTileColor: ShadTheme.of(context).colorScheme.foreground,
+              selectedTileColor: shadColorScheme.foreground,
               inactiveTrackColor: Colors.transparent,
-              inactiveThumbColor: ShadTheme.of(context).colorScheme.foreground,
+              inactiveThumbColor: shadColorScheme.foreground,
               onChanged: (bool value) {
                 controller.remember = value;
                 controller.update();
@@ -82,8 +98,8 @@ class SshWidget extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: FullWidthButton(
-            labelColor: ShadTheme.of(context).colorScheme.primaryForeground,
-            backgroundColor: ShadTheme.of(context).colorScheme.primary,
+            labelColor: shadColorScheme.primaryForeground,
+            backgroundColor: shadColorScheme.primary,
             onPressed: () async {
               await controller.connect();
               try {
@@ -116,7 +132,9 @@ class SshWidget extends StatelessWidget {
                 child: TextField(
                   controller: commandController,
                   decoration: const InputDecoration(
-                      border: OutlineInputBorder(), labelText: '请输入命令', labelStyle: TextStyle(fontSize: 14)),
+                      border: OutlineInputBorder(),
+                      labelText: '请输入命令',
+                      labelStyle: TextStyle(fontSize: 14)),
                 ),
               ),
               Row(
@@ -181,7 +199,8 @@ class SshWidget extends StatelessWidget {
                   return ListView.builder(
                       itemCount: controller.containerList.length,
                       itemBuilder: (context, index) {
-                        DockerContainer container = controller.containerList[index];
+                        DockerContainer container =
+                            controller.containerList[index];
                         return buildContainerCard(container, context);
                       });
                 })),
@@ -193,14 +212,18 @@ class SshWidget extends StatelessWidget {
                 itemBuilder: (context, index) {
                   String res = controller.logList[index];
                   return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 2),
                       width: MediaQuery.of(context).size.width,
                       child: SelectableText(
                         res.toString().trim(),
                         style: TextStyle(
                             fontSize: 12,
                             letterSpacing: 1.5,
-                            color: ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8)),
+                            color: ShadTheme.of(context)
+                                .colorScheme
+                                .foreground
+                                .withOpacity(0.8)),
                       ));
                 })),
       ],
@@ -233,7 +256,8 @@ class SshWidget extends StatelessWidget {
                   ? SlidableAction(
                       flex: 1,
                       borderRadius: const BorderRadius.all(Radius.circular(8)),
-                      onPressed: (context) => controller.stopContainer(container.name.toString()),
+                      onPressed: (context) =>
+                          controller.stopContainer(container.name.toString()),
                       backgroundColor: const Color(0xFF0A9D96),
                       foregroundColor: Colors.white,
                       // icon: Icons.stop_circle_outlined,
@@ -242,7 +266,8 @@ class SshWidget extends StatelessWidget {
                   : SlidableAction(
                       flex: 1,
                       borderRadius: const BorderRadius.all(Radius.circular(8)),
-                      onPressed: (context) => controller.startContainer(container.name.toString()),
+                      onPressed: (context) =>
+                          controller.startContainer(container.name.toString()),
                       backgroundColor: const Color(0xFF0A9D96),
                       foregroundColor: Colors.white,
                       // icon: Icons.stop_circle_outlined,
@@ -251,7 +276,8 @@ class SshWidget extends StatelessWidget {
               SlidableAction(
                 flex: 1,
                 borderRadius: const BorderRadius.all(Radius.circular(8)),
-                onPressed: (context) => controller.restartContainer(container.name.toString()),
+                onPressed: (context) =>
+                    controller.restartContainer(container.name.toString()),
                 backgroundColor: const Color(0xFF0392CF),
                 foregroundColor: Colors.white,
                 label: '重启',
@@ -291,9 +317,11 @@ class SshWidget extends StatelessWidget {
                   Get.defaultDialog(
                     title: '重建容器',
                     middleText: '本操作会删除旧容器并使用原来的配置重建容器，具有一定的风险性，请谨慎操作',
-                    middleTextStyle: TextStyle(color: ShadTheme.of(context).colorScheme.destructive),
+                    middleTextStyle: TextStyle(
+                        color: ShadTheme.of(context).colorScheme.destructive),
                     onConfirm: () {
-                      controller.rebuildContainer(container.name.toString(), container.image.toString());
+                      controller.rebuildContainer(container.name.toString(),
+                          container.image.toString());
                       Get.back();
                     },
                     onCancel: () => Get.back(),
@@ -310,8 +338,10 @@ class SshWidget extends StatelessWidget {
                 flex: 1,
                 borderRadius: const BorderRadius.all(Radius.circular(8)),
                 onPressed: (context) async {
-                  String newCommand = await controller.generateNewContainerCommand(
-                      container.name.toString(), container.image.toString());
+                  String newCommand =
+                      await controller.generateNewContainerCommand(
+                          container.name.toString(),
+                          container.image.toString());
                   Clipboard.setData(ClipboardData(text: newCommand)).then((_) {
                     // 可选：在复制后显示消息
                     Logger.instance.i('重建命令已复制到剪切板');
@@ -354,7 +384,9 @@ class SshWidget extends StatelessWidget {
                                         text: container.name.toString(),
                                         style: TextStyle(
                                           fontSize: 13,
-                                          color: ShadTheme.of(context).colorScheme.foreground,
+                                          color: ShadTheme.of(context)
+                                              .colorScheme
+                                              .foreground,
                                         ),
                                         ellipsis: '...',
                                       ),
@@ -367,8 +399,12 @@ class SshWidget extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 11,
                                   color: isRunning
-                                      ? ShadTheme.of(context).colorScheme.foreground
-                                      : ShadTheme.of(context).colorScheme.destructive,
+                                      ? ShadTheme.of(context)
+                                          .colorScheme
+                                          .foreground
+                                      : ShadTheme.of(context)
+                                          .colorScheme
+                                          .destructive,
                                 ),
                               ),
                             ],
@@ -382,7 +418,9 @@ class SshWidget extends StatelessWidget {
                                   text: imageText,
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color: ShadTheme.of(context).colorScheme.foreground,
+                                    color: ShadTheme.of(context)
+                                        .colorScheme
+                                        .foreground,
                                   ),
                                   ellipsis: '...',
                                 ),
@@ -392,7 +430,8 @@ class SshWidget extends StatelessWidget {
                               ),
                               if (container.hasNew)
                                 ElevatedButton(
-                                    onPressed: () => controller.getNewImage(container.image.toString()),
+                                    onPressed: () => controller.getNewImage(
+                                        container.image.toString()),
                                     child: const Text(
                                       '下载镜像',
                                       style: TextStyle(fontSize: 11),

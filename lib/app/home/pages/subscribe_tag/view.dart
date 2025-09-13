@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:harvest/api/option.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/models/common_response.dart';
+import 'package:harvest/utils/storage.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../../common/form_widgets.dart';
@@ -31,7 +32,7 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
         floatingActionButton: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            IconButton(
+            ShadIconButton.ghost(
                 onPressed: () async {
                   CommonResponse res = await importBaseSubTag();
                   if (res.code == 0) {
@@ -53,7 +54,7 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                   color: ShadTheme.of(context).colorScheme.primary,
                   size: 28,
                 )),
-            IconButton(
+            ShadIconButton.ghost(
               icon: Icon(
                 Icons.add,
                 size: 28,
@@ -162,11 +163,18 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
         // The end action pane is the one at the right or the bottom side.
         child: ListTile(
           dense: true,
-          title: Text(tag.name!),
+          title: Text(
+            tag.name!,
+            style: TextStyle(
+              color: ShadTheme.of(context).colorScheme.foreground,
+            ),
+          ),
           subtitle: Text(
             tag.category!,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
+              color:
+                  ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
             ),
           ),
           onTap: () => _openEditDialog(tag),
@@ -192,7 +200,7 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
     );
   }
 
-  _openEditDialog(SubTag? tag) {
+  void _openEditDialog(SubTag? tag) {
     final TextEditingController nameController =
         TextEditingController(text: tag != null ? tag.name : '');
     final TextEditingController categoryController = TextEditingController(
@@ -203,8 +211,13 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
 
     available.value = tag != null ? tag.available! : true;
     String title = tag != null ? '编辑标签：${tag.name!}' : '添加标签';
+    double opacity = SPUtil.getDouble("cardOpacity", defaultValue: 0.7);
     Get.bottomSheet(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+        backgroundColor: ShadTheme.of(context)
+            .colorScheme
+            .background
+            .withOpacity(opacity * 1.2),
         CustomCard(
           height: 300,
           child: Column(
@@ -220,47 +233,58 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                       controller: nameController,
                       labelText: '名称',
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: DropdownButtonFormField<String>(
-                        isDense: true,
-                        value: categoryController.text,
-                        onChanged: (String? newValue) {
-                          categoryController.text = newValue!;
-                        },
-                        items: controller.tagCategoryList
-                            .map<DropdownMenuItem<String>>(
-                                (MetaDataItem item) => DropdownMenuItem<String>(
-                                      value: item.value,
-                                      child: Text(
-                                        item.name,
-                                        style: const TextStyle(fontSize: 14),
-                                      ),
-                                    ))
-                            .toList(),
+                    DropdownButtonFormField<String>(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12.0, vertical: 4),
+                      isDense: true,
+                      value: categoryController.text,
+                      style: TextStyle(
+                        color: ShadTheme.of(context).colorScheme.foreground,
                       ),
+                      onChanged: (String? newValue) {
+                        categoryController.text = newValue!;
+                      },
+                      dropdownColor:
+                          ShadTheme.of(context).colorScheme.background,
+                      items: controller.tagCategoryList
+                          .map<DropdownMenuItem<String>>(
+                              (MetaDataItem item) => DropdownMenuItem<String>(
+                                    value: item.value,
+                                    child: Text(
+                                      item.name,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: ShadTheme.of(context)
+                                            .colorScheme
+                                            .foreground,
+                                      ),
+                                    ),
+                                  ))
+                          .toList(),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Obx(() {
-                        return SwitchListTile(
-                            dense: true,
-                            contentPadding: EdgeInsets.zero,
-                            title: const Text('标签可用'),
-                            value: available.value,
-                            onChanged: (bool val) {
-                              available.value = val;
-                            });
-                      }),
-                    ),
-                    const SizedBox(height: 10),
+                    Obx(() {
+                      return SwitchListTile(
+                          dense: true,
+                          contentPadding: const EdgeInsets.all(8.0),
+                          title: Text(
+                            '标签可用',
+                            style: TextStyle(
+                              color:
+                                  ShadTheme.of(context).colorScheme.foreground,
+                            ),
+                          ),
+                          value: available.value,
+                          onChanged: (bool val) {
+                            available.value = val;
+                          });
+                    }),
                   ],
                 ),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton.icon(
+                  ShadButton.destructive(
                     onPressed: () {
                       // 清空表单数据
                       nameController.clear();
@@ -268,19 +292,15 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                       available.value = true;
                       Get.back();
                     },
-                    style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all(
-                          Colors.redAccent.withAlpha(150)),
-                    ),
-                    icon:
+                    size: ShadButtonSize.sm,
+                    leading:
                         const Icon(Icons.cancel_outlined, color: Colors.white),
-                    label: const Text(
+                    child: const Text(
                       '取消',
-                      style: TextStyle(color: Colors.white),
                     ),
                   ),
                   Obx(() {
-                    return ElevatedButton.icon(
+                    return ShadButton(
                       onPressed: () async {
                         isLoading.value = true;
                         SubTag newTag;
@@ -301,14 +321,16 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                         submitForm(newTag);
                         isLoading.value = false;
                       },
-                      icon: isLoading.value
+                      size: ShadButtonSize.sm,
+                      leading: isLoading.value
                           ? Center(child: const CircularProgressIndicator())
                           : const Icon(Icons.save),
-                      label: const Text('保存'),
+                      child: const Text('保存'),
                     );
                   }),
                 ],
               ),
+              const SizedBox(height: 15),
             ],
           ),
         ));
