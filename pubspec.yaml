@@ -1,7 +1,7 @@
 name: harvest
 description: Harvest Project App Client
 publish_to: none
-version: 2025.0911.01+163
+version: 2025.0911.01+162
 environment:
   sdk: '>=3.3.2 <4.0.0'
 dependencies:
@@ -57,17 +57,11 @@ dependencies:
   shadcn_ui: ^0.28.0
   media_kit: ^1.2.0
   media_kit_video: ^1.3.0
-  # 👇 平台相关的预编译依赖（全写上就能全平台支持）
-  media_kit_libs_android_video: ^1.3.7   # Android 视频
-  # media_kit_libs_android_audio: ^1.3.7   # Android 音频
-  media_kit_libs_ios_video: ^1.1.4       # iOS 视频
-  media_kit_libs_ios_audio: ^1.1.4       # iOS 音频
-  media_kit_libs_macos_video: ^1.1.4     # macOS 视频
-  #  media_kit_libs_macos_audio: ^1.1.4     # macOS 音频
-  media_kit_libs_windows_video: ^1.0.11   # Windows 视频
-  # media_kit_libs_windows_audio: ^1.0.9   # Windows 音频
-  media_kit_libs_linux: ^1.2.1           # Linux（音视频一起）
-
+  media_kit_libs_android_video: ^1.3.7
+  media_kit_libs_ios_video: ^1.1.4
+  media_kit_libs_macos_video: ^1.1.4
+  media_kit_libs_windows_video: ^1.0.11
+  media_kit_libs_linux: ^1.2.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

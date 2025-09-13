@@ -50,6 +50,10 @@ PODS:
     - Flutter
   - image_picker_ios (0.0.1):
     - Flutter
+  - media_kit_libs_ios_video (1.0.4):
+    - Flutter
+  - media_kit_video (0.0.1):
+    - Flutter
   - MobileVLCKit (3.6.1b1)
   - OrderedSet (6.0.3)
   - package_info_plus (0.4.5):
@@ -75,9 +79,10 @@ PODS:
   - SwiftyGif (5.4.5)
   - url_launcher_ios (0.0.1):
     - Flutter
-  - video_player_avfoundation (0.0.1):
+  - volume_controller (0.0.1):
     - Flutter
-    - FlutterMacOS
+  - wakelock_plus (0.0.1):
+    - Flutter
 
 DEPENDENCIES:
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
@@ -87,6 +92,8 @@ DEPENDENCIES:
   - flutter_vlc_player (from `.symlinks/plugins/flutter_vlc_player/ios`)
   - image_gallery_saver_plus (from `.symlinks/plugins/image_gallery_saver_plus/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
+  - media_kit_libs_ios_video (from `.symlinks/plugins/media_kit_libs_ios_video/ios`)
+  - media_kit_video (from `.symlinks/plugins/media_kit_video/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - pasteboard (from `.symlinks/plugins/pasteboard/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
@@ -95,7 +102,8 @@ DEPENDENCIES:
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
-  - video_player_avfoundation (from `.symlinks/plugins/video_player_avfoundation/darwin`)
+  - volume_controller (from `.symlinks/plugins/volume_controller/ios`)
+  - wakelock_plus (from `.symlinks/plugins/wakelock_plus/ios`)
 
 SPEC REPOS:
   trunk:
@@ -121,6 +129,10 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/image_gallery_saver_plus/ios"
   image_picker_ios:
     :path: ".symlinks/plugins/image_picker_ios/ios"
+  media_kit_libs_ios_video:
+    :path: ".symlinks/plugins/media_kit_libs_ios_video/ios"
+  media_kit_video:
+    :path: ".symlinks/plugins/media_kit_video/ios"
   package_info_plus:
     :path: ".symlinks/plugins/package_info_plus/ios"
   pasteboard:
@@ -137,8 +149,10 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/sqflite_darwin/darwin"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
-  video_player_avfoundation:
-    :path: ".symlinks/plugins/video_player_avfoundation/darwin"
+  volume_controller:
+    :path: ".symlinks/plugins/volume_controller/ios"
+  wakelock_plus:
+    :path: ".symlinks/plugins/wakelock_plus/ios"
 
 SPEC CHECKSUMS:
   DKImagePickerController: 946cec48c7873164274ecc4624d19e3da4c1ef3c
@@ -150,6 +164,8 @@ SPEC CHECKSUMS:
   flutter_vlc_player: 5464f594a9338e080d240bbe7b10ffe30c7bc8bc
   image_gallery_saver_plus: e597bf65a7846979417a3eae0763b71b6dfec6c3
   image_picker_ios: 7fe1ff8e34c1790d6fff70a32484959f563a928a
+  media_kit_libs_ios_video: 5a18affdb97d1f5d466dc79988b13eff6c5e2854
+  media_kit_video: 1746e198cb697d1ffb734b1d05ec429d1fcd1474
   MobileVLCKit: 2d9c7c373393ae43086aeeff890bf0b1afc15c5c
   OrderedSet: e539b66b644ff081c73a262d24ad552a69be3a94
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
@@ -162,7 +178,8 @@ SPEC CHECKSUMS:
   sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
   SwiftyGif: 706c60cf65fa2bc5ee0313beece843c8eb8194d4
   url_launcher_ios: 694010445543906933d732453a59da0a173ae33d
-  video_player_avfoundation: 2cef49524dd1f16c5300b9cd6efd9611ce03639b
+  volume_controller: 3657a1f65bedb98fa41ff7dc5793537919f31b12
+  wakelock_plus: e29112ab3ef0b318e58cfa5c32326458be66b556
 
 PODFILE CHECKSUM: ddb36cd5499d016d050a33ae43b1c9b71ab7472a
 
