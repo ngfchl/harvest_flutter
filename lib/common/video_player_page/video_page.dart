@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:harvest/utils/platform.dart';
 import 'package:harvest/utils/storage.dart';
@@ -26,79 +27,59 @@ class VideoPlayerPage extends StatelessWidget {
         final isFullscreen = controller.isFullscreen.value;
 
         var shadColorScheme = ShadTheme.of(context).colorScheme;
-        return Scaffold(
-          appBar: isFullscreen || PlatformTool.isHorizontalScreen() ? null : AppBar(title: const Text("正在播放")),
-          backgroundColor: shadColorScheme.background.withOpacity(opacity),
-          body: SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // 视频区域
-                    AspectRatio(
-                      aspectRatio: controller.videoController.player.state.height != null
-                          ? (controller.videoController.player.state.width! /
-                              controller.videoController.player.state.height!)
-                          : 16 / 9,
-                      child: Stack(
-                        children: [
-                          Video(
+        return KeyboardListener(
+          focusNode: FocusNode()..requestFocus(),
+          onKeyEvent: (KeyEvent event) {
+            if (event is KeyDownEvent) {
+              if (event.logicalKey == LogicalKeyboardKey.escape) {
+                // ESC 按下处理逻辑
+                Navigator.of(context).maybePop();
+              }
+            }
+          },
+          child: Scaffold(
+            appBar: isFullscreen || PlatformTool.isHorizontalScreen() ? null : AppBar(title: const Text("正在播放")),
+            backgroundColor: shadColorScheme.background.withOpacity(opacity * 1.2),
+            body: Center(
+              child: SafeArea(
+                child: AspectRatio(
+                  aspectRatio: controller.videoController.player.state.height != null
+                      ? (controller.videoController.player.state.width! /
+                          controller.videoController.player.state.height!)
+                      : 16 / 9,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: Center(
+                          child: Video(
                             controller: controller.videoController,
-                            fit: BoxFit.fitWidth,
-                          ),
-                          if (controller.isLoading.value)
-                            const Center(
-                              child: CircularProgressIndicator(),
-                            ),
-                        ],
-                      ),
-                    ),
-
-                    // 控制栏
-                    Row(
-                      children: [
-                        ShadIconButton.ghost(
-                          icon: Icon(
-                            controller.isPlaying.value ? Icons.pause : Icons.play_arrow,
-                            color: shadColorScheme.foreground,
-                          ),
-                          onPressed: controller.togglePlay,
-                        ),
-                        Text(
-                          "${_formatDuration(controller.position.value)} / ${_formatDuration(controller.duration.value)}",
-                          style: TextStyle(
-                            color: shadColorScheme.foreground,
-                          ),
-                        ),
-                        Expanded(
-                          child: Slider(
-                            value: controller.position.value.inSeconds.toDouble(),
-                            max: controller.duration.value.inSeconds.toDouble().clamp(1, double.infinity),
-                            activeColor: shadColorScheme.foreground,
-                            onChanged: (value) {
-                              controller.seek(Duration(seconds: value.toInt()));
+                            fit: BoxFit.contain,
+                            controls: (videoState) {
+                              return Stack(
+                                children: [
+                                  AdaptiveVideoControls(videoState),
+                                  Positioned(
+                                    right: 16,
+                                    top: 16,
+                                    child: ShadIconButton.ghost(
+                                      icon: Icon(
+                                        Icons.exit_to_app_outlined,
+                                      ),
+                                      onPressed: () => Get.back(),
+                                    ),
+                                  ),
+                                ],
+                              );
                             },
                           ),
                         ),
-                        ShadIconButton.ghost(
-                          icon: Icon(
-                            isFullscreen ? Icons.fullscreen_exit : Icons.fullscreen,
-                            color: shadColorScheme.foreground,
-                          ),
-                          onPressed: controller.toggleFullscreen,
+                      ),
+                      if (controller.isLoading.value)
+                        const Center(
+                          child: CircularProgressIndicator(),
                         ),
-                        ShadIconButton.ghost(
-                          icon: Icon(
-                            Icons.exit_to_app_outlined,
-                            color: shadColorScheme.foreground,
-                          ),
-                          onPressed: () => Get.back(),
-                        ),
-                      ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
