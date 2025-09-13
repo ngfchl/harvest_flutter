@@ -308,6 +308,7 @@ class HomeView extends GetView<HomeController> {
 
   Widget _actionButtonList(BuildContext context) {
     return GetBuilder<HomeController>(builder: (controller) {
+      var shadColorScheme = ShadTheme.of(context).colorScheme;
       return Row(
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -323,7 +324,7 @@ class HomeView extends GetView<HomeController> {
               child: Icon(
                 Icons.map,
                 size: 20,
-                color: ShadTheme.of(context).colorScheme.foreground,
+                color: shadColorScheme.foreground,
               ),
             ),
           ],
@@ -331,425 +332,434 @@ class HomeView extends GetView<HomeController> {
             const SizedBox(width: 15),
             CustomPopup(
               showArrow: false,
-              backgroundColor: ShadTheme.of(context).colorScheme.background,
+              backgroundColor: shadColorScheme.background,
               barrierColor: Colors.transparent,
               content: SizedBox(
                 width: 150,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    PopupMenuItem<String>(
-                      child: Text(
-                        '播放视频',
-                        style: TextStyle(
-                          color: ShadTheme.of(context).colorScheme.secondary,
-                        ),
-                      ),
-                      onTap: () async {
-                        final urlController = TextEditingController();
-                        showShadDialog(
-                          context: context,
-                          builder: (context) => ShadDialog(
-                            title: const Text('播放网络视频'),
-                            // description: const Text("测试链接"),
-                            actions: [
-                              ShadButton(
-                                child: Text('播放'),
-                                onPressed: () {
-                                  if (urlController.text.isEmpty == true) {
-                                    return;
-                                  } else {
-                                    Get.dialog(CustomCard(
-                                        child: VideoPlayerPage(
-                                      initialUrl: urlController.text,
-                                    )));
-                                  }
-                                },
-                              )
-                            ],
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 320),
-                              child: ShadInput(
-                                controller: urlController,
-                                placeholder: Text('输入视频URL',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: ShadTheme.of(context)
-                                          .colorScheme
-                                          .foreground,
-                                    )),
-                              ),
-                            ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      PopupMenuItem<String>(
+                        child: Text(
+                          '播放视频',
+                          style: TextStyle(
+                            color: shadColorScheme.foreground,
                           ),
-                        );
-                      },
-                    ),
-                    PopupMenuItem<String>(
-                      child: Text(
-                        '全员签到',
-                        style: TextStyle(
-                          color: ShadTheme.of(context).colorScheme.secondary,
                         ),
-                      ),
-                      onTap: () async {
-                        await signAllSiteButton();
-                      },
-                    ),
-                    PopupMenuItem<String>(
-                      child: Text(
-                        '站点数据',
-                        style: TextStyle(
-                          color: ShadTheme.of(context).colorScheme.secondary,
-                        ),
-                      ),
-                      onTap: () async {
-                        await getAllStatusButton();
-                      },
-                    ),
-                    PopupMenuItem<String>(
-                      child: Text(
-                        '批量操作',
-                        style: TextStyle(
-                          color: ShadTheme.of(context).colorScheme.secondary,
-                        ),
-                      ),
-                      onTap: () async {
-                        const List<Tab> tabs = [
-                          Tab(text: '批量修改'),
-                          Tab(text: '清理数据'),
-                        ];
-                        TextEditingController keyController =
-                            TextEditingController(text: '');
-                        TextEditingController valueController =
-                            TextEditingController(text: '');
-                        Map<String, String> selectOptions = {
-                          "站点UA": "user_agent",
-                          "网络代理": "proxy"
-                        };
-                        Get.bottomSheet(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5.0), // 圆角半径
-                          ),
-                          SizedBox(
-                            height: 240,
-                            // width: 240,
-                            child: DefaultTabController(
-                              length: tabs.length,
-                              child: Scaffold(
-                                resizeToAvoidBottomInset: false,
-                                appBar: const TabBar(tabs: tabs),
-                                body: TabBarView(
-                                  children: [
-                                    ListView(
-                                      // mainAxisAlignment:
-                                      //     MainAxisAlignment.spaceEvenly,
-                                      children: [
-                                        CustomPickerField(
-                                          controller: keyController,
-                                          labelText: '要替换的属性',
-                                          data: const ["站点UA", "网络代理"],
-                                          // onChanged: (p, position) {
-                                          //   keyController.text = selectOptions[p]!;
-                                          // },
+                        onTap: () async {
+                          final urlController = TextEditingController();
+                          showShadDialog(
+                            context: context,
+                            builder: (context) => ShadDialog(
+                              title: const Text('播放网络视频'),
+                              // description: const Text("测试链接"),
+                              actions: [
+                                ShadButton(
+                                  child: Text('播放'),
+                                  onPressed: () {
+                                    if (urlController.text.isEmpty == true) {
+                                      return;
+                                    } else {
+                                      showShadDialog(
+                                        context: context,
+                                        builder: (context) => ShadDialog(
+                                          child: CustomCard(
+                                            child: VideoPlayerPage(
+                                              initialUrl: urlController.text,
+                                            ),
+                                          ),
                                         ),
-                                        CustomTextField(
-                                            controller: valueController,
-                                            labelText: "替换为"),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceAround,
-                                          children: [
-                                            ElevatedButton(
-                                              style: OutlinedButton.styleFrom(
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0), // 圆角半径
-                                                ),
-                                              ),
-                                              onPressed: () {
-                                                Get.back(result: false);
-                                              },
-                                              child: const Text('取消'),
-                                            ),
-                                            ElevatedButton(
-                                              style: OutlinedButton.styleFrom(
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0), // 圆角半径
-                                                ),
-                                              ),
-                                              onPressed: () async {
-                                                Get.back(result: true);
-                                                await bulkUpgradeHandler({
-                                                  "key": selectOptions[
-                                                      keyController.text]!,
-                                                  "value": StringUtils
-                                                      .parseJsonOrReturnString(
-                                                          valueController.text),
-                                                });
-                                              },
-                                              child: const Text('确认'),
-                                            ),
-                                          ],
-                                        )
-                                      ],
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 28.0),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          CustomTextTag(
-                                              labelText: "慎用，清理后数据无法恢复",
-                                              backgroundColor:
-                                                  ShadTheme.of(context)
-                                                      .colorScheme
-                                                      .destructive),
-                                          FullWidthButton(
-                                              text: "精简历史数据",
-                                              onPressed: () async {
-                                                Get.defaultDialog(
-                                                  title: "确认吗？",
-                                                  middleText:
-                                                      "本操作会精简站点数据，只保留最近15天的历史数据，确认精简数据吗？",
-                                                  actions: [
-                                                    ElevatedButton(
-                                                      style: OutlinedButton
-                                                          .styleFrom(
-                                                        shape:
-                                                            RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      8.0), // 圆角半径
-                                                        ),
-                                                      ),
-                                                      onPressed: () async {
-                                                        Get.back(result: false);
-                                                      },
-                                                      child: const Text('取消'),
-                                                    ),
-                                                    ElevatedButton(
-                                                      style: OutlinedButton
-                                                          .styleFrom(
-                                                        shape:
-                                                            RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      8.0), // 圆角半径
-                                                        ),
-                                                      ),
-                                                      onPressed: () async {
-                                                        Get.back(result: true);
-                                                        await bulkUpgradeHandler({
-                                                          "key": "status_15",
-                                                          "value": {},
-                                                        });
-                                                      },
-                                                      child: const Text('确认'),
-                                                    ),
-                                                  ],
-                                                );
-                                              }),
-                                          FullWidthButton(
-                                              text: "清除历史数据",
-                                              onPressed: () async {
-                                                Get.defaultDialog(
-                                                  title: "确认吗？",
-                                                  middleText: "确认清除站点历史数据吗？",
-                                                  actions: [
-                                                    ElevatedButton(
-                                                      style: OutlinedButton
-                                                          .styleFrom(
-                                                        shape:
-                                                            RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      8.0), // 圆角半径
-                                                        ),
-                                                      ),
-                                                      onPressed: () async {
-                                                        Get.back(result: false);
-                                                      },
-                                                      child: const Text('取消'),
-                                                    ),
-                                                    ElevatedButton(
-                                                      style: OutlinedButton
-                                                          .styleFrom(
-                                                        shape:
-                                                            RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      8.0), // 圆角半径
-                                                        ),
-                                                      ),
-                                                      onPressed: () async {
-                                                        Get.back(result: true);
-                                                        await bulkUpgradeHandler({
-                                                          "key": "status",
-                                                          "value": {},
-                                                        });
-                                                      },
-                                                      child: const Text('确认'),
-                                                    ),
-                                                  ],
-                                                );
-                                              }),
-                                          FullWidthButton(
-                                              text: "清除签到数据",
-                                              onPressed: () async {
-                                                Get.defaultDialog(
-                                                  title: "确认吗？",
-                                                  middleText: "确认清除站点签到数据吗？",
-                                                  actions: [
-                                                    ElevatedButton(
-                                                      style: OutlinedButton
-                                                          .styleFrom(
-                                                        shape:
-                                                            RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      8.0), // 圆角半径
-                                                        ),
-                                                      ),
-                                                      onPressed: () {
-                                                        Get.back(result: false);
-                                                      },
-                                                      child: const Text('取消'),
-                                                    ),
-                                                    ElevatedButton(
-                                                      style: OutlinedButton
-                                                          .styleFrom(
-                                                        shape:
-                                                            RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      8.0), // 圆角半径
-                                                        ),
-                                                      ),
-                                                      onPressed: () async {
-                                                        Get.back(result: true);
-                                                        await bulkUpgradeHandler({
-                                                          "key": "sign_info",
-                                                          "value": {},
-                                                        });
-                                                      },
-                                                      child: const Text('确认'),
-                                                    ),
-                                                  ],
-                                                );
-                                              }),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
+                                      );
+                                    }
+                                  },
+                                )
+                              ],
+                              child: ConstrainedBox(
+                                constraints:
+                                    const BoxConstraints(maxWidth: 320),
+                                child: ShadInput(
+                                  controller: urlController,
+                                  placeholder: Text('输入视频URL',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: shadColorScheme.foreground,
+                                      )),
                                 ),
                               ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-                    PopupMenuItem(
-                      child: CustomUAWidget(
+                          );
+                        },
+                      ),
+                      PopupMenuItem<String>(
                         child: Text(
-                          '自定义UA',
+                          '全员签到',
                           style: TextStyle(
-                            color: ShadTheme.of(context).colorScheme.secondary,
+                            color: shadColorScheme.foreground,
                           ),
                         ),
+                        onTap: () async {
+                          await signAllSiteButton();
+                        },
                       ),
-                    ),
-                    PopupMenuItem(
-                      child: InviteUser(
+                      PopupMenuItem<String>(
                         child: Text(
-                          '试用邀请',
+                          '站点数据',
                           style: TextStyle(
-                            color: ShadTheme.of(context).colorScheme.secondary,
+                            color: shadColorScheme.foreground,
+                          ),
+                        ),
+                        onTap: () async {
+                          await getAllStatusButton();
+                        },
+                      ),
+                      PopupMenuItem<String>(
+                        child: Text(
+                          '批量操作',
+                          style: TextStyle(
+                            color: shadColorScheme.foreground,
+                          ),
+                        ),
+                        onTap: () async {
+                          const List<Tab> tabs = [
+                            Tab(text: '批量修改'),
+                            Tab(text: '清理数据'),
+                          ];
+                          TextEditingController keyController =
+                              TextEditingController(text: '');
+                          TextEditingController valueController =
+                              TextEditingController(text: '');
+                          Map<String, String> selectOptions = {
+                            "站点UA": "user_agent",
+                            "网络代理": "proxy"
+                          };
+                          Get.bottomSheet(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5.0), // 圆角半径
+                            ),
+                            SizedBox(
+                              height: 240,
+                              // width: 240,
+                              child: DefaultTabController(
+                                length: tabs.length,
+                                child: Scaffold(
+                                  resizeToAvoidBottomInset: false,
+                                  appBar: const TabBar(tabs: tabs),
+                                  body: TabBarView(
+                                    children: [
+                                      ListView(
+                                        // mainAxisAlignment:
+                                        //     MainAxisAlignment.spaceEvenly,
+                                        children: [
+                                          CustomPickerField(
+                                            controller: keyController,
+                                            labelText: '要替换的属性',
+                                            data: const ["站点UA", "网络代理"],
+                                            // onChanged: (p, position) {
+                                            //   keyController.text = selectOptions[p]!;
+                                            // },
+                                          ),
+                                          CustomTextField(
+                                              controller: valueController,
+                                              labelText: "替换为"),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceAround,
+                                            children: [
+                                              ElevatedButton(
+                                                style: OutlinedButton.styleFrom(
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8.0), // 圆角半径
+                                                  ),
+                                                ),
+                                                onPressed: () {
+                                                  Get.back(result: false);
+                                                },
+                                                child: const Text('取消'),
+                                              ),
+                                              ElevatedButton(
+                                                style: OutlinedButton.styleFrom(
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8.0), // 圆角半径
+                                                  ),
+                                                ),
+                                                onPressed: () async {
+                                                  Get.back(result: true);
+                                                  await bulkUpgradeHandler({
+                                                    "key": selectOptions[
+                                                        keyController.text]!,
+                                                    "value": StringUtils
+                                                        .parseJsonOrReturnString(
+                                                            valueController
+                                                                .text),
+                                                  });
+                                                },
+                                                child: const Text('确认'),
+                                              ),
+                                            ],
+                                          )
+                                        ],
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 28.0),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                            CustomTextTag(
+                                                labelText: "慎用，清理后数据无法恢复",
+                                                backgroundColor: shadColorScheme
+                                                    .destructive),
+                                            FullWidthButton(
+                                                text: "精简历史数据",
+                                                onPressed: () async {
+                                                  Get.defaultDialog(
+                                                    title: "确认吗？",
+                                                    middleText:
+                                                        "本操作会精简站点数据，只保留最近15天的历史数据，确认精简数据吗？",
+                                                    actions: [
+                                                      ElevatedButton(
+                                                        style: OutlinedButton
+                                                            .styleFrom(
+                                                          shape:
+                                                              RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        8.0), // 圆角半径
+                                                          ),
+                                                        ),
+                                                        onPressed: () async {
+                                                          Get.back(
+                                                              result: false);
+                                                        },
+                                                        child: const Text('取消'),
+                                                      ),
+                                                      ElevatedButton(
+                                                        style: OutlinedButton
+                                                            .styleFrom(
+                                                          shape:
+                                                              RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        8.0), // 圆角半径
+                                                          ),
+                                                        ),
+                                                        onPressed: () async {
+                                                          Get.back(
+                                                              result: true);
+                                                          await bulkUpgradeHandler({
+                                                            "key": "status_15",
+                                                            "value": {},
+                                                          });
+                                                        },
+                                                        child: const Text('确认'),
+                                                      ),
+                                                    ],
+                                                  );
+                                                }),
+                                            FullWidthButton(
+                                                text: "清除历史数据",
+                                                onPressed: () async {
+                                                  Get.defaultDialog(
+                                                    title: "确认吗？",
+                                                    middleText: "确认清除站点历史数据吗？",
+                                                    actions: [
+                                                      ElevatedButton(
+                                                        style: OutlinedButton
+                                                            .styleFrom(
+                                                          shape:
+                                                              RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        8.0), // 圆角半径
+                                                          ),
+                                                        ),
+                                                        onPressed: () async {
+                                                          Get.back(
+                                                              result: false);
+                                                        },
+                                                        child: const Text('取消'),
+                                                      ),
+                                                      ElevatedButton(
+                                                        style: OutlinedButton
+                                                            .styleFrom(
+                                                          shape:
+                                                              RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        8.0), // 圆角半径
+                                                          ),
+                                                        ),
+                                                        onPressed: () async {
+                                                          Get.back(
+                                                              result: true);
+                                                          await bulkUpgradeHandler({
+                                                            "key": "status",
+                                                            "value": {},
+                                                          });
+                                                        },
+                                                        child: const Text('确认'),
+                                                      ),
+                                                    ],
+                                                  );
+                                                }),
+                                            FullWidthButton(
+                                                text: "清除签到数据",
+                                                onPressed: () async {
+                                                  Get.defaultDialog(
+                                                    title: "确认吗？",
+                                                    middleText: "确认清除站点签到数据吗？",
+                                                    actions: [
+                                                      ElevatedButton(
+                                                        style: OutlinedButton
+                                                            .styleFrom(
+                                                          shape:
+                                                              RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        8.0), // 圆角半径
+                                                          ),
+                                                        ),
+                                                        onPressed: () {
+                                                          Get.back(
+                                                              result: false);
+                                                        },
+                                                        child: const Text('取消'),
+                                                      ),
+                                                      ElevatedButton(
+                                                        style: OutlinedButton
+                                                            .styleFrom(
+                                                          shape:
+                                                              RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        8.0), // 圆角半径
+                                                          ),
+                                                        ),
+                                                        onPressed: () async {
+                                                          Get.back(
+                                                              result: true);
+                                                          await bulkUpgradeHandler({
+                                                            "key": "sign_info",
+                                                            "value": {},
+                                                          });
+                                                        },
+                                                        child: const Text('确认'),
+                                                      ),
+                                                    ],
+                                                  );
+                                                }),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      PopupMenuItem(
+                        child: CustomUAWidget(
+                          child: Text(
+                            '自定义UA',
+                            style: TextStyle(
+                              color: shadColorScheme.foreground,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    PopupMenuItem<String>(
-                      child: Text(
-                        'PTPP',
-                        style: TextStyle(
-                          color: ShadTheme.of(context).colorScheme.secondary,
+                      PopupMenuItem(
+                        child: InviteUser(
+                          child: Text(
+                            '试用邀请',
+                            style: TextStyle(
+                              color: shadColorScheme.foreground,
+                            ),
+                          ),
                         ),
                       ),
-                      onTap: () async => pickAndUpload(),
-                    ),
-                    PopupMenuItem<String>(
-                      child: Text(
-                        'CC 同步',
-                        style: TextStyle(
-                          color: ShadTheme.of(context).colorScheme.secondary,
+                      PopupMenuItem<String>(
+                        child: Text(
+                          'PTPP',
+                          style: TextStyle(
+                            color: shadColorScheme.foreground,
+                          ),
                         ),
+                        onTap: () async => pickAndUpload(),
                       ),
-                      onTap: () async {
-                        await importFromCookieCloud();
-                      },
-                    ),
-                    PopupMenuItem<String>(
-                      child: Text(
-                        'CF 测速',
-                        style: TextStyle(
-                          color: ShadTheme.of(context).colorScheme.secondary,
+                      PopupMenuItem<String>(
+                        child: Text(
+                          'CC 同步',
+                          style: TextStyle(
+                            color: shadColorScheme.foreground,
+                          ),
                         ),
+                        onTap: () async {
+                          await importFromCookieCloud();
+                        },
                       ),
-                      onTap: () async {
-                        CommonResponse res = await speedTestApi();
-                        if (res.code == 0) {
-                          Get.back();
-                          Get.snackbar('测速任务发送成功', res.msg,
-                              colorText:
-                                  ShadTheme.of(context).colorScheme.foreground);
-                        } else {
-                          Get.snackbar('测速任务发送失败', '测速任务执行出错啦：${res.msg}',
-                              colorText: ShadTheme.of(context)
-                                  .colorScheme
-                                  .destructive);
-                        }
-                      },
-                    ),
-                    PopupMenuItem<String>(
-                      child: Text(
-                        '截图分享',
-                        style: TextStyle(
-                          color: ShadTheme.of(context).colorScheme.secondary,
+                      PopupMenuItem<String>(
+                        child: Text(
+                          'CF 测速',
+                          style: TextStyle(
+                            color: shadColorScheme.foreground,
+                          ),
                         ),
+                        onTap: () async {
+                          CommonResponse res = await speedTestApi();
+                          if (res.code == 0) {
+                            Get.back();
+                            Get.snackbar('测速任务发送成功', res.msg,
+                                colorText: shadColorScheme.foreground);
+                          } else {
+                            Get.snackbar('测速任务发送失败', '测速任务执行出错啦：${res.msg}',
+                                colorText: shadColorScheme.destructive);
+                          }
+                        },
                       ),
-                      onTap: () async {
-                        await ScreenshotSaver.captureAndSave(_captureKey);
-                      },
-                    ),
-                    PopupMenuItem<String>(
-                      child: Text(
-                        '退出登录',
-                        style: TextStyle(
-                          color: ShadTheme.of(context).colorScheme.secondary,
+                      PopupMenuItem<String>(
+                        child: Text(
+                          '截图分享',
+                          style: TextStyle(
+                            color: shadColorScheme.foreground,
+                          ),
                         ),
+                        onTap: () async {
+                          await ScreenshotSaver.captureAndSave(_captureKey);
+                        },
                       ),
-                      onTap: () async {
-                        controller.logout();
-                      },
-                    ),
-                  ],
+                      PopupMenuItem<String>(
+                        child: Text(
+                          '退出登录',
+                          style: TextStyle(
+                            color: shadColorScheme.foreground,
+                          ),
+                        ),
+                        onTap: () async {
+                          controller.logout();
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
               child: Icon(
                 Icons.add_box_outlined,
                 size: 24,
-                color: ShadTheme.of(context).colorScheme.foreground,
+                color: shadColorScheme.foreground,
               ),
             )
           ],
