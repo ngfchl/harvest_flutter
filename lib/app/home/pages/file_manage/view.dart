@@ -9,7 +9,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:get/get.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/form_widgets.dart';
@@ -114,9 +113,7 @@ class FileManagePage extends StatelessWidget {
                                     '暂无文件',
                                     style: TextStyle(
                                       fontSize: 16,
-                                      color: ShadTheme.of(context)
-                                          .colorScheme
-                                          .foreground,
+                                      color: ShadTheme.of(context).colorScheme.foreground,
                                     ),
                                   ),
                                 ),
@@ -136,16 +133,11 @@ class FileManagePage extends StatelessWidget {
                                             flex: 1,
                                             // padding: EdgeInsets.all(8),
                                             icon: Icons.delete_outline,
-                                            borderRadius:
-                                                const BorderRadius.only(
-                                                    topLeft: Radius.circular(8),
-                                                    bottomLeft:
-                                                        Radius.circular(8)),
+                                            borderRadius: const BorderRadius.only(
+                                                topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
                                             onPressed: (context) async {
-                                              TextEditingController
-                                                  nameController =
-                                                  TextEditingController(
-                                                      text: item.name);
+                                              TextEditingController nameController =
+                                                  TextEditingController(text: item.name);
                                               Get.defaultDialog(
                                                 title: '重命名',
                                                 radius: 5,
@@ -154,9 +146,7 @@ class FileManagePage extends StatelessWidget {
                                                     fontWeight: FontWeight.w900,
                                                     color: Colors.deepPurple),
                                                 middleText: '确定要重新命名吗？',
-                                                content: CustomTextField(
-                                                    controller: nameController,
-                                                    labelText: "重命名为"),
+                                                content: CustomTextField(controller: nameController, labelText: "重命名为"),
                                                 actions: [
                                                   ElevatedButton(
                                                     onPressed: () {
@@ -167,18 +157,14 @@ class FileManagePage extends StatelessWidget {
                                                   ElevatedButton(
                                                     onPressed: () async {
                                                       Get.back(result: true);
-                                                      doFileAction(item.path,
-                                                          'rename_dir',
-                                                          newFileName:
-                                                              "newFileName");
+                                                      doFileAction(item.path, 'rename_dir', newFileName: "newFileName");
                                                     },
                                                     child: const Text('确认'),
                                                   ),
                                                 ],
                                               );
                                             },
-                                            backgroundColor:
-                                                const Color(0xFF0A9D96),
+                                            backgroundColor: const Color(0xFF0A9D96),
                                             foregroundColor: Colors.white,
                                             label: '重命名',
                                           ),
@@ -191,12 +177,8 @@ class FileManagePage extends StatelessWidget {
                                           SlidableAction(
                                             flex: 1,
                                             icon: Icons.delete_outline,
-                                            borderRadius:
-                                                const BorderRadius.only(
-                                                    topRight:
-                                                        Radius.circular(8),
-                                                    bottomRight:
-                                                        Radius.circular(8)),
+                                            borderRadius: const BorderRadius.only(
+                                                topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
                                             onPressed: (context) async {
                                               Get.defaultDialog(
                                                 title: '确认',
@@ -233,8 +215,7 @@ class FileManagePage extends StatelessWidget {
                                                 ],
                                               );
                                             },
-                                            backgroundColor:
-                                                const Color(0xFFFE4A49),
+                                            backgroundColor: const Color(0xFFFE4A49),
                                             foregroundColor: Colors.white,
                                             // icon: Icons.delete,
                                             label: '删除',
@@ -245,33 +226,25 @@ class FileManagePage extends StatelessWidget {
                                         title: Text(
                                           item.name,
                                           style: TextStyle(
-                                            color: ShadTheme.of(context)
-                                                .colorScheme
-                                                .foreground,
+                                            color: ShadTheme.of(context).colorScheme.foreground,
                                           ),
                                         ),
                                         subtitle: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
                                             Text(
                                               item.modified,
                                               style: TextStyle(
                                                 fontSize: 12,
-                                                color: ShadTheme.of(context)
-                                                    .colorScheme
-                                                    .foreground,
+                                                color: ShadTheme.of(context).colorScheme.foreground,
                                               ),
                                             ),
                                             if (!item.isDir)
                                               Text(
-                                                FileSizeConvert.parseToFileSize(
-                                                    item.size),
+                                                FileSizeConvert.parseToFileSize(item.size),
                                                 style: TextStyle(
                                                   fontSize: 12,
-                                                  color: ShadTheme.of(context)
-                                                      .colorScheme
-                                                      .foreground,
+                                                  color: ShadTheme.of(context).colorScheme.foreground,
                                                 ),
                                               ),
                                           ],
@@ -281,17 +254,13 @@ class FileManagePage extends StatelessWidget {
                                           child: item.isDir
                                               ? Icon(
                                                   Icons.folder,
-                                                  color: ShadTheme.of(context)
-                                                      .colorScheme
-                                                      .foreground,
+                                                  color: ShadTheme.of(context).colorScheme.foreground,
                                                 )
                                               : Text(
                                                   item.ext.toString(),
                                                   style: TextStyle(
                                                     fontSize: 12,
-                                                    color: ShadTheme.of(context)
-                                                        .colorScheme
-                                                        .foreground,
+                                                    color: ShadTheme.of(context).colorScheme.foreground,
                                                   ),
                                                 ),
                                         ),
@@ -300,8 +269,7 @@ class FileManagePage extends StatelessWidget {
                                             title: '常用操作',
                                             content: CustomCard(
                                               child: Wrap(
-                                                alignment:
-                                                    WrapAlignment.spaceAround,
+                                                alignment: WrapAlignment.spaceAround,
                                                 spacing: 10,
                                                 runSpacing: 10,
                                                 children: [
@@ -312,33 +280,72 @@ class FileManagePage extends StatelessWidget {
                                                   // ),
                                                   ShadButton.ghost(
                                                     onPressed: () async {
-                                                      doFileAction(item.path,
-                                                          'search_tmdb');
+                                                      doFileAction(item.path, 'search_tmdb');
                                                     },
-                                                    leading: Icon(Icons
-                                                        .movie_filter_outlined),
+                                                    leading: Icon(Icons.movie_filter_outlined),
                                                     child: Text("刮削资源"),
                                                   ),
                                                   ShadButton.ghost(
                                                     onPressed: () async {
-                                                      doFileAction(item.path,
-                                                          'search_seed');
+                                                      doFileAction(item.path, 'search_seed');
                                                     },
-                                                    leading: Icon(Icons
-                                                        .local_movies_outlined),
+                                                    leading: Icon(Icons.local_movies_outlined),
                                                     child: Text("查询做种"),
                                                   ),
                                                   ShadButton.ghost(
                                                     onPressed: () async {
-                                                      doFileAction(item.path,
-                                                          'hard_link',
-                                                          newFileName:
-                                                              "newFileName");
+                                                      doFileAction(item.path, 'hard_link', newFileName: "newFileName");
                                                     },
-                                                    leading:
-                                                        Icon(Icons.hardware),
+                                                    leading: Icon(Icons.hardware),
                                                     child: Text("硬链接"),
                                                   ),
+                                                  if (!item.isDir)
+                                                    ShadButton.ghost(
+                                                      onPressed: () async {
+                                                        Logger.instance.d('文件后缀名：${item.ext}，文件类型：${item.mimeType}');
+                                                        CommonResponse res =
+                                                            await controller.getFileSourceUrl(item.path);
+                                                        Logger.instance.d(res.toString());
+                                                        if (res.succeed) {
+                                                          Clipboard.setData(ClipboardData(text: res.data));
+                                                          if (item.mimeType.startsWith('image')) {
+                                                            showImage(res.data);
+                                                          } else if (item.mimeType.startsWith('video')) {
+                                                            showPlayer(res.data, context);
+                                                          } else if (item.mimeType.startsWith('audio')) {
+                                                            showPlayer(res.data, context);
+                                                          } else {
+                                                            Get.defaultDialog(
+                                                              title: '文件操作',
+                                                              content: CustomCard(
+                                                                child: Wrap(
+                                                                  alignment: WrapAlignment.spaceAround,
+                                                                  spacing: 10,
+                                                                  runSpacing: 10,
+                                                                  children: [
+                                                                    ShadButton.ghost(
+                                                                      onPressed: () async {
+                                                                        await pickAndDownload(res.data);
+                                                                      },
+                                                                      leading: Icon(Icons.download_outlined),
+                                                                      child: Text("下载"),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                            );
+                                                          }
+                                                        } else {
+                                                          Get.snackbar(
+                                                            '提示',
+                                                            res.msg,
+                                                            colorText: Get.theme.colorScheme.error,
+                                                          );
+                                                        }
+                                                      },
+                                                      leading: Icon(Icons.hardware),
+                                                      child: Text("打开"),
+                                                    ),
                                                 ],
                                               ),
                                             ),
@@ -351,42 +358,33 @@ class FileManagePage extends StatelessWidget {
                                             controller.currentPath = item.path;
                                             await controller.initSourceData();
                                           } else {
-                                            Logger.instance.d(
-                                                '文件后缀名：${item.ext}，文件类型：${item.mimeType}');
-                                            CommonResponse res =
-                                                await controller
-                                                    .getFileSourceUrl(
-                                                        item.path);
+                                            Logger.instance.d('文件后缀名：${item.ext}，文件类型：${item.mimeType}');
+                                            CommonResponse res = await controller.getFileSourceUrl(item.path);
                                             Logger.instance.d(res.toString());
                                             if (res.succeed) {
-                                              Clipboard.setData(ClipboardData(
-                                                  text: res.data));
-                                              if (item.mimeType
-                                                  .startsWith('image')) {
+                                              Clipboard.setData(ClipboardData(text: res.data));
+                                              if (item.mimeType.startsWith('image')) {
                                                 showImage(res.data);
-                                              } else if (item.mimeType
-                                                  .startsWith('video')) {
-                                                showPlayer(res.data, context);
-                                              } else if (item.mimeType
-                                                  .startsWith('audio')) {
-                                                showPlayer(res.data, context);
+                                              } else if (item.mimeType.startsWith('video') ||
+                                                  item.mimeType.startsWith('audio')) {
+                                                Get.dialog(CustomCard(
+                                                    child: VideoPlayerPage(
+                                                  initialUrl: res.data,
+                                                )));
                                               } else {
                                                 Get.defaultDialog(
                                                   title: '文件操作',
                                                   content: CustomCard(
                                                     child: Wrap(
-                                                      alignment: WrapAlignment
-                                                          .spaceAround,
+                                                      alignment: WrapAlignment.spaceAround,
                                                       spacing: 10,
                                                       runSpacing: 10,
                                                       children: [
                                                         ShadButton.ghost(
                                                           onPressed: () async {
-                                                            await pickAndDownload(
-                                                                res.data);
+                                                            await pickAndDownload(res.data);
                                                           },
-                                                          leading: Icon(Icons
-                                                              .download_outlined),
+                                                          leading: Icon(Icons.download_outlined),
                                                           child: Text("下载"),
                                                         ),
                                                       ],
@@ -398,8 +396,7 @@ class FileManagePage extends StatelessWidget {
                                               Get.snackbar(
                                                 '提示',
                                                 res.msg,
-                                                colorText:
-                                                    Get.theme.colorScheme.error,
+                                                colorText: Get.theme.colorScheme.error,
                                               );
                                             }
                                           }
@@ -496,14 +493,12 @@ class FileManagePage extends StatelessWidget {
       // Windows: 直接调用可执行文件 (需在 PATH 或已知安装路径)
       switch (player.toLowerCase()) {
         case 'vlc':
-          Uri encodedUrl =
-              Uri.parse('vlc-x-callback://${Uri.encodeComponent(url)}');
+          Uri encodedUrl = Uri.parse('vlc-x-callback://${Uri.encodeComponent(url)}');
           Logger.instance.d(await canLaunchUrl(encodedUrl));
           if (await canLaunchUrl(encodedUrl)) {
             await launchUrl(encodedUrl, mode: LaunchMode.externalApplication);
           } else {
-            await Process.start(
-                'C:\\Program Files\\VideoLAN\\VLC\\vlc.exe', [url]);
+            await Process.start('C:\\Program Files\\VideoLAN\\VLC\\vlc.exe', [url]);
           }
           break;
         case 'potplayer':
@@ -557,20 +552,25 @@ class FileManagePage extends StatelessWidget {
           if (defaultTargetPlatform == TargetPlatform.iOS)
             ...schemes.entries.toList().map(
                   (entry) => ShadButton.ghost(
+                    size: ShadButtonSize.sm,
                     onPressed: () async {
                       final uri = Uri.parse(entry.value);
-                      if (!await launchUrl(uri,
-                          mode: LaunchMode.externalApplication)) {
+                      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
                         Logger.instance.w('无法使用${entry.key}外部播放器');
                       }
                     },
                     child: Text(
                       entry.key.toString(),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: shadColorScheme.foreground,
+                      ),
                     ),
                   ),
                 ),
           if (defaultTargetPlatform == TargetPlatform.android)
             ShadButton.ghost(
+              size: ShadButtonSize.sm,
               onPressed: () async {
                 final intent = AndroidIntent(
                   action: 'action_view',
@@ -580,106 +580,60 @@ class FileManagePage extends StatelessWidget {
                 intent.launch();
               },
               leading: Icon(Icons.open_in_new_rounded),
-              child: Text('打开'),
+              child: Text(
+                '打开',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: shadColorScheme.foreground,
+                ),
+              ),
             ),
           if (defaultTargetPlatform == TargetPlatform.linux ||
               defaultTargetPlatform == TargetPlatform.macOS ||
               defaultTargetPlatform == TargetPlatform.windows)
             ...schemes.entries.toList().map(
                   (entry) => ShadButton.ghost(
+                    size: ShadButtonSize.sm,
                     onPressed: () async {
                       openWithPlayer(entry.key, url);
                     },
                     child: Text(
                       entry.key.toString(),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: shadColorScheme.foreground,
+                      ),
                     ),
                   ),
                 ),
           ShadButton.ghost(
+            size: ShadButtonSize.sm,
             onPressed: () async {
               Get.dialog(CustomCard(
                   child: VideoPlayerPage(
                 initialUrl: url,
               )));
             },
-            // leading: Icon(Icons.play_circle_outline),
-            child: Text('MediaKit'),
-          ),
-          if (defaultTargetPlatform == TargetPlatform.android ||
-              defaultTargetPlatform == TargetPlatform.iOS)
-            ShadButton.ghost(
-              onPressed: () async {
-                VlcPlayerController vlcController = VlcPlayerController.network(
-                  url,
-                  hwAcc: HwAcc.full,
-                  autoPlay: true,
-                  options: VlcPlayerOptions(),
-                );
-
-                Get.dialog(
-                  CustomCard(
-                    width: double.infinity,
-                    height: Get.height * 0.7,
-                    color:
-                        shadColorScheme.background.withOpacity(opacity * 1.2),
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: VlcPlayer(
-                            controller: vlcController,
-                            aspectRatio: 16 / 9,
-                            placeholder:
-                                Center(child: CircularProgressIndicator()),
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 2,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            spacing: 10,
-                            children: [
-                              IconButton(
-                                  onPressed: () {
-                                    vlcController.play();
-                                  },
-                                  icon: Icon(Icons.play_arrow_outlined)),
-                              IconButton(
-                                  onPressed: () {
-                                    vlcController.pause();
-                                  },
-                                  icon: Icon(Icons.pause_outlined)),
-                              IconButton(
-                                  onPressed: () {
-                                    Get.back();
-                                  },
-                                  icon: Icon(Icons.exit_to_app_outlined)),
-                              IconButton(
-                                  onPressed: () {},
-                                  icon: Icon(Icons.fullscreen_outlined)),
-                              IconButton(
-                                  onPressed: () {},
-                                  icon: Icon(Icons.fullscreen_exit_outlined)),
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                  barrierDismissible: false,
-                ).whenComplete(() {
-                  vlcController.stop();
-                  vlcController.dispose();
-                });
-              },
-              leading: Icon(Icons.play_arrow_outlined),
-              child: Text("播放"),
+            child: Text(
+              'MediaKit',
+              style: TextStyle(
+                fontSize: 14,
+                color: shadColorScheme.foreground,
+              ),
             ),
+          ),
           ShadButton.ghost(
+            size: ShadButtonSize.sm,
             onPressed: () async {
               await pickAndDownload(url);
             },
-            leading: Icon(Icons.download_outlined),
-            child: Text("下载"),
+            child: Text(
+              "下载",
+              style: TextStyle(
+                fontSize: 14,
+                color: shadColorScheme.foreground,
+              ),
+            ),
           ),
         ],
       ),
@@ -700,8 +654,7 @@ class FileManagePage extends StatelessWidget {
 
     /// 选择保存位置并下载
     // 1. 系统文件选择器（无需 Get.dialog）
-    Logger.instance
-        .w('文件名: ${Uri.parse(url).pathSegments.last.split('/').last}');
+    Logger.instance.w('文件名: ${Uri.parse(url).pathSegments.last.split('/').last}');
     final savePath = await FilePicker.platform.saveFile(
       dialogTitle: '选择保存位置',
       fileName: Uri.parse(url).pathSegments.last.split('/').last,
@@ -756,9 +709,8 @@ class FileManagePage extends StatelessWidget {
                     maxScale: PhotoViewComputedScale.covered * 5, // 允许用户放大
                     minScale: PhotoViewComputedScale.contained,
                     initialScale: PhotoViewComputedScale.contained, // 默认显示整个图片
-                    imageProvider: CachedNetworkImageProvider(url,
-                        cacheKey:
-                            Uri.parse(url).pathSegments.last.split('/').last),
+                    imageProvider:
+                        CachedNetworkImageProvider(url, cacheKey: Uri.parse(url).pathSegments.last.split('/').last),
                   ),
                 ),
               ),
@@ -796,16 +748,13 @@ class FileManagePage extends StatelessWidget {
                         try {
                           // 1. 先下到临时目录
                           final tempDir = await getTemporaryDirectory();
-                          final tempFile = File(
-                              '${tempDir.path}/${Uri.parse(url).pathSegments.last.split('/').last}');
-                          Logger.instance.d(
-                              '临时文件URL: ${Uri.parse(url).pathSegments.last.split('/').last}');
+                          final tempFile = File('${tempDir.path}/${Uri.parse(url).pathSegments.last.split('/').last}');
+                          Logger.instance.d('临时文件URL: ${Uri.parse(url).pathSegments.last.split('/').last}');
                           Logger.instance.d('临时文件保存路径: ${tempFile.path}');
                           await Dio().download(url, tempFile.path);
 
                           // 2. 写相册（自动区分 iOS/Android）
-                          final result = await ImageGallerySaverPlus.saveFile(
-                              tempFile.path);
+                          final result = await ImageGallerySaverPlus.saveFile(tempFile.path);
                           Get.back(); // 关闭加载圈
 
                           if (result['isSuccess'] == true) {
