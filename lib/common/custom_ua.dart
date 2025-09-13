@@ -13,9 +13,9 @@ class CustomUAWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ShadIconButton.ghost(
-      icon: child,
-      onPressed: () {
+    return InkWell(
+      child: child,
+      onTap: () {
         _showCustomUADialog(context);
       },
     );
@@ -27,56 +27,65 @@ class CustomUAWidget extends StatelessWidget {
           SPUtil.getString("CustomUA", defaultValue: 'Harvest APP Client/1.0'),
     );
 
+    double opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.defaultDialog(
       title: "自定义 UserAgent",
-      titleStyle: const TextStyle(fontSize: 18),
+      titleStyle: TextStyle(fontSize: 16, color: shadColorScheme.foreground),
       radius: 10,
-      content: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
+      backgroundColor: shadColorScheme.background.withOpacity(opacity * 1.2),
+      content: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            CustomTextField(
+              autofocus: true,
+              controller: tokenController,
+              labelText: 'User-Agent',
+            ),
+            const SizedBox(height: 15),
+            Row(
               children: [
-                CustomTextField(
-                  autofocus: true,
-                  controller: tokenController,
-                  labelText: '令牌',
-                ),
-                const SizedBox(height: 15),
-                Row(
-                  children: [
-                    Expanded(
-                      child: FullWidthButton(
-                        text: '随机Token',
-                        backgroundColor: Colors.green,
-                        onPressed: () {
-                          tokenController.text = generateRandomString(16,
-                                  includeSpecialChars: false)
+                Expanded(
+                  child: ShadButton.destructive(
+                    onPressed: () {
+                      tokenController.text =
+                          generateRandomString(16, includeSpecialChars: false)
                               .toUpperCase();
-                        },
-                      ),
+                    },
+                    size: ShadButtonSize.sm,
+                    child: Text(
+                      '随机Token',
+                      style: TextStyle(
+                          color: shadColorScheme.destructiveForeground),
                     ),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      child: FullWidthButton(
-                        text: '保存',
-                        onPressed: () async {
-                          _saveToken(context, tokenController.text);
-                        },
-                      ),
+                  ),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: ShadButton(
+                    size: ShadButtonSize.sm,
+                    onPressed: () async {
+                      _saveToken(context, tokenController.text);
+                    },
+                    child: Text(
+                      '保存',
+                      style:
+                          TextStyle(color: shadColorScheme.primaryForeground),
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   void _saveToken(BuildContext context, String token) async {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     if (token.isNotEmpty) {
       await SPUtil.setString("CustomUA", token);
       Get.back();
@@ -84,14 +93,13 @@ class CustomUAWidget extends StatelessWidget {
         '保存成功',
         '自定义 APP 请求头设置成功！',
         colorText: Colors.white70,
-        backgroundColor: ShadTheme.of(context).colorScheme.primary,
+        backgroundColor: shadColorScheme.primary,
       );
     } else {
       Get.snackbar(
         '保存失败',
         'APP 请求头不能为空！',
-        colorText: Colors.white70,
-        backgroundColor: ShadTheme.of(context).colorScheme.ring,
+        backgroundColor: shadColorScheme.destructive,
       );
     }
   }
