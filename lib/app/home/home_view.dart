@@ -203,53 +203,54 @@ class HomeView extends GetView<HomeController> {
                     decoration: const BoxDecoration(
                       color: Colors.transparent,
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 20.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                          const ShadAvatar(
-                            'assets/images/avatar.png',
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '${controller.userinfo?.isStaff == true ? '👑' : '🎩'}${controller.userinfo?.user.toString()}',
-                                style: TextStyle(fontSize: 12, color: colorScheme.foreground),
-                              ),
-                              IconButton(
-                                onPressed: () {
-                                  controller.logout();
-                                  controller.update();
-                                },
-                                icon: Icon(Icons.exit_to_app, size: 16, color: colorScheme.foreground),
-                              ),
-                            ],
-                          ),
-                          if (controller.authInfo != null) ...[
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        const ShadAvatar(
+                          'assets/images/avatar.png',
+                          size: Size(50, 50),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
                             Text(
-                              'VIP: ${controller.authInfo?.username.toString()}',
+                              '${controller.userinfo?.isStaff == true ? '👑' : '🎩'}${controller.userinfo?.user.toString()}',
                               style: TextStyle(fontSize: 12, color: colorScheme.foreground),
                             ),
-                            Text(
-                              'Expire: ${controller.authInfo?.timeExpire.toString()}',
-                              style: TextStyle(fontSize: 12, color: colorScheme.foreground),
-                            )
+                            InkWell(
+                              onTap: () {
+                                controller.logout();
+                                controller.update();
+                              },
+                              child: Icon(Icons.exit_to_app, size: 16, color: colorScheme.foreground),
+                            ),
                           ],
-                          InkWell(
-                            onTap: () async {
-                              await Clipboard.setData(ClipboardData(text: baseUrl));
-                            },
-                            child: Text(
-                              '$baseUrl',
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontSize: 12, color: colorScheme.foreground),
-                            ),
+                        ),
+                        if (controller.authInfo != null) ...[
+                          Text(
+                            'VIP: ${controller.authInfo?.username.toString()}',
+                            style: TextStyle(fontSize: 12, color: colorScheme.foreground),
                           ),
+                          Text(
+                            'Expire: ${controller.authInfo?.timeExpire.toString()}',
+                            style: TextStyle(fontSize: 12, color: colorScheme.foreground),
+                          )
                         ],
-                      ),
+                        InkWell(
+                          onTap: () async {
+                            await Clipboard.setData(ClipboardData(text: baseUrl));
+                          },
+                          child: Text(
+                            '$baseUrl',
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 12, color: colorScheme.foreground),
+                          ),
+                        ),
+                      ],
                     ),
                   );
                 }
