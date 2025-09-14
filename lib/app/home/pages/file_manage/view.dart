@@ -36,6 +36,9 @@ class FileManagePage extends StatelessWidget {
     return GetBuilder<FileManageController>(
         id: 'file_manage',
         builder: (controller) {
+          List<String> pathList = controller.currentPath.split('/');
+
+          var shadColorScheme = ShadTheme.of(context).colorScheme;
           return Scaffold(
             backgroundColor: Colors.transparent,
             floatingActionButton: Column(
@@ -49,7 +52,7 @@ class FileManagePage extends StatelessWidget {
                   },
                   icon: Icon(
                     Icons.home_outlined,
-                    color: ShadTheme.of(context).colorScheme.foreground,
+                    color: shadColorScheme.foreground,
                   ),
                 ),
                 ShadIconButton.ghost(
@@ -60,7 +63,7 @@ class FileManagePage extends StatelessWidget {
                   },
                   icon: Icon(
                     Icons.refresh,
-                    color: ShadTheme.of(context).colorScheme.foreground,
+                    color: shadColorScheme.foreground,
                   ),
                 ),
                 ShadIconButton.ghost(
@@ -77,7 +80,7 @@ class FileManagePage extends StatelessWidget {
                   },
                   icon: Icon(
                     Icons.arrow_back_outlined,
-                    color: ShadTheme.of(context).colorScheme.foreground,
+                    color: shadColorScheme.foreground,
                   ),
                 ),
               ],
@@ -93,14 +96,39 @@ class FileManagePage extends StatelessWidget {
                 //   ),
                 // ),
                 CustomCard(
-                  child: Text(
-                    controller.currentPath,
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: ShadTheme.of(context).colorScheme.foreground,
-                    ),
-                  ),
-                ),
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    child: Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 2,
+                      children: [
+                        for (int i = 0; i < pathList.length; i++) ...[
+                          if (pathList[i].isNotEmpty)
+                            ShadButton.ghost(
+                              size: ShadButtonSize.sm,
+                              padding: EdgeInsets.zero,
+                              child: Text(pathList[i]),
+                              onPressed: () async {
+                                // 点击返回到某层的逻辑
+                                String path = pathList.sublist(0, i + 1).join('/');
+                                Logger.instance.d("跳转到: $path");
+                                controller.isLoading = true;
+                                controller.update(['file_manage']);
+                                controller.currentPath = path;
+                                await controller.initSourceData();
+                              },
+                            ),
+                          if (i < pathList.length - 1)
+                            Padding(
+                              padding: EdgeInsets.only(bottom: 4),
+                              child: Text(
+                                "/",
+                                style: TextStyle(fontSize: 14, color: shadColorScheme.primary),
+                              ),
+                            ),
+                        ]
+                      ],
+                    )),
                 Expanded(
                   child: Stack(
                     children: [
@@ -113,7 +141,7 @@ class FileManagePage extends StatelessWidget {
                                     '暂无文件',
                                     style: TextStyle(
                                       fontSize: 16,
-                                      color: ShadTheme.of(context).colorScheme.foreground,
+                                      color: shadColorScheme.foreground,
                                     ),
                                   ),
                                 ),
@@ -226,7 +254,7 @@ class FileManagePage extends StatelessWidget {
                                         title: Text(
                                           item.name,
                                           style: TextStyle(
-                                            color: ShadTheme.of(context).colorScheme.foreground,
+                                            color: shadColorScheme.foreground,
                                           ),
                                         ),
                                         subtitle: Row(
@@ -236,7 +264,7 @@ class FileManagePage extends StatelessWidget {
                                               item.modified,
                                               style: TextStyle(
                                                 fontSize: 12,
-                                                color: ShadTheme.of(context).colorScheme.foreground,
+                                                color: shadColorScheme.foreground,
                                               ),
                                             ),
                                             if (!item.isDir)
@@ -244,7 +272,7 @@ class FileManagePage extends StatelessWidget {
                                                 FileSizeConvert.parseToFileSize(item.size),
                                                 style: TextStyle(
                                                   fontSize: 12,
-                                                  color: ShadTheme.of(context).colorScheme.foreground,
+                                                  color: shadColorScheme.foreground,
                                                 ),
                                               ),
                                           ],
@@ -254,13 +282,13 @@ class FileManagePage extends StatelessWidget {
                                           child: item.isDir
                                               ? Icon(
                                                   Icons.folder,
-                                                  color: ShadTheme.of(context).colorScheme.foreground,
+                                                  color: shadColorScheme.foreground,
                                                 )
                                               : Text(
                                                   item.ext.toString(),
                                                   style: TextStyle(
                                                     fontSize: 12,
-                                                    color: ShadTheme.of(context).colorScheme.foreground,
+                                                    color: shadColorScheme.foreground,
                                                   ),
                                                 ),
                                         ),
@@ -696,92 +724,104 @@ class FileManagePage extends StatelessWidget {
 
   void showImage(String url) {
     Get.dialog(
-      CustomCard(
-        borderRadius: BorderRadius.circular(5),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => Get.back(),
-                  child: PhotoView(
-                    maxScale: PhotoViewComputedScale.covered * 5, // 允许用户放大
-                    minScale: PhotoViewComputedScale.contained,
-                    initialScale: PhotoViewComputedScale.contained, // 默认显示整个图片
-                    imageProvider:
-                        CachedNetworkImageProvider(url, cacheKey: Uri.parse(url).pathSegments.last.split('/').last),
+      KeyboardListener(
+        focusNode: FocusNode()..requestFocus(),
+        onKeyEvent: (KeyEvent event) {
+          if (event is KeyDownEvent) {
+            if (event.logicalKey == LogicalKeyboardKey.escape) {
+              // ESC 按下处理逻辑
+              Get.back();
+            }
+          }
+        },
+        child: CustomCard(
+          borderRadius: BorderRadius.circular(5),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => Get.back(),
+                    child: PhotoView(
+                      maxScale: PhotoViewComputedScale.covered * 5, // 允许用户放大
+                      minScale: PhotoViewComputedScale.contained,
+                      initialScale: PhotoViewComputedScale.contained, // 默认显示整个图片
+                      imageProvider:
+                          CachedNetworkImageProvider(url, cacheKey: Uri.parse(url).pathSegments.last.split('/').last),
+                    ),
                   ),
                 ),
               ),
-            ),
-            Positioned(
-              bottom: 0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    onPressed: () async {
-                      if (GetPlatform.isDesktop || GetPlatform.isWeb) {
-                        await pickAndDownload(url);
-                      } else {
-                        if (GetPlatform.isAndroid) {
-                          if (!await Permission.storage.request().isGranted ||
-                              !await Permission.photos.request().isGranted) {
-                            Get.snackbar('权限失败', '需要存储权限以保存图片');
-                            return;
+              Positioned(
+                bottom: 0,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      onPressed: () async {
+                        if (GetPlatform.isDesktop || GetPlatform.isWeb) {
+                          await pickAndDownload(url);
+                        } else {
+                          if (GetPlatform.isAndroid) {
+                            if (!await Permission.storage.request().isGranted ||
+                                !await Permission.photos.request().isGranted) {
+                              Get.snackbar('权限失败', '需要存储权限以保存图片');
+                              return;
+                            }
+                          } else if (GetPlatform.isIOS) {
+                            final status = await Permission.photosAddOnly.status;
+                            Logger.instance.d('photosAddOnly status: $status');
+                            if (!status.isGranted) {
+                              Get.snackbar('权限失败', '需要相册写入权限');
+                              return;
+                            }
                           }
-                        } else if (GetPlatform.isIOS) {
-                          final status = await Permission.photosAddOnly.status;
-                          Logger.instance.d('photosAddOnly status: $status');
-                          if (!status.isGranted) {
-                            Get.snackbar('权限失败', '需要相册写入权限');
-                            return;
+                          // Get.dialog(
+                          //   const Center(child: CircularProgressIndicator()),
+                          //   barrierDismissible: false,
+                          //   name: 'album_download',
+                          // );
+
+                          try {
+                            // 1. 先下到临时目录
+                            final tempDir = await getTemporaryDirectory();
+                            final tempFile =
+                                File('${tempDir.path}/${Uri.parse(url).pathSegments.last.split('/').last}');
+                            Logger.instance.d('临时文件URL: ${Uri.parse(url).pathSegments.last.split('/').last}');
+                            Logger.instance.d('临时文件保存路径: ${tempFile.path}');
+                            await Dio().download(url, tempFile.path);
+
+                            // 2. 写相册（自动区分 iOS/Android）
+                            final result = await ImageGallerySaverPlus.saveFile(tempFile.path);
+                            Get.back(); // 关闭加载圈
+
+                            if (result['isSuccess'] == true) {
+                              Get.snackbar('✅ 已保存', '图片已存入系统相册');
+                            } else {
+                              Logger.instance.e(result['errorMessage']);
+                              Get.snackbar('❌ 保存失败', '保存失败!!!!!');
+                            }
+                          } catch (e) {
+                            Get.back();
+                            Logger.instance.e(e);
+                            Get.snackbar('❌ 下载失败', '❌ 下载失败');
                           }
                         }
-                        // Get.dialog(
-                        //   const Center(child: CircularProgressIndicator()),
-                        //   barrierDismissible: false,
-                        //   name: 'album_download',
-                        // );
-
-                        try {
-                          // 1. 先下到临时目录
-                          final tempDir = await getTemporaryDirectory();
-                          final tempFile = File('${tempDir.path}/${Uri.parse(url).pathSegments.last.split('/').last}');
-                          Logger.instance.d('临时文件URL: ${Uri.parse(url).pathSegments.last.split('/').last}');
-                          Logger.instance.d('临时文件保存路径: ${tempFile.path}');
-                          await Dio().download(url, tempFile.path);
-
-                          // 2. 写相册（自动区分 iOS/Android）
-                          final result = await ImageGallerySaverPlus.saveFile(tempFile.path);
-                          Get.back(); // 关闭加载圈
-
-                          if (result['isSuccess'] == true) {
-                            Get.snackbar('✅ 已保存', '图片已存入系统相册');
-                          } else {
-                            Logger.instance.e(result['errorMessage']);
-                            Get.snackbar('❌ 保存失败', '保存失败!!!!!');
-                          }
-                        } catch (e) {
-                          Get.back();
-                          Logger.instance.e(e);
-                          Get.snackbar('❌ 下载失败', '❌ 下载失败');
-                        }
-                      }
-                    },
-                    icon: Icon(Icons.save_alt_outlined),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      Get.back();
-                    },
-                    icon: Icon(Icons.exit_to_app_outlined),
-                  ),
-                ],
-              ),
-            )
-          ],
+                      },
+                      icon: Icon(Icons.save_alt_outlined),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        Get.back();
+                      },
+                      icon: Icon(Icons.exit_to_app_outlined),
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
         ),
       ),
       barrierDismissible: false,
