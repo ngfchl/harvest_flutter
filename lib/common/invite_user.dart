@@ -4,6 +4,7 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../api/api.dart';
 import '../api/hooks.dart';
+import '../utils/storage.dart';
 import 'form_widgets.dart';
 
 class InviteUser extends StatelessWidget {
@@ -23,10 +24,11 @@ class InviteUser extends StatelessWidget {
 
   void _showCustomUADialog(BuildContext context) {
     TextEditingController emailController = TextEditingController();
-
+    double opacity = SPUtil.getDouble('opacity', defaultValue: 0.7);
     Get.defaultDialog(
       title: "试用邀请",
       titleStyle: const TextStyle(fontSize: 18),
+      backgroundColor: ShadTheme.of(context).colorScheme.background.withOpacity(opacity),
       radius: 10,
       content: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -42,24 +44,21 @@ class InviteUser extends StatelessWidget {
                 ),
                 const SizedBox(height: 15),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    Expanded(
-                      child: FullWidthButton(
-                        text: '取消',
-                        backgroundColor: Colors.green,
-                        onPressed: () {
-                          Get.back();
-                        },
-                      ),
+                    ShadButton.destructive(
+                      size: ShadButtonSize.sm,
+                      child: Text('取消'),
+                      onPressed: () {
+                        Get.back();
+                      },
                     ),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      child: FullWidthButton(
-                        text: '邀请',
-                        onPressed: () async {
-                          _inviteUser(context, emailController.text);
-                        },
-                      ),
+                    ShadButton(
+                      size: ShadButtonSize.sm,
+                      child: Text('邀请'),
+                      onPressed: () async {
+                        _inviteUser(context, emailController.text);
+                      },
                     ),
                   ],
                 ),

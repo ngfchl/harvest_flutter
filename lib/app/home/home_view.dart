@@ -50,33 +50,21 @@ class HomeView extends GetView<HomeController> {
             // onConfirm: () {
             //   exit(0);
             // },
-            cancel: ElevatedButton(
-                style: ButtonStyle(
-                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                  ),
-                  backgroundColor: WidgetStateProperty.all(Colors.blueAccent.withAlpha(250)),
-                ),
+            cancel: ShadButton.destructive(
+                size: ShadButtonSize.sm,
                 onPressed: () {
                   Navigator.of(context).pop(false);
                 },
                 child: const Text(
                   '取消',
-                  style: TextStyle(color: Colors.white),
                 )),
-            confirm: ElevatedButton(
-                style: ButtonStyle(
-                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                  ),
-                  backgroundColor: WidgetStateProperty.all(Colors.redAccent.withAlpha(250)),
-                ),
+            confirm: ShadButton(
+                size: ShadButtonSize.sm,
                 onPressed: () {
                   exit(0);
                 },
                 child: const Text(
                   '退出',
-                  style: TextStyle(color: Colors.white),
                 )),
             textCancel: '取消',
             // textConfirm: '退出',
@@ -418,51 +406,46 @@ class HomeView extends GetView<HomeController> {
                                   appBar: const TabBar(tabs: tabs),
                                   body: TabBarView(
                                     children: [
-                                      ListView(
-                                        // mainAxisAlignment:
-                                        //     MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          CustomPickerField(
-                                            controller: keyController,
-                                            labelText: '要替换的属性',
-                                            data: const ["站点UA", "网络代理"],
-                                            // onChanged: (p, position) {
-                                            //   keyController.text = selectOptions[p]!;
-                                            // },
-                                          ),
-                                          CustomTextField(controller: valueController, labelText: "替换为"),
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                            children: [
-                                              ElevatedButton(
-                                                style: OutlinedButton.styleFrom(
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(8.0), // 圆角半径
-                                                  ),
+                                      SingleChildScrollView(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                          spacing: 10,
+                                          children: [
+                                            CustomPickerField(
+                                              controller: keyController,
+                                              labelText: '要替换的属性',
+                                              data: const ["站点UA", "网络代理"],
+                                              // onChanged: (p, position) {
+                                              //   keyController.text = selectOptions[p]!;
+                                              // },
+                                            ),
+                                            CustomTextField(controller: valueController, labelText: "替换为"),
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                              children: [
+                                                ShadButton.destructive(
+                                                  size: ShadButtonSize.sm,
+                                                  onPressed: () {
+                                                    Get.back(result: false);
+                                                  },
+                                                  child: const Text('取消'),
                                                 ),
-                                                onPressed: () {
-                                                  Get.back(result: false);
-                                                },
-                                                child: const Text('取消'),
-                                              ),
-                                              ElevatedButton(
-                                                style: OutlinedButton.styleFrom(
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(8.0), // 圆角半径
-                                                  ),
+                                                ShadButton(
+                                                  size: ShadButtonSize.sm,
+                                                  onPressed: () async {
+                                                    Get.back(result: true);
+                                                    await bulkUpgradeHandler({
+                                                      "key": selectOptions[keyController.text]!,
+                                                      "value":
+                                                          StringUtils.parseJsonOrReturnString(valueController.text),
+                                                    });
+                                                  },
+                                                  child: const Text('确认'),
                                                 ),
-                                                onPressed: () async {
-                                                  Get.back(result: true);
-                                                  await bulkUpgradeHandler({
-                                                    "key": selectOptions[keyController.text]!,
-                                                    "value": StringUtils.parseJsonOrReturnString(valueController.text),
-                                                  });
-                                                },
-                                                child: const Text('确认'),
-                                              ),
-                                            ],
-                                          )
-                                        ],
+                                              ],
+                                            )
+                                          ],
+                                        ),
                                       ),
                                       Padding(
                                         padding: const EdgeInsets.symmetric(horizontal: 28.0),
@@ -472,30 +455,23 @@ class HomeView extends GetView<HomeController> {
                                             CustomTextTag(
                                                 labelText: "慎用，清理后数据无法恢复",
                                                 backgroundColor: shadColorScheme.destructive),
-                                            FullWidthButton(
-                                                text: "精简历史数据",
+                                            ShadButton.destructive(
+                                                size: ShadButtonSize.sm,
+                                                child: Text("精简历史数据"),
                                                 onPressed: () async {
                                                   Get.defaultDialog(
                                                     title: "确认吗？",
                                                     middleText: "本操作会精简站点数据，只保留最近15天的历史数据，确认精简数据吗？",
                                                     actions: [
-                                                      ElevatedButton(
-                                                        style: OutlinedButton.styleFrom(
-                                                          shape: RoundedRectangleBorder(
-                                                            borderRadius: BorderRadius.circular(8.0), // 圆角半径
-                                                          ),
-                                                        ),
+                                                      ShadButton.destructive(
+                                                        size: ShadButtonSize.sm,
                                                         onPressed: () async {
                                                           Get.back(result: false);
                                                         },
                                                         child: const Text('取消'),
                                                       ),
-                                                      ElevatedButton(
-                                                        style: OutlinedButton.styleFrom(
-                                                          shape: RoundedRectangleBorder(
-                                                            borderRadius: BorderRadius.circular(8.0), // 圆角半径
-                                                          ),
-                                                        ),
+                                                      ShadButton(
+                                                        size: ShadButtonSize.sm,
                                                         onPressed: () async {
                                                           Get.back(result: true);
                                                           await bulkUpgradeHandler({
@@ -508,30 +484,23 @@ class HomeView extends GetView<HomeController> {
                                                     ],
                                                   );
                                                 }),
-                                            FullWidthButton(
-                                                text: "清除历史数据",
+                                            ShadButton.destructive(
+                                                size: ShadButtonSize.sm,
+                                                child: Text("清除历史数据"),
                                                 onPressed: () async {
                                                   Get.defaultDialog(
                                                     title: "确认吗？",
                                                     middleText: "确认清除站点历史数据吗？",
                                                     actions: [
-                                                      ElevatedButton(
-                                                        style: OutlinedButton.styleFrom(
-                                                          shape: RoundedRectangleBorder(
-                                                            borderRadius: BorderRadius.circular(8.0), // 圆角半径
-                                                          ),
-                                                        ),
+                                                      ShadButton.destructive(
+                                                        size: ShadButtonSize.sm,
                                                         onPressed: () async {
                                                           Get.back(result: false);
                                                         },
                                                         child: const Text('取消'),
                                                       ),
-                                                      ElevatedButton(
-                                                        style: OutlinedButton.styleFrom(
-                                                          shape: RoundedRectangleBorder(
-                                                            borderRadius: BorderRadius.circular(8.0), // 圆角半径
-                                                          ),
-                                                        ),
+                                                      ShadButton(
+                                                        size: ShadButtonSize.sm,
                                                         onPressed: () async {
                                                           Get.back(result: true);
                                                           await bulkUpgradeHandler({
@@ -544,30 +513,23 @@ class HomeView extends GetView<HomeController> {
                                                     ],
                                                   );
                                                 }),
-                                            FullWidthButton(
-                                                text: "清除签到数据",
+                                            ShadButton.destructive(
+                                                size: ShadButtonSize.sm,
+                                                child: Text("清除签到数据"),
                                                 onPressed: () async {
                                                   Get.defaultDialog(
                                                     title: "确认吗？",
                                                     middleText: "确认清除站点签到数据吗？",
                                                     actions: [
-                                                      ElevatedButton(
-                                                        style: OutlinedButton.styleFrom(
-                                                          shape: RoundedRectangleBorder(
-                                                            borderRadius: BorderRadius.circular(8.0), // 圆角半径
-                                                          ),
-                                                        ),
+                                                      ShadButton.destructive(
+                                                        size: ShadButtonSize.sm,
                                                         onPressed: () {
                                                           Get.back(result: false);
                                                         },
                                                         child: const Text('取消'),
                                                       ),
-                                                      ElevatedButton(
-                                                        style: OutlinedButton.styleFrom(
-                                                          shape: RoundedRectangleBorder(
-                                                            borderRadius: BorderRadius.circular(8.0), // 圆角半径
-                                                          ),
-                                                        ),
+                                                      ShadButton(
+                                                        size: ShadButtonSize.sm,
                                                         onPressed: () async {
                                                           Get.back(result: true);
                                                           await bulkUpgradeHandler({
@@ -691,7 +653,7 @@ class HomeView extends GetView<HomeController> {
     Get.defaultDialog(
       title: "选择 PTPP 备份文件",
       content: Center(
-        child: TextButton(
+        child: ShadButton.link(
           onPressed: () async {
             FilePickerResult? result =
                 await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['zip']);
