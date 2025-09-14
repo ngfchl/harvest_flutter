@@ -146,8 +146,8 @@ class DownloadController extends GetxController {
   Map<String, List<String>> trackers = {};
   List<String> showTrackers = [];
   TextEditingController showTrackersKeyController = TextEditingController();
-  List<String> tags = ['全部'];
-  List<String> errors = ['全部'];
+  List<String> tags = [];
+  List<String> errors = [];
   List<dynamic> serverStatus = [];
   String selectedTag = '全部';
   int torrentFilter = 0;
@@ -193,12 +193,10 @@ class DownloadController extends GetxController {
   dynamic currentPrefs = false;
 
   // 使用StreamController来管理下载状态的流
-  final StreamController<List<Downloader>> _downloadStreamController =
-      StreamController<List<Downloader>>.broadcast();
+  final StreamController<List<Downloader>> _downloadStreamController = StreamController<List<Downloader>>.broadcast();
 
   // 提供获取下载状态流的方法
-  Stream<List<Downloader>> get downloadStream =>
-      _downloadStreamController.stream;
+  Stream<List<Downloader>> get downloadStream => _downloadStreamController.stream;
 
   Map<int, dynamic> speedInfo = {};
 
@@ -215,8 +213,7 @@ class DownloadController extends GetxController {
     downloadStream.listen((downloaders) {
       for (var downloader in downloaders) {
         // 查找 dataList 中 id 相同的元素
-        int index =
-            dataList.indexWhere((element) => element.id == downloader.id);
+        int index = dataList.indexWhere((element) => element.id == downloader.id);
 
         if (index != -1) {
           // 如果找到了，替换为新的 downloader
@@ -226,10 +223,7 @@ class DownloadController extends GetxController {
           dataList.add(downloader);
         }
       }
-      dataMap = {
-        for (var item in dataList)
-          "${item.name}-${item.id}-${item.category}": item
-      };
+      dataMap = {for (var item in dataList) "${item.name}-${item.id}-${item.category}": item};
       update();
     });
     await getDownloaderListFromServer();
@@ -251,15 +245,14 @@ class DownloadController extends GetxController {
   }
 
   void timerToStop() {
-    fiveMinutesTimer =
-        Timer(Duration(seconds: (timerDuration * 60).toInt()), () {
+    fiveMinutesTimer = Timer(Duration(seconds: (timerDuration * 60).toInt()), () {
       // 定时器触发后执行的操作，这里可以取消periodicTimer、关闭资源等
       cancelPeriodicTimer();
       // 你可以在这里添加其他需要在定时器触发后执行的逻辑
     });
   }
 
-  toggleRealTimeState() {
+  void toggleRealTimeState() {
     realTimeState = !realTimeState;
     isTimerActive = !realTimeState;
     isTimerActive ? cancelPeriodicTimer() : startPeriodicTimer();
@@ -268,8 +261,7 @@ class DownloadController extends GetxController {
 
   void startPeriodicTimer() {
     // 设置定时器，每隔一定时间刷新下载器数据
-    periodicTimer = Timer.periodic(
-        Duration(milliseconds: (duration * 1000).toInt()), (Timer t) {
+    periodicTimer = Timer.periodic(Duration(milliseconds: (duration * 1000).toInt()), (Timer t) {
       // 在定时器触发时获取最新的下载器数据
       logger_helper.Logger.instance.d('调用刷新 timer');
 
@@ -319,13 +311,12 @@ class DownloadController extends GetxController {
     await Future.wait(futures);
   }
 
-  getDownloaderListFromServer({bool withStatus = false}) async {
+  Future<void> getDownloaderListFromServer({bool withStatus = false}) async {
     if (!withStatus) {
       loading = true;
       update();
     }
-    CommonResponse response =
-        await getDownloaderListApi(withStatus: withStatus);
+    CommonResponse response = await getDownloaderListApi(withStatus: withStatus);
     if (response.succeed) {
       dataList.clear();
       dataList = response.data;
@@ -348,8 +339,7 @@ class DownloadController extends GetxController {
   Future<QBittorrentApiV2> getQbInstance(Downloader downloader) async {
     final qbittorrent = QBittorrentApiV2(
       baseUrl: '${downloader.protocol}://${downloader.host}:${downloader.port}',
-      cookiePath:
-          '${(await getApplicationDocumentsDirectory()).path}/${downloader.host}/${downloader.port}',
+      cookiePath: '${(await getApplicationDocumentsDirectory()).path}/${downloader.host}/${downloader.port}',
       logger: false,
     );
     await qbittorrent.auth.login(
@@ -360,8 +350,7 @@ class DownloadController extends GetxController {
   }
 
   Future<tr.Transmission> getTrInstance(Downloader downloader) async {
-    final transmission = tr.Transmission(
-        '${downloader.protocol}://${downloader.host}:${downloader.port}',
+    final transmission = tr.Transmission('${downloader.protocol}://${downloader.host}:${downloader.port}',
         tr.AuthKeys(downloader.username, downloader.password),
         logConfig: const tr.ConfigLogger.showNone());
     return transmission;
@@ -371,11 +360,7 @@ class DownloadController extends GetxController {
     final client = await getTrInstance(downloader);
     var res = await client.v1.session.sessionStats();
     var res1 = await client.v1.session.sessionGet(
-        fields: tr.SessionArgs()
-            .speedLimitDown()
-            .speedLimitDownEnabled()
-            .speedLimitUp()
-            .speedLimitUpEnabled());
+        fields: tr.SessionArgs().speedLimitDown().speedLimitDownEnabled().speedLimitUp().speedLimitUpEnabled());
 
     TransmissionStats stats = TransmissionStats.fromJson(res["arguments"]);
     downloader.prefs = TransmissionConfig.fromJson(res1["arguments"]);
@@ -389,26 +374,19 @@ class DownloadController extends GetxController {
   }
 
   dynamic getIntervalSpeed(Downloader downloader) async {
-    return downloader.category == 'Qb'
-        ? await getQbSpeed(downloader)
-        : await getTrSpeed(downloader);
+    return downloader.category == 'Qb' ? await getQbSpeed(downloader) : await getTrSpeed(downloader);
   }
 
-  getDownloaderTorrents(Downloader downloader) async {
+  Future<void> getDownloaderTorrents(Downloader downloader) async {
     // 打开加载状态
     try {
       bool isQb = downloader.category == 'Qb';
       isTorrentsLoading = true;
       serverStatus.clear();
-      sortKey = SPUtil.getString(
-              '${downloader.host}:${downloader.port}-sortKey',
-              defaultValue: 'name') ??
-          'name';
-      localPaginationController =
-          Get.put(LocalPaginationController(pageSize: pageSize * 10));
+      sortKey = SPUtil.getString('${downloader.host}:${downloader.port}-sortKey', defaultValue: 'name');
+      localPaginationController = Get.put(LocalPaginationController(pageSize: pageSize * 10));
       update();
-      final wsUrl = Uri.parse(
-          '${baseUrl.replaceFirst('http', 'ws')}/api/${Api.DOWNLOADER_TORRENTS}');
+      final wsUrl = Uri.parse('${baseUrl.replaceFirst('http', 'ws')}/api/${Api.DOWNLOADER_TORRENTS}');
       torrentsChannel = WebSocketChannel.connect(wsUrl);
       await torrentsChannel.ready;
       // 使用缓存
@@ -426,8 +404,7 @@ class DownloadController extends GetxController {
         update();
       }
       scrollController.addListener(() {
-        if (scrollController.position.pixels >=
-                scrollController.position.maxScrollExtent - 100 &&
+        if (scrollController.position.pixels >= scrollController.position.maxScrollExtent - 100 &&
             localPaginationController.hasMore) {
           localPaginationController.loadNextPage();
           update();
@@ -442,8 +419,7 @@ class DownloadController extends GetxController {
 
       torrentsChannel.stream.listen((message) async {
         logger_helper.Logger.instance.d('开始刷新种子列表！Rid：$rid');
-        CommonResponse response =
-            CommonResponse.fromJson(json.decode(message), (p0) => p0);
+        CommonResponse response = CommonResponse.fromJson(json.decode(message), (p0) => p0);
         if (response.code == 0) {
           // logger_helper.Logger.instance.d(response.data[0]);
           await SPUtil.setCache(key, {key: response.data}, 3600 * 24 * 3);
@@ -474,13 +450,12 @@ class DownloadController extends GetxController {
     }
   }
 
-  getDownloaderStatus() async {
+  Future<void> getDownloaderStatus() async {
     // 打开加载状态
     isLoading = true;
     update();
     try {
-      final wsUrl = Uri.parse(
-          '${baseUrl.replaceFirst('http', 'ws')}/api/${Api.DOWNLOADER_STATUS}');
+      final wsUrl = Uri.parse('${baseUrl.replaceFirst('http', 'ws')}/api/${Api.DOWNLOADER_STATUS}');
       channel = WebSocketChannel.connect(wsUrl);
 
       await channel.ready;
@@ -489,8 +464,7 @@ class DownloadController extends GetxController {
       }));
       List<Future<void>> futures = [];
       channel.stream.listen((message) async {
-        CommonResponse response =
-            CommonResponse.fromJson(json.decode(message), (p0) => p0);
+        CommonResponse response = CommonResponse.fromJson(json.decode(message), (p0) => p0);
         if (response.code == 0) {
           // logger_helper.Logger.instance.d(response.data);
           Future<void> fetchStatus = fetchItemStatus(response.data);
@@ -518,7 +492,7 @@ class DownloadController extends GetxController {
     }
   }
 
-  getSSEDownloaderStatus() async {
+  Future<void> getSSEDownloaderStatus() async {
     // 打开加载状态
     isLoading = true;
     update();
@@ -579,10 +553,10 @@ class DownloadController extends GetxController {
     update();
   }
 
-  getQbMainData(Downloader downloader) async {
+  Future getQbMainData(Downloader downloader) async {
     CommonResponse response = await getMainData(downloader.id!);
     if (!response.succeed) {
-      return response;
+      return;
     }
 
     categoryMap.addAll({
@@ -590,8 +564,7 @@ class DownloadController extends GetxController {
         entry.key: Category.fromJson(entry.value as Map<String, dynamic>)
     });
 
-    trackers.addAll(mergeTrackers(
-        Map<String, List<dynamic>>.from(response.data['trackers'])));
+    trackers.addAll(mergeTrackers(Map<String, List<dynamic>>.from(response.data['trackers'])));
     update();
   }
 
@@ -599,9 +572,7 @@ class DownloadController extends GetxController {
     showTrackers = trackers.keys.toList();
     if (showTrackersKeyController.text.isNotEmpty) {
       showTrackers = showTrackers
-          .where((element) => element
-              .toLowerCase()
-              .contains(showTrackersKeyController.text.toLowerCase()))
+          .where((element) => element.toLowerCase().contains(showTrackersKeyController.text.toLowerCase()))
           .toList();
     }
     showTrackers.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
@@ -610,9 +581,7 @@ class DownloadController extends GetxController {
   Map<String, List<String>> mergeTrackers(Map<String, List<dynamic>> trackers) {
     return trackers.entries.fold({}, (merged, entry) {
           var host = Uri.parse(entry.key).host;
-          var tracker = trackerToWebSiteMap.keys.firstWhere(
-              (element) => element.contains(host),
-              orElse: () => host);
+          var tracker = trackerToWebSiteMap.keys.firstWhere((element) => element.contains(host), orElse: () => host);
           host = trackerToWebSiteMap[tracker]?.name ?? tracker;
           merged?.putIfAbsent(host, () => []);
           merged?[host]!.addAll(List<String>.from(entry.value));
@@ -621,14 +590,11 @@ class DownloadController extends GetxController {
         {};
   }
 
-  getDownloaderTorrentDetailInfo(
-      Downloader downloader, String torrentHash, bool isQb) async {
-    CommonResponse response =
-        await getTorrentDetailInfo(downloader.id!, torrentHash);
+  Future<CommonResponse> getDownloaderTorrentDetailInfo(Downloader downloader, String torrentHash, bool isQb) async {
+    CommonResponse response = await getTorrentDetailInfo(downloader.id!, torrentHash);
 
-    selectedTorrent = isQb
-        ? QbittorrentTorrentInfo.fromJson(response.data['properties'])
-        : TrTorrent.fromJson(response.data);
+    selectedTorrent =
+        isQb ? QbittorrentTorrentInfo.fromJson(response.data['properties']) : TrTorrent.fromJson(response.data);
     update();
     return response;
   }
@@ -638,13 +604,10 @@ class DownloadController extends GetxController {
     if (!response.succeed) {
       return response;
     }
-    categoryMap = {
-      for (var item in response.data)
-        (item)['name']!: Category.fromJson(item as Map<String, dynamic>)
-    };
+    categoryMap = {for (var item in response.data) (item)['name']!: Category.fromJson(item as Map<String, dynamic>)};
   }
 
-  filterTrTorrents() {
+  void filterTrTorrents() {
     isTorrentsLoading = false;
     showTorrents = torrents;
     update();
@@ -681,8 +644,7 @@ class DownloadController extends GetxController {
       case 'totalSize':
         showTorrents.sort((a, b) => a.totalSize.compareTo(b.totalSize));
       case 'queuePosition':
-        showTorrents.sort((a, b) =>
-            a.queuePosition.toString().compareTo(b.queuePosition.toString()));
+        showTorrents.sort((a, b) => a.queuePosition.toString().compareTo(b.queuePosition.toString()));
       case 'doneDate':
         showTorrents.sort((a, b) => a.doneDate.compareTo(b.doneDate));
       case 'percentDone':
@@ -690,15 +652,13 @@ class DownloadController extends GetxController {
       case 'uploadedEver':
         showTorrents.sort((a, b) => a.uploadedEver.compareTo(b.uploadedEver));
       case 'downloaded':
-        showTorrents
-            .sort((a, b) => a.downloadedEver.compareTo(b.downloadedEver));
+        showTorrents.sort((a, b) => a.downloadedEver.compareTo(b.downloadedEver));
       case 'rateDownload':
         showTorrents.sort((a, b) => a.rateDownload.compareTo(b.rateDownload));
       case 'rateUpload':
         showTorrents.sort((a, b) => a.rateUpload.compareTo(b.rateUpload));
       case 'recheckProgress':
-        showTorrents
-            .sort((a, b) => a.recheckProgress.compareTo(b.recheckProgress));
+        showTorrents.sort((a, b) => a.recheckProgress.compareTo(b.recheckProgress));
       case 'activityDate':
         showTorrents.sort((a, b) => a.activityDate.compareTo(b.activityDate));
       default:
@@ -742,9 +702,7 @@ class DownloadController extends GetxController {
 // 添加私有方法 `_getMetaName` 处理逻辑
   String getTrMetaName(String hashString) {
     // 查找第一个匹配的 tracker 键
-    final trackerKey = trackers.entries
-        .firstWhereOrNull((entry) => entry.value.contains(hashString))
-        ?.key;
+    final trackerKey = trackers.entries.firstWhereOrNull((entry) => entry.value.contains(hashString))?.key;
 
     // 根据 trackerKey 查找对应的 WebSite 名称
     return trackerToWebSiteMap[trackerKey]?.name ?? trackerKey ?? '未知';
@@ -756,8 +714,7 @@ class DownloadController extends GetxController {
     }
     switch (trTorrentState) {
       case 99:
-        showTorrents =
-            showTorrents.where((torrent) => torrent.error > 0).toList();
+        showTorrents = showTorrents.where((torrent) => torrent.error > 0).toList();
         break;
       case 100:
         showTorrents = showTorrents
@@ -770,9 +727,7 @@ class DownloadController extends GetxController {
             .toList();
         break;
       default:
-        showTorrents = showTorrents
-            .where((torrent) => torrent.status == trTorrentState)
-            .toList();
+        showTorrents = showTorrents.where((torrent) => torrent.status == trTorrentState).toList();
         break;
     }
   }
@@ -784,12 +739,8 @@ class DownloadController extends GetxController {
       showTorrents = showTorrents
           .where((torrent) =>
               torrent.name.toLowerCase().contains(searchKey.toLowerCase()) ||
-              torrent.errorString
-                  .toLowerCase()
-                  .contains(searchKey.toLowerCase()) ||
-              torrent.hashString
-                  .toLowerCase()
-                  .contains(searchKey.toLowerCase()))
+              torrent.errorString.toLowerCase().contains(searchKey.toLowerCase()) ||
+              torrent.hashString.toLowerCase().contains(searchKey.toLowerCase()))
           .toList();
     }
   }
@@ -801,35 +752,29 @@ class DownloadController extends GetxController {
       showTorrents = showTorrents
           .where((torrent) =>
               torrent.trackerStats.isNotEmpty &&
-              torrent.trackerStats.first?.announce
-                      .toLowerCase()
-                      .contains(selectedTracker.toString().toLowerCase()) ==
+              torrent.trackerStats.first?.announce.toLowerCase().contains(selectedTracker.toString().toLowerCase()) ==
                   true)
           .toList();
     }
     // logger_helper.Logger.instance.i(showTorrents.length);
   }
 
-  filterTorrents(bool isQb) {
+  void filterTorrents(bool isQb) {
     searchKey = searchController.text;
     isTorrentsLoading = false;
     isQb ? filterQbTorrents() : filterTrTorrents();
     update();
   }
 
-  filterQbTorrents() {
+  void filterQbTorrents() {
     showTorrents = torrents;
 
     if (searchKey.isNotEmpty) {
       showTorrents = showTorrents
           .where((torrent) =>
               torrent.name!.toLowerCase().contains(searchKey.toLowerCase()) ||
-              torrent.category
-                  .toLowerCase()
-                  .contains(searchKey.toLowerCase()) ||
-              torrent.infohashV1
-                  .toLowerCase()
-                  .contains(searchKey.toLowerCase()))
+              torrent.category.toLowerCase().contains(searchKey.toLowerCase()) ||
+              torrent.infohashV1.toLowerCase().contains(searchKey.toLowerCase()))
           .toList();
     }
     // logger_helper.Logger.instance.d(showTorrents.length);
@@ -846,41 +791,31 @@ class DownloadController extends GetxController {
     if (torrentState != null) {
       if (torrentState == 'active') {
         showTorrents = showTorrents
-            .where((torrent) =>
-                activeStates.contains(torrent.state) ||
-                (torrent.upSpeed + torrent.dlSpeed) > 0)
+            .where((torrent) => activeStates.contains(torrent.state) || (torrent.upSpeed + torrent.dlSpeed) > 0)
             .toList();
       } else if (torrentState != '全部') {
-        showTorrents = showTorrents
-            .where((torrent) => torrent.state == torrentState)
-            .toList();
+        showTorrents = showTorrents.where((torrent) => torrent.state == torrentState).toList();
       }
     }
     // logger_helper.Logger.instance.d(showTorrents.length);
     if (selectedTag != '全部') {
-      showTorrents = showTorrents
-          .where((torrent) => torrent.tags.contains(selectedTag))
-          .toList();
+      showTorrents = showTorrents.where((torrent) => torrent.tags.contains(selectedTag)).toList();
     }
     // logger_helper.Logger.instance.d(showTorrents.length);
 
     if (selectedCategory != null && selectedCategory != '全部') {
       showTorrents = showTorrents
-          .where((torrent) =>
-              torrent.category ==
-              (selectedCategory != '未分类' ? selectedCategory : ''))
+          .where((torrent) => torrent.category == (selectedCategory != '未分类' ? selectedCategory : ''))
           .toList();
     }
     // logger_helper.Logger.instance.d(showTorrents.length);
 
     if (selectedTracker == '红种') {
-      showTorrents =
-          showTorrents.where((torrent) => torrent.tracker!.isEmpty).toList();
+      showTorrents = showTorrents.where((torrent) => torrent.tracker!.isEmpty).toList();
     } else if (selectedTracker != '全部') {
       showTorrents = showTorrents
-          .where((torrent) =>
-              trackers[selectedTracker] != null &&
-              trackers[selectedTracker]!.contains(torrent.infohashV1))
+          .where(
+              (torrent) => trackers[selectedTracker] != null && trackers[selectedTracker]!.contains(torrent.infohashV1))
           .toList();
     }
 
@@ -893,7 +828,7 @@ class DownloadController extends GetxController {
     update();
   }
 
-  sortQbTorrents() {
+  void sortQbTorrents() {
     switch (sortKey) {
       case 'name':
         showTorrents.sort((a, b) => a.name.compareTo(b.name));
@@ -922,11 +857,9 @@ class DownloadController extends GetxController {
       case 'dlLimit':
         showTorrents.sort((a, b) => b.dlLimit.compareTo(a.dlLimit));
       case 'downloadedSession':
-        showTorrents
-            .sort((a, b) => a.downloadedSession.compareTo(b.downloadedSession));
+        showTorrents.sort((a, b) => a.downloadedSession.compareTo(b.downloadedSession));
       case 'uploadedSession':
-        showTorrents
-            .sort((a, b) => a.uploadedSession.compareTo(b.uploadedSession));
+        showTorrents.sort((a, b) => a.uploadedSession.compareTo(b.uploadedSession));
       case 'forceStart':
         showTorrents.sort((a, b) => a.forceStart.compareTo(b.forceStart));
       case 'superSeeding':
@@ -997,22 +930,17 @@ class DownloadController extends GetxController {
           'delete_data': enable,
         });
       case 'start_all':
-        response = await controlTorrent(
-            downloaderId: downloader.id!, command: {'command': command});
+        response = await controlTorrent(downloaderId: downloader.id!, command: {'command': command});
       case 'start_torrent':
       case 'stop_torrent':
       case 'verify_torrent':
       case 'reannounce_torrent':
         response = await controlTorrent(
-            downloaderId: downloader.id!,
-            command: {'command': command, 'ids': ids, 'bypass_queue': enable});
+            downloaderId: downloader.id!, command: {'command': command, 'ids': ids, 'bypass_queue': enable});
       case 'move_torrent_data':
-        response = await controlTorrent(downloaderId: downloader.id!, command: {
-          'command': command,
-          'ids': ids,
-          'location': location,
-          'move': move
-        });
+        response = await controlTorrent(
+            downloaderId: downloader.id!,
+            command: {'command': command, 'ids': ids, 'location': location, 'move': move});
       // case 'rename_torrent_path':
       case 'queue_top':
       case 'queue_bottom':
@@ -1027,8 +955,7 @@ class DownloadController extends GetxController {
         response = CommonResponse.error(msg: msg);
     }
     if (selectedTorrent != null) {
-      await getDownloaderTorrentDetailInfo(
-          downloader, selectedTorrent.hashString, false);
+      await getDownloaderTorrentDetailInfo(downloader, selectedTorrent.hashString, false);
     }
     update();
     if (!response.succeed) {
@@ -1179,13 +1106,11 @@ class DownloadController extends GetxController {
         response = CommonResponse.error(msg: msg);
     }
     if (selectedTorrent != null) {
-      await getDownloaderTorrentDetailInfo(
-          downloader, selectedTorrent.hash, true);
+      await getDownloaderTorrentDetailInfo(downloader, selectedTorrent.hash, true);
     }
     update();
     if (!response.succeed) {
-      Get.snackbar(response.succeed ? '成功啦！' : '出错啦！', response.msg,
-          colorText: Colors.red);
+      Get.snackbar(response.succeed ? '成功啦！' : '出错啦！', response.msg, colorText: Colors.red);
     }
     return response;
   }
@@ -1200,16 +1125,13 @@ class DownloadController extends GetxController {
       'Content-Type': 'application/json; charset=utf-8',
       'Authorization': 'Bearer ${authInfo.authToken}'
     };
-    sortKey = SPUtil.getString('${downloader.host}:${downloader.port}-sortKey',
-            defaultValue: 'name') ??
-        'name';
+    sortKey = SPUtil.getString('${downloader.host}:${downloader.port}-sortKey', defaultValue: 'name') ?? 'name';
 
     try {
       SSEClient.enableRetry();
       SSEClient.subscribeToSSE(
         method: SSERequestType.POST,
-        url:
-            '$baseUrl/api/option/downloaders/torrents/${downloader.id}?interval=${interval}',
+        url: '$baseUrl/api/option/downloaders/torrents/${downloader.id}?interval=${interval}',
         header: headers,
         body: {
           "status_filter": torrentState,
@@ -1263,18 +1185,13 @@ class DownloadController extends GetxController {
         'Content-Type': 'application/json; charset=utf-8',
         'Authorization': 'Bearer ${authInfo.authToken}'
       };
-      localPaginationController =
-          Get.put(LocalPaginationController(pageSize: pageSize * 10));
+      localPaginationController = Get.put(LocalPaginationController(pageSize: pageSize * 10));
 
       serverStatus.clear();
-      sortKey = SPUtil.getString(
-              '${downloader.host}:${downloader.port}-sortKey',
-              defaultValue: 'name') ??
-          'name';
+      sortKey = SPUtil.getString('${downloader.host}:${downloader.port}-sortKey', defaultValue: 'name') ?? 'name';
       update();
       scrollController.addListener(() {
-        if (scrollController.position.pixels >=
-                scrollController.position.maxScrollExtent - 100 &&
+        if (scrollController.position.pixels >= scrollController.position.maxScrollExtent - 100 &&
             localPaginationController.hasMore) {
           localPaginationController.loadNextPage();
           update();
@@ -1340,25 +1257,15 @@ class DownloadController extends GetxController {
   }
 
   parseTrData(data) {
-    if (data.runtimeType == List ||
-        data['torrents'] == null ||
-        data['status'].isEmpty) return;
-    torrents
-        .assignAll(data['torrents'].map((item) => TrTorrent.fromJson(item)));
-    tags.addAll(
-        torrents.expand<String>((item) => item.labels).toSet().toList());
+    if (data.runtimeType == List || data['torrents'] == null || data['status'].isEmpty) return;
+    torrents.assignAll(data['torrents'].map((item) => TrTorrent.fromJson(item)));
+    tags.addAll(torrents.expand<String>((item) => item.labels).toSet().toList());
 
-    errors.addAll(torrents
-        .map<String>((item) => item.errorString)
-        .toSet()
-        .where((el) => el.isNotEmpty)
-        .toList());
+    errors.addAll(torrents.map<String>((item) => item.errorString).toSet().where((el) => el.isNotEmpty).toList());
     errors = errors.toSet().toList();
     categoryMap = {
       '全部': const Category(name: '全部', savePath: null),
-      for (var dir in torrents
-          .map((e) => e.downloadDir.replaceAll(RegExp(r'/$'), '').toString())
-          .toSet())
+      for (var dir in torrents.map((e) => e.downloadDir.replaceAll(RegExp(r'/$'), '').toString()).toSet())
         dir.split('/').last: Category(
           name: dir.split('/').last,
           savePath: dir,
@@ -1399,21 +1306,16 @@ class DownloadController extends GetxController {
       '全部': const Category(name: '全部'),
       '未分类': const Category(name: '未分类', savePath: ''),
       if (data['categories'] != null) ...{
-        for (var entry in data['categories'].entries)
-          entry.key: Category.fromJson(entry.value as Map<String, dynamic>)
+        for (var entry in data['categories'].entries) entry.key: Category.fromJson(entry.value as Map<String, dynamic>)
       }
     };
 
     trackers = {
       '全部': [],
-      if (data['trackers'] != null)
-        ...mergeTrackers(Map<String, List<dynamic>>.from(data['trackers']))
+      if (data['trackers'] != null) ...mergeTrackers(Map<String, List<dynamic>>.from(data['trackers']))
     };
     // logger_helper.Logger.instance.d(trackers);
-    tags = [
-      "全部",
-      if (data['tags'] != null) ...List<String>.from(data['tags'] ?? [])
-    ];
+    tags = ["全部", if (data['tags'] != null) ...List<String>.from(data['tags'] ?? [])];
     torrents.assignAll(data['torrents']?.entries.map((entry) {
           var torrent = Map<String, dynamic>.from(entry.value); // 复制原始数据
           torrent['hash'] = entry.key; // 添加 hash 属性
@@ -1421,8 +1323,7 @@ class DownloadController extends GetxController {
         }).toList() ??
         []);
     if (selectedTorrent != null) {
-      selectedTorrent = QbittorrentTorrentInfo.fromJson(
-          data['torrents'][selectedTorrent.infohashV1]);
+      selectedTorrent = QbittorrentTorrentInfo.fromJson(data['torrents'][selectedTorrent.infohashV1]);
     }
     isTorrentsLoading = false;
     ServerState state = ServerState.fromJson(data['server_state']);
@@ -1434,10 +1335,7 @@ class DownloadController extends GetxController {
   Future<void> fetchItemStatus(Map<String, dynamic> status) async {
     try {
       if (dataMap.isEmpty) {
-        dataMap = {
-          for (var item in dataList)
-            "${item.name}-${item.id}-${item.category}": item
-        };
+        dataMap = {for (var item in dataList) "${item.name}-${item.id}-${item.category}": item};
       }
       String key = status.keys.first;
       Downloader? item = dataMap[key];
@@ -1448,13 +1346,11 @@ class DownloadController extends GetxController {
           item.status.add(ServerState.fromJson(status[key]["info"]));
           item.prefs = QbittorrentPreferences.fromJson(status[key]['prefs']);
         } else {
-          TransmissionStats stats =
-              TransmissionStats.fromJson(status[key]["info"]);
+          TransmissionStats stats = TransmissionStats.fromJson(status[key]["info"]);
           item.prefs = TransmissionConfig.fromJson(status[key]['prefs']);
           item.status.add(stats);
         }
-        logger_helper.Logger.instance
-            .i('下载器${item.name}状态：${item.status.length}');
+        logger_helper.Logger.instance.i('下载器${item.name}状态：${item.status.length}');
 
         if (item.status.length > 30) {
           item.status.removeAt(0);
@@ -1467,8 +1363,7 @@ class DownloadController extends GetxController {
     } catch (e, trace) {
       logger_helper.Logger.instance.e('Error fetching download status: $e');
       logger_helper.Logger.instance.e('Error fetching download status: $trace');
-      logger_helper.Logger.instance
-          .e('Error fetching download status: $status');
+      logger_helper.Logger.instance.e('Error fetching download status: $status');
     }
   }
 
@@ -1490,20 +1385,21 @@ class DownloadController extends GetxController {
     torrentState = null;
   }
 
-  stopFetchTorrents() async {
+  Future<void> stopFetchTorrents() async {
     // SSEClient.disableRetry();
     // SSEClient.unsubscribeFromSSE();
     await torrentsChannel.sink.close(status.normalClosure);
     torrents.clear();
+    serverStatus.clear();
     clearFilterOption();
     update();
   }
 
-  toggleFetchStatus() async {
+  Future<void> toggleFetchStatus() async {
     isLoading ? await stopFetchStatus() : await getDownloaderStatus();
   }
 
-  stopFetchStatus() async {
+  Future<void> stopFetchStatus() async {
     isLoading = false;
     // SSEClient.disableRetry();
     // SSEClient.unsubscribeFromSSE();
@@ -1603,10 +1499,7 @@ class DownloadController extends GetxController {
   ///@updateTime
   */
   replaceTrackers(
-      {required Downloader downloader,
-      required List<String> torrentHashes,
-      required String newTracker}) async {
-    return await replaceTorrentTrackerApi(downloader.id!,
-        {'torrent_hashes': torrentHashes, 'new_tracker': newTracker});
+      {required Downloader downloader, required List<String> torrentHashes, required String newTracker}) async {
+    return await replaceTorrentTrackerApi(downloader.id!, {'torrent_hashes': torrentHashes, 'new_tracker': newTracker});
   }
 }
