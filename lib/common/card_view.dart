@@ -150,6 +150,8 @@ class CustomTextTag extends StatelessWidget {
   final Color? backgroundColor;
   final BorderRadius? borderRadius;
   final Icon? icon;
+  final MainAxisAlignment mainAxisAlignment;
+  final CrossAxisAlignment crossAxisAlignment;
 
   const CustomTextTag({
     super.key,
@@ -158,6 +160,8 @@ class CustomTextTag extends StatelessWidget {
     this.backgroundColor = Colors.green,
     this.borderRadius = const BorderRadius.all(Radius.circular(4)),
     this.icon,
+    this.mainAxisAlignment = MainAxisAlignment.center,
+    this.crossAxisAlignment = CrossAxisAlignment.center,
   });
 
   @override
@@ -169,8 +173,9 @@ class CustomTextTag extends StatelessWidget {
         borderRadius: borderRadius,
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: mainAxisAlignment,
+        crossAxisAlignment: crossAxisAlignment,
+        mainAxisSize: MainAxisSize.min,
         children: [
           icon ?? const SizedBox.shrink(),
           if (icon != null) const SizedBox(width: 2),
