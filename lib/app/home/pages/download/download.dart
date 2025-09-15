@@ -1190,6 +1190,118 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
+            InkWell(
+              onTap: () {
+                logger_helper.Logger.instance.d('当前排序规则：${controller.sortKey},正序：${controller.sortReversed}！');
+                controller.sortReversed = !controller.sortReversed;
+                isQb ? controller.sortQbTorrents() : controller.sortTrTorrents();
+                logger_helper.Logger.instance.d('当前排序规则：${controller.sortKey},正序：${controller.sortReversed}！');
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    controller.sortReversed
+                        ? Icon(
+                            Icons.sim_card_download_sharp,
+                            size: 13,
+                            color: shadColorScheme.foreground,
+                          )
+                        : Icon(
+                            Icons.upload_file_sharp,
+                            size: 13,
+                            color: shadColorScheme.foreground,
+                          ),
+                    SizedBox(width: 3),
+                    controller.sortReversed
+                        ? Text(
+                            '正序',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: shadColorScheme.foreground,
+                            ),
+                          )
+                        : Text(
+                            '倒序',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: shadColorScheme.foreground,
+                            ),
+                          ),
+                  ],
+                ),
+              ),
+            ),
+            GetBuilder<DownloadController>(builder: (controller) {
+              return CustomPopup(
+                contentDecoration: BoxDecoration(
+                  color: shadColorScheme.background.withOpacity(opacity * 1.6),
+                ),
+                content: SingleChildScrollView(
+                  child: SizedBox(
+                    width: 100,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: isQb
+                          ? controller.qbSortOptions
+                              .map((item) => PopupMenuItem<String>(
+                                    height: 32,
+                                    child: Text(
+                                      item.name,
+                                      style: TextStyle(
+                                        color: shadColorScheme.foreground,
+                                      ),
+                                    ),
+                                    onTap: () async {
+                                      controller.sortKey = item.value;
+                                      SPUtil.setLocalStorage('${downloader.host}:${downloader.port}-sortKey',
+                                          controller.sortKey.toString());
+                                      controller.sortQbTorrents();
+                                    },
+                                  ))
+                              .toList()
+                          : controller.trSortOptions
+                              .map((item) => ListTile(
+                                    dense: true,
+                                    title: Text(
+                                      item.name,
+                                    ),
+                                    style: ListTileStyle.list,
+                                    titleTextStyle: TextStyle(color: shadColorScheme.foreground),
+                                    selected: controller.sortKey == item.value,
+                                    selectedColor: shadColorScheme.destructive,
+                                    selectedTileColor: Colors.amber,
+                                    onTap: () {
+                                      controller.sortKey = item.value;
+                                      SPUtil.setLocalStorage('${downloader.host}:${downloader.port}-sortKey',
+                                          controller.sortKey.toString());
+                                      controller.sortTrTorrents();
+                                    },
+                                  ))
+                              .toList(),
+                    ),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
+                  child: CustomTextTag(
+                    backgroundColor: Colors.transparent,
+                    icon:Icon(
+                      Icons.sort_by_alpha_outlined,
+                      size: 13,
+                      color: shadColorScheme.foreground,
+                    ),
+                    labelText: '【${controller.qbSortOptions.firstWhereOrNull((item) => item.value == controller.sortKey)?.name ?? "无"}】',
+                    labelColor:shadColorScheme.foreground,
+
+
+                  ),
+                ),
+              );
+            }),
             GetBuilder<DownloadController>(builder: (controller) {
               return CustomPopup(
                 contentDecoration: BoxDecoration(
@@ -1234,24 +1346,16 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.tag,
-                        size: 13,
-                        color: shadColorScheme.foreground,
-                      ),
-                      Text(
-                        '【${controller.selectedTag}】',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: shadColorScheme.foreground,
-                        ),
-                      )
-                    ],
+                  child: CustomTextTag(
+                    backgroundColor: Colors.transparent,
+                    icon:Icon(
+                      Icons.tag,
+                      size: 13,
+                      color: shadColorScheme.foreground,
+                    ),
+                    labelText: '【${controller.selectedTag}】',
+                    labelColor:shadColorScheme.foreground,
+
                   ),
                 ),
               );
@@ -1312,103 +1416,15 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.language_outlined,
-                        size: 13,
-                        color: shadColorScheme.foreground,
-                      ),
-                      Text(
-                        '【${controller.selectedTracker}】',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: shadColorScheme.foreground,
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-              );
-            }),
-            GetBuilder<DownloadController>(builder: (controller) {
-              return CustomPopup(
-                contentDecoration: BoxDecoration(
-                  color: shadColorScheme.background.withOpacity(opacity * 1.6),
-                ),
-                content: SingleChildScrollView(
-                  child: SizedBox(
-                    width: 100,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: isQb
-                          ? controller.qbSortOptions
-                              .map((item) => PopupMenuItem<String>(
-                                    height: 32,
-                                    child: Text(
-                                      item.name,
-                                      style: TextStyle(
-                                        color: shadColorScheme.foreground,
-                                      ),
-                                    ),
-                                    onTap: () async {
-                                      controller.sortReversed =
-                                          controller.sortKey == item.value ? !controller.sortReversed : false;
-                                      controller.sortKey = item.value;
-                                      SPUtil.setLocalStorage('${downloader.host}:${downloader.port}-sortKey',
-                                          controller.sortKey.toString());
-                                      controller.sortQbTorrents();
-                                    },
-                                  ))
-                              .toList()
-                          : controller.trSortOptions
-                              .map((item) => ListTile(
-                                    dense: true,
-                                    title: Text(
-                                      item.name,
-                                    ),
-                                    style: ListTileStyle.list,
-                                    titleTextStyle: TextStyle(color: shadColorScheme.foreground),
-                                    selected: controller.sortKey == item.value,
-                                    selectedColor: shadColorScheme.destructive,
-                                    selectedTileColor: Colors.amber,
-                                    onTap: () {
-                                      Get.back();
-                                      controller.sortReversed =
-                                          controller.sortKey == item.value ? !controller.sortReversed : false;
-                                      controller.sortKey = item.value;
-                                      SPUtil.setLocalStorage('${downloader.host}:${downloader.port}-sortKey',
-                                          controller.sortKey.toString());
-                                      controller.sortTrTorrents();
-                                    },
-                                  ))
-                              .toList(),
+                  child: CustomTextTag(
+                    backgroundColor: Colors.transparent,
+                    icon:Icon(
+                      Icons.language_outlined,
+                      size: 13,
+                      color: shadColorScheme.foreground,
                     ),
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.sort_by_alpha_outlined,
-                        size: 13,
-                        color: shadColorScheme.foreground,
-                      ),
-                      Text(
-                        '【${controller.qbSortOptions.firstWhereOrNull((item) => item.value == controller.sortKey)?.name ?? "无"}】',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: shadColorScheme.foreground,
-                        ),
-                      )
-                    ],
+                    labelText: '【${controller.selectedTracker}】',
+                    labelColor:shadColorScheme.foreground,
                   ),
                 ),
               );
@@ -1445,24 +1461,18 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
-                  child: Row(
+                  child: CustomTextTag(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.category_outlined,
-                        size: 13,
-                        color: shadColorScheme.foreground,
-                      ),
-                      Text(
-                        '【${controller.categoryMap.keys.firstWhereOrNull((item) => item == controller.selectedCategory) ?? "全部"}】',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: shadColorScheme.foreground,
-                        ),
-                      )
-                    ],
+                    icon:  Icon(
+                      Icons.category_outlined,
+                      size: 13,
+                      color: shadColorScheme.foreground,
+                    ),
+                    backgroundColor: Colors.transparent,
+
+                    labelColor: shadColorScheme.foreground,
+                    labelText: '【${controller.categoryMap.keys.firstWhereOrNull((item) => item == controller.selectedCategory) ?? "全部"}】',
+
                   ),
                 ),
               );
@@ -1540,24 +1550,17 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
-                  child: Row(
+                  child: CustomTextTag(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.info_outlined,
-                        size: 13,
-                        color: shadColorScheme.foreground,
-                      ),
-                      Text(
-                        '【${controller.qBitStatus.firstWhereOrNull((item) => item.value == controller.torrentState) ?? "全部"}】',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: shadColorScheme.foreground,
-                        ),
-                      )
-                    ],
+                   icon:Icon(
+                     Icons.info_outlined,
+                     size: 13,
+                     color: shadColorScheme.foreground,
+                   ),
+                    backgroundColor: Colors.transparent,
+
+                    labelText: '【${controller.qBitStatus.firstWhereOrNull((item) => item.value == controller.torrentState) ?? "全部"}】',
+                    labelColor: shadColorScheme.foreground,
                   ),
                 ),
               );
@@ -1606,24 +1609,16 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
-                    child: Row(
+                    child: CustomTextTag(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.warning_amber_outlined,
-                          size: 13,
-                          color: shadColorScheme.foreground,
-                        ),
-                        Text(
-                          '【${controller.qBitStatus.firstWhereOrNull((item) => item.value == controller.torrentState) ?? "全部"}】',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: shadColorScheme.foreground,
-                          ),
-                        )
-                      ],
+                      icon:Icon(
+                        Icons.warning_amber_outlined,
+                        size: 13,
+                        color: shadColorScheme.foreground,
+                      ),
+                      backgroundColor: Colors.transparent,
+                      labelColor: shadColorScheme.foreground,
+                      labelText:'【${controller.qBitStatus.firstWhereOrNull((item) => item.value == controller.torrentState) ?? "全部"}】',
                     ),
                   ),
                 );
@@ -1674,13 +1669,43 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                 appBar: AppBar(
                   backgroundColor: shadColorScheme.background.withOpacity(opacity * 1.6),
                   toolbarHeight: 40,
-                  title: Row(
-                    children: [
-                      Text(
-                          '${downloader.name} (${controller.torrents.isNotEmpty ? controller.torrents.length : 'loading'})'),
-                    ],
-                  ),
+                  title: Text(
+                      '${downloader.name} (${controller.torrents.isNotEmpty ? controller.torrents.length : 'loading'})'),
                   actions: [
+                    if (controller.serverStatus.isNotEmpty) ...[
+                      SizedBox(
+                        width: 150,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CustomTextTag(
+                                icon: Icon(
+                                  Icons.keyboard_arrow_up_outlined,
+                                  color: shadColorScheme.primary,
+                                  size: 14,
+                                ),
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                backgroundColor: Colors.transparent,
+                                labelColor: shadColorScheme.primary,
+                                labelText:
+                                    "${FileSizeConvert.parseToFileSize(controller.serverStatus.last.upInfoSpeed)}/s[${FileSizeConvert.parseToFileSize(controller.serverStatus.last.upRateLimit)}]"),
+                            CustomTextTag(
+                                icon: Icon(
+                                  Icons.keyboard_arrow_down_outlined,
+                                  color: shadColorScheme.destructive,
+                                  size: 14,
+                                ),
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                backgroundColor: Colors.transparent,
+                                labelColor: shadColorScheme.destructive,
+                                labelText:
+                                    "${FileSizeConvert.parseToFileSize(controller.serverStatus.last.dlInfoSpeed)}/s[${FileSizeConvert.parseToFileSize(controller.serverStatus.last.dlRateLimit)}]"),
+                          ],
+                        ),
+                      ),
+                    ],
                     CustomPopup(
                         showArrow: false,
                         backgroundColor: shadColorScheme.background,
@@ -1768,10 +1793,6 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                         )),
                   ],
                 ),
-                drawer: GetBuilder<DownloadController>(builder: (controller) {
-                  return isQb ? _buildQbDrawer(downloader, context) : _buildTrDrawer(downloader, context);
-                }),
-                drawerEdgeDragWidth: 100,
                 body: CustomCard(
                     child: Column(
                   children: [
@@ -1851,7 +1872,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               ),
                             ),
                             if (controller.searchKey.isNotEmpty)
-                              ShadIconButton(
+                              ShadIconButton.ghost(
                                   onPressed: () {
                                     if (controller.searchController.text.isNotEmpty) {
                                       controller.searchController.text = controller.searchController.text
@@ -1874,33 +1895,33 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
                                 CustomTextTag(
-                                    icon: const Icon(
+                                    icon: Icon(
                                       Icons.sd_storage,
-                                      color: Colors.green,
+                                      color: shadColorScheme.primary,
                                       size: 14,
                                     ),
                                     backgroundColor: Colors.transparent,
-                                    labelColor: Colors.green,
+                                    labelColor: shadColorScheme.primary,
                                     labelText:
                                         FileSizeConvert.parseToFileSize(controller.serverStatus.last.freeSpaceOnDisk)),
                                 CustomTextTag(
-                                    icon: const Icon(
+                                    icon: Icon(
                                       Icons.upload_outlined,
-                                      color: Colors.green,
+                                      color: shadColorScheme.primary,
                                       size: 14,
                                     ),
                                     backgroundColor: Colors.transparent,
-                                    labelColor: Colors.green,
+                                    labelColor: shadColorScheme.primary,
                                     labelText:
                                         '${FileSizeConvert.parseToFileSize(controller.serverStatus.last.alltimeUl)}[${FileSizeConvert.parseToFileSize(controller.serverStatus.last.upInfoData)}]'),
                                 CustomTextTag(
-                                    icon: const Icon(
+                                    icon: Icon(
                                       Icons.download_outlined,
-                                      color: Colors.red,
+                                      color: shadColorScheme.destructive,
                                       size: 14,
                                     ),
                                     backgroundColor: Colors.transparent,
-                                    labelColor: Colors.red,
+                                    labelColor: shadColorScheme.destructive,
                                     labelText:
                                         '${FileSizeConvert.parseToFileSize(controller.serverStatus.last.alltimeDl)}[${FileSizeConvert.parseToFileSize(controller.serverStatus.last.dlInfoData)}]'),
                               ],

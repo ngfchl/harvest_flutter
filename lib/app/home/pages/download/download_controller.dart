@@ -624,14 +624,14 @@ class DownloadController extends GetxController {
     // logger_helper.Logger.instance.d(showTorrents.length);
     filterTorrentsByTracker();
     filterSiteTorrent();
-    localPaginationController.bindSource(showTorrents.obs, reset: true);
     sortTrTorrents();
+    // localPaginationController.bindSource(showTorrents.obs, reset: true);
     localPaginationController.bindSource(showTorrents.obs);
     update();
     logger_helper.Logger.instance.i(showTorrents.length);
   }
 
-  sortTrTorrents() {
+  void sortTrTorrents() {
     switch (sortKey) {
       case 'name':
         showTorrents.sort((a, b) => a.name.compareTo(b.name));
@@ -1256,7 +1256,7 @@ class DownloadController extends GetxController {
     }
   }
 
-  parseTrData(data) {
+  void parseTrData(data) {
     if (data.runtimeType == List || data['torrents'] == null || data['status'].isEmpty) return;
     torrents.assignAll(data['torrents'].map((item) => TrTorrent.fromJson(item)));
     tags.addAll(torrents.expand<String>((item) => item.labels).toSet().toList());
@@ -1315,7 +1315,7 @@ class DownloadController extends GetxController {
       if (data['trackers'] != null) ...mergeTrackers(Map<String, List<dynamic>>.from(data['trackers']))
     };
     // logger_helper.Logger.instance.d(trackers);
-    tags = ["全部", if (data['tags'] != null) ...List<String>.from(data['tags'] ?? [])];
+    tags = [if (data['tags'] != null) ...List<String>.from(data['tags'] ?? [])];
     torrents.assignAll(data['torrents']?.entries.map((entry) {
           var torrent = Map<String, dynamic>.from(entry.value); // 复制原始数据
           torrent['hash'] = entry.key; // 添加 hash 属性
