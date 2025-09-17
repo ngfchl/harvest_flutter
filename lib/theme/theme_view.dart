@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harvest/utils/storage.dart';
-import '../common/card_view.dart';
-import '../utils/logger_helper.dart';
-import 'theme_controller.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
+
+import '../common/card_view.dart';
+import 'theme_controller.dart';
 
 class ThemeTag extends StatelessWidget {
   const ThemeTag({super.key});
@@ -100,9 +100,8 @@ class ThemeTag extends StatelessWidget {
           trailing: ShadSwitch(
               value: controller.followSystem.value,
               onChanged: (bool v) async {
-                controller.toggleFollowSystem(v);
-                await SPUtil.setBool('followSystemDark', v);
-                Logger.instance.d('系统主题跟随状态: $v');
+                await controller.toggleFollowSystem(v);
+                await SPUtil.setBool('followSystem', v);
               }),
         ),
       );

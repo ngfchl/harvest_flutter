@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
+
+import '../utils/logger_helper.dart';
 import '../utils/storage.dart';
 
 class ThemeController extends GetxController {
@@ -53,36 +55,35 @@ class ThemeController extends GetxController {
     _loadTheme();
   }
 
-  void toggleDarkMode() {
+  Future<void> toggleDarkMode() async {
     if (followSystem.value) return; // 跟随系统时禁止手动切换
     isDark.value = !isDark.value;
-    _saveTheme();
+    await _saveTheme();
   }
 
-  void changeColorScheme(String name) {
+  Future<void> changeColorScheme(String name) async {
     colorSchemeName.value = name;
-    _saveTheme();
+    await _saveTheme();
   }
 
-  void toggleFollowSystem(bool value) {
+  Future<void> toggleFollowSystem(bool value) async {
     followSystem.value = value;
     if (followSystem.value) {
       isDark.value = Get.isDarkMode;
-      toggleDarkMode();
     }
-    _saveTheme();
+    await _saveTheme();
   }
 
   void _loadTheme() {
     isDark.value = SPUtil.getBool("isDark", defaultValue: false);
     followSystem.value = SPUtil.getBool("followSystem", defaultValue: true);
-    colorSchemeName.value =
-        SPUtil.getString("colorSchemeName", defaultValue: "slate");
+    colorSchemeName.value = SPUtil.getString("colorSchemeName", defaultValue: "slate");
   }
 
-  void _saveTheme() {
-    SPUtil.setBool("isDark", isDark.value);
-    SPUtil.setBool("followSystem", followSystem.value);
-    SPUtil.setString("colorSchemeName", colorSchemeName.value);
+  Future<void> _saveTheme() async {
+    Logger.instance.d("Save暗黑模式：${isDark.value}");
+    await SPUtil.setBool("isDark", isDark.value);
+    await SPUtil.setBool("followSystem", followSystem.value);
+    await SPUtil.setString("colorSchemeName", colorSchemeName.value);
   }
 }
