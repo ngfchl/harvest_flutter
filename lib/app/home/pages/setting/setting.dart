@@ -175,6 +175,9 @@ class SettingPage extends StatelessWidget {
                 '站点未设置标签时是否自动添加配置文件中的标签',
                 style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
               ),
+              onTap: () {
+                isEdit.value = !isEdit.value;
+              },
               trailing: ExpandIcon(
                   isExpanded: isEdit.value,
                   onPressed: (value) {
@@ -198,8 +201,8 @@ class SettingPage extends StatelessWidget {
                         onChanged: (bool v) async {
                           repeat.value = v;
                         }),
-                    FullWidthButton(
-                        text: '保存',
+                    ShadButton(
+                        child: Text('保存'),
                         onPressed: () async {
                           if (option == null) {
                             option = Option(
@@ -355,6 +358,9 @@ class SettingPage extends StatelessWidget {
                             ? const Icon(Icons.check, color: Colors.green)
                             : const Icon(Icons.clear, color: Colors.red))
                     : const SizedBox.shrink(),
+                onTap: () {
+                  isEdit.value = !isEdit.value;
+                },
                 trailing: ExpandIcon(
                     isExpanded: isEdit.value,
                     onPressed: (value) {
@@ -380,40 +386,37 @@ class SettingPage extends StatelessWidget {
                     ),
                     Row(
                       children: [
-                        Expanded(
-                          child: FullWidthButton(
-                              text: '保存',
-                              onPressed: () async {
-                                if (option == null) {
-                                  option = Option(
-                                    id: 0,
-                                    name: 'aggregation_search',
-                                    isActive: isActive.value,
-                                    value: OptionValue(
-                                      limit: int.tryParse(limitController.text) ?? 30,
-                                      maxCount: int.tryParse(maxCountController.text) ?? 30,
-                                    ),
-                                  );
-                                } else {
-                                  option?.isActive = isActive.value;
-                                  option?.value = OptionValue(
+                        ShadButton(
+                            child: Text('保存'),
+                            onPressed: () async {
+                              if (option == null) {
+                                option = Option(
+                                  id: 0,
+                                  name: 'aggregation_search',
+                                  isActive: isActive.value,
+                                  value: OptionValue(
                                     limit: int.tryParse(limitController.text) ?? 30,
                                     maxCount: int.tryParse(maxCountController.text) ?? 30,
-                                  );
-                                }
-                                final res = await controller.saveOption(option!);
-                                if (res.code == 0) {
-                                  Get.back();
-                                  Get.snackbar('配置保存成功', '${controller.optionMap['aggregation_search']} 配置：${res.msg}',
-                                      colorText: ShadTheme.of(context).colorScheme.foreground);
-                                  isEdit.value = false;
-                                } else {
-                                  Get.snackbar(
-                                      '配置保存失败', '${controller.optionMap['aggregation_search']} 配置出错啦：${res.msg}',
-                                      colorText: ShadTheme.of(context).colorScheme.destructive);
-                                }
-                              }),
-                        ),
+                                  ),
+                                );
+                              } else {
+                                option?.isActive = isActive.value;
+                                option?.value = OptionValue(
+                                  limit: int.tryParse(limitController.text) ?? 30,
+                                  maxCount: int.tryParse(maxCountController.text) ?? 30,
+                                );
+                              }
+                              final res = await controller.saveOption(option!);
+                              if (res.code == 0) {
+                                Get.back();
+                                Get.snackbar('配置保存成功', '${controller.optionMap['aggregation_search']} 配置：${res.msg}',
+                                    colorText: ShadTheme.of(context).colorScheme.foreground);
+                                isEdit.value = false;
+                              } else {
+                                Get.snackbar('配置保存失败', '${controller.optionMap['aggregation_search']} 配置出错啦：${res.msg}',
+                                    colorText: ShadTheme.of(context).colorScheme.destructive);
+                              }
+                            }),
                       ],
                     ),
                   ],
@@ -454,6 +457,9 @@ class SettingPage extends StatelessWidget {
                             ? const Icon(Icons.check, color: Colors.green)
                             : const Icon(Icons.clear, color: Colors.red))
                     : const SizedBox.shrink(),
+                onTap: () {
+                  isEdit.value = !isEdit.value;
+                },
                 trailing: ExpandIcon(
                     isExpanded: isEdit.value,
                     onPressed: (value) {
@@ -485,41 +491,39 @@ class SettingPage extends StatelessWidget {
                         }),
                     Row(
                       children: [
-                        Expanded(
-                          child: FullWidthButton(
-                              text: '保存',
-                              onPressed: () async {
-                                if (option == null) {
-                                  option = Option(
-                                    id: 0,
-                                    name: 'tmdb_api_auth',
-                                    isActive: isActive.value,
-                                    value: OptionValue(
-                                      proxy: proxyController.text,
-                                      apiKey: apiKeyController.text,
-                                      secretKey: secretController.text,
-                                    ),
-                                  );
-                                } else {
-                                  option?.isActive = isActive.value;
-                                  option?.value = OptionValue(
+                        ShadButton(
+                            child: Text('保存'),
+                            onPressed: () async {
+                              if (option == null) {
+                                option = Option(
+                                  id: 0,
+                                  name: 'tmdb_api_auth',
+                                  isActive: isActive.value,
+                                  value: OptionValue(
                                     proxy: proxyController.text,
                                     apiKey: apiKeyController.text,
                                     secretKey: secretController.text,
-                                  );
-                                }
-                                final res = await controller.saveOption(option!);
-                                if (res.code == 0) {
-                                  Get.back();
-                                  Get.snackbar('配置保存成功', '${controller.optionMap['tmdb_api_auth']} 配置：${res.msg}',
-                                      colorText: ShadTheme.of(context).colorScheme.foreground);
-                                  isEdit.value = false;
-                                } else {
-                                  Get.snackbar('配置保存失败', '${controller.optionMap['tmdb_api_auth']} 配置出错啦：${res.msg}',
-                                      colorText: ShadTheme.of(context).colorScheme.destructive);
-                                }
-                              }),
-                        ),
+                                  ),
+                                );
+                              } else {
+                                option?.isActive = isActive.value;
+                                option?.value = OptionValue(
+                                  proxy: proxyController.text,
+                                  apiKey: apiKeyController.text,
+                                  secretKey: secretController.text,
+                                );
+                              }
+                              final res = await controller.saveOption(option!);
+                              if (res.code == 0) {
+                                Get.back();
+                                Get.snackbar('配置保存成功', '${controller.optionMap['tmdb_api_auth']} 配置：${res.msg}',
+                                    colorText: ShadTheme.of(context).colorScheme.foreground);
+                                isEdit.value = false;
+                              } else {
+                                Get.snackbar('配置保存失败', '${controller.optionMap['tmdb_api_auth']} 配置出错啦：${res.msg}',
+                                    colorText: ShadTheme.of(context).colorScheme.destructive);
+                              }
+                            }),
                       ],
                     ),
                   ],
@@ -572,6 +576,9 @@ class SettingPage extends StatelessWidget {
                           ? const Icon(Icons.check, color: Colors.green)
                           : const Icon(Icons.clear, color: Colors.red))
                   : const SizedBox.shrink(),
+              onTap: () {
+                isEdit.value = !isEdit.value;
+              },
               trailing: ExpandIcon(
                   isExpanded: isEdit.value,
                   onPressed: (value) {
@@ -745,37 +752,18 @@ class SettingPage extends StatelessWidget {
                         ],
                       ),
                     ),
-                    Expanded(
-                      child: FullWidthButton(
-                          text: '保存',
-                          onPressed: () async {
-                            if (option == null) {
-                              option = Option(
-                                id: 0,
-                                name: 'notice_category_enable',
-                                isActive: isActive.value,
-                                value: OptionValue(
-                                  aliyundriveNotice: aliyundriveNotice.value,
-                                  siteData: siteData.value,
-                                  siteDataSuccess: siteDataSuccess.value,
-                                  todayData: todayData.value,
-                                  packageTorrent: packageTorrent.value,
-                                  deleteTorrent: deleteTorrent.value,
-                                  rssTorrent: rssTorrent.value,
-                                  pushTorrent: pushTorrent.value,
-                                  programUpgrade: programUpgrade.value,
-                                  ptppImport: ptppImport.value,
-                                  announcement: announcement.value,
-                                  message: message.value,
-                                  signInSuccess: signInSuccess.value,
-                                  cookieSync: cookieSync.value,
-                                ),
-                              );
-                            } else {
-                              option?.isActive = isActive.value;
-                              option?.value = OptionValue(
+                    ShadButton(
+                        child: Text('保存'),
+                        onPressed: () async {
+                          if (option == null) {
+                            option = Option(
+                              id: 0,
+                              name: 'notice_category_enable',
+                              isActive: isActive.value,
+                              value: OptionValue(
                                 aliyundriveNotice: aliyundriveNotice.value,
                                 siteData: siteData.value,
+                                siteDataSuccess: siteDataSuccess.value,
                                 todayData: todayData.value,
                                 packageTorrent: packageTorrent.value,
                                 deleteTorrent: deleteTorrent.value,
@@ -786,23 +774,39 @@ class SettingPage extends StatelessWidget {
                                 announcement: announcement.value,
                                 message: message.value,
                                 signInSuccess: signInSuccess.value,
-                                siteDataSuccess: siteDataSuccess.value,
                                 cookieSync: cookieSync.value,
-                              );
-                            }
-                            final res = await controller.saveOption(option!);
-                            if (res.code == 0) {
-                              Get.back();
-                              Get.snackbar('配置保存成功', '${controller.optionMap['notice_category_enable']} 配置：${res.msg}',
-                                  colorText: ShadTheme.of(context).colorScheme.foreground);
-                              isEdit.value = false;
-                            } else {
-                              Get.snackbar(
-                                  '配置保存失败', '${controller.optionMap['notice_category_enable']} 配置出错啦：${res.msg}',
-                                  colorText: ShadTheme.of(context).colorScheme.destructive);
-                            }
-                          }),
-                    ),
+                              ),
+                            );
+                          } else {
+                            option?.isActive = isActive.value;
+                            option?.value = OptionValue(
+                              aliyundriveNotice: aliyundriveNotice.value,
+                              siteData: siteData.value,
+                              todayData: todayData.value,
+                              packageTorrent: packageTorrent.value,
+                              deleteTorrent: deleteTorrent.value,
+                              rssTorrent: rssTorrent.value,
+                              pushTorrent: pushTorrent.value,
+                              programUpgrade: programUpgrade.value,
+                              ptppImport: ptppImport.value,
+                              announcement: announcement.value,
+                              message: message.value,
+                              signInSuccess: signInSuccess.value,
+                              siteDataSuccess: siteDataSuccess.value,
+                              cookieSync: cookieSync.value,
+                            );
+                          }
+                          final res = await controller.saveOption(option!);
+                          if (res.code == 0) {
+                            Get.back();
+                            Get.snackbar('配置保存成功', '${controller.optionMap['notice_category_enable']} 配置：${res.msg}',
+                                colorText: ShadTheme.of(context).colorScheme.foreground);
+                            isEdit.value = false;
+                          } else {
+                            Get.snackbar('配置保存失败', '${controller.optionMap['notice_category_enable']} 配置出错啦：${res.msg}',
+                                colorText: ShadTheme.of(context).colorScheme.destructive);
+                          }
+                        }),
                   ],
                 ),
               ),
@@ -851,6 +855,9 @@ class SettingPage extends StatelessWidget {
                           ? const Icon(Icons.check, color: Colors.green)
                           : const Icon(Icons.clear, color: Colors.red))
                   : const SizedBox.shrink(),
+              onTap: () {
+                isEdit.value = !isEdit.value;
+              },
               trailing: ExpandIcon(
                   isExpanded: isEdit.value,
                   onPressed: (value) {
@@ -1002,58 +1009,63 @@ class SettingPage extends StatelessWidget {
                         ],
                       ),
                     ),
-                    Expanded(
-                      child: FullWidthButton(
-                          text: '保存',
-                          onPressed: () async {
-                            if (option == null) {
-                              option = Option(
-                                id: 0,
-                                name: 'notice_content_item',
-                                isActive: isActive.value,
-                                value: OptionValue(
-                                  level: level.value,
-                                  bonus: bonus.value,
-                                  perBonus: perBonus.value,
-                                  score: score.value,
-                                  ratio: ratio.value,
-                                  seedingVol: seedingVol.value,
-                                  uploaded: uploaded.value,
-                                  downloaded: downloaded.value,
-                                  seeding: seeding.value,
-                                  leeching: leeching.value,
-                                  invite: invite.value,
-                                  hr: hr.value,
-                                ),
-                              );
-                            } else {
-                              option?.isActive = isActive.value;
-                              option?.value = OptionValue(
-                                level: level.value,
-                                bonus: bonus.value,
-                                perBonus: perBonus.value,
-                                score: score.value,
-                                ratio: ratio.value,
-                                seedingVol: seedingVol.value,
-                                uploaded: uploaded.value,
-                                downloaded: downloaded.value,
-                                seeding: seeding.value,
-                                leeching: leeching.value,
-                                invite: invite.value,
-                                hr: hr.value,
-                              );
-                            }
-                            final res = await controller.saveOption(option!);
-                            if (res.code == 0) {
-                              Get.back();
-                              Get.snackbar('配置保存成功', '${controller.optionMap['notice_content_item']} 配置：${res.msg}',
-                                  colorText: ShadTheme.of(context).colorScheme.foreground);
-                              isEdit.value = false;
-                            } else {
-                              Get.snackbar('配置保存失败', '${controller.optionMap['notice_content_item']} 配置出错啦：${res.msg}',
-                                  colorText: ShadTheme.of(context).colorScheme.destructive);
-                            }
-                          }),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ShadButton(
+                              child: Text('保存'),
+                              onPressed: () async {
+                                if (option == null) {
+                                  option = Option(
+                                    id: 0,
+                                    name: 'notice_content_item',
+                                    isActive: isActive.value,
+                                    value: OptionValue(
+                                      level: level.value,
+                                      bonus: bonus.value,
+                                      perBonus: perBonus.value,
+                                      score: score.value,
+                                      ratio: ratio.value,
+                                      seedingVol: seedingVol.value,
+                                      uploaded: uploaded.value,
+                                      downloaded: downloaded.value,
+                                      seeding: seeding.value,
+                                      leeching: leeching.value,
+                                      invite: invite.value,
+                                      hr: hr.value,
+                                    ),
+                                  );
+                                } else {
+                                  option?.isActive = isActive.value;
+                                  option?.value = OptionValue(
+                                    level: level.value,
+                                    bonus: bonus.value,
+                                    perBonus: perBonus.value,
+                                    score: score.value,
+                                    ratio: ratio.value,
+                                    seedingVol: seedingVol.value,
+                                    uploaded: uploaded.value,
+                                    downloaded: downloaded.value,
+                                    seeding: seeding.value,
+                                    leeching: leeching.value,
+                                    invite: invite.value,
+                                    hr: hr.value,
+                                  );
+                                }
+                                final res = await controller.saveOption(option!);
+                                if (res.code == 0) {
+                                  Get.back();
+                                  Get.snackbar('配置保存成功', '${controller.optionMap['notice_content_item']} 配置：${res.msg}',
+                                      colorText: ShadTheme.of(context).colorScheme.foreground);
+                                  isEdit.value = false;
+                                } else {
+                                  Get.snackbar(
+                                      '配置保存失败', '${controller.optionMap['notice_content_item']} 配置出错啦：${res.msg}',
+                                      colorText: ShadTheme.of(context).colorScheme.destructive);
+                                }
+                              }),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -1091,6 +1103,9 @@ class SettingPage extends StatelessWidget {
                             ? const Icon(Icons.check, color: Colors.green)
                             : const Icon(Icons.clear, color: Colors.red))
                     : const SizedBox.shrink(),
+                onTap: () {
+                  isEdit.value = !isEdit.value;
+                },
                 trailing: ExpandIcon(
                     isExpanded: isEdit.value,
                     onPressed: (value) {
@@ -1188,6 +1203,9 @@ class SettingPage extends StatelessWidget {
                             ? const Icon(Icons.check, color: Colors.green)
                             : const Icon(Icons.clear, color: Colors.red))
                     : const SizedBox.shrink(),
+                onTap: () {
+                  isEdit.value = !isEdit.value;
+                },
                 trailing: ExpandIcon(
                     isExpanded: isEdit.value,
                     onPressed: (value) {
@@ -1210,8 +1228,8 @@ class SettingPage extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: FullWidthButton(
-                              text: '保存',
+                          child: ShadButton(
+                              child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {
                                   option = Option(
@@ -1291,6 +1309,9 @@ class SettingPage extends StatelessWidget {
                             ? const Icon(Icons.check, color: Colors.green)
                             : const Icon(Icons.clear, color: Colors.red))
                     : const SizedBox.shrink(),
+                onTap: () {
+                  isEdit.value = !isEdit.value;
+                },
                 trailing: ExpandIcon(
                     isExpanded: isEdit.value,
                     onPressed: (value) {
@@ -1307,8 +1328,8 @@ class SettingPage extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: FullWidthButton(
-                              text: '保存',
+                          child: ShadButton(
+                              child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {
                                   option = Option(
@@ -1370,6 +1391,9 @@ class SettingPage extends StatelessWidget {
                   icon: Icon(Icons.notification_important_outlined, color: Colors.green),
                   onPressed: null,
                 ),
+                onTap: () {
+                  isEdit.value = !isEdit.value;
+                },
                 trailing: ExpandIcon(
                     isExpanded: isEdit.value,
                     onPressed: (value) {
@@ -1390,8 +1414,8 @@ class SettingPage extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: FullWidthButton(
-                              text: '发送',
+                          child: ShadButton(
+                              child: Text('发送'),
                               onPressed: () async {
                                 final res = await noticeTestApi({
                                   "title": titleController.text,
@@ -1448,6 +1472,9 @@ class SettingPage extends StatelessWidget {
                             ? const Icon(Icons.check, color: Colors.green)
                             : const Icon(Icons.clear, color: Colors.red))
                     : const SizedBox.shrink(),
+                onTap: () {
+                  isEdit.value = !isEdit.value;
+                },
                 trailing: ExpandIcon(
                     isExpanded: isEdit.value,
                     onPressed: (value) {
@@ -1476,8 +1503,8 @@ class SettingPage extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: FullWidthButton(
-                              text: '保存',
+                          child: ShadButton(
+                              child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {
                                   option = Option(
@@ -1549,6 +1576,9 @@ class SettingPage extends StatelessWidget {
                             ? const Icon(Icons.check, color: Colors.green)
                             : const Icon(Icons.clear, color: Colors.red))
                     : const SizedBox.shrink(),
+                onTap: () {
+                  isEdit.value = !isEdit.value;
+                },
                 trailing: ExpandIcon(
                     isExpanded: isEdit.value,
                     onPressed: (value) {
@@ -1565,8 +1595,8 @@ class SettingPage extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: FullWidthButton(
-                              text: '保存',
+                          child: ShadButton(
+                              child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {
                                   option = Option(
@@ -1636,6 +1666,9 @@ class SettingPage extends StatelessWidget {
                             ? const Icon(Icons.check, color: Colors.green)
                             : const Icon(Icons.clear, color: Colors.red))
                     : const SizedBox.shrink(),
+                onTap: () {
+                  isEdit.value = !isEdit.value;
+                },
                 trailing: ExpandIcon(
                     isExpanded: isEdit.value,
                     onPressed: (value) {
@@ -1662,8 +1695,8 @@ class SettingPage extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: FullWidthButton(
-                              text: '保存',
+                          child: ShadButton(
+                              child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {
                                   option = Option(
@@ -1735,6 +1768,9 @@ class SettingPage extends StatelessWidget {
                             ? const Icon(Icons.check, color: Colors.green)
                             : const Icon(Icons.clear, color: Colors.red))
                     : const SizedBox.shrink(),
+                onTap: () {
+                  isEdit.value = !isEdit.value;
+                },
                 trailing: ExpandIcon(
                     isExpanded: isEdit.value,
                     onPressed: (value) {
@@ -1753,8 +1789,8 @@ class SettingPage extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: FullWidthButton(
-                              text: '保存',
+                          child: ShadButton(
+                              child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {
                                   option = Option(
@@ -1827,6 +1863,9 @@ class SettingPage extends StatelessWidget {
                             ? const Icon(Icons.check, color: Colors.green)
                             : const Icon(Icons.clear, color: Colors.red))
                     : const SizedBox.shrink(),
+                onTap: () {
+                  isEdit.value = !isEdit.value;
+                },
                 trailing: ExpandIcon(
                     isExpanded: isEdit.value,
                     onPressed: (value) {
@@ -1844,8 +1883,8 @@ class SettingPage extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: FullWidthButton(
-                              text: '保存',
+                          child: ShadButton(
+                              child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {
                                   option = Option(
@@ -1917,6 +1956,9 @@ class SettingPage extends StatelessWidget {
                             ? const Icon(Icons.check, color: Colors.green)
                             : const Icon(Icons.clear, color: Colors.red))
                     : const SizedBox.shrink(),
+                onTap: () {
+                  isEdit.value = !isEdit.value;
+                },
                 trailing: ExpandIcon(
                     isExpanded: isEdit.value,
                     onPressed: (value) {
@@ -1933,8 +1975,8 @@ class SettingPage extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: FullWidthButton(
-                              text: '保存',
+                          child: ShadButton(
+                              child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {
                                   option = Option(
@@ -2000,6 +2042,9 @@ class SettingPage extends StatelessWidget {
                   onPressed: () async {},
                   icon: const Icon(Icons.telegram_outlined, color: Colors.green),
                 ),
+                onTap: () {
+                  isEdit.value = !isEdit.value;
+                },
                 trailing: ExpandIcon(
                     isExpanded: isEdit.value,
                     onPressed: (value) {
@@ -2020,8 +2065,8 @@ class SettingPage extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: FullWidthButton(
-                            text: '保存',
+                          child: ShadButton(
+                            child: Text('保存'),
                             onPressed: () => _saveWebHook(context, urlController.text),
                           ),
                         ),
@@ -2037,7 +2082,7 @@ class SettingPage extends StatelessWidget {
   }
 
   Widget _backgroundImageForm(context) {
-    RxString? baseUrl = SPUtil.getString('backgroundImage', defaultValue: '').obs;
+    RxString? baseUrl = SPUtil.getString('backgroundImage', defaultValue: 'https://bing.img.run/rand_uhd.php').obs;
     RxDouble? opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7).obs;
     RxBool useLocalBackground = SPUtil.getBool('useLocalBackground', defaultValue: false).obs;
     RxBool useBackground = SPUtil.getBool('useBackground', defaultValue: false).obs;
@@ -2073,6 +2118,9 @@ class SettingPage extends StatelessWidget {
                       color: Colors.green,
                     ),
                   ),
+                  onTap: () {
+                    isEdit.value = !isEdit.value;
+                  },
                   trailing: ExpandIcon(
                       isExpanded: isEdit.value,
                       onPressed: (value) {
@@ -2091,49 +2139,45 @@ class SettingPage extends StatelessWidget {
                           spacing: 20,
                           children: [
                             if (useBackground.value)
-                              Expanded(
-                                child: FullWidthButton(
-                                  text: '预览',
-                                  onPressed: () {
-                                    if (urlController.text.isNotEmpty) {
-                                      baseUrl.value = urlController.text;
-                                      showPreview.value = !showPreview.value;
-                                    } else {
-                                      showPreview.value = false;
-                                    }
-                                  },
-                                ),
-                              ),
-                            Expanded(
-                              child: FullWidthButton(
-                                text: '保存',
-                                backgroundColor: ShadTheme.of(context).colorScheme.foreground,
+                              ShadButton.secondary(
+                                child: Text('预览'),
                                 onPressed: () {
                                   if (urlController.text.isNotEmpty) {
-                                    if (useLocalBackground.value && baseUrl.value.startsWith('http')) {
-                                      Get.snackbar(
-                                        '出错啦',
-                                        "请选择正确的背景图片！",
-                                        colorText: ShadTheme.of(context).colorScheme.destructive,
-                                      );
-                                      return;
-                                    }
                                     baseUrl.value = urlController.text;
-                                    Logger.instance.d('backgroundImage: ${urlController.text}');
-                                    SPUtil.setString('backgroundImage', urlController.text);
-                                    homeController.backgroundImage = urlController.text;
-                                    homeController.update(['home_view_background_image']);
-                                    isEdit.value = false;
-                                    homeController.onInit();
+                                    showPreview.value = !showPreview.value;
                                   } else {
-                                    Get.snackbar(
-                                      '出错啦',
-                                      "请选择或输入正确的图片地址！",
-                                      colorText: ShadTheme.of(context).colorScheme.destructive,
-                                    );
+                                    showPreview.value = false;
                                   }
                                 },
                               ),
+                            ShadButton(
+                              backgroundColor: ShadTheme.of(context).colorScheme.foreground,
+                              onPressed: () {
+                                if (urlController.text.isNotEmpty) {
+                                  if (useLocalBackground.value && baseUrl.value.startsWith('http')) {
+                                    Get.snackbar(
+                                      '出错啦',
+                                      "请选择正确的背景图片！",
+                                      colorText: ShadTheme.of(context).colorScheme.destructive,
+                                    );
+                                    return;
+                                  }
+                                  baseUrl.value = urlController.text;
+                                  Logger.instance.d('backgroundImage: ${urlController.text}');
+                                  SPUtil.setString('backgroundImage', urlController.text);
+                                  homeController.backgroundImage = urlController.text;
+                                  homeController.update(['home_view_background_image']);
+                                  isEdit.value = false;
+                                  homeController.onInit();
+                                } else {
+                                  Get.snackbar(
+                                    '出错啦',
+                                    "请选择或输入正确的图片地址！",
+                                    colorText: ShadTheme.of(context).colorScheme.destructive,
+                                  );
+                                }
+                              },
+                              child: Text('保存'),
                             ),
                           ],
                         ),
@@ -2295,6 +2339,9 @@ class SettingPage extends StatelessWidget {
                             ? const Icon(Icons.check, color: Colors.green)
                             : const Icon(Icons.clear, color: Colors.red))
                     : const SizedBox.shrink(),
+                onTap: () {
+                  isEdit.value = !isEdit.value;
+                },
                 trailing: ExpandIcon(
                     isExpanded: isEdit.value,
                     onPressed: (value) {
@@ -2310,8 +2357,8 @@ class SettingPage extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: FullWidthButton(
-                              text: '保存',
+                          child: ShadButton(
+                              child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {
                                   option = Option(
@@ -2382,6 +2429,9 @@ class SettingPage extends StatelessWidget {
                             ? const Icon(Icons.check, color: Colors.green)
                             : const Icon(Icons.clear, color: Colors.red))
                     : const SizedBox.shrink(),
+                onTap: () {
+                  isEdit.value = !isEdit.value;
+                },
                 trailing: ExpandIcon(
                     isExpanded: isEdit.value,
                     onPressed: (value) {
@@ -2399,8 +2449,8 @@ class SettingPage extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: FullWidthButton(
-                              text: '保存',
+                          child: ShadButton(
+                              child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {
                                   option = Option(
@@ -2473,6 +2523,9 @@ class SettingPage extends StatelessWidget {
                             ? const Icon(Icons.check, color: Colors.green)
                             : const Icon(Icons.clear, color: Colors.red))
                     : const SizedBox.shrink(),
+                onTap: () {
+                  isEdit.value = !isEdit.value;
+                },
                 trailing: ExpandIcon(
                     isExpanded: isEdit.value,
                     onPressed: (value) {
@@ -2490,8 +2543,8 @@ class SettingPage extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: FullWidthButton(
-                              text: '保存',
+                          child: ShadButton(
+                              child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {
                                   option = Option(
@@ -2565,6 +2618,9 @@ class SettingPage extends StatelessWidget {
                             ? const Icon(Icons.check, color: Colors.green)
                             : const Icon(Icons.clear, color: Colors.red))
                     : const SizedBox.shrink(),
+                onTap: () {
+                  isEdit.value = !isEdit.value;
+                },
                 trailing: ExpandIcon(
                     isExpanded: isEdit.value,
                     onPressed: (value) {
@@ -2582,8 +2638,8 @@ class SettingPage extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: FullWidthButton(
-                              text: '保存',
+                          child: ShadButton(
+                              child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {
                                   option = Option(
