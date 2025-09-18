@@ -53,7 +53,7 @@ class DashBoardController extends GetxController {
   bool buildSiteInfo = true;
   bool showTodayUploadedIncrement = true;
   bool showTodayDownloadedIncrement = true;
-  bool scaleEnable = true;
+  bool scaleEnable = false;
   MySite? earliestSite;
   int days = 7;
   int maxDays = 0;
@@ -104,26 +104,17 @@ class DashBoardController extends GetxController {
     privateMode = SPUtil.getBool('privateMode', defaultValue: false);
     cardHeight = SPUtil.getDouble('buildCardHeight', defaultValue: 260);
     buildStackedBar = SPUtil.getBool('buildStackedBar', defaultValue: true);
-    buildSeedVolumePieChart =
-        SPUtil.getBool('buildSeedVolumePieChart', defaultValue: true);
-    buildSmartLabelPieChart =
-        SPUtil.getBool('buildSmartLabelPieChart', defaultValue: true);
-    buildAccountInfoCard =
-        SPUtil.getBool('buildAccountInfoCard', defaultValue: true);
-    buildMonthPublishedBar =
-        SPUtil.getBool('buildMonthPublishedBar', defaultValue: true);
-    buildMonthDownloadedBar =
-        SPUtil.getBool('buildMonthDownloadedBar', defaultValue: true);
-    buildPublishedPieChart =
-        SPUtil.getBool('buildPublishedPieChart', defaultValue: true);
-    buildMonthStackedBar =
-        SPUtil.getBool('buildMonthStackedBar', defaultValue: true);
+    buildSeedVolumePieChart = SPUtil.getBool('buildSeedVolumePieChart', defaultValue: true);
+    buildSmartLabelPieChart = SPUtil.getBool('buildSmartLabelPieChart', defaultValue: true);
+    buildAccountInfoCard = SPUtil.getBool('buildAccountInfoCard', defaultValue: true);
+    buildMonthPublishedBar = SPUtil.getBool('buildMonthPublishedBar', defaultValue: true);
+    buildMonthDownloadedBar = SPUtil.getBool('buildMonthDownloadedBar', defaultValue: true);
+    buildPublishedPieChart = SPUtil.getBool('buildPublishedPieChart', defaultValue: true);
+    buildMonthStackedBar = SPUtil.getBool('buildMonthStackedBar', defaultValue: true);
     buildSiteInfo = SPUtil.getBool('buildSiteInfo', defaultValue: true);
-    showTodayUploadedIncrement =
-        SPUtil.getBool('showTodayUploadedIncrement', defaultValue: true);
-    showTodayDownloadedIncrement =
-        SPUtil.getBool('showTodayDownloadedIncrement', defaultValue: true);
-    scaleEnable = SPUtil.getBool('scaleEnable', defaultValue: true);
+    showTodayUploadedIncrement = SPUtil.getBool('showTodayUploadedIncrement', defaultValue: true);
+    showTodayDownloadedIncrement = SPUtil.getBool('showTodayDownloadedIncrement', defaultValue: true);
+    scaleEnable = SPUtil.getBool('scaleEnable', defaultValue: false);
     isCacheLoading = true;
     update();
     await loadCacheDashData();
@@ -221,9 +212,8 @@ class DashBoardController extends GetxController {
   ///@updateTime
    */
   parseDashData(data) {
-    emailMap = (data['emailCount'] as List? ?? [])
-        .map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>))
-        .toList();
+    emailMap =
+        (data['emailCount'] as List? ?? []).map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>)).toList();
     usernameMap = (data['usernameCount'] as List? ?? [])
         .map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>))
         .toList();
@@ -241,13 +231,10 @@ class DashBoardController extends GetxController {
         .map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>))
         .toList();
 
-    downloadIncrementDataList =
-        (data['downloadIncrementDataList'] as List? ?? [])
-            .map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>))
-            .toList();
-    uploadMonthIncrementDataList = (data['uploadMonthIncrementDataList']
-                as List? ??
-            [])
+    downloadIncrementDataList = (data['downloadIncrementDataList'] as List? ?? [])
+        .map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>))
+        .toList();
+    uploadMonthIncrementDataList = (data['uploadMonthIncrementDataList'] as List? ?? [])
         .map((el) => MetaDataItem(
               name: el['name'] as String,
               value: (el['value'] as List<dynamic>? ?? [])
@@ -255,12 +242,9 @@ class DashBoardController extends GetxController {
                   .toList(),
             ))
         .toList();
-    statusList = (data['statusList'] as List? ?? [])
-        .map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>))
-        .toList();
-    earliestSite = data['earliestSite'] != null
-        ? MySite.fromJson(data['earliestSite'])
-        : null;
+    statusList =
+        (data['statusList'] as List? ?? []).map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>)).toList();
+    earliestSite = data['earliestSite'] != null ? MySite.fromJson(data['earliestSite']) : null;
     stackChartDataList = (data['stackChartDataList'] as List<dynamic>? ?? [])
         .map((el) => MetaDataItem(
               name: el['name'] as String,

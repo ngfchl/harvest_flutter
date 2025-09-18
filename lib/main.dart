@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:harvest/utils/dio_util.dart';
+import 'package:harvest/utils/logger_helper.dart';
 import 'package:harvest/utils/storage.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -80,13 +81,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeController = Get.find<ThemeController>();
+    Logger.instance.d("暗黑模式：${themeController.isDark.value}");
+    Logger.instance.d("暗黑模式：${Get.isDarkMode}");
+    Logger.instance.d("暗黑模式：${SPUtil.getBool('isDark')}");
 
     return Obx(() {
       return ShadApp.custom(
           darkTheme: themeController.darkTheme,
           theme: themeController.lightTheme,
-          themeMode:
-              themeController.isDark.value ? ThemeMode.dark : ThemeMode.light,
+          themeMode: themeController.themeMode,
           appBuilder: (context) {
             return GetMaterialApp(
               title: "Harvest",
