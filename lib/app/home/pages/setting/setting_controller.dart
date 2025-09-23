@@ -41,6 +41,8 @@ class SettingController extends GetxController {
 
   @override
   Future<void> onInit() async {
+    isLoaded = true;
+    update();
     optionChoice = optionMapList.map((e) => SelectOption.fromJson(e)).toList();
     optionMap = Map.fromEntries(
         optionMapList.map((item) => MapEntry(item['value']!, item['name']!)));
@@ -53,9 +55,7 @@ class SettingController extends GetxController {
     super.onInit();
   }
 
-  getOptionList() async {
-    isLoaded = true;
-    update();
+  Future<void> getOptionList() async {
     final res = await getOptionListApi();
     if (res.code == 0) {
       optionList = res.data;
@@ -71,13 +71,13 @@ class SettingController extends GetxController {
     update();
   }
 
-  logout() {
+  void logout() {
     SPUtil.remove("userinfo");
     SPUtil.remove("isLogin");
     Get.offAllNamed(Routes.LOGIN);
   }
 
-  getSystemConfigFromServer() {
+  void getSystemConfigFromServer() {
     // getSystemConfig().then((value) {
     //   if (value.code == 0) {
     //     configData = value.data;
@@ -102,5 +102,9 @@ class SettingController extends GetxController {
       await getOptionList();
     }
     return res;
+  }
+
+  Future<CommonResponse> removeOption(Option option) async {
+    return await removeOptionApi(option);
   }
 }

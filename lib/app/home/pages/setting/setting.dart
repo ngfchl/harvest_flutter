@@ -5,6 +5,7 @@ import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:harvest/api/api.dart';
 import 'package:harvest/app/home/controller/home_controller.dart';
@@ -325,13 +326,67 @@ class SettingPage extends StatelessWidget {
 
   List<Widget> _optionListView(context) {
     Map<String, OptionFormBuilder> optionForms = _optionFormMap();
-    List<Widget> children = [];
-    for (var option in controller.optionList) {
-      children.add(optionForms[option.name]!(option, context));
-    }
+    // List<Widget> children = [];
+    // for (var option in controller.optionList) {
+    //   children.add(optionForms[option.name]!(option, context));
+    // }
+
     return controller.optionList
-        .map((option) =>
-            optionForms[option.name]?.call(option, context) ?? const SizedBox())
+        .map((option) => Slidable(
+            key: ValueKey("${option.name}-${option.id}"),
+            endActionPane: ActionPane(
+              motion: const ScrollMotion(),
+              extentRatio: 0.25,
+              children: [
+                SlidableAction(
+                  flex: 1,
+                  icon: Icons.delete_outline,
+                  borderRadius: const BorderRadius.all(Radius.circular(8)),
+                  onPressed: (context) async {
+                    var shadColorScheme = ShadTheme.of(context).colorScheme;
+                    Get.defaultDialog(
+                      title: '确认',
+                      radius: 5,
+                      titleStyle: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.deepPurple),
+                      middleText: '确定要删除配置信息吗？',
+                      actions: [
+                        ElevatedButton(
+                          onPressed: () {
+                            Get.back(result: false);
+                          },
+                          child: const Text('取消'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () async {
+                            Get.back(result: true);
+                            CommonResponse res =
+                                await controller.removeOption(option);
+                            if (res.code == 0) {
+                              Get.snackbar('删除通知', res.msg.toString(),
+                                  colorText: shadColorScheme.foreground);
+                            } else {
+                              Get.snackbar('删除通知', res.msg.toString(),
+                                  colorText: shadColorScheme.destructive);
+                            }
+                            await controller.getOptionList();
+                          },
+                          child: const Text('确认'),
+                        ),
+                      ],
+                    );
+                  },
+                  backgroundColor: const Color(0xFFFE4A49),
+                  foregroundColor: Colors.white,
+                  // icon: Icons.delete,
+                  label: '删除',
+                ),
+              ],
+            ),
+            child: optionForms[option.name]?.call(option, context) ??
+                const SizedBox()))
         .toList();
   }
 
