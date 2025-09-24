@@ -325,7 +325,13 @@ class _MyRssPageState extends State<MyRssPage> {
                         isLoading.value = false;
                       },
                       leading: isLoading.value
-                          ? SizedBox(width: 24, height: 24, child: Center(child: const CircularProgressIndicator()))
+                          ? SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: Center(
+                                  child: CircularProgressIndicator(
+                                color: shadColorScheme.primary,
+                              )))
                           : const Icon(Icons.save),
                       child: Text(
                         '保存',

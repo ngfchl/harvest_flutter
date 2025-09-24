@@ -186,6 +186,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     String cacheServer = 'https://images.weserv.nl/?url=';
     double opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     return GetBuilder<LoginController>(builder: (controller) {
       CancelToken cancelToken = CancelToken();
       var themeData = ShadTheme.of(context);
@@ -203,7 +204,10 @@ class _LoginPageState extends State<LoginPage> {
                           )
                         : CachedNetworkImage(
                             imageUrl: '${controller.useImageProxy ? cacheServer : ''}${controller.backgroundImage}',
-                            placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                            placeholder: (context, url) => Center(
+                                child: CircularProgressIndicator(
+                              color: shadColorScheme.primary,
+                            )),
                             errorWidget: (context, url, error) =>
                                 Image.asset('assets/images/background.png', fit: BoxFit.cover),
                             fit: BoxFit.cover,
@@ -308,7 +312,7 @@ class _LoginPageState extends State<LoginPage> {
                                       dimension: 16,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        color: themeData.colorScheme.destructiveForeground,
+                                        color: shadColorScheme.destructiveForeground,
                                       ),
                                     ),
                                     child: const Text('连接中，点击取消'),
@@ -350,7 +354,11 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-                  if (controller.switchServerLoading) Center(child: CircularProgressIndicator())
+                  if (controller.switchServerLoading)
+                    Center(
+                        child: CircularProgressIndicator(
+                      color: shadColorScheme.primary,
+                    ))
                 ],
               ),
             ),
@@ -520,7 +528,7 @@ class _LoginPageState extends State<LoginPage> {
                                     height: 18,
                                     width: 18,
                                     child: CircularProgressIndicator(
-                                      color: themeData.colorScheme.primaryForeground,
+                                      color: themeData.colorScheme.primary,
                                     )),
                               )
                             : Icon(

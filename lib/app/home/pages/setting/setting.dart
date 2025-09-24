@@ -34,6 +34,7 @@ class SettingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     return SafeArea(
       child: Scaffold(
         backgroundColor: SPUtil.getBool('useBackground')
@@ -51,7 +52,12 @@ class SettingPage extends StatelessWidget {
                   _telegramWebHookForm(context),
                   _backgroundImageForm(context),
                   ...(controller.isLoaded
-                      ? [const Center(child: CircularProgressIndicator())]
+                      ? [
+                          Center(
+                              child: CircularProgressIndicator(
+                            color: shadColorScheme.primary,
+                          ))
+                        ]
                       : _optionListView(context)),
                 ].map((item) => Padding(padding: EdgeInsets.symmetric(horizontal: 2.0), child: item)),
               ],
@@ -2241,6 +2247,7 @@ class SettingPage extends StatelessWidget {
     final showPreview = false.obs;
     HomeController homeController = Get.find();
     return Obx(() {
+      var shadColorScheme = ShadTheme.of(context).colorScheme;
       return CustomCard(
         padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
         child: SingleChildScrollView(
@@ -2251,7 +2258,7 @@ class SettingPage extends StatelessWidget {
               ListTile(
                   title: Text(
                     "APP背景图片",
-                    style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                    style: TextStyle(color: shadColorScheme.foreground),
                   ),
                   dense: true,
                   contentPadding: EdgeInsets.zero,
@@ -2270,7 +2277,7 @@ class SettingPage extends StatelessWidget {
                       onPressed: (value) {
                         isEdit.value = !isEdit.value;
                       },
-                      color: ShadTheme.of(context).colorScheme.foreground)),
+                      color: shadColorScheme.foreground)),
               if (isEdit.value)
                 Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -2295,14 +2302,14 @@ class SettingPage extends StatelessWidget {
                                 },
                               ),
                             ShadButton(
-                              backgroundColor: ShadTheme.of(context).colorScheme.foreground,
+                              backgroundColor: shadColorScheme.foreground,
                               onPressed: () {
                                 if (urlController.text.isNotEmpty) {
                                   if (useLocalBackground.value && baseUrl.value.startsWith('http')) {
                                     Get.snackbar(
                                       '出错啦',
                                       "请选择正确的背景图片！",
-                                      colorText: ShadTheme.of(context).colorScheme.destructive,
+                                      colorText: shadColorScheme.destructive,
                                     );
                                     return;
                                   }
@@ -2317,7 +2324,7 @@ class SettingPage extends StatelessWidget {
                                   Get.snackbar(
                                     '出错啦',
                                     "请选择或输入正确的图片地址！",
-                                    colorText: ShadTheme.of(context).colorScheme.destructive,
+                                    colorText: shadColorScheme.destructive,
                                   );
                                 }
                               },
@@ -2332,7 +2339,7 @@ class SettingPage extends StatelessWidget {
                           children: [
                             Text(
                               '卡片透明度',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             Expanded(
                               child: Slider(
@@ -2405,7 +2412,10 @@ class SettingPage extends StatelessWidget {
                                       return CachedNetworkImage(
                                         imageUrl:
                                             '${useImageProxy.value ? 'https://images.weserv.nl/?url=' : ''}${baseUrl.value}',
-                                        placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                                        placeholder: (context, url) => Center(
+                                            child: CircularProgressIndicator(
+                                          color: shadColorScheme.primary,
+                                        )),
                                         errorWidget: (context, url, error) =>
                                             Image.asset('assets/images/background.png'),
                                         fit: BoxFit.fitWidth,

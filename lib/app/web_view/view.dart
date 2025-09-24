@@ -32,6 +32,7 @@ class _WebViewPageState extends State<WebViewPage> {
   Widget build(BuildContext context) {
     final GlobalKey webViewKey = GlobalKey();
     final cookieManager = CookieManager.instance();
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
 
     String domain = Uri.parse(controller.url).host;
     List<String> cookieList = controller.mySite != null
@@ -225,7 +226,7 @@ class _WebViewPageState extends State<WebViewPage> {
               onPressed: () async {
                 Uri uri = Uri.parse(controller.url);
                 if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-                  Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？', colorText: ShadTheme.of(context).colorScheme.destructive);
+                  Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？', colorText: shadColorScheme.destructive);
                 }
               },
             ),
@@ -246,6 +247,7 @@ class _WebViewPageState extends State<WebViewPage> {
                       child: Center(
                           child: CircularProgressIndicator(
                         strokeWidth: 2,
+                        color: shadColorScheme.primary,
                       )))
                   : const SizedBox.shrink();
             }),

@@ -314,8 +314,12 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                         isLoading.value = false;
                       },
                       size: ShadButtonSize.sm,
-                      leading:
-                          isLoading.value ? Center(child: const CircularProgressIndicator()) : const Icon(Icons.save),
+                      leading: isLoading.value
+                          ? Center(
+                              child: CircularProgressIndicator(
+                              color: shadColorScheme.primary,
+                            ))
+                          : const Icon(Icons.save),
                       child: const Text('保存'),
                     );
                   }),

@@ -22,7 +22,7 @@ class TaskPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ShadColorScheme colorScheme = ShadTheme.of(context).colorScheme;
+    ShadColorScheme shadColorScheme = ShadTheme.of(context).colorScheme;
 
     List<Tab> tabs = const [
       Tab(text: '计划任务'),
@@ -35,9 +35,9 @@ class TaskPage extends StatelessWidget {
         bottomNavigationBar: TabBar(
           tabs: tabs,
           labelStyle: const TextStyle(fontSize: 13),
-          indicatorColor: colorScheme.primary,
-          labelColor: colorScheme.foreground,
-          unselectedLabelColor: colorScheme.foreground.withOpacity(0.8),
+          indicatorColor: shadColorScheme.primary,
+          labelColor: shadColorScheme.foreground,
+          unselectedLabelColor: shadColorScheme.foreground.withOpacity(0.8),
         ),
         body: GetBuilder<TaskController>(builder: (controller) {
           return TabBarView(
@@ -46,7 +46,7 @@ class TaskPage extends StatelessWidget {
               Scaffold(
                 backgroundColor: Colors.transparent,
                 floatingActionButton: IconButton(
-                  icon: Icon(Icons.add, size: 28, color: colorScheme.primary),
+                  icon: Icon(Icons.add, size: 28, color: shadColorScheme.primary),
                   onPressed: () {
                     editTask(null, context);
                   },
@@ -61,7 +61,12 @@ class TaskPage extends StatelessWidget {
                           },
                           child: controller.isLoading
                               ? ListView(
-                                  children: const [Center(child: CircularProgressIndicator())],
+                                  children: [
+                                    Center(
+                                        child: CircularProgressIndicator(
+                                      color: shadColorScheme.primary,
+                                    ))
+                                  ],
                                 )
                               : GetBuilder<TaskController>(builder: (controller) {
                                   return ListView.builder(
@@ -142,10 +147,10 @@ class TaskPage extends StatelessWidget {
                                               var res = await controller.abortTask(item);
                                               if (res.code == 0) {
                                                 Get.snackbar('删除通知', res.msg.toString(),
-                                                    colorText: colorScheme.foreground);
+                                                    colorText: shadColorScheme.foreground);
                                               } else {
                                                 Get.snackbar('删除通知', res.msg.toString(),
-                                                    colorText: colorScheme.destructive);
+                                                    colorText: shadColorScheme.destructive);
                                               }
                                             },
                                             child: const Text('确认'),
@@ -181,10 +186,10 @@ class TaskPage extends StatelessWidget {
                                               var res = await controller.revokeTask(item);
                                               if (res.code == 0) {
                                                 Get.snackbar('删除通知', res.msg.toString(),
-                                                    colorText: colorScheme.foreground);
+                                                    colorText: shadColorScheme.foreground);
                                               } else {
                                                 Get.snackbar('删除通知', res.msg.toString(),
-                                                    colorText: colorScheme.destructive);
+                                                    colorText: shadColorScheme.destructive);
                                               }
                                             },
                                             child: const Text('确认'),
@@ -398,7 +403,10 @@ class TaskPage extends StatelessWidget {
                       },
                       child: isRunning.value == false
                           ? const Icon(Icons.play_circle_outline, color: Colors.green)
-                          : Center(child: const CircularProgressIndicator()),
+                          : Center(
+                              child: CircularProgressIndicator(
+                              color: shadColorScheme.primary,
+                            )),
                     );
                   })
                 : const SizedBox.shrink(),

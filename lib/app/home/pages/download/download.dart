@@ -1,9 +1,7 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:easy_refresh/easy_refresh.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
@@ -53,51 +51,43 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: Column(
-          children: [
-            Expanded(
-              child: GetBuilder<DownloadController>(builder: (controller) {
-                return StreamBuilder<List<Downloader>>(
-                    stream: controller.downloadStream,
-                    // initialData: controller.dataList,
-                    builder: (context, snapshot) {
-                      // controller.isLoaded = snapshot.hasData;
-                      return EasyRefresh(
-                          controller: EasyRefreshController(),
-                          onRefresh: () => controller.getDownloaderListFromServer(withStatus: true),
-                          child: Stack(
-                            children: [
-                              Positioned.fill(
-                                child: SingleChildScrollView(
-                                  child: Wrap(
-                                    alignment: WrapAlignment.start,
-                                    direction: Axis.horizontal,
-                                    crossAxisAlignment: WrapCrossAlignment.start,
-                                    runAlignment: WrapAlignment.start,
-                                    children: controller.dataList
-                                        .map((downloader) => FractionallySizedBox(
-                                              widthFactor: getWidthFactor(context),
-                                              child: buildDownloaderCard(downloader),
-                                            ))
-                                        .toList(),
-                                  ),
-                                ),
-                              ),
-                              if (controller.loading)
-                                const Center(
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                ),
-                            ],
-                          ));
-                    });
-              }),
-            ),
-            if (!kIsWeb && Platform.isIOS) const SizedBox(height: 10),
-            const SizedBox(height: 50),
-          ],
-        ),
+        body: GetBuilder<DownloadController>(builder: (controller) {
+          return StreamBuilder<List<Downloader>>(
+              stream: controller.downloadStream,
+              // initialData: controller.dataList,
+              builder: (context, snapshot) {
+                // controller.isLoaded = snapshot.hasData;
+                return EasyRefresh(
+                    controller: EasyRefreshController(),
+                    onRefresh: () => controller.getDownloaderListFromServer(withStatus: true),
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: SingleChildScrollView(
+                            child: Wrap(
+                              alignment: WrapAlignment.start,
+                              direction: Axis.horizontal,
+                              crossAxisAlignment: WrapCrossAlignment.start,
+                              runAlignment: WrapAlignment.start,
+                              children: controller.dataList
+                                  .map((downloader) => FractionallySizedBox(
+                                        widthFactor: getWidthFactor(context),
+                                        child: buildDownloaderCard(downloader),
+                                      ))
+                                  .toList(),
+                            ),
+                          ),
+                        ),
+                        if (controller.loading)
+                          const Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                            ),
+                          ),
+                      ],
+                    ));
+              });
+        }),
         floatingActionButton: _buildBottomButtonBar(),
       ),
     );
@@ -1238,9 +1228,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
             GetBuilder<DownloadController>(builder: (controller) {
               return CustomPopup(
                 showArrow: false,
-                contentDecoration: BoxDecoration(
-                  color: shadColorScheme.background,
-                ),
+                backgroundColor: shadColorScheme.background,
                 content: SingleChildScrollView(
                   child: SizedBox(
                     width: 100,
@@ -1305,9 +1293,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
             GetBuilder<DownloadController>(builder: (controller) {
               return CustomPopup(
                 showArrow: false,
-                contentDecoration: BoxDecoration(
-                  color: shadColorScheme.background,
-                ),
+                backgroundColor: shadColorScheme.background,
                 content: SingleChildScrollView(
                   child: SizedBox(
                     width: 180,
@@ -1363,9 +1349,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
             GetBuilder<DownloadController>(builder: (controller) {
               return CustomPopup(
                 showArrow: false,
-                contentDecoration: BoxDecoration(
-                  color: shadColorScheme.background,
-                ),
+                backgroundColor: shadColorScheme.background,
                 content: SingleChildScrollView(
                   child: SizedBox(
                     width: 120,
@@ -1433,9 +1417,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
             GetBuilder<DownloadController>(builder: (controller) {
               return CustomPopup(
                 showArrow: false,
-                contentDecoration: BoxDecoration(
-                  color: shadColorScheme.background,
-                ),
+                backgroundColor: shadColorScheme.background,
                 content: SingleChildScrollView(
                   child: SizedBox(
                     width: 180,
@@ -1481,9 +1463,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
             GetBuilder<DownloadController>(builder: (controller) {
               return CustomPopup(
                 showArrow: false,
-                contentDecoration: BoxDecoration(
-                  color: shadColorScheme.background,
-                ),
+                backgroundColor: shadColorScheme.background,
                 content: SingleChildScrollView(
                   child: SizedBox(
                     width: 150,

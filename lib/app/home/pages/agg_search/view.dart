@@ -804,7 +804,10 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                           borderRadius: BorderRadius.circular(5),
                           child: CachedNetworkImage(
                             imageUrl: imgUrl,
-                            placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                            placeholder: (context, url) => Center(
+                                child: CircularProgressIndicator(
+                              color: shadColorScheme.primary,
+                            )),
                             errorWidget: (context, url, error) =>
                                 const Image(image: AssetImage('assets/images/avatar.png')),
                             fit: BoxFit.fitWidth,
@@ -1470,6 +1473,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
 
   Future<dynamic> _buildOperateDialog(DouBanSearchResult mediaInfo) async {
     await controller.getSubjectInfo(mediaInfo.target.id);
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.bottomSheet(
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
@@ -1512,7 +1516,10 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                             borderRadius: BorderRadius.circular(5),
                             child: CachedNetworkImage(
                               imageUrl: '$cacheServer${mediaInfo.target.coverUrl}',
-                              placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                              placeholder: (context, url) => Center(
+                                  child: CircularProgressIndicator(
+                                color: shadColorScheme.primary,
+                              )),
                               errorWidget: (context, url, error) => Image.asset('assets/images/avatar.png'),
                               width: 120,
                               height: 180,
@@ -1624,7 +1631,10 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                     borderRadius: BorderRadius.circular(5.0),
                                     child: CachedNetworkImage(
                                       imageUrl: '$cacheServer$imgUrl',
-                                      placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                                      placeholder: (context, url) => Center(
+                                          child: CircularProgressIndicator(
+                                        color: shadColorScheme.primary,
+                                      )),
                                       height: 160,
                                       fit: BoxFit.fitWidth,
                                     ),
@@ -1667,8 +1677,10 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                           borderRadius: BorderRadius.circular(5),
                                           child: CachedNetworkImage(
                                             imageUrl: '$cacheServer${worker.imgUrl}',
-                                            placeholder: (context, url) =>
-                                                const Center(child: CircularProgressIndicator()),
+                                            placeholder: (context, url) => Center(
+                                                child: CircularProgressIndicator(
+                                              color: shadColorScheme.primary,
+                                            )),
                                             width: 100,
                                             height: 150,
                                             fit: BoxFit.fitWidth,
@@ -1835,7 +1847,10 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                             borderRadius: BorderRadius.circular(5),
                             child: CachedNetworkImage(
                               imageUrl: "$cacheServer${info.target.coverUrl}",
-                              placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                              placeholder: (context, url) => Center(
+                                  child: CircularProgressIndicator(
+                                color: shadColorScheme.primary,
+                              )),
                               errorWidget: (context, url, error) =>
                                   const Image(image: AssetImage('assets/images/avatar.png')),
                               fit: BoxFit.fitWidth,
@@ -1850,7 +1865,10 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                         borderRadius: BorderRadius.circular(5),
                         child: CachedNetworkImage(
                           imageUrl: "$cacheServer${info.target.coverUrl}",
-                          placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                          placeholder: (context, url) => Center(
+                              child: CircularProgressIndicator(
+                            color: shadColorScheme.primary,
+                          )),
                           errorWidget: (context, url, error) =>
                               const Image(image: AssetImage('assets/images/avatar.png'), fit: BoxFit.fitWidth),
                           fit: BoxFit.fitWidth,
@@ -1933,6 +1951,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
     logger_helper.Logger.instance.d(mediaInfo);
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height * 0.5;
+    var shadColorScheme = Theme.of(context).colorScheme;
     Get.bottomSheet(
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
@@ -1976,7 +1995,10 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                 borderRadius: BorderRadius.circular(5),
                                 child: CachedNetworkImage(
                                   imageUrl: posterPath,
-                                  placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                                  placeholder: (context, url) => Center(
+                                      child: CircularProgressIndicator(
+                                    color: shadColorScheme.primary,
+                                  )),
                                   errorWidget: (context, url, error) => Image.asset('assets/images/avatar.png'),
                                   width: 120,
                                   height: 180,

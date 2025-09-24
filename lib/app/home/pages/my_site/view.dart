@@ -180,7 +180,14 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                   controller.update();
                                 },
                                 icon: controller.searching
-                                    ? Center(child: const CircularProgressIndicator())
+                                    ? SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: Center(
+                                            child: CircularProgressIndicator(
+                                          color: shadColorScheme.primary,
+                                        )),
+                                      )
                                     : Icon(Icons.backspace_outlined,
                                         size: 18, color: shadColorScheme.primary.withOpacity(0.8)))
                         ],
@@ -411,7 +418,10 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
 
                 Expanded(
                   child: controller.loading
-                      ? Center(child: const CircularProgressIndicator())
+                      ? Center(
+                          child: CircularProgressIndicator(
+                          color: shadColorScheme.primary,
+                        ))
                       : controller.showStatusList.isEmpty
                           ? ListView(
                               children: const [Center(child: Text('没有符合条件的数据！'))],
@@ -452,7 +462,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                               Center(
                                                   child: CircularProgressIndicator(
                                                 strokeWidth: 2,
-                                                color: shadColorScheme.foreground,
+                                                color: shadColorScheme.primary,
                                               )),
                                           ],
                                         );
@@ -1241,8 +1251,12 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
       child: Obx(
         () => siteRefreshing.value
             ? SizedBox(
-                width: 36,
-                child: Center(child: const CircularProgressIndicator()),
+                width: 24,
+                height: 24,
+                child: Center(
+                    child: CircularProgressIndicator(
+                  color: shadColorScheme.primary,
+                )),
               )
             : Icon(
                 Icons.widgets_outlined,
@@ -1336,7 +1350,16 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
               ),
               trailing: Obx(() {
                 return isLoading.value
-                    ? const Align(alignment: Alignment.centerRight, child: Center(child: CircularProgressIndicator()))
+                    ? Align(
+                        alignment: Alignment.centerRight,
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: Center(
+                              child: CircularProgressIndicator(
+                            color: shadColorScheme.primary,
+                          )),
+                        ))
                     : ShadButton.ghost(
                         size: ShadButtonSize.sm,
                         onPressed: () async {
@@ -1738,7 +1761,13 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                   ShadButton(
                     leading: Obx(() {
                       return doSaveLoading.value
-                          ? Center(child: const CircularProgressIndicator())
+                          ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: Center(
+                                  child: CircularProgressIndicator(
+                                color: shadColorScheme.primary,
+                              )))
                           : Icon(Icons.save, color: shadColorScheme.primaryForeground);
                     }),
                     child: Text(

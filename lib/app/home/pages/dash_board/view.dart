@@ -631,7 +631,10 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                       child: GetBuilder<DashBoardController>(builder: (controller) {
                         return SingleChildScrollView(
                           child: controller.isCacheLoading
-                              ? Center(child: const CircularProgressIndicator())
+                              ? Center(
+                                  child: CircularProgressIndicator(
+                                  color: shadColorScheme.primary,
+                                ))
                               : RepaintBoundary(
                                   key: _captureKey,
                                   child: Wrap(
@@ -2059,7 +2062,10 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                           return Row(
                             children: [
                               controller.isStackedLoading
-                                  ? Center(child: const CircularProgressIndicator())
+                                  ? Center(
+                                      child: CircularProgressIndicator(
+                                      color: shadColorScheme.primary,
+                                    ))
                                   : InkWell(
                                       onTap: () async {
                                         if (controller.days > 1) {
@@ -2091,7 +2097,10 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                     }),
                               ),
                               controller.isStackedLoading
-                                  ? Center(child: const CircularProgressIndicator())
+                                  ? Center(
+                                      child: CircularProgressIndicator(
+                                      color: shadColorScheme.primary,
+                                    ))
                                   : InkWell(
                                       onTap: () async {
                                         if (controller.days < 14) {

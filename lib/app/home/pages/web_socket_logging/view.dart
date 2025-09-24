@@ -48,6 +48,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
 
   Widget _showLoggingDialog(BuildContext context) {
     return GetBuilder<WebSocketLoggingController>(builder: (controller) {
+      var shadColorScheme = ShadTheme.of(context).colorScheme;
       return Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
@@ -57,7 +58,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
               icon: Icon(
                 Icons.wrap_text_outlined,
                 size: 24,
-                color: controller.wrapText ? Colors.orange : ShadTheme.of(context).colorScheme.foreground,
+                color: controller.wrapText ? Colors.orange : shadColorScheme.foreground,
               ),
               onPressed: () {
                 controller.wrapText = !controller.wrapText;
@@ -76,7 +77,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
 
             CustomPopup(
               showArrow: false,
-              backgroundColor: ShadTheme.of(context).colorScheme.background,
+              backgroundColor: shadColorScheme.background,
               barrierColor: Colors.transparent,
               content: SizedBox(
                 width: 100,
@@ -88,7 +89,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
                         child: Text(
                           l.key.toUpperCase(),
                           style: TextStyle(
-                            color: ShadTheme.of(context).colorScheme.secondary,
+                            color: shadColorScheme.secondary,
                           ),
                         ),
                         onTap: () async {
@@ -102,12 +103,15 @@ class WebSocketLoggingWidget extends StatelessWidget {
               child: Icon(
                 Icons.event_note,
                 size: 24,
-                color: ShadTheme.of(context).colorScheme.foreground,
+                color: shadColorScheme.foreground,
               ),
             ),
             controller.isLoading
                 ? IconButton(
-                    icon: Center(child: const CircularProgressIndicator()),
+                    icon: Center(
+                        child: CircularProgressIndicator(
+                      color: shadColorScheme.primary,
+                    )),
                     onPressed: () {
                       controller.stopFetchLog();
                       controller.update();
@@ -117,7 +121,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
                     icon: Icon(
                       Icons.play_arrow_outlined,
                       size: 24,
-                      color: ShadTheme.of(context).colorScheme.foreground,
+                      color: shadColorScheme.foreground,
                     ),
                     onPressed: () {
                       controller.fetchingWebSocketLogList();
@@ -128,7 +132,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
               icon: Icon(
                 Icons.exit_to_app_outlined,
                 size: 24,
-                color: ShadTheme.of(context).colorScheme.destructive,
+                color: shadColorScheme.destructive,
               ),
               onPressed: () {
                 controller.floating.close();
@@ -137,7 +141,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
           ],
         ),
         body: CustomCard(
-          color: ShadTheme.of(context).colorScheme.background,
+          color: shadColorScheme.background,
           child: GetBuilder<WebSocketLoggingController>(builder: (controller) {
             return ListView.builder(
                 itemCount: controller.showLogList.length,
@@ -160,7 +164,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           letterSpacing: 1.5,
-                          color: ShadTheme.of(context).colorScheme.background.withOpacity(0.8),
+                          color: shadColorScheme.background.withOpacity(0.8),
                           overflow: TextOverflow.visible,
                         ),
                       ));
