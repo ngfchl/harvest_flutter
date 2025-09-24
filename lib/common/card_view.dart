@@ -205,6 +205,8 @@ class FilterItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
+
     return CustomCard(
       padding: const EdgeInsets.all(0),
       child: Column(
@@ -217,7 +219,7 @@ class FilterItem extends StatelessWidget {
                 name,
                 style: TextStyle(
                   fontSize: 12,
-                  color: ShadTheme.of(context).colorScheme.foreground,
+                  color: shadColorScheme.foreground,
                 ),
               ),
             ),
@@ -227,33 +229,35 @@ class FilterItem extends StatelessWidget {
             child: Wrap(
               spacing: 12,
               runSpacing: 8,
-              children: value
-                  .map(
-                    (e) => FilterChip(
-                      label: Text(
-                        e.toString().isNotEmpty ? e.toString() : "无",
-                        style: TextStyle(
-                          color: ShadTheme.of(context).colorScheme.primaryForeground,
-                        ),
+              children: value.map(
+                (e) {
+                  return FilterChip(
+                    label: Text(
+                      e.toString().isNotEmpty ? e.toString() : "无",
+                      style: TextStyle(
+                        color: shadColorScheme.primaryForeground,
                       ),
-                      selected: selected.contains(e.toString()),
-                      backgroundColor: ShadTheme.of(context).colorScheme.primary,
-                      labelStyle: const TextStyle(fontSize: 12, color: Colors.white),
-                      selectedColor: Colors.green,
-                      selectedShadowColor: Colors.blue,
-                      pressElevation: 5,
-                      elevation: 3,
-                      onSelected: (value) {
-                        if (value) {
-                          selected.add(e.toString());
-                        } else {
-                          selected.removeWhere((item) => item == e.toString());
-                        }
-                        onUpdate();
-                      },
                     ),
-                  )
-                  .toList(),
+                    selected: selected.contains(e.toString()),
+                    backgroundColor: shadColorScheme.primary,
+                    labelStyle: TextStyle(
+                      fontSize: 12,
+                      color: shadColorScheme.primaryForeground,
+                    ),
+                    selectedColor: Colors.green,
+                    pressElevation: 5,
+                    elevation: 3,
+                    onSelected: (value) {
+                      if (value) {
+                        selected.add(e.toString());
+                      } else {
+                        selected.removeWhere((item) => item == e.toString());
+                      }
+                      onUpdate();
+                    },
+                  );
+                },
+              ).toList(),
             ),
           ),
         ],
