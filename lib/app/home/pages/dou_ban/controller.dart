@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harvest/app/home/controller/home_controller.dart';
+import 'package:harvest/app/home/pages/models/dou_ban_info.dart';
 
 import '../../../../api/douban.dart';
 import '../../../../models/common_response.dart';
 import '../../../../utils/logger_helper.dart';
 import '../agg_search/controller.dart';
 import 'douban_api.dart';
-import 'model.dart';
 
 class DouBanController extends GetxController {
   final searchController = Get.put(AggSearchController());
@@ -20,26 +20,8 @@ class DouBanController extends GetxController {
   List<HotMediaInfo> douBanTvHot = [];
   List<RankMovie> rankMovieList = [];
   List<int> top250PageNumList = [0, 25, 50, 75, 100, 125, 150, 175, 200, 225];
-  List<String> douBanMovieTags = [
-    '热门',
-    '最新',
-    '豆瓣高分',
-    '冷门佳片',
-    '华语',
-    '欧美',
-    '韩国',
-    '日本'
-  ];
-  List<String> douBanTvTags = [
-    '热门',
-    '国产剧',
-    '综艺',
-    '美剧',
-    '韩剧',
-    '日剧',
-    '日本动画',
-    '纪录片'
-  ];
+  List<String> douBanMovieTags = ['热门', '最新', '豆瓣高分', '冷门佳片', '华语', '欧美', '韩国', '日本'];
+  List<String> douBanTvTags = ['热门', '国产剧', '综艺', '美剧', '韩剧', '日剧', '日本动画', '纪录片'];
 
   Map<String, int> typeMap = {
     "TOP250": 0,

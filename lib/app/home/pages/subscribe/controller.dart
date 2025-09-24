@@ -5,11 +5,11 @@ import '../../../../api/downloader.dart';
 import '../../../../api/sub.dart';
 import '../../../../common/meta_item.dart';
 import '../../../../models/common_response.dart';
-import '../../../../models/download.dart';
 import '../../../../utils/logger_helper.dart';
 import '../download/download_controller.dart';
 import '../models/SubTag.dart';
 import '../models/Subscribe.dart';
+import '../models/download.dart';
 import '../my_rss/controller.dart';
 import '../subscribe_tag/controller.dart';
 
@@ -96,16 +96,14 @@ class SubscribeController extends GetxController {
     return res;
   }
 
-  Future<CommonResponse<Map<String, Category>>> getDownloaderCategoryList(
-      Downloader downloader) async {
+  Future<CommonResponse<Map<String, Category>>> getDownloaderCategoryList(Downloader downloader) async {
     try {
       CommonResponse response = await getDownloaderCategories(downloader.id!);
       if (!response.succeed) {
         return CommonResponse.error(msg: response.msg);
       }
       Map<String, Category> data = {
-        for (var item in response.data)
-          (item)['name']!: Category.fromJson(item as Map<String, dynamic>)
+        for (var item in response.data) (item)['name']!: Category.fromJson(item as Map<String, dynamic>)
       };
 
       return CommonResponse.success(data: data);

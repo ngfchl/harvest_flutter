@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
+import 'package:harvest/app/home/pages/models/subject.dart';
 import 'package:harvest/models/common_response.dart';
 
 import '../../../../utils/logger_helper.dart';
 import '../../../../utils/storage.dart';
-import 'models/douban.dart';
-import 'models/subject.dart';
+import '../models/douban.dart';
 
 class DouBanSearchHelper {
   late Dio _dio;
@@ -13,8 +13,7 @@ class DouBanSearchHelper {
     _dio = Dio(BaseOptions(
       baseUrl: 'https://frodo.douban.com/',
       headers: {
-        'Referer':
-            'https://servicewechat.com/wx2f9b06c1de1ccfca/91/page-frame.html',
+        'Referer': 'https://servicewechat.com/wx2f9b06c1de1ccfca/91/page-frame.html',
         'User-Agent': 'MicroMessenger/'
       },
     ));
@@ -24,16 +23,14 @@ class DouBanSearchHelper {
     ));
   }
 
-  Future<CommonResponse<Subject?>> getSubjectInfoApi(
-      {required String subject}) async {
+  Future<CommonResponse<Subject?>> getSubjectInfoApi({required String subject}) async {
     String key = "DouBanSubject-$subject";
     Map<String, dynamic> data = await SPUtil.getCache(key);
     if (data.isEmpty) {
       var params = {
         "apikey": "0ac44ae016490db2204ce0a042db2916",
       };
-      var response =
-          await _dio.get("api/v2/subject/$subject", queryParameters: params);
+      var response = await _dio.get("api/v2/subject/$subject", queryParameters: params);
       if (response.statusCode != 200) {
         return CommonResponse.error(msg: "获取影视详情出错啦！${response.statusCode}");
       }
@@ -45,8 +42,7 @@ class DouBanSearchHelper {
     return CommonResponse.success(data: Subject.fromJson(data[key]));
   }
 
-  Future<CommonResponse<List<DouBanSearchResult>>> doSearch(
-      {required String q}) async {
+  Future<CommonResponse<List<DouBanSearchResult>>> doSearch({required String q}) async {
     String key = "DouBanSearchResult-$q";
     Map<String, dynamic> data = await SPUtil.getCache(key);
     if (data.isEmpty || data[key].isEmpty) {
@@ -55,8 +51,7 @@ class DouBanSearchHelper {
         "count": 100,
         "apikey": "0ac44ae016490db2204ce0a042db2916",
       };
-      var response =
-          await _dio.get("api/v2/search/movie", queryParameters: params);
+      var response = await _dio.get("api/v2/search/movie", queryParameters: params);
       if (response.statusCode != 200) {
         return CommonResponse.error(msg: "搜索出错啦！${response.statusCode}");
       }

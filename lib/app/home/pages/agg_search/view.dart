@@ -8,7 +8,7 @@ import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
-import 'package:harvest/app/home/pages/agg_search/models/torrent_info.dart';
+import 'package:harvest/app/home/pages/models/torrent_info.dart';
 import 'package:harvest/app/home/pages/models/website.dart';
 import 'package:harvest/common/meta_item.dart';
 import 'package:harvest/models/common_response.dart';
@@ -26,10 +26,10 @@ import '../../../../utils/logger_helper.dart';
 import '../../../../utils/string_utils.dart';
 import '../../../routes/app_pages.dart';
 import '../download/download_form.dart';
+import '../models/douban.dart';
 import '../models/my_site.dart';
 import 'controller.dart';
 import 'models.dart';
-import 'models/douban.dart';
 
 class AggSearchPage extends StatefulWidget {
   const AggSearchPage({super.key});

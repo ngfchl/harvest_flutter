@@ -1,10 +1,10 @@
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
-import 'package:harvest/app/home/pages/agg_search/models/torrent_info.dart';
 
 import '../../utils/logger_helper.dart';
 import '../home/pages/agg_search/controller.dart';
 import '../home/pages/models/my_site.dart';
+import '../home/pages/models/torrent_info.dart';
 import '../home/pages/models/website.dart';
 
 class WebViewPageController extends GetxController {

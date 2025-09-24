@@ -10,9 +10,9 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import '../../../../common/card_view.dart';
 import '../../../../common/form_widgets.dart';
 import '../../../../models/common_response.dart';
-import '../../../../models/download.dart';
 import '../../../../utils/logger_helper.dart';
 import '../models/Subscribe.dart';
+import '../models/download.dart';
 import '../models/my_rss.dart';
 import 'controller.dart';
 
@@ -48,9 +48,7 @@ class _SubscribePageState extends State<SubscribePage> {
           return EasyRefresh(
             onRefresh: () => controller.getSubscribeFromServer(),
             child: ListView(
-              children: controller.subList
-                  .map((Subscribe sub) => _buildSub(sub))
-                  .toList(),
+              children: controller.subList.map((Subscribe sub) => _buildSub(sub)).toList(),
             ),
           );
         }),
@@ -89,8 +87,7 @@ class _SubscribePageState extends State<SubscribePage> {
                     Get.defaultDialog(
                       title: '确认',
                       radius: 5,
-                      titleStyle: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w900),
+                      titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                       middleText: '确定要删除吗？',
                       actions: [
                         ElevatedButton(
@@ -102,23 +99,18 @@ class _SubscribePageState extends State<SubscribePage> {
                         ElevatedButton(
                           onPressed: () async {
                             Get.back(result: true);
-                            CommonResponse res =
-                                await controller.removeSubscribe(sub);
+                            CommonResponse res = await controller.removeSubscribe(sub);
                             if (res.code == 0) {
                               Get.snackbar(
                                 '删除通知',
                                 res.msg.toString(),
-                                colorText: ShadTheme.of(context)
-                                    .colorScheme
-                                    .foreground,
+                                colorText: ShadTheme.of(context).colorScheme.foreground,
                               );
                             } else {
                               Get.snackbar(
                                 '删除通知',
                                 res.msg.toString(),
-                                colorText: ShadTheme.of(context)
-                                    .colorScheme
-                                    .destructive,
+                                colorText: ShadTheme.of(context).colorScheme.destructive,
                               );
                             }
                           },
@@ -142,17 +134,12 @@ class _SubscribePageState extends State<SubscribePage> {
                 ListTile(
                   dense: true,
                   title: Text(sub.name,
-                      style: TextStyle(
-                          fontSize: 14,
-                          color: ShadTheme.of(context).colorScheme.foreground)),
+                      style: TextStyle(fontSize: 14, color: ShadTheme.of(context).colorScheme.foreground)),
                   subtitle: Text(
                     sub.keyword,
                     style: TextStyle(
                         fontSize: 10,
-                        color: ShadTheme.of(context)
-                            .colorScheme
-                            .foreground
-                            .withValues(alpha: opacity * 255)),
+                        color: ShadTheme.of(context).colorScheme.foreground.withValues(alpha: opacity * 255)),
                   ),
                   onTap: () {
                     _openEditDialogX(sub);
@@ -170,8 +157,7 @@ class _SubscribePageState extends State<SubscribePage> {
                             color: Colors.red,
                           ),
                     onPressed: () {
-                      Subscribe newSub =
-                          sub.copyWith(available: !sub.available);
+                      Subscribe newSub = sub.copyWith(available: !sub.available);
                       submitForm(newSub);
                     },
                   ),
@@ -274,46 +260,30 @@ class _SubscribePageState extends State<SubscribePage> {
                         Padding(
                           padding: const EdgeInsets.all(8),
                           child: DropdownSearch<Downloader>(
-                            items: (String filter, _) => controller
-                                .subController.downloadController.dataList,
-                            selectedItem: controller
-                                .subController.downloadController.dataList
-                                .firstWhereOrNull((element) =>
-                                    element.id ==
-                                    int.parse(
-                                        controller.downloaderController.text)),
+                            items: (String filter, _) => controller.subController.downloadController.dataList,
+                            selectedItem: controller.subController.downloadController.dataList.firstWhereOrNull(
+                                (element) => element.id == int.parse(controller.downloaderController.text)),
                             compareFn: (item, sItem) => item.id == sItem.id,
                             itemAsString: (Downloader? item) => item!.name,
                             decoratorProps: DropDownDecoratorProps(
-                              decoration: InputDecoration(
-                                  labelText: '下载器',
-                                  filled: true,
-                                  fillColor: Colors.transparent),
+                              decoration:
+                                  InputDecoration(labelText: '下载器', filled: true, fillColor: Colors.transparent),
                             ),
                             onChanged: (Downloader? item) async {
                               controller.downloaderCategoryController.clear();
-                              controller.subController.isDownloaderLoading =
-                                  true;
+                              controller.subController.isDownloaderLoading = true;
                               controller.update();
-                              controller.downloaderController.text =
-                                  item!.id.toString();
-                              CommonResponse res = await controller
-                                  .subController
-                                  .getDownloaderCategoryList(item);
+                              controller.downloaderController.text = item!.id.toString();
+                              CommonResponse res = await controller.subController.getDownloaderCategoryList(item);
                               if (!res.succeed) {
-                                Get.snackbar('出错啦！', res.msg,
-                                    colorText: ShadTheme.of(context)
-                                        .colorScheme
-                                        .destructive);
+                                Get.snackbar('出错啦！', res.msg, colorText: ShadTheme.of(context).colorScheme.destructive);
                                 return;
                               }
                               controller.categories.value = res.data;
-                              controller.subController.isDownloaderLoading =
-                                  false;
+                              controller.subController.isDownloaderLoading = false;
                               controller.update();
                               if (controller.categories.isNotEmpty) {
-                                controller.downloaderCategoryController.text =
-                                    controller.categories.keys.toList()[0];
+                                controller.downloaderCategoryController.text = controller.categories.keys.toList()[0];
                               }
                               Logger.instance.i(controller.categories);
                               controller.update();
@@ -322,52 +292,35 @@ class _SubscribePageState extends State<SubscribePage> {
                         ),
                         controller.categories.isNotEmpty
                             ? CustomPickerField(
-                                controller:
-                                    controller.downloaderCategoryController,
+                                controller: controller.downloaderCategoryController,
                                 labelText: '下载到分类',
                                 data: controller.categories.keys.toList(),
                                 onChanged: (value, index) {
-                                  controller.downloaderCategoryController.text =
-                                      value;
+                                  controller.downloaderCategoryController.text = value;
                                   controller.update();
                                 },
                               )
                             : CustomTextField(
-                                controller:
-                                    controller.downloaderCategoryController,
+                                controller: controller.downloaderCategoryController,
                                 labelText: '分类',
                                 onTap: () async {
                                   if (controller.categories.isEmpty) {
-                                    controller.subController
-                                        .isDownloaderLoading = true;
+                                    controller.subController.isDownloaderLoading = true;
                                     controller.update();
-                                    CommonResponse res = await controller
-                                        .subController
-                                        .getDownloaderCategoryList(controller
-                                            .subController
-                                            .downloadController
-                                            .dataList
-                                            .firstWhere((element) =>
-                                                element.id ==
-                                                int.parse(controller
-                                                    .downloaderController
-                                                    .text)));
+                                    CommonResponse res = await controller.subController.getDownloaderCategoryList(
+                                        controller.subController.downloadController.dataList.firstWhere((element) =>
+                                            element.id == int.parse(controller.downloaderController.text)));
                                     if (!res.succeed) {
                                       Get.snackbar('出错啦！', res.msg,
-                                          colorText: ShadTheme.of(context)
-                                              .colorScheme
-                                              .destructive);
+                                          colorText: ShadTheme.of(context).colorScheme.destructive);
                                       return;
                                     }
                                     controller.categories.value = res.data;
                                     if (controller.categories.isNotEmpty) {
-                                      controller.downloaderCategoryController
-                                              .text =
-                                          controller.categories.keys
-                                              .toList()[0];
+                                      controller.downloaderCategoryController.text =
+                                          controller.categories.keys.toList()[0];
                                     }
-                                    controller.subController
-                                        .isDownloaderLoading = true;
+                                    controller.subController.isDownloaderLoading = true;
                                     controller.update();
                                   }
                                 },
@@ -394,8 +347,7 @@ class _SubscribePageState extends State<SubscribePage> {
                         ),
                         SwitchListTile(
                             dense: true,
-                            title: const Text('可用',
-                                style: TextStyle(fontSize: 14)),
+                            title: const Text('可用', style: TextStyle(fontSize: 14)),
                             value: controller.available.value,
                             onChanged: (bool val) {
                               controller.available.value = val;
@@ -403,8 +355,7 @@ class _SubscribePageState extends State<SubscribePage> {
                             }),
                         SwitchListTile(
                             dense: true,
-                            title: const Text('直接下载',
-                                style: TextStyle(fontSize: 14)),
+                            title: const Text('直接下载', style: TextStyle(fontSize: 14)),
                             value: controller.start.value,
                             onChanged: (bool val) {
                               controller.start.value = val;
@@ -413,21 +364,17 @@ class _SubscribePageState extends State<SubscribePage> {
                         ExpansionTile(
                           title: const Text('RSS选择'),
                           dense: true,
-                          children: controller
-                              .subController.rssController.rssList
+                          children: controller.subController.rssController.rssList
                               .map((MyRss item) => CheckboxListTile(
                                     title: Text(item.name.toString()),
                                     dense: true,
-                                    value: controller.rssList
-                                        .map((element) => element.id)
-                                        .contains(item.id),
+                                    value: controller.rssList.map((element) => element.id).contains(item.id),
                                     onChanged: (bool? value) {
                                       Logger.instance.i(controller.rssList);
                                       if (value == true) {
                                         controller.rssList.add(item);
                                       } else {
-                                        controller.rssList.removeWhere(
-                                            (element) => element.id == item.id);
+                                        controller.rssList.removeWhere((element) => element.id == item.id);
                                       }
                                       Logger.instance.i(controller.rssList);
                                       controller.update();
@@ -437,36 +384,25 @@ class _SubscribePageState extends State<SubscribePage> {
                         ),
                         Column(
                             children: controller.subController.tagCategoryList
-                                .where((element) =>
-                                    controller.prop[element.value] != null)
+                                .where((element) => controller.prop[element.value] != null)
                                 .map((e) => ExpansionTile(
                                       title: Text(e.name),
                                       dense: true,
                                       children: controller.subController.tags
-                                          .where((item) =>
-                                              item.category == e.value)
+                                          .where((item) => item.category == e.value)
                                           .map((item) => CheckboxListTile(
-                                                title:
-                                                    Text(item.name.toString()),
+                                                title: Text(item.name.toString()),
                                                 dense: true,
-                                                value: controller
-                                                        .prop[e.value]!.value ==
-                                                    item.name,
-                                                selected: controller
-                                                        .prop[e.value]!.value ==
-                                                    item.name,
+                                                value: controller.prop[e.value]!.value == item.name,
+                                                selected: controller.prop[e.value]!.value == item.name,
                                                 onChanged: (bool? value) {
-                                                  Logger.instance.i(
-                                                      controller.prop[e.value]);
+                                                  Logger.instance.i(controller.prop[e.value]);
                                                   if (value == true) {
-                                                    controller.prop[e.value]
-                                                        ?.value = item.name!;
+                                                    controller.prop[e.value]?.value = item.name!;
                                                   } else {
-                                                    controller.prop[e.value]
-                                                        ?.value = '';
+                                                    controller.prop[e.value]?.value = '';
                                                   }
-                                                  Logger.instance.i(
-                                                      controller.prop[e.value]);
+                                                  Logger.instance.i(controller.prop[e.value]);
                                                   controller.update();
                                                 },
                                               ))
@@ -485,37 +421,26 @@ class _SubscribePageState extends State<SubscribePage> {
                           child: SingleChildScrollView(
                             child: Column(
                               children: controller.subController.tagCategoryList
-                                  .where((element) =>
-                                      controller.props[element.value] != null)
+                                  .where((element) => controller.props[element.value] != null)
                                   .map((e) => ExpansionTile(
                                         title: Text(e.name),
                                         dense: true,
                                         initiallyExpanded: true,
                                         children: controller.subController.tags
-                                            .where((item) =>
-                                                item.category == e.value)
+                                            .where((item) => item.category == e.value)
                                             .map((item) => CheckboxListTile(
                                                   dense: true,
-                                                  title: Text(
-                                                      item.name.toString()),
-                                                  value: controller
-                                                      .props[e.value]!
-                                                      .contains(item.name),
+                                                  title: Text(item.name.toString()),
+                                                  value: controller.props[e.value]!.contains(item.name),
                                                   onChanged: (bool? value) {
-                                                    Logger.instance.i(controller
-                                                        .props[e.value]);
+                                                    Logger.instance.i(controller.props[e.value]);
                                                     if (value == true) {
-                                                      controller.props[e.value]!
-                                                          .add(item.name!);
+                                                      controller.props[e.value]!.add(item.name!);
                                                     } else {
                                                       controller.props[e.value]!
-                                                          .removeWhere(
-                                                              (element) =>
-                                                                  element ==
-                                                                  item.name);
+                                                          .removeWhere((element) => element == item.name);
                                                     }
-                                                    Logger.instance.i(controller
-                                                        .props[e.value]);
+                                                    Logger.instance.i(controller.props[e.value]);
                                                     controller.update();
                                                   },
                                                 ))
@@ -537,11 +462,9 @@ class _SubscribePageState extends State<SubscribePage> {
                           controller.categories.clear();
                         },
                         style: ButtonStyle(
-                          backgroundColor: WidgetStateProperty.all(
-                              Colors.redAccent.withAlpha(150)),
+                          backgroundColor: WidgetStateProperty.all(Colors.redAccent.withAlpha(150)),
                         ),
-                        icon: const Icon(Icons.cancel_outlined,
-                            color: Colors.white),
+                        icon: const Icon(Icons.cancel_outlined, color: Colors.white),
                         label: const Text(
                           '取消',
                           style: TextStyle(color: Colors.white),
@@ -563,8 +486,7 @@ class _SubscribePageState extends State<SubscribePage> {
                 ],
               ),
             ),
-            if (controller.subController.isDownloaderLoading)
-              Center(child: const CircularProgressIndicator())
+            if (controller.subController.isDownloaderLoading) Center(child: const CircularProgressIndicator())
           ],
         ),
       ),
@@ -579,11 +501,9 @@ class _SubscribePageState extends State<SubscribePage> {
       Logger.instance.i(res.msg);
       if (res.code == 0) {
         Get.back();
-        Get.snackbar('保存成功！', res.msg,
-            colorText: ShadTheme.of(context).colorScheme.foreground);
+        Get.snackbar('保存成功！', res.msg, colorText: ShadTheme.of(context).colorScheme.foreground);
       } else {
-        Get.snackbar('保存失败！', res.msg,
-            colorText: ShadTheme.of(context).colorScheme.destructive);
+        Get.snackbar('保存失败！', res.msg, colorText: ShadTheme.of(context).colorScheme.destructive);
       }
     } finally {}
   }
@@ -594,8 +514,7 @@ class EditDialogController extends GetxController {
 
   final TextEditingController nameController = TextEditingController();
   final TextEditingController keywordController = TextEditingController();
-  final TextEditingController downloaderCategoryController =
-      TextEditingController();
+  final TextEditingController downloaderCategoryController = TextEditingController();
   final TextEditingController doubanController = TextEditingController();
   final TextEditingController imdbController = TextEditingController();
   final TextEditingController tmdbController = TextEditingController();
@@ -617,8 +536,8 @@ class EditDialogController extends GetxController {
     doubanController.text = sub?.douban ?? '';
     imdbController.text = sub?.imdb ?? '';
     tmdbController.text = sub?.tmdb ?? '';
-    downloaderController.text = sub?.downloaderId?.toString() ??
-        subController.downloadController.dataList[0].id.toString();
+    downloaderController.text =
+        sub?.downloaderId?.toString() ?? subController.downloadController.dataList[0].id.toString();
     rssList.value = sub?.rssList ?? [];
     props = {
       'exclude': (sub?.exclude ?? <String>[]).obs,
@@ -709,11 +628,9 @@ class EditDialogController extends GetxController {
       Logger.instance.i(res.msg);
       if (res.code == 0) {
         Get.back();
-        Get.snackbar('保存成功！', res.msg,
-            colorText: ShadTheme.of(context).colorScheme.foreground);
+        Get.snackbar('保存成功！', res.msg, colorText: ShadTheme.of(context).colorScheme.foreground);
       } else {
-        Get.snackbar('保存失败！', res.msg,
-            colorText: ShadTheme.of(context).colorScheme.destructive);
+        Get.snackbar('保存失败！', res.msg, colorText: ShadTheme.of(context).colorScheme.destructive);
       }
     } finally {}
   }

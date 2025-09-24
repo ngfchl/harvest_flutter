@@ -3,20 +3,20 @@ import 'package:flutter/services.dart';
 import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
 import 'package:get/get.dart';
 import 'package:harvest/api/downloader.dart';
-import 'package:harvest/app/home/pages/download/qbittorrent.dart';
+import 'package:harvest/app/home/pages/models/qbittorrent.dart';
+import 'package:harvest/app/home/pages/models/torrent_info.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../../common/form_widgets.dart';
-import '../../../../models/download.dart';
 import '../../../../utils/logger_helper.dart';
-import 'download_controller.dart';
+import '../agg_search/controller.dart';
+import '../models/download.dart';
 import '../models/my_site.dart';
 import '../models/website.dart';
-import '../agg_search/controller.dart';
-import '../agg_search/models/torrent_info.dart';
+import 'download_controller.dart';
 
 class DownloadForm extends StatelessWidget {
   final Map<String, Category> categories;

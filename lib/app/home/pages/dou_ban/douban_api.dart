@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:harvest/app/home/pages/dou_ban/model.dart';
+import 'package:harvest/app/home/pages/models/dou_ban_info.dart';
 import 'package:harvest/utils/storage.dart';
 import 'package:html/parser.dart';
 import 'package:xpath_selector_html_parser/xpath_selector_html_parser.dart';
@@ -38,10 +38,8 @@ class DouBanHelper {
       Logger.instance.d(data);
       await SPUtil.setCache(key, data, 60 * 60 * 24 * 7);
     }
-    List<TopMovieInfo> topMovieInfoList = data[key]
-        .map((info) => TopMovieInfo.fromJson(info))
-        .toList()
-        .cast<TopMovieInfo>();
+    List<TopMovieInfo> topMovieInfoList =
+        data[key].map((info) => TopMovieInfo.fromJson(info)).toList().cast<TopMovieInfo>();
     return topMovieInfoList;
   }
 
@@ -51,39 +49,17 @@ class DouBanHelper {
 
     List<Map<String, dynamic>> resultList = elements.map((element) {
       var rank = element.querySelector('div > em')?.text.trim() ?? '';
-      var doubanUrl =
-          element.querySelector('div > a')?.attributes['href']?.trim() ?? '';
-      var poster =
-          element.querySelector('div > a > img')?.attributes['src']?.trim() ??
-              '';
-      var title =
-          element.querySelector('div > a > img')?.attributes['alt']?.trim() ??
-              '';
-      var subtitle = element
-          .querySelector('div.info > div.hd > a > span')
-          ?.text
-          .trim()
-          .split('/')
-          .map((e) => e.trim())
-          .toList();
-      var cast =
-          element.querySelector('./div/div/p[1]//text()[1]')?.text.trim() ?? '';
-      var desc = element
-          .querySelector('div.bd > p:nth-child(1)')
-          ?.text
-          .trim()
-          .split('\n')
-          .map((e) => e.trim())
-          .toList();
-      var ratingNum =
-          element.querySelector('span.rating_num')?.text.trim() ?? '';
-      var evaluateNum = element
-              .querySelector('div.bd > div.star > span:last-child')
-              ?.text
-              .trim() ??
-          '';
-      var quote =
-          element.querySelector('div > p.quote > span.inq')?.text.trim() ?? '';
+      var doubanUrl = element.querySelector('div > a')?.attributes['href']?.trim() ?? '';
+      var poster = element.querySelector('div > a > img')?.attributes['src']?.trim() ?? '';
+      var title = element.querySelector('div > a > img')?.attributes['alt']?.trim() ?? '';
+      var subtitle =
+          element.querySelector('div.info > div.hd > a > span')?.text.trim().split('/').map((e) => e.trim()).toList();
+      var cast = element.querySelector('./div/div/p[1]//text()[1]')?.text.trim() ?? '';
+      var desc =
+          element.querySelector('div.bd > p:nth-child(1)')?.text.trim().split('\n').map((e) => e.trim()).toList();
+      var ratingNum = element.querySelector('span.rating_num')?.text.trim() ?? '';
+      var evaluateNum = element.querySelector('div.bd > div.star > span:last-child')?.text.trim() ?? '';
+      var quote = element.querySelector('div > p.quote > span.inq')?.text.trim() ?? '';
 
       Map<String, dynamic> m = {
         'rank': rank,
@@ -145,10 +121,8 @@ class DouBanHelper {
       var document = parse(html).documentElement;
       HtmlXPath selector = HtmlXPath.node(document!);
 
-      String title =
-          selector.queryXPath('//h1/span[1]/text()').attr?.trim() ?? '';
-      String year =
-          selector.queryXPath('//h1/span[2]/text()').attr?.trim() ?? '';
+      String title = selector.queryXPath('//h1/span[1]/text()').attr?.trim() ?? '';
+      String year = selector.queryXPath('//h1/span[2]/text()').attr?.trim() ?? '';
       List<Map<String, dynamic>> director = selector
           .queryXPath('//div[@id="info"]/span[1]/span[2]/a')
           .nodes
@@ -189,24 +163,16 @@ class DouBanHelper {
                 'role': e.children.last.children.last.text,
               })
           .toList();
-      List<String?> genres = selector
-          .queryXPath('//div[@id="info"]//span[@property="v:genre"]')
-          .nodes
-          .map((e) => e.text?.trim())
-          .toList();
-      String officialSite =
-          selector.queryXPath('//div[@id="info"]/a/@href').attr?.trim() ?? '';
+      List<String?> genres =
+          selector.queryXPath('//div[@id="info"]//span[@property="v:genre"]').nodes.map((e) => e.text?.trim()).toList();
+      String officialSite = selector.queryXPath('//div[@id="info"]/a/@href').attr?.trim() ?? '';
 
       String regionXPath = '//div[@id="info"]/text()';
       var regionNodes = document.queryXPath(regionXPath);
-      List<String>? mediaBaseInfo = regionNodes.attr
-          ?.split('\n')
-          .map((e) => e.trim())
-          .where((element) => element.isNotEmpty)
-          .toList();
+      List<String>? mediaBaseInfo =
+          regionNodes.attr?.split('\n').map((e) => e.trim()).where((element) => element.isNotEmpty).toList();
       List<String>? region = mediaBaseInfo
-          ?.firstWhere((element) => element.startsWith('制片国家/地区:'),
-              orElse: () => '')
+          ?.firstWhere((element) => element.startsWith('制片国家/地区:'), orElse: () => '')
           .replaceAll('制片国家/地区:', '')
           .split('/')
           .map((e) => e.trim())
@@ -228,16 +194,14 @@ class DouBanHelper {
           .where((element) => element.isNotEmpty)
           .toList();
       List<String>? releaseDate = mediaBaseInfo
-          ?.firstWhere((element) => element.startsWith('上映日期:'),
-              orElse: () => '')
+          ?.firstWhere((element) => element.startsWith('上映日期:'), orElse: () => '')
           .replaceAll('上映日期:', '')
           .split('/')
           .map((e) => e.trim())
           .where((element) => element.isNotEmpty)
           .toList();
       String? season = mediaBaseInfo
-          ?.firstWhere((element) => element.startsWith('季数:'),
-              orElse: () => '1')
+          ?.firstWhere((element) => element.startsWith('季数:'), orElse: () => '1')
           .replaceAll('季数:', '')
           .trim();
       String? episode = mediaBaseInfo
@@ -251,8 +215,7 @@ class DouBanHelper {
           ?.trim();
       if (releaseDate == null || releaseDate.isEmpty) {
         releaseDate = mediaBaseInfo
-            ?.firstWhere((element) => element.startsWith('首播:'),
-                orElse: () => '')
+            ?.firstWhere((element) => element.startsWith('首播:'), orElse: () => '')
             .replaceAll('首播:', '')
             .split('/')
             .map((e) => e.trim())
@@ -261,27 +224,17 @@ class DouBanHelper {
       }
       if (duration == null || duration.isEmpty) {
         duration = mediaBaseInfo
-            ?.firstWhere((element) => element.startsWith('单集片长:'),
-                orElse: () => '')
+            ?.firstWhere((element) => element.startsWith('单集片长:'), orElse: () => '')
             .replaceAll('单集片长:', '')
             .trim();
       }
       String? imdb = mediaBaseInfo
-          ?.firstWhere((element) => element.startsWith('IMDb:'),
-              orElse: () => '')
+          ?.firstWhere((element) => element.startsWith('IMDb:'), orElse: () => '')
           .replaceAll('IMDb:', '')
           .trim();
 
-      String rate = selector
-              .queryXPath('//div[@class="rating_self clearfix"]/strong/text()')
-              .attr
-              ?.trim() ??
-          '';
-      String evaluate = selector
-              .queryXPath('//a[@class="rating_people"]/span/text()')
-              .attr
-              ?.trim() ??
-          '';
+      String rate = selector.queryXPath('//div[@class="rating_self clearfix"]/strong/text()').attr?.trim() ?? '';
+      String evaluate = selector.queryXPath('//a[@class="rating_people"]/span/text()').attr?.trim() ?? '';
 
       List<String?>? summary = selector
           .queryXPath('//span[@property="v:summary"]/text()')
@@ -297,14 +250,12 @@ class DouBanHelper {
           .toList();
 
       String hadSeen = selector
-              .queryXPath(
-                  '//div[@class="subject-others-interests-ft"]/a[contains(@href,"status=P")]/text()')
+              .queryXPath('//div[@class="subject-others-interests-ft"]/a[contains(@href,"status=P")]/text()')
               .attr
               ?.trim() ??
           '';
       String wantLook = selector
-              .queryXPath(
-                  '//div[@class="subject-others-interests-ft"]/a[contains(@href,"status=F")]/text()')
+              .queryXPath('//div[@class="subject-others-interests-ft"]/a[contains(@href,"status=F")]/text()')
               .attr
               ?.trim() ??
           '';
@@ -370,10 +321,7 @@ class DouBanHelper {
       Logger.instance.d(data);
       await SPUtil.setCache(key, data, 60 * 60 * 18);
     }
-    return data[key]
-        .map((e) => HotMediaInfo.fromJson(e))
-        .toList()
-        .cast<HotMediaInfo>();
+    return data[key].map((e) => HotMediaInfo.fromJson(e)).toList().cast<HotMediaInfo>();
   }
 
   Future<List<RankMovie>> getTypeRank(int typeId) async {
@@ -387,16 +335,12 @@ class DouBanHelper {
         "start": 0,
         "limit": 100
       };
-      Response<dynamic> response =
-          await _dio.get(path, queryParameters: params);
+      Response<dynamic> response = await _dio.get(path, queryParameters: params);
       data = {key: response.data};
       Logger.instance.d(data);
       await SPUtil.setCache(key, data, 60 * 60 * 18);
     }
-    return data[key]
-        .map((el) => RankMovie.fromJson(el))
-        .toList()
-        .cast<RankMovie>();
+    return data[key].map((el) => RankMovie.fromJson(el)).toList().cast<RankMovie>();
   }
 
   void closeDio() {

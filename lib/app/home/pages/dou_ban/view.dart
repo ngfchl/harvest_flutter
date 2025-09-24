@@ -4,6 +4,7 @@ import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:harvest/app/home/pages/models/dou_ban_info.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -12,7 +13,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../utils/logger_helper.dart';
 import '../../../routes/app_pages.dart';
 import 'controller.dart';
-import 'model.dart';
 
 class DouBanPage extends StatefulWidget {
   const DouBanPage({super.key});

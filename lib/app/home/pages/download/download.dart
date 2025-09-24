@@ -11,8 +11,8 @@ import 'package:flutter_popup/flutter_popup.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:harvest/app/home/pages/download/qb_file_tree_view.dart';
-import 'package:harvest/app/home/pages/download/qbittorrent.dart';
 import 'package:harvest/app/home/pages/download/tr_tree_file_view.dart';
+import 'package:harvest/app/home/pages/models/qbittorrent.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart' as qb;
 import 'package:random_color/random_color.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -24,15 +24,15 @@ import '../../../../common/form_widgets.dart';
 import '../../../../common/meta_item.dart';
 import '../../../../common/utils.dart';
 import '../../../../models/common_response.dart';
-import '../../../../models/download.dart';
 import '../../../../utils/date_time_utils.dart';
 import '../../../../utils/logger_helper.dart' as logger_helper;
 import '../../../../utils/storage.dart';
 import '../../../../utils/string_utils.dart';
+import '../models/download.dart';
 import '../models/transmission.dart';
+import '../models/transmission_base_torrent.dart';
 import 'download_controller.dart';
 import 'download_form.dart';
-import 'transmission_base_torrent.dart';
 
 class DownloadPage extends StatefulWidget {
   const DownloadPage({super.key});

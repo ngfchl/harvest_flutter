@@ -1,8 +1,8 @@
 import 'package:harvest/api/hooks.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
 
+import '../app/home/pages/models/download.dart';
 import '../models/common_response.dart';
-import '../models/download.dart';
 import '../utils/dio_util.dart';
 import '../utils/logger_helper.dart';
 import 'api.dart';
@@ -10,8 +10,7 @@ import 'api.dart';
 ///获取下载器列表
 ///
 Future<CommonResponse> getDownloaderListApi({bool withStatus = false}) async {
-  return await fetchDataList(
-      Api.DOWNLOADER_LIST, (p0) => Downloader.fromJson(p0),
+  return await fetchDataList(Api.DOWNLOADER_LIST, (p0) => Downloader.fromJson(p0),
       queryParameters: {"with_status": withStatus});
 }
 
@@ -28,8 +27,7 @@ Future<CommonResponse> getDownloaderPaths() async {
 }
 
 Future<CommonResponse> repeatSingleDownloader(int downloaderId) async {
-  final response =
-      await DioUtil().get('${Api.DOWNLOADER_REAPEAT}/$downloaderId');
+  final response = await DioUtil().get('${Api.DOWNLOADER_REAPEAT}/$downloaderId');
   Logger.instance.i(response.data);
   if (response.statusCode == 200) {
     return CommonResponse.fromJson(response.data, (p0) => null);
@@ -84,18 +82,15 @@ Future<CommonResponse> testDownloaderApi(int downloaderId) async {
 ///@description
 ///@updateTime
 Future<CommonResponse> getPrefsApi(int downloaderId) async {
-  final response =
-      await fetchBasicData('${Api.DOWNLOADER_PREFERENCES}$downloaderId');
+  final response = await fetchBasicData('${Api.DOWNLOADER_PREFERENCES}$downloaderId');
   return response;
 }
 
 //*///@title 更新下载器配置信息
 ///@description
 ///@updateTime
-Future<CommonResponse> setPrefsApi(
-    int downloaderId, Map<String, dynamic> prefs) async {
-  final response =
-      await editData('${Api.DOWNLOADER_PREFERENCES}$downloaderId', prefs);
+Future<CommonResponse> setPrefsApi(int downloaderId, Map<String, dynamic> prefs) async {
+  final response = await editData('${Api.DOWNLOADER_PREFERENCES}$downloaderId', prefs);
   return response;
 }
 
@@ -103,8 +98,7 @@ Future<CommonResponse> setPrefsApi(
 ///@description
 ///@updateTime
 Future<CommonResponse> toggleSpeedLimitApi(int downloaderId, bool state) async {
-  final response = await fetchBasicData(
-      '${Api.DOWNLOADER_TOGGLE_SPEED_LIMIT_ENABLE}$downloaderId',
+  final response = await fetchBasicData('${Api.DOWNLOADER_TOGGLE_SPEED_LIMIT_ENABLE}$downloaderId',
       queryParameters: {"state": state});
   return response;
 }
@@ -112,10 +106,8 @@ Future<CommonResponse> toggleSpeedLimitApi(int downloaderId, bool state) async {
 //*///@title 获取下载器种子详情
 ///@description
 ///@updateTime
-Future<CommonResponse> getTorrentDetailInfo(
-    int downloaderId, String torrentHash) async {
-  final response = await fetchBasicData(
-      '${Api.DOWNLOADER_TORRENT_DETAIL}$downloaderId',
+Future<CommonResponse> getTorrentDetailInfo(int downloaderId, String torrentHash) async {
+  final response = await fetchBasicData('${Api.DOWNLOADER_TORRENT_DETAIL}$downloaderId',
       queryParameters: {'torrent_hash': torrentHash});
   return response;
 }
@@ -124,58 +116,48 @@ Future<CommonResponse> getTorrentDetailInfo(
 ///@description
 ///@updateTime
 Future<CommonResponse> getDownloaderCategories(int downloaderId) async {
-  final response =
-      await fetchBasicList('${Api.DOWNLOADER_CATEGORY}$downloaderId');
+  final response = await fetchBasicList('${Api.DOWNLOADER_CATEGORY}$downloaderId');
   return response;
 }
 
 //*///@title 创建下载器分类
 ///@description
 ///@updateTime
-Future<CommonResponse> createDownloaderCategory(
-    int downloaderId, Category category) async {
-  final response = await addData(
-      '${Api.DOWNLOADER_CATEGORY}$downloaderId', category.toJson());
+Future<CommonResponse> createDownloaderCategory(int downloaderId, Category category) async {
+  final response = await addData('${Api.DOWNLOADER_CATEGORY}$downloaderId', category.toJson());
   return response;
 }
 
 //*///@title 修改下载器分类
 ///@description
 ///@updateTime
-Future<CommonResponse> editDownloaderCategory(
-    int downloaderId, Category category) async {
-  final response = await editData(
-      '${Api.DOWNLOADER_CATEGORY}$downloaderId', category.toJson());
+Future<CommonResponse> editDownloaderCategory(int downloaderId, Category category) async {
+  final response = await editData('${Api.DOWNLOADER_CATEGORY}$downloaderId', category.toJson());
   return response;
 }
 
 //*///@title 删除下载器分类
 ///@description
 ///@updateTime
-Future<CommonResponse> deleteDownloaderCategory(
-    int downloaderId, String category) async {
-  final response = await removeData('${Api.DOWNLOADER_CATEGORY}$downloaderId',
-      queryParameters: {'category': category});
+Future<CommonResponse> deleteDownloaderCategory(int downloaderId, String category) async {
+  final response = await removeData('${Api.DOWNLOADER_CATEGORY}$downloaderId', queryParameters: {'category': category});
   return response;
 }
 
 //*///@title 设置种子分类
 ///@description
 ///@updateTime
-Future<CommonResponse> addTorrentCategory(
-    int downloaderId, String tag, String torrentHashes) async {
-  final response = await editData('${Api.DOWNLOADER_SET_CATEGORY}$downloaderId',
-      {'tag': tag, 'torrent_hashes': torrentHashes});
+Future<CommonResponse> addTorrentCategory(int downloaderId, String tag, String torrentHashes) async {
+  final response =
+      await editData('${Api.DOWNLOADER_SET_CATEGORY}$downloaderId', {'tag': tag, 'torrent_hashes': torrentHashes});
   return response;
 }
 
 //*///@title 删除种子分类
 ///@description
 ///@updateTime
-Future<CommonResponse> removeTorrentCategory(
-    int downloaderId, String tag, dynamic torrentHashes) async {
-  final response = await removeData(
-      '${Api.DOWNLOADER_SET_CATEGORY}$downloaderId',
+Future<CommonResponse> removeTorrentCategory(int downloaderId, String tag, dynamic torrentHashes) async {
+  final response = await removeData('${Api.DOWNLOADER_SET_CATEGORY}$downloaderId',
       queryParameters: {'tag': tag, 'torrent_hashes': torrentHashes});
   return response;
 }
@@ -191,38 +173,32 @@ Future<CommonResponse> getDownloaderTags(int downloaderId) async {
 //*///@title 创建下载器标签
 ///@description
 ///@updateTime
-Future<CommonResponse> createDownloaderTags(
-    int downloaderId, String tag) async {
-  final response =
-      await addData('${Api.DOWNLOADER_TAGS}$downloaderId', {'tag': tag});
+Future<CommonResponse> createDownloaderTags(int downloaderId, String tag) async {
+  final response = await addData('${Api.DOWNLOADER_TAGS}$downloaderId', {'tag': tag});
   return response;
 }
 
 //*///@title 删除下载器标签
 ///@description
 ///@updateTime
-Future<CommonResponse> deleteDownloaderTags(
-    int downloaderId, String tag) async {
-  final response = await removeData('${Api.DOWNLOADER_TAGS}$downloaderId',
-      queryParameters: {'tag': tag});
+Future<CommonResponse> deleteDownloaderTags(int downloaderId, String tag) async {
+  final response = await removeData('${Api.DOWNLOADER_TAGS}$downloaderId', queryParameters: {'tag': tag});
   return response;
 }
 
 //*///@title 设置种子标签
 ///@description
 ///@updateTime
-Future<CommonResponse> addTorrentTags(
-    int downloaderId, String tag, String torrentHashes) async {
-  final response = await editData('${Api.DOWNLOADER_SET_TAGS}$downloaderId',
-      {'tag': tag, 'torrent_hashes': torrentHashes});
+Future<CommonResponse> addTorrentTags(int downloaderId, String tag, String torrentHashes) async {
+  final response =
+      await editData('${Api.DOWNLOADER_SET_TAGS}$downloaderId', {'tag': tag, 'torrent_hashes': torrentHashes});
   return response;
 }
 
 //*///@title 删除种子标签
 ///@description
 ///@updateTime
-Future<CommonResponse> removeTorrentTags(
-    int downloaderId, String tag, dynamic torrentHashes) async {
+Future<CommonResponse> removeTorrentTags(int downloaderId, String tag, dynamic torrentHashes) async {
   final response = await removeData('${Api.DOWNLOADER_SET_TAGS}$downloaderId',
       queryParameters: {'tag': tag, 'torrent_hashes': torrentHashes});
   return response;
@@ -231,10 +207,8 @@ Future<CommonResponse> removeTorrentTags(
 //*///@title 操作种子
 ///@description
 ///@updateTime
-Future<CommonResponse> controlTorrent(
-    {required int downloaderId, required Map<String, dynamic> command}) async {
-  final response =
-      await addData('${Api.DOWNLOADER_CONTROL}$downloaderId', command);
+Future<CommonResponse> controlTorrent({required int downloaderId, required Map<String, dynamic> command}) async {
+  final response = await addData('${Api.DOWNLOADER_CONTROL}$downloaderId', command);
   return response;
 }
 
@@ -242,7 +216,6 @@ Future<CommonResponse> pushTorrentToDownloader({
   required int downloaderId,
   required Map<String, dynamic> formData,
 }) async {
-  final response =
-      await addData('${Api.PUSH_TORRENT_URL}$downloaderId', formData);
+  final response = await addData('${Api.PUSH_TORRENT_URL}$downloaderId', formData);
   return response;
 }

@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
 import 'package:harvest/api/mysite.dart';
-import 'package:harvest/app/home/pages/agg_search/models/torrent_info.dart';
 import 'package:harvest/utils/logger_helper.dart';
 import 'package:html/parser.dart';
 import 'package:http/http.dart' as http;
@@ -15,6 +14,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:xpath_selector_html_parser/xpath_selector_html_parser.dart';
 
 import '../home/pages/download/download_form.dart';
+import '../home/pages/models/torrent_info.dart';
 import 'controller.dart';
 
 class WebViewPage extends StatefulWidget {

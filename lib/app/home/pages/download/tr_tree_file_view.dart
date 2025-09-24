@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../common/card_view.dart';
 import '../../../../utils/string_utils.dart';
-import 'transmission_base_torrent.dart';
+import '../models/transmission_base_torrent.dart';
 
 class TreeNode {
   String name;
@@ -39,8 +39,7 @@ class TransmissionTreeView extends StatelessWidget {
 
     for (TorrentFile content in contents) {
       List<String> filePathParts = content.name.split('/');
-      TreeNode currentNode = nodesMap.putIfAbsent(
-          filePathParts.first, () => TreeNode(filePathParts.first));
+      TreeNode currentNode = nodesMap.putIfAbsent(filePathParts.first, () => TreeNode(filePathParts.first));
       for (int i = 1; i < filePathParts.length; i++) {
         String part = filePathParts[i];
         if (currentNode.children.containsKey(part)) {
@@ -75,14 +74,11 @@ class TransmissionTreeView extends StatelessWidget {
           children: [
             CustomTextTag(
               labelText: FileSizeConvert.parseToFileSize(node.content!.length),
-              icon: const Icon(Icons.download_done,
-                  size: 10, color: Colors.white),
+              icon: const Icon(Icons.download_done, size: 10, color: Colors.white),
             ),
             CustomTextTag(
-                icon: const Icon(Icons.download_outlined,
-                    size: 10, color: Colors.white),
-                labelText: (node.content!.bytesCompleted / node.content!.length)
-                    .toStringAsFixed(2)),
+                icon: const Icon(Icons.download_outlined, size: 10, color: Colors.white),
+                labelText: (node.content!.bytesCompleted / node.content!.length).toStringAsFixed(2)),
           ],
         ),
         // 添加其他内容字段
@@ -101,8 +97,7 @@ class TransmissionTreeView extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
       ),
       children: [
-        ...node.children.values
-            .map((child) => _buildTreeTile(child, level + 1)),
+        ...node.children.values.map((child) => _buildTreeTile(child, level + 1)),
       ],
     );
   }

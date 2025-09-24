@@ -5,7 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart'; // ignore: depend_on_referenced_packages
 import 'package:harvest/app/home/pages/download/pagination.dart';
-import 'package:harvest/app/home/pages/download/qbittorrent.dart';
+import 'package:harvest/app/home/pages/models/qbittorrent.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
 import 'package:transmission_api/transmission_api.dart' as tr;
@@ -17,14 +17,14 @@ import '../../../../api/downloader.dart';
 import '../../../../common/meta_item.dart';
 import '../../../../models/authinfo.dart';
 import '../../../../models/common_response.dart';
-import '../../../../models/download.dart';
 import '../../../../utils/flutter_client_sse.dart';
 import '../../../../utils/logger_helper.dart' as logger_helper;
 import '../../../../utils/storage.dart';
+import '../models/download.dart';
 import '../models/transmission.dart';
+import '../models/transmission_base_torrent.dart';
 import '../models/website.dart';
 import '../my_site/controller.dart';
-import 'transmission_base_torrent.dart';
 
 class DownloadController extends GetxController {
   bool loading = false;

@@ -6,6 +6,9 @@ import 'package:flutter_floating/floating/floating.dart';
 import 'package:get/get.dart';
 import 'package:harvest/api/tmdb.dart' as tmdb;
 import 'package:harvest/app/home/pages/dou_ban/douban_api.dart';
+import 'package:harvest/app/home/pages/models/dou_ban_info.dart';
+import 'package:harvest/app/home/pages/models/douban.dart';
+import 'package:harvest/app/home/pages/models/torrent_info.dart';
 import 'package:harvest/common/meta_item.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:harvest/utils/logger_helper.dart' as logger_helper;
@@ -17,21 +20,17 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import '../../../../api/api.dart';
 import '../../../../api/downloader.dart';
 import '../../../../models/authinfo.dart';
-import '../../../../models/download.dart';
 import '../../../../utils/flutter_client_sse.dart';
 import '../../../../utils/storage.dart';
-import '../dou_ban/model.dart';
 import '../download/download_controller.dart';
+import '../models/download.dart';
 import '../models/my_site.dart';
 import '../models/option.dart';
 import '../my_site/controller.dart';
 import 'douban_search.dart';
 import 'models.dart';
-import 'models/douban.dart';
-import 'models/torrent_info.dart';
 
-class AggSearchController extends GetxController
-    with GetSingleTickerProviderStateMixin {
+class AggSearchController extends GetxController with GetSingleTickerProviderStateMixin {
   MySiteController mySiteController = Get.find();
   DownloadController downloadController = Get.put(DownloadController(false));
   TextEditingController searchKeyController = TextEditingController();
@@ -133,8 +132,7 @@ class AggSearchController extends GetxController
     updateSearchHistory(searchKeyController.text);
     update();
     logger_helper.Logger.instance.d(searchKeyController.text);
-    CommonResponse response =
-        await tmdb.getTMDBSearchApi(searchKeyController.text);
+    CommonResponse response = await tmdb.getTMDBSearchApi(searchKeyController.text);
     if (response.succeed != true) {
       isLoading = false;
       update();
@@ -202,17 +200,13 @@ class AggSearchController extends GetxController
     //     defaultValue: 1.0 * calcSize)!;
     // maxSize = SPUtil.getDouble('searchFilterFileMaxSize',
     //     defaultValue: 100.0 * calcSize)!;
-    sites = SPUtil.getStringList('custom_search_sites', defaultValue: [])
-        .map((e) => int.parse(e))
-        .toList();
+    sites = SPUtil.getStringList('custom_search_sites', defaultValue: []).map((e) => int.parse(e)).toList();
     searchHistory = SPUtil.getStringList('search_history', defaultValue: []);
     maxCount = sites.length;
     if (mySiteController.mySiteList.isEmpty) {
       await mySiteController.initData();
     }
-    mySiteMap = {
-      for (var mysite in mySiteController.mySiteList) mysite.site: mysite
-    };
+    mySiteMap = {for (var mysite in mySiteController.mySiteList) mysite.site: mysite};
     if (downloadController.dataList.isEmpty) {
       await downloadController.getDownloaderListFromServer();
     }
@@ -222,8 +216,7 @@ class AggSearchController extends GetxController
 
   saveDefaultSites() async {
     maxCount = sites.length;
-    SPUtil.setStringList(
-        'custom_search_sites', sites.map((e) => e.toString()).toList());
+    SPUtil.setStringList('custom_search_sites', sites.map((e) => e.toString()).toList());
     update();
   }
 
@@ -286,8 +279,7 @@ class AggSearchController extends GetxController
     }
 
     if (selectedSiteList.isNotEmpty) {
-      filteredResults
-          .retainWhere((element) => selectedSiteList.contains(element.siteId));
+      filteredResults.retainWhere((element) => selectedSiteList.contains(element.siteId));
     }
     if (selectedResolution.isNotEmpty) {
       filteredResults.retainWhere((element) => selectedResolution.any(
@@ -297,8 +289,7 @@ class AggSearchController extends GetxController
           ));
     }
     if (selectedCategories.isNotEmpty) {
-      filteredResults.retainWhere(
-          (element) => selectedCategories.contains(element.category));
+      filteredResults.retainWhere((element) => selectedCategories.contains(element.category));
     }
     if (selectedTags.isNotEmpty) {
       filteredResults.retainWhere((element) => selectedTags.any(
@@ -306,15 +297,13 @@ class AggSearchController extends GetxController
           ));
     }
     if (selectedSaleStatusList.isNotEmpty) {
-      filteredResults.retainWhere(
-          (element) => selectedSaleStatusList.contains(element.saleStatus));
+      filteredResults.retainWhere((element) => selectedSaleStatusList.contains(element.saleStatus));
     }
     logger_helper.Logger.instance.d(filteredResults.length);
     // logger_helper.Logger.instance
     //     .d(filteredResults.map((item) => item.size).toList());
 
-    filteredResults.retainWhere(
-        (element) => element.size >= minSize && element.size <= maxSize);
+    filteredResults.retainWhere((element) => element.size >= minSize && element.size <= maxSize);
     logger_helper.Logger.instance.d(filteredResults.length);
 
     showResults = filteredResults;
@@ -349,8 +338,7 @@ class AggSearchController extends GetxController
     );
     showDouBanResults = response.data!;
     logger_helper.Logger.instance.d(showDouBanResults);
-    showDouBanResults
-        .sort((a, b) => b.target.rating.value.compareTo(a.target.rating.value));
+    showDouBanResults.sort((a, b) => b.target.rating.value.compareTo(a.target.rating.value));
     // showResults.clear();
     isLoading = false;
     update();
@@ -392,8 +380,7 @@ class AggSearchController extends GetxController
       await initData();
     }
     try {
-      final wsUrl =
-          Uri.parse('${baseUrl.replaceFirst('http', 'ws')}/api/ws/search');
+      final wsUrl = Uri.parse('${baseUrl.replaceFirst('http', 'ws')}/api/ws/search');
       channel = WebSocketChannel.connect(wsUrl);
       updateSearchHistory(searchKeyController.text);
       await channel.ready;
@@ -404,18 +391,15 @@ class AggSearchController extends GetxController
       }));
 
       channel.stream.listen((message) {
-        CommonResponse response =
-            CommonResponse.fromJson(json.decode(message), (p0) => p0);
+        CommonResponse response = CommonResponse.fromJson(json.decode(message), (p0) => p0);
         logger_helper.Logger.instance.i(response.msg);
         if (response.code == 0) {
-          List<SearchTorrentInfo> torrentInfoList =
-              List<Map<String, dynamic>>.from(response.data)
-                  .map((jsonItem) => SearchTorrentInfo.fromJson(jsonItem))
-                  .toList();
+          List<SearchTorrentInfo> torrentInfoList = List<Map<String, dynamic>>.from(response.data)
+              .map((jsonItem) => SearchTorrentInfo.fromJson(jsonItem))
+              .toList();
           // 写入种子列表
           searchResults.addAll(torrentInfoList);
-          hrResultList
-              .addAll(torrentInfoList.where((element) => element.hr).toList());
+          hrResultList.addAll(torrentInfoList.where((element) => element.hr).toList());
           succeedTags.addAll(torrentInfoList.expand((element) => element.tags));
           if (succeedTags.isNotEmpty) {
             succeedTags = succeedTags.toSet().toList();
@@ -425,12 +409,8 @@ class AggSearchController extends GetxController
           succeedResolution.addAll(torrentInfoList
               .map((item) => resolutionKeyList
                   .firstWhereOrNull((MetaDataItem resolution) =>
-                      item.title
-                          .toLowerCase()
-                          .contains(resolution.value.toLowerCase()) ||
-                      item.subtitle
-                          .toLowerCase()
-                          .contains(resolution.value.toLowerCase()))
+                      item.title.toLowerCase().contains(resolution.value.toLowerCase()) ||
+                      item.subtitle.toLowerCase().contains(resolution.value.toLowerCase()))
                   ?.value)
               .whereType<String>() // 将结果转换为 List<String>
               .toList());
@@ -438,12 +418,10 @@ class AggSearchController extends GetxController
           succeedResolution.sort();
           logger_helper.Logger.instance.d(succeedResolution);
           // 获取种子分类，并去重
-          succeedCategories
-              .addAll(torrentInfoList.map((e) => e.category).toList());
+          succeedCategories.addAll(torrentInfoList.map((e) => e.category).toList());
           succeedCategories = succeedCategories.toSet().toList();
           succeedCategories.sort();
-          saleStatusList
-              .addAll(torrentInfoList.map((e) => e.saleStatus).toList());
+          saleStatusList.addAll(torrentInfoList.map((e) => e.saleStatus).toList());
           saleStatusList = saleStatusList.toSet().toList();
           saleStatusList.sort();
           // 写入有数据的站点
@@ -501,8 +479,7 @@ class AggSearchController extends GetxController
           header: headers,
           body: {
             "key": searchKeyController.text,
-            "max_count":
-                sites.length == mySiteMap.length ? maxCount : sites.length,
+            "max_count": sites.length == mySiteMap.length ? maxCount : sites.length,
             "sites": sites,
           }).listen((event) {
         Map<String, dynamic> jsonData = json.decode(event.data!);
@@ -516,17 +493,13 @@ class AggSearchController extends GetxController
               update();
               return;
             }
-            List<Map<String, dynamic>> jsonList =
-                jsonData['data'].cast<Map<String, dynamic>>();
-            List<SearchTorrentInfo> torrentInfoList = jsonList
-                .map((jsonItem) => SearchTorrentInfo.fromJson(jsonItem))
-                .toList();
+            List<Map<String, dynamic>> jsonList = jsonData['data'].cast<Map<String, dynamic>>();
+            List<SearchTorrentInfo> torrentInfoList =
+                jsonList.map((jsonItem) => SearchTorrentInfo.fromJson(jsonItem)).toList();
             // 写入种子列表
             searchResults.addAll(torrentInfoList);
-            hrResultList.addAll(
-                torrentInfoList.where((element) => element.hr).toList());
-            succeedTags
-                .addAll(torrentInfoList.expand((element) => element.tags));
+            hrResultList.addAll(torrentInfoList.where((element) => element.hr).toList());
+            succeedTags.addAll(torrentInfoList.expand((element) => element.tags));
             if (succeedTags.isNotEmpty) {
               succeedTags = succeedTags.toSet().toList();
               succeedTags.sort();
@@ -535,23 +508,17 @@ class AggSearchController extends GetxController
             succeedResolution.addAll(torrentInfoList
                 .map((item) => resolutionKeyList
                     .firstWhereOrNull((MetaDataItem resolution) =>
-                        item.title
-                            .toLowerCase()
-                            .contains(resolution.value.toLowerCase()) ||
-                        item.subtitle
-                            .toLowerCase()
-                            .contains(resolution.value.toLowerCase()))
+                        item.title.toLowerCase().contains(resolution.value.toLowerCase()) ||
+                        item.subtitle.toLowerCase().contains(resolution.value.toLowerCase()))
                     ?.value)
                 .whereType<String>() // 将结果转换为 List<String>
                 .toList());
             succeedResolution = succeedResolution.toSet().toList();
             logger_helper.Logger.instance.d(succeedResolution);
             // 获取种子分类，并去重
-            succeedCategories
-                .addAll(torrentInfoList.map((e) => e.category).toList());
+            succeedCategories.addAll(torrentInfoList.map((e) => e.category).toList());
             succeedCategories = succeedCategories.toSet().toList();
-            saleStatusList
-                .addAll(torrentInfoList.map((e) => e.saleStatus).toList());
+            saleStatusList.addAll(torrentInfoList.map((e) => e.saleStatus).toList());
             saleStatusList = saleStatusList.toSet().toList();
             // 写入有数据的站点
             if (torrentInfoList.isNotEmpty) {
@@ -613,8 +580,7 @@ class AggSearchController extends GetxController
     update();
   }
 
-  Future<CommonResponse> getMTeamDlLink(
-      MySite mySite, SearchTorrentInfo torrent) async {
+  Future<CommonResponse> getMTeamDlLink(MySite mySite, SearchTorrentInfo torrent) async {
     String url = '${mySite.mirror}api/torrent/genDlToken';
     final res = await Dio(BaseOptions(headers: {
       'x-api-key': '${mySite.authKey}',
@@ -638,8 +604,7 @@ class AggSearchController extends GetxController
         return response;
       }
       Map<String, Category> data = {
-        for (var item in response.data)
-          (item)['name']!: Category.fromJson(item as Map<String, dynamic>)
+        for (var item in response.data) (item)['name']!: Category.fromJson(item as Map<String, dynamic>)
       };
       isDownloaderLoading = false;
       update();

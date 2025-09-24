@@ -1,7 +1,7 @@
 import 'package:harvest/app/home/pages/models/transmission.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
 
-import '../app/home/pages/download/qbittorrent.dart';
+import 'qbittorrent.dart';
 
 class Downloader {
   int? id;
@@ -49,24 +49,18 @@ class Downloader {
       torrentPath: json['torrent_path'],
       isActive: json['is_active'],
       brush: json['brush'],
-      sortId: json['sort_id']??0,
+      sortId: json['sort_id'] ?? 0,
       status: json['status'] != null && json['status'].isNotEmpty
           ? (json['category'] == 'Qb'
-              ? json['status']
-                  .map<ServerState>(
-                      (e) => ServerState.fromJson(e as Map<String, dynamic>))
-                  .toList()
+              ? json['status'].map<ServerState>((e) => ServerState.fromJson(e as Map<String, dynamic>)).toList()
               : json['status']
-                  .map<TransmissionStats>((e) =>
-                      TransmissionStats.fromJson(e as Map<String, dynamic>))
+                  .map<TransmissionStats>((e) => TransmissionStats.fromJson(e as Map<String, dynamic>))
                   .toList())
           : [],
       prefs: json['prefs'] != null && json['prefs'].isNotEmpty
           ? (json['category'] == 'Qb'
-              ? QbittorrentPreferences.fromJson(
-                  json['prefs'] as Map<String, dynamic>)
-              : TransmissionConfig.fromJson(
-                  json['prefs'] as Map<String, dynamic>))
+              ? QbittorrentPreferences.fromJson(json['prefs'] as Map<String, dynamic>)
+              : TransmissionConfig.fromJson(json['prefs'] as Map<String, dynamic>))
           : {},
     );
   }
