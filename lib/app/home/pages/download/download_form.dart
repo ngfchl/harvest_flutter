@@ -12,11 +12,11 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import '../../../../common/form_widgets.dart';
 import '../../../../models/download.dart';
 import '../../../../utils/logger_helper.dart';
-import '../download/download_controller.dart';
+import 'download_controller.dart';
 import '../models/my_site.dart';
 import '../models/website.dart';
-import 'controller.dart';
-import 'models/torrent_info.dart';
+import '../agg_search/controller.dart';
+import '../agg_search/models/torrent_info.dart';
 
 class DownloadForm extends StatelessWidget {
   final Map<String, Category> categories;
@@ -50,9 +50,7 @@ class DownloadForm extends StatelessWidget {
     tagsController.text = info?.tags.join(',') ?? '';
     if (categories.isNotEmpty) {
       savePathController.text = categories.values.first.savePath ??
-          (downloader.category.toLowerCase() == 'qb'
-              ? downloader.prefs.savePath
-              : downloader.prefs.downloadDir);
+          (downloader.category.toLowerCase() == 'qb' ? downloader.prefs.savePath : downloader.prefs.downloadDir);
     }
   }
 
@@ -62,10 +60,7 @@ class DownloadForm extends StatelessWidget {
     categories.remove('全部');
     categories.remove('未分类');
     bool isQb = downloader.category.toLowerCase() == 'qb';
-    return CustomCard(
-        child: isQb
-            ? _buildQbittorrentForm(context)
-            : _buildTransmissionForm(context));
+    return CustomCard(child: isQb ? _buildQbittorrentForm(context) : _buildTransmissionForm(context));
   }
 
   Form _buildQbittorrentForm(BuildContext context) {
@@ -76,17 +71,14 @@ class DownloadForm extends StatelessWidget {
     RxBool advancedConfig = false.obs;
     RxBool paused = prefs.startPausedEnabled.obs;
     Rx<String> contentLayout = prefs.torrentContentLayout.obs;
-    Rx<String?> stopCondition = (prefs.torrentStopCondition == 'None'
-            ? null
-            : prefs.torrentStopCondition)
-        .obs;
+    Rx<String?> stopCondition = (prefs.torrentStopCondition == 'None' ? null : prefs.torrentStopCondition).obs;
     Rx<bool> autoTMM = prefs.autoTmmEnabled.obs;
     RxBool firstLastPiecePrio = false.obs;
     RxBool isSkipChecking = false.obs;
     RxBool addToTopOfQueue = false.obs;
     RxBool isSequentialDownload = false.obs;
     RxBool forced = false.obs;
-
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     return Form(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -96,9 +88,7 @@ class DownloadForm extends StatelessWidget {
               padding: const EdgeInsets.all(8.0),
               child: EllipsisText(
                 text: info!.subtitle.isNotEmpty ? info!.subtitle : info!.title,
-                style: TextStyle(
-                    fontSize: 12,
-                    color: ShadTheme.of(context).colorScheme.primary),
+                style: TextStyle(fontSize: 12, color: ShadTheme.of(context).colorScheme.primary),
                 ellipsis: '...',
                 maxLines: 1,
               ),
@@ -117,8 +107,7 @@ class DownloadForm extends StatelessWidget {
                       data: categories.keys.toList(),
                       onChanged: (value, index) {
                         categoryController.text = value;
-                        savePathController.text = categories[value]?.savePath ??
-                            downloader.prefs.savePath;
+                        savePathController.text = categories[value]?.savePath ?? downloader.prefs.savePath;
                       },
                     )
                   : CustomTextField(
@@ -142,10 +131,10 @@ class DownloadForm extends StatelessWidget {
               Obx(() {
                 return SwitchListTile(
                     dense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                    title: const Text(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    title: Text(
                       '暂停下载',
-                      style: TextStyle(fontSize: 12),
+                      style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
                     ),
                     value: paused.value,
                     onChanged: (bool val) {
@@ -155,10 +144,10 @@ class DownloadForm extends StatelessWidget {
               Obx(() {
                 return SwitchListTile(
                     dense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                    title: const Text(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    title: Text(
                       '高级选项',
-                      style: TextStyle(fontSize: 12),
+                      style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
                     ),
                     value: advancedConfig.value,
                     onChanged: (bool val) {
@@ -172,11 +161,10 @@ class DownloadForm extends StatelessWidget {
                         children: [
                           SwitchListTile(
                               dense: true,
-                              contentPadding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text(
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                              title: Text(
                                 '添加到队列顶部',
-                                style: TextStyle(fontSize: 12),
+                                style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
                               ),
                               value: addToTopOfQueue.value,
                               onChanged: (bool val) {
@@ -184,38 +172,29 @@ class DownloadForm extends StatelessWidget {
                               }),
                           Obx(() {
                             return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16.0, vertical: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
                               child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text('种子停止条件'),
+                                  Text('种子停止条件', style: TextStyle(fontSize: 12, color: shadColorScheme.foreground)),
                                   DropdownButton(
                                       value: stopCondition.value,
-                                      items: const [
+                                      items: [
                                         DropdownMenuItem(
                                           value: null,
                                           child: Text(
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                              ),
-                                              '无'),
+                                              style: TextStyle(fontSize: 14, color: shadColorScheme.foreground), '无'),
                                         ),
                                         DropdownMenuItem(
                                           value: 'MetadataReceived',
                                           child: Text(
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                              ),
+                                              style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                               '已收到元数据'),
                                         ),
                                         DropdownMenuItem(
                                           value: 'FilesChecked',
                                           child: Text(
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                              ),
+                                              style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                               '选种的文件'),
                                         ),
                                       ],
@@ -228,37 +207,29 @@ class DownloadForm extends StatelessWidget {
                           }),
                           Obx(() {
                             return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16.0, vertical: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
                               child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text('内容布局'),
+                                  Text('内容布局', style: TextStyle(fontSize: 12, color: shadColorScheme.foreground)),
                                   DropdownButton(
                                       isDense: true,
                                       value: contentLayout.value,
-                                      items: const [
+                                      items: [
                                         DropdownMenuItem(
                                             value: 'Original',
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 '原始')),
                                         DropdownMenuItem(
                                             value: 'Subfolder',
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 '子文件夹')),
                                         DropdownMenuItem(
                                             value: 'NoSubfolder',
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 '不创建子文件夹')),
                                       ],
                                       onChanged: (value) {
@@ -271,13 +242,10 @@ class DownloadForm extends StatelessWidget {
                           Obx(() {
                             return SwitchListTile(
                                 dense: true,
-                                contentPadding:
-                                    const EdgeInsets.symmetric(horizontal: 8),
-                                title: const Text(
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                                title: Text(
                                   '跳过哈希校验',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                  ),
+                                  style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
                                 ),
                                 value: isSkipChecking.value,
                                 onChanged: (bool val) {
@@ -287,13 +255,10 @@ class DownloadForm extends StatelessWidget {
                           Obx(() {
                             return SwitchListTile(
                                 dense: true,
-                                contentPadding:
-                                    const EdgeInsets.symmetric(horizontal: 8),
-                                title: const Text(
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                                title: Text(
                                   '自动管理',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                  ),
+                                  style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
                                 ),
                                 value: autoTMM.value,
                                 onChanged: (bool val) {
@@ -303,13 +268,10 @@ class DownloadForm extends StatelessWidget {
                           Obx(() {
                             return SwitchListTile(
                                 dense: true,
-                                contentPadding:
-                                    const EdgeInsets.symmetric(horizontal: 8),
-                                title: const Text(
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                                title: Text(
                                   '强制启动',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                  ),
+                                  style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
                                 ),
                                 value: forced.value,
                                 onChanged: (bool val) {
@@ -318,11 +280,10 @@ class DownloadForm extends StatelessWidget {
                           }),
                           SwitchListTile(
                               dense: true,
-                              contentPadding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text(
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                              title: Text(
                                 '按顺序下载',
-                                style: TextStyle(fontSize: 12),
+                                style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
                               ),
                               value: isSequentialDownload.value,
                               onChanged: (bool val) {
@@ -330,11 +291,10 @@ class DownloadForm extends StatelessWidget {
                               }),
                           SwitchListTile(
                               dense: true,
-                              contentPadding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
-                              title: const Text(
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                              title: Text(
                                 '优先下载首尾数据块',
-                                style: TextStyle(fontSize: 12),
+                                style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
                               ),
                               value: firstLastPiecePrio.value,
                               onChanged: (bool val) {
@@ -355,8 +315,7 @@ class DownloadForm extends StatelessWidget {
                             suffixText: 'MB/s',
                             inputFormatters: [
                               FilteringTextInputFormatter.digitsOnly,
-                              TextInputFormatter.withFunction(
-                                  (oldValue, newValue) {
+                              TextInputFormatter.withFunction((oldValue, newValue) {
                                 try {
                                   final int value = int.parse(newValue.text);
                                   if (value < -2) {
@@ -376,8 +335,7 @@ class DownloadForm extends StatelessWidget {
                             suffixText: 'MB/s',
                             inputFormatters: [
                               FilteringTextInputFormatter.digitsOnly,
-                              TextInputFormatter.withFunction(
-                                  (oldValue, newValue) {
+                              TextInputFormatter.withFunction((oldValue, newValue) {
                                 try {
                                   final int value = int.parse(newValue.text);
                                   if (value < -2) {
@@ -396,8 +354,7 @@ class DownloadForm extends StatelessWidget {
                             keyboardType: TextInputType.number,
                             inputFormatters: [
                               FilteringTextInputFormatter.digitsOnly,
-                              TextInputFormatter.withFunction(
-                                  (oldValue, newValue) {
+                              TextInputFormatter.withFunction((oldValue, newValue) {
                                 try {
                                   final int value = int.parse(newValue.text);
                                   if (value < -2) {
@@ -426,10 +383,7 @@ class DownloadForm extends StatelessWidget {
                 leading: const Icon(Icons.cancel_outlined, color: Colors.white),
                 child: Text(
                   '取消',
-                  style: TextStyle(
-                      color: ShadTheme.of(context)
-                          .colorScheme
-                          .destructiveForeground),
+                  style: TextStyle(color: ShadTheme.of(context).colorScheme.destructiveForeground),
                 ),
               ),
               Obx(() {
@@ -437,8 +391,7 @@ class DownloadForm extends StatelessWidget {
                   size: ShadButtonSize.sm,
                   onPressed: () async {
                     isLoading.value = true;
-                    double? ratioLimit =
-                        double.tryParse(ratioLimitController.text);
+                    double? ratioLimit = double.tryParse(ratioLimitController.text);
                     int? upLimit = int.tryParse(upLimitController.text);
                     int? dlLimit = int.tryParse(dlLimitController.text);
                     await submitForm({
@@ -452,21 +405,15 @@ class DownloadForm extends StatelessWidget {
                       'tags': tagsController.text,
                       'cookie': cookieController.text,
                       'content_layout': contentLayout.value,
-                      'stop_condition': stopCondition.value == 'None'
-                          ? null
-                          : stopCondition.value,
+                      'stop_condition': stopCondition.value == 'None' ? null : stopCondition.value,
                       'is_skip_checking': isSkipChecking.value,
                       'is_sequential_download': isSequentialDownload.value,
                       'is_first_last_piece_priority': firstLastPiecePrio.value,
                       'use_auto_torrent_management': autoTMM.value,
                       'add_to_top_of_queue': addToTopOfQueue.value,
                       'forced': forced.value,
-                      'upLimit': (upLimit != null && upLimit > 0)
-                          ? upLimit * 1024
-                          : null,
-                      'dlLimit': (dlLimit != null && dlLimit > 0)
-                          ? dlLimit * 1024
-                          : null,
+                      'upLimit': (upLimit != null && upLimit > 0) ? upLimit * 1024 : null,
+                      'dlLimit': (dlLimit != null && dlLimit > 0) ? dlLimit * 1024 : null,
                       'ratioLimit': ratioLimit,
                     }, context);
                     isLoading.value = false;
@@ -482,10 +429,7 @@ class DownloadForm extends StatelessWidget {
                       : const Icon(Icons.download),
                   child: Text(
                     '下载',
-                    style: TextStyle(
-                        color: ShadTheme.of(context)
-                            .colorScheme
-                            .primaryForeground),
+                    style: TextStyle(color: ShadTheme.of(context).colorScheme.primaryForeground),
                   ),
                 );
               }),
@@ -529,8 +473,7 @@ class DownloadForm extends StatelessWidget {
                     data: categories.keys.toList(),
                     onChanged: (value, index) {
                       categoryController.text = value;
-                      savePathController.text = categories[value]?.savePath ??
-                          downloader.prefs.downloadDir;
+                      savePathController.text = categories[value]?.savePath ?? downloader.prefs.downloadDir;
                     },
                   )
                 : CustomTextField(
@@ -555,10 +498,10 @@ class DownloadForm extends StatelessWidget {
             Obx(() {
               return SwitchListTile(
                   dense: true,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                  title: const Text(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  title: Text(
                     '暂停下载',
-                    style: TextStyle(fontSize: 12),
+                    style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
                   ),
                   value: paused.value,
                   onChanged: (bool val) {
@@ -568,10 +511,10 @@ class DownloadForm extends StatelessWidget {
             Obx(() {
               return SwitchListTile(
                   dense: true,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                  title: const Text(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  title: Text(
                     '高级选项',
-                    style: TextStyle(fontSize: 12),
+                    style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
                   ),
                   value: advancedConfig.value,
                   onChanged: (bool val) {
@@ -594,8 +537,7 @@ class DownloadForm extends StatelessWidget {
                           suffixText: 'MB/s',
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
-                            TextInputFormatter.withFunction(
-                                (oldValue, newValue) {
+                            TextInputFormatter.withFunction((oldValue, newValue) {
                               try {
                                 final int value = int.parse(newValue.text);
                                 if (value < 0) {
@@ -615,8 +557,7 @@ class DownloadForm extends StatelessWidget {
                           suffixText: 'MB/s',
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
-                            TextInputFormatter.withFunction(
-                                (oldValue, newValue) {
+                            TextInputFormatter.withFunction((oldValue, newValue) {
                               try {
                                 final int value = int.parse(newValue.text);
                                 if (value < 0) {
@@ -635,8 +576,7 @@ class DownloadForm extends StatelessWidget {
                           keyboardType: TextInputType.number,
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
-                            TextInputFormatter.withFunction(
-                                (oldValue, newValue) {
+                            TextInputFormatter.withFunction((oldValue, newValue) {
                               try {
                                 final int value = int.parse(newValue.text);
                                 if (value < 0) {
@@ -663,11 +603,9 @@ class DownloadForm extends StatelessWidget {
               onPressed: () => cancelForm(context),
               style: ButtonStyle(
                 shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                  RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5.0)),
+                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                 ),
-                backgroundColor:
-                    WidgetStateProperty.all(Colors.redAccent.withAlpha(150)),
+                backgroundColor: WidgetStateProperty.all(Colors.redAccent.withAlpha(150)),
               ),
               icon: const Icon(Icons.cancel_outlined, color: Colors.white),
               label: const Text(
@@ -679,8 +617,7 @@ class DownloadForm extends StatelessWidget {
               return ElevatedButton.icon(
                 onPressed: () async {
                   isLoading.value = true;
-                  double? ratioLimit =
-                      double.tryParse(ratioLimitController.text);
+                  double? ratioLimit = double.tryParse(ratioLimitController.text);
                   int? upLimit = int.tryParse(upLimitController.text);
                   int? dlLimit = int.tryParse(dlLimitController.text);
                   await submitForm({
@@ -691,19 +628,13 @@ class DownloadForm extends StatelessWidget {
                     'tags': tagsController.text.split(','),
                     'cookie': cookieController.text,
                     'is_paused': paused.value,
-                    'upLimit': (upLimit != null && upLimit > 0)
-                        ? upLimit * 1024
-                        : null,
-                    'dlLimit': (dlLimit != null && dlLimit > 0)
-                        ? dlLimit * 1024
-                        : null,
+                    'upLimit': (upLimit != null && upLimit > 0) ? upLimit * 1024 : null,
+                    'dlLimit': (dlLimit != null && dlLimit > 0) ? dlLimit * 1024 : null,
                     'ratioLimit': ratioLimit,
                   }, context);
                   isLoading.value = false;
                 },
-                icon: isLoading.value
-                    ? Center(child: const CircularProgressIndicator())
-                    : const Icon(Icons.download),
+                icon: isLoading.value ? Center(child: const CircularProgressIndicator()) : const Icon(Icons.download),
                 label: const Text('下载'),
               );
             }),
@@ -716,8 +647,7 @@ class DownloadForm extends StatelessWidget {
   Future<void> submitForm(Map<String, dynamic> formData, context) async {
     try {
       Logger.instance.i('提交表单: $formData');
-      CommonResponse res = await pushTorrentToDownloader(
-          downloaderId: downloader.id!, formData: formData);
+      CommonResponse res = await pushTorrentToDownloader(downloaderId: downloader.id!, formData: formData);
 
       Logger.instance.i(res.msg);
       if (res.succeed) {
@@ -751,8 +681,7 @@ class DownloadForm extends StatelessWidget {
   }
 }
 
-Future<void> openDownloaderListSheet(
-    BuildContext context, SearchTorrentInfo info) async {
+Future<void> openDownloaderListSheet(BuildContext context, SearchTorrentInfo info) async {
   DownloadController downloadController = Get.find();
   if (downloadController.dataList.isEmpty) {
     await downloadController.getDownloaderListFromServer();
@@ -790,8 +719,7 @@ Future<void> openDownloaderListSheet(
                         subtitle: Text(
                           '${downloader.protocol}://${downloader.host}:${downloader.port}',
                           style: TextStyle(
-                            color: themeData.colorScheme.foreground
-                                .withOpacity(0.8),
+                            color: themeData.colorScheme.foreground.withOpacity(0.8),
                           ),
                         ),
                         leading: CircleAvatar(
@@ -803,8 +731,7 @@ Future<void> openDownloaderListSheet(
                             ? const CircularProgressIndicator()
                             : const SizedBox.shrink(),
                         onTap: () async {
-                          CommonResponse response = await controller
-                              .getDownloaderCategoryList(downloader);
+                          CommonResponse response = await controller.getDownloaderCategoryList(downloader);
                           if (!response.succeed) {
                             Get.snackbar(
                               '警告',
@@ -815,8 +742,7 @@ Future<void> openDownloaderListSheet(
                           }
                           Map<String, Category> categorise = response.data;
                           Get.bottomSheet(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5.0)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                             enableDrag: true,
                             CustomCard(
                               height: 400,

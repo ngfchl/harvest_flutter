@@ -25,9 +25,9 @@ import '../../../../utils/logger_helper.dart' as logger_helper;
 import '../../../../utils/logger_helper.dart';
 import '../../../../utils/string_utils.dart';
 import '../../../routes/app_pages.dart';
+import '../download/download_form.dart';
 import '../models/my_site.dart';
 import 'controller.dart';
-import 'download_form.dart';
 import 'models.dart';
 import 'models/douban.dart';
 

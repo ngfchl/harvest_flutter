@@ -14,7 +14,7 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:xpath_selector_html_parser/xpath_selector_html_parser.dart';
 
-import '../home/pages/agg_search/download_form.dart';
+import '../home/pages/download/download_form.dart';
 import 'controller.dart';
 
 class WebViewPage extends StatefulWidget {

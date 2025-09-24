@@ -244,6 +244,17 @@ class DownloadController extends GetxController {
     super.onInit();
   }
 
+  void initData() {
+    trackerToWebSiteMap.clear();
+    categoryMap.clear();
+    trackers.clear();
+    showTrackers.clear();
+    tags.clear();
+    errors.clear();
+    serverStatus.clear();
+    speedInfo.clear();
+  }
+
   void timerToStop() {
     fiveMinutesTimer = Timer(Duration(seconds: (timerDuration * 60).toInt()), () {
       // 定时器触发后执行的操作，这里可以取消periodicTimer、关闭资源等

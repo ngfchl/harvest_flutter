@@ -29,9 +29,9 @@ import '../../../../utils/date_time_utils.dart';
 import '../../../../utils/logger_helper.dart' as logger_helper;
 import '../../../../utils/storage.dart';
 import '../../../../utils/string_utils.dart';
-import '../agg_search/download_form.dart';
 import '../models/transmission.dart';
 import 'download_controller.dart';
+import 'download_form.dart';
 import 'transmission_base_torrent.dart';
 
 class DownloadPage extends StatefulWidget {
@@ -1007,6 +1007,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
       );
     }
     Get.bottomSheet(
+      backgroundColor: shadColorScheme.background,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
       CustomCard(
         child: Column(
@@ -1181,7 +1182,6 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
 
   Widget _buildFunctionBar(Downloader downloader) {
     var shadColorScheme = ShadTheme.of(context).colorScheme;
-    var opacity = SPUtil.getDouble("cardOpacity", defaultValue: 0.7);
     bool isQb = downloader.category == 'Qb';
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -1238,7 +1238,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
             GetBuilder<DownloadController>(builder: (controller) {
               return CustomPopup(
                 contentDecoration: BoxDecoration(
-                  color: shadColorScheme.background.withOpacity(opacity * 1.6),
+                  color: shadColorScheme.background,
                 ),
                 content: SingleChildScrollView(
                   child: SizedBox(
@@ -1289,15 +1289,14 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                   padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
                   child: CustomTextTag(
                     backgroundColor: Colors.transparent,
-                    icon:Icon(
+                    icon: Icon(
                       Icons.sort_by_alpha_outlined,
                       size: 13,
                       color: shadColorScheme.foreground,
                     ),
-                    labelText: '【${controller.qbSortOptions.firstWhereOrNull((item) => item.value == controller.sortKey)?.name ?? "无"}】',
-                    labelColor:shadColorScheme.foreground,
-
-
+                    labelText:
+                        '【${controller.qbSortOptions.firstWhereOrNull((item) => item.value == controller.sortKey)?.name ?? "无"}】',
+                    labelColor: shadColorScheme.foreground,
                   ),
                 ),
               );
@@ -1305,7 +1304,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
             GetBuilder<DownloadController>(builder: (controller) {
               return CustomPopup(
                 contentDecoration: BoxDecoration(
-                  color: shadColorScheme.background.withOpacity(opacity * 1.6),
+                  color: shadColorScheme.background,
                 ),
                 content: SingleChildScrollView(
                   child: SizedBox(
@@ -1348,14 +1347,13 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                   padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
                   child: CustomTextTag(
                     backgroundColor: Colors.transparent,
-                    icon:Icon(
+                    icon: Icon(
                       Icons.tag,
                       size: 13,
                       color: shadColorScheme.foreground,
                     ),
                     labelText: '【${controller.selectedTag}】',
-                    labelColor:shadColorScheme.foreground,
-
+                    labelColor: shadColorScheme.foreground,
                   ),
                 ),
               );
@@ -1363,7 +1361,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
             GetBuilder<DownloadController>(builder: (controller) {
               return CustomPopup(
                 contentDecoration: BoxDecoration(
-                  color: shadColorScheme.background.withOpacity(opacity * 1.6),
+                  color: shadColorScheme.background,
                 ),
                 content: SingleChildScrollView(
                   child: SizedBox(
@@ -1418,13 +1416,13 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                   padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
                   child: CustomTextTag(
                     backgroundColor: Colors.transparent,
-                    icon:Icon(
+                    icon: Icon(
                       Icons.language_outlined,
                       size: 13,
                       color: shadColorScheme.foreground,
                     ),
                     labelText: '【${controller.selectedTracker}】',
-                    labelColor:shadColorScheme.foreground,
+                    labelColor: shadColorScheme.foreground,
                   ),
                 ),
               );
@@ -1432,7 +1430,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
             GetBuilder<DownloadController>(builder: (controller) {
               return CustomPopup(
                 contentDecoration: BoxDecoration(
-                  color: shadColorScheme.background.withOpacity(opacity * 1.6),
+                  color: shadColorScheme.background,
                 ),
                 content: SingleChildScrollView(
                   child: SizedBox(
@@ -1463,16 +1461,15 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                   padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
                   child: CustomTextTag(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    icon:  Icon(
+                    icon: Icon(
                       Icons.category_outlined,
                       size: 13,
                       color: shadColorScheme.foreground,
                     ),
                     backgroundColor: Colors.transparent,
-
                     labelColor: shadColorScheme.foreground,
-                    labelText: '【${controller.categoryMap.keys.firstWhereOrNull((item) => item == controller.selectedCategory) ?? "全部"}】',
-
+                    labelText:
+                        '【${controller.categoryMap.keys.firstWhereOrNull((item) => item == controller.selectedCategory) ?? "全部"}】',
                   ),
                 ),
               );
@@ -1480,7 +1477,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
             GetBuilder<DownloadController>(builder: (controller) {
               return CustomPopup(
                 contentDecoration: BoxDecoration(
-                  color: shadColorScheme.background.withOpacity(opacity * 1.6),
+                  color: shadColorScheme.background,
                 ),
                 content: SingleChildScrollView(
                   child: SizedBox(
@@ -1511,6 +1508,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               return PopupMenuItem(
                                 child: Text(
                                   '${state.name}(${torrentsMatchingState.length})',
+                                  style: TextStyle(color: shadColorScheme.foreground),
                                 ),
                               );
                             }).toList()
@@ -1530,15 +1528,11 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                     .where((torrent) => state.value != null ? torrent.status == state.value : true)
                                     .toList();
                               }
-                              return ListTile(
-                                dense: true,
-                                title: Text(
+                              return PopupMenuItem(
+                                child: Text(
                                   '${state.name}(${torrentsMatchingState.length})',
+                                  style: TextStyle(color: shadColorScheme.foreground),
                                 ),
-                                titleTextStyle: TextStyle(color: shadColorScheme.foreground),
-                                style: ListTileStyle.list,
-                                selected: controller.trTorrentState == state.value,
-                                selectedColor: shadColorScheme.destructive,
                                 onTap: () {
                                   Get.back();
                                   controller.filterTrTorrents();
@@ -1552,14 +1546,14 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                   padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
                   child: CustomTextTag(
                     mainAxisAlignment: MainAxisAlignment.center,
-                   icon:Icon(
-                     Icons.info_outlined,
-                     size: 13,
-                     color: shadColorScheme.foreground,
-                   ),
+                    icon: Icon(
+                      Icons.info_outlined,
+                      size: 13,
+                      color: shadColorScheme.foreground,
+                    ),
                     backgroundColor: Colors.transparent,
-
-                    labelText: '【${controller.qBitStatus.firstWhereOrNull((item) => item.value == controller.torrentState) ?? "全部"}】',
+                    labelText:
+                        '【${controller.qBitStatus.firstWhereOrNull((item) => item.value == controller.torrentState) ?? "全部"}】',
                     labelColor: shadColorScheme.foreground,
                   ),
                 ),
@@ -1569,7 +1563,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
               GetBuilder<DownloadController>(builder: (controller) {
                 return CustomPopup(
                   contentDecoration: BoxDecoration(
-                    color: shadColorScheme.background.withOpacity(opacity * 1.6),
+                    color: shadColorScheme.background,
                   ),
                   content: SingleChildScrollView(
                     child: SizedBox(
@@ -1611,14 +1605,15 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                     padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
                     child: CustomTextTag(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      icon:Icon(
+                      icon: Icon(
                         Icons.warning_amber_outlined,
                         size: 13,
                         color: shadColorScheme.foreground,
                       ),
                       backgroundColor: Colors.transparent,
                       labelColor: shadColorScheme.foreground,
-                      labelText:'【${controller.qBitStatus.firstWhereOrNull((item) => item.value == controller.torrentState) ?? "全部"}】',
+                      labelText:
+                          '【${controller.qBitStatus.firstWhereOrNull((item) => item.value == controller.torrentState) ?? "全部"}】',
                     ),
                   ),
                 );
@@ -1628,11 +1623,11 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
   }
 
   void _showTorrents(Downloader downloader) async {
+    controller.initData();
     controller.isTorrentsLoading = true;
     controller.update();
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     try {
-      var opacity = SPUtil.getDouble("cardOpacity", defaultValue: 0.7);
       var res = await controller.testConnect(downloader);
       if (!res.succeed) {
         Get.snackbar(
@@ -1664,13 +1659,16 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
             width: MediaQuery.of(context).size.width,
             child: SafeArea(
               child: Scaffold(
-                backgroundColor: shadColorScheme.background.withOpacity(opacity * 1.6),
+                backgroundColor: shadColorScheme.background,
                 resizeToAvoidBottomInset: false,
                 appBar: AppBar(
-                  backgroundColor: shadColorScheme.background.withOpacity(opacity * 1.6),
+                  backgroundColor: shadColorScheme.background,
                   toolbarHeight: 40,
                   title: Text(
-                      '${downloader.name} (${controller.torrents.isNotEmpty ? controller.torrents.length : 'loading'})'),
+                    '${downloader.name} (${controller.torrents.isNotEmpty ? controller.torrents.length : 'loading'})',
+                  ),
+                  titleTextStyle: TextStyle(color: shadColorScheme.foreground),
+                  toolbarTextStyle: TextStyle(color: shadColorScheme.foreground),
                   actions: [
                     if (controller.serverStatus.isNotEmpty) ...[
                       SizedBox(
@@ -1680,28 +1678,55 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            CustomTextTag(
-                                icon: Icon(
-                                  Icons.keyboard_arrow_up_outlined,
-                                  color: shadColorScheme.primary,
-                                  size: 14,
-                                ),
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                backgroundColor: Colors.transparent,
-                                labelColor: shadColorScheme.primary,
-                                labelText:
-                                    "${FileSizeConvert.parseToFileSize(controller.serverStatus.last.upInfoSpeed)}/s[${FileSizeConvert.parseToFileSize(controller.serverStatus.last.upRateLimit)}]"),
-                            CustomTextTag(
-                                icon: Icon(
-                                  Icons.keyboard_arrow_down_outlined,
-                                  color: shadColorScheme.destructive,
-                                  size: 14,
-                                ),
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                backgroundColor: Colors.transparent,
-                                labelColor: shadColorScheme.destructive,
-                                labelText:
-                                    "${FileSizeConvert.parseToFileSize(controller.serverStatus.last.dlInfoSpeed)}/s[${FileSizeConvert.parseToFileSize(controller.serverStatus.last.dlRateLimit)}]"),
+                            ...(isQb
+                                ? [
+                                    CustomTextTag(
+                                        icon: Icon(
+                                          Icons.keyboard_arrow_up_outlined,
+                                          color: shadColorScheme.primary,
+                                          size: 14,
+                                        ),
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        backgroundColor: Colors.transparent,
+                                        labelColor: shadColorScheme.primary,
+                                        labelText:
+                                            "${FileSizeConvert.parseToFileSize(controller.serverStatus.last.upInfoSpeed)}/s[${FileSizeConvert.parseToFileSize(controller.serverStatus.last.upRateLimit)}]"),
+                                    CustomTextTag(
+                                        icon: Icon(
+                                          Icons.keyboard_arrow_down_outlined,
+                                          color: shadColorScheme.destructive,
+                                          size: 14,
+                                        ),
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        backgroundColor: Colors.transparent,
+                                        labelColor: shadColorScheme.destructive,
+                                        labelText:
+                                            "${FileSizeConvert.parseToFileSize(controller.serverStatus.last.dlInfoSpeed)}/s[${FileSizeConvert.parseToFileSize(controller.serverStatus.last.dlRateLimit)}]"),
+                                  ]
+                                : [
+                                    CustomTextTag(
+                                        icon: Icon(
+                                          Icons.keyboard_arrow_up_outlined,
+                                          color: shadColorScheme.primary,
+                                          size: 14,
+                                        ),
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        backgroundColor: Colors.transparent,
+                                        labelColor: shadColorScheme.primary,
+                                        labelText:
+                                            "${FileSizeConvert.parseToFileSize(controller.serverStatus.last.uploadSpeed)}/s[${FileSizeConvert.parseToFileSize(downloader.prefs.speedLimitUp * 1024)}]"),
+                                    CustomTextTag(
+                                        icon: Icon(
+                                          Icons.keyboard_arrow_down_outlined,
+                                          color: shadColorScheme.destructive,
+                                          size: 14,
+                                        ),
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        backgroundColor: Colors.transparent,
+                                        labelColor: shadColorScheme.destructive,
+                                        labelText:
+                                            "${FileSizeConvert.parseToFileSize(controller.serverStatus.last.downloadSpeed)}/s[${FileSizeConvert.parseToFileSize(downloader.prefs.speedLimitDown * 1024)}]"),
+                                  ]),
                           ],
                         ),
                       ),
@@ -1817,6 +1842,9 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                   itemCount: controller.localPaginationController.displayedItems.length,
                                   itemBuilder: (BuildContext context, int index) {
                                     dynamic torrent = controller.localPaginationController.displayedItems[index];
+                                    if (!isQb && torrent is QbittorrentTorrentInfo) {
+                                      return SizedBox.shrink();
+                                    }
                                     return ShowTorrentWidget(
                                         downloader: downloader, torrentInfo: torrent, controller: controller);
                                   }),
@@ -1981,16 +2009,14 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
   }
 
   void _openAddTorrentDialog(DownloadController controller, Downloader downloader) async {
-    double opacity = SPUtil.getDouble('opacity', defaultValue: 0.7);
     await controller.getDownloaderCategoryList(downloader);
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.bottomSheet(
+      backgroundColor: shadColorScheme.background,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
       enableDrag: true,
-      CustomCard(
+      SizedBox(
         height: 400,
-        padding: const EdgeInsets.all(12),
-        color: shadColorScheme.background.withOpacity(opacity * 1.6),
         child: Column(children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -2031,7 +2057,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
         height: 240,
         // width: 240,
         child: Scaffold(
-          backgroundColor: Colors.transparent,
+          backgroundColor: shadColorScheme.background,
           body: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -3210,10 +3236,13 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
           return DefaultTabController(
             length: tabs.length,
             child: Scaffold(
-              backgroundColor: Colors.transparent,
+              backgroundColor: shadColorScheme.background,
               appBar: AppBar(
-                backgroundColor: shadColorScheme.background.withOpacity(opacity),
-                title: Text('配置选项[${downloader.prefs.webApiVersion.toString()}]'),
+                backgroundColor: shadColorScheme.background,
+                title: Text(
+                  '配置选项[${downloader.prefs.webApiVersion.toString()}]',
+                  style: TextStyle(color: shadColorScheme.foreground),
+                ),
                 bottom: const TabBar(tabs: tabs, isScrollable: true),
               ),
               floatingActionButton: ShadIconButton(
@@ -3403,31 +3432,28 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text('添加种子时'),
+                                  Text(
+                                    '添加种子时',
+                                    style: TextStyle(color: shadColorScheme.foreground),
+                                  ),
                                   DropdownButton(
                                       isDense: true,
                                       value: torrentContentLayoutController.text,
-                                      items: const [
+                                      items: [
                                         DropdownMenuItem(
                                             value: 'Original',
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 '原始')),
                                         DropdownMenuItem(
                                             value: 'Subfolder',
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 '子文件夹')),
                                         DropdownMenuItem(
                                             value: 'NoSubfolder',
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 '不创建子文件夹')),
                                       ],
                                       onChanged: (value) {
@@ -3442,39 +3468,35 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 startPausedEnabled.value = value == true;
                               },
-                              title: const Text('不要开始自动下载'),
+                              title: Text(
+                                '不要开始自动下载',
+                                style: TextStyle(color: shadColorScheme.foreground),
+                              ),
                             ),
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text('种子停止条件'),
+                                  Text('种子停止条件', style: TextStyle(color: shadColorScheme.foreground)),
                                   DropdownButton<String>(
                                       value: torrentStopCondition.value,
-                                      items: const [
+                                      items: [
                                         DropdownMenuItem(
                                           value: 'None',
                                           child: Text(
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                              ),
-                                              '无'),
+                                              style: TextStyle(fontSize: 14, color: shadColorScheme.foreground), '无'),
                                         ),
                                         DropdownMenuItem(
                                           value: 'MetadataReceived',
                                           child: Text(
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                              ),
+                                              style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                               '已收到元数据'),
                                         ),
                                         DropdownMenuItem(
                                           value: 'FilesChecked',
                                           child: Text(
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                              ),
+                                              style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                               '选种的文件'),
                                         ),
                                       ],
@@ -3490,7 +3512,10 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 autoDeleteMode.value = value == true ? 1 : 0;
                               },
-                              title: const Text('完成后删除.torrent文件'),
+                              title: Text(
+                                '完成后删除.torrent文件',
+                                style: TextStyle(color: shadColorScheme.foreground),
+                              ),
                             ),
                           ],
                         ),
@@ -3506,7 +3531,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 preallocateAll.value = value == true;
                               },
-                              title: const Text('为所有文件预分配磁盘空间'),
+                              title: Text('为所有文件预分配磁盘空间', style: TextStyle(color: shadColorScheme.foreground)),
                             ),
                             CheckboxListTile(
                               dense: true,
@@ -3514,7 +3539,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 incompleteFilesExt.value = value == true;
                               },
-                              title: const Text('为不完整的文件添加扩展名 .!qB'),
+                              title: Text('为不完整的文件添加扩展名 .!qB', style: TextStyle(color: shadColorScheme.foreground)),
                             ),
                           ],
                         ),
@@ -3530,31 +3555,27 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                             onChanged: (value) {
                               autoTmmEnabled.value = value == true;
                             },
-                            title: const Text('Torrent 自动管理模式'),
+                            title: Text('Torrent 自动管理模式', style: TextStyle(color: shadColorScheme.foreground)),
                           ),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text('当分类修改时'),
+                                Text('当分类修改时', style: TextStyle(color: shadColorScheme.foreground)),
                                 DropdownButton(
                                     isDense: true,
                                     value: categoryChangedTmmEnabled.value,
-                                    items: const [
+                                    items: [
                                       DropdownMenuItem(
                                           value: true,
                                           child: Text(
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                              ),
+                                              style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                               '重新定位')),
                                       DropdownMenuItem(
                                           value: false,
                                           child: Text(
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                              ),
+                                              style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                               '切换手动')),
                                     ],
                                     onChanged: (value) {
@@ -3568,24 +3589,20 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text('当默认保存路径修改'),
+                                Text('当默认保存路径修改', style: TextStyle(color: shadColorScheme.foreground)),
                                 DropdownButton(
                                     isDense: true,
                                     value: savePathChangedTmmEnabled.value,
-                                    items: const [
+                                    items: [
                                       DropdownMenuItem(
                                           value: true,
                                           child: Text(
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                              ),
+                                              style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                               '重新定位')),
                                       DropdownMenuItem(
                                           value: false,
                                           child: Text(
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                              ),
+                                              style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                               '切换手动')),
                                     ],
                                     onChanged: (value) {
@@ -3599,24 +3616,20 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text('当分类保存路径修改'),
+                                Text('当分类保存路径修改', style: TextStyle(color: shadColorScheme.foreground)),
                                 DropdownButton(
                                     isDense: true,
                                     value: torrentChangedTmmEnabled.value,
-                                    items: const [
+                                    items: [
                                       DropdownMenuItem(
                                           value: true,
                                           child: Text(
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                              ),
+                                              style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                               '重新定位')),
                                       DropdownMenuItem(
                                           value: false,
                                           child: Text(
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                              ),
+                                              style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                               '切换手动')),
                                     ],
                                     onChanged: (value) {
@@ -3635,7 +3648,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                             onChanged: (value) {
                               tempPathEnabled.value = value == true;
                             },
-                            title: const Text('保存未完成的 torrent 到'),
+                            title: Text('保存未完成的 torrent 到', style: TextStyle(color: shadColorScheme.foreground)),
                           ),
                           if (tempPathEnabled.value)
                             CustomTextField(
@@ -3648,7 +3661,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                             onChanged: (value) {
                               exportDirEnable.value = value == true;
                             },
-                            title: const Text('复制 .torrent 文件到：'),
+                            title: Text('复制 .torrent 文件到：', style: TextStyle(color: shadColorScheme.foreground)),
                           ),
                           if (exportDirEnable.value)
                             CustomTextField(
@@ -3661,7 +3674,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                             onChanged: (value) {
                               exportDirFinEnable.value = value == true;
                             },
-                            title: const Text('复制下载完成的 .torrent 文件到'),
+                            title: Text('复制下载完成的 .torrent 文件到', style: TextStyle(color: shadColorScheme.foreground)),
                           ),
                           if (exportDirFinEnable.value)
                             CustomTextField(
@@ -3680,32 +3693,23 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('下载连接协议'),
+                          Text('下载连接协议', style: TextStyle(color: shadColorScheme.foreground)),
                           DropdownButton(
                               isDense: true,
                               value: bittorrentProtocol.value,
-                              items: const [
+                              items: [
                                 DropdownMenuItem(
                                     value: 0,
                                     child: Text(
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                        ),
-                                        'TCP和UTP')),
+                                        style: TextStyle(fontSize: 14, color: shadColorScheme.foreground), 'TCP和UTP')),
                                 DropdownMenuItem(
                                     value: 1,
-                                    child: Text(
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                        ),
-                                        'TCP')),
+                                    child:
+                                        Text(style: TextStyle(fontSize: 14, color: shadColorScheme.foreground), 'TCP')),
                                 DropdownMenuItem(
                                     value: 2,
-                                    child: Text(
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                        ),
-                                        'UTP')),
+                                    child:
+                                        Text(style: TextStyle(fontSize: 14, color: shadColorScheme.foreground), 'UTP')),
                               ],
                               onChanged: (value) {
                                 bittorrentProtocol.value = value!;
@@ -3732,7 +3736,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                       onPressed: () {
                                         listenPortController.text = (10000 + Random().nextInt(55535)).toString();
                                       },
-                                      child: const Text('随机'))
+                                      child: Text('随机', style: TextStyle(color: shadColorScheme.foreground)))
                                 ],
                               ),
                             ),
@@ -3742,7 +3746,8 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 upnp.value = value == true;
                               },
-                              title: const Text('使用我的路由器的 UPnP / NAT-PMP 功能来转发端口'),
+                              title: Text('使用我的路由器的 UPnP / NAT-PMP 功能来转发端口',
+                                  style: TextStyle(color: shadColorScheme.foreground)),
                             ),
                             CheckboxListTile(
                               dense: true,
@@ -3750,7 +3755,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 randomPort.value = value == true;
                               },
-                              title: const Text('使用随机端口'),
+                              title: Text('使用随机端口', style: TextStyle(color: shadColorScheme.foreground)),
                             ),
                           ],
                         ),
@@ -3766,8 +3771,9 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 maxConnecEnabled.value = value == true;
                               },
-                              title: const Text(
+                              title: Text(
                                 '全局最大连接数',
+                                style: TextStyle(color: shadColorScheme.foreground),
                               ),
                             ),
                             if (maxConnecEnabled.value)
@@ -3782,7 +3788,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 maxConnecPerTorrentEnabled.value = value == true;
                               },
-                              title: const Text('每 torrent 最大连接数'),
+                              title: Text('每 torrent 最大连接数', style: TextStyle(color: shadColorScheme.foreground)),
                             ),
                             if (maxConnecPerTorrentEnabled.value)
                               CustomTextField(
@@ -3797,7 +3803,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 maxUploadsEnabled.value = value == true;
                               },
-                              title: const Text('全局上传窗口数上限'),
+                              title: Text('全局上传窗口数上限', style: TextStyle(color: shadColorScheme.foreground)),
                             ),
                             if (maxUploadsEnabled.value)
                               CustomTextField(controller: maxUploadsController, labelText: '全局上传窗口数上限'),
@@ -3807,7 +3813,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 maxUploadsPerTorrentEnabled.value = value == true;
                               },
-                              title: const Text('每个 torrent 上传窗口数上限'),
+                              title: Text('每个 torrent 上传窗口数上限', style: TextStyle(color: shadColorScheme.foreground)),
                             ),
                             if (maxUploadsPerTorrentEnabled.value)
                               CustomTextField(
@@ -3824,69 +3830,53 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text('代理类型'),
+                                Text('代理类型', style: TextStyle(color: shadColorScheme.foreground)),
                                 DropdownButton(
                                     isDense: true,
                                     value: proxyType.value,
                                     items: [
-                                      if (downloader.prefs.version.compareTo('2.5.1') > 0) ...const [
+                                      if (downloader.prefs.version.compareTo('2.5.1') > 0) ...[
                                         DropdownMenuItem(
                                             value: 'None',
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 '(无)')),
                                         DropdownMenuItem(
                                             value: 'SOCKS4',
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 'SOCKS4')),
                                         DropdownMenuItem(
                                             value: 'SOCKS5',
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 'SOCKS5')),
                                         DropdownMenuItem(
                                             value: 'HTTP',
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 'HTTP')),
                                       ],
-                                      if (downloader.prefs.version.compareTo('2.5.1') < 0) ...const [
+                                      if (downloader.prefs.version.compareTo('2.5.1') < 0) ...[
                                         DropdownMenuItem(
                                             value: 0,
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 '(无)')),
                                         DropdownMenuItem(
                                             value: 1,
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 'SOCKS4')),
                                         DropdownMenuItem(
                                             value: 2,
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 'SOCKS5')),
                                         DropdownMenuItem(
                                             value: 3,
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 'HTTP')),
                                       ],
                                     ],
@@ -3912,7 +3902,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                     onChanged: (value) {
                                       proxyPeerConnections.value = value == true;
                                     },
-                                    title: const Text('使用代理服务器进行用户连接'),
+                                    title: Text('使用代理服务器进行用户连接', style: TextStyle(color: shadColorScheme.foreground)),
                                   ),
                                   CheckboxListTile(
                                     dense: true,
@@ -3920,7 +3910,8 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                     onChanged: (value) {
                                       proxyTorrentsOnly.value = value == true;
                                     },
-                                    title: const Text('Use proxy only for torrents'),
+                                    title: Text('Use proxy only for torrents',
+                                        style: TextStyle(color: shadColorScheme.foreground)),
                                   ),
                                   CheckboxListTile(
                                     dense: true,
@@ -3928,7 +3919,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                     onChanged: (value) {
                                       proxyHostnameLookup.value = value == true;
                                     },
-                                    title: const Text('使用代理进行主机名查询'),
+                                    title: Text('使用代理进行主机名查询', style: TextStyle(color: shadColorScheme.foreground)),
                                   ),
                                   CheckboxListTile(
                                     dense: true,
@@ -3936,7 +3927,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                     onChanged: (value) {
                                       proxyAuthEnabled.value = value == true;
                                     },
-                                    title: const Text('验证'),
+                                    title: Text('验证', style: TextStyle(color: shadColorScheme.foreground)),
                                   ),
                                   if (proxyAuthEnabled.value)
                                     Column(
@@ -3955,14 +3946,14 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                       child: Obx(() {
                         return Column(
                           children: [
-                            const Text('IP 过滤'),
+                            Text('IP 过滤', style: TextStyle(color: shadColorScheme.foreground)),
                             CheckboxListTile(
                               dense: true,
                               value: ipFilterEnabled.value,
                               onChanged: (value) {
                                 ipFilterEnabled.value = value == true;
                               },
-                              title: const Text('开启过滤规则'),
+                              title: Text('开启过滤规则', style: TextStyle(color: shadColorScheme.foreground)),
                             ),
                             if (ipFilterEnabled.value)
                               Column(
@@ -3977,7 +3968,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                     onChanged: (value) {
                                       ipFilterTrackers.value = value == true;
                                     },
-                                    title: const Text('开启过滤规则'),
+                                    title: Text('开启过滤规则', style: TextStyle(color: shadColorScheme.foreground)),
                                   ),
                                   CustomTextField(
                                     controller: bannedIPsController,
@@ -3997,7 +3988,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                     CustomCard(
                       child: Column(
                         children: [
-                          const Text('全局速度限制(0 为无限制)'),
+                          Text('全局速度限制(0 为无限制)', style: TextStyle(color: shadColorScheme.foreground)),
                           CustomTextField(
                             controller: upLimitController,
                             labelText: '上传(KiB/s)',
@@ -4013,7 +4004,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                       return CustomCard(
                         child: Column(
                           children: [
-                            const Text('备用速度限制(0 为无限制)'),
+                            Text('备用速度限制(0 为无限制)', style: TextStyle(color: shadColorScheme.foreground)),
                             CustomTextField(
                               controller: altUpLimitController,
                               labelText: '上传(KiB/s)',
@@ -4028,7 +4019,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 schedulerEnabled.value = value == true;
                               },
-                              title: const Text('计划备用速度限制的启用时间'),
+                              title: Text('计划备用速度限制的启用时间', style: TextStyle(color: shadColorScheme.foreground)),
                             ),
                             if (schedulerEnabled.value)
                               Column(
@@ -4047,76 +4038,56 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                       child: DropdownButton(
                                           isDense: true,
                                           value: schedulerDays.value,
-                                          items: const [
+                                          items: [
                                             DropdownMenuItem(
                                                 value: 0,
                                                 child: Text(
-                                                    style: TextStyle(
-                                                      fontSize: 14,
-                                                    ),
+                                                    style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                     '每天')),
                                             DropdownMenuItem(
                                                 value: 1,
                                                 child: Text(
-                                                    style: TextStyle(
-                                                      fontSize: 14,
-                                                    ),
+                                                    style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                     '工作日')),
                                             DropdownMenuItem(
                                                 value: 2,
                                                 child: Text(
-                                                    style: TextStyle(
-                                                      fontSize: 14,
-                                                    ),
+                                                    style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                     '周末')),
                                             DropdownMenuItem(
                                                 value: 3,
                                                 child: Text(
-                                                    style: TextStyle(
-                                                      fontSize: 14,
-                                                    ),
+                                                    style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                     '周一')),
                                             DropdownMenuItem(
                                                 value: 4,
                                                 child: Text(
-                                                    style: TextStyle(
-                                                      fontSize: 14,
-                                                    ),
+                                                    style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                     '周二')),
                                             DropdownMenuItem(
                                                 value: 5,
                                                 child: Text(
-                                                    style: TextStyle(
-                                                      fontSize: 14,
-                                                    ),
+                                                    style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                     '周三')),
                                             DropdownMenuItem(
                                                 value: 6,
                                                 child: Text(
-                                                    style: TextStyle(
-                                                      fontSize: 14,
-                                                    ),
+                                                    style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                     '周四')),
                                             DropdownMenuItem(
                                                 value: 7,
                                                 child: Text(
-                                                    style: TextStyle(
-                                                      fontSize: 14,
-                                                    ),
+                                                    style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                     '周五')),
                                             DropdownMenuItem(
                                                 value: 8,
                                                 child: Text(
-                                                    style: TextStyle(
-                                                      fontSize: 14,
-                                                    ),
+                                                    style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                     '周六')),
                                             DropdownMenuItem(
                                                 value: 9,
                                                 child: Text(
-                                                    style: TextStyle(
-                                                      fontSize: 14,
-                                                    ),
+                                                    style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                     '周日')),
                                           ],
                                           onChanged: (value) {
@@ -4140,7 +4111,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                             onChanged: (value) {
                               limitUtpRate.value = value == true;
                             },
-                            title: const Text('对 µTP 协议进行速度限制'),
+                            title: Text('对 µTP 协议进行速度限制', style: TextStyle(color: shadColorScheme.foreground)),
                           ),
                           CheckboxListTile(
                             dense: true,
@@ -4148,7 +4119,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                             onChanged: (value) {
                               limitTcpOverhead.value = value == true;
                             },
-                            title: const Text('对传送总开销进行速度限制'),
+                            title: Text('对传送总开销进行速度限制', style: TextStyle(color: shadColorScheme.foreground)),
                           ),
                           CheckboxListTile(
                             dense: true,
@@ -4156,7 +4127,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                             onChanged: (value) {
                               limitLanPeers.value = value == true;
                             },
-                            title: const Text('对本地网络用户进行速度限制'),
+                            title: Text('对本地网络用户进行速度限制', style: TextStyle(color: shadColorScheme.foreground)),
                           ),
                         ],
                       ));
@@ -4175,7 +4146,8 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 dht.value = value == true;
                               },
-                              title: const Text('启用 DHT (去中心化网络) 以找到更多用户'),
+                              title:
+                                  Text('启用 DHT (去中心化网络) 以找到更多用户', style: TextStyle(color: shadColorScheme.foreground)),
                             ),
                             CheckboxListTile(
                               dense: true,
@@ -4183,7 +4155,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 pex.value = value == true;
                               },
-                              title: const Text('启用用户交换 (PeX) 以找到更多用户'),
+                              title: Text('启用用户交换 (PeX) 以找到更多用户', style: TextStyle(color: shadColorScheme.foreground)),
                             ),
                             CheckboxListTile(
                               dense: true,
@@ -4191,38 +4163,32 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 lsd.value = value == true;
                               },
-                              title: const Text('启用本地用户发现以找到更多用户'),
+                              title: Text('启用本地用户发现以找到更多用户', style: TextStyle(color: shadColorScheme.foreground)),
                             ),
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text('加密模式'),
+                                  Text('加密模式', style: TextStyle(color: shadColorScheme.foreground)),
                                   DropdownButton(
                                       isDense: true,
                                       value: encryption.value,
-                                      items: const [
+                                      items: [
                                         DropdownMenuItem(
                                             value: 0,
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 '允许加密')),
                                         DropdownMenuItem(
                                             value: 1,
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 '强制加密')),
                                         DropdownMenuItem(
                                             value: 2,
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 '禁用加密')),
                                       ],
                                       onChanged: (value) {
@@ -4237,7 +4203,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 anonymousMode.value = value == true;
                               },
-                              title: const Text('启用匿名模式'),
+                              title: Text('启用匿名模式', style: TextStyle(color: shadColorScheme.foreground)),
                             ),
                           ],
                         ),
@@ -4259,7 +4225,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                             onChanged: (value) {
                               queueingEnabled.value = value == true;
                             },
-                            title: const Text('Torrent 排队'),
+                            title: Text('Torrent 排队', style: TextStyle(color: shadColorScheme.foreground)),
                           ),
                           if (queueingEnabled.value)
                             Column(
@@ -4282,7 +4248,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                   onChanged: (value) {
                                     dontCountSlowTorrents.value = value == true;
                                   },
-                                  title: const Text('慢速 torrent 不计入限制内'),
+                                  title: Text('慢速 torrent 不计入限制内', style: TextStyle(color: shadColorScheme.foreground)),
                                 ),
                                 if (dontCountSlowTorrents.value)
                                   Column(
@@ -4310,14 +4276,14 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                       return CustomCard(
                           child: Column(
                         children: [
-                          const Text('做种限制'),
+                          Text('做种限制', style: TextStyle(color: shadColorScheme.foreground)),
                           CheckboxListTile(
                             dense: true,
                             value: maxRatioEnabled.value,
                             onChanged: (value) {
                               maxRatioEnabled.value = value == true;
                             },
-                            title: const Text('当分享率达到'),
+                            title: Text('当分享率达到', style: TextStyle(color: shadColorScheme.foreground)),
                           ),
                           if (maxRatioEnabled.value)
                             CustomNumberField(
@@ -4330,7 +4296,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                             onChanged: (value) {
                               maxSeedingTimeEnabled.value = value == true;
                             },
-                            title: const Text('当做种时间达到'),
+                            title: Text('当做种时间达到', style: TextStyle(color: shadColorScheme.foreground)),
                           ),
                           if (maxSeedingTimeEnabled.value)
                             CustomNumberField(
@@ -4347,38 +4313,30 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text('达到做种限制时的操作'),
+                                    Text('达到做种限制时的操作', style: TextStyle(color: shadColorScheme.foreground)),
                                     DropdownButton(
                                         isDense: true,
                                         value: maxRatioAct.value,
-                                        items: const [
+                                        items: [
                                           DropdownMenuItem(
                                               value: 0,
                                               child: Text(
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                  ),
+                                                  style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                   '暂停 torrent')),
                                           DropdownMenuItem(
                                               value: 1,
                                               child: Text(
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                  ),
+                                                  style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                   '删除 torrent')),
                                           DropdownMenuItem(
                                               value: 2,
                                               child: Text(
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                  ),
+                                                  style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                   '删除 torrent 及所属文件')),
                                           DropdownMenuItem(
                                               value: 3,
                                               child: Text(
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                  ),
+                                                  style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                   '为 torrent 启用超级做种')),
                                         ],
                                         onChanged: (value) {}),
@@ -4399,7 +4357,8 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 addTrackersEnabled.value = value == true;
                               },
-                              title: const Text('自动添加tracker到新的 torrent'),
+                              title:
+                                  Text('自动添加tracker到新的 torrent', style: TextStyle(color: shadColorScheme.foreground)),
                             ),
                             if (addTrackersEnabled.value)
                               CustomTextField(
@@ -4419,14 +4378,14 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                       return CustomCard(
                           child: Column(
                         children: [
-                          const Text('RSS'),
+                          Text('RSS', style: TextStyle(color: shadColorScheme.foreground)),
                           CheckboxListTile(
                             dense: true,
                             value: rssProcessingEnabled.value,
                             onChanged: (value) {
                               rssProcessingEnabled.value = value == true;
                             },
-                            title: const Text('启用获取 RSS 订阅'),
+                            title: Text('启用获取 RSS 订阅', style: TextStyle(color: shadColorScheme.foreground)),
                           ),
                           if (rssProcessingEnabled.value)
                             Column(
@@ -4453,7 +4412,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                           onChanged: (value) {
                             rssAutoDownloadingEnabled.value = value == true;
                           },
-                          title: const Text('启用 RSS Torrent 自动下载'),
+                          title: Text('启用 RSS Torrent 自动下载', style: TextStyle(color: shadColorScheme.foreground)),
                         ),
                       ]));
                     }),
@@ -4461,14 +4420,14 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                       child: Obx(() {
                         return Column(
                           children: [
-                            const Text('RSS 智能剧集过滤器'),
+                            Text('RSS 智能剧集过滤器', style: TextStyle(color: shadColorScheme.foreground)),
                             CheckboxListTile(
                               dense: true,
                               value: rssDownloadRepackProperEpisodes.value,
                               onChanged: (value) {
                                 rssDownloadRepackProperEpisodes.value = value == true;
                               },
-                              title: const Text('下载 REPACK/PROPER 版剧集'),
+                              title: Text('下载 REPACK/PROPER 版剧集', style: TextStyle(color: shadColorScheme.foreground)),
                             ),
                             if (rssDownloadRepackProperEpisodes.value)
                               CustomTextField(
@@ -4491,16 +4450,20 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text('用户界面语言'),
+                              Text('用户界面语言', style: TextStyle(color: shadColorScheme.foreground)),
                               DropdownButton(
                                   isDense: true,
                                   value: locale.value,
                                   style: const TextStyle(
                                     fontSize: 14,
                                   ),
-                                  items: const [
-                                    DropdownMenuItem(value: 'zh_CN', child: Text('简体中文')),
-                                    DropdownMenuItem(value: 'en', child: Text('English')),
+                                  items: [
+                                    DropdownMenuItem(
+                                        value: 'zh_CN',
+                                        child: Text('简体中文', style: TextStyle(color: shadColorScheme.foreground))),
+                                    DropdownMenuItem(
+                                        value: 'en',
+                                        child: Text('English', style: TextStyle(color: shadColorScheme.foreground))),
                                   ],
                                   onChanged: (value) {
                                     locale.value = value!;
@@ -4517,7 +4480,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                           onChanged: (value) {
                             performanceWarning.value = value == true;
                           },
-                          title: const Text('记录性能警报'),
+                          title: Text('记录性能警报', style: TextStyle(color: shadColorScheme.foreground)),
                         );
                       }),
                     ),
@@ -4537,7 +4500,8 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                           onChanged: (value) {
                             webUiUpnp.value = value == true;
                           },
-                          title: const Text('使用我的路由器的 UPnP / NAT-PMP 功能来转发端口'),
+                          title: Text('使用我的路由器的 UPnP / NAT-PMP 功能来转发端口',
+                              style: TextStyle(color: shadColorScheme.foreground)),
                         ),
                         CheckboxListTile(
                           dense: true,
@@ -4545,7 +4509,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                           onChanged: (value) {
                             useHttps.value = value == true;
                           },
-                          title: const Text('使用 HTTPS 而不是 HTTP'),
+                          title: Text('使用 HTTPS 而不是 HTTP', style: TextStyle(color: shadColorScheme.foreground)),
                         ),
                         if (useHttps.value)
                           Column(
@@ -4578,7 +4542,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                           onChanged: (value) {
                             bypassLocalAuth.value = value == true;
                           },
-                          title: const Text('对本地主机上的客户端跳过身份验证'),
+                          title: Text('对本地主机上的客户端跳过身份验证', style: TextStyle(color: shadColorScheme.foreground)),
                         ),
                         CheckboxListTile(
                           dense: true,
@@ -4586,7 +4550,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                           onChanged: (value) {
                             bypassAuthSubnetWhitelistEnabled.value = value == true;
                           },
-                          title: const Text('对 IP 子网白名单中的客户端跳过身份验证'),
+                          title: Text('对 IP 子网白名单中的客户端跳过身份验证', style: TextStyle(color: shadColorScheme.foreground)),
                         ),
                         if (bypassAuthSubnetWhitelistEnabled.value)
                           CustomTextField(
@@ -4617,7 +4581,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                             onChanged: (value) {
                               alternativeWebuiEnabled.value = value == true;
                             },
-                            title: const Text('使用备用 Web UI'),
+                            title: Text('使用备用 Web UI', style: TextStyle(color: shadColorScheme.foreground)),
                           ),
                           if (alternativeWebuiEnabled.value)
                             CustomTextField(
@@ -4636,7 +4600,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                             onChanged: (value) {
                               webUiClickjackingProtectionEnabled.value = value == true;
                             },
-                            title: const Text('启用 “点击劫持” 保护'),
+                            title: Text('启用 “点击劫持” 保护', style: TextStyle(color: shadColorScheme.foreground)),
                           ),
                           CheckboxListTile(
                             dense: true,
@@ -4644,7 +4608,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                             onChanged: (value) {
                               webUiCsrfProtectionEnabled.value = value == true;
                             },
-                            title: const Text('启用跨站请求伪造 (CSRF) 保护'),
+                            title: Text('启用跨站请求伪造 (CSRF) 保护', style: TextStyle(color: shadColorScheme.foreground)),
                           ),
                           CheckboxListTile(
                             dense: true,
@@ -4653,7 +4617,8 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                             onChanged: (value) {
                               webUiSecureCookieEnabled.value = value == true;
                             },
-                            title: const Text('启用 cookie 安全标志（需要 HTTPS）'),
+                            title:
+                                Text('启用 cookie 安全标志（需要 HTTPS）', style: TextStyle(color: shadColorScheme.foreground)),
                           ),
                           CheckboxListTile(
                             dense: true,
@@ -4661,7 +4626,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                             onChanged: (value) {
                               webUiHostHeaderValidationEnabled.value = value == true;
                             },
-                            title: const Text('启用 Host header 属性验证'),
+                            title: Text('启用 Host header 属性验证', style: TextStyle(color: shadColorScheme.foreground)),
                           ),
                           if (webUiHostHeaderValidationEnabled.value)
                             CustomTextField(
@@ -4682,7 +4647,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                             onChanged: (value) {
                               webUiUseCustomHttpHeadersEnabled.value = value == true;
                             },
-                            title: const Text('添加自定义 HTTP 头字段'),
+                            title: Text('添加自定义 HTTP 头字段', style: TextStyle(color: shadColorScheme.foreground)),
                           ),
                           if (webUiUseCustomHttpHeadersEnabled.value)
                             CustomTextField(
@@ -4702,7 +4667,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                             onChanged: (value) {
                               webUiReverseProxyEnabled.value = value == true;
                             },
-                            title: const Text('启用反向代理支持'),
+                            title: Text('启用反向代理支持', style: TextStyle(color: shadColorScheme.foreground)),
                           ),
                           if (webUiReverseProxyEnabled.value)
                             CustomTextField(
@@ -4721,7 +4686,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                             onChanged: (value) {
                               dyndnsEnabled.value = value == true;
                             },
-                            title: const Text('更新我的动态域名'),
+                            title: Text('更新我的动态域名', style: TextStyle(color: shadColorScheme.foreground)),
                           ),
                           if (dyndnsEnabled.value)
                             Column(
@@ -4731,24 +4696,20 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      const Text('域名提供商'),
+                                      Text('域名提供商', style: TextStyle(color: shadColorScheme.foreground)),
                                       DropdownButton(
                                           isDense: true,
                                           value: dyndnsService.value,
-                                          items: const [
+                                          items: [
                                             DropdownMenuItem(
                                                 value: 0,
                                                 child: Text(
-                                                    style: TextStyle(
-                                                      fontSize: 14,
-                                                    ),
+                                                    style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                     'DynDNS')),
                                             DropdownMenuItem(
                                                 value: 1,
                                                 child: Text(
-                                                    style: TextStyle(
-                                                      fontSize: 14,
-                                                    ),
+                                                    style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                     'NO-IP')),
                                           ],
                                           onChanged: (value) {
@@ -4781,31 +4742,30 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                     CustomCard(
                       child: Obx(() {
                         return Column(children: [
-                          const Text('qBittorrent 相关'),
+                          Text(
+                            'qBittorrent 相关',
+                            style: TextStyle(color: shadColorScheme.foreground),
+                          ),
                           if (resumeDataStorageType.value.isNotEmpty)
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text('恢复数据存储(需重启)'),
+                                  Text('恢复数据存储(需重启)', style: TextStyle(color: shadColorScheme.foreground)),
                                   DropdownButton(
                                       isDense: true,
                                       value: resumeDataStorageType.value,
-                                      items: const [
+                                      items: [
                                         DropdownMenuItem(
                                             value: 'Legacy',
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 '快速恢复文件')),
                                         DropdownMenuItem(
                                             value: 'SQLite',
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 'SQLite 数据库')),
                                       ],
                                       onChanged: (value) {
@@ -4878,7 +4838,10 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                             onChanged: (value) {
                               recheckCompletedTorrents.value = value == true;
                             },
-                            title: const Text('完成后重新校验 Torrent'),
+                            title: Text(
+                              '完成后重新校验 Torrent',
+                              style: TextStyle(color: shadColorScheme.foreground),
+                            ),
                           ),
                           CustomTextField(
                             controller: refreshIntervalController,
@@ -4898,7 +4861,10 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                             onChanged: (value) {
                               reannounceWhenAddressChanged.value = value == true;
                             },
-                            title: const Text('当 IP 或端口更改时，重新通知所有 trackers'),
+                            title: Text(
+                              '当 IP 或端口更改时，重新通知所有 trackers',
+                              style: TextStyle(color: shadColorScheme.foreground),
+                            ),
                           ),
                           CheckboxListTile(
                             dense: true,
@@ -4906,7 +4872,10 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                             onChanged: (value) {
                               enableEmbeddedTracker.value = value == true;
                             },
-                            title: const Text('启用内置 Tracker'),
+                            title: Text(
+                              '启用内置 Tracker',
+                              style: TextStyle(color: shadColorScheme.foreground),
+                            ),
                           ),
                           if (enableEmbeddedTracker.value == true)
                             Column(
@@ -4921,7 +4890,10 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                   onChanged: (value) {
                                     embeddedTrackerPortForwarding.value = value == true;
                                   },
-                                  title: const Text('对嵌入的 tracker 启用端口转发'),
+                                  title: Text(
+                                    '对嵌入的 tracker 启用端口转发',
+                                    style: TextStyle(color: shadColorScheme.foreground),
+                                  ),
                                 ),
                               ],
                             ),
@@ -4966,31 +4938,28 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text('磁盘 IO 类型（需要重启）'),
+                                  Text(
+                                    '磁盘 IO 类型（需要重启）',
+                                    style: TextStyle(color: shadColorScheme.foreground),
+                                  ),
                                   DropdownButton(
                                       isDense: true,
                                       value: diskIoType.value,
-                                      items: const [
+                                      items: [
                                         DropdownMenuItem(
                                             value: 0,
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 ' 默认')),
                                         DropdownMenuItem(
                                             value: 1,
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 '内存映射文件')),
                                         DropdownMenuItem(
                                             value: 2,
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 '遵循 POSIX')),
                                       ],
                                       onChanged: (value) {
@@ -5004,24 +4973,23 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text('磁盘 IO 读取模式'),
+                                  Text(
+                                    '磁盘 IO 读取模式',
+                                    style: TextStyle(color: shadColorScheme.foreground),
+                                  ),
                                   DropdownButton(
                                       isDense: true,
                                       value: diskIoReadMode.value,
-                                      items: const [
+                                      items: [
                                         DropdownMenuItem(
                                             value: 0,
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 '禁用操作系统缓存')),
                                         DropdownMenuItem(
                                             value: 1,
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 '启用操作系统缓存')),
                                       ],
                                       onChanged: (value) {
@@ -5035,31 +5003,25 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text('磁盘 IO 写入模式'),
+                                  Text('磁盘 IO 写入模式', style: TextStyle(color: shadColorScheme.foreground)),
                                   DropdownButton(
                                       isDense: true,
                                       value: diskIoWriteMode.value,
-                                      items: const [
+                                      items: [
                                         DropdownMenuItem(
                                             value: 0,
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 '禁用操作系统缓存')),
                                         DropdownMenuItem(
                                             value: 1,
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 '启用操作系统缓存')),
                                         DropdownMenuItem(
                                             value: 2,
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 '连续写入')),
                                       ],
                                       onChanged: (value) {
@@ -5074,7 +5036,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 enableCoalesceReadWrite.value = value!;
                               },
-                              title: const Text('合并读写'),
+                              title: Text('合并读写', style: TextStyle(color: shadColorScheme.foreground)),
                             ),
                             CheckboxListTile(
                               dense: true,
@@ -5082,7 +5044,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 enablePieceExtentAffinity.value = value == true;
                               },
-                              title: const Text('启用相连文件块下载模式'),
+                              title: Text('启用相连文件块下载模式', style: TextStyle(color: shadColorScheme.foreground)),
                             ),
                             CheckboxListTile(
                               dense: true,
@@ -5090,7 +5052,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 enableUploadSuggestions.value = value!;
                               },
-                              title: const Text('发送分块上传建议'),
+                              title: Text('发送分块上传建议', style: TextStyle(color: shadColorScheme.foreground)),
                             ),
                             CustomTextField(
                               controller: sendBufferWatermarkController,
@@ -5133,24 +5095,20 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text('μTP-TCP 混合模式策略'),
+                                  Text('μTP-TCP 混合模式策略', style: TextStyle(color: shadColorScheme.foreground)),
                                   DropdownButton(
                                       isDense: true,
                                       value: utpTcpMixedMode.value,
-                                      items: const [
+                                      items: [
                                         DropdownMenuItem(
                                             value: 0,
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 '优先使用TCP')),
                                         DropdownMenuItem(
                                             value: 1,
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 '按用户比重')),
                                       ],
                                       onChanged: (value) {
@@ -5165,7 +5123,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 idnSupportEnabled.value = value!;
                               },
-                              title: const Text('支持国际化域名（IDN）'),
+                              title: Text('支持国际化域名（IDN）', style: TextStyle(color: shadColorScheme.foreground)),
                             ),
                             CheckboxListTile(
                               dense: true,
@@ -5173,7 +5131,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 enableMultiConnectionsFromSameIp.value = value == true;
                               },
-                              title: const Text('允许来自同一 IP 地址的多个连接'),
+                              title: Text('允许来自同一 IP 地址的多个连接', style: TextStyle(color: shadColorScheme.foreground)),
                             ),
                             CheckboxListTile(
                               dense: true,
@@ -5181,7 +5139,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 validateHttpsTrackerCertificate.value = value == true;
                               },
-                              title: const Text('验证 HTTPS tracker 证书'),
+                              title: Text('验证 HTTPS tracker 证书', style: TextStyle(color: shadColorScheme.foreground)),
                             ),
                             CheckboxListTile(
                               dense: true,
@@ -5189,7 +5147,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 ssrfMitigation.value = value == true;
                               },
-                              title: const Text('服务器端请求伪造（SSRF）攻击缓解'),
+                              title: Text('服务器端请求伪造（SSRF）攻击缓解', style: TextStyle(color: shadColorScheme.foreground)),
                             ),
                             CheckboxListTile(
                               dense: true,
@@ -5197,31 +5155,27 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 blockPeersOnPrivilegedPorts.value = value == true;
                               },
-                              title: const Text('禁止连接到特权端口上的 Peer'),
+                              title: Text('禁止连接到特权端口上的 Peer', style: TextStyle(color: shadColorScheme.foreground)),
                             ),
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text('上传窗口策略'),
+                                  Text('上传窗口策略', style: TextStyle(color: shadColorScheme.foreground)),
                                   DropdownButton(
                                       isDense: true,
                                       value: uploadSlotsBehavior.value,
-                                      items: const [
+                                      items: [
                                         DropdownMenuItem(
                                             value: 0,
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 ' 固定窗口数')),
                                         DropdownMenuItem(
                                             value: 1,
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 '基于上传速度')),
                                       ],
                                       onChanged: (value) {
@@ -5235,31 +5189,25 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text('上传连接策略'),
+                                  Text('上传连接策略', style: TextStyle(color: shadColorScheme.foreground)),
                                   DropdownButton(
                                       isDense: true,
                                       value: uploadChokingAlgorithm.value,
-                                      items: const [
+                                      items: [
                                         DropdownMenuItem(
                                             value: 0,
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 '轮流上传')),
                                         DropdownMenuItem(
                                             value: 1,
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 '最快上传')),
                                         DropdownMenuItem(
                                             value: 2,
                                             child: Text(
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                                 ' 反吸血')),
                                       ],
                                       onChanged: (value) {
@@ -5274,7 +5222,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 announceToAllTrackers.value = value == true;
                               },
-                              title: const Text('总是向同级的所有 Tracker 汇报'),
+                              title: Text('总是向同级的所有 Tracker 汇报', style: TextStyle(color: shadColorScheme.foreground)),
                             ),
                             CheckboxListTile(
                               dense: true,
@@ -5282,7 +5230,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               onChanged: (value) {
                                 announceToAllTiers.value = value == true;
                               },
-                              title: const Text('总是向所有等级的 Tracker 汇报'),
+                              title: Text('总是向所有等级的 Tracker 汇报', style: TextStyle(color: shadColorScheme.foreground)),
                             ),
                             CustomTextField(
                               controller: announceIpController,
@@ -5455,7 +5403,6 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
         .map((item) => MetaDataItem(name: item.value, value: pow(2, item.key)))
         .toList());
     RxList<int> daysOfWeekMask = RxList(TransmissionUtils.getEnabledDaysFromAltSpeedTimeDay(altSpeedTimeDay.value));
-    var opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
     Get.bottomSheet(
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
@@ -5472,283 +5419,345 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
           return DefaultTabController(
             length: tabs.length,
             child: Scaffold(
-              backgroundColor: Colors.transparent,
+              backgroundColor: shadColorScheme.background,
               appBar: AppBar(
-                title: const Text('配置选项'),
-                backgroundColor: shadColorScheme.background.withOpacity(opacity),
+                title: Text('配置选项', style: TextStyle(color: shadColorScheme.foreground)),
+                backgroundColor: shadColorScheme.background,
                 bottom: const TabBar(tabs: tabs, isScrollable: true),
               ),
-              body: TabBarView(children: [
-                ListView(
-                  children: [
-                    Obx(() {
-                      return Column(
-                        children: [
-                          CustomTextField(controller: downloadDirController, labelText: '默认保存目录'),
-                          CheckboxListTile(
-                            value: renamePartialFiles.value,
-                            onChanged: (value) {
-                              renamePartialFiles.value = value == true;
-                            },
-                            title: const Text('在未完成的文件名后加上 “.part” 后缀'),
-                          ),
-                          CheckboxListTile(
-                            value: incompleteDirEnabled.value,
-                            onChanged: (value) {
-                              incompleteDirEnabled.value = value == true;
-                            },
-                            title: const Text('启用临时目录'),
-                          ),
-                          if (incompleteDirEnabled.value)
-                            CustomTextField(
-                              controller: incompleteDirController,
-                              labelText: '临时目录',
+              body: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TabBarView(children: [
+                  ListView(
+                    children: [
+                      Obx(() {
+                        return Column(
+                          children: [
+                            CustomTextField(controller: downloadDirController, labelText: '默认保存目录'),
+                            CheckboxListTile(
+                              value: renamePartialFiles.value,
+                              onChanged: (value) {
+                                renamePartialFiles.value = value == true;
+                              },
+                              title:
+                                  Text('在未完成的文件名后加上 “.part” 后缀', style: TextStyle(color: shadColorScheme.foreground)),
                             ),
-                          CheckboxListTile(
-                            value: seedRatioLimited.value,
-                            onChanged: (value) {
-                              seedRatioLimited.value = value == true;
-                            },
-                            title: const Text('默认分享率上限'),
-                          ),
-                          if (seedRatioLimited.value)
-                            CustomTextField(controller: seedRatioLimitController, labelText: '默认分享率上限'),
-                          CheckboxListTile(
-                            value: idleSeedingLimitEnabled.value,
-                            onChanged: (value) {
-                              idleSeedingLimitEnabled.value = value == true;
-                            },
-                            title: const Text('默认停止无流量种子'),
-                          ),
-                          if (idleSeedingLimitEnabled.value)
-                            CustomTextField(controller: idleSeedingLimitController, labelText: '默认停止无流量种子持续时间(分钟)'),
-                          CustomTextField(controller: cacheSizeMbController, labelText: '磁盘缓存大小（MB）'),
-                        ],
-                      );
-                    }),
-                  ],
-                ),
-                ListView(
-                  children: [
-                    Obx(() {
-                      return Column(
-                        children: [
-                          CustomPortField(controller: peerPortController, labelText: '连接端口号'),
-                          ShadButton(size: ShadButtonSize.sm, onPressed: null, child: Text('测试端口')),
-                          CheckboxListTile(
-                            value: peerPortRandomOnStart.value,
-                            onChanged: (value) {
-                              peerPortRandomOnStart.value = value == true;
-                            },
-                            title: const Text('启用随机端口'),
-                          ),
-                          CheckboxListTile(
-                            value: portForwardingEnabled.value,
-                            onChanged: (value) {
-                              portForwardingEnabled.value = value == true;
-                            },
-                            title: const Text('启用端口转发 (UPnP)'),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text('加密'),
-                                DropdownButton(
-                                    isDense: true,
-                                    value: encryption.value,
-                                    items: const [
-                                      DropdownMenuItem(
-                                          value: 'tolerated',
-                                          child: Text(
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                              ),
-                                              '允许加密')),
-                                      DropdownMenuItem(
-                                          value: 'preferred',
-                                          child: Text(
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                              ),
-                                              '优先加密')),
-                                      DropdownMenuItem(
-                                          value: 'required',
-                                          child: Text(
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                              ),
-                                              ' 强制加密')),
-                                    ],
-                                    onChanged: (value) {
-                                      encryption.value = value!;
-                                    }),
-                              ],
+                            CheckboxListTile(
+                              value: incompleteDirEnabled.value,
+                              onChanged: (value) {
+                                incompleteDirEnabled.value = value == true;
+                              },
+                              title: Text(
+                                '启用临时目录',
+                                style: TextStyle(color: shadColorScheme.foreground),
+                              ),
                             ),
-                          ),
-                          CustomTextField(controller: peerLimitGlobalController, labelText: '全局最大链接数'),
-                          CustomTextField(controller: peerLimitPerTorrentController, labelText: '单种最大链接数'),
-                          CheckboxListTile(
-                            value: pexEnabled.value,
-                            onChanged: (value) {
-                              pexEnabled.value = value == true;
-                            },
-                            title: const Text('启用本地用户交换'),
-                          ),
-                          CheckboxListTile(
-                            value: lpdEnabled.value,
-                            onChanged: (value) {
-                              lpdEnabled.value = value == true;
-                            },
-                            title: const Text('对等交换'),
-                          ),
-                          CheckboxListTile(
-                            value: dhtEnabled.value,
-                            onChanged: (value) {
-                              dhtEnabled.value = value == true;
-                            },
-                            title: const Text('启用分布式哈希表 (DHT)'),
-                          ),
-                          CheckboxListTile(
-                            value: blocklistEnabled.value,
-                            onChanged: (value) {
-                              blocklistEnabled.value = value == true;
-                            },
-                            title: const Text('启用黑名单列表:'),
-                          ),
-                          if (blocklistEnabled.value)
-                            Column(
-                              children: [
-                                CustomTextField(controller: blocklistUrlController, labelText: '黑名单列表'),
-                                ShadButton(
+                            if (incompleteDirEnabled.value)
+                              CustomTextField(
+                                controller: incompleteDirController,
+                                labelText: '临时目录',
+                              ),
+                            CheckboxListTile(
+                              value: seedRatioLimited.value,
+                              onChanged: (value) {
+                                seedRatioLimited.value = value == true;
+                              },
+                              title: Text(
+                                '默认分享率上限',
+                                style: TextStyle(color: shadColorScheme.foreground),
+                              ),
+                            ),
+                            if (seedRatioLimited.value)
+                              CustomTextField(controller: seedRatioLimitController, labelText: '默认分享率上限'),
+                            CheckboxListTile(
+                              value: idleSeedingLimitEnabled.value,
+                              onChanged: (value) {
+                                idleSeedingLimitEnabled.value = value == true;
+                              },
+                              title: Text(
+                                '默认停止无流量种子',
+                                style: TextStyle(color: shadColorScheme.foreground),
+                              ),
+                            ),
+                            if (idleSeedingLimitEnabled.value)
+                              CustomTextField(controller: idleSeedingLimitController, labelText: '默认停止无流量种子持续时间(分钟)'),
+                            CustomTextField(controller: cacheSizeMbController, labelText: '磁盘缓存大小（MB）'),
+                          ],
+                        );
+                      }),
+                    ],
+                  ),
+                  ListView(
+                    children: [
+                      Obx(() {
+                        return Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(right: 16.0),
+                              child: Row(
+                                children: [
+                                  Expanded(child: CustomPortField(controller: peerPortController, labelText: '连接端口号')),
+                                  ShadButton.outline(
                                     size: ShadButtonSize.sm,
                                     onPressed: null,
                                     child: Text(
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                        ),
-                                        '更新黑名单【$blocklistSize】')),
-                              ],
+                                      '测试端口',
+                                      style: TextStyle(color: shadColorScheme.foreground),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                        ],
-                      );
-                    })
-                  ],
-                ),
-                Obx(() {
-                  return ListView(
-                    children: [
-                      CheckboxListTile(
-                        value: speedLimitDownEnabled.value,
-                        onChanged: (value) {
-                          speedLimitDownEnabled.value = value == true;
-                        },
-                        title: const Text('最大下载速度 (KB/s):'),
-                      ),
-                      if (speedLimitDownEnabled.value)
-                        Column(
-                          children: [
-                            CustomNumberField(controller: speedLimitDownController, labelText: '正常最大下载速度(KB/s)'),
-                            CustomNumberField(controller: altSpeedDownController, labelText: '备用最大下载速度(KB/s)'),
+                            CheckboxListTile(
+                              value: peerPortRandomOnStart.value,
+                              onChanged: (value) {
+                                peerPortRandomOnStart.value = value == true;
+                              },
+                              title: Text(
+                                '启用随机端口',
+                                style: TextStyle(color: shadColorScheme.foreground),
+                              ),
+                            ),
+                            CheckboxListTile(
+                              value: portForwardingEnabled.value,
+                              onChanged: (value) {
+                                portForwardingEnabled.value = value == true;
+                              },
+                              title: Text(
+                                '启用端口转发 (UPnP)',
+                                style: TextStyle(color: shadColorScheme.foreground),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    '加密',
+                                    style: TextStyle(color: shadColorScheme.foreground),
+                                  ),
+                                  DropdownButton(
+                                      isDense: true,
+                                      value: encryption.value,
+                                      items: [
+                                        DropdownMenuItem(
+                                            value: 'tolerated',
+                                            child: Text(
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                                                '允许加密')),
+                                        DropdownMenuItem(
+                                            value: 'preferred',
+                                            child: Text(
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                                                '优先加密')),
+                                        DropdownMenuItem(
+                                            value: 'required',
+                                            child: Text(
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                                                ' 强制加密')),
+                                      ],
+                                      onChanged: (value) {
+                                        encryption.value = value!;
+                                      }),
+                                ],
+                              ),
+                            ),
+                            CustomTextField(controller: peerLimitGlobalController, labelText: '全局最大链接数'),
+                            CustomTextField(controller: peerLimitPerTorrentController, labelText: '单种最大链接数'),
+                            CheckboxListTile(
+                              value: pexEnabled.value,
+                              onChanged: (value) {
+                                pexEnabled.value = value == true;
+                              },
+                              title: Text(
+                                '启用本地用户交换',
+                                style: TextStyle(color: shadColorScheme.foreground),
+                              ),
+                            ),
+                            CheckboxListTile(
+                              value: lpdEnabled.value,
+                              onChanged: (value) {
+                                lpdEnabled.value = value == true;
+                              },
+                              title: Text(
+                                '对等交换',
+                                style: TextStyle(color: shadColorScheme.foreground),
+                              ),
+                            ),
+                            CheckboxListTile(
+                              value: dhtEnabled.value,
+                              onChanged: (value) {
+                                dhtEnabled.value = value == true;
+                              },
+                              title: Text(
+                                '启用分布式哈希表 (DHT)',
+                                style: TextStyle(color: shadColorScheme.foreground),
+                              ),
+                            ),
+                            CheckboxListTile(
+                              value: blocklistEnabled.value,
+                              onChanged: (value) {
+                                blocklistEnabled.value = value == true;
+                              },
+                              title: Text('启用黑名单列表:', style: TextStyle(color: shadColorScheme.foreground)),
+                            ),
+                            if (blocklistEnabled.value)
+                              Column(
+                                children: [
+                                  CustomTextField(controller: blocklistUrlController, labelText: '黑名单列表'),
+                                  ShadButton(
+                                    size: ShadButtonSize.sm,
+                                    onPressed: null,
+                                    child: Text(
+                                        style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                                        '更新黑名单【$blocklistSize】'),
+                                  ),
+                                ],
+                              ),
                           ],
-                        ),
-                      CheckboxListTile(
-                        value: speedLimitUpEnabled.value,
-                        onChanged: (value) {
-                          speedLimitUpEnabled.value = value == true;
-                        },
-                        title: const Text('最大上传速度 (KB/s):'),
-                      ),
-                      if (speedLimitUpEnabled.value)
-                        Column(
-                          children: [
-                            CustomNumberField(controller: speedLimitUpController, labelText: '正常最大上传速度(KB/s)'),
-                            CustomNumberField(controller: altSpeedUpController, labelText: '备用最大上传速度(KB/s)'),
-                          ],
-                        ),
-                      CheckboxListTile(
-                        value: altSpeedEnabled.value,
-                        onChanged: (value) {
-                          altSpeedEnabled.value = value == true;
-                        },
-                        title: const Text('启用备用带宽'),
-                      ),
-                      CheckboxListTile(
-                        value: altSpeedTimeEnabled.value,
-                        onChanged: (value) {
-                          altSpeedTimeEnabled.value = value == true;
-                        },
-                        title: const Text('自动启用备用带宽设置 (时间段内)'),
-                      ),
-                      if (altSpeedTimeEnabled.value)
-                        Obx(() {
-                          return Column(
-                            children: [
-                              CustomTextField(controller: altSpeedTimeBeginController, labelText: '自动启用备用带宽设置开始时间'),
-                              CustomTextField(controller: altSpeedTimeEndController, labelText: '自动启用备用带宽设置结束时间'),
-                              Text('${altSpeedTimeDay.value}'),
-                              Obx(() {
-                                return Wrap(
-                                  children: [
-                                    ...daysOfWeek.map(
-                                      (item) => CheckboxListTile(
-                                        value: daysOfWeekMask.contains(item.value),
-                                        onChanged: (value) {
-                                          logger_helper.Logger.instance.d(value);
-                                          if (value == true) {
-                                            altSpeedTimeDay.value = (altSpeedTimeDay.value + item.value).toInt();
-                                          } else {
-                                            altSpeedTimeDay.value = (altSpeedTimeDay.value - item.value).toInt();
-                                          }
-                                          daysOfWeekMask.value = TransmissionUtils.getEnabledDaysFromAltSpeedTimeDay(
-                                              altSpeedTimeDay.value);
-                                          logger_helper.Logger.instance.d(daysOfWeekMask);
-                                        },
-                                        title: Text(item.name),
-                                      ),
-                                    )
-                                  ],
-                                );
-                              }),
-                            ],
-                          );
-                        })
+                        );
+                      })
                     ],
-                  );
-                }),
-                Obx(() {
-                  return ListView(children: [
-                    CheckboxListTile(
-                      value: downloadQueueEnabled.value,
-                      onChanged: (value) {
-                        downloadQueueEnabled.value = value == true;
-                      },
-                      title: const Text('启用下载队列，最大同时下载数'),
-                    ),
-                    if (downloadQueueEnabled.value)
-                      CustomTextField(controller: downloadQueueSizeController, labelText: '启用下载队列，最大同时下载数'),
-                    CheckboxListTile(
-                      value: seedQueueEnabled.value,
-                      onChanged: (value) {
-                        seedQueueEnabled.value = value == true;
-                      },
-                      title: const Text('启用上传队列，最大同时上传数'),
-                    ),
-                    if (seedQueueEnabled.value)
-                      CustomTextField(controller: seedQueueSizeController, labelText: '启用上传队列，最大同时上传数'),
-                    CheckboxListTile(
-                      value: queueStalledEnabled.value,
-                      onChanged: (value) {
-                        queueStalledEnabled.value = value == true;
-                      },
-                      title: const Text('种子超过该时间无流量，移出队列'),
-                    ),
-                    if (queueStalledEnabled.value)
-                      CustomTextField(controller: queueStalledMinutesController, labelText: '种子超过该时间无流量，移出队列(分钟)'),
-                  ]);
-                }),
-              ]),
+                  ),
+                  Obx(() {
+                    return ListView(
+                      children: [
+                        CheckboxListTile(
+                          value: speedLimitDownEnabled.value,
+                          onChanged: (value) {
+                            speedLimitDownEnabled.value = value == true;
+                          },
+                          title: Text(
+                            '最大下载速度 (KB/s):',
+                            style: TextStyle(color: shadColorScheme.foreground),
+                          ),
+                        ),
+                        if (speedLimitDownEnabled.value)
+                          Column(
+                            children: [
+                              CustomNumberField(controller: speedLimitDownController, labelText: '正常最大下载速度(KB/s)'),
+                              CustomNumberField(controller: altSpeedDownController, labelText: '备用最大下载速度(KB/s)'),
+                            ],
+                          ),
+                        CheckboxListTile(
+                          value: speedLimitUpEnabled.value,
+                          onChanged: (value) {
+                            speedLimitUpEnabled.value = value == true;
+                          },
+                          title: Text(
+                            '最大上传速度 (KB/s):',
+                            style: TextStyle(color: shadColorScheme.foreground),
+                          ),
+                        ),
+                        if (speedLimitUpEnabled.value)
+                          Column(
+                            children: [
+                              CustomNumberField(controller: speedLimitUpController, labelText: '正常最大上传速度(KB/s)'),
+                              CustomNumberField(controller: altSpeedUpController, labelText: '备用最大上传速度(KB/s)'),
+                            ],
+                          ),
+                        CheckboxListTile(
+                          value: altSpeedEnabled.value,
+                          onChanged: (value) {
+                            altSpeedEnabled.value = value == true;
+                          },
+                          title: Text(
+                            '启用备用带宽',
+                            style: TextStyle(color: shadColorScheme.foreground),
+                          ),
+                        ),
+                        CheckboxListTile(
+                          value: altSpeedTimeEnabled.value,
+                          onChanged: (value) {
+                            altSpeedTimeEnabled.value = value == true;
+                          },
+                          title: Text(
+                            '自动启用备用带宽设置 (时间段内)',
+                            style: TextStyle(color: shadColorScheme.foreground),
+                          ),
+                        ),
+                        if (altSpeedTimeEnabled.value)
+                          Obx(() {
+                            return Column(
+                              children: [
+                                CustomTextField(controller: altSpeedTimeBeginController, labelText: '自动启用备用带宽设置开始时间'),
+                                CustomTextField(controller: altSpeedTimeEndController, labelText: '自动启用备用带宽设置结束时间'),
+                                Text('${altSpeedTimeDay.value}'),
+                                Obx(() {
+                                  return Wrap(
+                                    children: [
+                                      ...daysOfWeek.map(
+                                        (item) => CheckboxListTile(
+                                          value: daysOfWeekMask.contains(item.value),
+                                          onChanged: (value) {
+                                            logger_helper.Logger.instance.d(value);
+                                            if (value == true) {
+                                              altSpeedTimeDay.value = (altSpeedTimeDay.value + item.value).toInt();
+                                            } else {
+                                              altSpeedTimeDay.value = (altSpeedTimeDay.value - item.value).toInt();
+                                            }
+                                            daysOfWeekMask.value = TransmissionUtils.getEnabledDaysFromAltSpeedTimeDay(
+                                                altSpeedTimeDay.value);
+                                            logger_helper.Logger.instance.d(daysOfWeekMask);
+                                          },
+                                          title: Text(
+                                            item.name,
+                                            style: TextStyle(color: shadColorScheme.foreground),
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  );
+                                }),
+                              ],
+                            );
+                          })
+                      ],
+                    );
+                  }),
+                  Obx(() {
+                    return ListView(children: [
+                      CheckboxListTile(
+                        value: downloadQueueEnabled.value,
+                        onChanged: (value) {
+                          downloadQueueEnabled.value = value == true;
+                        },
+                        title: Text(
+                          '启用下载队列，最大同时下载数',
+                          style: TextStyle(color: shadColorScheme.foreground),
+                        ),
+                      ),
+                      if (downloadQueueEnabled.value)
+                        CustomTextField(controller: downloadQueueSizeController, labelText: '启用下载队列，最大同时下载数'),
+                      CheckboxListTile(
+                        value: seedQueueEnabled.value,
+                        onChanged: (value) {
+                          seedQueueEnabled.value = value == true;
+                        },
+                        title: Text(
+                          '启用上传队列，最大同时上传数',
+                          style: TextStyle(color: shadColorScheme.foreground),
+                        ),
+                      ),
+                      if (seedQueueEnabled.value)
+                        CustomTextField(controller: seedQueueSizeController, labelText: '启用上传队列，最大同时上传数'),
+                      CheckboxListTile(
+                        value: queueStalledEnabled.value,
+                        onChanged: (value) {
+                          queueStalledEnabled.value = value == true;
+                        },
+                        title: Text(
+                          '种子超过该时间无流量，移出队列',
+                          style: TextStyle(color: shadColorScheme.foreground),
+                        ),
+                      ),
+                      if (queueStalledEnabled.value)
+                        CustomTextField(controller: queueStalledMinutesController, labelText: '种子超过该时间无流量，移出队列(分钟)'),
+                    ]);
+                  }),
+                ]),
+              ),
               floatingActionButton: ShadIconButton(
                 onPressed: () async {
                   TransmissionConfig prefs = controller.currentPrefs.copyWith(
@@ -5832,7 +5841,9 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
     List<qb.TorrentContents> contents =
         response.data['files'].map<qb.TorrentContents>((item) => qb.TorrentContents.fromJson(item)).toList();
     List<qb.Tracker> trackers = response.data['trackers'].map<qb.Tracker>((item) => qb.Tracker.fromJson(item)).toList();
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.bottomSheet(
+      backgroundColor: shadColorScheme.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(2),
@@ -7639,7 +7650,7 @@ class ShowTorrentWidget extends StatelessWidget {
                 onPressed: (context) async {
                   Get.defaultDialog(
                     title: '确认',
-                    backgroundColor: Colors.white54,
+                    backgroundColor: shadColorScheme.background,
                     radius: 5,
                     titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
                     middleText: '确定要重新校验种子吗？',
@@ -7689,8 +7700,8 @@ class ShowTorrentWidget extends StatelessWidget {
             ],
           ),
           child: InkWell(
-            onTap: () {
-              _openQbTorrentInfoDetail(downloader, torrentInfo, context);
+            onTap: () async {
+              await _openQbTorrentInfoDetail(downloader, torrentInfo, context);
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -7724,15 +7735,11 @@ class ShowTorrentWidget extends StatelessWidget {
                             .firstWhere((element) => element.value == torrentInfo.state,
                                 orElse: () => MetaDataItem(name: "未知状态", value: qb.TorrentState.unknown))
                             .name,
-                        style: const TextStyle(
-                          fontSize: 10,
-                        ),
+                        style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
                       ),
                       Text(
                         FileSizeConvert.parseToFileSize(torrentInfo.size),
-                        style: const TextStyle(
-                          fontSize: 10,
-                        ),
+                        style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
                       ),
                     ],
                   ),
@@ -7745,9 +7752,7 @@ class ShowTorrentWidget extends StatelessWidget {
                           message: torrentInfo.name,
                           child: Text(
                             torrentInfo.name,
-                            style: const TextStyle(
-                              fontSize: 11,
-                            ),
+                            style: TextStyle(fontSize: 11, color: shadColorScheme.foreground),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                           ),
@@ -7755,9 +7760,7 @@ class ShowTorrentWidget extends StatelessWidget {
                       ),
                       Text(
                         torrentInfo.category.isNotEmpty ? torrentInfo.category : '未分类',
-                        style: const TextStyle(
-                          fontSize: 10,
-                        ),
+                        style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
                       ),
                     ],
                   ),
@@ -7776,9 +7779,7 @@ class ShowTorrentWidget extends StatelessWidget {
                                   size: 12,
                                 ),
                                 Text(FileSizeConvert.parseToFileSize(torrentInfo.upSpeed),
-                                    style: const TextStyle(
-                                      fontSize: 10,
-                                    ))
+                                    style: TextStyle(fontSize: 10, color: shadColorScheme.foreground))
                               ],
                             ),
                             Row(
@@ -7788,9 +7789,7 @@ class ShowTorrentWidget extends StatelessWidget {
                                   size: 12,
                                 ),
                                 Text(FileSizeConvert.parseToFileSize(torrentInfo.uploaded),
-                                    style: const TextStyle(
-                                      fontSize: 10,
-                                    ))
+                                    style: TextStyle(fontSize: 10, color: shadColorScheme.foreground))
                               ],
                             ),
                           ],
@@ -7808,9 +7807,7 @@ class ShowTorrentWidget extends StatelessWidget {
                                   size: 12,
                                 ),
                                 Text(FileSizeConvert.parseToFileSize(torrentInfo.dlSpeed),
-                                    style: const TextStyle(
-                                      fontSize: 10,
-                                    ))
+                                    style: TextStyle(fontSize: 10, color: shadColorScheme.foreground))
                               ],
                             ),
                             Row(
@@ -7820,9 +7817,7 @@ class ShowTorrentWidget extends StatelessWidget {
                                   size: 12,
                                 ),
                                 Text(FileSizeConvert.parseToFileSize(torrentInfo.downloaded),
-                                    style: const TextStyle(
-                                      fontSize: 10,
-                                    ))
+                                    style: TextStyle(fontSize: 10, color: shadColorScheme.foreground))
                               ],
                             ),
                           ],
@@ -7841,9 +7836,7 @@ class ShowTorrentWidget extends StatelessWidget {
                                 ),
                                 EllipsisText(
                                   text: formatDuration(torrentInfo.timeActive).toString(),
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                  ),
+                                  style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
                                   maxLines: 1,
                                   ellipsis: '...',
                                 )
@@ -7859,9 +7852,7 @@ class ShowTorrentWidget extends StatelessWidget {
                                   text: DateFormat('yyyy-MM-dd HH:mm:ss')
                                       .format(DateTime.fromMillisecondsSinceEpoch(torrentInfo.addedOn * 1000))
                                       .toString(),
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                  ),
+                                  style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
                                   maxLines: 1,
                                   ellipsis: '...',
                                 )
@@ -7892,6 +7883,7 @@ class ShowTorrentWidget extends StatelessWidget {
       Get.snackbar('获取种子详情失败', response.msg);
       return;
     }
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     List<qb.TorrentContents> contents =
         response.data['files'].map<qb.TorrentContents>((item) => qb.TorrentContents.fromJson(item)).toList();
     List<qb.Tracker> trackers = response.data['trackers'].map<qb.Tracker>((item) => qb.Tracker.fromJson(item)).toList();
@@ -7925,14 +7917,14 @@ class ShowTorrentWidget extends StatelessWidget {
                       width: 52,
                       child: Text(
                         e.name,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: shadColorScheme.foreground),
                       ),
                     ),
                     avatar: e.value.tracker.isNotEmpty
                         ? const Icon(Icons.link, color: Colors.green)
                         : const Icon(Icons.link_off, color: Colors.red),
-                    onPressed: () {
-                      _openQbTorrentInfoDetail(downloader, e.value, context);
+                    onPressed: () async {
+                      await _openQbTorrentInfoDetail(downloader, e.value, context);
                     },
                     onDeleted: () async {
                       RxBool deleteFiles = false.obs;
@@ -7980,7 +7972,6 @@ class ShowTorrentWidget extends StatelessWidget {
             Tab(text: '文件信息'),
             Tab(text: '辅种信息'),
           ];
-          var shadColorScheme = ShadTheme.of(context).colorScheme;
           return DefaultTabController(
             length: tabs.length,
             child: Scaffold(
@@ -8915,7 +8906,7 @@ class ShowTorrentWidget extends StatelessWidget {
                             children: [
                               Text(
                                 FileSizeConvert.parseToFileSize(torrentInfo.totalSize),
-                                style: TextStyle(fontSize: 10, color: shadColorScheme.background),
+                                style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
                               ),
                               SizedBox(
                                 height: 12,
