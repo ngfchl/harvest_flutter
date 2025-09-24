@@ -195,7 +195,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                             spacing: 10,
                             children: [
                               CustomPopup(
-                                backgroundColor: shadColorScheme.background.withOpacity(opacity * 1.2),
+                                backgroundColor: shadColorScheme.background,
                                 barrierColor: Colors.transparent,
                                 contentPadding: EdgeInsets.zero,
                                 content: SizedBox(
@@ -245,7 +245,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                 ),
                               ),
                               CustomPopup(
-                                backgroundColor: shadColorScheme.background.withOpacity(opacity * 1.2),
+                                backgroundColor: shadColorScheme.background,
                                 barrierColor: Colors.transparent,
                                 contentPadding: EdgeInsets.zero,
                                 content: SizedBox(
@@ -473,62 +473,44 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     });
   }
 
-  CustomPopup _buildBottomButtonBarFloat() {
+  Widget _buildBottomButtonBarFloat() {
     var shadColorScheme = ShadTheme.of(context).colorScheme;
-    return CustomPopup(
-        backgroundColor: shadColorScheme.background.withOpacity(opacity * 1.2),
-        barrierColor: Colors.transparent,
-        content: SizedBox(
-          width: 80,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              PopupMenuItem(
-                height: 40,
-                onTap: () async {
-                  Get.back();
-                  await _showEditBottomSheet();
-                },
-                child: Text(
-                  '添加',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: shadColorScheme.primary,
-                  ),
-                ),
-              ),
-              PopupMenuItem(
-                height: 40,
-                onTap: () async {
-                  Get.back();
-                  Future.microtask(() async {
-                    Logger.instance.i('开始从数据库加载数据...');
-                    controller.loadingFromServer = true;
-                    controller.update(); // UI 更新
-                    // 模拟后台获取数据
-                    await controller.getWebSiteListFromServer();
-                    await controller.getSiteStatusFromServer();
-                    controller.loadingFromServer = false;
-                    Logger.instance.i('从数据库加载数据完成！');
-                    controller.update(); // UI 更新
-                  });
-                },
-                child: Text(
-                  '加载',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: shadColorScheme.primary,
-                  ),
-                ),
-              ),
-            ],
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ShadIconButton.ghost(
+          height: 40,
+          onPressed: () async {
+            Get.back();
+            Future.microtask(() async {
+              Logger.instance.i('开始从数据库加载数据...');
+              controller.loadingFromServer = true;
+              controller.update(); // UI 更新
+              // 模拟后台获取数据
+              await controller.getWebSiteListFromServer();
+              await controller.getSiteStatusFromServer();
+              controller.loadingFromServer = false;
+              Logger.instance.i('从数据库加载数据完成！');
+              controller.update(); // UI 更新
+            });
+          },
+          icon: Icon(
+            Icons.refresh_outlined,
+            color: shadColorScheme.primary,
           ),
         ),
-        child: Icon(
-          Icons.settings_outlined,
-          color: shadColorScheme.primary,
-          size: 28,
-        ));
+        ShadIconButton.ghost(
+          onPressed: () async {
+            Get.back();
+            await _showEditBottomSheet();
+          },
+          icon: Icon(
+            Icons.add_outlined,
+            color: shadColorScheme.primary,
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -728,7 +710,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                 CustomPopup(
                   showArrow: true,
                   barrierColor: Colors.transparent,
-                  backgroundColor: shadColorScheme.background.withOpacity(opacity * 1.6),
+                  backgroundColor: shadColorScheme.background,
                   content: SingleChildScrollView(
                     child: SizedBox(
                         width: 200,
@@ -1137,7 +1119,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
       showArrow: true,
       // contentPadding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
       barrierColor: Colors.transparent,
-      backgroundColor: shadColorScheme.background.withOpacity(opacity * 1.8),
+      backgroundColor: shadColorScheme.background,
       content: SizedBox(
           width: 100,
           child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -1338,6 +1320,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     Get.bottomSheet(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
       isScrollControlled: true,
+      backgroundColor: shadColorScheme.background,
       CustomCard(
         padding: const EdgeInsets.all(20),
         height: selectedSite.value != null ? 500 : 120,
@@ -1353,26 +1336,20 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
               trailing: Obx(() {
                 return isLoading.value
                     ? const Align(alignment: Alignment.centerRight, child: Center(child: CircularProgressIndicator()))
-                    : ElevatedButton.icon(
+                    : ShadButton.ghost(
+                        size: ShadButtonSize.sm,
                         onPressed: () async {
                           isLoading.value = true;
                           await controller.getWebSiteListFromServer();
                           controller.update();
                           isLoading.value = false;
                         },
-                        style: ButtonStyle(
-                          shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                            RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                          ),
-                          padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 5)),
-                          side: WidgetStateProperty.all(BorderSide.none),
-                        ),
-                        icon: Icon(
+                        leading: Icon(
                           Icons.cloud_download_outlined,
                           size: 18,
                           color: shadColorScheme.foreground,
                         ),
-                        label: Text(
+                        child: Text(
                           '刷新站点列表',
                           style: TextStyle(
                             color: shadColorScheme.foreground,
@@ -1693,35 +1670,23 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
             OverflowBar(
               alignment: MainAxisAlignment.spaceAround,
               children: [
-                ElevatedButton.icon(
-                  style: ButtonStyle(
-                    shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                      RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                    ),
-                    backgroundColor: WidgetStateProperty.all(shadColorScheme.foreground),
-                  ),
+                ShadButton.destructive(
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  icon: Icon(
+                  leading: Icon(
                     Icons.cancel,
-                    color: shadColorScheme.primaryForeground,
+                    color: shadColorScheme.destructiveForeground,
                   ),
-                  label: Text(
+                  child: Text(
                     '取消',
                     style: TextStyle(
-                      color: shadColorScheme.primaryForeground,
+                      color: shadColorScheme.destructiveForeground,
                     ),
                   ),
                 ),
                 if (mySite != null)
-                  ElevatedButton(
-                    style: ButtonStyle(
-                      shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                      ),
-                      backgroundColor: WidgetStateProperty.all(shadColorScheme.destructive),
-                    ),
+                  ShadButton(
                     onPressed: () async {
                       Get.defaultDialog(
                           title: '删除站点：${mySite?.nickname}',
@@ -1729,13 +1694,13 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                           titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                           middleText: '确定要删除吗？',
                           actions: [
-                            ElevatedButton(
+                            ShadButton.destructive(
                               onPressed: () {
                                 Get.back(result: false);
                               },
                               child: const Text('取消'),
                             ),
-                            ElevatedButton(
+                            ShadButton(
                               onPressed: () async {
                                 Get.back(result: true);
                                 Navigator.of(context).pop();
@@ -1760,30 +1725,25 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                             ),
                           ]);
                     },
+                    leading: Icon(Icons.delete, color: shadColorScheme.destructive),
                     child: Text(
                       '删除',
                       style: TextStyle(
-                        color: shadColorScheme.primaryForeground,
+                        color: shadColorScheme.destructive,
                       ),
                     ),
                   ),
                 if (selectedSite.value != null)
-                  ElevatedButton.icon(
-                    style: ButtonStyle(
-                      shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                      ),
-                      backgroundColor: WidgetStateProperty.all(shadColorScheme.primaryForeground),
-                    ),
-                    icon: Obx(() {
+                  ShadButton(
+                    leading: Obx(() {
                       return doSaveLoading.value
                           ? Center(child: const CircularProgressIndicator())
                           : Icon(Icons.save, color: shadColorScheme.primaryForeground);
                     }),
-                    label: Text(
+                    child: Text(
                       '保存',
                       style: TextStyle(
-                        color: shadColorScheme.foreground,
+                        color: shadColorScheme.primaryForeground,
                       ),
                     ),
                     onPressed: () async {
@@ -2017,9 +1977,10 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
 
   void _showStatusHistory(MySite mySite) async {
     CommonResponse res = await getMySiteByIdApi(mySite.id);
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     if (!res.succeed) {
       Logger.instance.e('获取站点信息失败');
-      Get.snackbar('获取站点信息失败', res.msg, colorText: ShadTheme.of(context).colorScheme.destructive);
+      Get.snackbar('获取站点信息失败', res.msg, colorText: shadColorScheme.destructive);
       return;
     }
     mySite = res.data;
@@ -2033,6 +1994,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
         transformedData.sublist(rangeValues.value.start.toInt(), rangeValues.value.end.toInt() + 1).obs;
     Logger.instance.d(showData);
     Get.bottomSheet(
+      backgroundColor: shadColorScheme.background,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
       isScrollControlled: true,
       Obx(() {
@@ -2043,6 +2005,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
               child: Column(children: [
                 Text(
                   "${mySite.nickname} [站点数据累计${mySite.statusInfo.length}天]",
+                  style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
                 ),
                 SfCartesianChart(
                     tooltipBehavior: TooltipBehavior(
@@ -2175,6 +2138,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                     ]),
                 Text(
                   "${rangeValues.value.end.toInt() - rangeValues.value.start.toInt() + 1}日数据",
+                  style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
                 ),
                 RangeSlider(
                   min: 0,
