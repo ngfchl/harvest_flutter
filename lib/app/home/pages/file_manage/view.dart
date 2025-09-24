@@ -13,7 +13,6 @@ import 'package:get/get.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/form_widgets.dart';
 import 'package:harvest/models/common_response.dart';
-import 'package:harvest/utils/storage.dart';
 import 'package:harvest/utils/string_utils.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -22,8 +21,11 @@ import 'package:photo_view/photo_view.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../api/tmdb.dart';
+import '../../../../common/media_card.dart';
 import '../../../../common/video_player_page/video_page.dart';
 import '../../../../utils/logger_helper.dart';
+import '../agg_search/models.dart';
 import 'controller.dart';
 
 class FileManagePage extends StatelessWidget {
@@ -215,7 +217,7 @@ class FileManagePage extends StatelessWidget {
                                                     fontSize: 16,
                                                     fontWeight: FontWeight.w900,
                                                     color: Colors.deepPurple),
-                                                middleText: '确定要删除任务吗？',
+                                                middleText: '确定要删除文件吗？',
                                                 actions: [
                                                   ElevatedButton(
                                                     onPressed: () {
@@ -295,87 +297,181 @@ class FileManagePage extends StatelessWidget {
                                         onLongPress: () {
                                           Get.defaultDialog(
                                             title: '常用操作',
-                                            content: CustomCard(
-                                              child: Wrap(
-                                                alignment: WrapAlignment.spaceAround,
-                                                spacing: 10,
-                                                runSpacing: 10,
-                                                children: [
-                                                  //  ShadButton.ghost(
-                                                  //   onPressed: () async {},
-                                                  //   icon: Icon(Icons.open_in_new),
-                                                  //   label: Text("打开目录"),
-                                                  // ),
+                                            titleStyle: TextStyle(color: shadColorScheme.foreground),
+                                            backgroundColor: shadColorScheme.background,
+                                            content: Wrap(
+                                              alignment: WrapAlignment.spaceAround,
+                                              spacing: 10,
+                                              runSpacing: 10,
+                                              children: [
+                                                //  ShadButton.ghost(
+                                                //   onPressed: () async {},
+                                                //   icon: Icon(Icons.open_in_new),
+                                                //   label: Text("打开目录"),
+                                                // ),
+                                                ShadButton.ghost(
+                                                  onPressed: () async {
+                                                    Get.back();
+                                                    controller.isLoading = true;
+                                                    controller.update(['file_manage']);
+                                                    var response = await getTMDBMatchMovieApi(item.name);
+                                                    controller.isLoading = false;
+                                                    controller.update(['file_manage']);
+                                                    if (!response.succeed) {
+                                                      Get.snackbar(
+                                                        "出错啦！",
+                                                        response.msg,
+                                                        colorText: shadColorScheme.foreground,
+                                                        backgroundColor: shadColorScheme.background,
+                                                      );
+                                                      return;
+                                                    }
+                                                    if (response.data != null && response.data!.isEmpty) {
+                                                      Get.snackbar(
+                                                        "出错啦！",
+                                                        "未查询到相关影视信息",
+                                                        colorText: shadColorScheme.foreground,
+                                                        backgroundColor: shadColorScheme.background,
+                                                      );
+                                                      return;
+                                                    }
+                                                    Logger.instance.d(response.data);
+                                                    Get.defaultDialog(
+                                                        title: '影视信息查询结果',
+                                                        titleStyle: TextStyle(color: shadColorScheme.foreground),
+                                                        backgroundColor: shadColorScheme.background,
+                                                        content: SizedBox(
+                                                            height: 500,
+                                                            width: double.maxFinite,
+                                                            child: ListView.builder(
+                                                                shrinkWrap: true, // 👈 关键，避免无限高度
+                                                                itemCount:
+                                                                    response.data is List ? response.data!.length : 0,
+                                                                itemBuilder: (context, index) {
+                                                                  MediaItem item =
+                                                                      MediaItem.fromJson(response.data![index]);
+                                                                  return MediaItemCard(
+                                                                    media: item,
+                                                                    onDetail: (item) {},
+                                                                    onSearch: (item) async {},
+                                                                  );
+                                                                })));
+                                                  },
+                                                  leading: Icon(Icons.movie_filter_outlined),
+                                                  child: Text("电影刮削"),
+                                                ),
+                                                ShadButton.ghost(
+                                                  onPressed: () async {
+                                                    Get.back();
+                                                    controller.isLoading = true;
+                                                    controller.update(['file_manage']);
+                                                    var response = await getTMDBMatchTvApi(item.name);
+                                                    controller.isLoading = false;
+                                                    controller.update(['file_manage']);
+                                                    if (!response.succeed) {
+                                                      Get.snackbar("出错啦！", response.msg);
+                                                      return;
+                                                    }
+                                                    if (response.data != null && response.data!.isEmpty) {
+                                                      Get.snackbar("出错啦！", "未查询到相关影视信息");
+                                                      return;
+                                                    }
+                                                    Logger.instance.d(response.data);
+                                                    Get.defaultDialog(
+                                                        title: '影视信息查询结果',
+                                                        titleStyle: TextStyle(color: shadColorScheme.foreground),
+                                                        backgroundColor: shadColorScheme.background,
+                                                        content: SizedBox(
+                                                            height: 500,
+                                                            width: double.maxFinite,
+                                                            child: ListView.builder(
+                                                                shrinkWrap: true, // 👈 关键，避免无限高度
+                                                                itemCount:
+                                                                    response.data is List ? response.data!.length : 0,
+                                                                itemBuilder: (context, index) {
+                                                                  MediaItem item =
+                                                                      MediaItem.fromJson(response.data![index]);
+                                                                  return MediaItemCard(
+                                                                    media: item,
+                                                                    onDetail: (item) {},
+                                                                    onSearch: (item) async {},
+                                                                  );
+                                                                })));
+                                                  },
+                                                  leading: Icon(Icons.movie_filter_outlined),
+                                                  child: Text("电视剧刮削"),
+                                                ),
+                                                ShadButton.ghost(
+                                                  onPressed: () async {
+                                                    doFileAction(item.path, 'search_seed');
+                                                  },
+                                                  leading: Icon(Icons.local_movies_outlined),
+                                                  child: Text("做种查询"),
+                                                ),
+                                                ShadButton.ghost(
+                                                  onPressed: () async {
+                                                    CommonResponse res = await controller.getFileSourceUrl(item.path);
+                                                    if (res.succeed) {
+                                                      await pickAndDownload(res.data);
+                                                    }
+                                                  },
+                                                  leading: Icon(Icons.download_outlined),
+                                                  child: Text("下载"),
+                                                ),
+                                                // ShadButton.ghost(
+                                                //   onPressed: () async {
+                                                //     doFileAction(item.path, 'hard_link', newFileName: "newFileName");
+                                                //   },
+                                                //   leading: Icon(Icons.hardware),
+                                                //   child: Text("硬链接"),
+                                                // ),
+                                                if (!item.isDir)
                                                   ShadButton.ghost(
                                                     onPressed: () async {
-                                                      doFileAction(item.path, 'search_tmdb');
-                                                    },
-                                                    leading: Icon(Icons.movie_filter_outlined),
-                                                    child: Text("刮削资源"),
-                                                  ),
-                                                  ShadButton.ghost(
-                                                    onPressed: () async {
-                                                      doFileAction(item.path, 'search_seed');
-                                                    },
-                                                    leading: Icon(Icons.local_movies_outlined),
-                                                    child: Text("查询做种"),
-                                                  ),
-                                                  ShadButton.ghost(
-                                                    onPressed: () async {
-                                                      doFileAction(item.path, 'hard_link', newFileName: "newFileName");
-                                                    },
-                                                    leading: Icon(Icons.hardware),
-                                                    child: Text("硬链接"),
-                                                  ),
-                                                  if (!item.isDir)
-                                                    ShadButton.ghost(
-                                                      onPressed: () async {
-                                                        Logger.instance.d('文件后缀名：${item.ext}，文件类型：${item.mimeType}');
-                                                        CommonResponse res =
-                                                            await controller.getFileSourceUrl(item.path);
-                                                        Logger.instance.d(res.toString());
-                                                        if (res.succeed) {
-                                                          Clipboard.setData(ClipboardData(text: res.data));
-                                                          if (item.mimeType.startsWith('image')) {
-                                                            showImage(res.data);
-                                                          } else if (item.mimeType.startsWith('video')) {
-                                                            showPlayer(res.data, context);
-                                                          } else if (item.mimeType.startsWith('audio')) {
-                                                            showPlayer(res.data, context);
-                                                          } else {
-                                                            Get.defaultDialog(
-                                                              title: '文件操作',
-                                                              content: CustomCard(
-                                                                child: Wrap(
-                                                                  alignment: WrapAlignment.spaceAround,
-                                                                  spacing: 10,
-                                                                  runSpacing: 10,
-                                                                  children: [
-                                                                    ShadButton.ghost(
-                                                                      onPressed: () async {
-                                                                        await pickAndDownload(res.data);
-                                                                      },
-                                                                      leading: Icon(Icons.download_outlined),
-                                                                      child: Text("下载"),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            );
-                                                          }
+                                                      Logger.instance.d('文件后缀名：${item.ext}，文件类型：${item.mimeType}');
+                                                      CommonResponse res = await controller.getFileSourceUrl(item.path);
+                                                      Logger.instance.d(res.toString());
+                                                      if (res.succeed) {
+                                                        Clipboard.setData(ClipboardData(text: res.data));
+                                                        if (item.mimeType.startsWith('image')) {
+                                                          showImage(res.data);
+                                                        } else if (item.mimeType.startsWith('video')) {
+                                                          showPlayer(res.data, context);
+                                                        } else if (item.mimeType.startsWith('audio')) {
+                                                          showPlayer(res.data, context);
                                                         } else {
-                                                          Get.snackbar(
-                                                            '提示',
-                                                            res.msg,
-                                                            colorText: Get.theme.colorScheme.error,
+                                                          Get.defaultDialog(
+                                                            title: '文件操作',
+                                                            content: CustomCard(
+                                                              child: Wrap(
+                                                                alignment: WrapAlignment.spaceAround,
+                                                                spacing: 10,
+                                                                runSpacing: 10,
+                                                                children: [
+                                                                  ShadButton.ghost(
+                                                                    onPressed: () async {
+                                                                      await pickAndDownload(res.data);
+                                                                    },
+                                                                    leading: Icon(Icons.download_outlined),
+                                                                    child: Text("下载"),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
                                                           );
                                                         }
-                                                      },
-                                                      leading: Icon(Icons.hardware),
-                                                      child: Text("打开"),
-                                                    ),
-                                                ],
-                                              ),
+                                                      } else {
+                                                        Get.snackbar(
+                                                          '提示',
+                                                          res.msg,
+                                                          colorText: Get.theme.colorScheme.error,
+                                                        );
+                                                      }
+                                                    },
+                                                    leading: Icon(Icons.hardware),
+                                                    child: Text("打开"),
+                                                  ),
+                                              ],
                                             ),
                                           );
                                         },
@@ -438,7 +534,8 @@ class FileManagePage extends StatelessWidget {
                       if (controller.isLoading)
                         Center(
                           child: CircularProgressIndicator(
-                            strokeWidth: 2,
+                            strokeWidth: 4,
+                            color: shadColorScheme.foreground,
                           ),
                         ),
                     ],
@@ -566,12 +663,11 @@ class FileManagePage extends StatelessWidget {
 
   void showPlayer(String url, BuildContext context) async {
     final schemes = buildSchemes(url);
-    var opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.defaultDialog(
       title: '打开方式',
       titleStyle: TextStyle(color: shadColorScheme.foreground),
-      backgroundColor: shadColorScheme.background.withOpacity(opacity),
+      backgroundColor: shadColorScheme.background,
       content: Wrap(
         alignment: WrapAlignment.spaceAround,
         spacing: 10,
@@ -744,9 +840,11 @@ class FileManagePage extends StatelessWidget {
                   child: InkWell(
                     onTap: () => Get.back(),
                     child: PhotoView(
-                      maxScale: PhotoViewComputedScale.covered * 5, // 允许用户放大
+                      maxScale: PhotoViewComputedScale.covered * 5,
+                      // 允许用户放大
                       minScale: PhotoViewComputedScale.contained,
-                      initialScale: PhotoViewComputedScale.contained, // 默认显示整个图片
+                      initialScale: PhotoViewComputedScale.contained,
+                      // 默认显示整个图片
                       imageProvider:
                           CachedNetworkImageProvider(url, cacheKey: Uri.parse(url).pathSegments.last.split('/').last),
                     ),
