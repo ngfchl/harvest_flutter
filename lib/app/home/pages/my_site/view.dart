@@ -113,7 +113,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                           LengthLimitingTextInputFormatter(20),
                                         ],
                                         controller: controller.searchController,
-                                        style: const TextStyle(fontSize: 12),
+                                        style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
                                         textAlignVertical: TextAlignVertical.center,
                                         decoration: InputDecoration(
                                           // labelText: '搜索',
@@ -171,7 +171,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                 );
                               }),
                           if (controller.searchKey.isNotEmpty)
-                            IconButton(
+                            ShadIconButton.ghost(
                                 onPressed: () {
                                   controller.searchController.text = controller.searchController.text
                                       .substring(0, controller.searchController.text.length - 1);
@@ -181,15 +181,14 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                 },
                                 icon: controller.searching
                                     ? SizedBox(
-                                        width: 20,
-                                        height: 20,
+                                        width: 18,
+                                        height: 18,
                                         child: Center(
                                             child: CircularProgressIndicator(
-                                          color: shadColorScheme.primary,
+                                          color: shadColorScheme.foreground,
                                         )),
                                       )
-                                    : Icon(Icons.backspace_outlined,
-                                        size: 18, color: shadColorScheme.primary.withOpacity(0.8)))
+                                    : Icon(Icons.backspace_outlined, size: 18, color: shadColorScheme.foreground))
                         ],
                       ),
                       SingleChildScrollView(
@@ -219,7 +218,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                               controller.filterKey = item.value!;
                                               controller.filterByKey();
                                             },
-                                            child: Text(item.name, style: TextStyle(fontSize: 12)),
+                                            child: Text(item.name,
+                                                style: TextStyle(fontSize: 12, color: shadColorScheme.foreground)),
                                           ),
                                         ),
                                       ],
@@ -270,7 +270,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                               controller.sortKey = item.value!;
                                               controller.filterByKey();
                                             },
-                                            child: Text(item.name, style: TextStyle(fontSize: 12)),
+                                            child: Text(item.name,
+                                                style: TextStyle(fontSize: 12, color: shadColorScheme.foreground)),
                                           ),
                                         ),
                                       ],
@@ -349,42 +350,45 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                               CustomPopup(
                                 showArrow: false,
                                 backgroundColor: shadColorScheme.background,
-                                content: SingleChildScrollView(
-                                  scrollDirection: Axis.vertical,
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      PopupMenuItem<String>(
-                                        height: 32,
-                                        child: Text(
-                                          '全部',
-                                          style: TextStyle(
-                                            color: shadColorScheme.foreground,
-                                          ),
-                                        ),
-                                        onTap: () async {
-                                          Get.back();
-                                          controller.selectTag = '全部';
-                                          controller.filterByKey();
-                                          // await controller.mySiteController.initData();
-                                        },
-                                      ),
-                                      ...controller.tagList.map((item) => PopupMenuItem<String>(
-                                            height: 32,
-                                            child: Text(
-                                              item,
-                                              style: TextStyle(
-                                                color: shadColorScheme.foreground,
-                                              ),
+                                content: SizedBox(
+                                  width: 120,
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.vertical,
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        PopupMenuItem<String>(
+                                          height: 32,
+                                          child: Text(
+                                            '全部',
+                                            style: TextStyle(
+                                              color: shadColorScheme.foreground,
                                             ),
-                                            onTap: () async {
-                                              Get.back();
-                                              controller.selectTag = item;
-                                              controller.filterByKey();
-                                              // await controller.mySiteController.initData();
-                                            },
-                                          )),
-                                    ],
+                                          ),
+                                          onTap: () async {
+                                            Get.back();
+                                            controller.selectTag = '全部';
+                                            controller.filterByKey();
+                                            // await controller.mySiteController.initData();
+                                          },
+                                        ),
+                                        ...controller.tagList.map((item) => PopupMenuItem<String>(
+                                              height: 32,
+                                              child: Text(
+                                                item,
+                                                style: TextStyle(
+                                                  color: shadColorScheme.foreground,
+                                                ),
+                                              ),
+                                              onTap: () async {
+                                                Get.back();
+                                                controller.selectTag = item;
+                                                controller.filterByKey();
+                                                // await controller.mySiteController.initData();
+                                              },
+                                            )),
+                                      ],
+                                    ),
                                   ),
                                 ),
                                 child: Padding(
@@ -1557,8 +1561,10 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                 chipColor: shadColorScheme.background,
                                 initialValue: [...tags],
                                 title: Text(
-                                  "站点标签",
-                                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+                                  " 站点标签",
+                                  style: TextStyle(
+                                      fontSize: 13, fontWeight: FontWeight.w800, color: shadColorScheme.foreground),
+                                  textAlign: TextAlign.center,
                                 ),
                                 headerColor: Colors.transparent,
                                 decoration: BoxDecoration(
@@ -1695,6 +1701,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
               alignment: MainAxisAlignment.spaceAround,
               children: [
                 ShadButton.destructive(
+                  size: ShadButtonSize.sm,
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
@@ -1710,7 +1717,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                   ),
                 ),
                 if (mySite != null)
-                  ShadButton(
+                  ShadButton.destructive(
+                    size: ShadButtonSize.sm,
                     onPressed: () async {
                       Get.defaultDialog(
                           title: '删除站点：${mySite?.nickname}',
@@ -1719,12 +1727,14 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                           middleText: '确定要删除吗？',
                           actions: [
                             ShadButton.destructive(
+                              size: ShadButtonSize.sm,
                               onPressed: () {
                                 Get.back(result: false);
                               },
                               child: const Text('取消'),
                             ),
                             ShadButton(
+                              size: ShadButtonSize.sm,
                               onPressed: () async {
                                 Get.back(result: true);
                                 Navigator.of(context).pop();
@@ -1749,16 +1759,17 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                             ),
                           ]);
                     },
-                    leading: Icon(Icons.delete, color: shadColorScheme.destructive),
+                    leading: Icon(Icons.delete, color: shadColorScheme.destructiveForeground),
                     child: Text(
                       '删除',
                       style: TextStyle(
-                        color: shadColorScheme.destructive,
+                        color: shadColorScheme.destructiveForeground,
                       ),
                     ),
                   ),
                 if (selectedSite.value != null)
                   ShadButton(
+                    size: ShadButtonSize.sm,
                     leading: Obx(() {
                       return doSaveLoading.value
                           ? SizedBox(
