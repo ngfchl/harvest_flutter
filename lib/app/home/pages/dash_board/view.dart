@@ -90,7 +90,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
       children: [
         CustomPopup(
           showArrow: false,
-          backgroundColor: scheme.background.withOpacity(opacity * 1.2),
+          backgroundColor: scheme.background,
           barrierColor: Colors.transparent,
           content: SizedBox(
             width: 120,
@@ -122,8 +122,9 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
           ),
         ),
         CustomPopup(
-          backgroundColor: scheme.background.withOpacity(opacity * 1.2),
+          backgroundColor: scheme.background,
           barrierColor: Colors.transparent,
+          showArrow: false,
           content: SizedBox(
             width: 80,
             child: Column(mainAxisSize: MainAxisSize.min, children: [

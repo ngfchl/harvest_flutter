@@ -230,14 +230,16 @@ class _SubscribePageState extends State<SubscribePage> {
       }
     }
     await dialogController.init(sub);
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.bottomSheet(
+      backgroundColor: shadColorScheme.background,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10.0), // 设置圆角半径
       ),
       GetBuilder<EditDialogController>(
         builder: (controller) => Stack(
           children: [
-            CustomCard(
+            Container(
               padding: const EdgeInsets.all(12),
               height: MediaQuery.of(context).size.height * 0.9,
               child: Column(
@@ -251,11 +253,11 @@ class _SubscribePageState extends State<SubscribePage> {
                       children: [
                         CustomTextField(
                           controller: controller.nameController,
-                          labelText: '名称',
+                          labelText: '订阅任务名称',
                         ),
                         CustomTextField(
                           controller: controller.keywordController,
-                          labelText: '关键字',
+                          labelText: '订阅关键字',
                         ),
                         Padding(
                           padding: const EdgeInsets.all(8),
@@ -266,8 +268,12 @@ class _SubscribePageState extends State<SubscribePage> {
                             compareFn: (item, sItem) => item.id == sItem.id,
                             itemAsString: (Downloader? item) => item!.name,
                             decoratorProps: DropDownDecoratorProps(
-                              decoration:
-                                  InputDecoration(labelText: '下载器', filled: true, fillColor: Colors.transparent),
+                              baseStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                              decoration: InputDecoration(
+                                labelText: '下载器',
+                                filled: true,
+                                fillColor: Colors.transparent,
+                              ),
                             ),
                             onChanged: (Downloader? item) async {
                               controller.downloaderCategoryController.clear();
@@ -276,7 +282,7 @@ class _SubscribePageState extends State<SubscribePage> {
                               controller.downloaderController.text = item!.id.toString();
                               CommonResponse res = await controller.subController.getDownloaderCategoryList(item);
                               if (!res.succeed) {
-                                Get.snackbar('出错啦！', res.msg, colorText: ShadTheme.of(context).colorScheme.destructive);
+                                Get.snackbar('出错啦！', res.msg, colorText: shadColorScheme.destructive);
                                 return;
                               }
                               controller.categories.value = res.data;
@@ -311,8 +317,7 @@ class _SubscribePageState extends State<SubscribePage> {
                                         controller.subController.downloadController.dataList.firstWhere((element) =>
                                             element.id == int.parse(controller.downloaderController.text)));
                                     if (!res.succeed) {
-                                      Get.snackbar('出错啦！', res.msg,
-                                          colorText: ShadTheme.of(context).colorScheme.destructive);
+                                      Get.snackbar('出错啦！', res.msg, colorText: shadColorScheme.destructive);
                                       return;
                                     }
                                     controller.categories.value = res.data;
@@ -341,13 +346,14 @@ class _SubscribePageState extends State<SubscribePage> {
                                   },
                                 ),
                               ),
-                              Text('${controller.size.value} GB'),
+                              Text('${controller.size.value} GB',
+                                  style: TextStyle(fontSize: 14, color: shadColorScheme.foreground)),
                             ],
                           ),
                         ),
                         SwitchListTile(
                             dense: true,
-                            title: const Text('可用', style: TextStyle(fontSize: 14)),
+                            title: Text('可用', style: TextStyle(fontSize: 14, color: shadColorScheme.foreground)),
                             value: controller.available.value,
                             onChanged: (bool val) {
                               controller.available.value = val;
@@ -355,18 +361,19 @@ class _SubscribePageState extends State<SubscribePage> {
                             }),
                         SwitchListTile(
                             dense: true,
-                            title: const Text('直接下载', style: TextStyle(fontSize: 14)),
+                            title: Text('直接下载', style: TextStyle(fontSize: 14, color: shadColorScheme.foreground)),
                             value: controller.start.value,
                             onChanged: (bool val) {
                               controller.start.value = val;
                               controller.update();
                             }),
                         ExpansionTile(
-                          title: const Text('RSS选择'),
+                          title: Text('RSS选择', style: TextStyle(fontSize: 14, color: shadColorScheme.foreground)),
                           dense: true,
                           children: controller.subController.rssController.rssList
                               .map((MyRss item) => CheckboxListTile(
-                                    title: Text(item.name.toString()),
+                                    title: Text(item.name.toString(),
+                                        style: TextStyle(fontSize: 14, color: shadColorScheme.foreground)),
                                     dense: true,
                                     value: controller.rssList.map((element) => element.id).contains(item.id),
                                     onChanged: (bool? value) {
@@ -386,12 +393,14 @@ class _SubscribePageState extends State<SubscribePage> {
                             children: controller.subController.tagCategoryList
                                 .where((element) => controller.prop[element.value] != null)
                                 .map((e) => ExpansionTile(
-                                      title: Text(e.name),
+                                      title: Text(e.name,
+                                          style: TextStyle(fontSize: 14, color: shadColorScheme.foreground)),
                                       dense: true,
                                       children: controller.subController.tags
                                           .where((item) => item.category == e.value)
                                           .map((item) => CheckboxListTile(
-                                                title: Text(item.name.toString()),
+                                                title: Text(item.name.toString(),
+                                                    style: TextStyle(fontSize: 14, color: shadColorScheme.foreground)),
                                                 dense: true,
                                                 value: controller.prop[e.value]!.value == item.name,
                                                 selected: controller.prop[e.value]!.value == item.name,
@@ -413,7 +422,7 @@ class _SubscribePageState extends State<SubscribePage> {
                           padding: const EdgeInsets.only(left: 8.0),
                           child: Text(
                             '标签选择',
-                            style: ShadTheme.of(context).textTheme.h4,
+                            style: TextStyle(fontSize: 16, color: shadColorScheme.foreground),
                           ),
                         ),
                         SizedBox(
@@ -423,14 +432,17 @@ class _SubscribePageState extends State<SubscribePage> {
                               children: controller.subController.tagCategoryList
                                   .where((element) => controller.props[element.value] != null)
                                   .map((e) => ExpansionTile(
-                                        title: Text(e.name),
+                                        title: Text(e.name,
+                                            style: TextStyle(fontSize: 14, color: shadColorScheme.foreground)),
                                         dense: true,
                                         initiallyExpanded: true,
                                         children: controller.subController.tags
                                             .where((item) => item.category == e.value)
                                             .map((item) => CheckboxListTile(
                                                   dense: true,
-                                                  title: Text(item.name.toString()),
+                                                  title: Text(item.name.toString(),
+                                                      style:
+                                                          TextStyle(fontSize: 14, color: shadColorScheme.foreground)),
                                                   value: controller.props[e.value]!.contains(item.name),
                                                   onChanged: (bool? value) {
                                                     Logger.instance.i(controller.props[e.value]);
@@ -456,30 +468,35 @@ class _SubscribePageState extends State<SubscribePage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      ElevatedButton.icon(
+                      ShadButton.destructive(
+                        size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back();
                           controller.categories.clear();
                         },
-                        style: ButtonStyle(
-                          backgroundColor: WidgetStateProperty.all(Colors.redAccent.withAlpha(150)),
+                        leading: Icon(
+                          Icons.cancel,
+                          size: 18,
+                          color: shadColorScheme.destructiveForeground,
                         ),
-                        icon: const Icon(Icons.cancel_outlined, color: Colors.white),
-                        label: const Text(
-                          '取消',
-                          style: TextStyle(color: Colors.white),
-                        ),
+                        child: Text('取消', style: TextStyle(color: shadColorScheme.destructiveForeground)),
                       ),
-                      ElevatedButton.icon(
+                      ShadButton(
+                        size: ShadButtonSize.sm,
                         onPressed: () async {
                           await controller.saveSub(sub, context);
                           controller.categories.clear();
                           Get.back();
                         },
-                        icon: controller.isLoading.value
-                            ? Center(child: const CircularProgressIndicator())
-                            : const Icon(Icons.save),
-                        label: const Text('保存'),
+                        leading: Icon(
+                          Icons.save,
+                          size: 18,
+                          color: shadColorScheme.primaryForeground,
+                        ),
+                        child: Text(
+                          '保存',
+                          style: TextStyle(color: shadColorScheme.primaryForeground),
+                        ),
                       ),
                     ],
                   ),

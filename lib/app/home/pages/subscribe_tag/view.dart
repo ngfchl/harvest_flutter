@@ -73,9 +73,7 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                 return EasyRefresh(
                   onRefresh: () => controller.initData(),
                   child: ListView(
-                    children: controller.tags
-                        .map((SubTag tag) => _buildTag(tag))
-                        .toList(),
+                    children: controller.tags.map((SubTag tag) => _buildTag(tag)).toList(),
                   ),
                 );
               }),
@@ -121,8 +119,7 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                 Get.defaultDialog(
                   title: '确认',
                   radius: 5,
-                  titleStyle: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w900),
+                  titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                   middleText: '确定要删除标签吗？',
                   actions: [
                     ElevatedButton(
@@ -137,13 +134,10 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                         CommonResponse res = await controller.removeSubTag(tag);
                         if (res.code == 0) {
                           Get.snackbar('删除通知', res.msg.toString(),
-                              colorText:
-                                  ShadTheme.of(context).colorScheme.foreground);
+                              colorText: ShadTheme.of(context).colorScheme.foreground);
                         } else {
                           Get.snackbar('删除通知', res.msg.toString(),
-                              colorText: ShadTheme.of(context)
-                                  .colorScheme
-                                  .destructive);
+                              colorText: ShadTheme.of(context).colorScheme.destructive);
                         }
                       },
                       child: const Text('确认'),
@@ -173,8 +167,7 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
             tag.category!,
             style: TextStyle(
               fontSize: 10,
-              color:
-                  ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
+              color: ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
             ),
           ),
           onTap: () => _openEditDialog(tag),
@@ -201,10 +194,9 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
   }
 
   void _openEditDialog(SubTag? tag) {
-    final TextEditingController nameController =
-        TextEditingController(text: tag != null ? tag.name : '');
-    final TextEditingController categoryController = TextEditingController(
-        text: tag != null ? tag.category : controller.tagCategoryList[0].value);
+    final TextEditingController nameController = TextEditingController(text: tag != null ? tag.name : '');
+    final TextEditingController categoryController =
+        TextEditingController(text: tag != null ? tag.category : controller.tagCategoryList[0].value);
 
     RxBool available = true.obs;
     final isLoading = false.obs;
@@ -212,13 +204,11 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
     available.value = tag != null ? tag.available! : true;
     String title = tag != null ? '编辑标签：${tag.name!}' : '添加标签';
     double opacity = SPUtil.getDouble("cardOpacity", defaultValue: 0.7);
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.bottomSheet(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-        backgroundColor: ShadTheme.of(context)
-            .colorScheme
-            .background
-            .withOpacity(opacity * 1.2),
-        CustomCard(
+        backgroundColor: shadColorScheme.background,
+        SizedBox(
           height: 300,
           child: Column(
             children: [
@@ -234,43 +224,46 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                       labelText: '名称',
                     ),
                     DropdownButtonFormField<String>(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12.0, vertical: 4),
                       isDense: true,
                       value: categoryController.text,
                       style: TextStyle(
-                        color: ShadTheme.of(context).colorScheme.foreground,
+                        color: shadColorScheme.foreground,
                       ),
                       onChanged: (String? newValue) {
                         categoryController.text = newValue!;
                       },
-                      dropdownColor:
-                          ShadTheme.of(context).colorScheme.background,
+                      decoration: InputDecoration(
+                        labelText: '标签类别',
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4),
+                        labelStyle: TextStyle(
+                          color: shadColorScheme.foreground.withOpacity(0.5),
+                        ),
+                        enabledBorder: const UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.transparent),
+                        ),
+                      ),
+                      dropdownColor: shadColorScheme.background,
                       items: controller.tagCategoryList
-                          .map<DropdownMenuItem<String>>(
-                              (MetaDataItem item) => DropdownMenuItem<String>(
-                                    value: item.value,
-                                    child: Text(
-                                      item.name,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: ShadTheme.of(context)
-                                            .colorScheme
-                                            .foreground,
-                                      ),
-                                    ),
-                                  ))
+                          .map<DropdownMenuItem<String>>((MetaDataItem item) => DropdownMenuItem<String>(
+                                value: item.value,
+                                child: Text(
+                                  item.name,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: shadColorScheme.foreground,
+                                  ),
+                                ),
+                              ))
                           .toList(),
                     ),
                     Obx(() {
                       return SwitchListTile(
                           dense: true,
-                          contentPadding: const EdgeInsets.all(8.0),
+                          contentPadding: const EdgeInsets.all(16.0),
                           title: Text(
                             '标签可用',
                             style: TextStyle(
-                              color:
-                                  ShadTheme.of(context).colorScheme.foreground,
+                              color: shadColorScheme.foreground,
                             ),
                           ),
                           value: available.value,
@@ -293,8 +286,7 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                       Get.back();
                     },
                     size: ShadButtonSize.sm,
-                    leading:
-                        const Icon(Icons.cancel_outlined, color: Colors.white),
+                    leading: const Icon(Icons.cancel_outlined, color: Colors.white),
                     child: const Text(
                       '取消',
                     ),
@@ -322,9 +314,8 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                         isLoading.value = false;
                       },
                       size: ShadButtonSize.sm,
-                      leading: isLoading.value
-                          ? Center(child: const CircularProgressIndicator())
-                          : const Icon(Icons.save),
+                      leading:
+                          isLoading.value ? Center(child: const CircularProgressIndicator()) : const Icon(Icons.save),
                       child: const Text('保存'),
                     );
                   }),
@@ -343,11 +334,9 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
       Logger.instance.i(res.msg);
       if (res.code == 0) {
         Get.back();
-        Get.snackbar('标签保存成功！', res.msg,
-            colorText: ShadTheme.of(context).colorScheme.foreground);
+        Get.snackbar('标签保存成功！', res.msg, colorText: ShadTheme.of(context).colorScheme.foreground);
       } else {
-        Get.snackbar('标签保存失败！', res.msg,
-            colorText: ShadTheme.of(context).colorScheme.destructive);
+        Get.snackbar('标签保存失败！', res.msg, colorText: ShadTheme.of(context).colorScheme.destructive);
       }
     } finally {}
   }

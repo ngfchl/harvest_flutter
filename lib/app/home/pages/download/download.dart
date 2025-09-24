@@ -1237,6 +1237,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
             ),
             GetBuilder<DownloadController>(builder: (controller) {
               return CustomPopup(
+                showArrow: false,
                 contentDecoration: BoxDecoration(
                   color: shadColorScheme.background,
                 ),
@@ -1303,6 +1304,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
             }),
             GetBuilder<DownloadController>(builder: (controller) {
               return CustomPopup(
+                showArrow: false,
                 contentDecoration: BoxDecoration(
                   color: shadColorScheme.background,
                 ),
@@ -1360,6 +1362,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
             }),
             GetBuilder<DownloadController>(builder: (controller) {
               return CustomPopup(
+                showArrow: false,
                 contentDecoration: BoxDecoration(
                   color: shadColorScheme.background,
                 ),
@@ -1429,6 +1432,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
             }),
             GetBuilder<DownloadController>(builder: (controller) {
               return CustomPopup(
+                showArrow: false,
                 contentDecoration: BoxDecoration(
                   color: shadColorScheme.background,
                 ),
@@ -1476,6 +1480,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
             }),
             GetBuilder<DownloadController>(builder: (controller) {
               return CustomPopup(
+                showArrow: false,
                 contentDecoration: BoxDecoration(
                   color: shadColorScheme.background,
                 ),
@@ -1562,6 +1567,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
             if (!isQb)
               GetBuilder<DownloadController>(builder: (controller) {
                 return CustomPopup(
+                  showArrow: false,
                   contentDecoration: BoxDecoration(
                     color: shadColorScheme.background,
                   ),

@@ -24,8 +24,7 @@ class UserWidget extends StatelessWidget {
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: Colors.transparent,
-      floatingActionButton: (controller.userinfo?.isStaff == true ||
-              controller.userinfo?.isStaff == true)
+      floatingActionButton: (controller.userinfo?.isStaff == true || controller.userinfo?.isStaff == true)
           ? IconButton(
               icon: Icon(
                 Icons.add,
@@ -58,31 +57,25 @@ class UserWidget extends StatelessWidget {
                           SlidableAction(
                             flex: 1,
                             icon: Icons.edit,
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(8)),
+                            borderRadius: const BorderRadius.all(Radius.circular(8)),
                             onPressed: (context) async {
-                              _showEditBottomSheet(
-                                  user: user, context: context);
+                              _showEditBottomSheet(user: user, context: context);
                             },
                             backgroundColor: const Color(0xFF0392CF),
                             foregroundColor: Colors.white,
                             // icon: Icons.edit,
                             label: '编辑',
                           ),
-                          if (!user.isStaff &&
-                              user.username != controller.userinfo?.user)
+                          if (!user.isStaff && user.username != controller.userinfo?.user)
                             SlidableAction(
                               flex: 1,
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(8)),
+                              borderRadius: const BorderRadius.all(Radius.circular(8)),
                               onPressed: (context) async {
                                 Get.defaultDialog(
                                   title: '确认',
                                   radius: 5,
                                   titleStyle: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w900,
-                                      color: Colors.deepPurple),
+                                      fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
                                   middleText: '确定要删除用户吗？',
                                   actions: [
                                     ElevatedButton(
@@ -96,18 +89,13 @@ class UserWidget extends StatelessWidget {
                                         Get.back(result: true);
                                         controller.userList.remove(user);
                                         controller.update();
-                                        CommonResponse res = await controller
-                                            .removeUserModel(user);
+                                        CommonResponse res = await controller.removeUserModel(user);
                                         if (res.code == 0) {
-                                          Get.snackbar(
-                                              '删除通知', res.msg.toString(),
-                                              colorText:
-                                                  shadColorScheme.foreground);
+                                          Get.snackbar('删除通知', res.msg.toString(),
+                                              colorText: shadColorScheme.foreground);
                                         } else {
-                                          Get.snackbar(
-                                              '删除通知', res.msg.toString(),
-                                              colorText:
-                                                  shadColorScheme.destructive);
+                                          Get.snackbar('删除通知', res.msg.toString(),
+                                              colorText: shadColorScheme.destructive);
                                         }
                                       },
                                       child: const Text('确认'),
@@ -126,22 +114,17 @@ class UserWidget extends StatelessWidget {
                       child: ListTile(
                         title: Text(
                           user.username,
-                          style: TextStyle(
-                              fontSize: 20, color: shadColorScheme.foreground),
+                          style: TextStyle(fontSize: 20, color: shadColorScheme.foreground),
                         ),
                         trailing: Text(
-                          controller.userinfo?.user == user.username
-                              ? 'me'
-                              : '',
-                          style: TextStyle(
-                              fontSize: 12, color: shadColorScheme.foreground),
+                          controller.userinfo?.user == user.username ? 'me' : '',
+                          style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
                         ),
                         subtitle: Text(
                           user.isStaff ? '管理员' : '观影账号',
                           style: TextStyle(
                             fontSize: 12,
-                            color: shadColorScheme.foreground
-                                .withValues(alpha: opacity * 255),
+                            color: shadColorScheme.foreground.withValues(alpha: opacity * 255),
                           ),
                         ),
                         leading: Text(
@@ -161,8 +144,7 @@ class UserWidget extends StatelessWidget {
   }
 
   void _showEditBottomSheet({UserModel? user, required BuildContext context}) {
-    final usernameController =
-        TextEditingController(text: user?.username ?? '');
+    final usernameController = TextEditingController(text: user?.username ?? '');
     final passwordController = TextEditingController(text: '');
     final rePasswordController = TextEditingController(text: '');
     RxBool isActive = user != null ? user.isActive.obs : true.obs;
@@ -170,19 +152,18 @@ class UserWidget extends StatelessWidget {
     RxBool showRePassword = true.obs;
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.bottomSheet(
+      backgroundColor: shadColorScheme.background,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-      CustomCard(
+      Container(
         height: 320,
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 user != null ? '编辑用户：${user.username}' : '添加用户',
-                style: ShadTheme.of(context)
-                    .textTheme
-                    .h4
-                    .copyWith(color: shadColorScheme.foreground),
+                style: ShadTheme.of(context).textTheme.h4.copyWith(color: shadColorScheme.foreground),
               ),
             ),
             Expanded(
@@ -192,8 +173,7 @@ class UserWidget extends StatelessWidget {
                     CustomTextField(
                       controller: usernameController,
                       labelText: '用户名',
-                      suffixIcon:
-                          Icon(Icons.man, color: shadColorScheme.foreground),
+                      suffixIcon: Icon(Icons.man, color: shadColorScheme.foreground),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return '用户名不能为空';
@@ -208,9 +188,7 @@ class UserWidget extends StatelessWidget {
                         obscureText: showRePassword.value,
                         suffixIcon: IconButton(
                           icon: Icon(
-                            showPassword.value
-                                ? Icons.visibility
-                                : Icons.visibility_off,
+                            showPassword.value ? Icons.visibility : Icons.visibility_off,
                             size: 18,
                             color: shadColorScheme.foreground,
                           ),
@@ -233,9 +211,7 @@ class UserWidget extends StatelessWidget {
                         labelText: '密码校验',
                         suffixIcon: IconButton(
                           icon: Icon(
-                            showRePassword.value
-                                ? Icons.visibility
-                                : Icons.visibility_off,
+                            showRePassword.value ? Icons.visibility : Icons.visibility_off,
                             size: 18,
                             color: shadColorScheme.foreground,
                           ),
@@ -259,16 +235,13 @@ class UserWidget extends StatelessWidget {
                     if (user?.isStaff != true)
                       Obx(() {
                         return Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 4.0, horizontal: 8),
+                          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
                                 '可用',
-                                style: TextStyle(
-                                    fontSize: 13,
-                                    color: shadColorScheme.foreground),
+                                style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
                               ),
                               ShadSwitch(
                                 value: isActive.value,
@@ -287,26 +260,20 @@ class UserWidget extends StatelessWidget {
             OverflowBar(
               alignment: MainAxisAlignment.spaceAround,
               children: [
-                ElevatedButton(
-                  style: ButtonStyle(
-                    backgroundColor:
-                        WidgetStateProperty.all(shadColorScheme.destructive),
-                  ),
+                ShadButton.destructive(
+                  size: ShadButtonSize.sm,
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    Get.back();
                   },
-                  child: Text(
-                    '取消',
-                    style: TextStyle(
-                      color: shadColorScheme.destructiveForeground,
-                    ),
+                  leading: Icon(
+                    Icons.cancel,
+                    size: 18,
+                    color: shadColorScheme.destructiveForeground,
                   ),
+                  child: Text('取消', style: TextStyle(color: shadColorScheme.destructiveForeground)),
                 ),
-                ElevatedButton(
-                  style: ButtonStyle(
-                    backgroundColor:
-                        WidgetStateProperty.all(shadColorScheme.foreground),
-                  ),
+                ShadButton(
+                  size: ShadButtonSize.sm,
                   onPressed: () async {
                     if (usernameController.text.isEmpty) {
                       Get.snackbar(
@@ -339,8 +306,7 @@ class UserWidget extends StatelessWidget {
                       );
                     }
                     Logger.instance.i(user?.toJson());
-                    CommonResponse response =
-                        await controller.saveUserModel(user!);
+                    CommonResponse response = await controller.saveUserModel(user!);
                     if (response.code == 0) {
                       Get.back();
                       Get.snackbar(
@@ -366,11 +332,14 @@ class UserWidget extends StatelessWidget {
                       );
                     }
                   },
-                  child: const Text(
+                  leading: Icon(
+                    Icons.save,
+                    size: 18,
+                    color: shadColorScheme.primaryForeground,
+                  ),
+                  child: Text(
                     '保存',
-                    style: TextStyle(
-                      color: Colors.white,
-                    ),
+                    style: TextStyle(color: shadColorScheme.primaryForeground),
                   ),
                 ),
               ],

@@ -195,6 +195,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                             spacing: 10,
                             children: [
                               CustomPopup(
+                                showArrow: false,
                                 backgroundColor: shadColorScheme.background,
                                 barrierColor: Colors.transparent,
                                 contentPadding: EdgeInsets.zero,
@@ -245,6 +246,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                 ),
                               ),
                               CustomPopup(
+                                showArrow: false,
                                 backgroundColor: shadColorScheme.background,
                                 barrierColor: Colors.transparent,
                                 contentPadding: EdgeInsets.zero,
@@ -338,6 +340,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                 ),
                               ),
                               CustomPopup(
+                                showArrow: false,
                                 contentDecoration: BoxDecoration(
                                   color: shadColorScheme.background.withOpacity(opacity * 1.2),
                                 ),
@@ -708,7 +711,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                 ),
               if (status != null && level != null)
                 CustomPopup(
-                  showArrow: true,
+                  showArrow: false,
                   barrierColor: Colors.transparent,
                   backgroundColor: shadColorScheme.background,
                   content: SingleChildScrollView(
@@ -1116,7 +1119,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     RxBool siteRefreshing = false.obs;
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     return CustomPopup(
-      showArrow: true,
+      showArrow: false,
       // contentPadding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
       barrierColor: Colors.transparent,
       backgroundColor: shadColorScheme.background,

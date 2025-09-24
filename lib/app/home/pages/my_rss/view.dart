@@ -44,9 +44,7 @@ class _MyRssPageState extends State<MyRssPage> {
             onRefresh: () => controller.getMyRssFromServer(),
             child: SingleChildScrollView(
               child: Wrap(
-                children: controller.rssList
-                    .map((MyRss rss) => _buildMyRss(rss))
-                    .toList(),
+                children: controller.rssList.map((MyRss rss) => _buildMyRss(rss)).toList(),
               ),
             ),
           );
@@ -87,8 +85,7 @@ class _MyRssPageState extends State<MyRssPage> {
               Get.defaultDialog(
                 title: '确认',
                 radius: 5,
-                titleStyle:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+                titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                 middleText: '确定要删除标签吗？',
                 actions: [
                   ElevatedButton(
@@ -102,11 +99,9 @@ class _MyRssPageState extends State<MyRssPage> {
                       Get.back(result: true);
                       CommonResponse res = await controller.removeMyRss(rss);
                       if (res.code == 0) {
-                        Get.snackbar('删除通知', res.msg.toString(),
-                            colorText: colorScheme.foreground);
+                        Get.snackbar('删除通知', res.msg.toString(), colorText: colorScheme.foreground);
                       } else {
-                        Get.snackbar('删除通知', res.msg.toString(),
-                            colorText: colorScheme.destructive);
+                        Get.snackbar('删除通知', res.msg.toString(), colorText: colorScheme.destructive);
                       }
                     },
                     child: const Text('确认'),
@@ -126,8 +121,7 @@ class _MyRssPageState extends State<MyRssPage> {
       // The end action pane is the one at the right or the bottom side.
       child: ListTile(
         dense: true,
-        title: Text(rss.name!,
-            style: TextStyle(fontSize: 14, color: colorScheme.foreground)),
+        title: Text(rss.name!, style: TextStyle(fontSize: 14, color: colorScheme.foreground)),
         subtitle: Text(
           rss.siteId!,
           style: const TextStyle(fontSize: 10),
@@ -163,36 +157,34 @@ class _MyRssPageState extends State<MyRssPage> {
     String? category,
     bool? available,
     ''';
-    final TextEditingController nameController =
-        TextEditingController(text: rss != null ? rss.name : '');
-    final TextEditingController rssController =
-        TextEditingController(text: rss != null ? rss.rss : '');
-    final TextEditingController siteController = TextEditingController(
-        text: rss != null
-            ? rss.siteId
-            : controller.mySiteController.mySiteList[0].site);
-    final TextEditingController sortController =
-        TextEditingController(text: rss != null ? rss.sort.toString() : '0');
+    final TextEditingController nameController = TextEditingController(text: rss != null ? rss.name : '');
+    final TextEditingController rssController = TextEditingController(text: rss != null ? rss.rss : '');
+    final TextEditingController siteController =
+        TextEditingController(text: rss != null ? rss.siteId : controller.mySiteController.mySiteList[0].site);
+    final TextEditingController sortController = TextEditingController(text: rss != null ? rss.sort.toString() : '0');
 
     RxBool available = true.obs;
     final isLoading = false.obs;
 
     available.value = rss != null ? rss.available! : true;
     String title = rss != null ? '编辑RSS：${rss.name!}' : '添加RSS';
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.bottomSheet(
+        backgroundColor: shadColorScheme.background,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0), // 设置圆角半径
         ),
         isScrollControlled: true,
-        CustomCard(
+        Container(
           height: 410,
+          padding: const EdgeInsets.all(16),
           child: Column(
             children: [
               Padding(
                   padding: const EdgeInsets.all(8),
                   child: Text(
                     title,
-                    style: ShadTheme.of(context).textTheme.h4,
+                    style: TextStyle(fontSize: 16, color: shadColorScheme.foreground),
                   )),
               Expanded(
                 child: ListView(
@@ -204,23 +196,25 @@ class _MyRssPageState extends State<MyRssPage> {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: DropdownSearch<MySite>(
-                        items: (String? filter, _) async =>
-                            controller.mySiteController.mySiteList,
+                        items: (String? filter, _) async => controller.mySiteController.mySiteList,
                         selectedItem: controller.mySiteMap[siteController.text],
                         filterFn: (MySite item, String filter) =>
-                            item.site
-                                .toLowerCase()
-                                .contains(filter.toLowerCase()) ||
-                            item.nickname
-                                .toLowerCase()
-                                .contains(filter.toLowerCase()),
+                            item.site.toLowerCase().contains(filter.toLowerCase()) ||
+                            item.nickname.toLowerCase().contains(filter.toLowerCase()),
                         itemAsString: (MySite? item) => item!.site,
-                        compareFn: (MySite item, MySite selectedItem) =>
-                            item.site == selectedItem.site,
+                        compareFn: (MySite item, MySite selectedItem) => item.site == selectedItem.site,
                         onChanged: (MySite? item) {
                           siteController.text = item!.site;
                           Logger.instance.i(siteController);
                         },
+                        decoratorProps: DropDownDecoratorProps(
+                          baseStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                          decoration: InputDecoration(
+                            labelText: '站点选择',
+                            filled: true,
+                            fillColor: Colors.transparent,
+                          ),
+                        ),
                         popupProps: PopupPropsMultiSelection.menu(
                           searchDelay: const Duration(milliseconds: 50),
                           // isFilterOnline: false,
@@ -231,23 +225,18 @@ class _MyRssPageState extends State<MyRssPage> {
                             decoration: InputDecoration(
                               isDense: true,
                               border: OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.circular(8), // 设置搜索框的边框圆角
+                                borderRadius: BorderRadius.circular(8), // 设置搜索框的边框圆角
                               ),
                             ),
                           ),
-                          itemBuilder: (BuildContext context, MySite item,
-                              bool isSelected, _) {
+                          itemBuilder: (BuildContext context, MySite item, bool isSelected, _) {
                             return Container(
                               margin: const EdgeInsets.symmetric(horizontal: 8),
                               padding: EdgeInsets.zero,
                               decoration: !isSelected
                                   ? null
                                   : BoxDecoration(
-                                      border: Border.all(
-                                          color: ShadTheme.of(context)
-                                              .colorScheme
-                                              .foreground),
+                                      border: Border.all(color: shadColorScheme.foreground),
                                       borderRadius: BorderRadius.circular(5),
                                     ),
                               child: ListTile(
@@ -270,12 +259,12 @@ class _MyRssPageState extends State<MyRssPage> {
                       labelText: '优先级',
                     ),
                     Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(16.0),
                       child: Obx(() {
                         return SwitchListTile(
                             dense: true,
                             contentPadding: EdgeInsets.zero,
-                            title: const Text('可用'),
+                            title: Text('可用', style: TextStyle(fontSize: 14, color: shadColorScheme.foreground)),
                             value: available.value,
                             onChanged: (bool val) {
                               available.value = val;
@@ -288,7 +277,8 @@ class _MyRssPageState extends State<MyRssPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton.icon(
+                  ShadButton.destructive(
+                    size: ShadButtonSize.sm,
                     onPressed: () {
                       // 清空表单数据
                       nameController.clear();
@@ -298,19 +288,16 @@ class _MyRssPageState extends State<MyRssPage> {
                       available.value = true;
                       Get.back();
                     },
-                    style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all(
-                          Colors.redAccent.withAlpha(150)),
+                    leading: Icon(
+                      Icons.cancel,
+                      size: 18,
+                      color: shadColorScheme.destructiveForeground,
                     ),
-                    icon:
-                        const Icon(Icons.cancel_outlined, color: Colors.white),
-                    label: const Text(
-                      '取消',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                    child: Text('取消', style: TextStyle(color: shadColorScheme.destructiveForeground)),
                   ),
                   Obx(() {
-                    return ElevatedButton.icon(
+                    return ShadButton(
+                      size: ShadButtonSize.sm,
                       onPressed: () async {
                         isLoading.value = true;
                         MyRss newTag;
@@ -337,10 +324,13 @@ class _MyRssPageState extends State<MyRssPage> {
                         submitForm(newTag);
                         isLoading.value = false;
                       },
-                      icon: isLoading.value
-                          ? Center(child: const CircularProgressIndicator())
+                      leading: isLoading.value
+                          ? SizedBox(width: 24, height: 24, child: Center(child: const CircularProgressIndicator()))
                           : const Icon(Icons.save),
-                      label: const Text('保存'),
+                      child: Text(
+                        '保存',
+                        style: TextStyle(color: shadColorScheme.primaryForeground),
+                      ),
                     );
                   }),
                 ],
@@ -357,11 +347,9 @@ class _MyRssPageState extends State<MyRssPage> {
       Logger.instance.i(res.msg);
       if (res.code == 0) {
         Get.back();
-        Get.snackbar('标签保存成功！', res.msg,
-            colorText: ShadTheme.of(context).colorScheme.foreground);
+        Get.snackbar('标签保存成功！', res.msg, colorText: ShadTheme.of(context).colorScheme.foreground);
       } else {
-        Get.snackbar('标签保存失败！', res.msg,
-            colorText: ShadTheme.of(context).colorScheme.destructive);
+        Get.snackbar('标签保存失败！', res.msg, colorText: ShadTheme.of(context).colorScheme.destructive);
       }
     } finally {}
   }
