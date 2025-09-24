@@ -341,9 +341,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                               ),
                               CustomPopup(
                                 showArrow: false,
-                                contentDecoration: BoxDecoration(
-                                  color: shadColorScheme.background.withOpacity(opacity * 1.2),
-                                ),
+                                backgroundColor: shadColorScheme.background,
                                 content: SingleChildScrollView(
                                   scrollDirection: Axis.vertical,
                                   child: Column(
