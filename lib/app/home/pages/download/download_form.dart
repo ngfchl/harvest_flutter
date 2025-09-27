@@ -48,10 +48,8 @@ class DownloadForm extends StatelessWidget {
     upLimitController.text = website?.limitSpeed.toString() ?? '';
     urlController.text = info?.magnetUrl ?? '';
     tagsController.text = info?.tags.join(',') ?? '';
-    if (categories.isNotEmpty) {
-      savePathController.text = categories.values.first.savePath ??
-          (downloader.category.toLowerCase() == 'qb' ? downloader.prefs.savePath : downloader.prefs.downloadDir);
-    }
+    savePathController.text = categories.values.first.savePath ??
+        (downloader.category.toLowerCase() == 'qb' ? downloader.prefs.savePath : downloader.prefs.downloadDir);
   }
 
   @override
@@ -60,7 +58,7 @@ class DownloadForm extends StatelessWidget {
     categories.remove('全部');
     categories.remove('未分类');
     bool isQb = downloader.category.toLowerCase() == 'qb';
-    return CustomCard(child: isQb ? _buildQbittorrentForm(context) : _buildTransmissionForm(context));
+    return isQb ? _buildQbittorrentForm(context) : _buildTransmissionForm(context);
   }
 
   Form _buildQbittorrentForm(BuildContext context) {
@@ -68,6 +66,7 @@ class DownloadForm extends StatelessWidget {
     if (savePathController.text.isEmpty) {
       savePathController.text = prefs.savePath;
     }
+    Logger.instance.d("保存路径：${categories.values.first.savePath}");
     RxBool advancedConfig = false.obs;
     RxBool paused = prefs.startPausedEnabled.obs;
     Rx<String> contentLayout = prefs.torrentContentLayout.obs;
@@ -99,16 +98,22 @@ class DownloadForm extends StatelessWidget {
                 controller: urlController,
                 labelText: '链接',
               ),
+
               // if (downloader.category.toLowerCase() == 'qb')
               categories.isNotEmpty
-                  ? CustomPickerField(
-                      controller: categoryController,
-                      labelText: '分类',
-                      data: categories.keys.toList(),
-                      onChanged: (value, index) {
-                        categoryController.text = value;
-                        savePathController.text = categories[value]?.savePath ?? downloader.prefs.savePath;
-                      },
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
+                      child: ShadSelect<String>(
+                          placeholder: const Text('选择分类'),
+                          initialValue: categories.keys.first,
+                          options: categories.keys.map((key) => ShadOption(value: key, child: Text(key))).toList(),
+                          selectedOptionBuilder: (context, value) {
+                            return Text(value);
+                          },
+                          onChanged: (String? value) {
+                            categoryController.text = value!;
+                            savePathController.text = categories[value]?.savePath ?? downloader.prefs.savePath;
+                          }),
                     )
                   : CustomTextField(
                       controller: categoryController,
@@ -137,6 +142,7 @@ class DownloadForm extends StatelessWidget {
                       style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
                     ),
                     value: paused.value,
+                    activeColor: shadColorScheme.primary,
                     onChanged: (bool val) {
                       paused.value = val;
                     });
@@ -149,18 +155,19 @@ class DownloadForm extends StatelessWidget {
                       '高级选项',
                       style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
                     ),
+                    activeColor: shadColorScheme.primary,
                     value: advancedConfig.value,
                     onChanged: (bool val) {
                       advancedConfig.value = val;
                     });
               }),
-
               Obx(() {
                 return advancedConfig.value
                     ? Column(
                         children: [
                           SwitchListTile(
                               dense: true,
+                              activeColor: shadColorScheme.primary,
                               contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                               title: Text(
                                 '添加到队列顶部',
@@ -179,6 +186,7 @@ class DownloadForm extends StatelessWidget {
                                   Text('种子停止条件', style: TextStyle(fontSize: 12, color: shadColorScheme.foreground)),
                                   DropdownButton(
                                       value: stopCondition.value,
+                                      dropdownColor: shadColorScheme.background,
                                       items: [
                                         DropdownMenuItem(
                                           value: null,
@@ -215,6 +223,7 @@ class DownloadForm extends StatelessWidget {
                                   DropdownButton(
                                       isDense: true,
                                       value: contentLayout.value,
+                                      dropdownColor: shadColorScheme.background,
                                       items: [
                                         DropdownMenuItem(
                                             value: 'Original',
@@ -242,6 +251,7 @@ class DownloadForm extends StatelessWidget {
                           Obx(() {
                             return SwitchListTile(
                                 dense: true,
+                                activeColor: shadColorScheme.primary,
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                                 title: Text(
                                   '跳过哈希校验',
@@ -255,6 +265,7 @@ class DownloadForm extends StatelessWidget {
                           Obx(() {
                             return SwitchListTile(
                                 dense: true,
+                                activeColor: shadColorScheme.primary,
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                                 title: Text(
                                   '自动管理',
@@ -268,6 +279,7 @@ class DownloadForm extends StatelessWidget {
                           Obx(() {
                             return SwitchListTile(
                                 dense: true,
+                                activeColor: shadColorScheme.primary,
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                                 title: Text(
                                   '强制启动',
@@ -280,6 +292,7 @@ class DownloadForm extends StatelessWidget {
                           }),
                           SwitchListTile(
                               dense: true,
+                              activeColor: shadColorScheme.primary,
                               contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                               title: Text(
                                 '按顺序下载',
@@ -291,6 +304,7 @@ class DownloadForm extends StatelessWidget {
                               }),
                           SwitchListTile(
                               dense: true,
+                              activeColor: shadColorScheme.primary,
                               contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                               title: Text(
                                 '优先下载首尾数据块',
@@ -467,14 +481,19 @@ class DownloadForm extends StatelessWidget {
             ),
             // if (downloader.category.toLowerCase() == 'qb')
             categories.isNotEmpty
-                ? CustomPickerField(
-                    controller: categoryController,
-                    labelText: '分类',
-                    data: categories.keys.toList(),
-                    onChanged: (value, index) {
-                      categoryController.text = value;
-                      savePathController.text = categories[value]?.savePath ?? downloader.prefs.downloadDir;
-                    },
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
+                    child: ShadSelect<String>(
+                        placeholder: const Text('选择分类'),
+                        initialValue: categories.keys.first,
+                        options: categories.keys.map((key) => ShadOption(value: key, child: Text(key))).toList(),
+                        selectedOptionBuilder: (context, value) {
+                          return Text(value);
+                        },
+                        onChanged: (String? value) {
+                          categoryController.text = value!;
+                          savePathController.text = categories[value]?.savePath ?? downloader.prefs.downloadDir;
+                        }),
                   )
                 : CustomTextField(
                     controller: categoryController,
@@ -498,6 +517,7 @@ class DownloadForm extends StatelessWidget {
             Obx(() {
               return SwitchListTile(
                   dense: true,
+                  activeColor: shadColorScheme.primary,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                   title: Text(
                     '暂停下载',
@@ -511,6 +531,7 @@ class DownloadForm extends StatelessWidget {
             Obx(() {
               return SwitchListTile(
                   dense: true,
+                  activeColor: shadColorScheme.primary,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                   title: Text(
                     '高级选项',
@@ -599,22 +620,17 @@ class DownloadForm extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            ElevatedButton.icon(
+            ShadButton.destructive(
+              size: ShadButtonSize.sm,
               onPressed: () => cancelForm(context),
-              style: ButtonStyle(
-                shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                ),
-                backgroundColor: WidgetStateProperty.all(Colors.redAccent.withAlpha(150)),
-              ),
-              icon: const Icon(Icons.cancel_outlined, color: Colors.white),
-              label: const Text(
+              leading: const Icon(Icons.cancel_outlined),
+              child: const Text(
                 '取消',
-                style: TextStyle(color: Colors.white),
               ),
             ),
             Obx(() {
-              return ElevatedButton.icon(
+              return ShadButton(
+                size: ShadButtonSize.sm,
                 onPressed: () async {
                   isLoading.value = true;
                   double? ratioLimit = double.tryParse(ratioLimitController.text);
@@ -634,8 +650,9 @@ class DownloadForm extends StatelessWidget {
                   }, context);
                   isLoading.value = false;
                 },
-                icon: isLoading.value ? Center(child: const CircularProgressIndicator()) : const Icon(Icons.download),
-                label: const Text('下载'),
+                leading:
+                    isLoading.value ? Center(child: const CircularProgressIndicator()) : const Icon(Icons.download),
+                child: const Text('下载'),
               );
             }),
           ],
@@ -690,89 +707,93 @@ Future<void> openDownloaderListSheet(BuildContext context, SearchTorrentInfo inf
       return;
     }
   }
+
   var themeData = ShadTheme.of(context);
-  Get.bottomSheet(CustomCard(
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 8.0),
-          child: Text(
-            '请选择下载器',
-            style: themeData.textTheme.h4,
+  Get.bottomSheet(
+      backgroundColor: themeData.colorScheme.background,
+      Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(
+              '请选择下载器',
+              style: themeData.textTheme.h4,
+            ),
           ),
-        ),
-        Flexible(
-          child: ListView(
-            children: downloadController.dataList.map((downloader) {
-              return CustomCard(
-                child: GetBuilder<AggSearchController>(
-                    id: '${downloader.id} - ${downloader.name}',
-                    builder: (controller) {
-                      return ListTile(
-                        title: Text(
-                          downloader.name,
-                          style: TextStyle(
-                            color: themeData.colorScheme.foreground,
+          Flexible(
+            child: ListView(
+              children: downloadController.dataList.map((downloader) {
+                return CustomCard(
+                  child: GetBuilder<AggSearchController>(
+                      id: '${downloader.id} - ${downloader.name}',
+                      builder: (controller) {
+                        return ListTile(
+                          title: Text(
+                            downloader.name,
+                            style: TextStyle(
+                              color: themeData.colorScheme.foreground,
+                            ),
                           ),
-                        ),
-                        subtitle: Text(
-                          '${downloader.protocol}://${downloader.host}:${downloader.port}',
-                          style: TextStyle(
-                            color: themeData.colorScheme.foreground.withOpacity(0.8),
+                          subtitle: Text(
+                            '${downloader.protocol}://${downloader.host}:${downloader.port}',
+                            style: TextStyle(
+                              color: themeData.colorScheme.foreground.withOpacity(0.8),
+                            ),
                           ),
-                        ),
-                        leading: CircleAvatar(
-                          backgroundImage: Image.asset(
-                            'assets/images/${downloader.category.toLowerCase()}.png',
-                          ).image,
-                        ),
-                        trailing: controller.isDownloaderLoading
-                            ? const CircularProgressIndicator()
-                            : const SizedBox.shrink(),
-                        onTap: () async {
-                          CommonResponse response = await controller.getDownloaderCategoryList(downloader);
-                          if (!response.succeed) {
-                            Get.snackbar(
-                              '警告',
-                              response.msg,
-                              colorText: themeData.colorScheme.destructive,
-                            );
-                            return;
-                          }
-                          Map<String, Category> categorise = response.data;
-                          Get.bottomSheet(
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                            enableDrag: true,
-                            CustomCard(
-                              height: 400,
-                              padding: const EdgeInsets.all(12),
-                              child: Column(children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(
+                          leading: CircleAvatar(
+                            backgroundImage: Image.asset(
+                              'assets/images/${downloader.category.toLowerCase()}.png',
+                            ).image,
+                          ),
+                          trailing: controller.isDownloaderLoading
+                              ? const CircularProgressIndicator()
+                              : const SizedBox.shrink(),
+                          onTap: () async {
+                            if (downloadController.addTorrentLoading == true) {
+                              return;
+                            }
+                            downloadController.addTorrentLoading = true;
+                            CommonResponse response = await controller.getDownloaderCategoryList(downloader);
+                            if (!response.succeed) {
+                              Get.snackbar(
+                                '警告',
+                                response.msg,
+                                colorText: themeData.colorScheme.destructive,
+                              );
+                              return;
+                            }
+                            Map<String, Category> categorise = response.data;
+                            Get.bottomSheet(
+                              backgroundColor: themeData.colorScheme.background,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+                              enableDrag: true,
+                              Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: Column(children: [
+                                  Text(
                                     '添加种子',
                                     style: themeData.textTheme.h4,
                                   ),
-                                ),
-                                Expanded(
-                                  child: DownloadForm(
-                                    categories: categorise,
-                                    downloader: downloader,
-                                    info: info,
+                                  Expanded(
+                                    child: DownloadForm(
+                                      categories: categorise,
+                                      downloader: downloader,
+                                      info: info,
+                                    ),
                                   ),
-                                ),
-                              ]),
-                            ),
-                          );
-                        },
-                      );
-                    }),
-              );
-            }).toList(),
-          ),
-        )
-      ],
-    ),
-  ));
+                                ]),
+                              ),
+                            ).whenComplete(() {
+                              downloadController.addTorrentLoading = false;
+                            });
+                          },
+                        );
+                      }),
+                );
+              }).toList(),
+            ),
+          )
+        ],
+      ));
 }

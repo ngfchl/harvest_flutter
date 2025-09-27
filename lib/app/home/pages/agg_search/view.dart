@@ -772,6 +772,11 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
         }
       },
       onTap: () async {
+        if (controller.downloaderListLoading == true) {
+          return;
+        }
+        controller.downloaderListLoading = true;
+
         if (mySite.mirror!.contains('m-team')) {
           final res = await controller.getMTeamDlLink(mySite, info);
           if (res.code == 0) {
@@ -787,6 +792,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
           'harvest-app',
         ]);
         await openDownloaderListSheet(context, info);
+        controller.downloaderListLoading = false;
       },
       child: CustomCard(
         child: Column(

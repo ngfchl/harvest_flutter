@@ -14,6 +14,7 @@ class WebViewPageController extends GetxController {
   late WebSite? website;
   RxString pageTitle = ''.obs;
   bool isLoading = false;
+  bool downloaderListLoading = false;
   bool isTorrentPath = false;
   bool canGoBack = false;
   bool canGoForward = false;

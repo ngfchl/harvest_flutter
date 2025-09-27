@@ -28,6 +28,7 @@ import '../my_site/controller.dart';
 
 class DownloadController extends GetxController {
   bool loading = false;
+  bool addTorrentLoading = false;
   MySiteController mySiteController = Get.find();
   List<Downloader> dataList = <Downloader>[];
   Map<String, Downloader> dataMap = {};

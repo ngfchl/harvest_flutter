@@ -2005,6 +2005,10 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
   }
 
   void _openAddTorrentDialog(DownloadController controller, Downloader downloader) async {
+    if (controller.addTorrentLoading == true) {
+      return;
+    }
+    controller.addTorrentLoading = true;
     await controller.getDownloaderCategoryList(downloader);
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.bottomSheet(
@@ -2033,7 +2037,9 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
           ),
         ]),
       ),
-    );
+    ).whenComplete(() {
+      controller.addTorrentLoading = false;
+    });
   }
 
   void replaceTrackers({

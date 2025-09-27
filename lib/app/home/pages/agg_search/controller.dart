@@ -60,6 +60,7 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
 
   bool sortReversed = false;
   bool isLoading = false;
+  bool downloaderListLoading = false;
   bool isDownloaderLoading = false;
   String dataSource = 'TMDB';
   Floating? floating;

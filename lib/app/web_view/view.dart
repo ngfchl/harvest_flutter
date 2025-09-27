@@ -151,7 +151,13 @@ class _WebViewPageState extends State<WebViewPage> {
                         size: 24,
                       ),
                       onPressed: () async {
+                        if (controller.downloaderListLoading == true) {
+                          return;
+                        }
+                        controller.downloaderListLoading = true;
+
                         await openDownloaderListSheet(context, controller.info!);
+                        controller.downloaderListLoading = false;
                       },
                     ),
                   if (controller.mySite != null && controller.progress >= 100)
@@ -324,7 +330,13 @@ class _WebViewPageState extends State<WebViewPage> {
                       leechers: 0,
                       completers: 0,
                     );
-                    await openDownloaderListSheet(context, info);
+                    if (controller.downloaderListLoading == true) {
+                      return;
+                    }
+                    controller.downloaderListLoading = true;
+
+                    await openDownloaderListSheet(context, controller.info!);
+                    controller.downloaderListLoading = false;
                   },
                   onLoadStop: (inAppWebViewController, webUri) async {
                     Logger.instance.d(webUri!.toString);
