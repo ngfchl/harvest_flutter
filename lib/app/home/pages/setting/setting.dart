@@ -2302,7 +2302,6 @@ class SettingPage extends StatelessWidget {
                                 },
                               ),
                             ShadButton(
-                              backgroundColor: shadColorScheme.foreground,
                               onPressed: () {
                                 if (urlController.text.isNotEmpty) {
                                   if (useLocalBackground.value && baseUrl.value.startsWith('http')) {
