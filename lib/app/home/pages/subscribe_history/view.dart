@@ -23,11 +23,10 @@ class _SubscribeHistoryPageState extends State<SubscribeHistoryPage> {
     return GetBuilder<SubscribeHistoryController>(builder: (controller) {
       return Scaffold(
         backgroundColor: Colors.transparent,
-        floatingActionButton: IconButton(
+        floatingActionButton: ShadIconButton.ghost(
             onPressed: () => controller.getSubHistoryFromServer(),
             icon: const Icon(
               Icons.refresh,
-              color: Colors.green,
             )),
         body: GetBuilder<SubscribeHistoryController>(builder: (controller) {
           return Column(

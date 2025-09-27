@@ -54,7 +54,6 @@ class FileManagePage extends StatelessWidget {
                   },
                   icon: Icon(
                     Icons.home_outlined,
-                    color: shadColorScheme.foreground,
                   ),
                 ),
                 ShadIconButton.ghost(
@@ -65,7 +64,6 @@ class FileManagePage extends StatelessWidget {
                   },
                   icon: Icon(
                     Icons.refresh,
-                    color: shadColorScheme.foreground,
                   ),
                 ),
                 ShadIconButton.ghost(
@@ -82,7 +80,6 @@ class FileManagePage extends StatelessWidget {
                   },
                   icon: Icon(
                     Icons.arrow_back_outlined,
-                    color: shadColorScheme.foreground,
                   ),
                 ),
               ],

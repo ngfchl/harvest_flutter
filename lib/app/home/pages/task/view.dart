@@ -36,7 +36,7 @@ class TaskPage extends StatelessWidget {
           tabs: tabs,
           labelStyle: const TextStyle(fontSize: 13),
           indicatorColor: shadColorScheme.primary,
-          labelColor: shadColorScheme.foreground,
+          labelColor: shadColorScheme.primary,
           unselectedLabelColor: shadColorScheme.foreground.withOpacity(0.8),
         ),
         body: GetBuilder<TaskController>(builder: (controller) {

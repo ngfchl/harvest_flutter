@@ -8,7 +8,7 @@ import '../../../routes/app_pages.dart';
 import '../models/option.dart';
 
 class SettingController extends GetxController {
-  bool isLoaded = false;
+  bool isLoading = false;
   String configData = '';
   late PackageInfo packageInfo;
   String server = '';
@@ -41,11 +41,10 @@ class SettingController extends GetxController {
 
   @override
   Future<void> onInit() async {
-    isLoaded = true;
+    isLoading = true;
     update();
     optionChoice = optionMapList.map((e) => SelectOption.fromJson(e)).toList();
-    optionMap = Map.fromEntries(
-        optionMapList.map((item) => MapEntry(item['value']!, item['name']!)));
+    optionMap = Map.fromEntries(optionMapList.map((item) => MapEntry(item['value']!, item['name']!)));
 
     packageInfo = await PackageInfo.fromPlatform();
     await getOptionList();
@@ -61,13 +60,12 @@ class SettingController extends GetxController {
       optionList = res.data;
       var filter = optionList.where((item) => item.name == 'tmdb_api_auth');
       if (filter.isNotEmpty) {
-        SPUtil.setCache(
-            '${server}_option_tmdb_api', filter.first.toJson(), 3600 * 24 * 30);
+        SPUtil.setCache('${server}_option_tmdb_api', filter.first.toJson(), 3600 * 24 * 30);
       }
     } else {
       Get.snackbar('获取配置列表出错', res.msg.toString());
     }
-    isLoaded = false;
+    isLoading = false;
     update();
   }
 

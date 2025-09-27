@@ -98,7 +98,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
       var shadColorScheme = ShadTheme.of(context).colorScheme;
       return Column(
         mainAxisAlignment: MainAxisAlignment.end,
-        spacing: 15,
+        spacing: 10,
         children: [
           // IconButton(
           //   icon: Icon(
@@ -112,7 +112,6 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
             icon: Icon(
               controller.isLoading ? Icons.pause : Icons.play_arrow,
               size: 20,
-              color: shadColorScheme.foreground,
             ),
             onPressed: () => controller.toggleFetchStatus(),
           ),
@@ -120,7 +119,6 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
               icon: Icon(
                 Icons.settings,
                 size: 20,
-                color: shadColorScheme.foreground,
               ),
               onPressed: () {
                 Get.bottomSheet(
@@ -304,7 +302,6 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
             icon: Icon(
               Icons.add,
               size: 20,
-              color: shadColorScheme.foreground,
             ),
             onPressed: () async {
               _showEditBottomSheet();

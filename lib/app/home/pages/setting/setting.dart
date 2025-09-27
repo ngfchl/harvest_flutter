@@ -44,15 +44,17 @@ class SettingPage extends StatelessWidget {
                   _followSystemDarkForm(),
                   _noticeTestForm(context),
                   _telegramWebHookForm(context),
-                  ...(controller.isLoaded
+                  ...(controller.isLoading
                       ? [
-                          Center(
-                              child: CircularProgressIndicator(
-                            color: shadColorScheme.primary,
-                          ))
+                          Expanded(
+                            child: Center(
+                                child: CircularProgressIndicator(
+                              color: shadColorScheme.primary,
+                            )),
+                          )
                         ]
                       : _optionListView(context)),
-                ].map((item) => Padding(padding: EdgeInsets.symmetric(horizontal: 2.0), child: item)),
+                ].map((item) => item),
               ],
             ),
           );

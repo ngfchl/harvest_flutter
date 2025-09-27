@@ -40,12 +40,13 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
           floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
           // floatingActionButton: _buildBottomButtonBar(),
           bottomNavigationBar: CustomCard(
+              padding: EdgeInsets.zero,
               child: TabBar(
-            tabs: tabs,
-            dividerHeight: 0,
-            unselectedLabelColor: ShadTheme.of(context).colorScheme.foreground,
-            labelColor: ShadTheme.of(context).colorScheme.primary,
-          )),
+                tabs: tabs,
+                dividerHeight: 0,
+                unselectedLabelColor: ShadTheme.of(context).colorScheme.foreground,
+                labelColor: ShadTheme.of(context).colorScheme.primary,
+              )),
           body: TabBarView(
             children: [
               Column(children: [
@@ -63,7 +64,7 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                       SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Wrap(
-                            // spacing: 8,
+                            spacing: 8,
                             alignment: WrapAlignment.spaceAround,
                             children: controller.douBanMovieTags
                                 .map((e) => FilterChip(
