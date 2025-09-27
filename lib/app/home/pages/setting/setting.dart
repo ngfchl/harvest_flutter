@@ -1,14 +1,9 @@
-import 'dart:io';
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_refresh/easy_refresh.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:harvest/api/api.dart';
-import 'package:harvest/app/home/controller/home_controller.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/form_widgets.dart';
 import 'package:harvest/utils/storage.dart';
@@ -16,7 +11,6 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../../api/hooks.dart';
 import '../../../../api/option.dart';
-import '../../../../common/image_helper.dart';
 import '../../../../common/utils.dart';
 import '../../../../models/common_response.dart';
 import '../../../../theme/theme_view.dart';
@@ -50,7 +44,6 @@ class SettingPage extends StatelessWidget {
                   _followSystemDarkForm(),
                   _noticeTestForm(context),
                   _telegramWebHookForm(context),
-                  _backgroundImageForm(context),
                   ...(controller.isLoaded
                       ? [
                           Center(
@@ -2226,209 +2219,6 @@ class SettingPage extends StatelessWidget {
                 ),
               ),
           ],
-        ),
-      );
-    });
-  }
-
-  Widget _backgroundImageForm(context) {
-    RxString? baseUrl = SPUtil.getString('backgroundImage', defaultValue: 'https://bing.img.run/rand_uhd.php').obs;
-    RxDouble? opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7).obs;
-    RxBool useLocalBackground = SPUtil.getBool('useLocalBackground', defaultValue: false).obs;
-    RxBool useBackground = SPUtil.getBool('useBackground', defaultValue: false).obs;
-    RxBool useImageProxy = SPUtil.getBool('useImageProxy', defaultValue: false).obs;
-    TextEditingController urlController = TextEditingController(
-      text: baseUrl.value,
-    );
-    if (kIsWeb) {
-      useLocalBackground.value = false;
-    }
-    final isEdit = false.obs;
-    final showPreview = false.obs;
-    HomeController homeController = Get.find();
-    return Obx(() {
-      var shadColorScheme = ShadTheme.of(context).colorScheme;
-      return CustomCard(
-        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            spacing: 15.0,
-            children: [
-              ListTile(
-                  title: Text(
-                    "APP背景图片",
-                    style: TextStyle(color: shadColorScheme.foreground),
-                  ),
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                  leading: ShadIconButton.ghost(
-                    onPressed: () async {},
-                    icon: Icon(
-                      Icons.image_outlined,
-                      color: Colors.green,
-                    ),
-                  ),
-                  onTap: () {
-                    isEdit.value = !isEdit.value;
-                  },
-                  trailing: ExpandIcon(
-                      isExpanded: isEdit.value,
-                      onPressed: (value) {
-                        isEdit.value = !isEdit.value;
-                      },
-                      color: shadColorScheme.foreground)),
-              if (isEdit.value)
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          spacing: 20,
-                          children: [
-                            if (useBackground.value)
-                              ShadButton.secondary(
-                                child: Text('预览'),
-                                onPressed: () {
-                                  if (urlController.text.isNotEmpty) {
-                                    baseUrl.value = urlController.text;
-                                    showPreview.value = !showPreview.value;
-                                  } else {
-                                    showPreview.value = false;
-                                  }
-                                },
-                              ),
-                            ShadButton(
-                              onPressed: () {
-                                if (urlController.text.isNotEmpty) {
-                                  if (useLocalBackground.value && baseUrl.value.startsWith('http')) {
-                                    Get.snackbar(
-                                      '出错啦',
-                                      "请选择正确的背景图片！",
-                                      colorText: shadColorScheme.destructive,
-                                    );
-                                    return;
-                                  }
-                                  baseUrl.value = urlController.text;
-                                  Logger.instance.d('backgroundImage: ${urlController.text}');
-                                  SPUtil.setString('backgroundImage', urlController.text);
-                                  homeController.backgroundImage = urlController.text;
-                                  homeController.update(['home_view_background_image']);
-                                  isEdit.value = false;
-                                  homeController.onInit();
-                                } else {
-                                  Get.snackbar(
-                                    '出错啦',
-                                    "请选择或输入正确的图片地址！",
-                                    colorText: shadColorScheme.destructive,
-                                  );
-                                }
-                              },
-                              child: Text('保存'),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 16.0),
-                        child: Row(
-                          children: [
-                            Text(
-                              '卡片透明度',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
-                            Expanded(
-                              child: Slider(
-                                  min: 0.1,
-                                  max: 1,
-                                  divisions: 10,
-                                  label: opacity.value.toString(),
-                                  value: opacity.value,
-                                  onChanged: (value) async {
-                                    opacity.value = value;
-                                    SPUtil.setDouble('cardOpacity', opacity.value);
-                                  }),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SwitchTile(
-                        title: '使用背景图片',
-                        value: useBackground.value,
-                        onChanged: (value) {
-                          useBackground.value = value;
-                          SPUtil.setBool('useBackground', value);
-                        },
-                      ),
-                      if (useBackground.value)
-                        Column(spacing: 10, children: [
-                          if (!kIsWeb)
-                            SwitchTile(
-                              title: '使用本地图片',
-                              value: kIsWeb ? false : useLocalBackground.value,
-                              onChanged: (value) {
-                                useLocalBackground.value = value;
-                                SPUtil.setBool('useLocalBackground', value);
-                              },
-                            ),
-                          if (!useLocalBackground.value)
-                            SwitchTile(
-                              title: '网络图片加速',
-                              value: useImageProxy.value,
-                              onChanged: (value) {
-                                useImageProxy.value = value;
-                                SPUtil.setBool('useImageProxy', value);
-                              },
-                            ),
-                          useLocalBackground.value
-                              ? ImagePickerRow(
-                                  onImagePicked: (String? path) {
-                                    if (path != null) {
-                                      urlController.text = path;
-                                    }
-                                  },
-                                )
-                              : CustomTextField(
-                                  controller: urlController,
-                                  labelText: '背景图片地址',
-                                  helperText: '请仅输入网络图片地址，例：https://harvest.example.com/images/bg.jpg',
-                                ),
-                          Obx(() {
-                            if (showPreview.value && baseUrl.value.isNotEmpty) {
-                              Logger.instance.d('backgroundImage: $baseUrl , useLocalBackground: $useLocalBackground');
-                              return useLocalBackground.value
-                                  ? baseUrl.value.startsWith('http')
-                                      ? SizedBox.shrink()
-                                      : Image.file(
-                                          File(baseUrl.value),
-                                          width: double.infinity,
-                                          fit: BoxFit.fitWidth,
-                                        )
-                                  : Obx(() {
-                                      return CachedNetworkImage(
-                                        imageUrl:
-                                            '${useImageProxy.value ? 'https://images.weserv.nl/?url=' : ''}${baseUrl.value}',
-                                        placeholder: (context, url) => Center(
-                                            child: CircularProgressIndicator(
-                                          color: shadColorScheme.primary,
-                                        )),
-                                        errorWidget: (context, url, error) =>
-                                            Image.asset('assets/images/background.png'),
-                                        fit: BoxFit.fitWidth,
-                                      );
-                                    });
-                            }
-                            return SizedBox.shrink();
-                          }),
-                        ]),
-                    ],
-                  ),
-                ),
-            ],
-          ),
         ),
       );
     });
