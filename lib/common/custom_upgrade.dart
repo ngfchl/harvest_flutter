@@ -16,6 +16,8 @@ class CustomUpgradeWidget extends StatelessWidget {
             await controller.initUpdateLogState();
             Get.snackbar('请稍后', '更新日志获取中，请稍后...', colorText: ShadTheme.of(context).colorScheme.foreground);
           }
+          var shadColorScheme = ShadTheme.of(context).colorScheme;
+
           controller.initUpdateLogState();
           Get.bottomSheet(
             shape: RoundedRectangleBorder(
@@ -41,48 +43,37 @@ class CustomUpgradeWidget extends StatelessWidget {
                               children: [
                                 Expanded(
                                   child: ListView(
-                                    children: controller.updateLogState!.updateNotes
-                                        .map((note) => CheckboxListTile(
-                                              dense: true,
-                                              value: controller.updateLogState?.localLogs.hex == note.hex,
-                                              selected: controller.updateLogState?.localLogs.hex == note.hex,
-                                              onChanged: null,
-                                              title: Text(
-                                                note.data.trimRight(),
-                                                style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: controller.updateLogState?.update == true &&
-                                                            note.date.compareTo(
-                                                                    controller.updateLogState!.localLogs.date) >
-                                                                0
-                                                        ? Colors.red
-                                                        : ShadTheme.of(context).colorScheme.foreground,
-                                                    fontWeight: FontWeight.bold),
-                                              ),
-                                              subtitle: Text(
-                                                note.date,
-                                                style: TextStyle(
-                                                    fontSize: 10,
-                                                    color:
-                                                        ShadTheme.of(context).colorScheme.background.withOpacity(0.8)),
-                                              ),
-                                            ))
-                                        .toList(),
+                                    children: controller.updateLogState!.updateNotes.map((note) {
+                                      return CheckboxListTile(
+                                        dense: true,
+                                        value: controller.updateLogState?.localLogs.hex == note.hex,
+                                        selected: controller.updateLogState?.localLogs.hex == note.hex,
+                                        onChanged: null,
+                                        title: Text(
+                                          note.data.trimRight(),
+                                          style: TextStyle(
+                                              fontSize: 12,
+                                              color: controller.updateLogState?.update == true &&
+                                                      note.date.compareTo(controller.updateLogState!.localLogs.date) > 0
+                                                  ? Colors.red
+                                                  : shadColorScheme.foreground,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        subtitle: Text(
+                                          note.date,
+                                          style: TextStyle(
+                                              fontSize: 10, color: shadColorScheme.background.withOpacity(0.8)),
+                                        ),
+                                      );
+                                    }).toList(),
                                   ),
                                 ),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                                   children: [
                                     if (controller.updateLogState!.update == true)
-                                      ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          foregroundColor: Colors.white,
-                                          backgroundColor: Colors.blue,
-                                          // 按钮文字颜色
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(18.0), // 圆角半径
-                                          ),
-                                        ),
+                                      ShadButton(
+                                        size: ShadButtonSize.sm,
                                         onPressed: () async {
                                           final res = await controller.doDockerUpdate();
                                           Get.back();
@@ -91,15 +82,8 @@ class CustomUpgradeWidget extends StatelessWidget {
                                         },
                                         child: const Text('更新'),
                                       ),
-                                    ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        foregroundColor: Colors.white,
-                                        backgroundColor: Colors.red,
-                                        // 按钮文字颜色
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(18.0), // 圆角半径
-                                        ),
-                                      ),
+                                    ShadButton(
+                                      size: ShadButtonSize.sm,
                                       onPressed: () {
                                         Get.back();
                                       },
@@ -114,18 +98,11 @@ class CustomUpgradeWidget extends StatelessWidget {
                         SizedBox(
                           height: 300,
                           child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  foregroundColor: Colors.white,
-                                  backgroundColor: Colors.blue,
-                                  // 按钮文字颜色
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(18.0), // 圆角半径
-                                  ),
-                                ),
+                              ShadButton(
+                                size: ShadButtonSize.sm,
                                 onPressed: () async {
                                   final res = await controller.doDockerUpdate();
                                   Get.back();
@@ -134,15 +111,8 @@ class CustomUpgradeWidget extends StatelessWidget {
                                 },
                                 child: const Text('更新主服务'),
                               ),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  foregroundColor: Colors.white,
-                                  backgroundColor: Colors.blue,
-                                  // 按钮文字颜色
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(18.0), // 圆角半径
-                                  ),
-                                ),
+                              ShadButton(
+                                size: ShadButtonSize.sm,
                                 onPressed: () async {
                                   final res = await controller.doWebUIUpdate();
                                   Get.back();
@@ -151,15 +121,8 @@ class CustomUpgradeWidget extends StatelessWidget {
                                 },
                                 child: const Text('更新WebUI'),
                               ),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  foregroundColor: Colors.white,
-                                  backgroundColor: Colors.blue,
-                                  // 按钮文字颜色
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(18.0), // 圆角半径
-                                  ),
-                                ),
+                              ShadButton(
+                                size: ShadButtonSize.sm,
                                 onPressed: () async {
                                   final res = await controller.doSitesUpdate();
                                   Get.back();

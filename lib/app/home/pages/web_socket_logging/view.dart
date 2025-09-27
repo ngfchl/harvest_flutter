@@ -50,9 +50,9 @@ class WebSocketLoggingWidget extends StatelessWidget {
     return GetBuilder<WebSocketLoggingController>(builder: (controller) {
       var shadColorScheme = ShadTheme.of(context).colorScheme;
       return Scaffold(
-        backgroundColor: Colors.transparent,
         appBar: AppBar(
           title: const Text("实时访问日志"),
+          toolbarHeight: 40,
           actions: [
             IconButton(
               icon: Icon(
@@ -89,7 +89,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
                         child: Text(
                           l.key.toUpperCase(),
                           style: TextStyle(
-                            color: shadColorScheme.secondary,
+                            color: shadColorScheme.foreground,
                           ),
                         ),
                         onTap: () async {
@@ -107,11 +107,15 @@ class WebSocketLoggingWidget extends StatelessWidget {
               ),
             ),
             controller.isLoading
-                ? IconButton(
-                    icon: Center(
-                        child: CircularProgressIndicator(
-                      color: shadColorScheme.primary,
-                    )),
+                ? ShadIconButton.ghost(
+                    icon: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: Center(
+                          child: CircularProgressIndicator(
+                        color: shadColorScheme.foreground,
+                      )),
+                    ),
                     onPressed: () {
                       controller.stopFetchLog();
                       controller.update();
@@ -141,7 +145,6 @@ class WebSocketLoggingWidget extends StatelessWidget {
           ],
         ),
         body: CustomCard(
-          color: shadColorScheme.background,
           child: GetBuilder<WebSocketLoggingController>(builder: (controller) {
             return ListView.builder(
                 itemCount: controller.showLogList.length,
@@ -164,7 +167,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           letterSpacing: 1.5,
-                          color: shadColorScheme.background.withOpacity(0.8),
+                          color: shadColorScheme.foreground,
                           overflow: TextOverflow.visible,
                         ),
                       ));

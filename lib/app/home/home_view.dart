@@ -22,6 +22,7 @@ import '../../common/logging.dart';
 import '../../common/site_map.dart';
 import '../../common/video_player_page/video_page.dart';
 import '../../models/common_response.dart';
+import '../../theme/theme_view.dart';
 import '../../utils/screenshot.dart';
 import '../../utils/storage.dart';
 import '../../utils/string_utils.dart';
@@ -116,6 +117,7 @@ class HomeView extends GetView<HomeController> {
                 appBar: AppBar(
                   backgroundColor: shadColorScheme.background.withOpacity(opacity),
                   iconTheme: IconThemeData(color: shadColorScheme.foreground),
+                  toolbarHeight: 40,
                   elevation: 0,
                   actions: <Widget>[
                     _actionButtonList(context),
@@ -286,6 +288,10 @@ class HomeView extends GetView<HomeController> {
           const LoggingView(),
           const SizedBox(width: 15),
           const WebSocketLoggingWidget(),
+          const SizedBox(width: 15),
+          ThemeIconButton(
+            icon: Icon(LucideIcons.palette, size: 20, color: shadColorScheme.foreground),
+          ),
           const SizedBox(width: 15),
           if (controller.userinfo?.isStaff == true) ...[
             const CustomUpgradeWidget(),
