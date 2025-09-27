@@ -17,64 +17,53 @@ class ImagePickerRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final isMobile = Platform.isAndroid || Platform.isIOS;
 
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     return ListTile(
       title: Text(
         '选择图片',
         style: TextStyle(
           fontSize: 14,
-          color: ShadTheme.of(context).colorScheme.foreground,
+          color: shadColorScheme.foreground,
         ),
       ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
+        spacing: 20,
         children: [
           // 拍照按钮：移动端才显示
           if (isMobile)
-            ElevatedButton.icon(
-              icon: Icon(
+            ShadButton.outline(
+              size: ShadButtonSize.sm,
+              leading: Icon(
                 Icons.camera_alt,
-                size: 18,
-                color: ShadTheme.of(context).colorScheme.foreground,
+                size: 14,
+                color: shadColorScheme.primaryForeground,
               ),
-              label: Text(
+              child: Text(
                 '拍照',
                 style: TextStyle(
                   fontSize: 12,
-                  color: ShadTheme.of(context).colorScheme.foreground,
+                  color: shadColorScheme.primaryForeground,
                 ),
               ),
               onPressed: () => _pick(ImageSource.camera),
-              style: OutlinedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0), // 圆角半径
-                ),
-                backgroundColor: ShadTheme.of(context).colorScheme.secondary,
-                textStyle: TextStyle(fontSize: 12, color: Colors.white70),
-              ),
             ),
-          const SizedBox(width: 12),
           // 相册按钮：所有平台都显示
-          ElevatedButton.icon(
-            icon: Icon(
+          ShadButton.outline(
+            size: ShadButtonSize.sm,
+            leading: Icon(
               Icons.photo_library,
-              size: 18,
-              color: ShadTheme.of(context).colorScheme.primaryForeground,
+              size: 14,
+              color: shadColorScheme.primaryForeground,
             ),
-            label: Text(
+            child: Text(
               '相册',
               style: TextStyle(
                 fontSize: 12,
-                color: ShadTheme.of(context).colorScheme.primaryForeground,
+                color: shadColorScheme.primaryForeground,
               ),
             ),
             onPressed: () => _pick(ImageSource.gallery),
-            style: OutlinedButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0), // 圆角半径
-              ),
-              backgroundColor: ShadTheme.of(context).colorScheme.background,
-              textStyle: TextStyle(fontSize: 12, color: Colors.white70),
-            ),
           ),
         ],
       ),
