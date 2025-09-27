@@ -71,23 +71,23 @@ class DownloadController extends GetxController {
 
   // 下载器种子状态
   List<MetaDataItem> qBitStatus = [
-    {"name": "下载中", "value": 'downloading'},
+    {"name": "正在下载", "value": 'downloading'},
     {"name": "下载暂停", "value": 'pausedDL'},
-    {"name": "上传中", "value": 'uploading'},
-    {"name": "做种中", "value": 'stalledUP'},
+    {"name": "正在上传", "value": 'uploading'},
+    {"name": "正在做种", "value": 'stalledUP'},
     {"name": "等待下载", "value": 'stalledDL'},
-    {"name": "移动中", "value": 'moving'},
+    {"name": "正在移动", "value": 'moving'},
     {"name": "上传暂停", "value": 'pausedUP'},
     {"name": "下载队列", "value": 'queuedDL'},
     {"name": "上传队列", "value": 'queuedUP'},
-    {"name": "分配中", "value": 'allocating'},
+    // {"name": "分配中", "value": 'allocating'},
     {"name": "校验下载", "value": 'checkingDL'},
-    {"name": "校验恢复数据", "value": 'checkingResumeData'},
+    // {"name": "校验恢复数据", "value": 'checkingResumeData'},
     {"name": "校验上传", "value": 'checkingUP'},
     {"name": "强制下载", "value": 'forcedDL'},
-    {"name": "强制元数据下载", "value": 'forcedMetaDL'},
+    // {"name": "强制元数据下载", "value": 'forcedMetaDL'},
     {"name": "强制上传", "value": 'forcedUP'},
-    {"name": "元数据下载中", "value": 'metaDL'},
+    // {"name": "元数据下载中", "value": 'metaDL'},
     {"name": "缺失文件", "value": 'missingFiles'},
     {"name": "未知状态", "value": "unknown"},
     {"name": "错误", "value": 'error'},
@@ -840,6 +840,7 @@ class DownloadController extends GetxController {
   }
 
   void sortQbTorrents() {
+    logger_helper.Logger.instance.d('正在执行当前排序规则：$sortKey,正序：$sortReversed！');
     switch (sortKey) {
       case 'name':
         showTorrents.sort((a, b) => a.name.compareTo(b.name));
