@@ -175,13 +175,13 @@ class FileManagePage extends StatelessWidget {
                                                 middleText: '确定要重新命名吗？',
                                                 content: CustomTextField(controller: nameController, labelText: "重命名为"),
                                                 actions: [
-                                                  ElevatedButton(
+                                                  ShadButton(
                                                     onPressed: () {
                                                       Get.back(result: false);
                                                     },
                                                     child: const Text('取消'),
                                                   ),
-                                                  ElevatedButton(
+                                                  ShadButton(
                                                     onPressed: () async {
                                                       Get.back(result: true);
                                                       doFileAction(item.path, 'rename_dir', newFileName: "newFileName");
@@ -216,13 +216,13 @@ class FileManagePage extends StatelessWidget {
                                                     color: Colors.deepPurple),
                                                 middleText: '确定要删除文件吗？',
                                                 actions: [
-                                                  ElevatedButton(
+                                                  ShadButton(
                                                     onPressed: () {
                                                       Get.back(result: false);
                                                     },
                                                     child: const Text('取消'),
                                                   ),
-                                                  ElevatedButton(
+                                                  ShadButton(
                                                     onPressed: () async {
                                                       Get.back(result: true);
                                                       // CommonResponse res =

@@ -323,13 +323,13 @@ class SettingPage extends StatelessWidget {
                       titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
                       middleText: '确定要删除配置信息吗？',
                       actions: [
-                        ElevatedButton(
+                        ShadButton(
                           onPressed: () {
                             Get.back(result: false);
                           },
                           child: const Text('取消'),
                         ),
-                        ElevatedButton(
+                        ShadButton(
                           onPressed: () async {
                             Get.back(result: true);
                             CommonResponse res = await controller.removeOption(option);

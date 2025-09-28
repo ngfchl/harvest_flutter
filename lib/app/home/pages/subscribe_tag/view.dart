@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 import 'package:harvest/api/option.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/models/common_response.dart';
-import 'package:harvest/utils/storage.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../../common/form_widgets.dart';
@@ -122,22 +121,21 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                   titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                   middleText: '确定要删除标签吗？',
                   actions: [
-                    ElevatedButton(
+                    ShadButton(
                       onPressed: () {
                         Get.back(result: false);
                       },
                       child: const Text('取消'),
                     ),
-                    ElevatedButton(
+                    ShadButton(
                       onPressed: () async {
                         Get.back(result: true);
                         CommonResponse res = await controller.removeSubTag(tag);
+                        var shadColorScheme = ShadTheme.of(context).colorScheme;
                         if (res.code == 0) {
-                          Get.snackbar('删除通知', res.msg.toString(),
-                              colorText: ShadTheme.of(context).colorScheme.foreground);
+                          Get.snackbar('删除通知', res.msg.toString(), colorText: shadColorScheme.foreground);
                         } else {
-                          Get.snackbar('删除通知', res.msg.toString(),
-                              colorText: ShadTheme.of(context).colorScheme.destructive);
+                          Get.snackbar('删除通知', res.msg.toString(), colorText: shadColorScheme.destructive);
                         }
                       },
                       child: const Text('确认'),
@@ -203,7 +201,6 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
 
     available.value = tag != null ? tag.available! : true;
     String title = tag != null ? '编辑标签：${tag.name!}' : '添加标签';
-    double opacity = SPUtil.getDouble("cardOpacity", defaultValue: 0.7);
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.bottomSheet(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),

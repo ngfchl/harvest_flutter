@@ -135,13 +135,13 @@ class TaskPage extends StatelessWidget {
                                             fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
                                         middleText: '确定要删除任务吗？',
                                         actions: [
-                                          ElevatedButton(
+                                          ShadButton(
                                             onPressed: () {
                                               Get.back(result: false);
                                             },
                                             child: const Text('取消'),
                                           ),
-                                          ElevatedButton(
+                                          ShadButton(
                                             onPressed: () async {
                                               Get.back(result: true);
                                               var res = await controller.abortTask(item);
@@ -174,13 +174,13 @@ class TaskPage extends StatelessWidget {
                                             fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
                                         middleText: '确定要删除任务吗？',
                                         actions: [
-                                          ElevatedButton(
+                                          ShadButton(
                                             onPressed: () {
                                               Get.back(result: false);
                                             },
                                             child: const Text('取消'),
                                           ),
-                                          ElevatedButton(
+                                          ShadButton(
                                             onPressed: () async {
                                               Get.back(result: true);
                                               var res = await controller.revokeTask(item);
@@ -310,13 +310,13 @@ class TaskPage extends StatelessWidget {
                     ),
                     middleText: '确定要删除任务吗？',
                     actions: [
-                      ElevatedButton(
+                      ShadButton(
                         onPressed: () {
                           Get.back(result: false);
                         },
                         child: const Text('取消'),
                       ),
-                      ElevatedButton(
+                      ShadButton(
                         onPressed: () async {
                           Get.back(result: true);
                           CommonResponse res = await controller.removeTask(item);

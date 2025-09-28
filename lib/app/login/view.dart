@@ -451,19 +451,13 @@ class _LoginPageState extends State<LoginPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       // 新增取消按钮
-                      ElevatedButton.icon(
-                        icon: Icon(Icons.cancel_outlined, size: 18, color: themeData.colorScheme.destructiveForeground),
-                        label: Text(
+                      ShadButton(
+                        leading:
+                            Icon(Icons.cancel_outlined, size: 18, color: themeData.colorScheme.destructiveForeground),
+                        child: Text(
                           '取消',
                           style: TextStyle(
                             color: themeData.colorScheme.destructiveForeground,
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: themeData.colorScheme.destructive,
-                          // 设置背景颜色为绿色
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5.0), // 边角圆角大小可自定义
                           ),
                         ),
                         onPressed: () {
@@ -481,7 +475,7 @@ class _LoginPageState extends State<LoginPage> {
                           Navigator.pop(context);
                         },
                       ),
-                      ElevatedButton.icon(
+                      ShadButton(
                         onPressed: () async {
                           // 防止重复点击
                           if (controller.isLoading) return;
@@ -522,7 +516,7 @@ class _LoginPageState extends State<LoginPage> {
                           controller.isLoading = false;
                           controller.update();
                         },
-                        icon: controller.isLoading
+                        leading: controller.isLoading
                             ? Center(
                                 child: SizedBox(
                                     height: 18,
@@ -536,17 +530,10 @@ class _LoginPageState extends State<LoginPage> {
                                 size: 18,
                                 color: themeData.colorScheme.primaryForeground,
                               ),
-                        label: Text(
+                        child: Text(
                           controller.isLoading ? '测试...' : '保存',
                           style: TextStyle(
                             color: themeData.colorScheme.primaryForeground,
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: themeData.colorScheme.foreground,
-                          // 设置背景颜色为绿色
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5.0), // 边角圆角大小可自定义
                           ),
                         ),
                       ),

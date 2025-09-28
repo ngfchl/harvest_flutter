@@ -63,13 +63,13 @@ class _SubscribeHistoryPageState extends State<SubscribeHistoryPage> {
                 titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                 middleText: '确定要删除吗？',
                 actions: [
-                  ElevatedButton(
+                  ShadButton(
                     onPressed: () {
                       Get.back(result: false);
                     },
                     child: const Text('取消'),
                   ),
-                  ElevatedButton(
+                  ShadButton(
                     onPressed: () async {
                       CommonResponse res = await controller.removeHistory(history);
                       if (res.succeed) {

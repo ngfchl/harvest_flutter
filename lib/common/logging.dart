@@ -143,14 +143,14 @@ class LoggingView extends StatelessWidget {
                                 ? Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                                     children: [
-                                      ElevatedButton(
+                                      ShadButton(
                                           onPressed: () async {
                                             Get.back();
                                             String url = '$server/api/flower/tasks';
                                             await openUrl(url);
                                           },
                                           child: const Text('任务列表')),
-                                      ElevatedButton(
+                                      ShadButton(
                                           onPressed: () async {
                                             Get.back();
                                             String url = '$server/supervisor';
@@ -170,27 +170,27 @@ class LoggingView extends StatelessWidget {
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                                         children: [
-                                          ElevatedButton(
+                                          ShadButton(
                                               onPressed: () {
                                                 controller.currentLog = 'logging';
                                                 controller.switchLogging();
                                               },
                                               child: const Text('服务')),
-                                          // ElevatedButton(
+                                          // ShadButton(
                                           //     onPressed: () {
                                           //       controller.currentLog =
                                           //           'taskList';
                                           //       controller.switchLogging();
                                           //     },
                                           //     child: const Text('任务')),
-                                          // ElevatedButton(
+                                          // ShadButton(
                                           //     onPressed: () {
                                           //       controller.currentLog =
                                           //           'taskLog';
                                           //       controller.switchLogging();
                                           //     },
                                           //     child: const Text('Log')),
-                                          ElevatedButton(
+                                          ShadButton(
                                               onPressed: () {
                                                 controller.currentLog = 'accessLog';
                                                 controller.switchLogging();

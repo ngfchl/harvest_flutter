@@ -868,23 +868,23 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                ElevatedButton.icon(
+                ShadButton(
                   onPressed: () => controller.goSearchPage(videoDetail),
-                  icon: Icon(
+                  leading: Icon(
                     Icons.search,
                     color: ShadTheme.of(context).colorScheme.foreground,
                   ),
-                  label: const Text('搜索'),
+                  child: const Text('搜索'),
                 ),
-                ElevatedButton.icon(
+                ShadButton(
                   onPressed: () async {
                     await _openMediaInfoDetail(mediaInfo);
                   },
-                  icon: Icon(
+                  leading: Icon(
                     Icons.info_outline,
                     color: ShadTheme.of(context).colorScheme.foreground,
                   ),
-                  label: const Text('详情'),
+                  child: const Text('详情'),
                 ),
               ],
             ),

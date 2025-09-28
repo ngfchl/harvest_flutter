@@ -135,7 +135,7 @@ class SshWidget extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  ElevatedButton(
+                  ShadButton(
                       onPressed: () async {
                         await controller.execute(commandController.text);
                       },
@@ -146,7 +146,7 @@ class SshWidget extends StatelessWidget {
                           color: ShadTheme.of(context).colorScheme.foreground,
                         ),
                       )),
-                  ElevatedButton(
+                  ShadButton(
                     onPressed: () {
                       controller.clear();
                     },
@@ -158,7 +158,7 @@ class SshWidget extends StatelessWidget {
                       ),
                     ),
                   ),
-                  ElevatedButton(
+                  ShadButton(
                     onPressed: () {
                       controller.getContainerList();
                     },
@@ -170,7 +170,7 @@ class SshWidget extends StatelessWidget {
                       ),
                     ),
                   ),
-                  ElevatedButton(
+                  ShadButton(
                     onPressed: () {
                       controller.disconnect();
                     },
@@ -404,7 +404,7 @@ class SshWidget extends StatelessWidget {
                                 width: 5,
                               ),
                               if (container.hasNew)
-                                ElevatedButton(
+                                ShadButton(
                                     onPressed: () => controller.getNewImage(container.image.toString()),
                                     child: const Text(
                                       '下载镜像',

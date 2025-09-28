@@ -81,13 +81,13 @@ class UserWidget extends StatelessWidget {
                                             fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
                                         middleText: '确定要删除用户吗？',
                                         actions: [
-                                          ElevatedButton(
+                                          ShadButton(
                                             onPressed: () {
                                               Get.back(result: false);
                                             },
                                             child: const Text('取消'),
                                           ),
-                                          ElevatedButton(
+                                          ShadButton(
                                             onPressed: () async {
                                               Get.back(result: true);
                                               controller.userList.remove(user);
