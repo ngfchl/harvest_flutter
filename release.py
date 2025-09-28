@@ -1,22 +1,23 @@
+import argparse
 import concurrent.futures
 import datetime
+import dmgbuild
 import os
 import platform
 import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import traceback
-import argparse
-
 import yaml
 
 
 class VersionManager:
     def __init__(
-        self,
-        output_folder,
-        yaml_file_path="pubspec.yaml",
+            self,
+            output_folder,
+            yaml_file_path="pubspec.yaml",
     ):
         self.yaml_file_path = yaml_file_path
         self.output_folder = os.path.expanduser(output_folder)
@@ -114,7 +115,8 @@ class VersionManager:
         print(f"开始打包：{self.fvm} flutter build {flag}")
         try:
             if flag == "apk":
-                subprocess.run([self.fvm, "flutter", "build", "apk"])
+                subprocess.run([self.fvm, "flutter", "build", "apk", "--release", "--obfuscate",
+                                "--split-debug-info=build/symbols"])
                 print(f"APK 编译完成，正在移动到指定文件夹 {self.output_folder}")
                 shutil.move(
                     "build/app/outputs/flutter-apk/app-release.apk",
@@ -122,20 +124,59 @@ class VersionManager:
                 )
                 print(f"APK 打包完成")
             elif flag == "macos":
-                subprocess.run([self.fvm, "flutter", "build", "macos"])
+                subprocess.run([self.fvm, "flutter", "build", "macos", "--release", "--obfuscate",
+                                "--split-debug-info=build/symbols"])
                 print(f"macos APP 编译完成，正在移动到指定文件夹 {self.output_folder}")
-                res = subprocess.run(
-                    "zip -r harvest.app.zip harvest.app",
-                    cwd="build/macos/Build/Products/Release/",
-                    shell=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
-                print(res.stdout.decode("utf-8"))
-                shutil.move(
-                    "build/macos/Build/Products/Release/harvest.app.zip",
-                    f"{self.output_folder}/harvest_{self.new_version}_{self.machine}-macos.zip",
-                )
+                app_name = "harvest.app"
+                dmg_name = f"harvest_{self.new_version}_{self.machine}-macos.dmg"
+                app_path = "build/macos/Build/Products/Release/" + app_name
+                dmg_path = os.path.join(self.output_folder, dmg_name)
+                #
+                with tempfile.NamedTemporaryFile("w", suffix=".py", delete=False) as tmp:
+                    settings_file = tmp.name
+                    tmp.write(f"""
+files = ["{app_path}"]
+
+symlinks = {{
+    "Applications": "/Applications"
+}}
+
+icon_locations = {{
+    "harvest.app": (140, 120),
+    "Applications": (500, 120)
+}}
+""")
+
+                try:
+                    dmgbuild.build_dmg(
+                        dmg_path,
+                        "Harvest",
+                        settings_file
+                    )
+                    print(f"✅ DMG 打包完成: {dmg_path}")
+                finally:
+                    # 删除临时配置文件
+                    # os.remove(settings_file)
+                    pass
+                # res = subprocess.run(
+                #     "zip -r harvest.app.zip harvest.app",
+                #     cwd="build/macos/Build/Products/Release/",
+                #     shell=True,
+                #     stdout=subprocess.PIPE,
+                #     stderr=subprocess.PIPE,
+                # )
+                # print(res.stdout.decode("utf-8"))
+                # shutil.move(
+                #     "build/macos/Build/Products/Release/harvest.app.zip",
+                #     f"{self.output_folder}/harvest_{self.new_version}_{self.machine}-macos.zip",
+                # )
+                # target_path = os.path.join(self.output_folder, os.path.basename(dmg_path))
+                # if os.path.exists(target_path):
+                #     os.remove(target_path)  # 删除已有文件
+                # shutil.move(
+                #     dmg_path,
+                #     f"{self.output_folder}/",
+                # )
                 print(f"MacOS 打包完成")
             elif flag == "windows":
                 res = subprocess.run(
@@ -174,7 +215,7 @@ class VersionManager:
                 )
                 print(res.stdout.decode("utf-8"))
                 res = subprocess.run(
-                    f"{self.fvm} flutter build ios",
+                    f"{self.fvm} flutter build ios --release --obfuscate --split-debug-info=build/symbols",
                     shell=True,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
