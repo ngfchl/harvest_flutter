@@ -14,13 +14,13 @@ class WebSocketLoggingWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      child: Icon(
+    return ShadIconButton.ghost(
+      icon: Icon(
         Icons.waves_sharp,
         size: 20,
         color: ShadTheme.of(context).colorScheme.foreground,
       ),
-      onTap: () {
+      onPressed: () {
         final WebSocketLoggingController controller = Get.put(WebSocketLoggingController());
         double width = MediaQuery.of(context).size.width * 0.75;
         double height = MediaQuery.of(context).size.height * 0.5;

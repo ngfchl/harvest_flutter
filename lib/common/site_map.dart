@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harvest/app/home/pages/models/website.dart';
 import 'package:harvest/app/home/pages/my_site/controller.dart';
-import 'package:harvest/common/card_view.dart';
 import 'package:harvest/utils/calc_weeks.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:timelines_plus/timelines_plus.dart';
@@ -17,16 +16,16 @@ import '../utils/logger_helper.dart';
 import '../utils/string_utils.dart';
 
 class SiteMap extends StatelessWidget {
-  final Widget child;
+  final Widget icon;
 
-  const SiteMap({super.key, this.child = const Icon(Icons.map, size: 20)});
+  const SiteMap({super.key, this.icon = const Icon(Icons.map, size: 20)});
 
   @override
   Widget build(BuildContext context) {
     return GetBuilder<MySiteController>(builder: (controller) {
-      return InkWell(
-        child: child,
-        onTap: () {
+      return ShadIconButton.ghost(
+        icon: icon,
+        onPressed: () {
           RxString sortKey = RxString('mySiteJoined');
           // controller.mySiteList
           //     .sort((a, b) => a.timeJoin.compareTo(b.timeJoin));
@@ -41,51 +40,22 @@ class SiteMap extends StatelessWidget {
               .toList()
               .obs
             ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+          var shadColorScheme = ShadTheme.of(context).colorScheme;
+
           Get.bottomSheet(
+              backgroundColor: shadColorScheme.background,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
               isScrollControlled: true,
               enableDrag: true,
-              CustomCard(
-                height: MediaQuery.of(context).size.height * 0.9,
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.95,
                 child: Column(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: 120,
-                            child: Text(
-                              '站点图谱',
-                              style: ShadTheme.of(context).textTheme.h1Large,
-                            ),
-                          ),
-                          // Obx(() {
-                          //   return DropdownButton(
-                          //     isDense: true,
-                          //     value: sortKey.value,
-                          //     items: [
-                          //       {'name': '站点名称', 'value': 'siteName'},
-                          //       {'name': '注册时间', 'value': 'mySiteJoined'},
-                          //       {'name': '做种体积', 'value': 'statusSeedVolume'}
-                          //     ]
-                          //         .map((item) => MetaDataItem.fromJson(item))
-                          //         .map((el) => DropdownMenuItem(
-                          //             value: el.value,
-                          //             child: Text(
-                          //                 style: const TextStyle(
-                          //                   fontSize: 14,
-                          //                 ),
-                          //                 el.name)))
-                          //         .toList(),
-                          //     onChanged: (Object? value) {
-                          //       webSiteList.sort((a, b) => a.name
-                          //           .toLowerCase()
-                          //           .compareTo(b.name.toLowerCase()));
-                          //     },
-                          //   );
-                          // })
-                        ],
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      child: Text(
+                        '站点图谱',
+                        style: TextStyle(fontSize: 18, color: shadColorScheme.foreground, fontWeight: FontWeight.bold),
                       ),
                     ),
                     Expanded(
@@ -103,6 +73,7 @@ class SiteMap extends StatelessWidget {
                               }
                               bool flag = index % 2 != 0;
                               String country = getFlagEmojiFromCountryName(webSite.nation);
+                              String iconUrl = '${controller.baseUrl}/local/icons/${webSite.name}.png';
                               return TimelineNode(
                                 indicator: Column(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -116,14 +87,14 @@ class SiteMap extends StatelessWidget {
                                             country,
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: ShadTheme.of(context).colorScheme.secondary,
+                                              color: shadColorScheme.foreground,
                                             ),
                                           ),
                                           Text(
                                             mySite?.nickname ?? webSite.name,
                                             style: TextStyle(
                                               fontSize: 14,
-                                              color: ShadTheme.of(context).colorScheme.foreground,
+                                              color: shadColorScheme.foreground,
                                             ),
                                           ),
                                         ],
@@ -134,7 +105,7 @@ class SiteMap extends StatelessWidget {
                                           '[${webSite.tags}]',
                                           style: TextStyle(
                                             fontSize: 11,
-                                            color: ShadTheme.of(context).colorScheme.secondary,
+                                            color: shadColorScheme.foreground,
                                           ),
                                         ),
                                       ),
@@ -159,8 +130,7 @@ class SiteMap extends StatelessWidget {
                                                             if (!await launchUrl(uri,
                                                                 mode: LaunchMode.externalApplication)) {
                                                               Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
-                                                                  colorText:
-                                                                      ShadTheme.of(context).colorScheme.foreground);
+                                                                  colorText: shadColorScheme.foreground);
                                                             }
                                                           } else {
                                                             Logger.instance.d('使用内置浏览器打开');
@@ -181,16 +151,23 @@ class SiteMap extends StatelessWidget {
                                           : ClipRRect(
                                               borderRadius: BorderRadius.circular(10),
                                               child: CachedNetworkImage(
-                                                imageUrl: webSite.logo.startsWith('http')
-                                                    ? webSite.logo
-                                                    : '${mySite?.mirror}${webSite.logo}',
+                                                imageUrl: iconUrl,
+                                                cacheKey: iconUrl,
                                                 fit: BoxFit.fill,
-                                                httpHeaders: {
-                                                  "user-agent": mySite?.userAgent ?? '',
-                                                  "Cookie": mySite?.cookie ?? '',
-                                                },
-                                                errorWidget: (context, url, error) =>
-                                                    const Image(image: AssetImage('assets/images/avatar.png')),
+                                                errorWidget: (context, url, error) => CachedNetworkImage(
+                                                  imageUrl: webSite.logo.startsWith('http')
+                                                      ? webSite.logo
+                                                      : '${mySite?.mirror}${webSite.logo}',
+                                                  fit: BoxFit.fill,
+                                                  httpHeaders: {
+                                                    "user-agent": mySite?.userAgent.toString() ?? '',
+                                                    "Cookie": mySite?.cookie.toString() ?? '',
+                                                  },
+                                                  errorWidget: (context, url, error) =>
+                                                      const Image(image: AssetImage('assets/images/avatar.png')),
+                                                  width: 32,
+                                                  height: 32,
+                                                ),
                                                 width: 32,
                                                 height: 32,
                                               ),
@@ -200,16 +177,23 @@ class SiteMap extends StatelessWidget {
                                           : ClipRRect(
                                               borderRadius: BorderRadius.circular(10),
                                               child: CachedNetworkImage(
-                                                imageUrl: webSite.logo.startsWith('http')
-                                                    ? webSite.logo
-                                                    : '${mySite?.mirror}${webSite.logo}',
+                                                imageUrl: iconUrl,
+                                                cacheKey: iconUrl,
                                                 fit: BoxFit.fill,
-                                                httpHeaders: {
-                                                  "user-agent": mySite?.userAgent ?? '',
-                                                  "Cookie": mySite?.cookie ?? '',
-                                                },
-                                                errorWidget: (context, url, error) =>
-                                                    const Image(image: AssetImage('assets/images/avatar.png')),
+                                                errorWidget: (context, url, error) => CachedNetworkImage(
+                                                  imageUrl: webSite.logo.startsWith('http')
+                                                      ? webSite.logo
+                                                      : '${mySite?.mirror}${webSite.logo}',
+                                                  fit: BoxFit.fill,
+                                                  httpHeaders: {
+                                                    "user-agent": mySite?.userAgent.toString() ?? '',
+                                                    "Cookie": mySite?.cookie.toString() ?? '',
+                                                  },
+                                                  errorWidget: (context, url, error) =>
+                                                      const Image(image: AssetImage('assets/images/avatar.png')),
+                                                  width: 32,
+                                                  height: 32,
+                                                ),
                                                 width: 32,
                                                 height: 32,
                                               ),
@@ -224,35 +208,35 @@ class SiteMap extends StatelessWidget {
                                             calcWeeksDays(mySite.timeJoin),
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: ShadTheme.of(context).colorScheme.secondary,
+                                              color: shadColorScheme.foreground,
                                             ),
                                           ),
                                           Text(
                                             '[${status?.myLevel}]',
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: ShadTheme.of(context).colorScheme.foreground,
+                                              color: shadColorScheme.foreground,
                                             ),
                                           ),
                                           Text(
                                             '↑${FileSizeConvert.parseToFileSize(status?.uploaded ?? 0)} (${status?.seed ?? 0})',
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: ShadTheme.of(context).colorScheme.foreground,
+                                              color: shadColorScheme.foreground,
                                             ),
                                           ),
                                           Text(
                                             '↓${FileSizeConvert.parseToFileSize(status?.downloaded ?? 0)} (${status?.leech ?? 0})',
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: ShadTheme.of(context).colorScheme.foreground,
+                                              color: shadColorScheme.foreground,
                                             ),
                                           ),
                                           Text(
                                             '☁︎${FileSizeConvert.parseToFileSize(status?.seedVolume ?? 0)}',
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: ShadTheme.of(context).colorScheme.foreground,
+                                              color: shadColorScheme.foreground,
                                             ),
                                           ),
                                         ],

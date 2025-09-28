@@ -294,10 +294,10 @@ class HomeView extends GetView<HomeController> {
           ),
           const SizedBox(width: 15),
           if (controller.userinfo?.isStaff == true) ...[
-            const CustomUpgradeWidget(),
+            CustomUpgradeWidget(),
             const SizedBox(width: 15),
             SiteMap(
-              child: Icon(
+              icon: Icon(
                 Icons.map,
                 size: 20,
                 color: shadColorScheme.foreground,
