@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_pickers/pickers.dart';
-import 'package:flutter_pickers/style/picker_style.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 class SwitchTile extends StatelessWidget {
@@ -30,7 +28,7 @@ class SwitchTile extends StatelessWidget {
       ),
       trailing: Transform.scale(
         scale: 0.5,
-        child: Switch(
+        child: ShadSwitch(
           value: value,
           onChanged: onChanged,
         ),
@@ -184,105 +182,6 @@ class CustomNumberField extends StatelessWidget {
       keyboardType: TextInputType.number,
       inputFormatters: [
         FilteringTextInputFormatter.digitsOnly,
-      ],
-    );
-  }
-}
-
-class CustomPickerField extends StatelessWidget {
-  final TextEditingController controller;
-  final String labelText;
-  final List<String> data;
-  final bool readOnly;
-  final Function(dynamic, int)? onConfirm;
-  final Function(dynamic, int)? onChanged;
-
-  const CustomPickerField({
-    super.key,
-    required this.controller,
-    required this.labelText,
-    required this.data,
-    this.onConfirm,
-    this.onChanged,
-    this.readOnly = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (data.isNotEmpty && controller.text.isEmpty) controller.text = data[0];
-    return Stack(
-      children: [
-        CustomTextField(
-          controller: controller,
-          labelText: labelText,
-          readOnly: readOnly,
-        ),
-        if (!readOnly)
-          Positioned.fill(
-            child: InkWell(
-              onTap: () {
-                Pickers.showSinglePicker(
-                  context,
-                  data: data,
-                  selectData: controller.text,
-                  pickerStyle: PickerStyle(
-                    showTitleBar: true,
-                    textSize: 14,
-                    textColor: ShadTheme.of(context).colorScheme.foreground,
-                    backgroundColor: ShadTheme.of(context).colorScheme.background,
-                    headDecoration: BoxDecoration(color: ShadTheme.of(context).colorScheme.background),
-                  ),
-                  onConfirm: (p, position) {
-                    controller.text = p;
-                    onConfirm?.call(p, position);
-                  },
-                  onChanged: (p, position) {
-                    controller.text = p;
-                    onChanged?.call(p, position);
-                  },
-                );
-              },
-              child: Container(), // 空的容器占据整个触发 InkWell 的 onTap
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-class FullWidthButton extends StatelessWidget {
-  final String text;
-  final VoidCallback onPressed;
-  final Color? backgroundColor;
-  final Color? labelColor;
-
-  const FullWidthButton({
-    required this.text,
-    required this.onPressed,
-    this.backgroundColor, // 默认颜色为蓝色
-    this.labelColor, // 默认颜色为蓝色
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: ElevatedButton(
-            onPressed: onPressed,
-            style: OutlinedButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0), // 圆角半径
-              ),
-              backgroundColor: backgroundColor ?? Colors.orange,
-            ),
-            child: Text(
-              text,
-              style: TextStyle(color: labelColor ?? Colors.white70),
-            ),
-          ),
-        ),
       ],
     );
   }
