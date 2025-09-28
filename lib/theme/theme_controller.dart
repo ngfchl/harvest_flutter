@@ -17,17 +17,17 @@ class ThemeController extends GetxController {
 
   final Map<String, String> shadThemeColorNames = {
     'blue': '蓝色',
-    'gray': '灰色',
+    // 'gray': '灰色',
     'green': '绿色',
-    'neutral': '中性',
+    // 'neutral': '中性',
     'orange': '橙色',
     'red': '红色',
     'rose': '玫瑰',
-    'slate': '石板',
-    'stone': '石头',
+    'slate': '板岩',
+    // 'stone': '石头',
     'violet': '紫罗兰',
     'yellow': '黄色',
-    'zinc': '锌色',
+    // 'zinc': '锌色',
   };
 
   /// 主题模式
