@@ -555,7 +555,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
               flex: 1,
               borderRadius: const BorderRadius.all(Radius.circular(8)),
               onPressed: (context) async {
-                CommonResponse res = controller.reseedDownloader(downloader.id!);
+                CommonResponse res = await controller.reseedDownloader(downloader.id!);
                 if (res.code == 0) {
                   Get.snackbar('辅种通知', res.msg.toString(), colorText: shadColorScheme.foreground);
                 } else {
@@ -1811,7 +1811,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                     ),
                                   ),
                                   onTap: () async {
-                                    await controller.clearFilterOption();
+                                    controller.clearFilterOption();
                                     controller.filterTorrents(isQb);
                                   },
                                 ),
