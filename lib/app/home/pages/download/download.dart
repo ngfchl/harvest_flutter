@@ -1680,7 +1680,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
 
       Future.delayed(Duration(milliseconds: 50), () {
         logger_helper.Logger.instance.i('开始加载种子数据 1');
-        controller.localPaginationController.bindSource(controller.showTorrents.obs, reset: true);
+        // controller.localPaginationController.bindSource(controller.showTorrents.obs, reset: true);
         controller.isTorrentsLoading = false;
         controller.update();
         Get.bottomSheet(
@@ -1929,8 +1929,8 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                     onChanged: (value) {
                                       controller.filterTorrents(isQb);
                                       logger_helper.Logger.instance.i('开始加载种子数据 3：${controller.showTorrents.length}');
-                                      controller.localPaginationController
-                                          .bindSource(controller.showTorrents.obs, reset: true);
+                                      // controller.localPaginationController
+                                      //     .bindSource(controller.showTorrents.obs, reset: true);
                                     },
                                   ),
                                 ),
@@ -8198,7 +8198,6 @@ class ShowTorrentWidget extends StatelessWidget {
                               children: [
                                 ShadButton.destructive(
                                   size: ShadButtonSize.sm,
-
                                   onPressed: () async {
                                     Get.defaultDialog(
                                       title: '',
@@ -8250,7 +8249,6 @@ class ShowTorrentWidget extends StatelessWidget {
                                 ),
                                 ShadButton.secondary(
                                   size: ShadButtonSize.sm,
-
                                   onPressed: () async {
                                     Clipboard.setData(ClipboardData(text: controller.selectedTorrent.infohashV1));
                                     Get.snackbar('复制种子HASH', '种子HASH复制成功！', colorText: shadColorScheme.foreground);
@@ -9329,7 +9327,6 @@ class ShowTorrentWidget extends StatelessWidget {
                               children: [
                                 ShadButton.destructive(
                                   size: ShadButtonSize.sm,
-
                                   onPressed: () async {
                                     Get.defaultDialog(
                                       title: '',

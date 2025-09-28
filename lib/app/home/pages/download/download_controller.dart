@@ -4,9 +4,7 @@ import 'dart:convert';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart'; // ignore: depend_on_referenced_packages
-import 'package:harvest/app/home/pages/download/pagination.dart';
 import 'package:harvest/app/home/pages/models/qbittorrent.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
 import 'package:transmission_api/transmission_api.dart' as tr;
 import 'package:web_socket_channel/status.dart' as status;
@@ -51,7 +49,7 @@ class DownloadController extends GetxController {
 
   DownloadController(this.realTimeState);
 
-  late LocalPaginationController localPaginationController;
+  // late LocalPaginationController localPaginationController;
   final ScrollController scrollController = ScrollController();
 
   // QB 下载器筛选状态
@@ -351,7 +349,6 @@ class DownloadController extends GetxController {
   Future<QBittorrentApiV2> getQbInstance(Downloader downloader) async {
     final qbittorrent = QBittorrentApiV2(
       baseUrl: '${downloader.protocol}://${downloader.host}:${downloader.port}',
-      cookiePath: '${(await getApplicationDocumentsDirectory()).path}/${downloader.host}/${downloader.port}',
       logger: false,
     );
     await qbittorrent.auth.login(
@@ -396,7 +393,7 @@ class DownloadController extends GetxController {
       isTorrentsLoading = true;
       serverStatus.clear();
       sortKey = SPUtil.getString('${downloader.host}:${downloader.port}-sortKey', defaultValue: 'name');
-      localPaginationController = Get.put(LocalPaginationController(pageSize: pageSize * 10));
+      // localPaginationController = Get.put(LocalPaginationController(pageSize: pageSize * 10));
       update();
       final wsUrl = Uri.parse('${baseUrl.replaceFirst('http', 'ws')}/api/${Api.DOWNLOADER_TORRENTS}');
       torrentsChannel = WebSocketChannel.connect(wsUrl);
@@ -415,13 +412,13 @@ class DownloadController extends GetxController {
         }
         update();
       }
-      scrollController.addListener(() {
-        if (scrollController.position.pixels >= scrollController.position.maxScrollExtent - 100 &&
-            localPaginationController.hasMore) {
-          localPaginationController.loadNextPage();
-          update();
-        }
-      });
+      // scrollController.addListener(() {
+      //   if (scrollController.position.pixels >= scrollController.position.maxScrollExtent - 100 &&
+      //       localPaginationController.hasMore) {
+      //     localPaginationController.loadNextPage();
+      //     update();
+      //   }
+      // });
       int rid = 0;
       torrentsChannel.sink.add(json.encode({
         "downloader_id": downloader.id,
@@ -611,12 +608,13 @@ class DownloadController extends GetxController {
     return response;
   }
 
-  getDownloaderCategoryList(Downloader downloader) async {
+  Future getDownloaderCategoryList(Downloader downloader) async {
     CommonResponse response = await getDownloaderCategories(downloader.id!);
     if (!response.succeed) {
       return response;
     }
     categoryMap = {for (var item in response.data) (item)['name']!: Category.fromJson(item as Map<String, dynamic>)};
+    return;
   }
 
   void filterTrTorrents() {
@@ -638,7 +636,7 @@ class DownloadController extends GetxController {
     filterSiteTorrent();
     sortTrTorrents();
     // localPaginationController.bindSource(showTorrents.obs, reset: true);
-    localPaginationController.bindSource(showTorrents.obs);
+    // localPaginationController.bindSource(showTorrents.obs);
     update();
     logger_helper.Logger.instance.i(showTorrents.length);
   }
@@ -720,7 +718,7 @@ class DownloadController extends GetxController {
     return trackerToWebSiteMap[trackerKey]?.name ?? trackerKey ?? '未知';
   }
 
-  filterTorrentsByState() {
+  void filterTorrentsByState() {
     if (trTorrentState == null) {
       return;
     }
@@ -744,7 +742,7 @@ class DownloadController extends GetxController {
     }
   }
 
-  filterTorrentsBySearchKey() {
+  void filterTorrentsBySearchKey() {
     // logger_helper.Logger.instance.d('搜索关键字：${searchKey.value}');
 
     if (searchKey.isNotEmpty) {
@@ -757,7 +755,7 @@ class DownloadController extends GetxController {
     }
   }
 
-  filterTorrentsByTracker() {
+  void filterTorrentsByTracker() {
     logger_helper.Logger.instance.i(selectedTracker);
 
     if (selectedTracker.isNotEmpty && selectedTracker != '全部') {
@@ -834,9 +832,9 @@ class DownloadController extends GetxController {
     logger_helper.Logger.instance.d(showTorrents.length);
 
     filterSiteTorrent();
-    localPaginationController.bindSource(showTorrents.obs, reset: true);
+    // localPaginationController.bindSource(showTorrents.obs, reset: true);
     sortQbTorrents();
-    localPaginationController.bindSource(showTorrents.obs);
+    // localPaginationController.bindSource(showTorrents.obs);
     update();
   }
 
@@ -922,7 +920,7 @@ class DownloadController extends GetxController {
       logger_helper.Logger.instance.d('反转序列！');
       showTorrents = showTorrents.reversed.toList();
     }
-    localPaginationController.bindSource(showTorrents.obs);
+    // localPaginationController.bindSource(showTorrents.obs);
     update();
   }
 
@@ -1128,7 +1126,7 @@ class DownloadController extends GetxController {
     return response;
   }
 
-  subTorrentList(downloader) async {
+  Future<void> subTorrentList(Downloader downloader) async {
     // 单独订阅种子列表
     // 限制太多，暂时放弃
     bool isQb = downloader.category == 'Qb';
@@ -1138,13 +1136,13 @@ class DownloadController extends GetxController {
       'Content-Type': 'application/json; charset=utf-8',
       'Authorization': 'Bearer ${authInfo.authToken}'
     };
-    sortKey = SPUtil.getString('${downloader.host}:${downloader.port}-sortKey', defaultValue: 'name') ?? 'name';
+    sortKey = SPUtil.getString('${downloader.host}:${downloader.port}-sortKey', defaultValue: 'name');
 
     try {
       SSEClient.enableRetry();
       SSEClient.subscribeToSSE(
         method: SSERequestType.POST,
-        url: '$baseUrl/api/option/downloaders/torrents/${downloader.id}?interval=${interval}',
+        url: '$baseUrl/api/option/downloaders/torrents/${downloader.id}?interval=$interval',
         header: headers,
         body: {
           "status_filter": torrentState,
@@ -1187,7 +1185,7 @@ class DownloadController extends GetxController {
     }
   }
 
-  getSSEDownloaderTorrents(Downloader downloader) async {
+  Future<void> getSSEDownloaderTorrents(Downloader downloader) async {
     // 打开加载状态
     try {
       bool isQb = downloader.category == 'Qb';
@@ -1198,18 +1196,18 @@ class DownloadController extends GetxController {
         'Content-Type': 'application/json; charset=utf-8',
         'Authorization': 'Bearer ${authInfo.authToken}'
       };
-      localPaginationController = Get.put(LocalPaginationController(pageSize: pageSize * 10));
+      // localPaginationController = Get.put(LocalPaginationController(pageSize: pageSize * 10));
 
       serverStatus.clear();
-      sortKey = SPUtil.getString('${downloader.host}:${downloader.port}-sortKey', defaultValue: 'name') ?? 'name';
+      sortKey = SPUtil.getString('${downloader.host}:${downloader.port}-sortKey', defaultValue: 'name');
       update();
-      scrollController.addListener(() {
-        if (scrollController.position.pixels >= scrollController.position.maxScrollExtent - 100 &&
-            localPaginationController.hasMore) {
-          localPaginationController.loadNextPage();
-          update();
-        }
-      });
+      // scrollController.addListener(() {
+      //   if (scrollController.position.pixels >= scrollController.position.maxScrollExtent - 100 &&
+      //       localPaginationController.hasMore) {
+      //     localPaginationController.loadNextPage();
+      //     update();
+      //   }
+      // });
       // 使用缓存
       trackerToWebSiteMap = mySiteController.buildTrackerToWebSite();
       String key = 'Downloader-$baseUrl:${downloader.name}-${downloader.id}';
@@ -1269,7 +1267,7 @@ class DownloadController extends GetxController {
     }
   }
 
-  void parseTrData(data) {
+  void parseTrData(Map data) {
     if (data.runtimeType == List || data['torrents'] == null || data['status'].isEmpty) return;
     torrents.assignAll(data['torrents'].map((item) => TrTorrent.fromJson(item)));
     tags.addAll(torrents.expand<String>((item) => item.labels).toSet().toList());
@@ -1314,7 +1312,7 @@ class DownloadController extends GetxController {
     update();
   }
 
-  void parseQbMainData(data) {
+  void parseQbMainData(Map data) {
     categoryMap = {
       '全部': const Category(name: '全部'),
       '未分类': const Category(name: '未分类', savePath: ''),
@@ -1380,13 +1378,13 @@ class DownloadController extends GetxController {
     }
   }
 
-  resetSortKey(Downloader downloader) {
+  void resetSortKey(Downloader downloader) {
     sortKey = 'name';
     SPUtil.setString('${downloader.host}:${downloader.port}-sortKey', 'name');
     update();
   }
 
-  clearFilterOption() {
+  void clearFilterOption() {
     serverStatus.clear();
     trackers.clear();
     searchController.text = '';
@@ -1463,7 +1461,7 @@ class DownloadController extends GetxController {
     update();
   }
 
-  saveDownloaderToServer(Downloader downloader) async {
+  Future<CommonResponse> saveDownloaderToServer(Downloader downloader) async {
     CommonResponse response;
     if (downloader.id != 0) {
       response = await editDownloaderApi(downloader);
@@ -1473,15 +1471,15 @@ class DownloadController extends GetxController {
     return response;
   }
 
-  getTorrentsPathList() async {
+  Future<CommonResponse> getTorrentsPathList() async {
     return await getDownloaderPaths();
   }
 
-  reseedDownloader(int downloaderId) async {
+  Future<CommonResponse> reseedDownloader(int downloaderId) async {
     return await repeatSingleDownloader(downloaderId);
   }
 
-  toggleSpeedLimit(Downloader downloader, bool state) async {
+  Future<void> toggleSpeedLimit(Downloader downloader, bool state) async {
     toggleSpeedLimitLoading = true;
     update();
     CommonResponse response = await toggleSpeedLimitApi(downloader.id!, state);
@@ -1497,12 +1495,12 @@ class DownloadController extends GetxController {
     Get.snackbar('出错啦！', response.msg, colorText: Colors.red);
   }
 
-  getPrefs(Downloader downloader) async {
+  Future<CommonResponse> getPrefs(Downloader downloader) async {
     CommonResponse response = await getPrefsApi(downloader.id!);
     return response;
   }
 
-  setPrefs(Downloader downloader, dynamic prefs) async {
+  Future<CommonResponse> setPrefs(Downloader downloader, dynamic prefs) async {
     CommonResponse response = await setPrefsApi(downloader.id!, prefs.toJson());
     return response;
   }
@@ -1511,7 +1509,7 @@ class DownloadController extends GetxController {
   ///@description 批量更换 tracker
   ///@updateTime
   */
-  replaceTrackers(
+  Future replaceTrackers(
       {required Downloader downloader, required List<String> torrentHashes, required String newTracker}) async {
     return await replaceTorrentTrackerApi(downloader.id!, {'torrent_hashes': torrentHashes, 'new_tracker': newTracker});
   }
