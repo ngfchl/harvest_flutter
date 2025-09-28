@@ -57,10 +57,16 @@ class LoggingView extends StatelessWidget {
                   child: GetBuilder<LoggingController>(
                     builder: (controller) {
                       return Scaffold(
+                        backgroundColor: shadColorScheme.background,
                         bottomNavigationBar: TabBar(tabs: tabs),
                         appBar: AppBar(
-                          title: const Text('实时日志'),
+                          title: Text(
+                            '实时日志',
+                            style: TextStyle(color: shadColorScheme.foreground),
+                          ),
                           titleSpacing: 10,
+                          toolbarHeight: 40,
+                          backgroundColor: shadColorScheme.background,
                           actions: [
                             IconButton(
                               onPressed: () async {
@@ -134,6 +140,9 @@ class LoggingView extends StatelessWidget {
                                         padding: const EdgeInsets.all(8),
                                         child: SelectableText(
                                           log.lines.join('\n'),
+                                          style: TextStyle(
+                                            color: shadColorScheme.foreground,
+                                          ),
                                         ), // 确保 log 可以转换为字符串
                                       );
                                     },
@@ -285,7 +294,8 @@ class LoggingView extends StatelessWidget {
                                             Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                Text('页面字体大小：${controller.fontSize}'),
+                                                Text('页面字体大小：${controller.fontSize}',
+                                                    style: TextStyle(color: shadColorScheme.foreground)),
                                                 Expanded(
                                                   child: Slider(
                                                       min: 12,

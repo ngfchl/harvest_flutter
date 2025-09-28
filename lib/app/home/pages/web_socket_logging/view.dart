@@ -49,9 +49,14 @@ class WebSocketLoggingWidget extends StatelessWidget {
     return GetBuilder<WebSocketLoggingController>(builder: (controller) {
       var shadColorScheme = ShadTheme.of(context).colorScheme;
       return Scaffold(
+        backgroundColor: shadColorScheme.background,
         appBar: AppBar(
-          title: const Text("实时访问日志"),
+          title: Text(
+            "实时访问日志",
+            style: TextStyle(color: shadColorScheme.foreground),
+          ),
           toolbarHeight: 40,
+          backgroundColor: shadColorScheme.background,
           actions: [
             ShadMenubar(
               border: ShadBorder.none,

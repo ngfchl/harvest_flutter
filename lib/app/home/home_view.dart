@@ -285,8 +285,10 @@ class HomeView extends GetView<HomeController> {
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const LoggingView(),
-          const SizedBox(width: 15),
+          if (kDebugMode) ...[
+            const LoggingView(),
+            const SizedBox(width: 15),
+          ],
           const WebSocketLoggingWidget(),
           const SizedBox(width: 15),
           ThemeIconButton(
