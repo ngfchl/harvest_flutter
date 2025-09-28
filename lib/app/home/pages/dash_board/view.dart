@@ -10,7 +10,6 @@ import 'package:harvest/utils/platform.dart';
 import 'package:random_color/random_color.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:syncfusion_flutter_gauges/gauges.dart';
 
 import '../../../../common/animated_text.dart';
 import '../../../../common/card_view.dart';
@@ -1549,28 +1548,12 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                     ),
                                     Expanded(
                                       child: SizedBox(
-                                        height: 10,
+                                        height: 8,
                                         // width: 100,
-                                        child: SfLinearGauge(
-                                          showTicks: false,
-                                          showLabels: false,
-                                          animateAxis: true,
-                                          isAxisInversed: true,
-                                          axisTrackStyle: const LinearAxisTrackStyle(
-                                              thickness: 8,
-                                              edgeStyle: LinearEdgeStyle.bothCurve,
-                                              // ✅ 圆角
-                                              borderWidth: 1,
-                                              borderColor: Color(0xff898989),
-                                              color: Colors.transparent),
-                                          barPointers: <LinearBarPointer>[
-                                            LinearBarPointer(
-                                              value: (status.uploaded) / maxUploaded * 100,
-                                              thickness: 8,
-                                              edgeStyle: LinearEdgeStyle.bothCurve, // ✅ 圆角
-                                              color: uploadColor,
-                                            )
-                                          ],
+                                        child: ShadProgress(
+                                          value: 1 - status.uploaded / maxUploaded,
+                                          color: ShadTheme.of(context).colorScheme.background,
+                                          backgroundColor: ShadTheme.of(context).colorScheme.primary,
                                         ),
                                       ),
                                     ),
@@ -1595,27 +1578,11 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                   children: [
                                     Expanded(
                                       child: SizedBox(
-                                          height: 10,
+                                          height: 8,
                                           // width: 100,
-                                          child: SfLinearGauge(
-                                            showTicks: false,
-                                            showLabels: false,
-                                            animateAxis: true,
-                                            axisTrackStyle: const LinearAxisTrackStyle(
-                                              thickness: 8,
-                                              edgeStyle: LinearEdgeStyle.bothCurve,
-                                              borderWidth: 1,
-                                              borderColor: Color(0xff898989),
-                                              color: Colors.transparent,
-                                            ),
-                                            barPointers: <LinearBarPointer>[
-                                              LinearBarPointer(
-                                                  value: (status.downloaded ?? 0) / maxDownloaded * 100,
-                                                  thickness: 8,
-                                                  edgeStyle: LinearEdgeStyle.bothCurve,
-                                                  color: downloadColor),
-                                            ],
-                                          )),
+                                          child: ShadProgress(
+                                              value: (status.downloaded ?? 0) / maxDownloaded,
+                                              color: ShadTheme.of(context).colorScheme.destructive)),
                                     ),
                                     const SizedBox(
                                       width: 2,

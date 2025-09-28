@@ -15,7 +15,6 @@ import 'package:qbittorrent_api/qbittorrent_api.dart' as qb;
 import 'package:random_color/random_color.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:syncfusion_flutter_gauges/gauges.dart';
 
 import '../../../../common/card_view.dart';
 import '../../../../common/form_widgets.dart';
@@ -6013,25 +6012,8 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                   style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                                 ),
                               ),
-                              subtitle: SfLinearGauge(
-                                showTicks: false,
-                                showLabels: false,
-                                animateAxis: true,
-                                isAxisInversed: true,
-                                axisTrackStyle: const LinearAxisTrackStyle(
-                                    thickness: 8,
-                                    edgeStyle: LinearEdgeStyle.bothCurve,
-                                    // ✅ 圆角
-                                    borderWidth: 1,
-                                    borderColor: Color(0xff898989),
-                                    color: Colors.transparent),
-                                barPointers: <LinearBarPointer>[
-                                  LinearBarPointer(
-                                    value: controller.selectedTorrent.progress,
-                                    thickness: 8,
-                                    edgeStyle: LinearEdgeStyle.bothCurve, // ✅ 圆角
-                                  )
-                                ],
+                              subtitle: ShadProgress(
+                                value: controller.selectedTorrent.progress,
                               ),
                               trailing: controller.selectedTorrent.state.toString().contains('pause') ||
                                       controller.selectedTorrent.tracker.isEmpty == true
@@ -6847,25 +6829,8 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                   style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                                 ),
                               ),
-                              subtitle: SfLinearGauge(
-                                showTicks: false,
-                                showLabels: false,
-                                animateAxis: true,
-                                isAxisInversed: true,
-                                axisTrackStyle: const LinearAxisTrackStyle(
-                                    thickness: 8,
-                                    edgeStyle: LinearEdgeStyle.bothCurve,
-                                    // ✅ 圆角
-                                    borderWidth: 1,
-                                    borderColor: Color(0xff898989),
-                                    color: Colors.transparent),
-                                barPointers: <LinearBarPointer>[
-                                  LinearBarPointer(
-                                    value: controller.selectedTorrent.percentDone.toDouble(),
-                                    thickness: 8,
-                                    edgeStyle: LinearEdgeStyle.bothCurve, // ✅ 圆角
-                                  )
-                                ],
+                              subtitle: ShadProgress(
+                                value: controller.selectedTorrent.percentDone.toDouble(),
                               ),
                               trailing: controller.selectedTorrent.status.toString().contains('pause') ||
                                       controller.selectedTorrent.trackerStats.isEmpty == true
@@ -8055,26 +8020,7 @@ class ShowTorrentWidget extends StatelessWidget {
                                   style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                                 ),
                               ),
-                              subtitle: SfLinearGauge(
-                                showTicks: false,
-                                showLabels: false,
-                                animateAxis: true,
-                                isAxisInversed: true,
-                                axisTrackStyle: const LinearAxisTrackStyle(
-                                    thickness: 8,
-                                    edgeStyle: LinearEdgeStyle.bothCurve,
-                                    // ✅ 圆角
-                                    borderWidth: 1,
-                                    borderColor: Color(0xff898989),
-                                    color: Colors.transparent),
-                                barPointers: <LinearBarPointer>[
-                                  LinearBarPointer(
-                                    value: controller.selectedTorrent.progress,
-                                    thickness: 8,
-                                    edgeStyle: LinearEdgeStyle.bothCurve, // ✅ 圆角
-                                  )
-                                ],
-                              ),
+                              subtitle: ShadProgress(value: controller.selectedTorrent.progress),
                               trailing: controller.selectedTorrent.state.toString().contains('pause') ||
                                       controller.selectedTorrent.tracker.isEmpty == true
                                   ? const Icon(Icons.pause, color: Colors.red)
@@ -9241,26 +9187,7 @@ class ShowTorrentWidget extends StatelessWidget {
                                   style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                                 ),
                               ),
-                              subtitle: SfLinearGauge(
-                                showTicks: false,
-                                showLabels: false,
-                                animateAxis: true,
-                                isAxisInversed: true,
-                                axisTrackStyle: const LinearAxisTrackStyle(
-                                    thickness: 8,
-                                    edgeStyle: LinearEdgeStyle.bothCurve,
-                                    // ✅ 圆角
-                                    borderWidth: 1,
-                                    borderColor: Color(0xff898989),
-                                    color: Colors.transparent),
-                                barPointers: <LinearBarPointer>[
-                                  LinearBarPointer(
-                                    value: controller.selectedTorrent.percentDone.toDouble(),
-                                    thickness: 8,
-                                    edgeStyle: LinearEdgeStyle.bothCurve, // ✅ 圆角
-                                  )
-                                ],
-                              ),
+                              subtitle: ShadProgress(value: controller.selectedTorrent.percentDone.toDouble()),
                               trailing: controller.selectedTorrent.status.toString().contains('pause') ||
                                       controller.selectedTorrent.trackerStats.isEmpty == true
                                   ? const Icon(Icons.pause, color: Colors.red)
