@@ -4,7 +4,6 @@ import 'package:flutter_floating/floating/assist/floating_slide_type.dart';
 import 'package:flutter_floating/floating/floating.dart';
 import 'package:flutter_floating/floating/manager/floating_manager.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -46,6 +45,7 @@ class LoggingView extends StatelessWidget {
       width = MediaQuery.of(context).size.width * 0.5;
       height = MediaQuery.of(context).size.height * 0.5;
     }
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     Floating floating = floatingManager.createFloating(
         "inTimeAPPLogFloatingWindows",
         Floating(
@@ -60,6 +60,7 @@ class LoggingView extends StatelessWidget {
                         bottomNavigationBar: TabBar(tabs: tabs),
                         appBar: AppBar(
                           title: const Text('实时日志'),
+                          titleSpacing: 10,
                           actions: [
                             IconButton(
                               onPressed: () async {
@@ -69,45 +70,43 @@ class LoggingView extends StatelessWidget {
                               },
                               icon: Icon(
                                 Icons.refresh,
+                                size: 20,
                                 color: ShadTheme.of(context).colorScheme.foreground,
                               ),
                             ),
-                            CustomPopup(
-                              showArrow: false,
-                              backgroundColor: ShadTheme.of(context).colorScheme.background,
-                              barrierColor: Colors.transparent,
-                              content: SizedBox(
-                                width: 100,
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
+                            ShadMenubar(
+                              border: ShadBorder.none,
+                              backgroundColor: Colors.transparent,
+                              padding: EdgeInsets.zero,
+                              items: [
+                                ShadMenubarItem(
+                                  items: [
                                     ...Level.values.map(
-                                      (l) => PopupMenuItem<String>(
+                                      (l) => ShadContextMenuItem(
                                         child: Text(
                                           l.name.toUpperCase(),
                                           style: TextStyle(
-                                            color: ShadTheme.of(context).colorScheme.secondary,
+                                            color: shadColorScheme.foreground,
                                           ),
                                         ),
-                                        onTap: () async {
+                                        onPressed: () async {
                                           controller.filterLevel = l;
                                           controller.update();
                                         },
                                       ),
-                                    )
+                                    ),
                                   ],
+                                  child: Icon(
+                                    Icons.event_note,
+                                    size: 20,
+                                    color: shadColorScheme.foreground,
+                                  ),
                                 ),
-                              ),
-                              child: Icon(
-                                Icons.event_note,
-                                size: 24,
-                                color: ShadTheme.of(context).colorScheme.foreground,
-                              ),
+                              ],
                             ),
-                            const SizedBox(width: 10),
                             IconButton(
                               icon: Icon(Icons.exit_to_app_outlined,
-                                  color: ShadTheme.of(context).colorScheme.destructive),
+                                  size: 20, color: ShadTheme.of(context).colorScheme.destructive),
                               onPressed: () {
                                 Floating floating = floatingManager.getFloating("inTimeAPPLogFloatingWindows");
                                 floating.close();
@@ -115,7 +114,6 @@ class LoggingView extends StatelessWidget {
                                 Get.back();
                               },
                             ),
-                            const SizedBox(width: 10),
                           ],
                         ),
                         body: TabBarView(

@@ -1,3 +1,4 @@
+import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
@@ -32,8 +33,11 @@ class _SubscribeHistoryPageState extends State<SubscribeHistoryPage> {
           return Column(
             children: [
               Expanded(
-                child: ListView(
-                  children: controller.subHistory.map((SubHistory history) => _buildSubHistory(history)).toList(),
+                child: EasyRefresh(
+                  onRefresh: () => controller.getSubHistoryFromServer(),
+                  child: ListView(
+                    children: controller.subHistory.map((SubHistory history) => _buildSubHistory(history)).toList(),
+                  ),
                 ),
               ),
             ],

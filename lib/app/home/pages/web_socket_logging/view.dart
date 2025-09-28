@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_floating/floating/assist/floating_slide_type.dart';
 import 'package:flutter_floating/floating/floating.dart';
 import 'package:flutter_floating/floating/manager/floating_manager.dart';
-import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
@@ -54,10 +53,40 @@ class WebSocketLoggingWidget extends StatelessWidget {
           title: const Text("实时访问日志"),
           toolbarHeight: 40,
           actions: [
+            ShadMenubar(
+              border: ShadBorder.none,
+              backgroundColor: Colors.transparent,
+              padding: EdgeInsets.zero,
+              items: [
+                ShadMenubarItem(
+                  items: [
+                    ...controller.levelList.entries.map(
+                      (l) => ShadContextMenuItem(
+                        child: Text(
+                          l.key.toUpperCase(),
+                          style: TextStyle(
+                            color: shadColorScheme.foreground,
+                          ),
+                        ),
+                        onPressed: () async {
+                          controller.changeLogLevel(l.value);
+                        },
+                      ),
+                    ),
+                  ],
+                  child: Icon(
+                    Icons.event_note,
+                    size: 20,
+                    color: shadColorScheme.foreground,
+                  ),
+                ),
+              ],
+            ),
+
             IconButton(
               icon: Icon(
                 Icons.wrap_text_outlined,
-                size: 24,
+                size: 20,
                 color: controller.wrapText ? Colors.orange : shadColorScheme.foreground,
               ),
               onPressed: () {
@@ -75,46 +104,13 @@ class WebSocketLoggingWidget extends StatelessWidget {
             // ),
             // const SizedBox(width: 10),
 
-            CustomPopup(
-              showArrow: false,
-              backgroundColor: shadColorScheme.background,
-              barrierColor: Colors.transparent,
-              content: SizedBox(
-                width: 100,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ...controller.levelList.entries.map(
-                      (l) => PopupMenuItem<String>(
-                        child: Text(
-                          l.key.toUpperCase(),
-                          style: TextStyle(
-                            color: shadColorScheme.foreground,
-                          ),
-                        ),
-                        onTap: () async {
-                          controller.changeLogLevel(l.value);
-                        },
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              child: Icon(
-                Icons.event_note,
-                size: 24,
-                color: shadColorScheme.foreground,
-              ),
-            ),
             controller.isLoading
                 ? ShadIconButton.ghost(
                     icon: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: Center(
-                          child: CircularProgressIndicator(
-                        color: shadColorScheme.foreground,
-                      )),
+                      width: 14,
+                      height: 14,
+                      child:
+                          Center(child: CircularProgressIndicator(color: shadColorScheme.foreground, strokeWidth: 2)),
                     ),
                     onPressed: () {
                       controller.stopFetchLog();
@@ -124,7 +120,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
                 : IconButton(
                     icon: Icon(
                       Icons.play_arrow_outlined,
-                      size: 24,
+                      size: 20,
                       color: shadColorScheme.foreground,
                     ),
                     onPressed: () {
@@ -135,7 +131,7 @@ class WebSocketLoggingWidget extends StatelessWidget {
             IconButton(
               icon: Icon(
                 Icons.exit_to_app_outlined,
-                size: 24,
+                size: 20,
                 color: shadColorScheme.destructive,
               ),
               onPressed: () {
@@ -144,36 +140,34 @@ class WebSocketLoggingWidget extends StatelessWidget {
             ),
           ],
         ),
-        body: CustomCard(
-          child: GetBuilder<WebSocketLoggingController>(builder: (controller) {
-            return ListView.builder(
-                itemCount: controller.showLogList.length,
-                controller: controller.scrollController,
-                itemBuilder: (context, index) {
-                  String res = controller.showLogList[index];
-                  return CustomCard(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                      width: MediaQuery.of(context).size.width,
-                      child: SelectableText(
-                        onSelectionChanged: (TextSelection select, SelectionChangedCause? cause) {
-                          Clipboard.setData(ClipboardData(
-                              text: res.toString().trim().substring(
-                                    select.start,
-                                    select.end,
-                                  ))).then((_) {});
-                        },
-                        res.toString().trim(),
-                        maxLines: controller.wrapText ? null : 1,
-                        style: TextStyle(
-                          fontSize: 12,
-                          letterSpacing: 1.5,
-                          color: shadColorScheme.foreground,
-                          overflow: TextOverflow.visible,
-                        ),
-                      ));
-                });
-          }),
-        ),
+        body: GetBuilder<WebSocketLoggingController>(builder: (controller) {
+          return ListView.builder(
+              itemCount: controller.showLogList.length,
+              controller: controller.scrollController,
+              itemBuilder: (context, index) {
+                String res = controller.showLogList[index];
+                return CustomCard(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                    width: MediaQuery.of(context).size.width,
+                    child: SelectableText(
+                      onSelectionChanged: (TextSelection select, SelectionChangedCause? cause) {
+                        Clipboard.setData(ClipboardData(
+                            text: res.toString().trim().substring(
+                                  select.start,
+                                  select.end,
+                                ))).then((_) {});
+                      },
+                      res.toString().trim(),
+                      maxLines: controller.wrapText ? null : 1,
+                      style: TextStyle(
+                        fontSize: 12,
+                        letterSpacing: 1.5,
+                        color: shadColorScheme.foreground,
+                        overflow: TextOverflow.visible,
+                      ),
+                    ));
+              });
+        }),
       );
     });
   }

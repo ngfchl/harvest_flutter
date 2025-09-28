@@ -41,10 +41,16 @@ class _MyRssPageState extends State<MyRssPage> {
         body: GetBuilder<MyRssController>(builder: (controller) {
           return EasyRefresh(
             onRefresh: () => controller.getMyRssFromServer(),
-            child: SingleChildScrollView(
-              child: Wrap(
-                children: controller.rssList.map((MyRss rss) => _buildMyRss(rss)).toList(),
-              ),
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Wrap(
+                      children: controller.rssList.map((MyRss rss) => _buildMyRss(rss)).toList(),
+                    ),
+                  ),
+                ),
+              ],
             ),
           );
         }),
