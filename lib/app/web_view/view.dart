@@ -50,17 +50,28 @@ class _WebViewPageState extends State<WebViewPage> {
     Logger.instance.d(headers);
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) async {
+      onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
         Get.defaultDialog(
+          backgroundColor: shadColorScheme.background,
           title: "退出",
           content: const Text('确定要退出内置浏览器？'),
-          onCancel: () {
-            Navigator.of(context).pop(true);
-          },
-          onConfirm: () {
-            Navigator.of(context).pop(false);
-          },
+          radius: 10,
+          cancel: ShadButton.destructive(
+            size: ShadButtonSize.sm,
+            onPressed: () async {
+              Navigator.of(context).pop(true);
+            },
+            child: const Text('取消'),
+          ),
+          confirm: ShadButton(
+            size: ShadButtonSize.sm,
+            onPressed: () async {
+              Navigator.of(context).pop(false);
+              Get.back();
+            },
+            child: const Text('确定'),
+          ),
           textCancel: '退出',
           textConfirm: '取消',
         );

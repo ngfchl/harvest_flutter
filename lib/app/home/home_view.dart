@@ -398,7 +398,9 @@ class HomeView extends GetView<HomeController> {
                           TextEditingController keyController = TextEditingController(text: '');
                           TextEditingController valueController = TextEditingController(text: '');
                           Map<String, String> selectOptions = {"站点UA": "user_agent", "网络代理": "proxy"};
+                          const operateList = ["站点UA", "网络代理"];
                           Get.bottomSheet(
+                            backgroundColor: shadColorScheme.background,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(5.0), // 圆角半径
                             ),
@@ -408,6 +410,7 @@ class HomeView extends GetView<HomeController> {
                               child: DefaultTabController(
                                 length: tabs.length,
                                 child: Scaffold(
+                                  backgroundColor: Colors.transparent,
                                   resizeToAvoidBottomInset: false,
                                   appBar: const TabBar(tabs: tabs),
                                   body: TabBarView(
@@ -417,13 +420,25 @@ class HomeView extends GetView<HomeController> {
                                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                                           spacing: 10,
                                           children: [
-                                            CustomPickerField(
-                                              controller: keyController,
-                                              labelText: '要替换的属性',
-                                              data: const ["站点UA", "网络代理"],
-                                              // onChanged: (p, position) {
-                                              //   keyController.text = selectOptions[p]!;
-                                              // },
+                                            Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: ConstrainedBox(
+                                                constraints: const BoxConstraints(minWidth: double.infinity),
+                                                child: ShadSelect<String>(
+                                                    placeholder: const Text('选择操作'),
+                                                    decoration: ShadDecoration(border: ShadBorder.none),
+                                                    trailing: const Text('选择操作'),
+                                                    initialValue: operateList.first,
+                                                    options: operateList
+                                                        .map((key) => ShadOption(value: key, child: Text(key)))
+                                                        .toList(),
+                                                    selectedOptionBuilder: (context, value) {
+                                                      return Text(value);
+                                                    },
+                                                    onChanged: (String? value) {
+                                                      keyController.text = value!;
+                                                    }),
+                                              ),
                                             ),
                                             CustomTextField(controller: valueController, labelText: "替换为"),
                                             Row(

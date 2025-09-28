@@ -22,6 +22,7 @@ class SubscribeController extends GetxController {
   List<MetaDataItem> tagCategoryList = [];
   List<SubTag> tags = [];
   bool isDownloaderLoading = false;
+  bool isAddFormLoading = false;
 
   @override
   void onInit() async {

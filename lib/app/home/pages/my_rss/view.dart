@@ -1,4 +1,3 @@
-import 'package:dropdown_search/dropdown_search.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -88,13 +87,15 @@ class _MyRssPageState extends State<MyRssPage> {
                 titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                 middleText: '确定要删除标签吗？',
                 actions: [
-                  ElevatedButton(
+                  ShadButton.destructive(
+                    size: ShadButtonSize.sm,
                     onPressed: () {
                       Get.back(result: false);
                     },
                     child: const Text('取消'),
                   ),
-                  ElevatedButton(
+                  ShadButton(
+                    size: ShadButtonSize.sm,
                     onPressed: () async {
                       Get.back(result: true);
                       CommonResponse res = await controller.removeMyRss(rss);
@@ -169,6 +170,8 @@ class _MyRssPageState extends State<MyRssPage> {
     available.value = rss != null ? rss.available! : true;
     String title = rss != null ? '编辑RSS：${rss.name!}' : '添加RSS';
     var shadColorScheme = ShadTheme.of(context).colorScheme;
+    final RxList<MySite> filteredList = <MySite>[].obs;
+    filteredList.value = controller.mySiteController.mySiteList;
     Get.bottomSheet(
         backgroundColor: shadColorScheme.background,
         shape: RoundedRectangleBorder(
@@ -195,60 +198,38 @@ class _MyRssPageState extends State<MyRssPage> {
                     ),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: DropdownSearch<MySite>(
-                        items: (String? filter, _) async => controller.mySiteController.mySiteList,
-                        selectedItem: controller.mySiteMap[siteController.text],
-                        filterFn: (MySite item, String filter) =>
-                            item.site.toLowerCase().contains(filter.toLowerCase()) ||
-                            item.nickname.toLowerCase().contains(filter.toLowerCase()),
-                        itemAsString: (MySite? item) => item!.site,
-                        compareFn: (MySite item, MySite selectedItem) => item.site == selectedItem.site,
-                        onChanged: (MySite? item) {
-                          siteController.text = item!.site;
-                          Logger.instance.i(siteController);
-                        },
-                        decoratorProps: DropDownDecoratorProps(
-                          baseStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
-                          decoration: InputDecoration(
-                            labelText: '站点选择',
-                            filled: true,
-                            fillColor: Colors.transparent,
-                          ),
-                        ),
-                        popupProps: PopupPropsMultiSelection.menu(
-                          searchDelay: const Duration(milliseconds: 50),
-                          // isFilterOnline: false,
-                          showSelectedItems: true,
-                          showSearchBox: true,
-                          searchFieldProps: TextFieldProps(
-                            // padding: EdgeInsets.zero,
-                            decoration: InputDecoration(
-                              isDense: true,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8), // 设置搜索框的边框圆角
-                              ),
-                            ),
-                          ),
-                          itemBuilder: (BuildContext context, MySite item, bool isSelected, _) {
-                            return Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 8),
-                              padding: EdgeInsets.zero,
-                              decoration: !isSelected
-                                  ? null
-                                  : BoxDecoration(
-                                      border: Border.all(color: shadColorScheme.foreground),
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                              child: ListTile(
-                                dense: true,
-                                selected: isSelected,
-                                title: Text(item.site),
-                                subtitle: Text(item.nickname.toString()),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+                      child: LayoutBuilder(builder: (context, constraints) {
+                        double popupWidth = constraints.maxWidth;
+                        return Obx(() {
+                          return ShadSelect<MySite>.withSearch(
+                            placeholder: const Text('选择分类'),
+                            decoration: ShadDecoration(border: ShadBorder.none),
+                            initialValue: controller.mySiteMap[siteController.text],
+                            itemCount: filteredList.length,
+                            minWidth: 200,
+                            // 弹窗最小宽度
+                            maxWidth: popupWidth,
+                            // 弹窗最大宽度
+                            maxHeight: 400,
+                            options:
+                                filteredList.map((key) => ShadOption(value: key, child: Text(key.nickname))).toList(),
+                            selectedOptionBuilder: (context, value) {
+                              return Text(value.nickname);
+                            },
+                            onChanged: (MySite? item) {
+                              siteController.text = item!.site;
+                            },
+                            onSearchChanged: (String keyword) {
+                              filteredList.value = controller.mySiteController.mySiteList
+                                  .where((item) =>
+                                      item.site.toLowerCase().contains(keyword.toLowerCase()) ||
+                                      item.nickname.toLowerCase().contains(keyword.toLowerCase()) ||
+                                      item.mirror!.toLowerCase().contains(keyword.toLowerCase()))
+                                  .toList();
+                            },
+                          );
+                        });
+                      }),
                     ),
                     CustomTextField(
                       controller: rssController,

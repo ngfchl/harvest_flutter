@@ -467,7 +467,7 @@ class TaskPage extends StatelessWidget {
                           advance.value = val;
                         },
                         value: advance.value,
-                        activeColor: shadColorScheme.foreground,
+                        activeColor: shadColorScheme.primary,
                       );
                     }),
                   ),
@@ -478,11 +478,19 @@ class TaskPage extends StatelessWidget {
               child: Obx(() {
                 return ListView(
                   children: [
-                    CustomPickerField(
-                        controller: taskController,
-                        labelText: '选择任务',
-                        data: controller.taskList,
-                        onConfirm: (p, position) {}),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ShadSelect<String>(
+                          placeholder: const Text('选择任务'),
+                          initialValue: controller.taskList.first,
+                          options: controller.taskList.map((key) => ShadOption(value: key, child: Text(key))).toList(),
+                          selectedOptionBuilder: (context, value) {
+                            return Text(value);
+                          },
+                          onChanged: (String? value) {
+                            taskController.text = value!;
+                          }),
+                    ),
                     CustomTextField(
                       controller: nameController,
                       labelText: '任务名称',
@@ -510,7 +518,7 @@ class TaskPage extends StatelessWidget {
                           enabled.value = val;
                         },
                         value: enabled.value!,
-                        activeColor: shadColorScheme.foreground,
+                        activeColor: shadColorScheme.primary,
                       ),
                     ),
                     if (advance.value) ...[

@@ -964,15 +964,15 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
   Future<void> _showEditBottomSheet({Downloader? downloader}) async {
     final nameController = TextEditingController(text: downloader?.name ?? 'QBittorrent');
     final categoryController = TextEditingController(text: downloader?.category ?? 'Qb');
-    final usernameController = TextEditingController(text: downloader?.username ?? '');
-    final passwordController = TextEditingController(text: downloader?.password ?? '');
+    final usernameController = TextEditingController(text: downloader?.username ?? 'admin');
+    final passwordController = TextEditingController(text: downloader?.password ?? 'admin');
     final protocolController = TextEditingController(text: downloader?.protocol ?? 'http');
     final sortIdController = TextEditingController(text: downloader?.sortId.toString() ?? '0');
 
-    final hostController = TextEditingController(text: downloader?.host ?? '');
-    final portController = TextEditingController(text: downloader?.port.toString() ?? '');
+    final hostController = TextEditingController(text: downloader?.host ?? '192.168.');
+    final portController = TextEditingController(text: downloader?.port.toString() ?? '8999');
 
-    final torrentPathController = TextEditingController(text: downloader?.torrentPath ?? '');
+    final torrentPathController = TextEditingController(text: downloader?.torrentPath ?? '/downloaders');
 
     RxBool isActive = downloader != null ? downloader.isActive.obs : true.obs;
     RxBool brush = downloader != null ? downloader.brush.obs : false.obs;
@@ -1011,15 +1011,43 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      CustomPickerField(
-                        controller: categoryController,
-                        labelText: '选择分类',
-                        data: const ["Qb", "Tr"],
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(minWidth: double.infinity),
+                          child: ShadSelect<String>(
+                              decoration: ShadDecoration(border: ShadBorder.none),
+                              trailing: const Text('下载器分类'),
+                              placeholder: const Text('下载器分类'),
+                              initialValue: "Qb",
+                              options: ["Qb", "Tr"].map((key) => ShadOption(value: key, child: Text(key))).toList(),
+                              selectedOptionBuilder: (context, value) {
+                                return Text(value);
+                              },
+                              onChanged: (String? value) {
+                                categoryController.text = value!;
+                                nameController.text = value == 'Qb' ? 'QBittorrent' : 'Transmission';
+                              }),
+                        ),
                       ),
-                      CustomPickerField(
-                        controller: protocolController,
-                        labelText: '选择协议',
-                        data: const ["http", "https"],
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(minWidth: double.infinity),
+                          child: ShadSelect<String>(
+                              decoration: ShadDecoration(border: ShadBorder.none),
+                              trailing: const Text('选择协议'),
+                              placeholder: const Text('选择协议'),
+                              initialValue: "http",
+                              options:
+                                  ["http", "https"].map((key) => ShadOption(value: key, child: Text(key))).toList(),
+                              selectedOptionBuilder: (context, value) {
+                                return Text(value);
+                              },
+                              onChanged: (String? value) {
+                                protocolController.text = value!;
+                              }),
+                        ),
                       ),
                       CustomTextField(
                         controller: nameController,
@@ -1045,10 +1073,24 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                         controller: sortIdController,
                         labelText: '排序',
                       ),
-                      CustomPickerField(
-                        controller: torrentPathController,
-                        labelText: '选择路径',
-                        data: controller.pathList,
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(minWidth: double.infinity),
+                          child: ShadSelect<String>(
+                              placeholder: const Text('种子路径'),
+                              trailing: const Text('种子路径'),
+                              initialValue: controller.pathList.first,
+                              decoration: ShadDecoration(border: ShadBorder.none),
+                              options:
+                                  controller.pathList.map((key) => ShadOption(value: key, child: Text(key))).toList(),
+                              selectedOptionBuilder: (context, value) {
+                                return Text(value);
+                              },
+                              onChanged: (String? value) {
+                                torrentPathController.text = value!;
+                              }),
+                        ),
                       ),
                       const SizedBox(height: 5),
                       Obx(() {
@@ -1064,10 +1106,10 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                           ),
                           Expanded(
                               child: SwitchTile(
-                            title: '刷流',
-                            value: brush.value,
+                            title: '辅种开关',
+                            value: !brush.value,
                             onChanged: (value) {
-                              brush.value = value;
+                              brush.value = !value;
                             },
                           )),
                         ]);
@@ -2063,13 +2105,23 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
           body: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              CustomPickerField(
-                controller: keyController,
-                labelText: '要替换的站点',
-                data: sites,
-                // onChanged: (p, position) {
-                //   keyController.text = selectOptions[p]!;
-                // },
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: double.infinity),
+                  child: ShadSelect<String>(
+                      placeholder: const Text('要替换的站点'),
+                      trailing: const Text('要替换的站点'),
+                      initialValue: sites.first,
+                      decoration: ShadDecoration(border: ShadBorder.none),
+                      options: sites.map((key) => ShadOption(value: key, child: Text(key))).toList(),
+                      selectedOptionBuilder: (context, value) {
+                        return Text(value);
+                      },
+                      onChanged: (String? value) {
+                        keyController.text = value!;
+                      }),
+                ),
               ),
               CustomTextField(controller: valueController, labelText: "替换为"),
               Row(
@@ -8145,6 +8197,8 @@ class ShowTorrentWidget extends StatelessWidget {
                               alignment: WrapAlignment.spaceAround,
                               children: [
                                 ShadButton.destructive(
+                                  size: ShadButtonSize.sm,
+
                                   onPressed: () async {
                                     Get.defaultDialog(
                                       title: '',
@@ -8195,6 +8249,8 @@ class ShowTorrentWidget extends StatelessWidget {
                                   child: Text('强制汇报'),
                                 ),
                                 ShadButton.secondary(
+                                  size: ShadButtonSize.sm,
+
                                   onPressed: () async {
                                     Clipboard.setData(ClipboardData(text: controller.selectedTorrent.infohashV1));
                                     Get.snackbar('复制种子HASH', '种子HASH复制成功！', colorText: shadColorScheme.foreground);
@@ -9272,6 +9328,8 @@ class ShowTorrentWidget extends StatelessWidget {
                               alignment: WrapAlignment.spaceAround,
                               children: [
                                 ShadButton.destructive(
+                                  size: ShadButtonSize.sm,
+
                                   onPressed: () async {
                                     Get.defaultDialog(
                                       title: '',

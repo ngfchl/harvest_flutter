@@ -1,4 +1,3 @@
-import 'package:dropdown_search/dropdown_search.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -28,8 +27,7 @@ class _SubscribePageState extends State<SubscribePage> {
 
   @override
   Widget build(BuildContext context) {
-    var colorScheme = ShadTheme.of(context).colorScheme;
-    double opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     return GetBuilder<SubscribeController>(builder: (controller) {
       return Scaffold(
         backgroundColor: Colors.transparent,
@@ -37,7 +35,7 @@ class _SubscribePageState extends State<SubscribePage> {
           icon: Icon(
             Icons.add,
             size: 28,
-            color: colorScheme.primary,
+            color: shadColorScheme.primary,
           ),
           onPressed: () async {
             // await _openEditDialog(null);
@@ -45,11 +43,21 @@ class _SubscribePageState extends State<SubscribePage> {
           },
         ),
         body: GetBuilder<SubscribeController>(builder: (controller) {
-          return EasyRefresh(
-            onRefresh: () => controller.getSubscribeFromServer(),
-            child: ListView(
-              children: controller.subList.map((Subscribe sub) => _buildSub(sub)).toList(),
-            ),
+          return Stack(
+            children: [
+              EasyRefresh(
+                onRefresh: () => controller.getSubscribeFromServer(),
+                child: ListView(
+                  children: controller.subList.map((Subscribe sub) => _buildSub(sub)).toList(),
+                ),
+              ),
+              if (controller.isAddFormLoading)
+                Center(
+                  child: CircularProgressIndicator(
+                    color: shadColorScheme.primary,
+                  ),
+                )
+            ],
           );
         }),
       );
@@ -58,6 +66,8 @@ class _SubscribePageState extends State<SubscribePage> {
 
   Widget _buildSub(Subscribe sub) {
     double opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
+
     return CustomCard(
         child: Slidable(
             key: ValueKey('${sub.id}_${sub.name}'),
@@ -90,13 +100,15 @@ class _SubscribePageState extends State<SubscribePage> {
                       titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                       middleText: '确定要删除吗？',
                       actions: [
-                        ElevatedButton(
+                        ShadButton.destructive(
+                          size: ShadButtonSize.sm,
                           onPressed: () {
                             Get.back(result: false);
                           },
                           child: const Text('取消'),
                         ),
-                        ElevatedButton(
+                        ShadButton(
+                          size: ShadButtonSize.sm,
                           onPressed: () async {
                             Get.back(result: true);
                             CommonResponse res = await controller.removeSubscribe(sub);
@@ -104,13 +116,13 @@ class _SubscribePageState extends State<SubscribePage> {
                               Get.snackbar(
                                 '删除通知',
                                 res.msg.toString(),
-                                colorText: ShadTheme.of(context).colorScheme.foreground,
+                                colorText: shadColorScheme.foreground,
                               );
                             } else {
                               Get.snackbar(
                                 '删除通知',
                                 res.msg.toString(),
-                                colorText: ShadTheme.of(context).colorScheme.destructive,
+                                colorText: shadColorScheme.destructive,
                               );
                             }
                           },
@@ -173,7 +185,7 @@ class _SubscribePageState extends State<SubscribePage> {
             )));
   }
 
-  _buildSubTags(Subscribe sub) {
+  List<Widget> _buildSubTags(Subscribe sub) {
     List<Widget> tags = [];
     tags.add(CustomTextTag(
       labelText: '${sub.size} GB',
@@ -221,6 +233,8 @@ class _SubscribePageState extends State<SubscribePage> {
   }
 
   Future<void> _openEditDialogX(Subscribe? sub) async {
+    controller.isAddFormLoading = true;
+    controller.update();
     final dialogController = Get.put(EditDialogController());
     if (controller.downloadController.dataList.isEmpty) {
       await controller.getDownloaderListFromServer();
@@ -229,8 +243,19 @@ class _SubscribePageState extends State<SubscribePage> {
         return;
       }
     }
+
     await dialogController.init(sub);
     var shadColorScheme = ShadTheme.of(context).colorScheme;
+    EditDialogController editDialogController = Get.find();
+    CommonResponse res = await editDialogController.subController
+        .getDownloaderCategoryList(controller.downloadController.dataList.first);
+    if (!res.succeed) {
+      Get.snackbar('出错啦！', res.msg, colorText: shadColorScheme.destructive);
+    } else {
+      editDialogController.categories.value = res.data;
+    }
+    controller.isAddFormLoading = false;
+    controller.update();
     Get.bottomSheet(
       backgroundColor: shadColorScheme.background,
       shape: RoundedRectangleBorder(
@@ -260,51 +285,54 @@ class _SubscribePageState extends State<SubscribePage> {
                           labelText: '订阅关键字',
                         ),
                         Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: DropdownSearch<Downloader>(
-                            items: (String filter, _) => controller.subController.downloadController.dataList,
-                            selectedItem: controller.subController.downloadController.dataList.firstWhereOrNull(
-                                (element) => element.id == int.parse(controller.downloaderController.text)),
-                            compareFn: (item, sItem) => item.id == sItem.id,
-                            itemAsString: (Downloader? item) => item!.name,
-                            decoratorProps: DropDownDecoratorProps(
-                              baseStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
-                              decoration: InputDecoration(
-                                labelText: '下载器',
-                                filled: true,
-                                fillColor: Colors.transparent,
-                              ),
-                            ),
-                            onChanged: (Downloader? item) async {
-                              controller.downloaderCategoryController.clear();
-                              controller.subController.isDownloaderLoading = true;
-                              controller.update();
-                              controller.downloaderController.text = item!.id.toString();
-                              CommonResponse res = await controller.subController.getDownloaderCategoryList(item);
-                              if (!res.succeed) {
-                                Get.snackbar('出错啦！', res.msg, colorText: shadColorScheme.destructive);
-                                return;
-                              }
-                              controller.categories.value = res.data;
-                              controller.subController.isDownloaderLoading = false;
-                              controller.update();
-                              if (controller.categories.isNotEmpty) {
-                                controller.downloaderCategoryController.text = controller.categories.keys.toList()[0];
-                              }
-                              Logger.instance.i(controller.categories);
-                              controller.update();
-                            },
-                          ),
-                        ),
-                        controller.categories.isNotEmpty
-                            ? CustomPickerField(
-                                controller: controller.downloaderCategoryController,
-                                labelText: '下载到分类',
-                                data: controller.categories.keys.toList(),
-                                onChanged: (value, index) {
-                                  controller.downloaderCategoryController.text = value;
-                                  controller.update();
+                            padding: const EdgeInsets.all(8),
+                            child: ShadSelect<Downloader>(
+                                placeholder: const Text('选择下载器'),
+                                initialValue: controller.subController.downloadController.dataList.first,
+                                decoration: ShadDecoration(border: ShadBorder.none),
+                                options: controller.subController.downloadController.dataList
+                                    .map((key) => ShadOption(value: key, child: Text(key.name)))
+                                    .toList(),
+                                selectedOptionBuilder: (context, value) {
+                                  return Text(value.name);
                                 },
+                                onChanged: (Downloader? item) async {
+                                  controller.downloaderCategoryController.clear();
+                                  controller.subController.isDownloaderLoading = true;
+                                  controller.update();
+                                  controller.downloaderController.text = item!.id.toString();
+                                  CommonResponse res = await controller.subController.getDownloaderCategoryList(item);
+                                  if (!res.succeed) {
+                                    Get.snackbar('出错啦！', res.msg, colorText: shadColorScheme.destructive);
+                                    return;
+                                  }
+                                  controller.categories.value = res.data;
+                                  controller.subController.isDownloaderLoading = false;
+                                  controller.update();
+                                  if (controller.categories.isNotEmpty) {
+                                    controller.downloaderCategoryController.text =
+                                        controller.categories.keys.toList()[0];
+                                  }
+                                  Logger.instance.i(controller.categories);
+                                  controller.update();
+                                })),
+                        controller.categories.isNotEmpty
+                            ? Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: ShadSelect<String>(
+                                    placeholder: const Text('选择分类'),
+                                    initialValue: controller.categories.keys.first,
+                                    decoration: ShadDecoration(border: ShadBorder.none),
+                                    options: controller.categories.keys
+                                        .map((key) => ShadOption(value: key, child: Text(key)))
+                                        .toList(),
+                                    selectedOptionBuilder: (context, value) {
+                                      return Text(value);
+                                    },
+                                    onChanged: (String? value) {
+                                      controller.downloaderCategoryController.text = value!;
+                                      controller.update();
+                                    }),
                               )
                             : CustomTextField(
                                 controller: controller.downloaderCategoryController,
@@ -508,7 +536,10 @@ class _SubscribePageState extends State<SubscribePage> {
         ),
       ),
       isScrollControlled: true,
-    );
+    ).whenComplete(() {
+      controller.isAddFormLoading = false;
+      editDialogController.categories.clear();
+    });
   }
 
   void submitForm(Subscribe sub) async {

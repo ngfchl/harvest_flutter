@@ -127,7 +127,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                           GetBuilder<AggSearchController>(builder: (controller) {
                             return CustomPopup(
                               showArrow: false,
-                              backgroundColor: shadColorScheme.background.withOpacity(opacity),
+                              backgroundColor: shadColorScheme.background,
                               barrierColor: Colors.transparent,
                               content: SizedBox(
                                 width: 100,
@@ -444,7 +444,6 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
 
   Widget _buildBottomButtonBar() {
     var shadColorScheme = ShadTheme.of(context).colorScheme;
-
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -457,7 +456,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
           icon: Icon(
             Icons.remove_circle_outline,
             size: 20,
-            color: ShadTheme.of(context).colorScheme.foreground,
+            color: shadColorScheme.foreground,
           ),
         ),
         CustomPopup(
@@ -1036,20 +1035,24 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
     controller.mySiteController.mySiteList.sort((a, b) => a.nickname.toLowerCase().compareTo(b.nickname.toLowerCase()));
     List<MySite> canSearchList =
         controller.mySiteController.mySiteList.where((element) => element.available && element.searchTorrents).toList();
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     TextEditingController searchKey = TextEditingController();
-    Get.bottomSheet(SizedBox(
-      width: double.infinity,
-      child: GetBuilder<AggSearchController>(builder: (controller) {
-        return CustomCard(
-            padding: const EdgeInsets.all(12),
-            height: 500,
-            child: Column(
-              children: [
-                Row(
+    Get.bottomSheet(
+        backgroundColor: shadColorScheme.background,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+        GetBuilder<AggSearchController>(builder: (controller) {
+      return SizedBox(
+          height: 500,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 16.0),
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     GetBuilder<AggSearchController>(builder: (controller) {
-                      return ElevatedButton(
+                      return ShadButton(
+                          size: ShadButtonSize.sm,
                           onPressed: () {
                             if (controller.sites.isEmpty) {
                               controller.sites.addAll(canSearchList.map((e) => e.id).toList());
@@ -1058,31 +1061,20 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                             }
                             controller.update();
                           },
-                          style: OutlinedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0), // 圆角半径
-                            ),
-                          ),
                           child: Text(
                             '${controller.sites.isEmpty ? '全选' : '清除'} ${canSearchList.length}',
-                            style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                            style: TextStyle(color: shadColorScheme.foreground),
                           ));
                     }),
                     GetBuilder<AggSearchController>(builder: (controller) {
-                      return ElevatedButton(
+                      return ShadButton(
+                          size: ShadButtonSize.sm,
                           onPressed: () {
                             _getRandomSites();
                           },
-                          style: OutlinedButton.styleFrom(
-                            backgroundColor: Colors.deepOrangeAccent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0), // 圆角半径
-                            ),
-                          ),
                           child: Text(
                             '随机',
-                            style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                            style: TextStyle(color: shadColorScheme.foreground),
                           ));
                     }),
                     GetBuilder<AggSearchController>(builder: (controller) {
@@ -1102,17 +1094,12 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                               controller.update();
                             },
                           ),
-                          ElevatedButton(
+                          ShadButton(
                             onPressed: () => controller.saveDefaultSites(),
-                            style: OutlinedButton.styleFrom(
-                              backgroundColor: Colors.amber,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8.0), // 圆角半径
-                              ),
-                            ),
+                            size: ShadButtonSize.sm,
                             child: Text(
                               '默认${controller.maxCount}',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                           ),
                           InkWell(
@@ -1134,68 +1121,65 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                     }),
                   ],
                 ),
-                const SizedBox(height: 12),
-                CustomTextField(
-                  controller: searchKey,
-                  labelText: '筛选',
-                  onChanged: (String value) {
-                    // searchKey.text = value;
-                    controller.update();
-                  },
-                ),
-                const SizedBox(height: 12),
-                Expanded(
-                  child: GetBuilder<AggSearchController>(builder: (controller) {
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SingleChildScrollView(
-                        child: Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: canSearchList
-                              .where((element) =>
-                                  element.nickname.toLowerCase().contains(searchKey.text.toLowerCase()) ||
-                                  element.site.toLowerCase().contains(searchKey.text.toLowerCase()) ||
-                                  element.mirror!.toLowerCase().contains(searchKey.text.toLowerCase()))
-                              .map((MySite mySite) {
-                            WebSite? webSite = controller.mySiteController.webSiteList[mySite.site];
-                            if (webSite == null || !webSite.searchTorrents) {
-                              return const SizedBox.shrink();
-                            }
-                            return FilterChip(
-                              label: Text(
-                                capitalize(mySite.nickname),
-                                style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground, fontSize: 12),
-                              ),
-                              selected: controller.sites.contains(mySite.id),
-                              labelPadding: EdgeInsets.zero,
-                              backgroundColor: ShadTheme.of(context).colorScheme.primary.withOpacity(opacity),
-                              labelStyle:
-                                  TextStyle(fontSize: 12, color: ShadTheme.of(context).colorScheme.primaryForeground),
-                              selectedColor: Colors.green,
-                              selectedShadowColor: Colors.blue,
-                              pressElevation: 5,
-                              elevation: 3,
-                              onSelected: (value) {
-                                if (value) {
-                                  controller.sites.add(mySite.id);
-                                } else {
-                                  controller.sites.removeWhere((item) => item == mySite.id);
-                                }
-                                logger_helper.Logger.instance.d(controller.sites);
-                                controller.update();
-                              },
-                            );
-                          }).toList(),
-                        ),
+              ),
+              CustomTextField(
+                controller: searchKey,
+                labelText: '筛选',
+                onChanged: (String value) {
+                  // searchKey.text = value;
+                  controller.update();
+                },
+              ),
+              Expanded(
+                child: GetBuilder<AggSearchController>(builder: (controller) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: SingleChildScrollView(
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: canSearchList
+                            .where((element) =>
+                                element.nickname.toLowerCase().contains(searchKey.text.toLowerCase()) ||
+                                element.site.toLowerCase().contains(searchKey.text.toLowerCase()) ||
+                                element.mirror!.toLowerCase().contains(searchKey.text.toLowerCase()))
+                            .map((MySite mySite) {
+                          WebSite? webSite = controller.mySiteController.webSiteList[mySite.site];
+                          if (webSite == null || !webSite.searchTorrents) {
+                            return const SizedBox.shrink();
+                          }
+                          return FilterChip(
+                            label: Text(
+                              capitalize(mySite.nickname),
+                              style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
+                            ),
+                            selected: controller.sites.contains(mySite.id),
+                            labelPadding: EdgeInsets.zero,
+                            backgroundColor: shadColorScheme.primary.withOpacity(opacity),
+                            labelStyle: TextStyle(fontSize: 12, color: shadColorScheme.primaryForeground),
+                            selectedColor: Colors.green,
+                            selectedShadowColor: Colors.blue,
+                            pressElevation: 5,
+                            elevation: 3,
+                            onSelected: (value) {
+                              if (value) {
+                                controller.sites.add(mySite.id);
+                              } else {
+                                controller.sites.removeWhere((item) => item == mySite.id);
+                              }
+                              logger_helper.Logger.instance.d(controller.sites);
+                              controller.update();
+                            },
+                          );
+                        }).toList(),
                       ),
-                    );
-                  }),
-                ),
-              ],
-            ));
-      }),
-    ));
+                    ),
+                  );
+                }),
+              ),
+            ],
+          ));
+    }));
   }
 
   void _getRandomSites() {
@@ -1210,6 +1194,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
   }
 
   void _openSortSheet() {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.bottomSheet(SizedBox(
       width: double.infinity,
       child: CustomCard(
@@ -1223,7 +1208,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
               dense: true,
               title: Text(
                 item.name,
-                style: TextStyle(fontSize: 13, color: ShadTheme.of(context).colorScheme.foreground),
+                style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8.0),
@@ -1233,11 +1218,11 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
               selected: controller.sortKey == item.value,
               leading: Icon(
                 controller.sortReversed ? Icons.trending_up : Icons.trending_down,
-                color: ShadTheme.of(context).colorScheme.foreground,
+                color: shadColorScheme.foreground,
               ),
               trailing: Icon(
                 controller.sortKey == item.value ? Icons.check_box_outlined : Icons.check_box_outline_blank_rounded,
-                color: ShadTheme.of(context).colorScheme.foreground,
+                color: shadColorScheme.foreground,
               ),
               onTap: () {
                 if (controller.sortKey == item.value) {
@@ -1257,6 +1242,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
   }
 
   void _openFilterSheet() {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.bottomSheet(Container(
       margin: const EdgeInsets.all(8),
       width: double.infinity,
@@ -1270,7 +1256,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                     child: Text(
                       '种子筛选',
                       style: TextStyle(
-                        color: ShadTheme.of(context).colorScheme.foreground,
+                        color: shadColorScheme.foreground,
                         fontSize: ShadTheme.of(context).textTheme.h3.fontSize,
                       ),
                     )),
@@ -1323,7 +1309,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                       fontSize: 12,
                                       color: controller.calcSize == 1024 * 1024
                                           ? Colors.orange
-                                          : ShadTheme.of(context).colorScheme.foreground),
+                                          : shadColorScheme.foreground),
                                 ),
                               ),
                               TextButton(
@@ -1339,7 +1325,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                       fontSize: 12,
                                       color: controller.calcSize == 1024 * 1024 * 1024
                                           ? Colors.orange
-                                          : ShadTheme.of(context).colorScheme.foreground),
+                                          : shadColorScheme.foreground),
                                 ),
                               ),
                               TextButton(
@@ -1357,7 +1343,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                         fontSize: 12,
                                         color: controller.calcSize == 1024 * 1024 * 1024 * 1024
                                             ? Colors.orange
-                                            : ShadTheme.of(context).colorScheme.foreground),
+                                            : shadColorScheme.foreground),
                                   )),
                             ],
                           ),
@@ -1458,7 +1444,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                     child: SwitchListTile(
                       title: Text(
                         '排除 HR',
-                        style: TextStyle(fontSize: 12, color: ShadTheme.of(context).colorScheme.foreground),
+                        style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
                       ),
                       onChanged: (val) {
                         controller.hrKey = val;
@@ -1543,9 +1529,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                             Text(
                               '${controller.selectVideoDetail.title}${controller.selectVideoDetail.year}',
                               style: TextStyle(
-                                  color: ShadTheme.of(context).colorScheme.foreground,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w700),
+                                  color: shadColorScheme.foreground, fontSize: 20, fontWeight: FontWeight.w700),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -1581,11 +1565,11 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                         filledIcon: Icons.star,
                                         emptyIcon: Icons.star_border,
                                         emptyColor: Colors.redAccent,
-                                        filledColor: ShadTheme.of(context).colorScheme.foreground,
+                                        filledColor: shadColorScheme.foreground,
                                         halfFilledColor: Colors.amberAccent,
                                         halfFilledIcon: Icons.star_half,
                                         maxRating: 5,
-                                        size: 18,
+                                        size: 14,
                                       ),
                                       Text(
                                         '${controller.selectVideoDetail.evaluate} 人评价',
@@ -1744,26 +1728,28 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                ElevatedButton.icon(
+                ShadButton(
                   onPressed: () async {
                     Get.back();
                     controller.goSearchPage(mediaInfo.target.id);
                   },
-                  icon: Icon(
+                  leading: Icon(
                     Icons.search,
-                    color: ShadTheme.of(context).colorScheme.foreground,
+                    color: shadColorScheme.foreground,
                   ),
-                  label: const Text('搜索'),
+                  size: ShadButtonSize.sm,
+                  child: const Text('搜索'),
                 ),
-                ElevatedButton.icon(
+                ShadButton(
+                  size: ShadButtonSize.sm,
                   onPressed: () async {
                     await _openMediaInfoDetail(mediaInfo);
                   },
-                  icon: Icon(
+                  leading: Icon(
                     Icons.info_outline,
-                    color: ShadTheme.of(context).colorScheme.foreground,
+                    color: shadColorScheme.foreground,
                   ),
-                  label: const Text('详情'),
+                  child: const Text('详情'),
                 ),
               ],
             ),
@@ -1775,11 +1761,11 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
 
   Future<void> _openMediaInfoDetail(DouBanSearchResult mediaInfo) async {
     String url = mediaInfo.target.uri;
-
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     if (!Platform.isIOS && !Platform.isAndroid) {
       Logger.instance.i('Explorer');
       if (!await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication)) {
-        Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？', colorText: ShadTheme.of(context).colorScheme.foreground);
+        Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？', colorText: shadColorScheme.foreground);
       }
     } else {
       Logger.instance.i('WebView');
@@ -1957,7 +1943,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
     logger_helper.Logger.instance.d(mediaInfo);
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height * 0.5;
-    var shadColorScheme = Theme.of(context).colorScheme;
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.bottomSheet(
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
@@ -2022,9 +2008,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                 Text(
                                   '${mediaInfo.title}${mediaInfo.releaseDate}',
                                   style: TextStyle(
-                                      color: ShadTheme.of(context).colorScheme.foreground,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w700),
+                                      color: shadColorScheme.foreground, fontSize: 20, fontWeight: FontWeight.w700),
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -2066,11 +2050,11 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                             filledIcon: Icons.star,
                                             emptyIcon: Icons.star_border,
                                             emptyColor: Colors.redAccent,
-                                            filledColor: ShadTheme.of(context).colorScheme.foreground,
+                                            filledColor: shadColorScheme.foreground,
                                             halfFilledColor: Colors.amberAccent,
                                             halfFilledIcon: Icons.star_half,
                                             maxRating: 5,
-                                            size: 18,
+                                            size: 14,
                                           ),
                                           Text(
                                             '${mediaInfo.voteCount} 人评价',
@@ -2103,26 +2087,28 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    ElevatedButton.icon(
+                    ShadButton(
+                      size: ShadButtonSize.sm,
                       onPressed: () async {
                         Get.back();
                         controller.doTMDBSearch(mediaInfo);
                       },
-                      icon: Icon(
+                      leading: Icon(
                         Icons.search,
-                        color: ShadTheme.of(context).colorScheme.foreground,
+                        color: shadColorScheme.foreground,
                       ),
-                      label: const Text('搜索'),
+                      child: const Text('搜索'),
                     ),
-                    ElevatedButton.icon(
+                    ShadButton(
+                      size: ShadButtonSize.sm,
                       onPressed: () async {
                         await _openMediaInfoDetail(mediaInfo);
                       },
-                      icon: Icon(
+                      leading: Icon(
                         Icons.info_outline,
-                        color: ShadTheme.of(context).colorScheme.foreground,
+                        color: shadColorScheme.foreground,
                       ),
-                      label: const Text('详情'),
+                      child: const Text('详情'),
                     ),
                   ],
                 ),
@@ -2138,13 +2124,13 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
         Get.snackbar("提示", "搜索关键字不能为空！");
         return;
       }
-
+      var shadColorScheme = ShadTheme.of(context).colorScheme;
       CommonResponse response = await controller.searchTMDB();
       if (response.succeed != true) {
         Get.snackbar(
           '警告',
           '${response.msg}，从豆瓣获取信息...',
-          colorText: ShadTheme.of(context).colorScheme.destructive,
+          colorText: shadColorScheme.destructive,
         );
         await controller.doDouBanSearch();
       }

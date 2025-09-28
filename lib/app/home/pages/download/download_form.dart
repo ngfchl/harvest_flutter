@@ -105,6 +105,7 @@ class DownloadForm extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
                       child: ShadSelect<String>(
                           placeholder: const Text('选择分类'),
+                          decoration: ShadDecoration(border: ShadBorder.none),
                           initialValue: categories.keys.first,
                           options: categories.keys.map((key) => ShadOption(value: key, child: Text(key))).toList(),
                           selectedOptionBuilder: (context, value) {
@@ -486,6 +487,7 @@ class DownloadForm extends StatelessWidget {
                     child: ShadSelect<String>(
                         placeholder: const Text('选择分类'),
                         initialValue: categories.keys.first,
+                        decoration: ShadDecoration(border: ShadBorder.none),
                         options: categories.keys.map((key) => ShadOption(value: key, child: Text(key))).toList(),
                         selectedOptionBuilder: (context, value) {
                           return Text(value);

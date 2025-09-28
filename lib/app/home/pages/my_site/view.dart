@@ -57,370 +57,370 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
         bottom: false,
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          body: EasyRefresh(
-            onRefresh: () async {
-              controller.initFlag = false;
-              controller.getSiteStatusFromServer();
-            },
-            child: Column(
-              children: [
-                CustomCard(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
-                  child: Column(
-                    children: [
-                      if (controller.loadingFromServer)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                                width: 10,
-                                height: 10,
-                                child: Center(
-                                    child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: shadColorScheme.foreground,
-                                ))),
-                            const SizedBox(width: 5),
-                            Text(
-                              '当前为缓存数据，正在从服务器加载',
-                              style: TextStyle(
-                                fontSize: 10,
+          body: Column(
+            children: [
+              CustomCard(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
+                child: Column(
+                  children: [
+                    if (controller.loadingFromServer)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                              width: 10,
+                              height: 10,
+                              child: Center(
+                                  child: CircularProgressIndicator(
+                                strokeWidth: 2,
                                 color: shadColorScheme.foreground,
+                              ))),
+                          const SizedBox(width: 5),
+                          Text(
+                            '当前为缓存数据，正在从服务器加载',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: shadColorScheme.foreground,
+                            ),
+                          ),
+                        ],
+                      ),
+                    Row(
+                      children: [
+                        GetBuilder<MySiteController>(
+                            id: Key('showSearchBar'),
+                            builder: (controller) {
+                              return Expanded(
+                                child: InkWell(
+                                  onTap: () {
+                                    FocusScope.of(context).requestFocus(blankNode);
+                                  },
+                                  child: SizedBox(
+                                    height: 32,
+                                    child: TextField(
+                                      focusNode: blankNode,
+                                      scrollPhysics: const NeverScrollableScrollPhysics(),
+                                      // 禁止滚动
+                                      maxLines: 1,
+
+                                      inputFormatters: [
+                                        LengthLimitingTextInputFormatter(20),
+                                      ],
+                                      controller: controller.searchController,
+                                      style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
+                                      textAlignVertical: TextAlignVertical.center,
+                                      decoration: InputDecoration(
+                                        // labelText: '搜索',
+                                        isDense: true,
+                                        fillColor: Colors.transparent,
+
+                                        hoverColor: Colors.transparent,
+                                        focusColor: Colors.transparent,
+                                        hintText: '输入关键词...',
+                                        labelStyle: const TextStyle(fontSize: 12),
+                                        hintStyle: const TextStyle(fontSize: 12),
+                                        contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
+                                        prefixIcon: Icon(
+                                          Icons.search,
+                                          size: 14,
+                                          color: shadColorScheme.foreground,
+                                        ),
+                                        // suffix: ,
+                                        suffixIcon: Padding(
+                                          padding: const EdgeInsets.only(right: 8.0),
+                                          child: Column(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Text('计数：${controller.showStatusList.length}',
+                                                  style: const TextStyle(fontSize: 12, color: Colors.orange)),
+                                            ],
+                                          ),
+                                        ),
+                                        border: OutlineInputBorder(
+                                          borderSide: BorderSide.none,
+                                          // 不绘制边框
+                                          borderRadius: BorderRadius.circular(0.0),
+                                          // 确保角落没有圆角
+                                          gapPadding: 0.0, // 移除边框与hintText之间的间距
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: const BorderSide(width: 1.0, color: Colors.black),
+                                          // 仅在聚焦时绘制底部边框
+                                          borderRadius: BorderRadius.circular(0.0),
+                                        ),
+                                      ),
+                                      onChanged: (value) async {
+                                        controller.searching = true;
+                                        controller.update();
+                                        Logger.instance.d('搜索框内容变化：$value');
+                                        controller.searchKey = value;
+                                        await Future.delayed(Duration(milliseconds: 300));
+                                        controller.filterByKey();
+                                        controller.searching = false;
+                                        controller.update();
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }),
+                        if (controller.searchKey.isNotEmpty)
+                          ShadIconButton.ghost(
+                              onPressed: () {
+                                controller.searchController.text = controller.searchController.text
+                                    .substring(0, controller.searchController.text.length - 1);
+                                controller.searchKey = controller.searchController.text;
+                                controller.filterByKey();
+                                controller.update();
+                              },
+                              icon: controller.searching
+                                  ? SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: Center(
+                                          child: CircularProgressIndicator(
+                                        color: shadColorScheme.foreground,
+                                      )),
+                                    )
+                                  : Icon(Icons.backspace_outlined, size: 18, color: shadColorScheme.foreground))
+                      ],
+                    ),
+                    SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Wrap(
+                          alignment: WrapAlignment.spaceBetween,
+                          // mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          // crossAxisAlignment: CrossAxisAlignment.center,
+                          direction: Axis.horizontal,
+                          spacing: 10,
+                          children: [
+                            CustomPopup(
+                              showArrow: false,
+                              backgroundColor: shadColorScheme.background,
+                              barrierColor: Colors.transparent,
+                              contentPadding: EdgeInsets.zero,
+                              content: SizedBox(
+                                width: 120,
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      ...controller.filterOptions.map(
+                                        (item) => PopupMenuItem(
+                                          height: 40,
+                                          onTap: () {
+                                            controller.filterKey = item.value!;
+                                            controller.filterByKey();
+                                          },
+                                          child: Text(item.name,
+                                              style: TextStyle(fontSize: 12, color: shadColorScheme.foreground)),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.filter_tilt_shift,
+                                      size: 13,
+                                      color: shadColorScheme.foreground,
+                                    ),
+                                    SizedBox(width: 3),
+                                    Text(
+                                      controller.filterOptions
+                                          .firstWhere((item) => item.value == controller.filterKey)
+                                          .name,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: shadColorScheme.foreground,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            CustomPopup(
+                              showArrow: false,
+                              backgroundColor: shadColorScheme.background,
+                              barrierColor: Colors.transparent,
+                              contentPadding: EdgeInsets.zero,
+                              content: SizedBox(
+                                width: 100,
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      ...controller.siteSortOptions.map(
+                                        (item) => PopupMenuItem(
+                                          height: 40,
+                                          onTap: () {
+                                            controller.sortKey = item.value!;
+                                            controller.filterByKey();
+                                          },
+                                          child: Text(item.name,
+                                              style: TextStyle(fontSize: 12, color: shadColorScheme.foreground)),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.sort_by_alpha_outlined,
+                                      size: 13,
+                                      color: shadColorScheme.foreground,
+                                    ),
+                                    SizedBox(width: 3),
+                                    Text(
+                                      controller.siteSortOptions
+                                          .firstWhere((item) => item.value == controller.sortKey)
+                                          .name,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: shadColorScheme.foreground,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            InkWell(
+                              onTap: () {
+                                controller.sortReversed = !controller.sortReversed;
+                                controller.sortStatusList();
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    controller.sortReversed
+                                        ? Icon(
+                                            Icons.sim_card_download_sharp,
+                                            size: 13,
+                                            color: shadColorScheme.foreground,
+                                          )
+                                        : Icon(
+                                            Icons.upload_file_sharp,
+                                            size: 13,
+                                            color: shadColorScheme.foreground,
+                                          ),
+                                    SizedBox(width: 3),
+                                    controller.sortReversed
+                                        ? Text(
+                                            '正序',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: shadColorScheme.foreground,
+                                            ),
+                                          )
+                                        : Text(
+                                            '倒序',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: shadColorScheme.foreground,
+                                            ),
+                                          ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            CustomPopup(
+                              showArrow: false,
+                              backgroundColor: shadColorScheme.background,
+                              content: SizedBox(
+                                width: 120,
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.vertical,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      PopupMenuItem<String>(
+                                        height: 32,
+                                        child: Text(
+                                          '全部',
+                                          style: TextStyle(
+                                            color: shadColorScheme.foreground,
+                                          ),
+                                        ),
+                                        onTap: () async {
+                                          Get.back();
+                                          controller.selectTag = '全部';
+                                          controller.filterByKey();
+                                          // await controller.mySiteController.initData();
+                                        },
+                                      ),
+                                      ...controller.tagList.map((item) => PopupMenuItem<String>(
+                                            height: 32,
+                                            child: Text(
+                                              item,
+                                              style: TextStyle(
+                                                color: shadColorScheme.foreground,
+                                              ),
+                                            ),
+                                            onTap: () async {
+                                              Get.back();
+                                              controller.selectTag = item;
+                                              controller.filterByKey();
+                                              // await controller.mySiteController.initData();
+                                            },
+                                          )),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.tag,
+                                      size: 13,
+                                      color: shadColorScheme.foreground,
+                                    ),
+                                    Text(
+                                      '【${controller.selectTag}】',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: shadColorScheme.foreground,
+                                      ),
+                                    )
+                                  ],
+                                ),
                               ),
                             ),
                           ],
-                        ),
-                      Row(
-                        children: [
-                          GetBuilder<MySiteController>(
-                              id: Key('showSearchBar'),
-                              builder: (controller) {
-                                return Expanded(
-                                  child: InkWell(
-                                    onTap: () {
-                                      FocusScope.of(context).requestFocus(blankNode);
-                                    },
-                                    child: SizedBox(
-                                      height: 32,
-                                      child: TextField(
-                                        focusNode: blankNode,
-                                        scrollPhysics: const NeverScrollableScrollPhysics(),
-                                        // 禁止滚动
-                                        maxLines: 1,
-
-                                        inputFormatters: [
-                                          LengthLimitingTextInputFormatter(20),
-                                        ],
-                                        controller: controller.searchController,
-                                        style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
-                                        textAlignVertical: TextAlignVertical.center,
-                                        decoration: InputDecoration(
-                                          // labelText: '搜索',
-                                          isDense: true,
-                                          fillColor: Colors.transparent,
-
-                                          hoverColor: Colors.transparent,
-                                          focusColor: Colors.transparent,
-                                          hintText: '输入关键词...',
-                                          labelStyle: const TextStyle(fontSize: 12),
-                                          hintStyle: const TextStyle(fontSize: 12),
-                                          contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
-                                          prefixIcon: Icon(
-                                            Icons.search,
-                                            size: 14,
-                                            color: shadColorScheme.foreground,
-                                          ),
-                                          // suffix: ,
-                                          suffixIcon: Padding(
-                                            padding: const EdgeInsets.only(right: 8.0),
-                                            child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Text('计数：${controller.showStatusList.length}',
-                                                    style: const TextStyle(fontSize: 12, color: Colors.orange)),
-                                              ],
-                                            ),
-                                          ),
-                                          border: OutlineInputBorder(
-                                            borderSide: BorderSide.none,
-                                            // 不绘制边框
-                                            borderRadius: BorderRadius.circular(0.0),
-                                            // 确保角落没有圆角
-                                            gapPadding: 0.0, // 移除边框与hintText之间的间距
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderSide: const BorderSide(width: 1.0, color: Colors.black),
-                                            // 仅在聚焦时绘制底部边框
-                                            borderRadius: BorderRadius.circular(0.0),
-                                          ),
-                                        ),
-                                        onSubmitted: (value) async {
-                                          controller.searching = true;
-                                          controller.update();
-                                          Logger.instance.d('搜索框内容变化：$value');
-                                          controller.searchKey = value;
-                                          await Future.delayed(Duration(milliseconds: 300));
-                                          controller.filterByKey();
-                                          controller.searching = false;
-                                          controller.update();
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }),
-                          if (controller.searchKey.isNotEmpty)
-                            ShadIconButton.ghost(
-                                onPressed: () {
-                                  controller.searchController.text = controller.searchController.text
-                                      .substring(0, controller.searchController.text.length - 1);
-                                  controller.searchKey = controller.searchController.text;
-                                  controller.filterByKey();
-                                  controller.update();
-                                },
-                                icon: controller.searching
-                                    ? SizedBox(
-                                        width: 18,
-                                        height: 18,
-                                        child: Center(
-                                            child: CircularProgressIndicator(
-                                          color: shadColorScheme.foreground,
-                                        )),
-                                      )
-                                    : Icon(Icons.backspace_outlined, size: 18, color: shadColorScheme.foreground))
-                        ],
-                      ),
-                      SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Wrap(
-                            alignment: WrapAlignment.spaceBetween,
-                            // mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            // crossAxisAlignment: CrossAxisAlignment.center,
-                            direction: Axis.horizontal,
-                            spacing: 10,
-                            children: [
-                              CustomPopup(
-                                showArrow: false,
-                                backgroundColor: shadColorScheme.background,
-                                barrierColor: Colors.transparent,
-                                contentPadding: EdgeInsets.zero,
-                                content: SizedBox(
-                                  width: 100,
-                                  child: SingleChildScrollView(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        ...controller.filterOptions.map(
-                                          (item) => PopupMenuItem(
-                                            height: 40,
-                                            onTap: () {
-                                              controller.filterKey = item.value!;
-                                              controller.filterByKey();
-                                            },
-                                            child: Text(item.name,
-                                                style: TextStyle(fontSize: 12, color: shadColorScheme.foreground)),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.filter_tilt_shift,
-                                        size: 13,
-                                        color: shadColorScheme.foreground,
-                                      ),
-                                      SizedBox(width: 3),
-                                      Text(
-                                        controller.filterOptions
-                                            .firstWhere((item) => item.value == controller.filterKey)
-                                            .name,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: shadColorScheme.foreground,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              CustomPopup(
-                                showArrow: false,
-                                backgroundColor: shadColorScheme.background,
-                                barrierColor: Colors.transparent,
-                                contentPadding: EdgeInsets.zero,
-                                content: SizedBox(
-                                  width: 100,
-                                  child: SingleChildScrollView(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        ...controller.siteSortOptions.map(
-                                          (item) => PopupMenuItem(
-                                            height: 40,
-                                            onTap: () {
-                                              controller.sortKey = item.value!;
-                                              controller.filterByKey();
-                                            },
-                                            child: Text(item.name,
-                                                style: TextStyle(fontSize: 12, color: shadColorScheme.foreground)),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.sort_by_alpha_outlined,
-                                        size: 13,
-                                        color: shadColorScheme.foreground,
-                                      ),
-                                      SizedBox(width: 3),
-                                      Text(
-                                        controller.siteSortOptions
-                                            .firstWhere((item) => item.value == controller.sortKey)
-                                            .name,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: shadColorScheme.foreground,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              InkWell(
-                                onTap: () {
-                                  controller.sortReversed = !controller.sortReversed;
-                                  controller.sortStatusList();
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      controller.sortReversed
-                                          ? Icon(
-                                              Icons.sim_card_download_sharp,
-                                              size: 13,
-                                              color: shadColorScheme.foreground,
-                                            )
-                                          : Icon(
-                                              Icons.upload_file_sharp,
-                                              size: 13,
-                                              color: shadColorScheme.foreground,
-                                            ),
-                                      SizedBox(width: 3),
-                                      controller.sortReversed
-                                          ? Text(
-                                              '正序',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: shadColorScheme.foreground,
-                                              ),
-                                            )
-                                          : Text(
-                                              '倒序',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: shadColorScheme.foreground,
-                                              ),
-                                            ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              CustomPopup(
-                                showArrow: false,
-                                backgroundColor: shadColorScheme.background,
-                                content: SizedBox(
-                                  width: 120,
-                                  child: SingleChildScrollView(
-                                    scrollDirection: Axis.vertical,
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        PopupMenuItem<String>(
-                                          height: 32,
-                                          child: Text(
-                                            '全部',
-                                            style: TextStyle(
-                                              color: shadColorScheme.foreground,
-                                            ),
-                                          ),
-                                          onTap: () async {
-                                            Get.back();
-                                            controller.selectTag = '全部';
-                                            controller.filterByKey();
-                                            // await controller.mySiteController.initData();
-                                          },
-                                        ),
-                                        ...controller.tagList.map((item) => PopupMenuItem<String>(
-                                              height: 32,
-                                              child: Text(
-                                                item,
-                                                style: TextStyle(
-                                                  color: shadColorScheme.foreground,
-                                                ),
-                                              ),
-                                              onTap: () async {
-                                                Get.back();
-                                                controller.selectTag = item;
-                                                controller.filterByKey();
-                                                // await controller.mySiteController.initData();
-                                              },
-                                            )),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.tag,
-                                        size: 13,
-                                        color: shadColorScheme.foreground,
-                                      ),
-                                      Text(
-                                        '【${controller.selectTag}】',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: shadColorScheme.foreground,
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          )),
-                    ],
-                  ),
+                        )),
+                  ],
                 ),
+              ),
 
-                Expanded(
+              Expanded(
+                child: EasyRefresh(
+                  onRefresh: () async {
+                    controller.initFlag = false;
+                    controller.getSiteStatusFromServer();
+                  },
                   child: controller.loading
                       ? Center(
                           child: CircularProgressIndicator(
@@ -475,11 +475,11 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                               );
                             }),
                 ),
+              ),
 
-                // if (!kIsWeb && Platform.isIOS) const SizedBox(height: 10),
-                // const SizedBox(height: 50),
-              ],
-            ),
+              // if (!kIsWeb && Platform.isIOS) const SizedBox(height: 10),
+              // const SizedBox(height: 50),
+            ],
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           floatingActionButton: _buildBottomButtonBarFloat(),
@@ -1313,12 +1313,12 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     final proxyController = TextEditingController(text: mySite?.proxy ?? '');
     final torrentsController = TextEditingController(text: mySite?.torrents ?? '');
     final cookieController = TextEditingController(text: mySite?.cookie ?? '');
-    final mirrorController = TextEditingController(text: mySite?.mirror ?? '');
     final tagController = TextEditingController(text: '');
     Rx<WebSite?> selectedSite =
         (mySite != null ? controller.webSiteList[mySite.site] : (webSiteList.isNotEmpty ? webSiteList.first : null))
             .obs;
     RxList<String>? urlList = selectedSite.value != null ? selectedSite.value?.url.obs : <String>[].obs;
+    final mirrorController = TextEditingController(text: mySite?.mirror ?? urlList?.first ?? '');
     RxBool getInfo = mySite != null ? mySite.getInfo.obs : true.obs;
     RxBool available = mySite != null ? mySite.available.obs : (selectedSite.value?.alive ?? false).obs;
     RxList<String> tags = mySite != null ? mySite.tags.obs : (selectedSite.value?.tags.split(',') ?? []).obs;
@@ -1340,9 +1340,9 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
       isScrollControlled: true,
       backgroundColor: shadColorScheme.background,
-      CustomCard(
-        padding: const EdgeInsets.all(20),
-        height: selectedSite.value != null ? 500 : 120,
+      Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
         child: Column(
           children: [
             ListTile(
@@ -1392,118 +1392,116 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                   child: Obx(() {
                     return Column(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8),
-                          child: LayoutBuilder(builder: (context, constraints) {
-                            // constraints.maxWidth 就是控件自身宽度
-                            double popupWidth = constraints.maxWidth;
-                            return Obx(() {
-                              return SizedBox(
-                                width: Get.width,
-                                child: ShadSelect<WebSite>.withSearch(
-                                  searchPlaceholder: Text(
-                                    '搜索站点',
-                                    style: TextStyle(
-                                      color: shadColorScheme.foreground,
-                                    ),
-                                  ),
-                                  placeholder: Text(
-                                    '请选择站点',
-                                    style: TextStyle(
-                                      color: shadColorScheme.foreground,
-                                    ),
-                                  ),
-                                  decoration: ShadDecoration(
-                                    color: shadColorScheme.background.withOpacity(opacity),
-                                  ),
-                                  initialValue: selectedSite.value,
-                                  itemCount: filteredList.length,
-                                  minWidth: 200,
-                                  // 弹窗最小宽度
-                                  maxWidth: popupWidth,
-                                  // 弹窗最大宽度
-                                  maxHeight: 400,
-                                  // 弹窗最大高度
-                                  optionsBuilder: (BuildContext context, int index) {
-                                    var item = filteredList[index];
-                                    return ShadOption(
-                                      value: item,
-                                      child: ListTile(
-                                        leading: CircleAvatar(
-                                          backgroundColor: shadColorScheme.background,
-                                          child: Text(
-                                            item.name.substring(0, 1),
-                                            style: TextStyle(
-                                              color: shadColorScheme.foreground,
-                                            ),
-                                          ),
-                                        ),
-                                        // selected: isSelected,
-                                        title: Text(
-                                          item.name,
+                        LayoutBuilder(builder: (context, constraints) {
+                          // constraints.maxWidth 就是控件自身宽度
+                          double popupWidth = constraints.maxWidth;
+                          return Obx(() {
+                            return ConstrainedBox(
+                              constraints: const BoxConstraints(minWidth: double.infinity),
+                              child: ShadSelect<WebSite>.withSearch(
+                                searchPlaceholder: Text(
+                                  '搜索站点',
+                                  style: TextStyle(color: shadColorScheme.foreground),
+                                ),
+                                placeholder: Text(
+                                  '请选择站点',
+                                  style: TextStyle(color: shadColorScheme.foreground),
+                                ),
+                                decoration: ShadDecoration(border: ShadBorder.none),
+                                initialValue: selectedSite.value,
+                                itemCount: filteredList.length,
+                                minWidth: 200,
+                                // 弹窗最小宽度
+                                maxWidth: popupWidth,
+                                // 弹窗最大宽度
+                                maxHeight: 400,
+                                // 弹窗最大高度
+                                optionsBuilder: (BuildContext context, int index) {
+                                  var item = filteredList[index];
+                                  return ShadOption(
+                                    value: item,
+                                    child: ListTile(
+                                      leading: CircleAvatar(
+                                        backgroundColor: shadColorScheme.background,
+                                        child: Text(
+                                          item.name.substring(0, 1),
                                           style: TextStyle(
                                             color: shadColorScheme.foreground,
                                           ),
                                         ),
                                       ),
-                                    );
-                                  },
-                                  selectedOptionBuilder: (BuildContext context, WebSite website) {
-                                    return Text(
-                                      website.name,
-                                      style: TextStyle(
-                                        color: shadColorScheme.foreground,
+                                      // selected: isSelected,
+                                      title: Text(
+                                        item.name,
+                                        style: TextStyle(
+                                          color: shadColorScheme.foreground,
+                                        ),
                                       ),
-                                    );
-                                  },
-                                  onSearchChanged: (keyword) {
-                                    Logger.instance.d(keyword);
-                                    filteredList.value = webSiteList
-                                        .where((item) =>
-                                            item.name.toLowerCase().contains(keyword.toLowerCase()) ||
-                                            item.nickname.toLowerCase().contains(keyword.toLowerCase()) ||
-                                            item.url.any((e) => e.toLowerCase().contains(keyword.toLowerCase())))
-                                        .toList();
-                                    Logger.instance.d(filteredList.length);
-                                  },
-                                  onChanged: (item) {
-                                    if (item == null) return;
-                                    siteController.text = item.name;
-                                    selectedSite.value = item;
-                                    urlList?.value = selectedSite.value!.url;
-                                    mirrorController.text = urlList![0];
-                                    nicknameController.text = selectedSite.value!.name;
-                                    signIn.value = selectedSite.value!.signIn;
-                                    getInfo.value = selectedSite.value!.getInfo;
-                                    repeatTorrents.value = selectedSite.value!.repeatTorrents;
-                                    searchTorrents.value = selectedSite.value!.searchTorrents;
-                                    available.value = selectedSite.value!.alive;
-                                    tags.value = selectedSite.value!.tags
-                                        .split(',')
-                                        .map((item) => item.trim())
-                                        .where((el) => el.isNotEmpty)
-                                        .toList();
-                                    chipFieldKey.currentState?.reset();
-                                  },
-                                ),
-                              );
-                            });
-                          }),
-                        ),
+                                    ),
+                                  );
+                                },
+                                selectedOptionBuilder: (BuildContext context, WebSite website) {
+                                  return Text(
+                                    website.name,
+                                    style: TextStyle(
+                                      color: shadColorScheme.foreground,
+                                    ),
+                                  );
+                                },
+                                onSearchChanged: (keyword) {
+                                  Logger.instance.d(keyword);
+                                  filteredList.value = webSiteList
+                                      .where((item) =>
+                                          item.name.toLowerCase().contains(keyword.toLowerCase()) ||
+                                          item.nickname.toLowerCase().contains(keyword.toLowerCase()) ||
+                                          item.url.any((e) => e.toLowerCase().contains(keyword.toLowerCase())))
+                                      .toList();
+                                  Logger.instance.d(filteredList.length);
+                                },
+                                onChanged: (item) {
+                                  if (item == null) return;
+                                  siteController.text = item.name;
+                                  selectedSite.value = item;
+                                  urlList?.value = selectedSite.value!.url;
+                                  mirrorController.text = urlList![0];
+                                  nicknameController.text = selectedSite.value!.name;
+                                  signIn.value = selectedSite.value!.signIn;
+                                  getInfo.value = selectedSite.value!.getInfo;
+                                  repeatTorrents.value = selectedSite.value!.repeatTorrents;
+                                  searchTorrents.value = selectedSite.value!.searchTorrents;
+                                  available.value = selectedSite.value!.alive;
+                                  tags.value = selectedSite.value!.tags
+                                      .split(',')
+                                      .map((item) => item.trim())
+                                      .where((el) => el.isNotEmpty)
+                                      .toList();
+                                  chipFieldKey.currentState?.reset();
+                                },
+                              ),
+                            );
+                          });
+                        }),
 
-                        CustomTextField(
-                          controller: nicknameController,
-                          labelText: '站点昵称',
-                        ),
                         if (urlList!.isNotEmpty)
                           Obx(() {
                             return Row(
                               children: [
                                 Expanded(
-                                  child: CustomPickerField(
-                                    controller: mirrorController,
-                                    labelText: '选择网址',
-                                    data: urlList,
+                                  child: ConstrainedBox(
+                                    constraints: const BoxConstraints(minWidth: double.infinity),
+                                    child: ShadSelect<String>(
+                                        placeholder: const Text('选择网址'),
+                                        trailing: const Text('选择网址'),
+                                        initialValue: urlList.first,
+                                        decoration: ShadDecoration(border: ShadBorder.none),
+                                        options:
+                                            urlList.map((key) => ShadOption(value: key, child: Text(key))).toList(),
+                                        selectedOptionBuilder: (context, value) {
+                                          return Text(value);
+                                        },
+                                        onChanged: (String? value) {
+                                          mirrorController.text = value!;
+                                        }),
                                   ),
                                 ),
                                 IconButton(
@@ -1518,73 +1516,18 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                               ],
                             );
                           }),
+
                         Obx(() => manualInput.value
                             ? CustomTextField(
                                 controller: mirrorController,
                                 labelText: '手动输入 - 注意：浏览器插件自动导入可能无法识别',
                               )
                             : SizedBox.shrink()),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: CustomTextField(
-                                controller: tagController,
-                                labelText: '添加标签',
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: () {
-                                if (tagController.text.isEmpty) {
-                                  return;
-                                }
-                                controller.tagList.add(tagController.text);
-                                controller.updateTagList();
-                                controller.update();
-                              },
-                              icon: Icon(
-                                Icons.plus_one_sharp,
-                                size: 20,
-                              ),
-                            )
-                          ],
+                        CustomTextField(
+                          controller: nicknameController,
+                          labelText: '站点昵称',
                         ),
 
-                        GetBuilder<MySiteController>(builder: (controller) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8),
-                            child: Obx(() {
-                              return MultiSelectChipField(
-                                key: chipFieldKey,
-                                items: controller.tagList.map((tag) => MultiSelectItem<String?>(tag, tag)).toList(),
-                                textStyle: TextStyle(fontSize: 11, color: shadColorScheme.foreground),
-                                selectedTextStyle: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
-                                chipColor: shadColorScheme.background,
-                                initialValue: [...tags],
-                                title: Text(
-                                  " 站点标签",
-                                  style: TextStyle(
-                                      fontSize: 13, fontWeight: FontWeight.w800, color: shadColorScheme.foreground),
-                                  textAlign: TextAlign.center,
-                                ),
-                                headerColor: Colors.transparent,
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.blue.shade700, width: 0.8),
-                                ),
-                                // 关键设置：自定义 chipDisplay 实现自动换行
-                                scroll: false,
-                                // 禁用滚动
-                                selectedChipColor: Colors.blue.withOpacity(0.5),
-                                onTap: (List<String?> values) {
-                                  Logger.instance.d(values);
-                                  // tags.value = values;
-                                  tags.value = values.where((value) => value != null).whereType<String>().toList();
-                                  tags.value = tags.toSet().toList();
-                                  Logger.instance.d(tags);
-                                },
-                              );
-                            }),
-                          );
-                        }),
                         CustomTextField(
                           controller: usernameController,
                           maxLength: 128,
@@ -1634,6 +1577,68 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                           controller: proxyController,
                           labelText: 'HTTP代理',
                         ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: CustomTextField(
+                                controller: tagController,
+                                labelText: '添加标签',
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                if (tagController.text.isEmpty) {
+                                  return;
+                                }
+                                controller.tagList.add(tagController.text);
+                                controller.updateTagList();
+                                controller.update();
+                              },
+                              icon: Icon(
+                                Icons.plus_one_sharp,
+                                size: 20,
+                              ),
+                            )
+                          ],
+                        ),
+
+                        GetBuilder<MySiteController>(builder: (controller) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8),
+                            child: Obx(() {
+                              return MultiSelectChipField(
+                                key: chipFieldKey,
+                                items: controller.tagList.map((tag) => MultiSelectItem<String?>(tag, tag)).toList(),
+                                textStyle: TextStyle(fontSize: 11, color: shadColorScheme.foreground),
+                                selectedTextStyle: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
+                                chipColor: shadColorScheme.background,
+
+                                initialValue: [...tags],
+                                title: Text(
+                                  " 站点标签",
+                                  style: TextStyle(
+                                      fontSize: 13, fontWeight: FontWeight.w800, color: shadColorScheme.foreground),
+                                  textAlign: TextAlign.center,
+                                ),
+                                headerColor: Colors.transparent,
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.transparent, width: 0),
+                                ),
+                                // 关键设置：自定义 chipDisplay 实现自动换行
+                                scroll: false,
+                                // 禁用滚动
+                                selectedChipColor: Colors.blue.withOpacity(0.5),
+                                onTap: (List<String?> values) {
+                                  Logger.instance.d(values);
+                                  // tags.value = values;
+                                  tags.value = values.where((value) => value != null).whereType<String>().toList();
+                                  tags.value = tags.toSet().toList();
+                                  Logger.instance.d(tags);
+                                },
+                              );
+                            }),
+                          );
+                        }),
                         const SizedBox(height: 15),
                         Wrap(spacing: 12, runSpacing: 8, children: [
                           selectedSite.value!.alive
