@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
-import '../../../../common/card_view.dart';
 import '../../../../utils/string_utils.dart';
 
 class TreeNode {
@@ -29,7 +29,7 @@ class QBittorrentTreeView extends StatelessWidget {
       itemCount: nodes.length,
       itemBuilder: (context, index) {
         TreeNode node = nodes[index];
-        return _buildTreeTile(node, 0);
+        return _buildTreeTile(node, 0, context);
       },
     );
   }
@@ -39,8 +39,7 @@ class QBittorrentTreeView extends StatelessWidget {
 
     for (TorrentContents content in contents) {
       List<String> filePathParts = content.name!.split('/');
-      TreeNode currentNode = nodesMap.putIfAbsent(
-          filePathParts.first, () => TreeNode(filePathParts.first));
+      TreeNode currentNode = nodesMap.putIfAbsent(filePathParts.first, () => TreeNode(filePathParts.first));
       for (int i = 1; i < filePathParts.length; i++) {
         String part = filePathParts[i];
         if (currentNode.children.containsKey(part)) {
@@ -59,38 +58,53 @@ class QBittorrentTreeView extends StatelessWidget {
     return nodesMap.values.toList();
   }
 
-  Widget _buildTreeTile(TreeNode node, int level) {
+  Widget _buildTreeTile(TreeNode node, int level, BuildContext context) {
     EdgeInsetsGeometry padding = EdgeInsets.only(left: level * 16.0);
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     if (node.content != null) {
       return ListTile(
         // contentPadding: padding,
-        leading: const Icon(Icons.file_copy_sharp),
+        leading: Icon(
+          Icons.file_present_outlined,
+          color: shadColorScheme.foreground,
+        ),
+        trailing: Text(
+          FileSizeConvert.parseToFileSize(node.content!.size),
+          style: TextStyle(
+            fontSize: 12,
+            color: shadColorScheme.foreground,
+          ),
+        ),
         dense: true,
         title: Text(
           node.name,
           overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
         ),
         subtitle: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            CustomTextTag(labelText: node.content!.index.toString()),
-            CustomTextTag(
-              labelText: FileSizeConvert.parseToFileSize(node.content!.size),
-              icon: const Icon(Icons.download_done,
-                  size: 10, color: Colors.white),
+            Expanded(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 6),
+                child: ShadProgress(value: node.content?.progress ?? 0.0),
+              ),
             ),
-            CustomTextTag(
-                icon: const Icon(Icons.cloud_upload_outlined,
-                    size: 10, color: Colors.white),
-                labelText: node.content!.isSeed.toString()),
-            CustomTextTag(
-                icon: const Icon(Icons.download_outlined,
-                    size: 10, color: Colors.white),
-                labelText: node.content!.priority.toString()),
-            CustomTextTag(
-                icon: const Icon(Icons.download_outlined,
-                    size: 10, color: Colors.white),
-                labelText: node.content!.progress.toString()),
+            // CustomTextTag(labelText: node.content!.index.toString()),
+            Text(
+              "${(node.content?.progress ?? 0) * 100}%".toString(),
+              style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
+            ),
+            // CustomTextTag(
+            //     icon: const Icon(Icons.cloud_upload_outlined, size: 10, color: Colors.white),
+            //     labelText: node.content!.isSeed.toString()),
+            // CustomTextTag(
+            //     icon: const Icon(Icons.download_outlined, size: 10, color: Colors.white),
+            //     labelText: node.content!.priority.toString()),
+
+            // CustomTextTag(
+            //     icon: const Icon(Icons.download_outlined, size: 10, color: Colors.white),
+            //     labelText: node.content!.progress.toString()),
           ],
         ),
         // 添加其他内容字段
@@ -107,10 +121,13 @@ class QBittorrentTreeView extends StatelessWidget {
       title: Text(
         node.name,
         overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: 12,
+          color: shadColorScheme.foreground,
+        ),
       ),
       children: [
-        ...node.children.values
-            .map((child) => _buildTreeTile(child, level + 1)),
+        ...node.children.values.map((child) => _buildTreeTile(child, level + 1, context)),
       ],
     );
   }
