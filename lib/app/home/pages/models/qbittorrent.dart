@@ -4,6 +4,7 @@ class QbittorrentTorrentInfo {
   final bool autoTmm;
   final int availability;
   final String category;
+  final String comment;
   final int completed;
   final int completionOn;
   final String contentPath;
@@ -55,6 +56,7 @@ class QbittorrentTorrentInfo {
     required this.autoTmm,
     required this.availability,
     required this.category,
+    required this.comment,
     required this.completed,
     required this.completionOn,
     required this.contentPath,
@@ -108,6 +110,7 @@ class QbittorrentTorrentInfo {
       autoTmm: json['auto_tmm'] ?? false,
       availability: (json['availability'] as num?)?.toInt() ?? -1,
       category: json['category'] ?? '',
+      comment: json['comment'] ?? '',
       completed: json['completed'] ?? 0,
       completionOn: json['completion_on'] ?? 0,
       contentPath: json['content_path'] ?? '',
@@ -162,6 +165,7 @@ class QbittorrentTorrentInfo {
       'auto_tmm': autoTmm,
       'availability': availability,
       'category': category,
+      'comment': comment,
       'completed': completed,
       'completion_on': completionOn,
       'content_path': contentPath,
@@ -207,6 +211,112 @@ class QbittorrentTorrentInfo {
       'uploaded_session': uploadedSession,
       'upspeed': upSpeed,
     };
+  }
+
+  QbittorrentTorrentInfo copyWith({
+    int? addedOn,
+    int? amountLeft,
+    bool? autoTmm,
+    int? availability,
+    String? category,
+    String? comment,
+    int? completed,
+    int? completionOn,
+    String? contentPath,
+    int? dlLimit,
+    int? dlSpeed,
+    String? downloadPath,
+    int? downloaded,
+    int? downloadedSession,
+    int? eta,
+    bool? firstLastPiecePriority,
+    bool? forceStart,
+    String? hash,
+    String? infohashV1,
+    String? infohashV2,
+    int? lastActivity,
+    String? magnetUri,
+    double? maxRatio,
+    int? maxSeedingTime,
+    String? name,
+    int? numComplete,
+    int? numIncomplete,
+    int? numLeechs,
+    int? numSeeds,
+    int? priority,
+    double? progress,
+    double? ratio,
+    double? ratioLimit,
+    String? savePath,
+    int? seedingTime,
+    int? seedingTimeLimit,
+    int? seenComplete,
+    bool? sequentialDownload,
+    int? size,
+    String? state,
+    bool? superSeeding,
+    String? tags,
+    int? timeActive,
+    int? totalSize,
+    String? tracker,
+    int? trackersCount,
+    int? upLimit,
+    int? uploaded,
+    int? uploadedSession,
+    int? upSpeed,
+  }) {
+    return QbittorrentTorrentInfo(
+      addedOn: addedOn ?? this.addedOn,
+      amountLeft: amountLeft ?? this.amountLeft,
+      autoTmm: autoTmm ?? this.autoTmm,
+      availability: availability ?? this.availability,
+      category: category ?? this.category,
+      comment: comment ?? this.comment,
+      completed: completed ?? this.completed,
+      completionOn: completionOn ?? this.completionOn,
+      contentPath: contentPath ?? this.contentPath,
+      dlLimit: dlLimit ?? this.dlLimit,
+      dlSpeed: dlSpeed ?? this.dlSpeed,
+      downloadPath: downloadPath ?? this.downloadPath,
+      downloaded: downloaded ?? this.downloaded,
+      downloadedSession: downloadedSession ?? this.downloadedSession,
+      eta: eta ?? this.eta,
+      firstLastPiecePriority: firstLastPiecePriority ?? this.firstLastPiecePriority,
+      forceStart: forceStart ?? this.forceStart,
+      hash: hash ?? this.hash,
+      infohashV1: infohashV1 ?? this.infohashV1,
+      infohashV2: infohashV2 ?? this.infohashV2,
+      lastActivity: lastActivity ?? this.lastActivity,
+      magnetUri: magnetUri ?? this.magnetUri,
+      maxRatio: maxRatio ?? this.maxRatio,
+      maxSeedingTime: maxSeedingTime ?? this.maxSeedingTime,
+      name: name ?? this.name,
+      numComplete: numComplete ?? this.numComplete,
+      numIncomplete: numIncomplete ?? this.numIncomplete,
+      numLeechs: numLeechs ?? this.numLeechs,
+      numSeeds: numSeeds ?? this.numSeeds,
+      priority: priority ?? this.priority,
+      progress: progress ?? this.progress,
+      ratio: ratio ?? this.ratio,
+      ratioLimit: ratioLimit ?? this.ratioLimit,
+      savePath: savePath ?? this.savePath,
+      seedingTime: seedingTime ?? this.seedingTime,
+      seedingTimeLimit: seedingTimeLimit ?? this.seedingTimeLimit,
+      seenComplete: seenComplete ?? this.seenComplete,
+      sequentialDownload: sequentialDownload ?? this.sequentialDownload,
+      size: size ?? this.size,
+      state: state ?? this.state,
+      superSeeding: superSeeding ?? this.superSeeding,
+      tags: tags ?? this.tags,
+      timeActive: timeActive ?? this.timeActive,
+      totalSize: totalSize ?? this.totalSize,
+      tracker: tracker ?? this.tracker,
+      trackersCount: trackersCount ?? this.trackersCount,
+      upLimit: upLimit ?? this.upLimit,
+      uploaded: uploaded ?? this.uploaded,
+      uploadedSession: uploadedSession ?? this.uploadedSession,
+      upSpeed: upSpeed ?? this.upSpeed,
+    );
   }
 }
 
@@ -583,18 +693,14 @@ class QbittorrentPreferences {
       autoDeleteMode: json['auto_delete_mode'] ?? 0,
       autoTmmEnabled: json['auto_tmm_enabled'] ?? false,
       autorunEnabled: json['autorun_enabled'] ?? false,
-      autorunOnTorrentAddedEnabled:
-          json['autorun_on_torrent_added_enabled'] ?? false,
-      autorunOnTorrentAddedProgram:
-          json['autorun_on_torrent_added_program'] ?? '',
+      autorunOnTorrentAddedEnabled: json['autorun_on_torrent_added_enabled'] ?? false,
+      autorunOnTorrentAddedProgram: json['autorun_on_torrent_added_program'] ?? '',
       autorunProgram: json['autorun_program'] ?? '',
       bannedIps: json['banned_IPs'] ?? '',
       bittorrentProtocol: json['bittorrent_protocol'] ?? 0,
-      blockPeersOnPrivilegedPorts:
-          json['block_peers_on_privileged_ports'] ?? false,
+      blockPeersOnPrivilegedPorts: json['block_peers_on_privileged_ports'] ?? false,
       bypassAuthSubnetWhitelist: json['bypass_auth_subnet_whitelist'] ?? '',
-      bypassAuthSubnetWhitelistEnabled:
-          json['bypass_auth_subnet_whitelist_enabled'] ?? false,
+      bypassAuthSubnetWhitelistEnabled: json['bypass_auth_subnet_whitelist_enabled'] ?? false,
       bypassLocalAuth: json['bypass_local_auth'] ?? false,
       categoryChangedTmmEnabled: json['category_changed_tmm_enabled'] ?? false,
       checkingMemoryUse: json['checking_memory_use'] ?? 0,
@@ -616,12 +722,10 @@ class QbittorrentPreferences {
       dyndnsService: json['dyndns_service'] ?? 0,
       dyndnsUsername: json['dyndns_username'] ?? '',
       embeddedTrackerPort: json['embedded_tracker_port'] ?? 0,
-      embeddedTrackerPortForwarding:
-          json['embedded_tracker_port_forwarding'] ?? false,
+      embeddedTrackerPortForwarding: json['embedded_tracker_port_forwarding'] ?? false,
       enableCoalesceReadWrite: json['enable_coalesce_read_write'] ?? false,
       enableEmbeddedTracker: json['enable_embedded_tracker'] ?? false,
-      enableMultiConnectionsFromSameIp:
-          json['enable_multi_connections_from_same_ip'] ?? false,
+      enableMultiConnectionsFromSameIp: json['enable_multi_connections_from_same_ip'] ?? false,
       enablePieceExtentAffinity: json['enable_piece_extent_affinity'] ?? false,
       enableUploadSuggestions: json['enable_upload_suggestions'] ?? false,
       encryption: json['encryption'] ?? 0,
@@ -642,15 +746,13 @@ class QbittorrentPreferences {
       listenPort: json['listen_port'] ?? 0,
       locale: json['locale'] ?? '',
       lsd: json['lsd'] ?? false,
-      mailNotificationAuthEnabled:
-          json['mail_notification_auth_enabled'] ?? false,
+      mailNotificationAuthEnabled: json['mail_notification_auth_enabled'] ?? false,
       mailNotificationEmail: json['mail_notification_email'] ?? '',
       mailNotificationEnabled: json['mail_notification_enabled'] ?? false,
       mailNotificationPassword: json['mail_notification_password'] ?? '',
       mailNotificationSender: json['mail_notification_sender'] ?? '',
       mailNotificationSmtp: json['mail_notification_smtp'] ?? '',
-      mailNotificationSslEnabled:
-          json['mail_notification_ssl_enabled'] ?? false,
+      mailNotificationSslEnabled: json['mail_notification_ssl_enabled'] ?? false,
       mailNotificationUsername: json['mail_notification_username'] ?? '',
       maxActiveCheckingTorrents: json['max_active_checking_torrents'] ?? 0,
       maxActiveDownloads: json['max_active_downloads'] ?? 0,
@@ -687,16 +789,14 @@ class QbittorrentPreferences {
       proxyUsername: json['proxy_username'] ?? '',
       queueingEnabled: json['queueing_enabled'] ?? false,
       randomPort: json['random_port'] ?? false,
-      reannounceWhenAddressChanged:
-          json['reannounce_when_address_changed'] ?? false,
+      reannounceWhenAddressChanged: json['reannounce_when_address_changed'] ?? false,
       recheckCompletedTorrents: json['recheck_completed_torrents'] ?? false,
       refreshInterval: json['refresh_interval'] ?? 0,
       requestQueueSize: json['request_queue_size'] ?? 0,
       resolvePeerCountries: json['resolve_peer_countries'] ?? false,
       resumeDataStorageType: json['resume_data_storage_type'] ?? '',
       rssAutoDownloadingEnabled: json['rss_auto_downloading_enabled'] ?? false,
-      rssDownloadRepackProperEpisodes:
-          json['rss_download_repack_proper_episodes'] ?? false,
+      rssDownloadRepackProperEpisodes: json['rss_download_repack_proper_episodes'] ?? false,
       rssMaxArticlesPerFeed: json['rss_max_articles_per_feed'] ?? 0,
       rssProcessingEnabled: json['rss_processing_enabled'] ?? false,
       rssRefreshInterval: json['rss_refresh_interval'] ?? 0,
@@ -731,22 +831,17 @@ class QbittorrentPreferences {
       uploadSlotsBehavior: json['upload_slots_behavior'] ?? 0,
       upnp: json['upnp'] ?? false,
       upnpLeaseDuration: json['upnp_lease_duration'] ?? 0,
-      useCategoryPathsInManualMode:
-          json['use_category_paths_in_manual_mode'] ?? false,
+      useCategoryPathsInManualMode: json['use_category_paths_in_manual_mode'] ?? false,
       useHttps: json['use_https'] ?? false,
       utpTcpMixedMode: json['utp_tcp_mixed_mode'] ?? 0,
-      validateHttpsTrackerCertificate:
-          json['validate_https_tracker_certificate'] ?? false,
+      validateHttpsTrackerCertificate: json['validate_https_tracker_certificate'] ?? false,
       webUiAddress: json['web_ui_address'] ?? '',
       webUiBanDuration: json['web_ui_ban_duration'] ?? 0,
-      webUiClickjackingProtectionEnabled:
-          json['web_ui_clickjacking_protection_enabled'] ?? false,
-      webUiCsrfProtectionEnabled:
-          json['web_ui_csrf_protection_enabled'] ?? false,
+      webUiClickjackingProtectionEnabled: json['web_ui_clickjacking_protection_enabled'] ?? false,
+      webUiCsrfProtectionEnabled: json['web_ui_csrf_protection_enabled'] ?? false,
       webUiCustomHttpHeaders: json['web_ui_custom_http_headers'] ?? '',
       webUiDomainList: json['web_ui_domain_list'] ?? '',
-      webUiHostHeaderValidationEnabled:
-          json['web_ui_host_header_validation_enabled'] ?? false,
+      webUiHostHeaderValidationEnabled: json['web_ui_host_header_validation_enabled'] ?? false,
       webUiHttpsCertPath: json['web_ui_https_cert_path'] ?? '',
       webUiHttpsKeyPath: json['web_ui_https_key_path'] ?? '',
       webUiMaxAuthFailCount: json['web_ui_max_auth_fail_count'] ?? 0,
@@ -756,8 +851,7 @@ class QbittorrentPreferences {
       webUiSecureCookieEnabled: json['web_ui_secure_cookie_enabled'] ?? false,
       webUiSessionTimeout: json['web_ui_session_timeout'] ?? 0,
       webUiUpnp: json['web_ui_upnp'] ?? false,
-      webUiUseCustomHttpHeadersEnabled:
-          json['web_ui_use_custom_http_headers_enabled'] ?? false,
+      webUiUseCustomHttpHeadersEnabled: json['web_ui_use_custom_http_headers_enabled'] ?? false,
       webUiUsername: json['web_ui_username'] ?? '',
       version: json['version'] ?? '',
       webApiVersion: json['web_api_version'] ?? '',
@@ -924,8 +1018,7 @@ class QbittorrentPreferences {
       'validate_https_tracker_certificate': validateHttpsTrackerCertificate,
       'web_ui_address': webUiAddress,
       'web_ui_ban_duration': webUiBanDuration,
-      'web_ui_clickjacking_protection_enabled':
-          webUiClickjackingProtectionEnabled,
+      'web_ui_clickjacking_protection_enabled': webUiClickjackingProtectionEnabled,
       'web_ui_csrf_protection_enabled': webUiCsrfProtectionEnabled,
       'web_ui_custom_http_headers': webUiCustomHttpHeaders,
       'web_ui_domain_list': webUiDomainList,
@@ -939,8 +1032,7 @@ class QbittorrentPreferences {
       'web_ui_secure_cookie_enabled': webUiSecureCookieEnabled,
       'web_ui_session_timeout': webUiSessionTimeout,
       'web_ui_upnp': webUiUpnp,
-      'web_ui_use_custom_http_headers_enabled':
-          webUiUseCustomHttpHeadersEnabled,
+      'web_ui_use_custom_http_headers_enabled': webUiUseCustomHttpHeadersEnabled,
       'web_ui_username': webUiUsername,
     };
   }
@@ -1126,40 +1218,30 @@ class QbittorrentPreferences {
       addTrackersEnabled: addTrackersEnabled ?? this.addTrackersEnabled,
       altDlLimit: altDlLimit ?? this.altDlLimit,
       altUpLimit: altUpLimit ?? this.altUpLimit,
-      alternativeWebuiEnabled:
-          alternativeWebuiEnabled ?? this.alternativeWebuiEnabled,
+      alternativeWebuiEnabled: alternativeWebuiEnabled ?? this.alternativeWebuiEnabled,
       alternativeWebuiPath: alternativeWebuiPath ?? this.alternativeWebuiPath,
       announceIp: announceIp ?? this.announceIp,
       announceToAllTiers: announceToAllTiers ?? this.announceToAllTiers,
-      announceToAllTrackers:
-          announceToAllTrackers ?? this.announceToAllTrackers,
+      announceToAllTrackers: announceToAllTrackers ?? this.announceToAllTrackers,
       anonymousMode: anonymousMode ?? this.anonymousMode,
       asyncIoThreads: asyncIoThreads ?? this.asyncIoThreads,
       autoDeleteMode: autoDeleteMode ?? this.autoDeleteMode,
       autoTmmEnabled: autoTmmEnabled ?? this.autoTmmEnabled,
       autorunEnabled: autorunEnabled ?? this.autorunEnabled,
-      autorunOnTorrentAddedEnabled:
-          autorunOnTorrentAddedEnabled ?? this.autorunOnTorrentAddedEnabled,
-      autorunOnTorrentAddedProgram:
-          autorunOnTorrentAddedProgram ?? this.autorunOnTorrentAddedProgram,
+      autorunOnTorrentAddedEnabled: autorunOnTorrentAddedEnabled ?? this.autorunOnTorrentAddedEnabled,
+      autorunOnTorrentAddedProgram: autorunOnTorrentAddedProgram ?? this.autorunOnTorrentAddedProgram,
       autorunProgram: autorunProgram ?? this.autorunProgram,
       bannedIps: bannedIps ?? this.bannedIps,
       bittorrentProtocol: bittorrentProtocol ?? this.bittorrentProtocol,
-      blockPeersOnPrivilegedPorts:
-          blockPeersOnPrivilegedPorts ?? this.blockPeersOnPrivilegedPorts,
-      bypassAuthSubnetWhitelist:
-          bypassAuthSubnetWhitelist ?? this.bypassAuthSubnetWhitelist,
-      bypassAuthSubnetWhitelistEnabled: bypassAuthSubnetWhitelistEnabled ??
-          this.bypassAuthSubnetWhitelistEnabled,
+      blockPeersOnPrivilegedPorts: blockPeersOnPrivilegedPorts ?? this.blockPeersOnPrivilegedPorts,
+      bypassAuthSubnetWhitelist: bypassAuthSubnetWhitelist ?? this.bypassAuthSubnetWhitelist,
+      bypassAuthSubnetWhitelistEnabled: bypassAuthSubnetWhitelistEnabled ?? this.bypassAuthSubnetWhitelistEnabled,
       bypassLocalAuth: bypassLocalAuth ?? this.bypassLocalAuth,
-      categoryChangedTmmEnabled:
-          categoryChangedTmmEnabled ?? this.categoryChangedTmmEnabled,
+      categoryChangedTmmEnabled: categoryChangedTmmEnabled ?? this.categoryChangedTmmEnabled,
       checkingMemoryUse: checkingMemoryUse ?? this.checkingMemoryUse,
       connectionSpeed: connectionSpeed ?? this.connectionSpeed,
-      currentInterfaceAddress:
-          currentInterfaceAddress ?? this.currentInterfaceAddress,
-      currentNetworkInterface:
-          currentNetworkInterface ?? this.currentNetworkInterface,
+      currentInterfaceAddress: currentInterfaceAddress ?? this.currentInterfaceAddress,
+      currentNetworkInterface: currentNetworkInterface ?? this.currentNetworkInterface,
       dht: dht ?? this.dht,
       diskCache: diskCache ?? this.diskCache,
       diskCacheTtl: diskCacheTtl ?? this.diskCacheTtl,
@@ -1168,30 +1250,22 @@ class QbittorrentPreferences {
       diskIoWriteMode: diskIoWriteMode ?? this.diskIoWriteMode,
       diskQueueSize: diskQueueSize ?? this.diskQueueSize,
       dlLimit: dlLimit ?? this.dlLimit,
-      dontCountSlowTorrents:
-          dontCountSlowTorrents ?? this.dontCountSlowTorrents,
+      dontCountSlowTorrents: dontCountSlowTorrents ?? this.dontCountSlowTorrents,
       dyndnsDomain: dyndnsDomain ?? this.dyndnsDomain,
       dyndnsEnabled: dyndnsEnabled ?? this.dyndnsEnabled,
       dyndnsPassword: dyndnsPassword ?? this.dyndnsPassword,
       dyndnsService: dyndnsService ?? this.dyndnsService,
       dyndnsUsername: dyndnsUsername ?? this.dyndnsUsername,
       embeddedTrackerPort: embeddedTrackerPort ?? this.embeddedTrackerPort,
-      embeddedTrackerPortForwarding:
-          embeddedTrackerPortForwarding ?? this.embeddedTrackerPortForwarding,
-      enableCoalesceReadWrite:
-          enableCoalesceReadWrite ?? this.enableCoalesceReadWrite,
-      enableEmbeddedTracker:
-          enableEmbeddedTracker ?? this.enableEmbeddedTracker,
-      enableMultiConnectionsFromSameIp: enableMultiConnectionsFromSameIp ??
-          this.enableMultiConnectionsFromSameIp,
-      enablePieceExtentAffinity:
-          enablePieceExtentAffinity ?? this.enablePieceExtentAffinity,
-      enableUploadSuggestions:
-          enableUploadSuggestions ?? this.enableUploadSuggestions,
+      embeddedTrackerPortForwarding: embeddedTrackerPortForwarding ?? this.embeddedTrackerPortForwarding,
+      enableCoalesceReadWrite: enableCoalesceReadWrite ?? this.enableCoalesceReadWrite,
+      enableEmbeddedTracker: enableEmbeddedTracker ?? this.enableEmbeddedTracker,
+      enableMultiConnectionsFromSameIp: enableMultiConnectionsFromSameIp ?? this.enableMultiConnectionsFromSameIp,
+      enablePieceExtentAffinity: enablePieceExtentAffinity ?? this.enablePieceExtentAffinity,
+      enableUploadSuggestions: enableUploadSuggestions ?? this.enableUploadSuggestions,
       encryption: encryption ?? this.encryption,
       excludedFileNames: excludedFileNames ?? this.excludedFileNames,
-      excludedFileNamesEnabled:
-          excludedFileNamesEnabled ?? this.excludedFileNamesEnabled,
+      excludedFileNamesEnabled: excludedFileNamesEnabled ?? this.excludedFileNamesEnabled,
       exportDir: exportDir ?? this.exportDir,
       exportDirFin: exportDirFin ?? this.exportDirFin,
       filePoolSize: filePoolSize ?? this.filePoolSize,
@@ -1207,40 +1281,29 @@ class QbittorrentPreferences {
       listenPort: listenPort ?? this.listenPort,
       locale: locale ?? this.locale,
       lsd: lsd ?? this.lsd,
-      mailNotificationAuthEnabled:
-          mailNotificationAuthEnabled ?? this.mailNotificationAuthEnabled,
-      mailNotificationEmail:
-          mailNotificationEmail ?? this.mailNotificationEmail,
-      mailNotificationEnabled:
-          mailNotificationEnabled ?? this.mailNotificationEnabled,
-      mailNotificationPassword:
-          mailNotificationPassword ?? this.mailNotificationPassword,
-      mailNotificationSender:
-          mailNotificationSender ?? this.mailNotificationSender,
+      mailNotificationAuthEnabled: mailNotificationAuthEnabled ?? this.mailNotificationAuthEnabled,
+      mailNotificationEmail: mailNotificationEmail ?? this.mailNotificationEmail,
+      mailNotificationEnabled: mailNotificationEnabled ?? this.mailNotificationEnabled,
+      mailNotificationPassword: mailNotificationPassword ?? this.mailNotificationPassword,
+      mailNotificationSender: mailNotificationSender ?? this.mailNotificationSender,
       mailNotificationSmtp: mailNotificationSmtp ?? this.mailNotificationSmtp,
-      mailNotificationSslEnabled:
-          mailNotificationSslEnabled ?? this.mailNotificationSslEnabled,
-      mailNotificationUsername:
-          mailNotificationUsername ?? this.mailNotificationUsername,
-      maxActiveCheckingTorrents:
-          maxActiveCheckingTorrents ?? this.maxActiveCheckingTorrents,
+      mailNotificationSslEnabled: mailNotificationSslEnabled ?? this.mailNotificationSslEnabled,
+      mailNotificationUsername: mailNotificationUsername ?? this.mailNotificationUsername,
+      maxActiveCheckingTorrents: maxActiveCheckingTorrents ?? this.maxActiveCheckingTorrents,
       maxActiveDownloads: maxActiveDownloads ?? this.maxActiveDownloads,
       maxActiveTorrents: maxActiveTorrents ?? this.maxActiveTorrents,
       maxActiveUploads: maxActiveUploads ?? this.maxActiveUploads,
-      maxConcurrentHttpAnnounces:
-          maxConcurrentHttpAnnounces ?? this.maxConcurrentHttpAnnounces,
+      maxConcurrentHttpAnnounces: maxConcurrentHttpAnnounces ?? this.maxConcurrentHttpAnnounces,
       maxConnec: maxConnec ?? this.maxConnec,
       maxConnecPerTorrent: maxConnecPerTorrent ?? this.maxConnecPerTorrent,
       maxRatio: maxRatio ?? this.maxRatio,
       maxRatioAct: maxRatioAct ?? this.maxRatioAct,
       maxRatioEnabled: maxRatioEnabled ?? this.maxRatioEnabled,
       maxSeedingTime: maxSeedingTime ?? this.maxSeedingTime,
-      maxSeedingTimeEnabled:
-          maxSeedingTimeEnabled ?? this.maxSeedingTimeEnabled,
+      maxSeedingTimeEnabled: maxSeedingTimeEnabled ?? this.maxSeedingTimeEnabled,
       maxUploads: maxUploads ?? this.maxUploads,
       maxUploadsPerTorrent: maxUploadsPerTorrent ?? this.maxUploadsPerTorrent,
-      memoryWorkingSetLimit:
-          memoryWorkingSetLimit ?? this.memoryWorkingSetLimit,
+      memoryWorkingSetLimit: memoryWorkingSetLimit ?? this.memoryWorkingSetLimit,
       outgoingPortsMax: outgoingPortsMax ?? this.outgoingPortsMax,
       outgoingPortsMin: outgoingPortsMin ?? this.outgoingPortsMin,
       peerTos: peerTos ?? this.peerTos,
@@ -1261,30 +1324,21 @@ class QbittorrentPreferences {
       proxyUsername: proxyUsername ?? this.proxyUsername,
       queueingEnabled: queueingEnabled ?? this.queueingEnabled,
       randomPort: randomPort ?? this.randomPort,
-      reannounceWhenAddressChanged:
-          reannounceWhenAddressChanged ?? this.reannounceWhenAddressChanged,
-      recheckCompletedTorrents:
-          recheckCompletedTorrents ?? this.recheckCompletedTorrents,
+      reannounceWhenAddressChanged: reannounceWhenAddressChanged ?? this.reannounceWhenAddressChanged,
+      recheckCompletedTorrents: recheckCompletedTorrents ?? this.recheckCompletedTorrents,
       refreshInterval: refreshInterval ?? this.refreshInterval,
       requestQueueSize: requestQueueSize ?? this.requestQueueSize,
       resolvePeerCountries: resolvePeerCountries ?? this.resolvePeerCountries,
-      resumeDataStorageType:
-          resumeDataStorageType ?? this.resumeDataStorageType,
-      rssAutoDownloadingEnabled:
-          rssAutoDownloadingEnabled ?? this.rssAutoDownloadingEnabled,
-      rssDownloadRepackProperEpisodes: rssDownloadRepackProperEpisodes ??
-          this.rssDownloadRepackProperEpisodes,
-      rssMaxArticlesPerFeed:
-          rssMaxArticlesPerFeed ?? this.rssMaxArticlesPerFeed,
+      resumeDataStorageType: resumeDataStorageType ?? this.resumeDataStorageType,
+      rssAutoDownloadingEnabled: rssAutoDownloadingEnabled ?? this.rssAutoDownloadingEnabled,
+      rssDownloadRepackProperEpisodes: rssDownloadRepackProperEpisodes ?? this.rssDownloadRepackProperEpisodes,
+      rssMaxArticlesPerFeed: rssMaxArticlesPerFeed ?? this.rssMaxArticlesPerFeed,
       rssProcessingEnabled: rssProcessingEnabled ?? this.rssProcessingEnabled,
       rssRefreshInterval: rssRefreshInterval ?? this.rssRefreshInterval,
-      rssSmartEpisodeFilters:
-          rssSmartEpisodeFilters ?? this.rssSmartEpisodeFilters,
+      rssSmartEpisodeFilters: rssSmartEpisodeFilters ?? this.rssSmartEpisodeFilters,
       savePath: savePath ?? this.savePath,
-      savePathChangedTmmEnabled:
-          savePathChangedTmmEnabled ?? this.savePathChangedTmmEnabled,
-      saveResumeDataInterval:
-          saveResumeDataInterval ?? this.saveResumeDataInterval,
+      savePathChangedTmmEnabled: savePathChangedTmmEnabled ?? this.savePathChangedTmmEnabled,
+      saveResumeDataInterval: saveResumeDataInterval ?? this.saveResumeDataInterval,
       scanDirs: scanDirs ?? this.scanDirs,
       scheduleFromHour: scheduleFromHour ?? this.scheduleFromHour,
       scheduleFromMin: scheduleFromMin ?? this.scheduleFromMin,
@@ -1292,65 +1346,47 @@ class QbittorrentPreferences {
       scheduleToMin: scheduleToMin ?? this.scheduleToMin,
       schedulerDays: schedulerDays ?? this.schedulerDays,
       schedulerEnabled: schedulerEnabled ?? this.schedulerEnabled,
-      sendBufferLowWatermark:
-          sendBufferLowWatermark ?? this.sendBufferLowWatermark,
+      sendBufferLowWatermark: sendBufferLowWatermark ?? this.sendBufferLowWatermark,
       sendBufferWatermark: sendBufferWatermark ?? this.sendBufferWatermark,
-      sendBufferWatermarkFactor:
-          sendBufferWatermarkFactor ?? this.sendBufferWatermarkFactor,
-      slowTorrentDlRateThreshold:
-          slowTorrentDlRateThreshold ?? this.slowTorrentDlRateThreshold,
-      slowTorrentInactiveTimer:
-          slowTorrentInactiveTimer ?? this.slowTorrentInactiveTimer,
-      slowTorrentUlRateThreshold:
-          slowTorrentUlRateThreshold ?? this.slowTorrentUlRateThreshold,
+      sendBufferWatermarkFactor: sendBufferWatermarkFactor ?? this.sendBufferWatermarkFactor,
+      slowTorrentDlRateThreshold: slowTorrentDlRateThreshold ?? this.slowTorrentDlRateThreshold,
+      slowTorrentInactiveTimer: slowTorrentInactiveTimer ?? this.slowTorrentInactiveTimer,
+      slowTorrentUlRateThreshold: slowTorrentUlRateThreshold ?? this.slowTorrentUlRateThreshold,
       socketBacklogSize: socketBacklogSize ?? this.socketBacklogSize,
       ssrfMitigation: ssrfMitigation ?? this.ssrfMitigation,
       startPausedEnabled: startPausedEnabled ?? this.startPausedEnabled,
       stopTrackerTimeout: stopTrackerTimeout ?? this.stopTrackerTimeout,
       tempPath: tempPath ?? this.tempPath,
       tempPathEnabled: tempPathEnabled ?? this.tempPathEnabled,
-      torrentChangedTmmEnabled:
-          torrentChangedTmmEnabled ?? this.torrentChangedTmmEnabled,
+      torrentChangedTmmEnabled: torrentChangedTmmEnabled ?? this.torrentChangedTmmEnabled,
       torrentContentLayout: torrentContentLayout ?? this.torrentContentLayout,
       torrentStopCondition: torrentStopCondition ?? this.torrentStopCondition,
       upLimit: upLimit ?? this.upLimit,
-      uploadChokingAlgorithm:
-          uploadChokingAlgorithm ?? this.uploadChokingAlgorithm,
+      uploadChokingAlgorithm: uploadChokingAlgorithm ?? this.uploadChokingAlgorithm,
       uploadSlotsBehavior: uploadSlotsBehavior ?? this.uploadSlotsBehavior,
       upnp: upnp ?? this.upnp,
       upnpLeaseDuration: upnpLeaseDuration ?? this.upnpLeaseDuration,
-      useCategoryPathsInManualMode:
-          useCategoryPathsInManualMode ?? this.useCategoryPathsInManualMode,
+      useCategoryPathsInManualMode: useCategoryPathsInManualMode ?? this.useCategoryPathsInManualMode,
       useHttps: useHttps ?? this.useHttps,
       utpTcpMixedMode: utpTcpMixedMode ?? this.utpTcpMixedMode,
-      validateHttpsTrackerCertificate: validateHttpsTrackerCertificate ??
-          this.validateHttpsTrackerCertificate,
+      validateHttpsTrackerCertificate: validateHttpsTrackerCertificate ?? this.validateHttpsTrackerCertificate,
       webUiAddress: webUiAddress ?? this.webUiAddress,
       webUiBanDuration: webUiBanDuration ?? this.webUiBanDuration,
-      webUiClickjackingProtectionEnabled: webUiClickjackingProtectionEnabled ??
-          this.webUiClickjackingProtectionEnabled,
-      webUiCsrfProtectionEnabled:
-          webUiCsrfProtectionEnabled ?? this.webUiCsrfProtectionEnabled,
-      webUiCustomHttpHeaders:
-          webUiCustomHttpHeaders ?? this.webUiCustomHttpHeaders,
+      webUiClickjackingProtectionEnabled: webUiClickjackingProtectionEnabled ?? this.webUiClickjackingProtectionEnabled,
+      webUiCsrfProtectionEnabled: webUiCsrfProtectionEnabled ?? this.webUiCsrfProtectionEnabled,
+      webUiCustomHttpHeaders: webUiCustomHttpHeaders ?? this.webUiCustomHttpHeaders,
       webUiDomainList: webUiDomainList ?? this.webUiDomainList,
-      webUiHostHeaderValidationEnabled: webUiHostHeaderValidationEnabled ??
-          this.webUiHostHeaderValidationEnabled,
+      webUiHostHeaderValidationEnabled: webUiHostHeaderValidationEnabled ?? this.webUiHostHeaderValidationEnabled,
       webUiHttpsCertPath: webUiHttpsCertPath ?? this.webUiHttpsCertPath,
       webUiHttpsKeyPath: webUiHttpsKeyPath ?? this.webUiHttpsKeyPath,
-      webUiMaxAuthFailCount:
-          webUiMaxAuthFailCount ?? this.webUiMaxAuthFailCount,
+      webUiMaxAuthFailCount: webUiMaxAuthFailCount ?? this.webUiMaxAuthFailCount,
       webUiPort: webUiPort ?? this.webUiPort,
-      webUiReverseProxiesList:
-          webUiReverseProxiesList ?? this.webUiReverseProxiesList,
-      webUiReverseProxyEnabled:
-          webUiReverseProxyEnabled ?? this.webUiReverseProxyEnabled,
-      webUiSecureCookieEnabled:
-          webUiSecureCookieEnabled ?? this.webUiSecureCookieEnabled,
+      webUiReverseProxiesList: webUiReverseProxiesList ?? this.webUiReverseProxiesList,
+      webUiReverseProxyEnabled: webUiReverseProxyEnabled ?? this.webUiReverseProxyEnabled,
+      webUiSecureCookieEnabled: webUiSecureCookieEnabled ?? this.webUiSecureCookieEnabled,
       webUiSessionTimeout: webUiSessionTimeout ?? this.webUiSessionTimeout,
       webUiUpnp: webUiUpnp ?? this.webUiUpnp,
-      webUiUseCustomHttpHeadersEnabled: webUiUseCustomHttpHeadersEnabled ??
-          this.webUiUseCustomHttpHeadersEnabled,
+      webUiUseCustomHttpHeadersEnabled: webUiUseCustomHttpHeadersEnabled ?? this.webUiUseCustomHttpHeadersEnabled,
       webUiUsername: webUiUsername ?? this.webUiUsername,
       version: version,
       webApiVersion: webApiVersion,
