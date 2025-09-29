@@ -27,6 +27,7 @@ import '../my_site/controller.dart';
 class DownloadController extends GetxController {
   bool loading = false;
   bool addTorrentLoading = false;
+  bool showDetails = false;
   MySiteController mySiteController = Get.find();
   List<Downloader> dataList = <Downloader>[];
   Map<String, Downloader> dataMap = {};
@@ -44,6 +45,7 @@ class DownloadController extends GetxController {
   late StreamSubscription<SSEModel> subscription;
 
   String baseUrl = SPUtil.getLocalStorage('server');
+  String selectTab = 'torrentInfo';
   List torrents = [];
   List showTorrents = [];
 
@@ -156,6 +158,8 @@ class DownloadController extends GetxController {
   dynamic torrentState = '全部';
   String? selectedCategory = '全部';
   dynamic selectedTorrent;
+  dynamic selectedTorrentTrackers;
+  dynamic selectedTorrentContents;
   String selectedTracker = '全部';
   String sortKey = 'name';
   String searchKey = '';
@@ -452,6 +456,7 @@ class DownloadController extends GetxController {
         await stopFetchTorrents();
       }, onDone: () async {
         logger_helper.Logger.instance.e('本次种子传输结束啦！');
+        await stopFetchTorrents();
       });
     } catch (e, trace) {
       logger_helper.Logger.instance.e(e);
@@ -606,7 +611,7 @@ class DownloadController extends GetxController {
 
     selectedTorrent =
         isQb ? QbittorrentTorrentInfo.fromJson(response.data['properties']) : TrTorrent.fromJson(response.data);
-    update();
+
     return response;
   }
 
@@ -1335,8 +1340,11 @@ class DownloadController extends GetxController {
           return QbittorrentTorrentInfo.fromJson(torrent);
         }).toList() ??
         []);
-    if (selectedTorrent != null) {
-      selectedTorrent = QbittorrentTorrentInfo.fromJson(data['torrents'][selectedTorrent.infohashV1]);
+    if (selectedTorrent != null && data['torrents'] != null) {
+      selectedTorrent = QbittorrentTorrentInfo.fromJson({
+        ...selectedTorrent.toJson(), // 原始对象
+        ...data['torrents'][selectedTorrent.infohashV1], // 新的数据覆盖
+      });
     }
     isTorrentsLoading = false;
     ServerState state = ServerState.fromJson(data['server_state']);
@@ -1404,6 +1412,9 @@ class DownloadController extends GetxController {
     await torrentsChannel.sink.close(status.normalClosure);
     torrents.clear();
     serverStatus.clear();
+    selectedTorrentContents = [];
+    selectedTorrentTrackers = [];
+    showDetails = false;
     clearFilterOption();
     update();
   }
