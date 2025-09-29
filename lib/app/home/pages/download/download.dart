@@ -5909,7 +5909,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
       ),
       isScrollControlled: true,
       enableDrag: true,
-      CustomCard(
+      Container(
         height: MediaQuery.of(context).size.height * 0.9,
         padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
         child: GetBuilder<DownloadController>(builder: (controller) {
@@ -7911,6 +7911,7 @@ class ShowTorrentWidget extends StatelessWidget {
         response.data['files'].map<qb.TorrentContents>((item) => qb.TorrentContents.fromJson(item)).toList();
     List<qb.Tracker> trackers = response.data['trackers'].map<qb.Tracker>((item) => qb.Tracker.fromJson(item)).toList();
     Get.bottomSheet(
+      backgroundColor: shadColorScheme.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(2),
@@ -7919,7 +7920,7 @@ class ShowTorrentWidget extends StatelessWidget {
       ),
       isScrollControlled: true,
       enableDrag: true,
-      CustomCard(
+      Container(
         height: MediaQuery.of(context).size.height * 0.9,
         padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
         child: GetBuilder<DownloadController>(builder: (controller) {
@@ -7999,11 +8000,7 @@ class ShowTorrentWidget extends StatelessWidget {
             length: tabs.length,
             child: Scaffold(
               backgroundColor: Colors.transparent,
-              appBar: AppBar(
-                title: const Text('种子详情'),
-                backgroundColor: Colors.transparent,
-                bottom: const TabBar(tabs: tabs),
-              ),
+              appBar: const TabBar(tabs: tabs),
               body: TabBarView(
                 children: [
                   ListView(
@@ -8014,25 +8011,152 @@ class ShowTorrentWidget extends StatelessWidget {
                         children: [
                           CustomCard(
                             child: ListTile(
-                              dense: true,
-                              title: Tooltip(
-                                message: controller.selectedTorrent.name,
-                                child: Text(
-                                  controller.selectedTorrent.name,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                dense: true,
+                                title: Tooltip(
+                                  message: controller.selectedTorrent.name,
+                                  child: Text(
+                                    controller.selectedTorrent.name,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                  ),
                                 ),
-                              ),
-                              subtitle: ShadProgress(value: controller.selectedTorrent.progress),
-                              trailing: controller.selectedTorrent.state.toString().contains('pause') ||
-                                      controller.selectedTorrent.tracker.isEmpty == true
-                                  ? const Icon(Icons.pause, color: Colors.red)
-                                  : const Icon(
-                                      Icons.cloud_upload_outlined,
-                                      color: Colors.green,
+                                subtitle: SizedBox(
+                                    height: 8, child: ShadProgress(value: controller.selectedTorrent.progress)),
+                                trailing: ShadMenubar(
+                                  border: ShadBorder.none,
+                                  items: [
+                                    ShadMenubarItem(
+                                      items: [
+                                        ShadContextMenuItem(
+                                          leading: Icon(
+                                            Icons.announcement_outlined,
+                                            size: 14,
+                                            color: shadColorScheme.foreground,
+                                          ),
+                                          onPressed: () => Get.defaultDialog(
+                                            title: '',
+                                            middleText: '重新校验种子？',
+                                            actions: [
+                                              ShadButton.destructive(
+                                                size: ShadButtonSize.sm,
+                                                onPressed: () {
+                                                  Get.back(result: false);
+                                                },
+                                                child: const Text('取消'),
+                                              ),
+                                              ShadButton(
+                                                size: ShadButtonSize.sm,
+                                                onPressed: () async {
+                                                  // 重新校验种子
+                                                  Get.back(result: true);
+                                                  await controller.controlQbTorrents(
+                                                      downloader: downloader,
+                                                      command: 'recheck',
+                                                      hashes: [controller.selectedTorrent.infohashV1]);
+                                                },
+                                                child: const Text('确认'),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Text('重新校验'),
+                                        ),
+                                        ShadContextMenuItem(
+                                            leading: Icon(
+                                              Icons.campaign,
+                                              size: 14,
+                                              color: shadColorScheme.foreground,
+                                            ),
+                                            onPressed: () => controller.controlQbTorrents(
+                                                downloader: downloader,
+                                                command: 'reannounce',
+                                                hashes: [controller.selectedTorrent.infohashV1]),
+                                            child: Text('强制汇报')),
+                                        ShadContextMenuItem(
+                                            leading: Icon(
+                                              Icons.copy,
+                                              size: 14,
+                                              color: shadColorScheme.foreground,
+                                            ),
+                                            onPressed: () async {
+                                              Clipboard.setData(
+                                                  ClipboardData(text: controller.selectedTorrent.infohashV1));
+                                              Get.snackbar('复制种子HASH', '种子HASH复制成功！',
+                                                  colorText: shadColorScheme.foreground);
+                                            },
+                                            child: Text('复制哈希')),
+                                        ShadContextMenuItem(
+                                            leading: controller.selectedTorrent.autoTmm
+                                                ? Icon(
+                                                    Icons.hdr_auto_outlined,
+                                                    color: shadColorScheme.foreground,
+                                                    size: 14,
+                                                  )
+                                                : Icon(
+                                                    Icons.sports_handball_rounded,
+                                                    color: shadColorScheme.foreground,
+                                                    size: 14,
+                                                  ),
+                                            onPressed: () => controller.controlQbTorrents(
+                                                downloader: downloader,
+                                                command: 'set_auto_management',
+                                                hashes: [controller.selectedTorrent.infohashV1],
+                                                enable: !controller.selectedTorrent.autoTmm),
+                                            child: Text('自动管理')),
+                                        ShadContextMenuItem(
+                                            leading: controller.selectedTorrent.superSeeding
+                                                ? Icon(
+                                                    Icons.supervisor_account_rounded,
+                                                    color: shadColorScheme.foreground,
+                                                    size: 14,
+                                                  )
+                                                : Icon(
+                                                    Icons.accessibility_sharp,
+                                                    color: shadColorScheme.foreground,
+                                                    size: 14,
+                                                  ),
+                                            onPressed: () => controller.controlQbTorrents(
+                                                downloader: downloader,
+                                                command: 'set_super_seeding',
+                                                hashes: [controller.selectedTorrent.infohashV1],
+                                                enable: !controller.selectedTorrent.superSeeding),
+                                            child: Text('超级做种')),
+                                        ShadContextMenuItem(
+                                            leading: controller.selectedTorrent.forceStart
+                                                ? Icon(
+                                                    Icons.double_arrow_outlined,
+                                                    color: shadColorScheme.foreground,
+                                                    size: 14,
+                                                  )
+                                                : Icon(
+                                                    Icons.play_arrow_outlined,
+                                                    color: shadColorScheme.foreground,
+                                                    size: 14,
+                                                  ),
+                                            onPressed: () => controller.controlQbTorrents(
+                                                downloader: downloader,
+                                                command: 'set_force_start',
+                                                hashes: [controller.selectedTorrent.infohashV1],
+                                                enable: !controller.selectedTorrent.forceStart),
+                                            child: Text('强制开始')),
+                                        ShadContextMenuItem(
+                                            leading: Icon(
+                                              Icons.delete_outline,
+                                              color: shadColorScheme.foreground,
+                                              size: 14,
+                                            ),
+                                            child: Text('删除')),
+                                      ],
+                                      child: controller.selectedTorrent.state.toString().contains('pause') ||
+                                              controller.selectedTorrent.tracker.isEmpty == true
+                                          ? const Icon(Icons.pause, color: Colors.red)
+                                          : const Icon(
+                                              Icons.cloud_upload_outlined,
+                                              color: Colors.green,
+                                            ),
                                     ),
-                            ),
+                                  ],
+                                )),
                           ),
 
                           CustomCard(
@@ -8138,151 +8262,6 @@ class ShowTorrentWidget extends StatelessWidget {
                                 ),
                               ),
                             ),
-
-                          CustomCard(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                            child: Wrap(
-                              spacing: 28,
-                              alignment: WrapAlignment.spaceAround,
-                              children: [
-                                ShadButton.destructive(
-                                  size: ShadButtonSize.sm,
-                                  onPressed: () async {
-                                    Get.defaultDialog(
-                                      title: '',
-                                      middleText: '重新校验种子？',
-                                      actions: [
-                                        ShadButton.destructive(
-                                          size: ShadButtonSize.sm,
-                                          onPressed: () {
-                                            Get.back(result: false);
-                                          },
-                                          child: const Text('取消'),
-                                        ),
-                                        ShadButton(
-                                          size: ShadButtonSize.sm,
-                                          onPressed: () async {
-                                            // 重新校验种子
-                                            Get.back(result: true);
-                                            await controller.controlQbTorrents(
-                                                downloader: downloader,
-                                                command: 'recheck',
-                                                hashes: [controller.selectedTorrent.infohashV1]);
-                                          },
-                                          child: const Text('确认'),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                  leading: const Icon(
-                                    Icons.announcement_outlined,
-                                    size: 14,
-                                    color: Colors.white,
-                                  ),
-                                  child: const Text('重新校验'),
-                                ),
-                                ShadButton(
-                                  size: ShadButtonSize.sm,
-                                  onPressed: () async {
-                                    await controller.controlQbTorrents(
-                                        downloader: downloader,
-                                        command: 'reannounce',
-                                        hashes: [controller.selectedTorrent.infohashV1]);
-                                  },
-                                  leading: const Icon(
-                                    Icons.campaign,
-                                    size: 14,
-                                    color: Colors.white,
-                                  ),
-                                  child: Text('强制汇报'),
-                                ),
-                                ShadButton.secondary(
-                                  size: ShadButtonSize.sm,
-                                  onPressed: () async {
-                                    Clipboard.setData(ClipboardData(text: controller.selectedTorrent.infohashV1));
-                                    Get.snackbar('复制种子HASH', '种子HASH复制成功！', colorText: shadColorScheme.foreground);
-                                  },
-                                  leading: const Icon(
-                                    Icons.copy,
-                                    size: 14,
-                                    color: Colors.white,
-                                  ),
-                                  child: Text('复制哈希'),
-                                ),
-                                ShadButton(
-                                  size: ShadButtonSize.sm,
-                                  padding: EdgeInsets.zero,
-                                  // color: controller.selectedTorrent.autoTmm
-                                  //     ? GFColors.SUCCESS
-                                  //     : GFColors.DANGER,
-                                  onPressed: () async {
-                                    await controller.controlQbTorrents(
-                                        downloader: downloader,
-                                        command: 'set_auto_management',
-                                        hashes: [controller.selectedTorrent.infohashV1],
-                                        enable: !controller.selectedTorrent.autoTmm);
-                                  },
-                                  leading: controller.selectedTorrent.autoTmm
-                                      ? const Icon(
-                                          Icons.hdr_auto_outlined,
-                                          color: Colors.white,
-                                          size: 14,
-                                        )
-                                      : const Icon(
-                                          Icons.sports_handball_rounded,
-                                          color: Colors.white,
-                                          size: 14,
-                                        ),
-                                  child: Text('自动管理'),
-                                ),
-                                ShadButton(
-                                  size: ShadButtonSize.sm,
-                                  onPressed: () async {
-                                    await controller.controlQbTorrents(
-                                        downloader: downloader,
-                                        command: 'set_super_seeding',
-                                        hashes: [controller.selectedTorrent.infohashV1],
-                                        enable: !controller.selectedTorrent.superSeeding);
-                                  },
-                                  leading: controller.selectedTorrent.superSeeding
-                                      ? const Icon(
-                                          Icons.supervisor_account_rounded,
-                                          color: Colors.white,
-                                          size: 14,
-                                        )
-                                      : const Icon(
-                                          Icons.accessibility_sharp,
-                                          color: Colors.white,
-                                          size: 14,
-                                        ),
-                                  child: Text('超级做种'),
-                                ),
-                                ShadButton(
-                                  size: ShadButtonSize.sm,
-                                  onPressed: () async {
-                                    await controller.controlQbTorrents(
-                                        downloader: downloader,
-                                        command: 'set_force_start',
-                                        hashes: [controller.selectedTorrent.infohashV1],
-                                        enable: !controller.selectedTorrent.forceStart);
-                                  },
-                                  leading: controller.selectedTorrent.forceStart
-                                      ? const Icon(
-                                          Icons.double_arrow_outlined,
-                                          color: Colors.white,
-                                          size: 14,
-                                        )
-                                      : const Icon(
-                                          Icons.play_arrow_outlined,
-                                          color: Colors.white,
-                                          size: 14,
-                                        ),
-                                  child: Text('强制开始'),
-                                ),
-                              ],
-                            ),
-                          ),
 
                           CustomCard(
                             width: double.infinity,
