@@ -70,6 +70,8 @@ class DownloadController extends GetxController {
 
   // 下载器种子状态
   List<MetaDataItem> qBitStatus = [
+    {"name": "全部", "value": "all"},
+    {"name": "活动中", "value": 'active'},
     {"name": "正在下载", "value": 'downloading'},
     {"name": "下载暂停", "value": 'pausedDL'},
     {"name": "正在上传", "value": 'uploading'},
