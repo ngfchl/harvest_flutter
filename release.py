@@ -18,7 +18,10 @@ class VersionManager:
             self,
             output_folder,
             yaml_file_path="pubspec.yaml",
+            tasks=None,
     ):
+        print("初始化 VersionManager")
+        print(f"初始化任务参数：yaml: {yaml_file_path}   tasks:{tasks}")
         self.yaml_file_path = yaml_file_path
         self.output_folder = os.path.expanduser(output_folder)
         # 确保输出目录存在
@@ -29,16 +32,20 @@ class VersionManager:
         self.current_version = self.read_version()
         self.new_version = self.current_version
         self.machine = self.calc_machine()
-        self.tasks = ["macos"]
-        # 只在 Apple Silicon 的 macOS 上执行版本号自增
-        is_arm_mac = sys.platform.startswith("darwin") and platform.processor() == "arm"
-        if is_arm_mac:
-            self.calc_version()
-            self.tasks = ["apk", "ios", "macos"]
 
-        if sys.platform.startswith("win32"):
-            self.output_folder = self.output_folder.replace("/", "\\")
-            self.tasks = ["windows"]
+        if not tasks:
+            self.tasks = ["macos"]
+            # 只在 Apple Silicon 的 macOS 上执行版本号自增
+            is_arm_mac = sys.platform.startswith("darwin") and platform.processor() == "arm"
+            if is_arm_mac:
+                self.calc_version()
+                self.tasks = ["apk", "ipa", "macos"]
+
+            if sys.platform.startswith("win32"):
+                self.output_folder = self.output_folder.replace("/", "\\")
+                self.tasks = ["windows"]
+        else:
+            self.tasks = tasks
         self.fvm = self.get_fvm_command()
 
     @staticmethod
@@ -206,7 +213,7 @@ icon_locations = {{
                 #                     shell=True,
                 #                     stdout=subprocess.PIPE, stderr=subprocess.PIPE
                 #                 )
-            elif flag == "ios":
+            elif flag == "ipa":
                 res = subprocess.run(
                     ["rm -rf build/ios/iphoneos/*"],
                     shell=True,
@@ -215,42 +222,17 @@ icon_locations = {{
                 )
                 print(res.stdout.decode("utf-8"))
                 res = subprocess.run(
-                    f"{self.fvm} flutter build ios --release --obfuscate --split-debug-info=build/symbols",
+                    f"{self.fvm} flutter build ipa --export-options-plist=ExportOptions.plist",
                     shell=True,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                 )
                 print(res.stdout.decode("utf-8"))
-                print(f"IOS 编译完成，打包为 ipa 文件")
-                res = subprocess.run(
-                    "mkdir -p Payload/",
-                    cwd=self.ios_path,
-                    shell=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
-                print(res.stdout.decode("utf-8"))
-                res = subprocess.run(
-                    "mv Runner.app Payload/",
-                    cwd=self.ios_path,
-                    shell=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
-                print(res.stdout.decode("utf-8"))
-                res = subprocess.run(
-                    "zip -r Payload.zip Payload",
-                    cwd=self.ios_path,
-                    shell=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
-                print(f'命令执行成功！{res.stdout.decode("utf-8")}')
                 print(
-                    f"ipa 打包完成，正在移动到指定文件夹 {self.output_folder}/harvest_{self.new_version}.ipa"
+                    f"IOS 编译完成，正在移动到指定文件夹 {self.output_folder}/harvest_{self.new_version}.ipa"
                 )
                 shutil.move(
-                    "build/ios/iphoneos/Payload.zip",
+                    "build/ios/ipa/harvest.ipa",
                     f"{self.output_folder}/harvest_{self.new_version}.ipa",
                 )
 
@@ -271,7 +253,7 @@ icon_locations = {{
             #             if sys.platform.startswith('darwin'):
             #                 tasks = [
             #                     'apk',
-            #                     'ios',
+            #                     'ipa',
             #                     'macos',
             #                 ]
             # results = executor.map(self.compile, tasks)
@@ -305,8 +287,17 @@ if __name__ == "__main__":
         default="pubspec.yaml",
         help="pubspec.yaml 路径（默认：pubspec.yaml）",
     )
+
+    parser.add_argument(
+        "--tasks",
+        "-t",
+        nargs="*",
+        default=None,
+        help="任务列表（默认：None）",
+    )
     args = parser.parse_args()
-    manager = VersionManager(args.output_folder, yaml_file_path=args.yaml)
+    manager = VersionManager(args.output_folder, yaml_file_path=args.yaml, tasks=args.tasks)
+    print(manager.tasks)
     #     manager = VersionManager('~/Desktop/harvest')
     manager.compile_and_install()
     # manager.calc_version()
