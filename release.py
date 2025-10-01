@@ -1,7 +1,6 @@
 import argparse
 import concurrent.futures
 import datetime
-import dmgbuild
 import os
 import platform
 import re
@@ -12,6 +11,8 @@ import tempfile
 import traceback
 import yaml
 
+if sys.platform.startswith("darwin"):
+    import dmgbuild
 
 class VersionManager:
     def __init__(
