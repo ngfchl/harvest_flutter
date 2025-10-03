@@ -39,8 +39,8 @@ class HomeView extends GetView<HomeController> {
   Widget build(BuildContext context) {
     String cacheServer = 'https://images.weserv.nl/?url=';
     double opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     return GetBuilder<HomeController>(builder: (controller) {
-      var shadColorScheme = ShadTheme.of(context).colorScheme;
       return PopScope(
         canPop: false,
         onPopInvokedWithResult: (didPop, _) async {
@@ -91,19 +91,25 @@ class HomeView extends GetView<HomeController> {
                                     : 'assets/images/background.png'),
                                 fit: BoxFit.cover,
                               )
-                            : CachedNetworkImage(
-                                imageUrl: '${controller.useImageProxy ? cacheServer : ''}${controller.backgroundImage}',
-                                placeholder: (context, url) => Image.asset(
-                                  'assets/images/background.png',
-                                  fit: BoxFit.cover,
-                                ),
-                                errorWidget: (context, url, error) => Image.asset(
-                                  'assets/images/background.png',
-                                  fit: BoxFit.cover,
-                                ),
-                                fit: BoxFit.cover,
-                                cacheKey: controller.backgroundImage,
-                              ),
+                            : controller.useImageCache
+                                ? CachedNetworkImage(
+                                    imageUrl:
+                                        '${controller.useImageProxy ? cacheServer : ''}${controller.backgroundImage}',
+                                    placeholder: (context, url) => Image.asset(
+                                      'assets/images/background.png',
+                                      fit: BoxFit.cover,
+                                    ),
+                                    errorWidget: (context, url, error) => Image.asset(
+                                      'assets/images/background.png',
+                                      fit: BoxFit.cover,
+                                    ),
+                                    fit: BoxFit.cover,
+                                    cacheKey: controller.backgroundImage,
+                                  )
+                                : Image.network(
+                                    '${controller.useImageProxy ? cacheServer : ''}${controller.backgroundImage}',
+                                    fit: BoxFit.cover,
+                                  ),
                       );
                     }
                     return SizedBox.shrink();

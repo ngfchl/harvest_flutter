@@ -40,6 +40,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   AuthPeriod? authInfo;
   String backgroundImage = '';
   bool useLocalBackground = false;
+  bool useImageCache = false;
   bool useBackground = false;
   bool useImageProxy = false;
 
@@ -106,11 +107,13 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       useBackground = SPUtil.getBool('useBackground');
       if (useBackground) {
         useImageProxy = SPUtil.getBool('useImageProxy');
+        useImageCache = SPUtil.getBool('useImageCache');
         useLocalBackground = SPUtil.getBool('useLocalBackground');
 
-        backgroundImage = SPUtil.getString('backgroundImage',
-            defaultValue:
-                'https://cci1.yiimii.com/uploads/2023/11/20231114005921427.jpg');
+        backgroundImage = SPUtil.getString(
+          'backgroundImage',
+          defaultValue: 'https://pic4.zhimg.com/v2-12ed225c3144a726284fe048870f72d1_r.jpg',
+        );
         Logger.instance.d('背景图：$backgroundImage');
       }
       initDio();
