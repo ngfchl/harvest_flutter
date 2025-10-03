@@ -84,6 +84,7 @@ class _WebViewPageState extends State<WebViewPage> {
             controller.pageTitle.value,
             style: const TextStyle(fontSize: 14),
           ),
+          toolbarHeight: 40,
           actions: [
             GetBuilder<WebViewPageController>(builder: (controller) {
               return Row(
@@ -161,15 +162,7 @@ class _WebViewPageState extends State<WebViewPage> {
                         Icons.download_outlined,
                         size: 24,
                       ),
-                      onPressed: () async {
-                        if (controller.downloaderListLoading == true) {
-                          return;
-                        }
-                        controller.downloaderListLoading = true;
-
-                        await openDownloaderListSheet(context, controller.info!);
-                        controller.downloaderListLoading = false;
-                      },
+                      onPressed: () => openDownloaderListSheet(context, controller.info!),
                     ),
                   if (controller.mySite != null && controller.progress >= 100)
                     ShadIconButton.ghost(
@@ -315,13 +308,7 @@ class _WebViewPageState extends State<WebViewPage> {
                     Uri? uri = Uri.tryParse(url);
                     Logger.instance.d('种子 ID：${uri?.queryParameters['id']}');
                     String tid = uri?.queryParameters['id'] ?? '';
-                    // if (tid.isEmpty) {
-                    //   final regex = RegExp(r'(\d+)');
-                    //   final matches = regex.allMatches(url);
-                    //   if (matches.isNotEmpty) {
-                    //     tid = matches.first.group(0)!;
-                    //   }
-                    // }
+
                     SearchTorrentInfo info = SearchTorrentInfo(
                       siteId: controller.mySite?.id.toString() ?? '',
                       tid: tid,
@@ -341,13 +328,9 @@ class _WebViewPageState extends State<WebViewPage> {
                       leechers: 0,
                       completers: 0,
                     );
-                    if (controller.downloaderListLoading == true) {
-                      return;
-                    }
-                    controller.downloaderListLoading = true;
+                    Logger.instance.d('种子信息：${info.toJson()}');
 
-                    await openDownloaderListSheet(context, controller.info!);
-                    controller.downloaderListLoading = false;
+                    await openDownloaderListSheet(context, info);
                   },
                   onLoadStop: (inAppWebViewController, webUri) async {
                     Logger.instance.d(webUri!.toString);
