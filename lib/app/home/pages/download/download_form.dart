@@ -713,89 +713,92 @@ Future<void> openDownloaderListSheet(BuildContext context, SearchTorrentInfo inf
   var themeData = ShadTheme.of(context);
   Get.bottomSheet(
       backgroundColor: themeData.colorScheme.background,
-      Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Text(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10.0), // 设置圆角半径
+      ),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
               '请选择下载器',
               style: themeData.textTheme.h4,
             ),
-          ),
-          Flexible(
-            child: ListView(
-              children: downloadController.dataList.map((downloader) {
-                return CustomCard(
-                  child: GetBuilder<AggSearchController>(
-                      id: '${downloader.id} - ${downloader.name}',
-                      builder: (controller) {
-                        return ListTile(
-                          title: Text(
-                            downloader.name,
-                            style: TextStyle(
-                              color: themeData.colorScheme.foreground,
-                            ),
-                          ),
-                          subtitle: Text(
-                            '${downloader.protocol}://${downloader.host}:${downloader.port}',
-                            style: TextStyle(
-                              color: themeData.colorScheme.foreground.withOpacity(0.8),
-                            ),
-                          ),
-                          leading: CircleAvatar(
-                            backgroundImage: Image.asset(
-                              'assets/images/${downloader.category.toLowerCase()}.png',
-                            ).image,
-                          ),
-                          trailing: controller.isDownloaderLoading
-                              ? const CircularProgressIndicator()
-                              : const SizedBox.shrink(),
-                          onTap: () async {
-                            if (downloadController.addTorrentLoading == true) {
-                              return;
-                            }
-                            downloadController.addTorrentLoading = true;
-                            CommonResponse response = await controller.getDownloaderCategoryList(downloader);
-                            if (!response.succeed) {
-                              Get.snackbar(
-                                '警告',
-                                response.msg,
-                                colorText: themeData.colorScheme.destructive,
-                              );
-                              return;
-                            }
-                            Map<String, Category> categorise = response.data;
-                            Get.bottomSheet(
-                              backgroundColor: themeData.colorScheme.background,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                              enableDrag: true,
-                              Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: Column(children: [
-                                  Text(
-                                    '添加种子',
-                                    style: themeData.textTheme.h4,
-                                  ),
-                                  Expanded(
-                                    child: DownloadForm(
-                                      categories: categorise,
-                                      downloader: downloader,
-                                      info: info,
-                                    ),
-                                  ),
-                                ]),
+            Expanded(
+              child: ListView(
+                children: downloadController.dataList.map((downloader) {
+                  return CustomCard(
+                    child: GetBuilder<AggSearchController>(
+                        id: '${downloader.id} - ${downloader.name}',
+                        builder: (controller) {
+                          return ListTile(
+                            title: Text(
+                              downloader.name,
+                              style: TextStyle(
+                                color: themeData.colorScheme.foreground,
                               ),
-                            ).whenComplete(() {
-                              downloadController.addTorrentLoading = false;
-                            });
-                          },
-                        );
-                      }),
-                );
-              }).toList(),
-            ),
-          )
-        ],
+                            ),
+                            subtitle: Text(
+                              '${downloader.protocol}://${downloader.host}:${downloader.port}',
+                              style: TextStyle(
+                                color: themeData.colorScheme.foreground.withOpacity(0.8),
+                              ),
+                            ),
+                            leading: CircleAvatar(
+                              backgroundImage: Image.asset(
+                                'assets/images/${downloader.category.toLowerCase()}.png',
+                              ).image,
+                            ),
+                            trailing: controller.isDownloaderLoading
+                                ? const CircularProgressIndicator()
+                                : const SizedBox.shrink(),
+                            onTap: () async {
+                              if (downloadController.addTorrentLoading == true) {
+                                return;
+                              }
+                              downloadController.addTorrentLoading = true;
+                              CommonResponse response = await controller.getDownloaderCategoryList(downloader);
+                              if (!response.succeed) {
+                                Get.snackbar(
+                                  '警告',
+                                  response.msg,
+                                  colorText: themeData.colorScheme.destructive,
+                                );
+                                return;
+                              }
+                              Map<String, Category> categorise = response.data;
+                              Get.bottomSheet(
+                                backgroundColor: themeData.colorScheme.background,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+                                enableDrag: true,
+                                Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Column(children: [
+                                    Text(
+                                      '添加种子',
+                                      style: themeData.textTheme.h4,
+                                    ),
+                                    Expanded(
+                                      child: DownloadForm(
+                                        categories: categorise,
+                                        downloader: downloader,
+                                        info: info,
+                                      ),
+                                    ),
+                                  ]),
+                                ),
+                              ).whenComplete(() {
+                                downloadController.addTorrentLoading = false;
+                              });
+                            },
+                          );
+                        }),
+                  );
+                }).toList(),
+              ),
+            )
+          ],
+        ),
       ));
 }
