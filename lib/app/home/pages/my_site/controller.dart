@@ -4,7 +4,7 @@ import 'package:harvest/app/home/pages/models/my_site.dart';
 import 'package:harvest/app/home/pages/models/website.dart';
 import 'package:harvest/common/meta_item.dart';
 import 'package:harvest/models/common_response.dart';
-import 'package:intl/intl.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../../api/mysite.dart';
 import '../../../../utils/date_time_utils.dart';
@@ -227,36 +227,14 @@ class MySiteController extends GetxController {
     Logger.instance.d('解析站点信息列表程序耗时: ${duration.inMilliseconds} 毫秒');
   }
 
-  Future<bool> saveMySiteToServer(MySite mySite) async {
+  Future<CommonResponse> saveMySiteToServer(MySite mySite) async {
     CommonResponse response;
     if (mySite.id != 0) {
       response = await editMySite(mySite);
     } else {
       response = await saveMySite(mySite);
     }
-    if (response.code == 0) {
-      Get.snackbar(
-        '保存成功！',
-        response.msg,
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.green.shade400,
-        duration: const Duration(seconds: 3),
-      );
-      update();
-      Future.microtask(() async {
-        await getSiteStatusFromServer();
-      });
-      return true;
-    } else {
-      Get.snackbar(
-        '保存出错啦！',
-        response.msg,
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.red.shade400,
-        duration: const Duration(seconds: 3),
-      );
-      return false;
-    }
+    return response;
   }
 
   Future<CommonResponse> removeSiteFromServer(MySite mySite) async {

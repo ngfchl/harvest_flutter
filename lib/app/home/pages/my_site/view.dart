@@ -448,7 +448,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                   }
                                   controller.showStatusList.insert(newIndex, item);
                                   controller.update();
-                                  if (await controller.saveMySiteToServer(newItem)) {
+                                  CommonResponse response = await controller.saveMySiteToServer(newItem);
+                                  if (response.succeed) {
                                     await controller.getSiteStatusFromServer();
                                   }
                                 },
@@ -1255,8 +1256,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
       child: Obx(
         () => siteRefreshing.value
             ? SizedBox(
-                width: 24,
-                height: 24,
+                width: 18,
+                height: 18,
                 child: Center(
                     child: CircularProgressIndicator(
                   color: shadColorScheme.primary,
@@ -1778,11 +1779,11 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                     leading: Obx(() {
                       return doSaveLoading.value
                           ? SizedBox(
-                              width: 20,
-                              height: 20,
+                              width: 16,
+                              height: 16,
                               child: Center(
                                   child: CircularProgressIndicator(
-                                color: shadColorScheme.primary,
+                                color: shadColorScheme.primaryForeground,
                               )))
                           : Icon(Icons.save, color: shadColorScheme.primaryForeground);
                     }),
@@ -1860,7 +1861,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         );
                       }
                       Logger.instance.d(mySite?.toJson());
-                      if (await controller.saveMySiteToServer(mySite!)) {
+                      CommonResponse response = await controller.saveMySiteToServer(mySite!);
+                      if (response.succeed) {
                         Navigator.of(context).pop();
                         controller.initFlag = false;
                         controller.getSiteStatusFromServer();
@@ -1869,6 +1871,15 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                           dController.initChartData();
                           dController.update();
                         });
+                      }
+
+                      if (response.succeed) {
+                        Get.snackbar('保存成功！', response.msg, snackPosition: SnackPosition.TOP);
+                        controller.update();
+                        Future.microtask(() => controller.getSiteStatusFromServer());
+                      } else {
+                        Get.snackbar('保存出错啦！', response.msg,
+                            snackPosition: SnackPosition.TOP, colorText: shadColorScheme.destructive);
                       }
                       doSaveLoading.value = false;
                     },
