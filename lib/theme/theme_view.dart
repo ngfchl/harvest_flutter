@@ -255,6 +255,9 @@ class ThemeIconButton extends StatelessWidget {
                             Wrap(
                               alignment: WrapAlignment.spaceBetween,
                               crossAxisAlignment: WrapCrossAlignment.center,
+                              runAlignment: WrapAlignment.center,
+                              spacing: 5,
+                              runSpacing: 5,
                               children: [
                                 ...[
                                   // {"width": 1024.0, "height": 768.0},
@@ -264,9 +267,10 @@ class ThemeIconButton extends StatelessWidget {
                                   // {"width": 1600.0, "height": 900.0},
                                   {"width": 1920.0, "height": 1080.0},
                                   {"width": 2560.0, "height": 1536.0},
-                                ].map((item) => ShadButton.ghost(
+                                ].map((item) => ShadButton.outline(
                                     size: ShadButtonSize.sm,
-                                    child: Text('${item["width"]?.toInt()} * ${item["height"]?.toInt()}'),
+                                    child: Text('${item["width"]?.toInt()}x${item["height"]?.toInt()}',
+                                        style: TextStyle(fontSize: 12)),
                                     onPressed: () {
                                       double width = item["width"]!;
                                       double height = item["height"]!;
@@ -374,7 +378,7 @@ class ThemeTag extends StatelessWidget {
           ),
           leading: ThemeIconButton(
             // Pass an icon as a parameter
-            icon: Icon(LucideIcons.palette, size: 20, color: shadColorScheme.primary),
+            icon: Icon(LucideIcons.palette, size: 20, color: shadColorScheme.foreground),
           ),
           trailing: ShadSwitch(
             value: controller.followSystem.value,

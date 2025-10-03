@@ -106,7 +106,10 @@ class FileManagePage extends StatelessWidget {
                             ShadButton.ghost(
                               size: ShadButtonSize.sm,
                               padding: EdgeInsets.zero,
-                              child: Text(pathList[i]),
+                              child: Text(
+                                pathList[i],
+                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                              ),
                               onPressed: () async {
                                 // 点击返回到某层的逻辑
                                 String path = pathList.sublist(0, i + 1).join('/');
@@ -122,7 +125,7 @@ class FileManagePage extends StatelessWidget {
                               padding: EdgeInsets.only(bottom: 4),
                               child: Text(
                                 "/",
-                                style: TextStyle(fontSize: 14, color: shadColorScheme.primary),
+                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                               ),
                             ),
                         ]

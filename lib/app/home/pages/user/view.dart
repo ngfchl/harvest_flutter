@@ -25,11 +25,10 @@ class UserWidget extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.transparent,
       floatingActionButton: (controller.userinfo?.isStaff == true || controller.userinfo?.isStaff == true)
-          ? IconButton(
+          ? ShadIconButton.ghost(
               icon: Icon(
                 Icons.add,
                 size: 28,
-                color: shadColorScheme.primary,
               ),
               onPressed: () async {
                 _showEditBottomSheet(context: context);

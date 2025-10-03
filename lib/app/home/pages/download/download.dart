@@ -97,7 +97,6 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
       var shadColorScheme = ShadTheme.of(context).colorScheme;
       return Column(
         mainAxisAlignment: MainAxisAlignment.end,
-        spacing: 10,
         children: [
           // IconButton(
           //   icon: Icon(
@@ -109,14 +108,14 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
           // ),
           ShadIconButton.ghost(
             icon: Icon(
-              controller.isLoading ? Icons.pause : Icons.play_arrow,
+              controller.isLoading ? Icons.pause_outlined : Icons.play_arrow_outlined,
               size: 20,
             ),
             onPressed: () => controller.toggleFetchStatus(),
           ),
           ShadIconButton.ghost(
               icon: Icon(
-                Icons.settings,
+                Icons.settings_outlined,
                 size: 20,
               ),
               onPressed: () {
@@ -128,7 +127,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
-                            SwitchListTile(
+                            ListTile(
                               dense: true,
                               title: Text(
                                 '状态刷新',
@@ -138,27 +137,31 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                   color: shadColorScheme.foreground,
                                 ),
                               ),
-                              value: controller.realTimeState,
-                              onChanged: (bool value) async {
-                                controller.realTimeState = value;
-                                await SPUtil.setBool('realTimeState', value);
-                                if (value == false) {
-                                  await controller.stopFetchStatus();
-                                } else {
-                                  await controller.getDownloaderStatus();
-                                }
-                                controller.update();
-                              },
+                              trailing: ShadSwitch(
+                                value: controller.realTimeState,
+                                onChanged: (bool value) async {
+                                  controller.realTimeState = value;
+                                  await SPUtil.setBool('realTimeState', value);
+                                  if (value == false) {
+                                    await controller.stopFetchStatus();
+                                  } else {
+                                    await controller.getDownloaderStatus();
+                                  }
+                                  controller.update();
+                                },
+                              ),
                             ),
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 12.0),
                               child: Row(
                                 children: [
                                   CustomTextTag(
-                                      backgroundColor: shadColorScheme.foreground,
-                                      labelText: '刷新间隔：${controller.duration}秒'),
+                                      backgroundColor: Colors.transparent, labelText: '刷新间隔：${controller.duration}秒'),
                                   InkWell(
-                                    child: const Icon(Icons.remove),
+                                    child: Icon(
+                                      Icons.remove,
+                                      color: shadColorScheme.foreground,
+                                    ),
                                     onTap: () {
                                       if (controller.duration.toInt() > 1) {
                                         controller.duration--;
@@ -184,7 +187,10 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                         }),
                                   ),
                                   InkWell(
-                                    child: const Icon(Icons.add),
+                                    child: Icon(
+                                      Icons.add,
+                                      color: shadColorScheme.foreground,
+                                    ),
                                     onTap: () {
                                       if (controller.duration.toInt() < 15) {
                                         controller.duration++;
@@ -201,10 +207,13 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               child: Row(
                                 children: [
                                   CustomTextTag(
-                                      backgroundColor: shadColorScheme.foreground,
+                                      backgroundColor: Colors.transparent,
                                       labelText: '分页大小：${controller.pageSize * 10}个'),
                                   InkWell(
-                                    child: const Icon(Icons.remove),
+                                    child: Icon(
+                                      Icons.remove,
+                                      color: shadColorScheme.foreground,
+                                    ),
                                     onTap: () {
                                       if (controller.pageSize.toInt() > 10) {
                                         controller.pageSize -= 10;
@@ -228,7 +237,10 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                         }),
                                   ),
                                   InkWell(
-                                    child: const Icon(Icons.add),
+                                    child: Icon(
+                                      Icons.add,
+                                      color: shadColorScheme.foreground,
+                                    ),
                                     onTap: () {
                                       if (controller.pageSize.toInt() < 200) {
                                         controller.pageSize += 10;
@@ -245,10 +257,13 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               child: Row(
                                 children: [
                                   CustomTextTag(
-                                      backgroundColor: shadColorScheme.foreground,
+                                      backgroundColor: Colors.transparent,
                                       labelText: '刷新时长：${controller.timerDuration}分'),
                                   InkWell(
-                                    child: const Icon(Icons.remove),
+                                    child: Icon(
+                                      Icons.remove,
+                                      color: shadColorScheme.foreground,
+                                    ),
                                     onTap: () {
                                       if (controller.timerDuration.toInt() > 3) {
                                         controller.timerDuration--;
@@ -272,7 +287,10 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                         }),
                                   ),
                                   InkWell(
-                                    child: const Icon(Icons.add),
+                                    child: Icon(
+                                      Icons.add,
+                                      color: shadColorScheme.foreground,
+                                    ),
                                     onTap: () {
                                       if (controller.timerDuration.toInt() < 15) {
                                         controller.timerDuration++;
@@ -299,7 +317,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
               }),
           ShadIconButton.ghost(
             icon: Icon(
-              Icons.add,
+              Icons.add_outlined,
               size: 20,
             ),
             onPressed: () async {
@@ -369,12 +387,14 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                     child: SfCartesianChart(
                       plotAreaBorderWidth: 0,
                       tooltipBehavior: tooltipBehavior,
-                      primaryXAxis: const CategoryAxis(
+                      primaryXAxis: CategoryAxis(
                           isVisible: false,
+                          labelStyle: TextStyle(color: shadColorScheme.foreground),
                           majorGridLines: MajorGridLines(width: 0),
                           edgeLabelPlacement: EdgeLabelPlacement.shift),
                       primaryYAxis: NumericAxis(
                           axisLine: const AxisLine(width: 0),
+                          labelStyle: TextStyle(color: shadColorScheme.foreground),
                           axisLabelFormatter: (AxisLabelRenderDetails details) {
                             return ChartAxisLabel(
                               FileSizeConvert.parseToFileSize(details.value),
@@ -420,15 +440,17 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                     children: [
                       Text(
                         '上传限速：${FileSizeConvert.parseToFileSize(res.upRateLimit)}/s',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 10,
+                          color: shadColorScheme.foreground,
                         ),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         '下载限速：${FileSizeConvert.parseToFileSize(res.dlRateLimit)}/s',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 10,
+                          color: shadColorScheme.foreground,
                         ),
                       ),
                     ],
@@ -454,12 +476,14 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                     child: SfCartesianChart(
                       plotAreaBorderWidth: 0,
                       tooltipBehavior: tooltipBehavior,
-                      primaryXAxis: const CategoryAxis(
+                      primaryXAxis: CategoryAxis(
                           isVisible: false,
+                          labelStyle: TextStyle(color: shadColorScheme.foreground),
                           majorGridLines: MajorGridLines(width: 0),
                           edgeLabelPlacement: EdgeLabelPlacement.none),
                       primaryYAxis: NumericAxis(
                           axisLine: const AxisLine(width: 0),
+                          labelStyle: TextStyle(color: shadColorScheme.foreground),
                           axisLabelFormatter: (AxisLabelRenderDetails details) {
                             return ChartAxisLabel(
                               FileSizeConvert.parseToFileSize(details.value),
@@ -502,8 +526,9 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                     children: [
                       Text(
                         '活动种子：${res.activeTorrentCount}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 10,
+                          color: shadColorScheme.foreground,
                         ),
                       ),
                       const SizedBox(
@@ -513,16 +538,18 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                       if (downloader.prefs.speedLimitUpEnabled == true)
                         Text(
                           '上传限速：${FileSizeConvert.parseToFileSize(downloader.prefs.speedLimitUp * 1024)}/s',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 10,
+                            color: shadColorScheme.foreground,
                           ),
                         ),
                       const SizedBox(width: 8),
                       if (downloader.prefs.speedLimitDownEnabled == true)
                         Text(
                           '下载限速：${FileSizeConvert.parseToFileSize(downloader.prefs.speedLimitDown * 1024)}/s',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 10,
+                            color: shadColorScheme.foreground,
                           ),
                         ),
                     ],
@@ -774,6 +801,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
     if (downloader.status.isEmpty) {
       return Center(child: const CircularProgressIndicator());
     }
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     if (downloader.category == 'Qb') {
       qb.ServerState res = downloader.status.last;
 
@@ -796,8 +824,9 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                     const SizedBox(width: 2),
                     Text(
                       '${FileSizeConvert.parseToFileSize(res.upInfoSpeed!)}/S',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10,
+                        color: shadColorScheme.foreground,
                       ),
                     ),
                   ],
@@ -813,8 +842,9 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                     const SizedBox(width: 2),
                     Text(
                       '${FileSizeConvert.parseToFileSize(res.dlInfoSpeed!)}/S',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10,
+                        color: shadColorScheme.foreground,
                       ),
                     ),
                   ],
@@ -830,8 +860,9 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                     const SizedBox(width: 2),
                     Text(
                       FileSizeConvert.parseToFileSize(res.upInfoData),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10,
+                        color: shadColorScheme.foreground,
                       ),
                     ),
                   ],
@@ -848,8 +879,9 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                     const SizedBox(width: 2),
                     Text(
                       FileSizeConvert.parseToFileSize(res.dlInfoData),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10,
+                        color: shadColorScheme.foreground,
                       ),
                     ),
                   ],
@@ -878,8 +910,9 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                 const SizedBox(width: 2),
                 Text(
                   '${FileSizeConvert.parseToFileSize(res.uploadSpeed)}/S',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
+                    color: shadColorScheme.foreground,
                   ),
                 ),
               ],
@@ -895,8 +928,9 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                 const SizedBox(width: 2),
                 Text(
                   '${FileSizeConvert.parseToFileSize(res.downloadSpeed, 0)}/S',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
+                    color: shadColorScheme.foreground,
                   ),
                 ),
               ],
@@ -912,8 +946,9 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                 const SizedBox(width: 2),
                 Text(
                   FileSizeConvert.parseToFileSize(res.currentStats.uploadedBytes),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
+                    color: shadColorScheme.foreground,
                   ),
                 ),
               ],
@@ -930,8 +965,9 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                 const SizedBox(width: 2),
                 Text(
                   FileSizeConvert.parseToFileSize(res.currentStats.downloadedBytes),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
+                    color: shadColorScheme.foreground,
                   ),
                 ),
               ],
@@ -948,8 +984,9 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                 const SizedBox(width: 2),
                 Text(
                   '${res.pausedTorrentCount}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
+                    color: shadColorScheme.foreground,
                   ),
                 ),
               ],
@@ -3279,7 +3316,6 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
         TextEditingController(text: controller.currentPrefs.webUiPort.toString());
     TextEditingController webUiSessionTimeoutController =
         TextEditingController(text: controller.currentPrefs.webUiSessionTimeout.toString());
-    var opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
     Get.bottomSheet(
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
@@ -3289,198 +3325,23 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
       ),
       isScrollControlled: true,
       enableDrag: true,
-      CustomCard(
-        height: MediaQuery.of(context).size.height * 0.9,
-        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
-        child: GetBuilder<DownloadController>(builder: (controller) {
-          return DefaultTabController(
-            length: tabs.length,
-            child: Scaffold(
+      GetBuilder<DownloadController>(builder: (controller) {
+        return DefaultTabController(
+          length: tabs.length,
+          child: Scaffold(
+            backgroundColor: shadColorScheme.background,
+            appBar: AppBar(
               backgroundColor: shadColorScheme.background,
-              appBar: AppBar(
-                backgroundColor: shadColorScheme.background,
-                title: Text(
-                  '配置选项[${downloader.prefs.webApiVersion.toString()}]',
-                  style: TextStyle(color: shadColorScheme.foreground),
-                ),
-                bottom: const TabBar(tabs: tabs, isScrollable: true),
+              title: Text(
+                '配置选项[${downloader.prefs.webApiVersion.toString()}]',
+                style: TextStyle(color: shadColorScheme.foreground),
               ),
-              floatingActionButton: ShadIconButton(
-                onPressed: () async {
-                  QbittorrentPreferences prefs = controller.currentPrefs.copyWith(
-                    addTrackers: addTrackersController.text,
-                    addTrackersEnabled: addTrackersEnabled.value,
-                    altDlLimit: int.parse(altDlLimitController.text) * 1024,
-                    altUpLimit: int.parse(altUpLimitController.text) * 1024,
-                    alternativeWebuiEnabled: alternativeWebuiEnabled.value,
-                    alternativeWebuiPath: alternativeWebuiPathController.text,
-                    announceIp: announceIpController.text,
-                    announceToAllTiers: announceToAllTiers.value,
-                    announceToAllTrackers: announceToAllTrackers.value,
-                    anonymousMode: anonymousMode.value,
-                    asyncIoThreads: int.parse(asyncIoThreadsController.text),
-                    autoDeleteMode: autoDeleteMode.value,
-                    autoTmmEnabled: autoTmmEnabled.value,
-                    autorunProgram: autorunProgramController.text,
-                    bannedIps: bannedIPsController.text,
-                    bittorrentProtocol: bittorrentProtocol.value,
-                    blockPeersOnPrivilegedPorts: blockPeersOnPrivilegedPorts.value,
-                    bypassAuthSubnetWhitelist: bypassAuthSubnetWhitelistController.text,
-                    bypassAuthSubnetWhitelistEnabled: bypassAuthSubnetWhitelistEnabled.value,
-                    bypassLocalAuth: bypassLocalAuth.value,
-                    categoryChangedTmmEnabled: categoryChangedTmmEnabled.value,
-                    checkingMemoryUse: int.parse(checkingMemoryUseController.text),
-                    connectionSpeed: int.parse(connectionSpeedController.text),
-                    currentInterfaceAddress: currentInterfaceAddress.value,
-                    currentNetworkInterface: currentNetworkInterface.value,
-                    dht: dht.value,
-                    diskCache: int.parse(diskCacheController.text),
-                    diskCacheTtl: int.parse(diskCacheTtlController.text),
-                    diskIoReadMode: diskIoReadMode.value,
-                    diskIoType: diskIoType.value,
-                    diskIoWriteMode: diskIoWriteMode.value,
-                    diskQueueSize: int.parse(diskQueueSizeController.text) * 1024,
-                    dlLimit: int.parse(dlLimitController.text) * 1024,
-                    dontCountSlowTorrents: dontCountSlowTorrents.value,
-                    dyndnsDomain: dyndnsDomainController.text,
-                    dyndnsEnabled: dyndnsEnabled.value,
-                    dyndnsPassword: dyndnsPasswordController.text,
-                    dyndnsService: dyndnsService.value,
-                    dyndnsUsername: dyndnsUsernameController.text,
-                    embeddedTrackerPort: int.parse(embeddedTrackerPortController.text),
-                    embeddedTrackerPortForwarding: embeddedTrackerPortForwarding.value,
-                    enableCoalesceReadWrite: enableCoalesceReadWrite.value,
-                    enableEmbeddedTracker: enableEmbeddedTracker.value,
-                    enableMultiConnectionsFromSameIp: enableMultiConnectionsFromSameIp.value,
-                    enablePieceExtentAffinity: enablePieceExtentAffinity.value,
-                    enableUploadSuggestions: enableUploadSuggestions.value,
-                    encryption: encryption.value,
-                    excludedFileNamesEnabled: excludedFileNamesEnabled.value,
-                    exportDir: exportDirController.text,
-                    exportDirFin: exportDirFinController.text,
-                    filePoolSize: int.parse(filePoolSizeController.text),
-                    hashingThreads: int.parse(hashingThreadsController.text),
-                    idnSupportEnabled: idnSupportEnabled.value,
-                    incompleteFilesExt: incompleteFilesExt.value,
-                    ipFilterEnabled: ipFilterEnabled.value,
-                    ipFilterPath: ipFilterPathController.text,
-                    ipFilterTrackers: ipFilterTrackers.value,
-                    limitLanPeers: limitLanPeers.value,
-                    limitTcpOverhead: limitTcpOverhead.value,
-                    limitUtpRate: limitUtpRate.value,
-                    listenPort: int.parse(listenPortController.text),
-                    locale: locale.value,
-                    lsd: lsd.value,
-                    maxActiveCheckingTorrents: int.parse(maxActiveCheckingTorrentsController.text),
-                    maxActiveDownloads: int.parse(maxActiveDownloadsController.text),
-                    maxActiveTorrents: int.parse(maxActiveTorrentsController.text),
-                    maxActiveUploads: int.parse(maxActiveUploadsController.text),
-                    maxConnec: int.parse(maxConnecController.text),
-                    maxConnecPerTorrent: int.parse(maxConnecPerTorrentController.text),
-                    maxConcurrentHttpAnnounces: int.parse(maxConcurrentHttpAnnouncesController.text),
-                    maxRatio: double.parse(maxRatioController.text),
-                    maxRatioAct: maxRatioAct.value,
-                    maxRatioEnabled: maxRatioEnabled.value,
-                    maxSeedingTime: int.parse(maxSeedingTimeController.text),
-                    maxSeedingTimeEnabled: maxSeedingTimeEnabled.value,
-                    maxUploads: int.parse(maxUploadsController.text),
-                    maxUploadsPerTorrent: int.parse(maxUploadsPerTorrentController.text),
-                    memoryWorkingSetLimit: int.parse(memoryWorkingSetLimitController.text),
-                    outgoingPortsMax: int.parse(outgoingPortsMaxController.text),
-                    outgoingPortsMin: int.parse(outgoingPortsMinController.text),
-                    peerTos: int.parse(peerTosController.text),
-                    peerTurnover: int.parse(peerTurnoverController.text),
-                    peerTurnoverCutoff: int.parse(peerTurnoverCutoffController.text),
-                    peerTurnoverInterval: int.parse(peerTurnoverIntervalController.text),
-                    performanceWarning: performanceWarning.value,
-                    pex: pex.value,
-                    preallocateAll: preallocateAll.value,
-                    proxyAuthEnabled: proxyAuthEnabled.value,
-                    proxyHostnameLookup: proxyHostnameLookup.value,
-                    proxyIp: proxyIpController.text,
-                    proxyPassword: proxyPasswordController.text,
-                    proxyPeerConnections: proxyPeerConnections.value,
-                    proxyPort: int.parse(proxyPortController.text),
-                    proxyTorrentsOnly: proxyTorrentsOnly.value,
-                    proxyType: proxyType.value,
-                    proxyUsername: proxyUsernameController.text,
-                    queueingEnabled: queueingEnabled.value,
-                    randomPort: randomPort.value,
-                    reannounceWhenAddressChanged: reannounceWhenAddressChanged.value,
-                    recheckCompletedTorrents: recheckCompletedTorrents.value,
-                    refreshInterval: int.parse(refreshIntervalController.text),
-                    requestQueueSize: int.parse(requestQueueSizeController.text),
-                    resolvePeerCountries: resolvePeerCountries.value,
-                    resumeDataStorageType: resumeDataStorageType.value,
-                    rssAutoDownloadingEnabled: rssAutoDownloadingEnabled.value,
-                    rssDownloadRepackProperEpisodes: rssDownloadRepackProperEpisodes.value,
-                    rssMaxArticlesPerFeed: int.parse(rssMaxArticlesPerFeedController.text),
-                    rssProcessingEnabled: rssProcessingEnabled.value,
-                    rssRefreshInterval: int.parse(rssRefreshIntervalController.text),
-                    rssSmartEpisodeFilters: rssSmartEpisodeFiltersController.text,
-                    savePath: savePathController.text,
-                    savePathChangedTmmEnabled: savePathChangedTmmEnabled.value,
-                    saveResumeDataInterval: int.parse(saveResumeDataIntervalController.text),
-                    scheduleFromHour: int.parse(scheduleFromHourController.text),
-                    scheduleFromMin: int.parse(scheduleFromMinController.text),
-                    scheduleToHour: int.parse(scheduleToHourController.text),
-                    scheduleToMin: int.parse(scheduleToMinController.text),
-                    schedulerDays: schedulerDays.value,
-                    schedulerEnabled: schedulerEnabled.value,
-                    sendBufferLowWatermark: int.parse(sendBufferLowWatermarkController.text),
-                    sendBufferWatermark: int.parse(sendBufferWatermarkController.text),
-                    sendBufferWatermarkFactor: int.parse(sendBufferWatermarkFactorController.text),
-                    slowTorrentDlRateThreshold: int.parse(slowTorrentDlRateThresholdController.text),
-                    slowTorrentInactiveTimer: int.parse(slowTorrentInactiveTimerController.text),
-                    slowTorrentUlRateThreshold: int.parse(slowTorrentUlRateThresholdController.text),
-                    socketBacklogSize: int.parse(socketBacklogSizeController.text),
-                    ssrfMitigation: ssrfMitigation.value,
-                    startPausedEnabled: startPausedEnabled.value,
-                    stopTrackerTimeout: int.parse(stopTrackerTimeoutController.text),
-                    tempPath: tempPathController.text,
-                    tempPathEnabled: tempPathEnabled.value,
-                    torrentChangedTmmEnabled: torrentChangedTmmEnabled.value,
-                    torrentContentLayout: torrentContentLayoutController.text,
-                    torrentStopCondition: torrentStopCondition.value,
-                    upLimit: int.parse(upLimitController.text) * 1024,
-                    uploadChokingAlgorithm: uploadChokingAlgorithm.value,
-                    uploadSlotsBehavior: uploadSlotsBehavior.value,
-                    upnp: upnp.value,
-                    useCategoryPathsInManualMode: useCategoryPathsInManualMode.value,
-                    useHttps: useHttps.value,
-                    utpTcpMixedMode: utpTcpMixedMode.value,
-                    validateHttpsTrackerCertificate: validateHttpsTrackerCertificate.value,
-                    webUiAddress: webUiAddressController.text,
-                    webUiBanDuration: int.parse(webUiBanDurationController.text),
-                    webUiClickjackingProtectionEnabled: webUiClickjackingProtectionEnabled.value,
-                    webUiCsrfProtectionEnabled: webUiCsrfProtectionEnabled.value,
-                    webUiCustomHttpHeaders: webUiCustomHttpHeadersController.text,
-                    webUiDomainList: webUiDomainListController.text,
-                    webUiHostHeaderValidationEnabled: webUiHostHeaderValidationEnabled.value,
-                    webUiHttpsCertPath: webUiHttpsCertPathController.text,
-                    webUiHttpsKeyPath: webUiHttpsKeyPathController.text,
-                    webUiMaxAuthFailCount: int.parse(webUiMaxAuthFailCountController.text),
-                    webUiPort: int.parse(webUiPortController.text),
-                    webUiReverseProxiesList: webUiReverseProxiesListController.text,
-                    webUiReverseProxyEnabled: webUiReverseProxyEnabled.value,
-                    webUiSecureCookieEnabled: webUiSecureCookieEnabled.value,
-                    webUiSessionTimeout: int.parse(webUiSessionTimeoutController.text),
-                    webUiUpnp: webUiUpnp.value,
-                    webUiUseCustomHttpHeadersEnabled: webUiUseCustomHttpHeadersEnabled.value,
-                    webUiUsername: webUiUsernameController.text,
-                  );
-
-                  CommonResponse response = await controller.setPrefs(downloader, prefs);
-                  if (!response.succeed) {
-                    Get.snackbar('修改配置失败', response.msg);
-                  } else {
-                    controller.getDownloaderListFromServer();
-                  }
-                  Get.back();
-                },
-                icon: Icon(Icons.save_outlined),
-              ),
-              body: TabBarView(children: [
+              toolbarHeight: 40,
+              bottom: const TabBar(tabs: tabs, isScrollable: true),
+            ),
+            body: CustomCard(
+              padding: const EdgeInsets.all(8.0),
+              child: TabBarView(children: [
                 ListView(
                   children: [
                     Obx(() {
@@ -5328,9 +5189,184 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                 ),
               ]),
             ),
-          );
-        }),
-      ),
+            floatingActionButton: ShadIconButton.ghost(
+              onPressed: () async {
+                QbittorrentPreferences prefs = controller.currentPrefs.copyWith(
+                  addTrackers: addTrackersController.text,
+                  addTrackersEnabled: addTrackersEnabled.value,
+                  altDlLimit: int.parse(altDlLimitController.text) * 1024,
+                  altUpLimit: int.parse(altUpLimitController.text) * 1024,
+                  alternativeWebuiEnabled: alternativeWebuiEnabled.value,
+                  alternativeWebuiPath: alternativeWebuiPathController.text,
+                  announceIp: announceIpController.text,
+                  announceToAllTiers: announceToAllTiers.value,
+                  announceToAllTrackers: announceToAllTrackers.value,
+                  anonymousMode: anonymousMode.value,
+                  asyncIoThreads: int.parse(asyncIoThreadsController.text),
+                  autoDeleteMode: autoDeleteMode.value,
+                  autoTmmEnabled: autoTmmEnabled.value,
+                  autorunProgram: autorunProgramController.text,
+                  bannedIps: bannedIPsController.text,
+                  bittorrentProtocol: bittorrentProtocol.value,
+                  blockPeersOnPrivilegedPorts: blockPeersOnPrivilegedPorts.value,
+                  bypassAuthSubnetWhitelist: bypassAuthSubnetWhitelistController.text,
+                  bypassAuthSubnetWhitelistEnabled: bypassAuthSubnetWhitelistEnabled.value,
+                  bypassLocalAuth: bypassLocalAuth.value,
+                  categoryChangedTmmEnabled: categoryChangedTmmEnabled.value,
+                  checkingMemoryUse: int.parse(checkingMemoryUseController.text),
+                  connectionSpeed: int.parse(connectionSpeedController.text),
+                  currentInterfaceAddress: currentInterfaceAddress.value,
+                  currentNetworkInterface: currentNetworkInterface.value,
+                  dht: dht.value,
+                  diskCache: int.parse(diskCacheController.text),
+                  diskCacheTtl: int.parse(diskCacheTtlController.text),
+                  diskIoReadMode: diskIoReadMode.value,
+                  diskIoType: diskIoType.value,
+                  diskIoWriteMode: diskIoWriteMode.value,
+                  diskQueueSize: int.parse(diskQueueSizeController.text) * 1024,
+                  dlLimit: int.parse(dlLimitController.text) * 1024,
+                  dontCountSlowTorrents: dontCountSlowTorrents.value,
+                  dyndnsDomain: dyndnsDomainController.text,
+                  dyndnsEnabled: dyndnsEnabled.value,
+                  dyndnsPassword: dyndnsPasswordController.text,
+                  dyndnsService: dyndnsService.value,
+                  dyndnsUsername: dyndnsUsernameController.text,
+                  embeddedTrackerPort: int.parse(embeddedTrackerPortController.text),
+                  embeddedTrackerPortForwarding: embeddedTrackerPortForwarding.value,
+                  enableCoalesceReadWrite: enableCoalesceReadWrite.value,
+                  enableEmbeddedTracker: enableEmbeddedTracker.value,
+                  enableMultiConnectionsFromSameIp: enableMultiConnectionsFromSameIp.value,
+                  enablePieceExtentAffinity: enablePieceExtentAffinity.value,
+                  enableUploadSuggestions: enableUploadSuggestions.value,
+                  encryption: encryption.value,
+                  excludedFileNamesEnabled: excludedFileNamesEnabled.value,
+                  exportDir: exportDirController.text,
+                  exportDirFin: exportDirFinController.text,
+                  filePoolSize: int.parse(filePoolSizeController.text),
+                  hashingThreads: int.parse(hashingThreadsController.text),
+                  idnSupportEnabled: idnSupportEnabled.value,
+                  incompleteFilesExt: incompleteFilesExt.value,
+                  ipFilterEnabled: ipFilterEnabled.value,
+                  ipFilterPath: ipFilterPathController.text,
+                  ipFilterTrackers: ipFilterTrackers.value,
+                  limitLanPeers: limitLanPeers.value,
+                  limitTcpOverhead: limitTcpOverhead.value,
+                  limitUtpRate: limitUtpRate.value,
+                  listenPort: int.parse(listenPortController.text),
+                  locale: locale.value,
+                  lsd: lsd.value,
+                  maxActiveCheckingTorrents: int.parse(maxActiveCheckingTorrentsController.text),
+                  maxActiveDownloads: int.parse(maxActiveDownloadsController.text),
+                  maxActiveTorrents: int.parse(maxActiveTorrentsController.text),
+                  maxActiveUploads: int.parse(maxActiveUploadsController.text),
+                  maxConnec: int.parse(maxConnecController.text),
+                  maxConnecPerTorrent: int.parse(maxConnecPerTorrentController.text),
+                  maxConcurrentHttpAnnounces: int.parse(maxConcurrentHttpAnnouncesController.text),
+                  maxRatio: double.parse(maxRatioController.text),
+                  maxRatioAct: maxRatioAct.value,
+                  maxRatioEnabled: maxRatioEnabled.value,
+                  maxSeedingTime: int.parse(maxSeedingTimeController.text),
+                  maxSeedingTimeEnabled: maxSeedingTimeEnabled.value,
+                  maxUploads: int.parse(maxUploadsController.text),
+                  maxUploadsPerTorrent: int.parse(maxUploadsPerTorrentController.text),
+                  memoryWorkingSetLimit: int.parse(memoryWorkingSetLimitController.text),
+                  outgoingPortsMax: int.parse(outgoingPortsMaxController.text),
+                  outgoingPortsMin: int.parse(outgoingPortsMinController.text),
+                  peerTos: int.parse(peerTosController.text),
+                  peerTurnover: int.parse(peerTurnoverController.text),
+                  peerTurnoverCutoff: int.parse(peerTurnoverCutoffController.text),
+                  peerTurnoverInterval: int.parse(peerTurnoverIntervalController.text),
+                  performanceWarning: performanceWarning.value,
+                  pex: pex.value,
+                  preallocateAll: preallocateAll.value,
+                  proxyAuthEnabled: proxyAuthEnabled.value,
+                  proxyHostnameLookup: proxyHostnameLookup.value,
+                  proxyIp: proxyIpController.text,
+                  proxyPassword: proxyPasswordController.text,
+                  proxyPeerConnections: proxyPeerConnections.value,
+                  proxyPort: int.parse(proxyPortController.text),
+                  proxyTorrentsOnly: proxyTorrentsOnly.value,
+                  proxyType: proxyType.value,
+                  proxyUsername: proxyUsernameController.text,
+                  queueingEnabled: queueingEnabled.value,
+                  randomPort: randomPort.value,
+                  reannounceWhenAddressChanged: reannounceWhenAddressChanged.value,
+                  recheckCompletedTorrents: recheckCompletedTorrents.value,
+                  refreshInterval: int.parse(refreshIntervalController.text),
+                  requestQueueSize: int.parse(requestQueueSizeController.text),
+                  resolvePeerCountries: resolvePeerCountries.value,
+                  resumeDataStorageType: resumeDataStorageType.value,
+                  rssAutoDownloadingEnabled: rssAutoDownloadingEnabled.value,
+                  rssDownloadRepackProperEpisodes: rssDownloadRepackProperEpisodes.value,
+                  rssMaxArticlesPerFeed: int.parse(rssMaxArticlesPerFeedController.text),
+                  rssProcessingEnabled: rssProcessingEnabled.value,
+                  rssRefreshInterval: int.parse(rssRefreshIntervalController.text),
+                  rssSmartEpisodeFilters: rssSmartEpisodeFiltersController.text,
+                  savePath: savePathController.text,
+                  savePathChangedTmmEnabled: savePathChangedTmmEnabled.value,
+                  saveResumeDataInterval: int.parse(saveResumeDataIntervalController.text),
+                  scheduleFromHour: int.parse(scheduleFromHourController.text),
+                  scheduleFromMin: int.parse(scheduleFromMinController.text),
+                  scheduleToHour: int.parse(scheduleToHourController.text),
+                  scheduleToMin: int.parse(scheduleToMinController.text),
+                  schedulerDays: schedulerDays.value,
+                  schedulerEnabled: schedulerEnabled.value,
+                  sendBufferLowWatermark: int.parse(sendBufferLowWatermarkController.text),
+                  sendBufferWatermark: int.parse(sendBufferWatermarkController.text),
+                  sendBufferWatermarkFactor: int.parse(sendBufferWatermarkFactorController.text),
+                  slowTorrentDlRateThreshold: int.parse(slowTorrentDlRateThresholdController.text),
+                  slowTorrentInactiveTimer: int.parse(slowTorrentInactiveTimerController.text),
+                  slowTorrentUlRateThreshold: int.parse(slowTorrentUlRateThresholdController.text),
+                  socketBacklogSize: int.parse(socketBacklogSizeController.text),
+                  ssrfMitigation: ssrfMitigation.value,
+                  startPausedEnabled: startPausedEnabled.value,
+                  stopTrackerTimeout: int.parse(stopTrackerTimeoutController.text),
+                  tempPath: tempPathController.text,
+                  tempPathEnabled: tempPathEnabled.value,
+                  torrentChangedTmmEnabled: torrentChangedTmmEnabled.value,
+                  torrentContentLayout: torrentContentLayoutController.text,
+                  torrentStopCondition: torrentStopCondition.value,
+                  upLimit: int.parse(upLimitController.text) * 1024,
+                  uploadChokingAlgorithm: uploadChokingAlgorithm.value,
+                  uploadSlotsBehavior: uploadSlotsBehavior.value,
+                  upnp: upnp.value,
+                  useCategoryPathsInManualMode: useCategoryPathsInManualMode.value,
+                  useHttps: useHttps.value,
+                  utpTcpMixedMode: utpTcpMixedMode.value,
+                  validateHttpsTrackerCertificate: validateHttpsTrackerCertificate.value,
+                  webUiAddress: webUiAddressController.text,
+                  webUiBanDuration: int.parse(webUiBanDurationController.text),
+                  webUiClickjackingProtectionEnabled: webUiClickjackingProtectionEnabled.value,
+                  webUiCsrfProtectionEnabled: webUiCsrfProtectionEnabled.value,
+                  webUiCustomHttpHeaders: webUiCustomHttpHeadersController.text,
+                  webUiDomainList: webUiDomainListController.text,
+                  webUiHostHeaderValidationEnabled: webUiHostHeaderValidationEnabled.value,
+                  webUiHttpsCertPath: webUiHttpsCertPathController.text,
+                  webUiHttpsKeyPath: webUiHttpsKeyPathController.text,
+                  webUiMaxAuthFailCount: int.parse(webUiMaxAuthFailCountController.text),
+                  webUiPort: int.parse(webUiPortController.text),
+                  webUiReverseProxiesList: webUiReverseProxiesListController.text,
+                  webUiReverseProxyEnabled: webUiReverseProxyEnabled.value,
+                  webUiSecureCookieEnabled: webUiSecureCookieEnabled.value,
+                  webUiSessionTimeout: int.parse(webUiSessionTimeoutController.text),
+                  webUiUpnp: webUiUpnp.value,
+                  webUiUseCustomHttpHeadersEnabled: webUiUseCustomHttpHeadersEnabled.value,
+                  webUiUsername: webUiUsernameController.text,
+                );
+
+                CommonResponse response = await controller.setPrefs(downloader, prefs);
+                if (!response.succeed) {
+                  Get.snackbar('修改配置失败', response.msg);
+                } else {
+                  controller.getDownloaderListFromServer();
+                }
+                Get.back();
+              },
+              icon: Icon(Icons.save_outlined),
+            ),
+          ),
+        );
+      }),
     );
   }
 
@@ -5483,7 +5519,12 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
               appBar: AppBar(
                 title: Text('配置选项', style: TextStyle(color: shadColorScheme.foreground)),
                 backgroundColor: shadColorScheme.background,
-                bottom: const TabBar(tabs: tabs, isScrollable: true),
+                bottom: TabBar(
+                  tabs: tabs,
+                  isScrollable: true,
+                  labelColor: shadColorScheme.foreground,
+                  labelStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                ),
               ),
               body: Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -6743,51 +6784,51 @@ class ShowTorrentWidget extends StatelessWidget {
                                               ShadBadge(
                                                 child: Text(
                                                   '已上传: ${FileSizeConvert.parseToFileSize(controller.selectedTorrent.uploaded)}',
-                                                  style: TextStyle(color: Colors.white, fontSize: 12),
+                                                  style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
                                                 ),
                                               ),
                                               ShadBadge(
                                                 child: Text(
                                                   '上传速度: ${FileSizeConvert.parseToFileSize(controller.selectedTorrent.upSpeed)}/S',
-                                                  style: TextStyle(color: Colors.white, fontSize: 12),
+                                                  style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
                                                 ),
                                               ),
                                               ShadBadge(
                                                 child: Text(
                                                   '上传限速: ${FileSizeConvert.parseToFileSize(controller.selectedTorrent.upLimit)}/S',
-                                                  style: TextStyle(color: Colors.white, fontSize: 12),
+                                                  style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
                                                 ),
                                               ),
                                               ShadBadge(
                                                 child: Text(
                                                   '已下载: ${FileSizeConvert.parseToFileSize(controller.selectedTorrent.downloaded)}',
-                                                  style: TextStyle(color: Colors.white, fontSize: 12),
+                                                  style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
                                                 ),
                                               ),
                                               if (torrentInfo.progress < 1) ...[
                                                 ShadBadge(
                                                   child: Text(
                                                     '下载速度: ${FileSizeConvert.parseToFileSize(controller.selectedTorrent.dlSpeed)}',
-                                                    style: TextStyle(color: Colors.white, fontSize: 12),
+                                                    style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
                                                   ),
                                                 ),
                                                 ShadBadge(
                                                   child: Text(
                                                     '下载限速: ${FileSizeConvert.parseToFileSize(controller.selectedTorrent.dlLimit)}',
-                                                    style: TextStyle(color: Colors.white, fontSize: 12),
+                                                    style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
                                                   ),
                                                 ),
                                               ],
                                               ShadBadge(
                                                 child: Text(
                                                   '分享率: ${controller.selectedTorrent.ratio.toStringAsFixed(2)}',
-                                                  style: TextStyle(color: Colors.white, fontSize: 12),
+                                                  style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
                                                 ),
                                               ),
                                               ShadBadge(
                                                 child: Text(
                                                   '分享率限制: ${controller.selectedTorrent.ratioLimit}',
-                                                  style: TextStyle(color: Colors.white, fontSize: 12),
+                                                  style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
                                                 ),
                                               ),
                                             ],
@@ -7675,13 +7716,13 @@ class ShowTorrentWidget extends StatelessWidget {
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      const Text(
+                                      Text(
                                         '上传限速',
-                                        style: TextStyle(color: Colors.white, fontSize: 12),
+                                        style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
                                       ),
                                       Text(
                                         '${FileSizeConvert.parseToFileSize(controller.selectedTorrent.rateUpload)}/S',
-                                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                                        style: TextStyle(color: shadColorScheme.foreground, fontSize: 14),
                                       ),
                                     ],
                                   ),

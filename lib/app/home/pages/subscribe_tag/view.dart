@@ -50,14 +50,12 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                 },
                 icon: Icon(
                   Icons.save_alt_outlined,
-                  color: ShadTheme.of(context).colorScheme.primary,
                   size: 28,
                 )),
             ShadIconButton.ghost(
               icon: Icon(
                 Icons.add,
                 size: 28,
-                color: ShadTheme.of(context).colorScheme.primary,
               ),
               onPressed: () {
                 _openEditDialog(null);

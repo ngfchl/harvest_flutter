@@ -28,11 +28,10 @@ class _MyRssPageState extends State<MyRssPage> {
     return GetBuilder<MyRssController>(builder: (controller) {
       return Scaffold(
         backgroundColor: Colors.transparent,
-        floatingActionButton: IconButton(
+        floatingActionButton: ShadIconButton.ghost(
           icon: Icon(
             Icons.add,
             size: 28,
-            color: ShadTheme.of(context).colorScheme.primary,
           ),
           onPressed: () {
             _openEditDialog(null);

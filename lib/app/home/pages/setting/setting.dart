@@ -92,7 +92,7 @@ class SettingPage extends StatelessWidget {
         leading: ShadIconButton.ghost(
           icon: Icon(
             Icons.info_outline,
-            color: ShadTheme.of(context).colorScheme.background,
+            color: ShadTheme.of(context).colorScheme.foreground,
           ),
           onPressed: null,
         ),
@@ -204,6 +204,7 @@ class SettingPage extends StatelessWidget {
                           repeat.value = v;
                         }),
                     ShadButton(
+                        size: ShadButtonSize.sm,
                         child: Text('保存'),
                         onPressed: () async {
                           if (option == null) {
@@ -324,12 +325,14 @@ class SettingPage extends StatelessWidget {
                       middleText: '确定要删除配置信息吗？',
                       actions: [
                         ShadButton(
+                          size: ShadButtonSize.sm,
                           onPressed: () {
                             Get.back(result: false);
                           },
                           child: const Text('取消'),
                         ),
                         ShadButton(
+                          size: ShadButtonSize.sm,
                           onPressed: () async {
                             Get.back(result: true);
                             CommonResponse res = await controller.removeOption(option);
@@ -438,6 +441,7 @@ class SettingPage extends StatelessWidget {
                     Row(
                       children: [
                         ShadButton(
+                            size: ShadButtonSize.sm,
                             child: Text('保存'),
                             onPressed: () async {
                               if (option == null) {
@@ -543,6 +547,7 @@ class SettingPage extends StatelessWidget {
                     Row(
                       children: [
                         ShadButton(
+                            size: ShadButtonSize.sm,
                             child: Text('保存'),
                             onPressed: () async {
                               if (option == null) {
@@ -804,6 +809,7 @@ class SettingPage extends StatelessWidget {
                       ),
                     ),
                     ShadButton(
+                        size: ShadButtonSize.sm,
                         child: Text('保存'),
                         onPressed: () async {
                           if (option == null) {
@@ -1064,6 +1070,7 @@ class SettingPage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: ShadButton(
+                              size: ShadButtonSize.sm,
                               child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {
@@ -1174,17 +1181,20 @@ class SettingPage extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         ShadButton.destructive(
+                            size: ShadButtonSize.sm,
                             onPressed: () async {
                               tokenController.text = generateRandomString(8);
                               await Clipboard.setData(ClipboardData(text: tokenController.text));
                             },
                             child: Text('随机Token')),
                         ShadButton.secondary(
+                            size: ShadButtonSize.sm,
                             onPressed: () async {
                               await Clipboard.setData(ClipboardData(text: tokenController.text));
                             },
                             child: Text('复制Token')),
                         ShadButton(
+                            size: ShadButtonSize.sm,
                             child: Text('保存'),
                             onPressed: () async {
                               if (option == null) {
@@ -1280,6 +1290,7 @@ class SettingPage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: ShadButton(
+                              size: ShadButtonSize.sm,
                               child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {
@@ -1380,6 +1391,7 @@ class SettingPage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: ShadButton(
+                              size: ShadButtonSize.sm,
                               child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {
@@ -1438,8 +1450,9 @@ class SettingPage extends StatelessWidget {
                 ),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
-                leading: const ShadIconButton.ghost(
-                  icon: Icon(Icons.notification_important_outlined, color: Colors.green),
+                leading: ShadIconButton.ghost(
+                  icon:
+                      Icon(Icons.notification_important_outlined, color: ShadTheme.of(context).colorScheme.foreground),
                   onPressed: null,
                 ),
                 onTap: () {
@@ -1466,6 +1479,7 @@ class SettingPage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: ShadButton(
+                              size: ShadButtonSize.sm,
                               child: Text('发送'),
                               onPressed: () async {
                                 final res = await noticeTestApi({
@@ -1555,6 +1569,7 @@ class SettingPage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: ShadButton(
+                              size: ShadButtonSize.sm,
                               child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {
@@ -1649,6 +1664,7 @@ class SettingPage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: ShadButton(
+                              size: ShadButtonSize.sm,
                               child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {
@@ -1741,6 +1757,7 @@ class SettingPage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: ShadButton(
+                              size: ShadButtonSize.sm,
                               child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {
@@ -1841,6 +1858,7 @@ class SettingPage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: ShadButton(
+                              size: ShadButtonSize.sm,
                               child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {
@@ -1935,6 +1953,7 @@ class SettingPage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: ShadButton(
+                              size: ShadButtonSize.sm,
                               child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {
@@ -2029,6 +2048,7 @@ class SettingPage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: ShadButton(
+                              size: ShadButtonSize.sm,
                               child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {
@@ -2121,6 +2141,7 @@ class SettingPage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: ShadButton(
+                              size: ShadButtonSize.sm,
                               child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {
@@ -2185,7 +2206,7 @@ class SettingPage extends StatelessWidget {
                 contentPadding: EdgeInsets.zero,
                 leading: ShadIconButton.ghost(
                   onPressed: () async {},
-                  icon: const Icon(Icons.telegram_outlined, color: Colors.green),
+                  icon: Icon(Icons.telegram_outlined, color: ShadTheme.of(context).colorScheme.foreground),
                 ),
                 onTap: () {
                   isEdit.value = !isEdit.value;
@@ -2211,6 +2232,7 @@ class SettingPage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: ShadButton(
+                            size: ShadButtonSize.sm,
                             child: Text('保存'),
                             onPressed: () => _saveWebHook(context, urlController.text),
                           ),
@@ -2303,6 +2325,7 @@ class SettingPage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: ShadButton(
+                              size: ShadButtonSize.sm,
                               child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {
@@ -2395,6 +2418,7 @@ class SettingPage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: ShadButton(
+                              size: ShadButtonSize.sm,
                               child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {
@@ -2489,6 +2513,7 @@ class SettingPage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: ShadButton(
+                              size: ShadButtonSize.sm,
                               child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {
@@ -2584,6 +2609,7 @@ class SettingPage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: ShadButton(
+                              size: ShadButtonSize.sm,
                               child: Text('保存'),
                               onPressed: () async {
                                 if (option == null) {

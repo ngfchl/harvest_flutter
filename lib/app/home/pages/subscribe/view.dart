@@ -35,7 +35,6 @@ class _SubscribePageState extends State<SubscribePage> {
           icon: Icon(
             Icons.add,
             size: 28,
-            color: shadColorScheme.primary,
           ),
           onPressed: () async {
             // await _openEditDialog(null);
