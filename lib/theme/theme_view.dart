@@ -29,6 +29,7 @@ class ThemeIconButton extends StatelessWidget {
     RxBool useLocalBackground = SPUtil.getBool('useLocalBackground', defaultValue: false).obs;
     RxBool useBackground = SPUtil.getBool('useBackground', defaultValue: false).obs;
     RxBool useImageProxy = SPUtil.getBool('useImageProxy', defaultValue: false).obs;
+    RxBool useImageCache = SPUtil.getBool('useImageCache', defaultValue: true).obs;
     TextEditingController urlController = TextEditingController(
       text: baseUrl.value,
     );
@@ -127,93 +128,107 @@ class ThemeIconButton extends StatelessWidget {
                           ),
 
                           Obx(() {
-                            return ShadSwitch(
-                              label: Text('背景图片'),
-                              value: useBackground.value,
-                              onChanged: (value) {
-                                useBackground.value = value;
-                                SPUtil.setBool('useBackground', value);
-                              },
-                            );
-                          }),
-                          if (useBackground.value && !kIsWeb)
-                            Obx(() {
-                              return Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                ShadSwitch(
+                                  label: Text('背景图片'),
+                                  value: useBackground.value,
+                                  onChanged: (value) {
+                                    useBackground.value = value;
+                                    SPUtil.setBool('useBackground', value);
+                                  },
+                                ),
+                                if (useBackground.value)
                                   ShadSwitch(
-                                    label: Text(useLocalBackground.value ? '本地图片' : '网络图片'),
-                                    sublabel: Text(
-                                      '默认网络图片',
-                                      style: TextStyle(fontSize: 10),
-                                    ),
-                                    value: kIsWeb ? false : useLocalBackground.value,
+                                    label: Text('使用缓存'),
+                                    value: useImageCache.value,
                                     onChanged: (value) {
-                                      useLocalBackground.value = value;
-                                      SPUtil.setBool('useLocalBackground', value);
+                                      useImageCache.value = value;
+                                      SPUtil.setBool('useImageCache', value);
                                     },
                                   ),
-                                  if (!useLocalBackground.value)
-                                    Obx(() {
-                                      return ShadSwitch(
-                                        label: Text('网络图片加速'),
-                                        value: useImageProxy.value,
+                              ],
+                            );
+                          }),
+                          Obx(() {
+                            return useBackground.value && !kIsWeb
+                                ? Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      ShadSwitch(
+                                        label: Text(useLocalBackground.value ? '本地图片' : '网络图片'),
+                                        sublabel: Text(
+                                          '默认网络图片',
+                                          style: TextStyle(fontSize: 10),
+                                        ),
+                                        value: kIsWeb ? false : useLocalBackground.value,
                                         onChanged: (value) {
-                                          useImageProxy.value = value;
-                                          SPUtil.setBool('useImageProxy', value);
+                                          useLocalBackground.value = value;
+                                          SPUtil.setBool('useLocalBackground', value);
                                         },
-                                      );
-                                    }),
-                                ],
-                              );
-                            }),
-
-                          if (useBackground.value)
-                            Obx(() {
-                              return Column(spacing: 10, children: [
-                                useLocalBackground.value
-                                    ? ImagePickerRow(
-                                        onImagePicked: (String? path) {
-                                          if (path != null) {
-                                            urlController.text = path;
-                                          }
-                                        },
-                                      )
-                                    : ShadInput(
-                                        controller: urlController,
-                                        placeholder: Text('背景图片地址'),
-                                        keyboardType: TextInputType.url,
                                       ),
-                                Obx(() {
-                                  if (showPreview.value && baseUrl.value.isNotEmpty) {
-                                    Logger.instance
-                                        .d('backgroundImage: $baseUrl , useLocalBackground: $useLocalBackground');
-                                    return useLocalBackground.value
-                                        ? baseUrl.value.startsWith('http')
-                                            ? SizedBox.shrink()
-                                            : Image.file(
-                                                File(baseUrl.value),
-                                                width: double.infinity,
-                                                fit: BoxFit.fitWidth,
-                                              )
-                                        : Obx(() {
-                                            return CachedNetworkImage(
-                                              imageUrl:
-                                                  '${useImageProxy.value ? 'https://images.weserv.nl/?url=' : ''}${baseUrl.value}',
-                                              placeholder: (context, url) => Center(
-                                                  child: CircularProgressIndicator(
-                                                color: shadColorScheme.primary,
-                                              )),
-                                              errorWidget: (context, url, error) =>
-                                                  Image.asset('assets/images/background.png'),
+                                      if (!useLocalBackground.value)
+                                        Obx(() {
+                                          return ShadSwitch(
+                                            label: Text('图片加速'),
+                                            value: useImageProxy.value,
+                                            onChanged: (value) {
+                                              useImageProxy.value = value;
+                                              SPUtil.setBool('useImageProxy', value);
+                                            },
+                                          );
+                                        }),
+                                    ],
+                                  )
+                                : SizedBox.shrink();
+                          }),
+
+                          Obx(() {
+                            return Column(spacing: 10, children: [
+                              useBackground.value && useLocalBackground.value
+                                  ? ImagePickerRow(
+                                      onImagePicked: (String? path) {
+                                        if (path != null) {
+                                          urlController.text = path;
+                                        }
+                                      },
+                                    )
+                                  : ShadInput(
+                                      controller: urlController,
+                                      placeholder: Text('背景图片地址'),
+                                      keyboardType: TextInputType.url,
+                                    ),
+                              Obx(() {
+                                if (showPreview.value && baseUrl.value.isNotEmpty) {
+                                  Logger.instance
+                                      .d('backgroundImage: $baseUrl , useLocalBackground: $useLocalBackground');
+                                  return useLocalBackground.value
+                                      ? baseUrl.value.startsWith('http')
+                                          ? SizedBox.shrink()
+                                          : Image.file(
+                                              File(baseUrl.value),
+                                              width: double.infinity,
                                               fit: BoxFit.fitWidth,
-                                            );
-                                          });
-                                  }
-                                  return SizedBox.shrink();
-                                }),
-                              ]);
-                            }),
+                                            )
+                                      : Obx(() {
+                                          return CachedNetworkImage(
+                                            imageUrl:
+                                                '${useImageProxy.value ? 'https://images.weserv.nl/?url=' : ''}${baseUrl.value}',
+                                            placeholder: (context, url) => Center(
+                                                child: CircularProgressIndicator(
+                                              color: shadColorScheme.primary,
+                                            )),
+                                            errorWidget: (context, url, error) =>
+                                                Image.asset('assets/images/background.png'),
+                                            fit: BoxFit.fitWidth,
+                                          );
+                                        });
+                                }
+                                return SizedBox.shrink();
+                              }),
+                            ]);
+                          }),
                           Obx(() {
                             return Row(
                               children: [
