@@ -63,20 +63,18 @@ class SettingPage extends StatelessWidget {
         floatingActionButton: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           mainAxisSize: MainAxisSize.min,
-          spacing: 8,
           children: [
             ShadIconButton.ghost(
                 onPressed: () {
                   controller.getOptionList();
                 },
-                icon: Icon(Icons.refresh, size: 28, color: ShadTheme.of(context).colorScheme.primary)),
+                icon: Icon(Icons.refresh_outlined, size: 28)),
             ShadIconButton.ghost(
               onPressed: () {
                 _openAddOptionForm(context);
               },
-              icon: Icon(Icons.add, size: 28, color: ShadTheme.of(context).colorScheme.primary),
+              icon: Icon(Icons.add_outlined, size: 28),
             ),
-            SizedBox(height: 26),
           ],
         ),
       ),

@@ -45,8 +45,8 @@ class TaskPage extends StatelessWidget {
             children: [
               Scaffold(
                 backgroundColor: Colors.transparent,
-                floatingActionButton: IconButton(
-                  icon: Icon(Icons.add, size: 28, color: shadColorScheme.primary),
+                floatingActionButton: ShadIconButton.ghost(
+                  icon: Icon(Icons.add, size: 28),
                   onPressed: () {
                     editTask(null, context);
                   },

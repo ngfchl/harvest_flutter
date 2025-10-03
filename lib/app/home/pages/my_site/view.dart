@@ -670,7 +670,6 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
           },
           icon: Icon(
             Icons.refresh_outlined,
-            color: shadColorScheme.primary,
           ),
         ),
         ShadIconButton.ghost(
@@ -680,7 +679,6 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
           },
           icon: Icon(
             Icons.add_outlined,
-            color: shadColorScheme.primary,
           ),
         ),
       ],
