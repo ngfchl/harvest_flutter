@@ -460,9 +460,167 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                       id: "SingleSite-${mySite.id}",
                                       key: ValueKey("SingleSite-${mySite.id}"),
                                       builder: (controller) {
+                                        String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+                                        bool signed = mySite.getSignMaxKey() == today || mySite.signIn == false;
+                                        WebSite? website = controller.webSiteList[mySite.site];
+                                        RxBool siteRefreshing = false.obs;
+                                        var shadColorScheme = ShadTheme.of(context).colorScheme;
                                         return Stack(
                                           children: [
-                                            showSiteDataInfo(mySite),
+                                            ShadContextMenuRegion(
+                                                constraints: const BoxConstraints(minWidth: 100),
+                                                items: [
+                                                  if (website?.signIn == true && mySite.signIn && !signed)
+                                                    ShadContextMenuItem(
+                                                      leading: Icon(
+                                                        Icons.edit_calendar_outlined,
+                                                        color: shadColorScheme.foreground,
+                                                        size: 18,
+                                                      ),
+                                                      child: Text(
+                                                        '我要签到',
+                                                        style: TextStyle(color: shadColorScheme.foreground),
+                                                      ),
+                                                      onPressed: () async {
+                                                        siteRefreshing.value = true;
+                                                        CommonResponse res = await signIn(mySite.id);
+                                                        if (res.succeed) {
+                                                          Get.snackbar('签到成功', '${mySite.nickname} 签到信息：${res.msg}',
+                                                              colorText: shadColorScheme.foreground);
+                                                          SignInInfo? info =
+                                                              SignInInfo(updatedAt: getTodayString(), info: res.msg);
+                                                          Map<String, SignInInfo>? signInInfo = mySite.signInInfo;
+                                                          signInInfo.assign(getTodayString(), info);
+                                                          Logger.instance.d(signInInfo);
+                                                          MySite newSite = mySite.copyWith(signInInfo: signInInfo);
+                                                          controller.mySiteList =
+                                                              controller.mySiteList.map<MySite>((item) {
+                                                            if (item.id == mySite.id) {
+                                                              return newSite;
+                                                            }
+                                                            return item;
+                                                          }).toList();
+                                                          // controller.filterByKey();
+                                                          controller.update();
+                                                        } else {
+                                                          Get.snackbar(
+                                                              '签到失败', '${mySite.nickname} 签到任务执行出错啦：${res.msg}',
+                                                              colorText: shadColorScheme.destructive);
+                                                        }
+                                                        siteRefreshing.value = false;
+                                                      },
+                                                    ),
+                                                  ShadContextMenuItem(
+                                                    leading: Icon(
+                                                      Icons.refresh_outlined,
+                                                      color: shadColorScheme.foreground,
+                                                      size: 18,
+                                                    ),
+                                                    child: Text(
+                                                      '更新数据',
+                                                      style: TextStyle(color: shadColorScheme.foreground),
+                                                    ),
+                                                    onPressed: () async {
+                                                      siteRefreshing.value = true;
+                                                      CommonResponse res = await getNewestStatus(mySite.id);
+                                                      if (res.succeed) {
+                                                        Get.snackbar('站点数据刷新成功', '${mySite.nickname} 数据刷新：${res.msg}',
+                                                            colorText: shadColorScheme.foreground);
+                                                        StatusInfo? status = StatusInfo.fromJson(res.data);
+                                                        Map<String, StatusInfo>? statusInfo = mySite.statusInfo;
+                                                        statusInfo.assign(getTodayString(), status);
+                                                        Logger.instance.d(statusInfo);
+                                                        MySite newSite = mySite.copyWith(statusInfo: statusInfo);
+                                                        controller.mySiteList =
+                                                            controller.mySiteList.map<MySite>((item) {
+                                                          if (item.id == mySite.id) {
+                                                            return newSite;
+                                                          }
+                                                          return item;
+                                                        }).toList();
+                                                        // controller.filterByKey();
+                                                        controller.update();
+
+                                                        Future.delayed(Duration(microseconds: 500), () async {
+                                                          controller.getSiteStatusFromServer();
+                                                          DashBoardController dController = Get.find();
+                                                          dController.initChartData();
+                                                          dController.update();
+                                                        });
+                                                      } else {
+                                                        Get.snackbar(
+                                                            '站点数据刷新失败', '${mySite.nickname} 数据刷新出错啦：${res.msg}',
+                                                            colorText: shadColorScheme.destructive);
+                                                      }
+                                                      siteRefreshing.value = false;
+                                                    },
+                                                  ),
+                                                  if (website?.repeatTorrents == true && mySite.repeatTorrents)
+                                                    ShadContextMenuItem(
+                                                      leading: Icon(
+                                                        Icons.copy_outlined,
+                                                        color: shadColorScheme.foreground,
+                                                        size: 18,
+                                                      ),
+                                                      child: Text(
+                                                        '本站辅种',
+                                                        style: TextStyle(color: shadColorScheme.foreground),
+                                                      ),
+                                                      onPressed: () async {
+                                                        CommonResponse res = await repeatSite(mySite.id);
+
+                                                        if (res.succeed) {
+                                                          Get.snackbar('辅种任务发送成功', '${mySite.nickname} ${res.msg}',
+                                                              colorText: shadColorScheme.foreground);
+                                                        } else {
+                                                          Get.snackbar(
+                                                              '辅种任务发送失败', '${mySite.nickname} 辅种出错啦：${res.msg}',
+                                                              colorText: shadColorScheme.destructive);
+                                                        }
+                                                      },
+                                                    ),
+                                                  if (website?.signIn == true && mySite.signIn)
+                                                    ShadContextMenuItem(
+                                                      leading: Icon(
+                                                        Icons.manage_history,
+                                                        color: shadColorScheme.foreground,
+                                                        size: 18,
+                                                      ),
+                                                      child: Text(
+                                                        '签到历史',
+                                                        style: TextStyle(color: shadColorScheme.foreground),
+                                                      ),
+                                                      onPressed: () async {
+                                                        _showSignHistory(mySite);
+                                                      },
+                                                    ),
+                                                  ShadContextMenuItem(
+                                                    leading: Icon(
+                                                      Icons.history_outlined,
+                                                      color: shadColorScheme.foreground,
+                                                      size: 18,
+                                                    ),
+                                                    child: Text(
+                                                      '历史数据',
+                                                      style: TextStyle(color: shadColorScheme.foreground),
+                                                    ),
+                                                    onPressed: () async {
+                                                      _showStatusHistory(mySite);
+                                                    },
+                                                  ),
+                                                  ShadContextMenuItem(
+                                                    leading: Icon(
+                                                      Icons.edit,
+                                                      color: shadColorScheme.foreground,
+                                                      size: 18,
+                                                    ),
+                                                    child: Text('编辑站点'),
+                                                    onPressed: () async {
+                                                      await _showEditBottomSheet(mySite: mySite);
+                                                    },
+                                                  ),
+                                                ],
+                                                child: showSiteDataInfo(mySite)),
                                             if (controller.singleLoading)
                                               Center(
                                                   child: CircularProgressIndicator(
@@ -937,7 +1095,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                       ),
                   ],
                 ),
-          trailing: _buildMySiteOperate(website, mySite),
+          // trailing: _buildMySiteOperate(website, mySite),
         ),
         if (status != null)
           Padding(
@@ -1126,155 +1284,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     );
   }
 
-  Widget _buildMySiteOperate(WebSite website, MySite mySite) {
-    String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    bool signed = mySite.getSignMaxKey() == today || mySite.signIn == false;
-    RxBool siteRefreshing = false.obs;
-    var shadColorScheme = ShadTheme.of(context).colorScheme;
-    return CustomPopup(
-      showArrow: false,
-      // contentPadding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-      barrierColor: Colors.transparent,
-      backgroundColor: shadColorScheme.background,
-      content: SizedBox(
-          width: 100,
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            if (website.signIn && mySite.signIn && !signed)
-              PopupMenuItem<String>(
-                child: Text(
-                  '我要签到',
-                  style: TextStyle(color: shadColorScheme.foreground),
-                ),
-                onTap: () async {
-                  siteRefreshing.value = true;
-                  CommonResponse res = await signIn(mySite.id);
-                  if (res.succeed) {
-                    Get.snackbar('签到成功', '${mySite.nickname} 签到信息：${res.msg}', colorText: shadColorScheme.foreground);
-                    SignInInfo? info = SignInInfo(updatedAt: getTodayString(), info: res.msg);
-                    Map<String, SignInInfo>? signInInfo = mySite.signInInfo;
-                    signInInfo.assign(getTodayString(), info);
-                    Logger.instance.d(signInInfo);
-                    MySite newSite = mySite.copyWith(signInInfo: signInInfo);
-                    controller.mySiteList = controller.mySiteList.map<MySite>((item) {
-                      if (item.id == mySite.id) {
-                        return newSite;
-                      }
-                      return item;
-                    }).toList();
-                    // controller.filterByKey();
-                    controller.update();
-                  } else {
-                    Get.snackbar('签到失败', '${mySite.nickname} 签到任务执行出错啦：${res.msg}',
-                        colorText: shadColorScheme.destructive);
-                  }
-                  siteRefreshing.value = false;
-                },
-              ),
-            PopupMenuItem<String>(
-              child: Text(
-                '更新数据',
-                style: TextStyle(color: shadColorScheme.foreground),
-              ),
-              onTap: () async {
-                siteRefreshing.value = true;
-                CommonResponse res = await getNewestStatus(mySite.id);
-                if (res.succeed) {
-                  Get.snackbar('站点数据刷新成功', '${mySite.nickname} 数据刷新：${res.msg}', colorText: shadColorScheme.foreground);
-                  StatusInfo? status = StatusInfo.fromJson(res.data);
-                  Map<String, StatusInfo>? statusInfo = mySite.statusInfo;
-                  statusInfo.assign(getTodayString(), status);
-                  Logger.instance.d(statusInfo);
-                  MySite newSite = mySite.copyWith(statusInfo: statusInfo);
-                  controller.mySiteList = controller.mySiteList.map<MySite>((item) {
-                    if (item.id == mySite.id) {
-                      return newSite;
-                    }
-                    return item;
-                  }).toList();
-                  // controller.filterByKey();
-                  controller.update();
-
-                  Future.delayed(Duration(microseconds: 500), () async {
-                    controller.getSiteStatusFromServer();
-                    DashBoardController dController = Get.find();
-                    dController.initChartData();
-                    dController.update();
-                  });
-                } else {
-                  Get.snackbar('站点数据刷新失败', '${mySite.nickname} 数据刷新出错啦：${res.msg}',
-                      colorText: shadColorScheme.destructive);
-                }
-                siteRefreshing.value = false;
-              },
-            ),
-            if (website.repeatTorrents && mySite.repeatTorrents)
-              PopupMenuItem<String>(
-                child: Text(
-                  '本站辅种',
-                  style: TextStyle(color: shadColorScheme.foreground),
-                ),
-                onTap: () async {
-                  CommonResponse res = await repeatSite(mySite.id);
-
-                  if (res.succeed) {
-                    Get.snackbar('辅种任务发送成功', '${mySite.nickname} ${res.msg}', colorText: shadColorScheme.foreground);
-                  } else {
-                    Get.snackbar('辅种任务发送失败', '${mySite.nickname} 辅种出错啦：${res.msg}',
-                        colorText: shadColorScheme.destructive);
-                  }
-                },
-              ),
-            if (website.signIn && mySite.signIn)
-              PopupMenuItem<String>(
-                child: Text(
-                  '签到历史',
-                  style: TextStyle(color: shadColorScheme.foreground),
-                ),
-                onTap: () async {
-                  _showSignHistory(mySite);
-                },
-              ),
-            PopupMenuItem<String>(
-              child: Text(
-                '历史数据',
-                style: TextStyle(color: shadColorScheme.foreground),
-              ),
-              onTap: () async {
-                _showStatusHistory(mySite);
-              },
-            ),
-            PopupMenuItem<String>(
-              child: Text(
-                '编辑站点',
-                style: TextStyle(color: shadColorScheme.foreground),
-              ),
-              onTap: () async {
-                await _showEditBottomSheet(mySite: mySite);
-              },
-            ),
-          ])),
-      child: Obx(
-        () => siteRefreshing.value
-            ? SizedBox(
-                width: 18,
-                height: 18,
-                child: Center(
-                    child: CircularProgressIndicator(
-                  color: shadColorScheme.primary,
-                )),
-              )
-            : Icon(
-                Icons.widgets_outlined,
-                size: 36,
-                color: signed == true ? Colors.green : Colors.amber,
-              ),
-      ),
-    );
-  }
-
   Future<void> _showEditBottomSheet({MySite? mySite}) async {
     var shadThemeData = ShadTheme.of(context);
-    double opacity = SPUtil.getDouble("cardOpacity", defaultValue: 0.7);
     var shadColorScheme = shadThemeData.colorScheme;
     if (mySite != null) {
       controller.singleLoading = true;
@@ -1491,8 +1502,14 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                   child: ConstrainedBox(
                                     constraints: const BoxConstraints(minWidth: double.infinity),
                                     child: ShadSelect<String>(
-                                        placeholder: const Text('选择网址'),
-                                        trailing: const Text('选择网址'),
+                                        placeholder: Text(
+                                          '选择网址',
+                                          style: TextStyle(color: shadColorScheme.foreground),
+                                        ),
+                                        trailing: Text(
+                                          '选择网址',
+                                          style: TextStyle(color: shadColorScheme.foreground),
+                                        ),
                                         initialValue: urlList.first,
                                         decoration: ShadDecoration(border: ShadBorder.none),
                                         options:
@@ -1512,6 +1529,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                   },
                                   icon: Icon(
                                     manualInput.value ? Icons.back_hand_outlined : Icons.front_hand,
+                                    color: shadColorScheme.foreground,
+                                    size: 16,
                                   ),
                                 )
                               ],
@@ -1995,6 +2014,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     List<String> signKeys = mySite.signInInfo.keys.toList();
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     signKeys.sort((a, b) => b.compareTo(a));
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.bottomSheet(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)), isScrollControlled: true,
         GetBuilder<MySiteController>(builder: (controller) {
       return CustomCard(
@@ -2003,6 +2023,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
           child: Column(children: [
             Text(
               "${mySite.nickname} [累计自动签到${mySite.signInInfo.length}天]",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: shadColorScheme.foreground),
             ),
             Expanded(
                 child: ListView.builder(
@@ -2053,7 +2074,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     Get.bottomSheet(
       backgroundColor: shadColorScheme.background,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-      isScrollControlled: true,
+      // isScrollControlled: true,
       Obx(() {
         return SafeArea(
           child: CustomCard(
@@ -2062,7 +2083,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
               child: Column(children: [
                 Text(
                   "${mySite.nickname} [站点数据累计${mySite.statusInfo.length}天]",
-                  style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: shadColorScheme.foreground),
                 ),
                 SfCartesianChart(
                     tooltipBehavior: TooltipBehavior(
@@ -2103,20 +2124,23 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         numberFormat: NumberFormat.compact(),
                         majorTickLines: const MajorTickLines(width: 0),
                         minorTickLines: const MinorTickLines(width: 0),
+                        labelStyle: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
                       ),
-                      const NumericAxis(
+                      NumericAxis(
                         name: 'SecondaryYAxis',
                         isVisible: false,
                         tickPosition: TickPosition.inside,
                         majorTickLines: MajorTickLines(width: 0),
                         minorTickLines: MinorTickLines(width: 0),
+                        labelStyle: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
                       ),
-                      const NumericAxis(
+                      NumericAxis(
                         name: 'ThirdYAxis',
                         isVisible: false,
                         tickPosition: TickPosition.inside,
                         majorTickLines: MajorTickLines(width: 0),
                         minorTickLines: MinorTickLines(width: 0),
+                        labelStyle: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
                       ),
                     ],
                     series: <CartesianSeries>[
@@ -2143,10 +2167,13 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                 : 0,
                         dataLabelSettings: DataLabelSettings(
                             isVisible: true,
-                            textStyle: const TextStyle(fontSize: 10),
+                            textStyle: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
                             builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
                               return point.y > 0
-                                  ? Text(FileSizeConvert.parseToFileSize((point.y).toInt()))
+                                  ? Text(
+                                      FileSizeConvert.parseToFileSize((point.y).toInt()),
+                                      style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
+                                    )
                                   : const SizedBox.shrink();
                             }),
                       ),
