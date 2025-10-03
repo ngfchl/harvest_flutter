@@ -295,6 +295,7 @@ class ThemeIconButton extends StatelessWidget {
                       children: [
                         if (useBackground.value)
                           ShadButton.secondary(
+                            size: ShadButtonSize.sm,
                             child: Text('预览'),
                             onPressed: () {
                               if (urlController.text.isNotEmpty) {
@@ -306,6 +307,7 @@ class ThemeIconButton extends StatelessWidget {
                             },
                           ),
                         ShadButton(
+                          size: ShadButtonSize.sm,
                           onPressed: () {
                             if (urlController.text.isNotEmpty) {
                               if (useLocalBackground.value && baseUrl.value.startsWith('http')) {

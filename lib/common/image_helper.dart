@@ -22,7 +22,7 @@ class ImagePickerRow extends StatelessWidget {
       title: Text(
         '选择图片',
         style: TextStyle(
-          fontSize: 14,
+          fontSize: 12,
           color: shadColorScheme.foreground,
         ),
       ),
@@ -32,35 +32,35 @@ class ImagePickerRow extends StatelessWidget {
         children: [
           // 拍照按钮：移动端才显示
           if (isMobile)
-            ShadButton.outline(
+            ShadButton.ghost(
               size: ShadButtonSize.sm,
               leading: Icon(
                 Icons.camera_alt,
-                size: 14,
-                color: shadColorScheme.primaryForeground,
+                size: 13,
+                color: shadColorScheme.foreground,
               ),
               child: Text(
                 '拍照',
                 style: TextStyle(
                   fontSize: 12,
-                  color: shadColorScheme.primaryForeground,
+                  color: shadColorScheme.foreground,
                 ),
               ),
               onPressed: () => _pick(ImageSource.camera),
             ),
           // 相册按钮：所有平台都显示
-          ShadButton.outline(
+          ShadButton.ghost(
             size: ShadButtonSize.sm,
             leading: Icon(
               Icons.photo_library,
-              size: 14,
-              color: shadColorScheme.primaryForeground,
+              size: 13,
+              color: shadColorScheme.foreground,
             ),
             child: Text(
               '相册',
               style: TextStyle(
                 fontSize: 12,
-                color: shadColorScheme.primaryForeground,
+                color: shadColorScheme.foreground,
               ),
             ),
             onPressed: () => _pick(ImageSource.gallery),
