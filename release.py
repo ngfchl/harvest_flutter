@@ -20,9 +20,11 @@ class VersionManager:
             output_folder,
             yaml_file_path="pubspec.yaml",
             tasks=None,
+            calc=True,
     ):
         print("初始化 VersionManager")
-        print(f"初始化任务参数：yaml: {yaml_file_path}   tasks:{tasks}")
+        print(f"初始化任务参数：yaml文件路径: {yaml_file_path}   任务列表:{tasks}  是否计算版本号: {calc} {type(calc)}")
+
         self.yaml_file_path = yaml_file_path
         self.output_folder = os.path.expanduser(output_folder)
         # 确保输出目录存在
@@ -33,13 +35,14 @@ class VersionManager:
         self.current_version = self.read_version()
         self.new_version = self.current_version
         self.machine = self.calc_machine()
-
+        if calc:
+            # 执行版本号自增
+            self.calc_version()
         if not tasks:
             self.tasks = ["macos"]
-            # 只在 Apple Silicon 的 macOS 上执行版本号自增
-            is_arm_mac = sys.platform.startswith("darwin") and platform.processor() == "arm"
-            if is_arm_mac:
-                self.calc_version()
+
+            is_mac = sys.platform.startswith("darwin")
+            if is_mac:
                 self.tasks = ["apk", "ipa", "macos"]
 
             if sys.platform.startswith("win32"):
@@ -296,8 +299,15 @@ if __name__ == "__main__":
         default=None,
         help="任务列表（默认：None）",
     )
+    parser.add_argument(
+        "--calc",
+        "-c",
+        action="store_true",
+        default=False,
+        help="计算版本号（默认：False）",
+    )
     args = parser.parse_args()
-    manager = VersionManager(args.output_folder, yaml_file_path=args.yaml, tasks=args.tasks)
+    manager = VersionManager(args.output_folder, yaml_file_path=args.yaml, tasks=args.tasks, calc=args.calc)
     print(manager.tasks)
     #     manager = VersionManager('~/Desktop/harvest')
     manager.compile_and_install()
