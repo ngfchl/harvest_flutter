@@ -750,12 +750,15 @@ Future<void> openDownloaderListSheet(BuildContext context, SearchTorrentInfo inf
                               ).image,
                             ),
                             trailing: downloadController.isCategoryLoading
-                                ? SizedBox(height: 20, width: 20, child: const CircularProgressIndicator())
+                                ? SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(
+                                      color: themeData.colorScheme.foreground,
+                                      strokeWidth: 2,
+                                    ))
                                 : const SizedBox.shrink(),
                             onTap: () async {
-                              if (downloadController.addTorrentLoading == true) {
-                                return;
-                              }
                               CommonResponse response = await controller.getDownloaderCategoryList(downloader);
                               if (!response.succeed) {
                                 Get.snackbar(
@@ -763,6 +766,8 @@ Future<void> openDownloaderListSheet(BuildContext context, SearchTorrentInfo inf
                                   response.msg,
                                   colorText: themeData.colorScheme.destructive,
                                 );
+                                downloadController.isCategoryLoading = false;
+                                downloadController.update(["${downloader.host}:${downloader.port}-categories"]);
                                 return;
                               }
                               Map<String, Category?> categorise = response.data;
@@ -788,6 +793,7 @@ Future<void> openDownloaderListSheet(BuildContext context, SearchTorrentInfo inf
                                 ),
                               ).whenComplete(() {
                                 downloadController.isCategoryLoading = false;
+                                downloadController.update();
                               });
                             },
                           );
