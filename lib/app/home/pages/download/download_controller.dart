@@ -26,6 +26,7 @@ import '../my_site/controller.dart';
 
 class DownloadController extends GetxController {
   bool loading = false;
+  bool isCategoryLoading = false;
   bool addTorrentLoading = false;
   bool showDetails = false;
   MySiteController mySiteController = Get.find();
@@ -616,12 +617,18 @@ class DownloadController extends GetxController {
   }
 
   Future getDownloaderCategoryList(Downloader downloader) async {
+    var key = "${downloader.host}:${downloader.port}-categories";
+    isCategoryLoading = true;
+    update([key]);
     CommonResponse response = await getDownloaderCategories(downloader.id!);
     if (!response.succeed) {
       return response;
     }
     categoryMap = {for (var item in response.data) (item)['name']!: Category.fromJson(item as Map<String, dynamic>)};
-    return;
+    isCategoryLoading = false;
+
+    update([key]);
+    return CommonResponse.success(data: categoryMap);
   }
 
   void filterTrTorrents() {

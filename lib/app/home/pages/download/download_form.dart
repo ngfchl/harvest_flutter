@@ -12,14 +12,13 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../../common/form_widgets.dart';
 import '../../../../utils/logger_helper.dart';
-import '../agg_search/controller.dart';
 import '../models/download.dart';
 import '../models/my_site.dart';
 import '../models/website.dart';
 import 'download_controller.dart';
 
 class DownloadForm extends StatelessWidget {
-  final Map<String, Category> categories;
+  final Map<String, Category?> categories;
   final Downloader downloader;
   final SearchTorrentInfo? info;
   final MySite? mysite;
@@ -48,7 +47,7 @@ class DownloadForm extends StatelessWidget {
     upLimitController.text = website?.limitSpeed.toString() ?? '';
     urlController.text = info?.magnetUrl ?? '';
     tagsController.text = info?.tags.join(',') ?? '';
-    savePathController.text = categories.values.first.savePath ??
+    savePathController.text = categories.values.first?.savePath ??
         (downloader.category.toLowerCase() == 'qb' ? downloader.prefs.savePath : downloader.prefs.downloadDir);
   }
 
@@ -66,7 +65,7 @@ class DownloadForm extends StatelessWidget {
     if (savePathController.text.isEmpty) {
       savePathController.text = prefs.savePath;
     }
-    Logger.instance.d("保存路径：${categories.values.first.savePath}");
+    Logger.instance.d("保存路径：${categories.values.first?.savePath}");
     RxBool advancedConfig = false.obs;
     RxBool paused = prefs.startPausedEnabled.obs;
     Rx<String> contentLayout = prefs.torrentContentLayout.obs;
@@ -729,8 +728,8 @@ Future<void> openDownloaderListSheet(BuildContext context, SearchTorrentInfo inf
               child: ListView(
                 children: downloadController.dataList.map((downloader) {
                   return CustomCard(
-                    child: GetBuilder<AggSearchController>(
-                        id: '${downloader.id} - ${downloader.name}',
+                    child: GetBuilder<DownloadController>(
+                        id: "${downloader.host}:${downloader.port}-categories",
                         builder: (controller) {
                           return ListTile(
                             title: Text(
@@ -750,14 +749,13 @@ Future<void> openDownloaderListSheet(BuildContext context, SearchTorrentInfo inf
                                 'assets/images/${downloader.category.toLowerCase()}.png',
                               ).image,
                             ),
-                            trailing: controller.isDownloaderLoading
-                                ? const CircularProgressIndicator()
+                            trailing: downloadController.isCategoryLoading
+                                ? SizedBox(height: 20, width: 20, child: const CircularProgressIndicator())
                                 : const SizedBox.shrink(),
                             onTap: () async {
                               if (downloadController.addTorrentLoading == true) {
                                 return;
                               }
-                              downloadController.addTorrentLoading = true;
                               CommonResponse response = await controller.getDownloaderCategoryList(downloader);
                               if (!response.succeed) {
                                 Get.snackbar(
@@ -767,7 +765,7 @@ Future<void> openDownloaderListSheet(BuildContext context, SearchTorrentInfo inf
                                 );
                                 return;
                               }
-                              Map<String, Category> categorise = response.data;
+                              Map<String, Category?> categorise = response.data;
                               Get.bottomSheet(
                                 backgroundColor: themeData.colorScheme.background,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
@@ -789,7 +787,7 @@ Future<void> openDownloaderListSheet(BuildContext context, SearchTorrentInfo inf
                                   ]),
                                 ),
                               ).whenComplete(() {
-                                downloadController.addTorrentLoading = false;
+                                downloadController.isCategoryLoading = false;
                               });
                             },
                           );
