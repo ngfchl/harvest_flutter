@@ -66,6 +66,7 @@ class _MyRssPageState extends State<MyRssPage> {
       key: ValueKey('${rss.id}_${rss.name}'),
       startActionPane: ActionPane(
         motion: const ScrollMotion(),
+        extentRatio: 0.2,
         children: [
           SlidableAction(
             borderRadius: const BorderRadius.all(Radius.circular(8)),
@@ -82,6 +83,7 @@ class _MyRssPageState extends State<MyRssPage> {
       ),
       endActionPane: ActionPane(
         motion: const ScrollMotion(),
+        extentRatio: 0.2,
         children: [
           SlidableAction(
             borderRadius: const BorderRadius.all(Radius.circular(8)),

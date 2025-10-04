@@ -72,6 +72,7 @@ class _SubscribePageState extends State<SubscribePage> {
             key: ValueKey('${sub.id}_${sub.name}'),
             startActionPane: ActionPane(
               motion: const ScrollMotion(),
+              extentRatio: 0.2,
               children: [
                 SlidableAction(
                   borderRadius: const BorderRadius.all(Radius.circular(8)),
@@ -89,6 +90,7 @@ class _SubscribePageState extends State<SubscribePage> {
             ),
             endActionPane: ActionPane(
               motion: const ScrollMotion(),
+              extentRatio: 0.2,
               children: [
                 SlidableAction(
                   borderRadius: const BorderRadius.all(Radius.circular(8)),

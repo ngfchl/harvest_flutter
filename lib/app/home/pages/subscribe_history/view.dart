@@ -53,6 +53,7 @@ class _SubscribeHistoryPageState extends State<SubscribeHistoryPage> {
       key: ValueKey('${history.id}_${history.subscribe?.id}'),
       endActionPane: ActionPane(
         motion: const ScrollMotion(),
+        extentRatio: 0.2,
         children: [
           SlidableAction(
             borderRadius: const BorderRadius.all(Radius.circular(8)),

@@ -93,6 +93,7 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
         key: ValueKey('${tag.id}_${tag.name}'),
         startActionPane: ActionPane(
           motion: const ScrollMotion(),
+          extentRatio: 0.2,
           children: [
             SlidableAction(
               borderRadius: const BorderRadius.all(Radius.circular(8)),
@@ -109,6 +110,7 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
         ),
         endActionPane: ActionPane(
           motion: const ScrollMotion(),
+          extentRatio: 0.2,
           children: [
             SlidableAction(
               borderRadius: const BorderRadius.all(Radius.circular(8)),
