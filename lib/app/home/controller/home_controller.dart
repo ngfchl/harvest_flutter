@@ -43,6 +43,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   bool useImageCache = false;
   bool useBackground = false;
   bool useImageProxy = false;
+  bool authPrivateMode = false;
 
   // final mySiteController = Get.put(MySiteController());
 
@@ -105,6 +106,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     try {
       isDarkMode = Get.isDarkMode;
       useBackground = SPUtil.getBool('useBackground');
+      authPrivateMode = SPUtil.getBool('authPrivateMode', defaultValue: false);
       if (useBackground) {
         useImageProxy = SPUtil.getBool('useImageProxy');
         useImageCache = SPUtil.getBool('useImageCache');

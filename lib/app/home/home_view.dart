@@ -10,6 +10,7 @@ import 'package:get/get.dart';
 import 'package:harvest/app/home/pages/web_socket_logging/view.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/form_widgets.dart';
+import 'package:harvest/common/utils.dart';
 import 'package:harvest/utils/logger_helper.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
@@ -227,9 +228,16 @@ class HomeView extends GetView<HomeController> {
                           ],
                         ),
                         if (controller.authInfo != null) ...[
-                          Text(
-                            'VIP: ${controller.authInfo?.username.toString()}',
-                            style: TextStyle(fontSize: 12, color: colorScheme.foreground),
+                          InkWell(
+                            onTap: () async {
+                              controller.authPrivateMode = !controller.authPrivateMode;
+                              await SPUtil.setLocalStorage('authPrivateMode', controller.authPrivateMode);
+                              controller.update();
+                            },
+                            child: Text(
+                              'VIP: ${controller.authPrivateMode ? controller.authInfo?.username.toString() : maskString(controller.authInfo!.username.toString())}',
+                              style: TextStyle(fontSize: 12, color: colorScheme.foreground),
+                            ),
                           ),
                           Text(
                             'Expire: ${controller.authInfo?.timeExpire.toString()}',
