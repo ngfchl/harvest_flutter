@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 String formatCreatedTimeToDateString(item) {
@@ -15,6 +14,34 @@ String formatUpdatedTimeToDateString(item) {
 
 String formatCreatedTimeToMonthString(item) {
   return DateFormat("yy-MM").format(item.createdAt);
+}
+
+String maskString(String input) {
+  if (input.isEmpty) return input;
+
+  // 私有方法：应用用户名掩码规则
+  String maskUsername(String text) {
+    final length = text.length;
+    if (length == 1) return '$text**';
+    if (length == 2) return '${text[0]}**${text[1]}';
+
+    // 长度≥3: 保留首尾，中间替换为两个星号
+    return '${text[0]}**${text[length - 1]}';
+  }
+
+  // 检测是否为邮箱格式（包含@且前后有内容）
+  final emailMatch = RegExp(r'^(.+)@(.+)\.(.+)$').firstMatch(input);
+
+  if (emailMatch != null) {
+    final username = emailMatch.group(1)!;
+    final domain = '${emailMatch.group(2)!}.${emailMatch.group(3)!}';
+
+    // 掩码用户名部分，保留域名
+    return '${maskUsername(username)}@$domain';
+  }
+
+  // 普通字符串掩码处理
+  return maskUsername(input);
 }
 
 String generateRandomString(
