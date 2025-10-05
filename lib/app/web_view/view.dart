@@ -55,7 +55,12 @@ class _WebViewPageState extends State<WebViewPage> {
         Get.defaultDialog(
           backgroundColor: shadColorScheme.background,
           title: "退出",
-          content: const Text('确定要退出内置浏览器？'),
+          content: Text(
+            '确定要退出内置浏览器？',
+            style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+          ),
+          middleTextStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+          titleStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
           radius: 10,
           cancel: ShadButton.destructive(
             size: ShadButtonSize.sm,
