@@ -81,7 +81,7 @@ class SettingPage extends StatelessWidget {
     );
   }
 
-  CustomCard _versionCard(context) {
+  CustomCard _versionCard(BuildContext context) {
     return CustomCard(
       padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
       child: ListTile(
@@ -140,7 +140,7 @@ class SettingPage extends StatelessWidget {
     return ThemeTag();
   }
 
-  Widget _autoImportTagsForm(Option? option, context) {
+  Widget _autoImportTagsForm(Option? option, BuildContext context) {
     Logger.instance.d('自动添加标签: ${option?.value.repeat}');
     RxBool repeat = (option == null ? false : (option.value.repeat ?? false)).obs;
     final isEdit = (option == null).obs;
@@ -233,25 +233,21 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  void _openAddOptionForm(context) {
+  void _openAddOptionForm(BuildContext context) {
     Map<String, OptionFormBuilder> optionForms = _optionFormMap();
-    Logger.instance.i(optionForms);
     Logger.instance
         .d(controller.optionChoice.where((e) => !controller.optionList.any((element) => element.name == e.value)));
-    Get.bottomSheet(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-        CustomCard(
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
+    Get.defaultDialog(
+        title: '添加配置项',
+        radius: 5,
+        titleStyle: TextStyle(color: shadColorScheme.foreground, fontSize: 16, fontWeight: FontWeight.bold),
+        backgroundColor: shadColorScheme.background,
+        content: Container(
+          height: 250,
+          padding: const EdgeInsets.all(12),
           child: Column(
             children: [
-              Center(
-                child: Padding(
-                  padding: EdgeInsets.all(12.0),
-                  child: Text(
-                    '请选择配置项',
-                    style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
-                  ),
-                ),
-              ),
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
@@ -265,20 +261,22 @@ class SettingPage extends StatelessWidget {
                                   title: Center(
                                       child: Text(
                                     choice.name,
-                                    style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                                    style: TextStyle(color: shadColorScheme.foreground),
                                   )),
-                                  hoverColor: Colors.teal,
-                                  focusColor: Colors.teal,
-                                  splashColor: Colors.teal,
+                                  hoverColor: shadColorScheme.primary,
                                   onTap: () {
                                     Logger.instance.d(choice.value);
                                     if (optionForms[choice.value] != null) {
                                       Get.back();
                                       Get.bottomSheet(
                                         isScrollControlled: true,
+                                        backgroundColor: shadColorScheme.background,
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                                        SingleChildScrollView(
-                                          child: optionForms[choice.value]!(null, context),
+                                        Padding(
+                                          padding: const EdgeInsets.all(12.0),
+                                          child: SingleChildScrollView(
+                                            child: optionForms[choice.value]!(null, context),
+                                          ),
                                         ),
                                       );
                                     }
@@ -293,12 +291,8 @@ class SettingPage extends StatelessWidget {
         ));
   }
 
-  List<Widget> _optionListView(context) {
+  List<Widget> _optionListView(BuildContext context) {
     Map<String, OptionFormBuilder> optionForms = _optionFormMap();
-    // List<Widget> children = [];
-    // for (var option in controller.optionList) {
-    //   children.add(optionForms[option.name]!(option, context));
-    // }
 
     return controller.optionList
         .map((option) => CustomCard(
@@ -314,7 +308,7 @@ class SettingPage extends StatelessWidget {
                         // icon: Icons.delete_outline,
                         padding: EdgeInsets.zero,
                         borderRadius: const BorderRadius.all(Radius.circular(8)),
-                        onPressed: (context) async {
+                        onPressed: (BuildContext context) async {
                           var shadColorScheme = ShadTheme.of(context).colorScheme;
                           Get.defaultDialog(
                             title: '确认',
@@ -367,6 +361,7 @@ class SettingPage extends StatelessWidget {
       'bark_push': _barkForm,
       'iyuu_push': _iyuuForm,
       'meow_push': _meowForm,
+      'server_chan_push': _serverChanForm,
       'pushplus_push': _pushPlusForm,
       'telegram_push': _telegramForm,
       'aliyun_drive': _aliDriveForm,
@@ -383,7 +378,7 @@ class SettingPage extends StatelessWidget {
     return optionForms;
   }
 
-  Widget _aggregationSearchForm(Option? option, context) {
+  Widget _aggregationSearchForm(Option? option, BuildContext context) {
     TextEditingController limitController = TextEditingController(text: option?.value.limit.toString() ?? '30');
     TextEditingController maxCountController = TextEditingController(text: option?.value.maxCount.toString() ?? '30');
     final isActive = (option == null ? true : option.isActive).obs;
@@ -479,7 +474,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _tmdbApiAuthForm(Option? option, context) {
+  Widget _tmdbApiAuthForm(Option? option, BuildContext context) {
     TextEditingController proxyController = TextEditingController(text: option?.value.proxy ?? '');
     TextEditingController apiKeyController = TextEditingController(text: option?.value.apiKey ?? '');
     TextEditingController secretController = TextEditingController(text: option?.value.secretKey ?? '');
@@ -584,7 +579,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _noticeCategoryEnableForm(Option? option, context) {
+  Widget _noticeCategoryEnableForm(Option? option, BuildContext context) {
     final isActive = (option == null ? true : option.isActive).obs;
     final aliyundriveNotice = (option == null ? true : option.value.aliyundriveNotice).obs;
     final siteData = (option == null ? true : option.value.siteData).obs;
@@ -863,7 +858,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _noticeContentItem(Option? option, context) {
+  Widget _noticeContentItem(Option? option, BuildContext context) {
     final isActive = (option == null ? true : option.isActive).obs;
     final level = (option == null ? true : option.value.level).obs;
     final bonus = (option == null ? true : option.value.bonus).obs;
@@ -1121,7 +1116,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _monkeyTokenForm(Option? option, context) {
+  Widget _monkeyTokenForm(Option? option, BuildContext context) {
     TextEditingController tokenController = TextEditingController(text: option?.value.token ?? '');
     final isActive = (option == null ? true : option.isActive).obs;
     final isEdit = (option == null).obs;
@@ -1214,7 +1209,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _qyWechatForm(Option? option, context) {
+  Widget _qyWechatForm(Option? option, BuildContext context) {
     TextEditingController corpIdController = TextEditingController(text: option?.value.corpId ?? '');
     TextEditingController corpSecretController = TextEditingController(text: option?.value.corpSecret ?? '');
     TextEditingController toUidController = TextEditingController(text: option?.value.toUid ?? '@all');
@@ -1324,7 +1319,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _fileListForm(Option? option, context) {
+  Widget _fileListForm(Option? option, BuildContext context) {
     TextEditingController usernameController = TextEditingController(text: option?.value.username ?? '');
     TextEditingController passwordController = TextEditingController(text: option?.value.password ?? '');
     final isActive = (option == null ? true : option.isActive).obs;
@@ -1411,7 +1406,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _noticeTestForm(context) {
+  Widget _noticeTestForm(BuildContext context) {
     TextEditingController titleController = TextEditingController(text: '这是一个消息标题');
     TextEditingController messageController = TextEditingController(text: '*这是一条测试消息*  \n__这是二号标题__\n```这是消息```');
     final isEdit = false.obs;
@@ -1486,7 +1481,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _iyuuForm(Option? option, context) {
+  Widget _iyuuForm(Option? option, BuildContext context) {
     TextEditingController tokenController = TextEditingController(text: option?.value.token ?? '');
     TextEditingController proxyController = TextEditingController(text: option?.value.proxy ?? '');
     RxBool repeat = (option == null ? true : option.value.repeat!).obs;
@@ -1589,7 +1584,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _meowForm(Option? option, context) {
+  Widget _meowForm(Option? option, BuildContext context) {
     TextEditingController tokenController = TextEditingController(text: option?.value.token ?? '');
     TextEditingController serverController = TextEditingController(text: option?.value.server ?? '');
     TextEditingController maxCountController = TextEditingController(text: option?.value.maxCount.toString() ?? '200');
@@ -1681,7 +1676,106 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _pushDeerForm(Option? option, context) {
+  Widget _serverChanForm(Option? option, BuildContext context) {
+    TextEditingController tokenController = TextEditingController(text: option?.value.token ?? '');
+    TextEditingController channelController = TextEditingController(text: option?.value.server ?? '');
+    TextEditingController noIpController = TextEditingController(text: option?.value.maxCount.toString() ?? '1');
+    TextEditingController openidController = TextEditingController(text: option?.value.appId ?? '');
+
+    final isActive = (option == null ? true : option.isActive).obs;
+    final isEdit = (option == null).obs;
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
+    return Obx(() {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          ListTile(
+              title: Text(
+                'Server酱',
+                style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+              ),
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              leading: option != null
+                  ? ShadIconButton.ghost(
+                      onPressed: () async {
+                        option?.isActive = !option!.isActive;
+                        await controller.saveOption(option!);
+                      },
+                      icon: option!.isActive
+                          ? const Icon(Icons.check, color: Colors.green)
+                          : const Icon(Icons.clear, color: Colors.red))
+                  : const SizedBox.shrink(),
+              onTap: () {
+                isEdit.value = !isEdit.value;
+              },
+              trailing: ExpandIcon(
+                  isExpanded: isEdit.value,
+                  onPressed: (value) {
+                    isEdit.value = !isEdit.value;
+                  },
+                  color: ShadTheme.of(context).colorScheme.foreground)),
+          if (isEdit.value)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  CustomTextField(autofocus: true, controller: tokenController, labelText: 'SendKey'),
+                  CustomTextField(autofocus: true, controller: openidController, labelText: 'OpenId'),
+                  CustomTextField(autofocus: true, controller: channelController, labelText: '消息通道'),
+                  CustomTextField(autofocus: true, controller: noIpController, labelText: '隐藏调用IP'),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ShadButton(
+                            size: ShadButtonSize.sm,
+                            child: Text('保存'),
+                            onPressed: () async {
+                              if (option == null) {
+                                option = Option(
+                                  id: 0,
+                                  name: 'server_chan_push',
+                                  isActive: isActive.value,
+                                  value: OptionValue(
+                                    token: tokenController.text,
+                                    server: channelController.text,
+                                    count: int.tryParse(noIpController.text) ?? 1,
+                                    appId: openidController.text,
+                                  ),
+                                );
+                              } else {
+                                option?.isActive = isActive.value;
+                                option?.value = OptionValue(
+                                  token: tokenController.text,
+                                  server: channelController.text,
+                                  count: int.tryParse(noIpController.text) ?? 1,
+                                  appId: openidController.text,
+                                );
+                              }
+                              final res = await controller.saveOption(option!);
+
+                              if (res.succeed) {
+                                Get.back();
+                                Get.snackbar('配置保存成功', '${controller.optionMap['server_chan_push']} 配置：${res.msg}',
+                                    colorText: shadColorScheme.foreground);
+                                isEdit.value = false;
+                              } else {
+                                Get.snackbar('配置保存失败', '${controller.optionMap['server_chan_push']} 配置出错啦：${res.msg}',
+                                    colorText: shadColorScheme.destructive);
+                              }
+                            }),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+        ],
+      );
+    });
+  }
+
+  Widget _pushDeerForm(Option? option, BuildContext context) {
     TextEditingController keyController = TextEditingController(text: option?.value.key ?? '');
     TextEditingController proxyController = TextEditingController(text: option?.value.proxy ?? '');
     final isActive = (option == null ? true : option.isActive).obs;
@@ -1769,7 +1863,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _aliDriveForm(Option? option, context) {
+  Widget _aliDriveForm(Option? option, BuildContext context) {
     TextEditingController tokenController = TextEditingController(text: option?.value.refreshToken ?? '');
     RxBool welfare = true.obs;
     final isActive = (option == null ? true : option.isActive).obs;
@@ -1867,7 +1961,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _ssdForumForm(Option? option, context) {
+  Widget _ssdForumForm(Option? option, BuildContext context) {
     TextEditingController cookieController = TextEditingController(text: option?.value.cookie ?? '');
     TextEditingController userAgentController = TextEditingController(text: option?.value.userAgent ?? '');
     TextEditingController todaySayController =
@@ -1961,7 +2055,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _baiduOcrForm(Option? option, context) {
+  Widget _baiduOcrForm(Option? option, BuildContext context) {
     TextEditingController appIdController = TextEditingController(text: option?.value.appId ?? '');
     TextEditingController apiKeyController = TextEditingController(text: option?.value.apiKey ?? '');
     TextEditingController secretController = TextEditingController(text: option?.value.secretKey ?? '');
@@ -2053,7 +2147,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _barkForm(Option? option, context) {
+  Widget _barkForm(Option? option, BuildContext context) {
     TextEditingController deviceIdController = TextEditingController(text: option?.value.deviceKey ?? '');
     TextEditingController serverController = TextEditingController(text: option?.value.server ?? '');
     final isActive = (option == null ? true : option.isActive).obs;
@@ -2141,7 +2235,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _telegramWebHookForm(context) {
+  Widget _telegramWebHookForm(BuildContext context) {
     String? baseUrl = SPUtil.getLocalStorage('server');
     String webhook = SPUtil.getString('TELEGRAM_WEBHOOK', defaultValue: '');
     TextEditingController urlController = TextEditingController(
@@ -2236,7 +2330,7 @@ class SettingPage extends StatelessWidget {
     }
   }
 
-  Widget _pushPlusForm(Option? option, context) {
+  Widget _pushPlusForm(Option? option, BuildContext context) {
     TextEditingController tokenController = TextEditingController(text: option?.value.token ?? '');
     final isActive = (option == null ? true : option.isActive).obs;
     final isEdit = (option == null).obs;
@@ -2322,7 +2416,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _wxPusherForm(Option? option, context) {
+  Widget _wxPusherForm(Option? option, BuildContext context) {
     TextEditingController tokenController = TextEditingController(text: option?.value.token ?? '');
     TextEditingController appIdController = TextEditingController(text: option?.value.appId ?? '');
     TextEditingController uidController = TextEditingController(text: option?.value.uids ?? '');
@@ -2414,7 +2508,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _telegramForm(Option? option, context) {
+  Widget _telegramForm(Option? option, BuildContext context) {
     TextEditingController tokenController = TextEditingController(text: option?.value.telegramToken ?? '');
     TextEditingController proxyController = TextEditingController(text: option?.value.proxy ?? '');
     TextEditingController chatIdController = TextEditingController(text: option?.value.telegramChatId ?? '');
@@ -2507,7 +2601,7 @@ class SettingPage extends StatelessWidget {
     });
   }
 
-  Widget _cookieCloudForm(Option? option, context) {
+  Widget _cookieCloudForm(Option? option, BuildContext context) {
     TextEditingController serverController = TextEditingController(text: option?.value.server ?? '');
     TextEditingController keyController = TextEditingController(text: option?.value.key ?? '');
     TextEditingController passwordController = TextEditingController(text: option?.value.password ?? '');

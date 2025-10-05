@@ -24,6 +24,7 @@ class SettingController extends GetxController {
     {'name': 'PushDeer', 'value': 'pushdeer_push'},
     {'name': 'Bark', 'value': 'bark_push'},
     {'name': '喵呜通知', 'value': 'meow_push'},
+    {'name': 'Server酱', 'value': 'server_chan_push'},
     {'name': '爱语飞飞', 'value': 'iyuu_push'},
     {'name': 'PushPlus', 'value': 'pushplus_push'},
     {'name': 'TeleGram', 'value': 'telegram_push'},
