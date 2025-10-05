@@ -51,23 +51,18 @@ class Api {
   // 下载器分类列表
   static const String DOWNLOADER_TORRENTS = "ws/downloader";
   static const String DOWNLOADER_STATUS = "ws/downloader/speed";
-  static const String DOWNLOADER_TOGGLE_SPEED_LIMIT_ENABLE =
-      "/option/downloaders/toggle_speed_limit/";
+  static const String DOWNLOADER_TOGGLE_SPEED_LIMIT_ENABLE = "/option/downloaders/toggle_speed_limit/";
   static const String DOWNLOADER_MAIN = "option/downloaders/main/";
   static const String DOWNLOADER_TEST = "option/downloaders/test/";
   static const String DOWNLOADER_TAGS = "option/downloaders/tags/";
-  static const String DOWNLOADER_TRACKER_REPLACE =
-      "option/downloaders/trackers/replace/";
+  static const String DOWNLOADER_TRACKER_REPLACE = "option/downloaders/trackers/replace/";
   static const String DOWNLOADER_SET_TAGS = "option/downloaders/tags/set/";
   static const String DOWNLOADER_CATEGORY = "option/downloaders/category/";
-  static const String DOWNLOADER_SET_CATEGORY =
-      "option/downloaders/category/set/";
+  static const String DOWNLOADER_SET_CATEGORY = "option/downloaders/category/set/";
   static const String DOWNLOADER_CONTROL = "option/downloaders/control/";
   static const String DOWNLOADER_PUSH_TORRENT = "option/push_torrent";
-  static const String DOWNLOADER_PREFERENCES =
-      "option/downloaders/preferences/";
-  static const String DOWNLOADER_TORRENT_DETAIL =
-      "option/downloaders/torrent/detail/";
+  static const String DOWNLOADER_PREFERENCES = "option/downloaders/preferences/";
+  static const String DOWNLOADER_TORRENT_DETAIL = "option/downloaders/torrent/detail/";
 
   // 推送种子到下载器
   static const String PUSH_TORRENT_URL = "option/push_torrent/";
@@ -128,8 +123,7 @@ class Api {
   static const String TMDB_MOVIE_INFO = "/tmdb/movie/";
   static const String TMDB_TV_INFO = "/tmdb/tv/";
   static const String TMDB_SEASON = "/tmdb/season/{tv_id}/{season_id}";
-  static const String TMDB_EPISODE =
-      "/tmdb/episode/{tv_id}/{season_id}/{episode_id}";
+  static const String TMDB_EPISODE = "/tmdb/episode/{tv_id}/{season_id}/{episode_id}";
   static const String TMDB_ON_THE_AIR = "/tmdb/on_the_air/tvs";
   static const String TMDB_AIRING_TODAY = "/tmdb/airing_today/tvs";
   static const String TMDB_UPCOMING = "/tmdb/upcoming/movies";
@@ -146,4 +140,5 @@ class Api {
   static const String SOURCE_LIST = "source/all";
   static const String SOURCE_URL = "source/file/url";
   static const String SOURCE_ACCESS = "source/file/access";
+  static const String SOURCE_OPERATE = "source/file/operate";
 }
