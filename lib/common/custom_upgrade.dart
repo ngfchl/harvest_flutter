@@ -61,6 +61,21 @@ class CustomUpgradeWidget extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
+                              ShadButton.destructive(
+                                size: ShadButtonSize.sm,
+                                onPressed: () {
+                                  Get.back();
+                                },
+                                child: Text(
+                                  '取消',
+                                  style: TextStyle(color: shadColorScheme.destructiveForeground),
+                                ),
+                              ),
+                              ShadButton(
+                                size: ShadButtonSize.sm,
+                                onPressed: () => controller.initUpdateLogState(),
+                                child: const Text('检查更新'),
+                              ),
                               if (controller.updateLogState!.update == true)
                                 ShadButton(
                                   size: ShadButtonSize.sm,
@@ -71,13 +86,6 @@ class CustomUpgradeWidget extends StatelessWidget {
                                   },
                                   child: const Text('更新'),
                                 ),
-                              ShadButton(
-                                size: ShadButtonSize.sm,
-                                onPressed: () {
-                                  Get.back();
-                                },
-                                child: const Text('取消'),
-                              ),
                             ],
                           ),
                           const SizedBox(height: 8)
@@ -134,7 +142,6 @@ class CustomUpgradeWidget extends StatelessWidget {
             if (controller.updateLogState == null) {
               controller.initUpdateLogState();
               Get.snackbar('请稍后', '更新日志获取中，请稍后...', colorText: shadColorScheme.foreground);
-              return;
             }
             popoverController.toggle();
           },
