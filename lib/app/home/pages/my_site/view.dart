@@ -784,6 +784,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     String iconUrl = '${controller.baseUrl}/local/icons/${website.name}.png';
     // Logger.instance.d('${website.name} - $iconUrl');
     var toUpgradeTime = DateTime.parse(mySite.timeJoin).add(Duration(days: (nextLevel?.days ?? 0) * 7));
+    String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    bool signed = mySite.getSignMaxKey() == today || mySite.signIn == false;
     return CustomCard(
       key: Key("${mySite.id}-${mySite.site}"),
       child: Column(children: [
@@ -1093,7 +1095,11 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                       ),
                   ],
                 ),
-          // trailing: _buildMySiteOperate(website, mySite),
+          trailing: Icon(
+            Icons.check_circle_outline,
+            size: 24,
+            color: signed == true ? Colors.green : Colors.amber,
+          ),
         ),
         if (status != null)
           Padding(
