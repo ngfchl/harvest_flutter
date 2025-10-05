@@ -26,6 +26,7 @@ import '../../../../common/media_card.dart';
 import '../../../../common/video_player_page/video_page.dart';
 import '../../../../utils/logger_helper.dart';
 import '../agg_search/models.dart';
+import '../models/source.dart';
 import 'controller.dart';
 
 class FileManagePage extends StatelessWidget {
@@ -281,18 +282,7 @@ class FileManagePage extends StatelessWidget {
                                         ),
                                         trailing: CircleAvatar(
                                           backgroundColor: Colors.transparent,
-                                          child: item.isDir
-                                              ? Icon(
-                                                  Icons.folder,
-                                                  color: shadColorScheme.foreground,
-                                                )
-                                              : Text(
-                                                  item.ext.toString(),
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: shadColorScheme.foreground,
-                                                  ),
-                                                ),
+                                          child: buildItemWidget(item, shadColorScheme),
                                         ),
                                         onLongPress: () {
                                           Get.defaultDialog(
@@ -498,21 +488,20 @@ class FileManagePage extends StatelessWidget {
                                               } else {
                                                 Get.defaultDialog(
                                                   title: '文件操作',
-                                                  content: CustomCard(
-                                                    child: Wrap(
-                                                      alignment: WrapAlignment.spaceAround,
-                                                      spacing: 10,
-                                                      runSpacing: 10,
-                                                      children: [
-                                                        ShadButton.ghost(
-                                                          onPressed: () async {
-                                                            await pickAndDownload(res.data);
-                                                          },
-                                                          leading: Icon(Icons.download_outlined),
-                                                          child: Text("下载"),
-                                                        ),
-                                                      ],
-                                                    ),
+                                                  content: Wrap(
+                                                    alignment: WrapAlignment.spaceAround,
+                                                    spacing: 10,
+                                                    runSpacing: 10,
+                                                    children: [
+                                                      ShadButton.ghost(
+                                                        size: ShadButtonSize.sm,
+                                                        onPressed: () async {
+                                                          await pickAndDownload(res.data);
+                                                        },
+                                                        leading: Icon(Icons.download_outlined),
+                                                        child: Text("下载"),
+                                                      ),
+                                                    ],
                                                   ),
                                                 );
                                               }
@@ -545,6 +534,130 @@ class FileManagePage extends StatelessWidget {
             ),
           );
         });
+  }
+
+  Widget buildItemWidget(SourceItemView item, ShadColorScheme shadColorScheme) {
+    // 如果 item 本身是图片
+    if (!item.isDir && item.mimeType.startsWith('image')) {
+      return GetBuilder<FileManageController>(builder: (controller) {
+        return FutureBuilder<String>(
+          future: controller.getFileSourceUrl(item.path).then((res) => res.data ?? ''),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              // 加载中显示占位
+              return SizedBox(
+                width: 32,
+                height: 48,
+                child: Center(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: shadColorScheme.foreground,
+                  ),
+                ),
+              );
+            } else if (snapshot.hasError || snapshot.data!.isEmpty) {
+              // 获取失败显示文件图标
+              return Icon(Icons.insert_drive_file, color: shadColorScheme.foreground);
+            } else {
+              // 成功获取 URL 显示图片
+              return CachedNetworkImage(
+                imageUrl: snapshot.data!,
+                height: double.infinity,
+                fit: BoxFit.fitWidth,
+                progressIndicatorBuilder: (context, url, progress) => SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    value: progress.progress,
+                    strokeWidth: 2,
+                    color: shadColorScheme.foreground,
+                  ),
+                ),
+                cacheKey: snapshot.data!.split('?').first,
+                errorWidget: (context, url, error) => Icon(Icons.insert_drive_file, color: shadColorScheme.foreground),
+              );
+            }
+          },
+        );
+      });
+    }
+    if (item.isDir) {
+      // 先找 cover 开头的图片
+      final coverImage = item.children?.firstWhereOrNull(
+        (e) => e.name.toLowerCase().startsWith('cover') == true && e.mimeType.startsWith('image') == true,
+      );
+
+      // 如果没有 cover，再找第一个 image 类型文件
+      final firstImage = coverImage ??
+          item.children?.firstWhereOrNull(
+            (e) => e.mimeType.startsWith('image') == true,
+          );
+
+      if (firstImage != null) {
+        Logger.instance.d('图片资源：${firstImage.path}');
+        var imaUrl = '';
+
+        Logger.instance.d('图片链接：$imaUrl');
+        // 返回图片资源
+        return GetBuilder<FileManageController>(builder: (controller) {
+          return FutureBuilder(
+            future: controller.getFileSourceUrl(firstImage.path).then((res) => imaUrl = res.data),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                // 加载中显示占位
+                return SizedBox(
+                  width: 32,
+                  height: 32,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: shadColorScheme.foreground,
+                  ),
+                );
+              } else if (snapshot.hasError || snapshot.data!.isEmpty) {
+                // 获取失败显示文件夹
+                return Icon(Icons.folder, color: shadColorScheme.foreground);
+              } else {
+                // 成功获取 URL，显示图片
+                return CachedNetworkImage(
+                  imageUrl: snapshot.data!,
+                  height: double.infinity,
+                  fit: BoxFit.fitWidth,
+                  progressIndicatorBuilder: (context, url, progress) => SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      value: progress.progress,
+                      strokeWidth: 2,
+                      color: shadColorScheme.foreground,
+                    ),
+                  ),
+                  cacheKey: snapshot.data.split('?').first,
+                  errorWidget: (context, url, error) => Icon(
+                    Icons.folder,
+                    color: shadColorScheme.foreground,
+                  ),
+                );
+              }
+            },
+          );
+        });
+      } else {
+        // 没有图片显示文件夹图标
+        return Icon(
+          Icons.folder,
+          color: Colors.deepOrangeAccent,
+        );
+      }
+    } else {
+      // 普通文件显示扩展名
+      return Text(
+        item.ext.toString(),
+        style: TextStyle(
+          fontSize: 12,
+          color: shadColorScheme.foreground,
+        ),
+      );
+    }
   }
 
   /*///@title
@@ -853,10 +966,11 @@ class FileManagePage extends StatelessWidget {
               ),
               Positioned(
                 bottom: 0,
+                right: 0,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    IconButton(
+                    ShadIconButton.ghost(
                       onPressed: () async {
                         if (GetPlatform.isDesktop || GetPlatform.isWeb) {
                           await pickAndDownload(url);
@@ -909,7 +1023,7 @@ class FileManagePage extends StatelessWidget {
                       },
                       icon: Icon(Icons.save_alt_outlined),
                     ),
-                    IconButton(
+                    ShadIconButton.ghost(
                       onPressed: () {
                         Get.back();
                       },

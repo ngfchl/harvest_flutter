@@ -17,20 +17,18 @@ class FileManageController extends GetxController {
     await initSourceData();
   }
 
-  initSourceData() async {
+  Future<void> initSourceData() async {
     CommonResponse res = await getSourceListApi(path: currentPath);
     if (res.succeed) {
       currentPath = res.data["current_path"];
-      items = (res.data["items"] as List)
-          .map((e) => SourceItemView.fromJson(e as Map<String, dynamic>))
-          .toList();
+      items = (res.data["items"] as List).map((e) => SourceItemView.fromJson(e as Map<String, dynamic>)).toList();
     }
     isLoading = false;
     Logger.instance.d('当前路径: $currentPath，当前路径下文件数量: ${items.length}');
     update(['file_manage']);
   }
 
-  getFileSourceUrl(String path) async {
+  Future<CommonResponse> getFileSourceUrl(String path) async {
     return await getSourceUrlApi(path: path);
   }
 
