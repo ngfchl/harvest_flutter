@@ -11,6 +11,11 @@ Future<CommonResponse> getSourceListApi({String path = '/downloads'}) async {
 Future<CommonResponse> getSourceUrlApi({required String path}) async {
   return await fetchData(Api.SOURCE_URL, queryParameters: {"file_path": path});
 }
+
+///  删除资源
+Future<CommonResponse> removeSourceApi(String path) async {
+  return await removeData(Api.SOURCE_OPERATE, queryParameters: {"file_path": path});
+}
 // ///  修改用户信息
 // editUserModelApi(UserModel user) async {
 //   String apiUrl = '${Api.AUTH_USER}/${user.id}';
