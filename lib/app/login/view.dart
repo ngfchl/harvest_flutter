@@ -376,6 +376,27 @@ class _LoginPageState extends State<LoginPage> {
     TextEditingController usernameController = TextEditingController(text: serverToEdit?.username ?? 'admin');
     TextEditingController passwordController = TextEditingController(text: serverToEdit?.password ?? 'adminadmin');
     CancelToken cancelToken = CancelToken();
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
+
+    var serverList = [
+      'http://192.168.31.10:25174',
+      'http://192.168.31.31:25174',
+      'http://192.168.123.5:35173',
+      'http://192.168.123.5:25174',
+      'http://192.168.123.5:5173',
+      'http://192.168.31.10:5173',
+      'http://192.168.31.31:5173',
+      'http://192.168.1.',
+      'http://192.168.2.',
+      'http://192.168.3.',
+      'http://192.168.50.',
+      'http://127.0.0.1',
+      'http://127.0.0.1:',
+      'http://127.0.0.1:28080',
+      'http://127.0.0.1:28000',
+      'http://127.0.0.1:25173',
+      'http://127.0.0.1:5173',
+    ];
     await Get.bottomSheet(
       enableDrag: true,
       GetBuilder<LoginController>(builder: (controller) {
@@ -394,10 +415,76 @@ class _LoginPageState extends State<LoginPage> {
                     controller: nameController,
                     labelText: '名称',
                   ),
-                  CustomTextField(
-                    controller: entryController,
-                    labelText: '地址',
-                    readOnly: kIsWeb,
+                  Autocomplete<String>(
+                    initialValue: TextEditingValue(text: 'http://192.168.1'),
+                    optionsBuilder: (TextEditingValue textEditingValue) {
+                      Logger.instance.d(textEditingValue.text);
+                      entryController.text = textEditingValue.text;
+                      List<String> filterList = [];
+                      if (textEditingValue.text.isEmpty) {
+                        filterList = serverList;
+                      } else {
+                        filterList = serverList.where((String option) {
+                          return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
+                        }).toList();
+                      }
+                      Logger.instance.d(filterList);
+                      return filterList;
+                    },
+                    optionsViewBuilder: (context, onSelected, options) {
+                      return Align(
+                        alignment: Alignment.topLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Material(
+                            elevation: 8,
+                            borderRadius: BorderRadius.circular(8),
+                            color: shadColorScheme.card,
+                            shadowColor: shadColorScheme.foreground.withOpacity(0.15),
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxHeight: 200, minWidth: 200),
+                              child: ListView.separated(
+                                padding: EdgeInsets.zero,
+                                shrinkWrap: true,
+                                itemCount: options.length,
+                                separatorBuilder: (_, __) => Divider(
+                                  height: 1,
+                                  color: shadColorScheme.foreground.withOpacity(0.05),
+                                ),
+                                itemBuilder: (context, index) {
+                                  final option = options.elementAt(index);
+                                  return InkWell(
+                                    borderRadius: BorderRadius.circular(12),
+                                    onTap: () => onSelected(option),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                      child: Text(
+                                        option,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: shadColorScheme.foreground,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                    onSelected: (String selection) {
+                      entryController.text = selection;
+                    },
+                    fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
+                      return CustomTextField(
+                        controller: textEditingController,
+                        labelText: '地址',
+                        focusNode: focusNode, // ✅ 一定要传！
+                        readOnly: kIsWeb,
+                      );
+                    },
                   ),
                   CustomTextField(
                     controller: usernameController,
@@ -451,7 +538,7 @@ class _LoginPageState extends State<LoginPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       // 新增取消按钮
-                      ShadButton(
+                      ShadButton.destructive(
                         leading:
                             Icon(Icons.cancel_outlined, size: 18, color: themeData.colorScheme.destructiveForeground),
                         child: Text(
