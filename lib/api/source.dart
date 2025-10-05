@@ -8,8 +8,8 @@ Future<CommonResponse> getSourceListApi({String path = '/downloads'}) async {
 }
 
 /// 获取
-Future<CommonResponse> getSourceUrlApi({required String path}) async {
-  return await fetchData(Api.SOURCE_URL, queryParameters: {"file_path": path});
+Future<CommonResponse> getSourceUrlApi({required String path, bool noCache = false}) async {
+  return await fetchData(Api.SOURCE_URL, queryParameters: {"file_path": path, "no_cache": noCache});
 }
 
 ///  删除资源

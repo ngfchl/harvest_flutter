@@ -17,7 +17,7 @@ class FileManageController extends GetxController {
     await initSourceData();
   }
 
-  Future<void> initSourceData() async {
+  Future<void> initSourceData({bool noCache = false}) async {
     CommonResponse res = await getSourceListApi(path: currentPath);
     if (res.succeed) {
       currentPath = res.data["current_path"];
@@ -30,6 +30,10 @@ class FileManageController extends GetxController {
 
   Future<CommonResponse> getFileSourceUrl(String path) async {
     return await getSourceUrlApi(path: path);
+  }
+
+  Future<CommonResponse> removeSource(String path) async {
+    return await removeSourceApi(path);
   }
 
   @override

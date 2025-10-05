@@ -220,26 +220,30 @@ class FileManagePage extends StatelessWidget {
                                                     color: Colors.deepPurple),
                                                 middleText: '确定要删除文件吗？',
                                                 actions: [
-                                                  ShadButton(
+                                                  ShadButton.destructive(
                                                     onPressed: () {
                                                       Get.back(result: false);
                                                     },
-                                                    child: const Text('取消'),
+                                                    child: Text(
+                                                      '取消',
+                                                      style: TextStyle(color: shadColorScheme.destructiveForeground),
+                                                    ),
                                                   ),
                                                   ShadButton(
                                                     onPressed: () async {
                                                       Get.back(result: true);
-                                                      // CommonResponse res =
-                                                      // await controller.removeDownloader(downloader);
-                                                      // if (res.code == 0) {
-                                                      //   Get.snackbar('删除通知', res.msg.toString(),
-                                                      //       colorText: ShadTheme.of(context).colorScheme.foreground);
-                                                      // } else {
-                                                      //   Get.snackbar('删除通知', res.msg.toString(),
-                                                      //       colorText: Get.theme.colorScheme.error);
-                                                      // }
-                                                      // await controller.getDownloaderListFromServer(
-                                                      //     withStatus: true);
+                                                      CommonResponse res = await controller.removeSource(item.path);
+                                                      if (res.succeed) {
+                                                        Get.snackbar('删除通知', res.msg.toString(),
+                                                            colorText: shadColorScheme.foreground);
+                                                        var r = controller.items.remove(item);
+                                                        Logger.instance.d(r);
+                                                        controller.update(["file_manage"]);
+                                                      } else {
+                                                        Get.snackbar('删除通知', res.msg.toString(),
+                                                            colorText: Get.theme.colorScheme.error);
+                                                      }
+                                                      await controller.initSourceData(noCache: true);
                                                     },
                                                     child: const Text('确认'),
                                                   ),
