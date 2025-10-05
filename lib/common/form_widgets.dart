@@ -39,6 +39,7 @@ class SwitchTile extends StatelessWidget {
 
 class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
+  final FocusNode? focusNode; // ✅ 新增
   final String labelText;
   final String? prefixText;
   final Widget? prefixIcon;
@@ -60,6 +61,7 @@ class CustomTextField extends StatelessWidget {
     super.key,
     required this.controller,
     required this.labelText,
+    this.focusNode, // ✅ 新增
     this.inputFormatters = const [],
     this.maxLines = 1,
     this.keyboardType,
@@ -85,6 +87,8 @@ class CustomTextField extends StatelessWidget {
       child: TextFormField(
         autofocus: autofocus,
         controller: controller,
+        focusNode: focusNode,
+        // ✅ 必须加上
         onChanged: onChanged,
         maxLength: maxLength,
         onTap: onTap,
