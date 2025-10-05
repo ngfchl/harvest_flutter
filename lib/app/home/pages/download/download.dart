@@ -1114,8 +1114,8 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(minWidth: double.infinity),
                           child: ShadSelect<String>(
-                              placeholder: const Text('种子路径'),
-                              trailing: const Text('种子路径'),
+                              placeholder: Text('种子路径', style: TextStyle(color: shadColorScheme.foreground)),
+                              trailing: Text('种子路径', style: TextStyle(color: shadColorScheme.foreground)),
                               initialValue: controller.pathList.first,
                               decoration: ShadDecoration(border: ShadBorder.none),
                               options:
@@ -3359,6 +3359,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                   ),
                                   DropdownButton(
                                       isDense: true,
+                                      dropdownColor: shadColorScheme.background,
                                       value: torrentContentLayoutController.text,
                                       items: [
                                         DropdownMenuItem(
@@ -3400,7 +3401,8 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text('种子停止条件', style: TextStyle(color: shadColorScheme.foreground)),
-                                  DropdownButton<String>(
+                                  DropdownButton(
+                                      dropdownColor: shadColorScheme.background,
                                       value: torrentStopCondition.value,
                                       items: [
                                         DropdownMenuItem(
@@ -3486,6 +3488,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                 Text('当分类修改时', style: TextStyle(color: shadColorScheme.foreground)),
                                 DropdownButton(
                                     isDense: true,
+                                    dropdownColor: shadColorScheme.background,
                                     value: categoryChangedTmmEnabled.value,
                                     items: [
                                       DropdownMenuItem(
@@ -3512,6 +3515,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               children: [
                                 Text('当默认保存路径修改', style: TextStyle(color: shadColorScheme.foreground)),
                                 DropdownButton(
+                                    dropdownColor: shadColorScheme.background,
                                     isDense: true,
                                     value: savePathChangedTmmEnabled.value,
                                     items: [
@@ -3539,6 +3543,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               children: [
                                 Text('当分类保存路径修改', style: TextStyle(color: shadColorScheme.foreground)),
                                 DropdownButton(
+                                    dropdownColor: shadColorScheme.background,
                                     isDense: true,
                                     value: torrentChangedTmmEnabled.value,
                                     items: [
@@ -3616,6 +3621,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                         children: [
                           Text('下载连接协议', style: TextStyle(color: shadColorScheme.foreground)),
                           DropdownButton(
+                              dropdownColor: shadColorScheme.background,
                               isDense: true,
                               value: bittorrentProtocol.value,
                               items: [
@@ -3753,6 +3759,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               children: [
                                 Text('代理类型', style: TextStyle(color: shadColorScheme.foreground)),
                                 DropdownButton(
+                                    dropdownColor: shadColorScheme.background,
                                     isDense: true,
                                     value: proxyType.value,
                                     items: [
@@ -3957,6 +3964,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                     child: Align(
                                       alignment: Alignment.centerLeft,
                                       child: DropdownButton(
+                                          dropdownColor: shadColorScheme.background,
                                           isDense: true,
                                           value: schedulerDays.value,
                                           items: [
@@ -4093,6 +4101,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                 children: [
                                   Text('加密模式', style: TextStyle(color: shadColorScheme.foreground)),
                                   DropdownButton(
+                                      dropdownColor: shadColorScheme.background,
                                       isDense: true,
                                       value: encryption.value,
                                       items: [
@@ -4236,6 +4245,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                   children: [
                                     Text('达到做种限制时的操作', style: TextStyle(color: shadColorScheme.foreground)),
                                     DropdownButton(
+                                        dropdownColor: shadColorScheme.background,
                                         isDense: true,
                                         value: maxRatioAct.value,
                                         items: [
@@ -4373,6 +4383,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                             children: [
                               Text('用户界面语言', style: TextStyle(color: shadColorScheme.foreground)),
                               DropdownButton(
+                                  dropdownColor: shadColorScheme.background,
                                   isDense: true,
                                   value: locale.value,
                                   style: const TextStyle(
@@ -4619,6 +4630,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                     children: [
                                       Text('域名提供商', style: TextStyle(color: shadColorScheme.foreground)),
                                       DropdownButton(
+                                          dropdownColor: shadColorScheme.background,
                                           isDense: true,
                                           value: dyndnsService.value,
                                           items: [
@@ -4675,6 +4687,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                 children: [
                                   Text('恢复数据存储(需重启)', style: TextStyle(color: shadColorScheme.foreground)),
                                   DropdownButton(
+                                      dropdownColor: shadColorScheme.background,
                                       isDense: true,
                                       value: resumeDataStorageType.value,
                                       items: [
@@ -4706,7 +4719,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                           //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           //     children: [
                           //       const Text('网络接口'),
-                          //       DropdownButton(
+                          //        DropdownButton(dropdownColor: shadColorScheme.background,
                           //           isDense: true,
                           //           value: currentNetworkInterface.value,
                           //           items: const [
@@ -4731,7 +4744,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                           //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           //     children: [
                           //       const Text('绑定到的可选 IP 地址'),
-                          //       DropdownButton(
+                          //        DropdownButton(dropdownColor: shadColorScheme.background,
                           //           isDense: true,
                           //           value: currentInterfaceAddress.value,
                           //           items: const [
@@ -4864,6 +4877,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                     style: TextStyle(color: shadColorScheme.foreground),
                                   ),
                                   DropdownButton(
+                                      dropdownColor: shadColorScheme.background,
                                       isDense: true,
                                       value: diskIoType.value,
                                       items: [
@@ -4899,6 +4913,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                     style: TextStyle(color: shadColorScheme.foreground),
                                   ),
                                   DropdownButton(
+                                      dropdownColor: shadColorScheme.background,
                                       isDense: true,
                                       value: diskIoReadMode.value,
                                       items: [
@@ -4926,6 +4941,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                 children: [
                                   Text('磁盘 IO 写入模式', style: TextStyle(color: shadColorScheme.foreground)),
                                   DropdownButton(
+                                      dropdownColor: shadColorScheme.background,
                                       isDense: true,
                                       value: diskIoWriteMode.value,
                                       items: [
@@ -5018,6 +5034,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                 children: [
                                   Text('μTP-TCP 混合模式策略', style: TextStyle(color: shadColorScheme.foreground)),
                                   DropdownButton(
+                                      dropdownColor: shadColorScheme.background,
                                       isDense: true,
                                       value: utpTcpMixedMode.value,
                                       items: [
@@ -5085,6 +5102,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                 children: [
                                   Text('上传窗口策略', style: TextStyle(color: shadColorScheme.foreground)),
                                   DropdownButton(
+                                      dropdownColor: shadColorScheme.background,
                                       isDense: true,
                                       value: uploadSlotsBehavior.value,
                                       items: [
@@ -5112,6 +5130,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                 children: [
                                   Text('上传连接策略', style: TextStyle(color: shadColorScheme.foreground)),
                                   DropdownButton(
+                                      dropdownColor: shadColorScheme.background,
                                       isDense: true,
                                       value: uploadChokingAlgorithm.value,
                                       items: [
@@ -5639,6 +5658,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                     style: TextStyle(color: shadColorScheme.foreground),
                                   ),
                                   DropdownButton(
+                                      dropdownColor: shadColorScheme.background,
                                       isDense: true,
                                       value: encryption.value,
                                       items: [

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
-import 'package:harvest/utils/storage.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../../common/card_view.dart';
@@ -270,7 +269,6 @@ class TaskPage extends StatelessWidget {
   }
 
   Widget _buildTaskView(Schedule item, context) {
-    double opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     return GetBuilder<TaskController>(builder: (controller) {
       RxBool isRunning = false.obs;
@@ -418,7 +416,7 @@ class TaskPage extends StatelessWidget {
 
   void editTask(Schedule? task, context) {
     Crontab? cron = controller.crontabList[task?.crontab];
-    final taskController = TextEditingController(text: task != null ? task.task : '');
+    final taskController = TextEditingController(text: task != null ? task.task : controller.taskList.first);
     final nameController = TextEditingController(text: task != null ? task.name : '');
     final minuteController = TextEditingController(text: task != null ? cron?.minute : '1');
     final hourController = TextEditingController(text: task != null ? cron?.hour : '*');
