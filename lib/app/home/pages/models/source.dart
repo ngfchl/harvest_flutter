@@ -7,12 +7,14 @@ class SourceItemView {
   final String modified;
   final String path;
   final String mimeType;
+  final List<SourceItemView>? children;
 
   SourceItemView({
     required this.name,
     required this.isDir,
     this.ext,
     this.size,
+    this.children,
     required this.modified,
     required this.path,
     required this.mimeType,
@@ -26,6 +28,7 @@ class SourceItemView {
         modified: json['modified'] as String,
         path: json['path'] as String,
         mimeType: json['mime'] as String,
+        children: (json['children'] as List<dynamic>?)?.map((e) => SourceItemView.fromJson(e)).toList(),
       );
 
   Map<String, dynamic> toJson() => {
@@ -36,5 +39,6 @@ class SourceItemView {
         'modified': modified,
         'path': path,
         'mime': mimeType,
+        'children': children?.map((e) => e.toJson()).toList(),
       };
 }
