@@ -55,6 +55,8 @@ class FileManagePage extends StatelessWidget {
                   },
                   icon: Icon(
                     Icons.home_outlined,
+                    color: shadColorScheme.foreground,
+                    size: 16,
                   ),
                 ),
                 ShadIconButton.ghost(
@@ -65,6 +67,8 @@ class FileManagePage extends StatelessWidget {
                   },
                   icon: Icon(
                     Icons.refresh,
+                    color: shadColorScheme.foreground,
+                    size: 16,
                   ),
                 ),
                 ShadIconButton.ghost(
@@ -81,6 +85,8 @@ class FileManagePage extends StatelessWidget {
                   },
                   icon: Icon(
                     Icons.arrow_back_outlined,
+                    color: shadColorScheme.foreground,
+                    size: 16,
                   ),
                 ),
               ],
@@ -97,6 +103,7 @@ class FileManagePage extends StatelessWidget {
                 // ),
                 CustomCard(
                     padding: EdgeInsets.symmetric(horizontal: 8),
+                    width: double.infinity,
                     child: Wrap(
                       alignment: WrapAlignment.center,
                       crossAxisAlignment: WrapCrossAlignment.center,
@@ -106,9 +113,9 @@ class FileManagePage extends StatelessWidget {
                           if (pathList[i].isNotEmpty)
                             ShadButton.ghost(
                               size: ShadButtonSize.sm,
-                              padding: EdgeInsets.zero,
+                              padding: EdgeInsets.symmetric(horizontal: 3),
                               child: Text(
-                                pathList[i],
+                                "/${pathList[i]}",
                                 style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                               ),
                               onPressed: () async {
@@ -120,14 +127,6 @@ class FileManagePage extends StatelessWidget {
                                 controller.currentPath = path;
                                 await controller.initSourceData();
                               },
-                            ),
-                          if (i < pathList.length - 1)
-                            Padding(
-                              padding: EdgeInsets.only(bottom: 4),
-                              child: Text(
-                                "/",
-                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
-                              ),
                             ),
                         ]
                       ],
@@ -310,7 +309,8 @@ class FileManagePage extends StatelessWidget {
                                               children: [
                                                 //  ShadButton.ghost(
                                                 //   onPressed: () async {},
-                                                //   icon: Icon(Icons.open_in_new),
+                                                //   icon: Icon(Icons.open_in_new, color: shadColorScheme.foreground,
+                                                //                     size: 16,),
                                                 //   label: Text("打开目录"),
                                                 // ),
                                                 ShadButton.ghost(
@@ -361,7 +361,11 @@ class FileManagePage extends StatelessWidget {
                                                                   );
                                                                 })));
                                                   },
-                                                  leading: Icon(Icons.movie_filter_outlined),
+                                                  leading: Icon(
+                                                    Icons.movie_filter_outlined,
+                                                    color: shadColorScheme.foreground,
+                                                    size: 16,
+                                                  ),
                                                   child: Text("电影刮削"),
                                                 ),
                                                 ShadButton.ghost(
@@ -402,14 +406,22 @@ class FileManagePage extends StatelessWidget {
                                                                   );
                                                                 })));
                                                   },
-                                                  leading: Icon(Icons.movie_filter_outlined),
+                                                  leading: Icon(
+                                                    Icons.movie_filter_outlined,
+                                                    color: shadColorScheme.foreground,
+                                                    size: 16,
+                                                  ),
                                                   child: Text("电视剧刮削"),
                                                 ),
                                                 ShadButton.ghost(
                                                   onPressed: () async {
                                                     doFileAction(item.path, 'search_seed');
                                                   },
-                                                  leading: Icon(Icons.local_movies_outlined),
+                                                  leading: Icon(
+                                                    Icons.local_movies_outlined,
+                                                    color: shadColorScheme.foreground,
+                                                    size: 16,
+                                                  ),
                                                   child: Text("做种查询"),
                                                 ),
                                                 ShadButton.ghost(
@@ -419,14 +431,19 @@ class FileManagePage extends StatelessWidget {
                                                       await pickAndDownload(res.data);
                                                     }
                                                   },
-                                                  leading: Icon(Icons.download_outlined),
+                                                  leading: Icon(
+                                                    Icons.download_outlined,
+                                                    color: shadColorScheme.foreground,
+                                                    size: 16,
+                                                  ),
                                                   child: Text("下载"),
                                                 ),
                                                 // ShadButton.ghost(
                                                 //   onPressed: () async {
                                                 //     doFileAction(item.path, 'hard_link', newFileName: "newFileName");
                                                 //   },
-                                                //   leading: Icon(Icons.hardware),
+                                                //   leading: Icon(Icons.hardware,color: shadColorScheme.foreground,
+                                                //                     size: 16,),
                                                 //   child: Text("硬链接"),
                                                 // ),
                                                 if (!item.isDir)
@@ -438,7 +455,7 @@ class FileManagePage extends StatelessWidget {
                                                       if (res.succeed) {
                                                         Clipboard.setData(ClipboardData(text: res.data));
                                                         if (item.mimeType.startsWith('image')) {
-                                                          showImage(res.data);
+                                                          showImage(res.data, context);
                                                         } else if (item.mimeType.startsWith('video')) {
                                                           showPlayer(res.data, context);
                                                         } else if (item.mimeType.startsWith('audio')) {
@@ -446,21 +463,24 @@ class FileManagePage extends StatelessWidget {
                                                         } else {
                                                           Get.defaultDialog(
                                                             title: '文件操作',
-                                                            content: CustomCard(
-                                                              child: Wrap(
-                                                                alignment: WrapAlignment.spaceAround,
-                                                                spacing: 10,
-                                                                runSpacing: 10,
-                                                                children: [
-                                                                  ShadButton.ghost(
-                                                                    onPressed: () async {
-                                                                      await pickAndDownload(res.data);
-                                                                    },
-                                                                    leading: Icon(Icons.download_outlined),
-                                                                    child: Text("下载"),
+                                                            backgroundColor: shadColorScheme.background,
+                                                            content: Wrap(
+                                                              alignment: WrapAlignment.spaceAround,
+                                                              spacing: 10,
+                                                              runSpacing: 10,
+                                                              children: [
+                                                                ShadButton.ghost(
+                                                                  onPressed: () async {
+                                                                    await pickAndDownload(res.data);
+                                                                  },
+                                                                  leading: Icon(Icons.download_outlined,
+                                                                      size: 16, color: shadColorScheme.foreground),
+                                                                  child: Text(
+                                                                    "下载",
+                                                                    style: TextStyle(color: shadColorScheme.foreground),
                                                                   ),
-                                                                ],
-                                                              ),
+                                                                ),
+                                                              ],
                                                             ),
                                                           );
                                                         }
@@ -472,7 +492,11 @@ class FileManagePage extends StatelessWidget {
                                                         );
                                                       }
                                                     },
-                                                    leading: Icon(Icons.hardware),
+                                                    leading: Icon(
+                                                      Icons.hardware,
+                                                      color: shadColorScheme.foreground,
+                                                      size: 16,
+                                                    ),
                                                     child: Text("打开"),
                                                   ),
                                               ],
@@ -492,7 +516,7 @@ class FileManagePage extends StatelessWidget {
                                             if (res.succeed) {
                                               Clipboard.setData(ClipboardData(text: res.data));
                                               if (item.mimeType.startsWith('image')) {
-                                                showImage(res.data);
+                                                showImage(res.data, context);
                                               } else if (item.mimeType.startsWith('video') ||
                                                   item.mimeType.startsWith('audio')) {
                                                 Get.dialog(CustomCard(
@@ -502,6 +526,12 @@ class FileManagePage extends StatelessWidget {
                                               } else {
                                                 Get.defaultDialog(
                                                   title: '文件操作',
+                                                  titleStyle: TextStyle(
+                                                    color: shadColorScheme.foreground,
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                  backgroundColor: shadColorScheme.background,
                                                   content: Wrap(
                                                     alignment: WrapAlignment.spaceAround,
                                                     spacing: 10,
@@ -512,8 +542,13 @@ class FileManagePage extends StatelessWidget {
                                                         onPressed: () async {
                                                           await pickAndDownload(res.data);
                                                         },
-                                                        leading: Icon(Icons.download_outlined),
-                                                        child: Text("下载"),
+                                                        leading: Icon(
+                                                          Icons.download_outlined,
+                                                          color: shadColorScheme.foreground,
+                                                          size: 16,
+                                                        ),
+                                                        child: Text("下载",
+                                                            style: TextStyle(color: shadColorScheme.foreground)),
                                                       ),
                                                     ],
                                                   ),
@@ -571,7 +606,7 @@ class FileManagePage extends StatelessWidget {
               );
             } else if (snapshot.hasError || snapshot.data!.isEmpty) {
               // 获取失败显示文件图标
-              return Icon(Icons.insert_drive_file, color: shadColorScheme.foreground);
+              return Icon(Icons.insert_drive_file, color: shadColorScheme.foreground, size: 16);
             } else {
               // 成功获取 URL 显示图片
               return CachedNetworkImage(
@@ -588,7 +623,11 @@ class FileManagePage extends StatelessWidget {
                   ),
                 ),
                 cacheKey: snapshot.data!.split('?').first,
-                errorWidget: (context, url, error) => Icon(Icons.insert_drive_file, color: shadColorScheme.foreground),
+                errorWidget: (context, url, error) => Icon(
+                  Icons.insert_drive_file,
+                  color: shadColorScheme.foreground,
+                  size: 16,
+                ),
               );
             }
           },
@@ -629,7 +668,11 @@ class FileManagePage extends StatelessWidget {
                 );
               } else if (snapshot.hasError || snapshot.data!.isEmpty) {
                 // 获取失败显示文件夹
-                return Icon(Icons.folder, color: shadColorScheme.foreground);
+                return Icon(
+                  Icons.folder,
+                  color: shadColorScheme.foreground,
+                  size: 16,
+                );
               } else {
                 // 成功获取 URL，显示图片
                 return CachedNetworkImage(
@@ -649,6 +692,7 @@ class FileManagePage extends StatelessWidget {
                   errorWidget: (context, url, error) => Icon(
                     Icons.folder,
                     color: shadColorScheme.foreground,
+                    size: 16,
                   ),
                 );
               }
@@ -660,6 +704,7 @@ class FileManagePage extends StatelessWidget {
         return Icon(
           Icons.folder,
           color: Colors.deepOrangeAccent,
+          size: 16,
         );
       }
     } else {
@@ -830,7 +875,11 @@ class FileManagePage extends StatelessWidget {
                 );
                 intent.launch();
               },
-              leading: Icon(Icons.open_in_new_rounded),
+              leading: Icon(
+                Icons.open_in_new_rounded,
+                color: shadColorScheme.foreground,
+                size: 16,
+              ),
               child: Text(
                 '打开',
                 style: TextStyle(
@@ -945,7 +994,8 @@ class FileManagePage extends StatelessWidget {
     }
   }
 
-  void showImage(String url) {
+  void showImage(String url, context) {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.dialog(
       KeyboardListener(
         focusNode: FocusNode()..requestFocus(),
@@ -1035,13 +1085,21 @@ class FileManagePage extends StatelessWidget {
                           }
                         }
                       },
-                      icon: Icon(Icons.save_alt_outlined),
+                      icon: Icon(
+                        Icons.save_alt_outlined,
+                        color: shadColorScheme.foreground,
+                        size: 16,
+                      ),
                     ),
                     ShadIconButton.ghost(
                       onPressed: () {
                         Get.back();
                       },
-                      icon: Icon(Icons.exit_to_app_outlined),
+                      icon: Icon(
+                        Icons.exit_to_app_outlined,
+                        color: shadColorScheme.foreground,
+                        size: 16,
+                      ),
                     ),
                   ],
                 ),
