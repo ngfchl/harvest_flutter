@@ -14,6 +14,7 @@ import yaml
 if sys.platform.startswith("darwin"):
     import dmgbuild
 
+
 class VersionManager:
     def __init__(
             self,
@@ -126,13 +127,32 @@ class VersionManager:
         print(f"开始打包：{self.fvm} flutter build {flag}")
         try:
             if flag == "apk":
-                subprocess.run([self.fvm, "flutter", "build", "apk", "--release", "--obfuscate",
-                                "--split-debug-info=build/symbols"])
+                # 分架构打包，生成多个架构版本的 APK
+                subprocess.run([
+                    self.fvm, "flutter", "build", "apk",
+                    "--release",
+                    "--obfuscate",
+                    "--split-debug-info=build/symbols",
+                    "--split-per-abi"  # 按架构分包
+                ])
+
                 print(f"APK 编译完成，正在移动到指定文件夹 {self.output_folder}")
-                shutil.move(
-                    "build/app/outputs/flutter-apk/app-release.apk",
-                    f"{self.output_folder}/harvest_{self.new_version}.apk",
-                )
+
+                # 架构对应输出路径
+                arch_map = {
+                    "armeabi-v7a": f"{self.output_folder}/harvest_{self.new_version}_arm32.apk",
+                    "arm64-v8a": f"{self.output_folder}/harvest_{self.new_version}_arm64.apk",
+                    "x86_64": f"{self.output_folder}/harvest_{self.new_version}_x86_64.apk",
+                }
+
+                for arch, output_name in arch_map.items():
+                    src_path = f"build/app/outputs/flutter-apk/app-{arch}-release.apk"
+                    if os.path.exists(src_path):
+                        shutil.move(src_path, output_name)
+                        print(f"✅ 已生成: {output_name}")
+                    else:
+                        print(f"⚠️ 未找到 {src_path}")
+
                 print(f"APK 打包完成")
             elif flag == "macos":
                 subprocess.run([self.fvm, "flutter", "build", "macos", "--release", "--obfuscate",
