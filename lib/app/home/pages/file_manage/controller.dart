@@ -18,7 +18,7 @@ class FileManageController extends GetxController {
   }
 
   Future<void> initSourceData({bool noCache = false}) async {
-    CommonResponse res = await getSourceListApi(path: currentPath);
+    CommonResponse res = await getSourceListApi(path: currentPath, noCache: noCache);
     if (res.succeed) {
       currentPath = res.data["current_path"];
       items = (res.data["items"] as List).map((e) => SourceItemView.fromJson(e as Map<String, dynamic>)).toList();
@@ -34,6 +34,10 @@ class FileManageController extends GetxController {
 
   Future<CommonResponse> removeSource(String path) async {
     return await removeSourceApi(path);
+  }
+
+  Future<CommonResponse> edisSource(String path, String newName) async {
+    return await editSourceApi(path, newName);
   }
 
   @override

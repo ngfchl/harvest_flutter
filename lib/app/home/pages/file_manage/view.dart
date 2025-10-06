@@ -61,7 +61,7 @@ class FileManagePage extends StatelessWidget {
                   onPressed: () async {
                     controller.isLoading = true;
                     controller.update(['file_manage']);
-                    await controller.initSourceData();
+                    await controller.initSourceData(noCache: true);
                   },
                   icon: Icon(
                     Icons.refresh,
@@ -177,9 +177,10 @@ class FileManagePage extends StatelessWidget {
                                                     fontWeight: FontWeight.w900,
                                                     color: Colors.deepPurple),
                                                 middleText: '确定要重新命名吗？',
+                                                backgroundColor: shadColorScheme.background,
                                                 content: CustomTextField(controller: nameController, labelText: "重命名为"),
                                                 actions: [
-                                                  ShadButton(
+                                                  ShadButton.destructive(
                                                     onPressed: () {
                                                       Get.back(result: false);
                                                     },
@@ -188,7 +189,16 @@ class FileManagePage extends StatelessWidget {
                                                   ShadButton(
                                                     onPressed: () async {
                                                       Get.back(result: true);
-                                                      doFileAction(item.path, 'rename_dir', newFileName: "newFileName");
+                                                      CommonResponse res =
+                                                          await controller.edisSource(item.path, nameController.text);
+                                                      if (res.succeed) {
+                                                        Get.snackbar('通知', res.msg.toString(),
+                                                            colorText: shadColorScheme.foreground);
+                                                        await controller.initSourceData(noCache: true);
+                                                      } else {
+                                                        Get.snackbar('通知', res.msg.toString(),
+                                                            colorText: Get.theme.colorScheme.error);
+                                                      }
                                                     },
                                                     child: const Text('确认'),
                                                   ),
@@ -239,11 +249,11 @@ class FileManagePage extends StatelessWidget {
                                                         var r = controller.items.remove(item);
                                                         Logger.instance.d(r);
                                                         controller.update(["file_manage"]);
+                                                        await controller.initSourceData(noCache: true);
                                                       } else {
                                                         Get.snackbar('删除通知', res.msg.toString(),
                                                             colorText: Get.theme.colorScheme.error);
                                                       }
-                                                      await controller.initSourceData(noCache: true);
                                                     },
                                                     child: const Text('确认'),
                                                   ),
