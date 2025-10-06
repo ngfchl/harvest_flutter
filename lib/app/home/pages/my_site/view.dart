@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_popup/flutter_popup.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:harvest/app/home/pages/dash_board/controller.dart';
 import 'package:harvest/models/common_response.dart';
@@ -460,172 +461,16 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                       id: "SingleSite-${mySite.id}",
                                       key: ValueKey("SingleSite-${mySite.id}"),
                                       builder: (controller) {
-                                        String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-                                        bool signed = mySite.getSignMaxKey() == today || mySite.signIn == false;
-                                        WebSite? website = controller.webSiteList[mySite.site];
-                                        RxBool siteRefreshing = false.obs;
                                         var shadColorScheme = ShadTheme.of(context).colorScheme;
                                         return Stack(
+                                          alignment: Alignment.center,
                                           children: [
-                                            ShadContextMenuRegion(
-                                                constraints: const BoxConstraints(minWidth: 100),
-                                                items: [
-                                                  if (website?.signIn == true && mySite.signIn && !signed)
-                                                    ShadContextMenuItem(
-                                                      leading: Icon(
-                                                        Icons.edit_calendar_outlined,
-                                                        color: shadColorScheme.foreground,
-                                                        size: 18,
-                                                      ),
-                                                      child: Text(
-                                                        '我要签到',
-                                                        style: TextStyle(color: shadColorScheme.foreground),
-                                                      ),
-                                                      onPressed: () async {
-                                                        siteRefreshing.value = true;
-                                                        CommonResponse res = await signIn(mySite.id);
-                                                        if (res.succeed) {
-                                                          Get.snackbar('签到成功', '${mySite.nickname} 签到信息：${res.msg}',
-                                                              colorText: shadColorScheme.foreground);
-                                                          SignInInfo? info =
-                                                              SignInInfo(updatedAt: getTodayString(), info: res.msg);
-                                                          Map<String, SignInInfo>? signInInfo = mySite.signInInfo;
-                                                          signInInfo.assign(getTodayString(), info);
-                                                          Logger.instance.d(signInInfo);
-                                                          MySite newSite = mySite.copyWith(signInInfo: signInInfo);
-                                                          controller.mySiteList =
-                                                              controller.mySiteList.map<MySite>((item) {
-                                                            if (item.id == mySite.id) {
-                                                              return newSite;
-                                                            }
-                                                            return item;
-                                                          }).toList();
-                                                          // controller.filterByKey();
-                                                          controller.update();
-                                                        } else {
-                                                          Get.snackbar(
-                                                              '签到失败', '${mySite.nickname} 签到任务执行出错啦：${res.msg}',
-                                                              colorText: shadColorScheme.destructive);
-                                                        }
-                                                        siteRefreshing.value = false;
-                                                      },
-                                                    ),
-                                                  ShadContextMenuItem(
-                                                    leading: Icon(
-                                                      Icons.refresh_outlined,
-                                                      color: shadColorScheme.foreground,
-                                                      size: 18,
-                                                    ),
-                                                    child: Text(
-                                                      '更新数据',
-                                                      style: TextStyle(color: shadColorScheme.foreground),
-                                                    ),
-                                                    onPressed: () async {
-                                                      siteRefreshing.value = true;
-                                                      CommonResponse res = await getNewestStatus(mySite.id);
-                                                      if (res.succeed) {
-                                                        Get.snackbar('站点数据刷新成功', '${mySite.nickname} 数据刷新：${res.msg}',
-                                                            colorText: shadColorScheme.foreground);
-                                                        StatusInfo? status = StatusInfo.fromJson(res.data);
-                                                        Map<String, StatusInfo>? statusInfo = mySite.statusInfo;
-                                                        statusInfo.assign(getTodayString(), status);
-                                                        Logger.instance.d(statusInfo);
-                                                        MySite newSite = mySite.copyWith(statusInfo: statusInfo);
-                                                        controller.mySiteList =
-                                                            controller.mySiteList.map<MySite>((item) {
-                                                          if (item.id == mySite.id) {
-                                                            return newSite;
-                                                          }
-                                                          return item;
-                                                        }).toList();
-                                                        // controller.filterByKey();
-                                                        controller.update();
-
-                                                        Future.delayed(Duration(microseconds: 500), () async {
-                                                          controller.getSiteStatusFromServer();
-                                                          DashBoardController dController = Get.find();
-                                                          dController.initChartData();
-                                                          dController.update();
-                                                        });
-                                                      } else {
-                                                        Get.snackbar(
-                                                            '站点数据刷新失败', '${mySite.nickname} 数据刷新出错啦：${res.msg}',
-                                                            colorText: shadColorScheme.destructive);
-                                                      }
-                                                      siteRefreshing.value = false;
-                                                    },
-                                                  ),
-                                                  if (website?.repeatTorrents == true && mySite.repeatTorrents)
-                                                    ShadContextMenuItem(
-                                                      leading: Icon(
-                                                        Icons.copy_outlined,
-                                                        color: shadColorScheme.foreground,
-                                                        size: 18,
-                                                      ),
-                                                      child: Text(
-                                                        '本站辅种',
-                                                        style: TextStyle(color: shadColorScheme.foreground),
-                                                      ),
-                                                      onPressed: () async {
-                                                        CommonResponse res = await repeatSite(mySite.id);
-
-                                                        if (res.succeed) {
-                                                          Get.snackbar('辅种任务发送成功', '${mySite.nickname} ${res.msg}',
-                                                              colorText: shadColorScheme.foreground);
-                                                        } else {
-                                                          Get.snackbar(
-                                                              '辅种任务发送失败', '${mySite.nickname} 辅种出错啦：${res.msg}',
-                                                              colorText: shadColorScheme.destructive);
-                                                        }
-                                                      },
-                                                    ),
-                                                  if (website?.signIn == true && mySite.signIn)
-                                                    ShadContextMenuItem(
-                                                      leading: Icon(
-                                                        Icons.manage_history,
-                                                        color: shadColorScheme.foreground,
-                                                        size: 18,
-                                                      ),
-                                                      child: Text(
-                                                        '签到历史',
-                                                        style: TextStyle(color: shadColorScheme.foreground),
-                                                      ),
-                                                      onPressed: () async {
-                                                        _showSignHistory(mySite);
-                                                      },
-                                                    ),
-                                                  ShadContextMenuItem(
-                                                    leading: Icon(
-                                                      Icons.history_outlined,
-                                                      color: shadColorScheme.foreground,
-                                                      size: 18,
-                                                    ),
-                                                    child: Text(
-                                                      '历史数据',
-                                                      style: TextStyle(color: shadColorScheme.foreground),
-                                                    ),
-                                                    onPressed: () async {
-                                                      _showStatusHistory(mySite);
-                                                    },
-                                                  ),
-                                                  ShadContextMenuItem(
-                                                    leading: Icon(
-                                                      Icons.edit,
-                                                      color: shadColorScheme.foreground,
-                                                      size: 18,
-                                                    ),
-                                                    child: Text('编辑站点'),
-                                                    onPressed: () async {
-                                                      await _showEditBottomSheet(mySite: mySite);
-                                                    },
-                                                  ),
-                                                ],
-                                                child: showSiteDataInfo(mySite)),
+                                            showSiteDataInfo(mySite),
                                             if (controller.singleLoading)
                                               Center(
                                                   child: CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                                color: shadColorScheme.primary,
+                                                strokeWidth: 4,
+                                                color: shadColorScheme.foreground,
                                               )),
                                           ],
                                         );
@@ -786,505 +631,640 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     var toUpgradeTime = DateTime.parse(mySite.timeJoin).add(Duration(days: (nextLevel?.days ?? 0) * 7));
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     bool signed = mySite.getSignMaxKey() == today || mySite.signIn == false;
+    RxBool siteRefreshing = false.obs;
     return CustomCard(
       key: Key("${mySite.id}-${mySite.site}"),
-      child: Column(children: [
-        ListTile(
-          dense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-          leading: InkWell(
-            onTap: () => _openSitePage(mySite, website, true),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: CachedNetworkImage(
-                imageUrl: iconUrl,
-                cacheKey: iconUrl,
-                fit: BoxFit.fill,
-                errorWidget: (context, url, error) => CachedNetworkImage(
-                  imageUrl: website.logo.startsWith('http') ? website.logo : '${mySite.mirror}${website.logo}',
+      child: Slidable(
+        key: ValueKey('${mySite.id}_${mySite.nickname}'),
+        startActionPane: ActionPane(
+          motion: const ScrollMotion(),
+          extentRatio: 0.35,
+          children: [
+            SlidableAction(
+              icon: Icons.refresh_outlined,
+              label: '更新',
+              backgroundColor: Colors.teal,
+              foregroundColor: Colors.white,
+              borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
+              onPressed: (context) async {
+                siteRefreshing.value = true;
+                CommonResponse res = await getNewestStatus(mySite.id);
+                if (res.succeed) {
+                  Get.snackbar('站点数据刷新成功', '${mySite.nickname} 数据刷新：${res.msg}', colorText: shadColorScheme.foreground);
+                  StatusInfo? status = StatusInfo.fromJson(res.data);
+                  Map<String, StatusInfo>? statusInfo = mySite.statusInfo;
+                  statusInfo.assign(getTodayString(), status);
+                  Logger.instance.d(statusInfo);
+                  MySite newSite = mySite.copyWith(statusInfo: statusInfo);
+                  controller.mySiteList = controller.mySiteList.map<MySite>((item) {
+                    if (item.id == mySite.id) {
+                      return newSite;
+                    }
+                    return item;
+                  }).toList();
+                  // controller.filterByKey();
+                  controller.update();
+
+                  Future.delayed(Duration(microseconds: 500), () async {
+                    controller.getSiteStatusFromServer();
+                    DashBoardController dController = Get.find();
+                    dController.initChartData();
+                    dController.update();
+                  });
+                } else {
+                  Get.snackbar('站点数据刷新失败', '${mySite.nickname} 数据刷新出错啦：${res.msg}',
+                      colorText: shadColorScheme.destructive);
+                }
+                siteRefreshing.value = false;
+              },
+            ),
+            if (website?.signIn == true && mySite.signIn && !signed)
+              SlidableAction(
+                icon: Icons.edit_calendar_outlined,
+                label: '签到',
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                onPressed: (context) async {
+                  siteRefreshing.value = true;
+                  CommonResponse res = await signIn(mySite.id);
+                  if (res.succeed) {
+                    Get.snackbar('签到成功', '${mySite.nickname} 签到信息：${res.msg}', colorText: shadColorScheme.foreground);
+                    SignInInfo? info = SignInInfo(updatedAt: getTodayString(), info: res.msg);
+                    Map<String, SignInInfo>? signInInfo = mySite.signInInfo;
+                    signInInfo.assign(getTodayString(), info);
+                    Logger.instance.d(signInInfo);
+                    MySite newSite = mySite.copyWith(signInInfo: signInInfo);
+                    controller.mySiteList = controller.mySiteList.map<MySite>((item) {
+                      if (item.id == mySite.id) {
+                        return newSite;
+                      }
+                      return item;
+                    }).toList();
+                    // controller.filterByKey();
+                    controller.update();
+                  } else {
+                    Get.snackbar('签到失败', '${mySite.nickname} 签到任务执行出错啦：${res.msg}',
+                        colorText: shadColorScheme.destructive);
+                  }
+                  siteRefreshing.value = false;
+                },
+              ),
+            if (website?.repeatTorrents == true && mySite.repeatTorrents)
+              SlidableAction(
+                flex: 1,
+                backgroundColor: Colors.blueGrey,
+                foregroundColor: Colors.white,
+                onPressed: (context) async {
+                  CommonResponse res = await repeatSite(mySite.id);
+
+                  if (res.succeed) {
+                    Get.snackbar('辅种任务发送成功', '${mySite.nickname} ${res.msg}', colorText: shadColorScheme.foreground);
+                  } else {
+                    Get.snackbar('辅种任务发送失败', '${mySite.nickname} 辅种出错啦：${res.msg}',
+                        colorText: shadColorScheme.destructive);
+                  }
+                },
+                icon: Icons.copy_outlined,
+                label: '辅种',
+              ),
+          ],
+        ),
+        endActionPane: ActionPane(
+          motion: const ScrollMotion(),
+          extentRatio: 0.35,
+          children: [
+            if (website?.signIn == true && mySite.signIn)
+              SlidableAction(
+                flex: 1,
+                onPressed: (context) async {
+                  _showSignHistory(mySite);
+                },
+                backgroundColor: Colors.amber,
+                foregroundColor: Colors.white,
+                icon: Icons.manage_history_outlined,
+                label: '签到历史',
+              ),
+            SlidableAction(
+              flex: 1,
+              onPressed: (context) async {
+                _showStatusHistory(mySite);
+              },
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+              icon: Icons.history_outlined,
+              label: '历史数据',
+            ),
+            SlidableAction(
+              flex: 1,
+              borderRadius: BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
+              onPressed: (context) async {
+                await _showEditBottomSheet(mySite: mySite);
+              },
+              backgroundColor: Colors.deepOrange,
+              foregroundColor: Colors.white,
+              icon: Icons.edit,
+              label: '编辑',
+            ),
+          ],
+        ),
+        child: Column(children: [
+          ListTile(
+            dense: true,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+            leading: InkWell(
+              onTap: () => _openSitePage(mySite, website, true),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: CachedNetworkImage(
+                  imageUrl: iconUrl,
+                  cacheKey: iconUrl,
                   fit: BoxFit.fill,
-                  httpHeaders: {
-                    "user-agent": mySite.userAgent.toString(),
-                    "Cookie": mySite.cookie.toString(),
-                  },
-                  errorWidget: (context, url, error) => const Image(image: AssetImage('assets/images/avatar.png')),
+                  errorWidget: (context, url, error) => CachedNetworkImage(
+                    imageUrl: website.logo.startsWith('http') ? website.logo : '${mySite.mirror}${website.logo}',
+                    fit: BoxFit.fill,
+                    httpHeaders: {
+                      "user-agent": mySite.userAgent.toString(),
+                      "Cookie": mySite.cookie.toString(),
+                    },
+                    errorWidget: (context, url, error) => const Image(image: AssetImage('assets/images/avatar.png')),
+                    width: 32,
+                    height: 32,
+                  ),
                   width: 32,
                   height: 32,
                 ),
-                width: 32,
-                height: 32,
               ),
             ),
-          ),
-          onLongPress: () => _openSitePage(mySite, website, false),
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              mySite.latestActive != null
-                  ? Tooltip(
-                      message: '最后访问时间：${calculateTimeElapsed(mySite.latestActive.toString())}',
-                      child: Text(
+            onLongPress: () => _openSitePage(mySite, website, false),
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                mySite.latestActive != null
+                    ? Tooltip(
+                        message: '最后访问时间：${calculateTimeElapsed(mySite.latestActive.toString())}',
+                        child: Text(
+                          mySite.nickname,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: shadColorScheme.foreground,
+                          ),
+                        ),
+                      )
+                    : Text(
                         mySite.nickname,
                         style: TextStyle(
                           fontSize: 13,
                           color: shadColorScheme.foreground,
                         ),
                       ),
-                    )
-                  : Text(
-                      mySite.nickname,
-                      style: TextStyle(
-                        fontSize: 13,
+                if (mySite.mail! > 0)
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.mail,
+                        size: 12,
                         color: shadColorScheme.foreground,
                       ),
-                    ),
-              if (mySite.mail! > 0)
-                Row(
-                  children: [
-                    Icon(
-                      Icons.mail,
-                      size: 12,
-                      color: shadColorScheme.foreground,
-                    ),
-                    Text(
-                      '${mySite.mail}',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: shadColorScheme.foreground,
+                      Text(
+                        '${mySite.mail}',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: shadColorScheme.foreground,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              if (mySite.notice! > 0)
-                Row(
-                  children: [
-                    Icon(
-                      Icons.notifications,
-                      size: 12,
-                      color: shadColorScheme.foreground,
-                    ),
-                    Text(
-                      '${mySite.notice}',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: shadColorScheme.foreground,
-                      ),
-                    ),
-                  ],
-                ),
-              if (status != null && level == null)
-                Text(
-                  website.level?[status.myLevel]?.level ?? status.myLevel,
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: shadColorScheme.foreground,
+                    ],
                   ),
-                ),
-              if (status != null && level != null)
-                CustomPopup(
-                  showArrow: false,
-                  barrierColor: Colors.transparent,
-                  backgroundColor: shadColorScheme.background,
-                  content: SingleChildScrollView(
-                    child: SizedBox(
-                        width: 200,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (nextLevel != null) ...[
-                              PopupMenuItem<String>(
-                                height: 13,
-                                child: Text("下一等级：${nextLevel.level}",
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: shadColorScheme.foreground,
-                                    )),
-                              ),
-                              // if (status.uploaded < nextLevelToUploadedByte)
-                              PopupMenuItem<String>(
-                                height: 13,
-                                child: Text(
-                                    '上传量：${FileSizeConvert.parseToFileSize(status.uploaded)}/${FileSizeConvert.parseToFileSize(nextLevelToUploadedByte)}',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: status.uploaded < max(nextLevelToUploadedByte, calcToUploaded)
-                                          ? shadColorScheme.destructive
-                                          : shadColorScheme.foreground,
-                                    )),
-                              ),
-                              // if (status.downloaded < nextLevelToDownloadedByte)
-                              PopupMenuItem<String>(
-                                height: 13,
-                                child: Text(
-                                    '下载量：${FileSizeConvert.parseToFileSize(status.downloaded)}/${FileSizeConvert.parseToFileSize(nextLevelToDownloadedByte)}',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: status.downloaded < nextLevelToDownloadedByte
-                                          ? shadColorScheme.destructive
-                                          : shadColorScheme.foreground,
-                                    )),
-                              ),
-                              // if (status.uploaded / status.downloaded <
-                              //     nextLevel.ratio)
-                              //   PopupMenuItem<String>(
-                              //     height: 13,
-                              //     child: Text(
-                              //         '分享率：${(status.uploaded / status.downloaded).toStringAsFixed(2)}/${nextLevel.ratio}',
-                              //         style: TextStyle(
-                              //           fontSize: 10,
-                              //           color:
-                              //               ShadTheme.of(context).colorScheme.destructive,
-                              //         )),
-                              //   ),
-                              if (nextLevel.torrents > 0)
+                if (mySite.notice! > 0)
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.notifications,
+                        size: 12,
+                        color: shadColorScheme.foreground,
+                      ),
+                      Text(
+                        '${mySite.notice}',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: shadColorScheme.foreground,
+                        ),
+                      ),
+                    ],
+                  ),
+                if (status != null && level == null)
+                  Text(
+                    website.level?[status.myLevel]?.level ?? status.myLevel,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: shadColorScheme.foreground,
+                    ),
+                  ),
+                if (status != null && level != null)
+                  CustomPopup(
+                    showArrow: false,
+                    barrierColor: Colors.transparent,
+                    backgroundColor: shadColorScheme.background,
+                    content: SingleChildScrollView(
+                      child: SizedBox(
+                          width: 200,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (nextLevel != null) ...[
                                 PopupMenuItem<String>(
                                   height: 13,
-                                  child: Text('需发种数量：${status.published}/${nextLevel.torrents}',
+                                  child: Text("下一等级：${nextLevel.level}",
                                       style: TextStyle(
-                                        fontSize: 10,
-                                        color: status.published < nextLevel.torrents
-                                            ? shadColorScheme.destructive
-                                            : shadColorScheme.foreground,
+                                        fontSize: 12,
+                                        color: shadColorScheme.foreground,
                                       )),
                                 ),
-                              if (nextLevel.score > 0)
-                                PopupMenuItem<String>(
-                                  height: 13,
-                                  child: Text('做种积分：${formatNumber(status.myScore)}/${formatNumber(nextLevel.score)}',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: status.myScore < nextLevel.score
-                                            ? shadColorScheme.destructive
-                                            : shadColorScheme.foreground,
-                                      )),
-                                ),
-                              if (nextLevel.bonus > 0)
-                                PopupMenuItem<String>(
-                                  height: 13,
-                                  child: Text('魔力值：${formatNumber(status.myBonus)}/${formatNumber(nextLevel.bonus)}',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: status.myBonus < nextLevel.bonus
-                                            ? shadColorScheme.destructive
-                                            : shadColorScheme.foreground,
-                                      )),
-                                ),
-                              if (nextLevel.days > 0)
+                                // if (status.uploaded < nextLevelToUploadedByte)
                                 PopupMenuItem<String>(
                                   height: 13,
                                   child: Text(
-                                      '升级日期：${DateFormat('yyyy-MM-dd').format(DateTime.now())}/${DateFormat('yyyy-MM-dd').format(toUpgradeTime)}',
+                                      '上传量：${FileSizeConvert.parseToFileSize(status.uploaded)}/${FileSizeConvert.parseToFileSize(nextLevelToUploadedByte)}',
                                       style: TextStyle(
                                         fontSize: 10,
-                                        color: DateTime.now().isBefore(toUpgradeTime)
+                                        color: status.uploaded < max(nextLevelToUploadedByte, calcToUploaded)
                                             ? shadColorScheme.destructive
                                             : shadColorScheme.foreground,
                                       )),
                                 ),
-                              if (level.keepAccount != true && nextLevel.keepAccount)
+                                // if (status.downloaded < nextLevelToDownloadedByte)
                                 PopupMenuItem<String>(
                                   height: 13,
-                                  child: Text('保留账号：${nextLevel.keepAccount}',
+                                  child: Text(
+                                      '下载量：${FileSizeConvert.parseToFileSize(status.downloaded)}/${FileSizeConvert.parseToFileSize(nextLevelToDownloadedByte)}',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: status.downloaded < nextLevelToDownloadedByte
+                                            ? shadColorScheme.destructive
+                                            : shadColorScheme.foreground,
+                                      )),
+                                ),
+                                // if (status.uploaded / status.downloaded <
+                                //     nextLevel.ratio)
+                                //   PopupMenuItem<String>(
+                                //     height: 13,
+                                //     child: Text(
+                                //         '分享率：${(status.uploaded / status.downloaded).toStringAsFixed(2)}/${nextLevel.ratio}',
+                                //         style: TextStyle(
+                                //           fontSize: 10,
+                                //           color:
+                                //               ShadTheme.of(context).colorScheme.destructive,
+                                //         )),
+                                //   ),
+                                if (nextLevel.torrents > 0)
+                                  PopupMenuItem<String>(
+                                    height: 13,
+                                    child: Text('需发种数量：${status.published}/${nextLevel.torrents}',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: status.published < nextLevel.torrents
+                                              ? shadColorScheme.destructive
+                                              : shadColorScheme.foreground,
+                                        )),
+                                  ),
+                                if (nextLevel.score > 0)
+                                  PopupMenuItem<String>(
+                                    height: 13,
+                                    child: Text('做种积分：${formatNumber(status.myScore)}/${formatNumber(nextLevel.score)}',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: status.myScore < nextLevel.score
+                                              ? shadColorScheme.destructive
+                                              : shadColorScheme.foreground,
+                                        )),
+                                  ),
+                                if (nextLevel.bonus > 0)
+                                  PopupMenuItem<String>(
+                                    height: 13,
+                                    child: Text('魔力值：${formatNumber(status.myBonus)}/${formatNumber(nextLevel.bonus)}',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: status.myBonus < nextLevel.bonus
+                                              ? shadColorScheme.destructive
+                                              : shadColorScheme.foreground,
+                                        )),
+                                  ),
+                                if (nextLevel.days > 0)
+                                  PopupMenuItem<String>(
+                                    height: 13,
+                                    child: Text(
+                                        '升级日期：${DateFormat('yyyy-MM-dd').format(DateTime.now())}/${DateFormat('yyyy-MM-dd').format(toUpgradeTime)}',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: DateTime.now().isBefore(toUpgradeTime)
+                                              ? shadColorScheme.destructive
+                                              : shadColorScheme.foreground,
+                                        )),
+                                  ),
+                                if (level.keepAccount != true && nextLevel.keepAccount)
+                                  PopupMenuItem<String>(
+                                    height: 13,
+                                    child: Text('保留账号：${nextLevel.keepAccount}',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: shadColorScheme.destructive,
+                                        )),
+                                  ),
+                                if (level.graduation != true && nextLevel.graduation)
+                                  PopupMenuItem<String>(
+                                    height: 13,
+                                    child: Text('毕业：${nextLevel.graduation}',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: shadColorScheme.destructive,
+                                        )),
+                                  ),
+                                PopupMenuItem<String>(
+                                  height: 13,
+                                  child: Text('即将获得：${nextLevel.rights}',
                                       style: TextStyle(
                                         fontSize: 10,
                                         color: shadColorScheme.destructive,
                                       )),
                                 ),
-                              if (level.graduation != true && nextLevel.graduation)
-                                PopupMenuItem<String>(
-                                  height: 13,
-                                  child: Text('毕业：${nextLevel.graduation}',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: shadColorScheme.destructive,
-                                      )),
-                                ),
-                              PopupMenuItem<String>(
-                                height: 13,
-                                child: Text('即将获得：${nextLevel.rights}',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: shadColorScheme.destructive,
-                                    )),
-                              ),
+                              ],
+                              ...rights
+                                  .where((el) =>
+                                      el.rights.trim() != '无' &&
+                                      !el.rights.trim().startsWith('同') &&
+                                      !el.rights.trim().contains('同上'))
+                                  .map((LevelInfo item) => PopupMenuItem<String>(
+                                        height: 13,
+                                        child: Text(item.rights,
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: item.graduation ? Colors.orange : shadColorScheme.foreground,
+                                            )),
+                                      ))
                             ],
-                            ...rights
-                                .where((el) =>
-                                    el.rights.trim() != '无' &&
-                                    !el.rights.trim().startsWith('同') &&
-                                    !el.rights.trim().contains('同上'))
-                                .map((LevelInfo item) => PopupMenuItem<String>(
-                                      height: 13,
-                                      child: Text(item.rights,
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            color: item.graduation ? Colors.orange : shadColorScheme.foreground,
-                                          )),
-                                    ))
-                          ],
-                        )),
+                          )),
+                    ),
+                    child: Text(
+                      website.level?[status.myLevel]?.level ?? status.myLevel,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: shadColorScheme.foreground,
+                      ),
+                    ),
                   ),
-                  child: Text(
-                    website.level?[status.myLevel]?.level ?? status.myLevel,
+              ],
+            ),
+            subtitle: status == null
+                ? Text(
+                    '新站点，还没有数据哦',
                     style: TextStyle(
-                      fontSize: 11,
                       color: shadColorScheme.foreground,
+                      fontSize: 10,
                     ),
-                  ),
-                ),
-            ],
-          ),
-          subtitle: status == null
-              ? Text(
-                  '新站点，还没有数据哦',
-                  style: TextStyle(
-                    color: shadColorScheme.foreground,
-                    fontSize: 10,
-                  ),
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    DateTime.parse(mySite.timeJoin) != DateTime(2024, 2, 1)
-                        ? Text(
-                            '⌚️${calcWeeksDays(mySite.timeJoin)}',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: shadColorScheme.foreground,
-                            ),
-                          )
-                        : Text(
-                            '⌚️获取失败！',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: shadColorScheme.foreground,
-                            ),
-                          ),
-                    if (level?.keepAccount == true)
-                      const Text(
-                        '🔥保号',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Colors.red,
-                        ),
-                      ),
-                    if (level?.graduation == true)
-                      const Text(
-                        '🎓毕业',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Colors.amber,
-                        ),
-                      ),
-                    if (status.invitation > 0)
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.person_add_alt_outlined,
-                            size: 12,
-                            color: shadColorScheme.foreground,
-                          ),
-                          Text(
-                            '${status.invitation}',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: shadColorScheme.foreground,
-                            ),
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
-          trailing: Icon(
-            Icons.check_circle_outline,
-            size: 24,
-            color: signed == true ? Colors.green : Colors.amber,
-          ),
-        ),
-        if (status != null)
-          Padding(
-            padding: const EdgeInsets.only(left: 12.0, right: 12, bottom: 12),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SizedBox(
-                      width: 120,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            textBaseline: TextBaseline.ideographic,
-                            children: [
-                              const Icon(
-                                Icons.upload_outlined,
-                                color: Colors.green,
-                                size: 14,
-                              ),
-                              const SizedBox(width: 2),
-                              Text(
-                                '${FileSizeConvert.parseToFileSize(status.uploaded)} (${status.seed})',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: shadColorScheme.foreground,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 2),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.download_outlined,
-                                color: Colors.red,
-                                size: 14,
-                              ),
-                              const SizedBox(width: 2),
-                              Text(
-                                '${FileSizeConvert.parseToFileSize(status.downloaded)} (${status.leech})',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: shadColorScheme.foreground,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      width: 90,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.ios_share,
-                                color: status.ratio > 1 ? shadColorScheme.foreground : Colors.deepOrange,
-                                size: 14,
-                              ),
-                              const SizedBox(width: 2),
-                              Text(
-                                '${status.published}(${formatNumber(status.ratio, fixed: status.ratio >= 1000 ? 0 : 2)})',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: status.ratio > 1 ? shadColorScheme.foreground : Colors.deepOrange,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 2),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.cloud_upload_outlined,
-                                size: 14,
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      DateTime.parse(mySite.timeJoin) != DateTime(2024, 2, 1)
+                          ? Text(
+                              '⌚️${calcWeeksDays(mySite.timeJoin)}',
+                              style: TextStyle(
+                                fontSize: 10,
                                 color: shadColorScheme.foreground,
                               ),
-                              const SizedBox(width: 2),
-                              Text(
-                                FileSizeConvert.parseToFileSize(status.seedVolume),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: shadColorScheme.foreground,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      width: 120,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            textBaseline: TextBaseline.ideographic,
-                            children: [
-                              Icon(
-                                Icons.timer_outlined,
-                                size: 14,
+                            )
+                          : Text(
+                              '⌚️获取失败！',
+                              style: TextStyle(
+                                fontSize: 10,
                                 color: shadColorScheme.foreground,
                               ),
-                              const SizedBox(width: 2),
-                              Text(
-                                formatNumber(status.bonusHour),
-                                // '(${  status.siteSpFull != null && status.siteSpFull! > 0 ? ((status.statusBonusHour! / status.siteSpFull!) * 100).toStringAsFixed(2) : '0'}%)',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: shadColorScheme.foreground,
-                                ),
+                            ),
+                      if (level?.keepAccount == true)
+                        const Text(
+                          '🔥保号',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.red,
+                          ),
+                        ),
+                      if (level?.graduation == true)
+                        const Text(
+                          '🎓毕业',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.amber,
+                          ),
+                        ),
+                      if (status.invitation > 0)
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.person_add_alt_outlined,
+                              size: 12,
+                              color: shadColorScheme.foreground,
+                            ),
+                            Text(
+                              '${status.invitation}',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: shadColorScheme.foreground,
                               ),
-                              if (website.spFull > 0 && status.bonusHour > 0)
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+            trailing: Icon(
+              Icons.check_circle_outline,
+              size: 24,
+              color: signed == true ? Colors.green : Colors.amber,
+            ),
+          ),
+          if (status != null)
+            Padding(
+              padding: const EdgeInsets.only(left: 12.0, right: 12, bottom: 12),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SizedBox(
+                        width: 120,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              textBaseline: TextBaseline.ideographic,
+                              children: [
+                                const Icon(
+                                  Icons.upload_outlined,
+                                  color: Colors.green,
+                                  size: 14,
+                                ),
+                                const SizedBox(width: 2),
                                 Text(
-                                  // formatNumber(status.bonusHour),
-                                  '(${((status.bonusHour / website.spFull) * 100).toStringAsFixed((status.bonusHour / website.spFull) * 100 > 1 ? 0 : 2)}%)',
+                                  '${FileSizeConvert.parseToFileSize(status.uploaded)} (${status.seed})',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: shadColorScheme.foreground,
                                   ),
                                 ),
-                            ],
-                          ),
-                          const SizedBox(height: 2),
-                          Row(
-                            textBaseline: TextBaseline.ideographic,
-                            children: [
-                              Icon(
-                                Icons.score,
-                                size: 14,
-                                color: shadColorScheme.foreground,
-                              ),
-                              const SizedBox(width: 2),
-                              Text(
-                                '${formatNumber(status.myBonus, fixed: 0)}(${formatNumber(status.myScore, fixed: 0)})',
-                                style: TextStyle(
-                                  fontSize: 12,
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.download_outlined,
+                                  color: Colors.red,
+                                  size: 14,
+                                ),
+                                const SizedBox(width: 2),
+                                Text(
+                                  '${FileSizeConvert.parseToFileSize(status.downloaded)} (${status.leech})',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: shadColorScheme.foreground,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        width: 90,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.ios_share,
+                                  color: status.ratio > 1 ? shadColorScheme.foreground : Colors.deepOrange,
+                                  size: 14,
+                                ),
+                                const SizedBox(width: 2),
+                                Text(
+                                  '${status.published}(${formatNumber(status.ratio, fixed: status.ratio >= 1000 ? 0 : 2)})',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: status.ratio > 1 ? shadColorScheme.foreground : Colors.deepOrange,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.cloud_upload_outlined,
+                                  size: 14,
                                   color: shadColorScheme.foreground,
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '最近更新：${calculateTimeElapsed(status.updatedAt.toString())}',
-                      textAlign: TextAlign.right,
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        color: shadColorScheme.foreground,
-                      ),
-                    ),
-                    if (status.myHr != '' && status.myHr != "0")
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text(
-                            'HR: ${status.myHr.replaceAll('区', '').replaceAll('专', '').replaceAll('H&R', '').trim()}',
-                            textAlign: TextAlign.right,
-                            style: const TextStyle(
-                              color: Colors.red,
-                              fontSize: 10,
+                                const SizedBox(width: 2),
+                                Text(
+                                  FileSizeConvert.parseToFileSize(status.seedVolume),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: shadColorScheme.foreground,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                  ],
-                ),
-              ],
+                      SizedBox(
+                        width: 120,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              textBaseline: TextBaseline.ideographic,
+                              children: [
+                                Icon(
+                                  Icons.timer_outlined,
+                                  size: 14,
+                                  color: shadColorScheme.foreground,
+                                ),
+                                const SizedBox(width: 2),
+                                Text(
+                                  formatNumber(status.bonusHour),
+                                  // '(${  status.siteSpFull != null && status.siteSpFull! > 0 ? ((status.statusBonusHour! / status.siteSpFull!) * 100).toStringAsFixed(2) : '0'}%)',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: shadColorScheme.foreground,
+                                  ),
+                                ),
+                                if (website.spFull > 0 && status.bonusHour > 0)
+                                  Text(
+                                    // formatNumber(status.bonusHour),
+                                    '(${((status.bonusHour / website.spFull) * 100).toStringAsFixed((status.bonusHour / website.spFull) * 100 > 1 ? 0 : 2)}%)',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: shadColorScheme.foreground,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Row(
+                              textBaseline: TextBaseline.ideographic,
+                              children: [
+                                Icon(
+                                  Icons.score,
+                                  size: 14,
+                                  color: shadColorScheme.foreground,
+                                ),
+                                const SizedBox(width: 2),
+                                Text(
+                                  '${formatNumber(status.myBonus, fixed: 0)}(${formatNumber(status.myScore, fixed: 0)})',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: shadColorScheme.foreground,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '最近更新：${calculateTimeElapsed(status.updatedAt.toString())}',
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          color: shadColorScheme.foreground,
+                        ),
+                      ),
+                      if (status.myHr != '' && status.myHr != "0")
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text(
+                              'HR: ${status.myHr.replaceAll('区', '').replaceAll('专', '').replaceAll('H&R', '').trim()}',
+                              textAlign: TextAlign.right,
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-      ]),
+        ]),
+      ),
     );
   }
 
@@ -2019,8 +1999,10 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     signKeys.sort((a, b) => b.compareTo(a));
     var shadColorScheme = ShadTheme.of(context).colorScheme;
-    Get.bottomSheet(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)), isScrollControlled: true,
-        GetBuilder<MySiteController>(builder: (controller) {
+    Get.bottomSheet(
+        backgroundColor: shadColorScheme.background,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+        isScrollControlled: true, GetBuilder<MySiteController>(builder: (controller) {
       return CustomCard(
           width: double.infinity,
           height: MediaQuery.of(context).size.height * 0.8,
