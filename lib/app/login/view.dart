@@ -370,7 +370,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void showEditOrCreateServerSheet(Server? serverToEdit) async {
     final formKey = GlobalKey<FormState>();
-    String defaultEntry = kIsWeb ? Uri.base.origin : 'http://192.168.123.5:35173';
+    String defaultEntry = kIsWeb ? Uri.base.origin : 'http://192.168.1';
     TextEditingController nameController = TextEditingController(text: serverToEdit?.name ?? 'DefaultServer');
     TextEditingController entryController = TextEditingController(text: serverToEdit?.entry ?? defaultEntry);
     TextEditingController usernameController = TextEditingController(text: serverToEdit?.username ?? 'admin');
@@ -416,7 +416,7 @@ class _LoginPageState extends State<LoginPage> {
                     labelText: '名称',
                   ),
                   Autocomplete<String>(
-                    initialValue: TextEditingValue(text: 'http://192.168.1'),
+                    initialValue: TextEditingValue(text: defaultEntry),
                     optionsBuilder: (TextEditingValue textEditingValue) {
                       Logger.instance.d(textEditingValue.text);
                       entryController.text = textEditingValue.text;
