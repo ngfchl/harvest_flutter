@@ -53,6 +53,7 @@ class CustomTextField extends StatelessWidget {
   final bool autofocus;
   final bool readOnly;
   final bool obscureText;
+  final ScrollPhysics? scrollPhysics;
   final Function(String)? onChanged;
   final Function()? onTap;
   final FormFieldValidator<String>? validator;
@@ -74,6 +75,7 @@ class CustomTextField extends StatelessWidget {
     this.onTap,
     this.validator,
     this.maxLength,
+    this.scrollPhysics = const NeverScrollableScrollPhysics(),
     this.autofocus = false,
     this.readOnly = false,
     this.obscureText = false,
@@ -97,17 +99,17 @@ class CustomTextField extends StatelessWidget {
         readOnly: readOnly,
         obscureText: obscureText,
         inputFormatters: inputFormatters,
-        scrollPhysics: const NeverScrollableScrollPhysics(),
+        scrollPhysics: scrollPhysics,
         style: TextStyle(fontSize: 13, color: scheme.foreground),
         decoration: InputDecoration(
           labelText: labelText,
           labelStyle: TextStyle(fontSize: 12, color: scheme.foreground),
           contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-          enabledBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: Color(0x19000000)),
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: scheme.foreground.withOpacity(0.2)),
           ),
-          focusedBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: Color(0x16000000)),
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: scheme.foreground.withOpacity(0.5)),
           ),
           focusColor: Colors.transparent,
           hoverColor: Colors.transparent,
