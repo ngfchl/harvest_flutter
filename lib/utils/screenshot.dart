@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:get/get.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:pasteboard/pasteboard.dart';
 import 'package:path/path.dart' as p;
@@ -19,8 +20,7 @@ class ScreenshotSaver {
       await Future.delayed(Duration(milliseconds: 20)); // 可选延时，视实际情况添加
       await WidgetsBinding.instance.endOfFrame;
 
-      final boundary =
-          key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      final boundary = key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
       if (boundary == null) throw Exception("找不到 RepaintBoundary");
 
       final image = await boundary.toImage(pixelRatio: 3.0);
@@ -43,8 +43,10 @@ class ScreenshotSaver {
   /// 手机保存到相册
   static Future<void> _saveToGallery(Uint8List bytes) async {
     if (Platform.isAndroid) {
-      final status = await Permission.storage.request();
-      if (!status.isGranted) throw Exception("未获得存储权限");
+      final status = await Permission.manageExternalStorage.request();
+      if (!status.isGranted) {
+        Get.snackbar('未授权', 'Yay! 未获得存储权限!');
+      }
     }
 
     final result = await ImageGallerySaverPlus.saveImage(
@@ -59,8 +61,7 @@ class ScreenshotSaver {
   /// 分享图片字节
   static Future<void> _shareImageBytes(Uint8List bytes) async {
     final tempDir = await getTemporaryDirectory();
-    final filePath = p.join(
-        tempDir.path, 'share_${DateTime.now().millisecondsSinceEpoch}.png');
+    final filePath = p.join(tempDir.path, 'share_${DateTime.now().millisecondsSinceEpoch}.png');
 
     final file = File(filePath);
     await file.writeAsBytes(bytes);
