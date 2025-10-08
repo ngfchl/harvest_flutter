@@ -209,8 +209,13 @@ class _MyRssPageState extends State<MyRssPage> {
                         double popupWidth = constraints.maxWidth;
                         return Obx(() {
                           return ShadSelect<MySite>.withSearch(
-                            placeholder: const Text('选择分类'),
-                            decoration: ShadDecoration(border: ShadBorder.none),
+                            placeholder: const Text('选择站点'),
+                            decoration: ShadDecoration(
+                              border: ShadBorder(
+                                merge: false,
+                                bottom: ShadBorderSide(color: shadColorScheme.foreground.withOpacity(0.2), width: 1),
+                              ),
+                            ),
                             initialValue: controller.mySiteMap[siteController.text],
                             itemCount: filteredList.length,
                             minWidth: 200,
@@ -252,6 +257,7 @@ class _MyRssPageState extends State<MyRssPage> {
                         return SwitchListTile(
                             dense: true,
                             contentPadding: EdgeInsets.zero,
+                            activeColor: shadColorScheme.primary,
                             title: Text('可用', style: TextStyle(fontSize: 14, color: shadColorScheme.foreground)),
                             value: available.value,
                             onChanged: (bool val) {

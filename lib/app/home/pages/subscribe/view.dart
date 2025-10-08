@@ -290,7 +290,13 @@ class _SubscribePageState extends State<SubscribePage> {
                             child: ShadSelect<Downloader>(
                                 placeholder: const Text('选择下载器'),
                                 initialValue: controller.subController.downloadController.dataList.first,
-                                decoration: ShadDecoration(border: ShadBorder.none),
+                                decoration: ShadDecoration(
+                                  border: ShadBorder(
+                                    merge: false,
+                                    bottom:
+                                        ShadBorderSide(color: shadColorScheme.foreground.withOpacity(0.2), width: 1),
+                                  ),
+                                ),
                                 options: controller.subController.downloadController.dataList
                                     .map((key) => ShadOption(value: key, child: Text(key.name)))
                                     .toList(),
@@ -323,7 +329,13 @@ class _SubscribePageState extends State<SubscribePage> {
                                 child: ShadSelect<String>(
                                     placeholder: const Text('选择分类'),
                                     initialValue: controller.categories.keys.first,
-                                    decoration: ShadDecoration(border: ShadBorder.none),
+                                    decoration: ShadDecoration(
+                                      border: ShadBorder(
+                                        merge: false,
+                                        bottom: ShadBorderSide(
+                                            color: shadColorScheme.foreground.withOpacity(0.2), width: 1),
+                                      ),
+                                    ),
                                     options: controller.categories.keys
                                         .map((key) => ShadOption(value: key, child: Text(key)))
                                         .toList(),

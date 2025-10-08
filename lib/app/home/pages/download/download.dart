@@ -1033,7 +1033,8 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
       backgroundColor: shadColorScheme.background,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
       GetBuilder<DownloadController>(builder: (controller) {
-        return CustomCard(
+        return Padding(
+          padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
               Padding(
@@ -1052,7 +1053,13 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(minWidth: double.infinity),
                           child: ShadSelect<String>(
-                              decoration: ShadDecoration(border: ShadBorder.none),
+                              decoration: ShadDecoration(
+                                border: ShadBorder(
+                                  merge: false,
+                                  bottom: ShadBorderSide(color: shadColorScheme.foreground.withOpacity(0.2), width: 1),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                                ),
+                              ),
                               trailing: const Text('下载器分类'),
                               placeholder: const Text('下载器分类'),
                               initialValue: "Qb",
@@ -1071,7 +1078,13 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(minWidth: double.infinity),
                           child: ShadSelect<String>(
-                              decoration: ShadDecoration(border: ShadBorder.none),
+                              decoration: ShadDecoration(
+                                border: ShadBorder(
+                                  merge: false,
+                                  bottom: ShadBorderSide(color: shadColorScheme.foreground.withOpacity(0.2), width: 1),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                                ),
+                              ),
                               trailing: const Text('选择协议'),
                               placeholder: const Text('选择协议'),
                               initialValue: "http",
@@ -1117,7 +1130,13 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               placeholder: Text('种子路径', style: TextStyle(color: shadColorScheme.foreground)),
                               trailing: Text('种子路径', style: TextStyle(color: shadColorScheme.foreground)),
                               initialValue: controller.pathList.first,
-                              decoration: ShadDecoration(border: ShadBorder.none),
+                              decoration: ShadDecoration(
+                                border: ShadBorder(
+                                  merge: false,
+                                  bottom: ShadBorderSide(color: shadColorScheme.foreground.withOpacity(0.2), width: 1),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                                ),
+                              ),
                               options:
                                   controller.pathList.map((key) => ShadOption(value: key, child: Text(key))).toList(),
                               selectedOptionBuilder: (context, value) {
@@ -2156,7 +2175,13 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                       placeholder: const Text('要替换的站点'),
                       trailing: const Text('要替换的站点'),
                       initialValue: sites.first,
-                      decoration: ShadDecoration(border: ShadBorder.none),
+                      decoration: ShadDecoration(
+                        border: ShadBorder(
+                          merge: false,
+                          bottom: ShadBorderSide(color: shadColorScheme.foreground.withOpacity(0.2), width: 1),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                        ),
+                      ),
                       options: sites.map((key) => ShadOption(value: key, child: Text(key))).toList(),
                       selectedOptionBuilder: (context, value) {
                         return Text(value);

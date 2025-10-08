@@ -411,10 +411,6 @@ class HomeView extends GetView<HomeController> {
                           ),
                         ),
                         onTap: () async {
-                          const List<Tab> tabs = [
-                            Tab(text: '批量修改'),
-                            Tab(text: '清理数据'),
-                          ];
                           TextEditingController keyController = TextEditingController(text: '');
                           TextEditingController valueController = TextEditingController(text: '');
                           Map<String, String> selectOptions = {"站点UA": "user_agent", "网络代理": "proxy"};
@@ -427,26 +423,55 @@ class HomeView extends GetView<HomeController> {
                             SizedBox(
                               height: 240,
                               // width: 240,
-                              child: DefaultTabController(
-                                length: tabs.length,
-                                child: Scaffold(
-                                  backgroundColor: Colors.transparent,
-                                  resizeToAvoidBottomInset: false,
-                                  appBar: const TabBar(tabs: tabs),
-                                  body: TabBarView(
-                                    children: [
-                                      SingleChildScrollView(
+                              child: ShadTabs<String>(
+                                value: '批量操作',
+                                tabs: [
+                                  ShadTab(
+                                    value: '批量操作',
+                                    content: ShadCard(
+                                      width: double.infinity,
+                                      height: 192,
+                                      footer: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                        children: [
+                                          ShadButton.destructive(
+                                            size: ShadButtonSize.sm,
+                                            onPressed: () {
+                                              Get.back(result: false);
+                                            },
+                                            child: const Text('取消'),
+                                          ),
+                                          ShadButton(
+                                            size: ShadButtonSize.sm,
+                                            onPressed: () async {
+                                              Get.back(result: true);
+                                              await bulkUpgradeHandler({
+                                                "key": selectOptions[keyController.text]!,
+                                                "value": StringUtils.parseJsonOrReturnString(valueController.text),
+                                              });
+                                            },
+                                            child: const Text('确认'),
+                                          ),
+                                        ],
+                                      ),
+                                      child: SingleChildScrollView(
                                         child: Column(
                                           mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                          spacing: 10,
                                           children: [
                                             Padding(
-                                              padding: const EdgeInsets.all(8.0),
+                                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
                                               child: ConstrainedBox(
                                                 constraints: const BoxConstraints(minWidth: double.infinity),
                                                 child: ShadSelect<String>(
                                                     placeholder: const Text('选择操作'),
-                                                    decoration: ShadDecoration(border: ShadBorder.none),
+                                                    decoration: ShadDecoration(
+                                                      border: ShadBorder(
+                                                        merge: false,
+                                                        bottom: ShadBorderSide(
+                                                            color: shadColorScheme.foreground.withOpacity(0.2),
+                                                            width: 1),
+                                                      ),
+                                                    ),
                                                     trailing: const Text('选择操作'),
                                                     initialValue: operateList.first,
                                                     options: operateList
@@ -461,134 +486,125 @@ class HomeView extends GetView<HomeController> {
                                               ),
                                             ),
                                             CustomTextField(controller: valueController, labelText: "替换为"),
-                                            Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                              children: [
-                                                ShadButton.destructive(
-                                                  size: ShadButtonSize.sm,
-                                                  onPressed: () {
-                                                    Get.back(result: false);
-                                                  },
-                                                  child: const Text('取消'),
-                                                ),
-                                                ShadButton(
-                                                  size: ShadButtonSize.sm,
-                                                  onPressed: () async {
-                                                    Get.back(result: true);
-                                                    await bulkUpgradeHandler({
-                                                      "key": selectOptions[keyController.text]!,
-                                                      "value":
-                                                          StringUtils.parseJsonOrReturnString(valueController.text),
-                                                    });
-                                                  },
-                                                  child: const Text('确认'),
-                                                ),
-                                              ],
-                                            )
                                           ],
                                         ),
                                       ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 28.0),
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                          children: [
-                                            CustomTextTag(
-                                                labelText: "慎用，清理后数据无法恢复",
-                                                backgroundColor: shadColorScheme.destructive),
-                                            ShadButton.destructive(
-                                                size: ShadButtonSize.sm,
-                                                child: Text("精简历史数据"),
-                                                onPressed: () async {
-                                                  Get.defaultDialog(
-                                                    title: "确认吗？",
-                                                    middleText: "本操作会精简站点数据，只保留最近15天的历史数据，确认精简数据吗？",
-                                                    actions: [
-                                                      ShadButton.destructive(
-                                                        size: ShadButtonSize.sm,
-                                                        onPressed: () async {
-                                                          Get.back(result: false);
-                                                        },
-                                                        child: const Text('取消'),
-                                                      ),
-                                                      ShadButton(
-                                                        size: ShadButtonSize.sm,
-                                                        onPressed: () async {
-                                                          Get.back(result: true);
-                                                          await bulkUpgradeHandler({
-                                                            "key": "status_15",
-                                                            "value": {},
-                                                          });
-                                                        },
-                                                        child: const Text('确认'),
-                                                      ),
-                                                    ],
-                                                  );
-                                                }),
-                                            ShadButton.destructive(
-                                                size: ShadButtonSize.sm,
-                                                child: Text("清除历史数据"),
-                                                onPressed: () async {
-                                                  Get.defaultDialog(
-                                                    title: "确认吗？",
-                                                    middleText: "确认清除站点历史数据吗？",
-                                                    actions: [
-                                                      ShadButton.destructive(
-                                                        size: ShadButtonSize.sm,
-                                                        onPressed: () async {
-                                                          Get.back(result: false);
-                                                        },
-                                                        child: const Text('取消'),
-                                                      ),
-                                                      ShadButton(
-                                                        size: ShadButtonSize.sm,
-                                                        onPressed: () async {
-                                                          Get.back(result: true);
-                                                          await bulkUpgradeHandler({
-                                                            "key": "status",
-                                                            "value": {},
-                                                          });
-                                                        },
-                                                        child: const Text('确认'),
-                                                      ),
-                                                    ],
-                                                  );
-                                                }),
-                                            ShadButton.destructive(
-                                                size: ShadButtonSize.sm,
-                                                child: Text("清除签到数据"),
-                                                onPressed: () async {
-                                                  Get.defaultDialog(
-                                                    title: "确认吗？",
-                                                    middleText: "确认清除站点签到数据吗？",
-                                                    actions: [
-                                                      ShadButton.destructive(
-                                                        size: ShadButtonSize.sm,
-                                                        onPressed: () {
-                                                          Get.back(result: false);
-                                                        },
-                                                        child: const Text('取消'),
-                                                      ),
-                                                      ShadButton(
-                                                        size: ShadButtonSize.sm,
-                                                        onPressed: () async {
-                                                          Get.back(result: true);
-                                                          await bulkUpgradeHandler({
-                                                            "key": "sign_info",
-                                                            "value": {},
-                                                          });
-                                                        },
-                                                        child: const Text('确认'),
-                                                      ),
-                                                    ],
-                                                  );
-                                                }),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
+                                    ),
+                                    child: const Text('批量操作'),
                                   ),
-                                ),
+                                  ShadTab(
+                                    value: '精简数据',
+                                    content: ShadCard(
+                                      width: double.infinity,
+                                      height: 192,
+                                      description: Center(
+                                          child: Text("慎用，清理后数据无法恢复",
+                                              style: TextStyle(color: shadColorScheme.destructive))),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 28.0),
+                                        child: Center(
+                                          child: Wrap(
+                                            alignment: WrapAlignment.center,
+                                            crossAxisAlignment: WrapCrossAlignment.center,
+                                            runAlignment: WrapAlignment.center,
+                                            spacing: 8,
+                                            runSpacing: 8,
+                                            children: [
+                                              ShadButton.destructive(
+                                                  size: ShadButtonSize.sm,
+                                                  child: Text("精简历史数据"),
+                                                  onPressed: () async {
+                                                    Get.defaultDialog(
+                                                      title: "确认吗？",
+                                                      middleText: "本操作会精简站点数据，只保留最近15天的历史数据，确认精简数据吗？",
+                                                      actions: [
+                                                        ShadButton.destructive(
+                                                          size: ShadButtonSize.sm,
+                                                          onPressed: () async {
+                                                            Get.back(result: false);
+                                                          },
+                                                          child: const Text('取消'),
+                                                        ),
+                                                        ShadButton(
+                                                          size: ShadButtonSize.sm,
+                                                          onPressed: () async {
+                                                            Get.back(result: true);
+                                                            await bulkUpgradeHandler({
+                                                              "key": "status_15",
+                                                              "value": {},
+                                                            });
+                                                          },
+                                                          child: const Text('确认'),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  }),
+                                              ShadButton.destructive(
+                                                  size: ShadButtonSize.sm,
+                                                  child: Text("清除历史数据"),
+                                                  onPressed: () async {
+                                                    Get.defaultDialog(
+                                                      title: "确认吗？",
+                                                      middleText: "确认清除站点历史数据吗？",
+                                                      actions: [
+                                                        ShadButton.destructive(
+                                                          size: ShadButtonSize.sm,
+                                                          onPressed: () async {
+                                                            Get.back(result: false);
+                                                          },
+                                                          child: const Text('取消'),
+                                                        ),
+                                                        ShadButton(
+                                                          size: ShadButtonSize.sm,
+                                                          onPressed: () async {
+                                                            Get.back(result: true);
+                                                            await bulkUpgradeHandler({
+                                                              "key": "status",
+                                                              "value": {},
+                                                            });
+                                                          },
+                                                          child: const Text('确认'),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  }),
+                                              ShadButton.destructive(
+                                                  size: ShadButtonSize.sm,
+                                                  child: Text("清除签到数据"),
+                                                  onPressed: () async {
+                                                    Get.defaultDialog(
+                                                      title: "确认吗？",
+                                                      middleText: "确认清除站点签到数据吗？",
+                                                      actions: [
+                                                        ShadButton.destructive(
+                                                          size: ShadButtonSize.sm,
+                                                          onPressed: () {
+                                                            Get.back(result: false);
+                                                          },
+                                                          child: const Text('取消'),
+                                                        ),
+                                                        ShadButton(
+                                                          size: ShadButtonSize.sm,
+                                                          onPressed: () async {
+                                                            Get.back(result: true);
+                                                            await bulkUpgradeHandler({
+                                                              "key": "sign_info",
+                                                              "value": {},
+                                                            });
+                                                          },
+                                                          child: const Text('确认'),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  }),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    child: const Text('精简数据'),
+                                  ),
+                                ],
                               ),
                             ),
                           );
