@@ -46,6 +46,10 @@ class HomeView extends GetView<HomeController> {
         canPop: false,
         onPopInvokedWithResult: (didPop, _) async {
           if (didPop) return;
+          if (controller.initPage != 0) {
+            controller.changePage(0);
+            return;
+          }
           Get.defaultDialog(
             title: "退出",
             content: const Text('确定要退出收割机吗？'),
