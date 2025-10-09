@@ -2109,41 +2109,47 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
   }
 
   void _openAddTorrentDialog(DownloadController controller, Downloader downloader) async {
-    if (controller.addTorrentLoading == true) {
-      return;
-    }
-    controller.addTorrentLoading = true;
-    await controller.getDownloaderCategoryList(downloader);
-    var shadColorScheme = ShadTheme.of(context).colorScheme;
-    Get.bottomSheet(
-      backgroundColor: shadColorScheme.background,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-      enableDrag: true,
-      SizedBox(
-        height: 400,
-        child: Column(children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              '添加种子',
-              style: ShadTheme.of(context).textTheme.h4,
+    try {
+      if (controller.addTorrentLoading == true) {
+            return;
+          }
+      controller.addTorrentLoading = true;
+      await controller.getDownloaderCategoryList(downloader);
+      var shadColorScheme = ShadTheme.of(context).colorScheme;
+      Get.bottomSheet(
+            backgroundColor: shadColorScheme.background,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+            enableDrag: true,
+            SizedBox(
+              height: 400,
+              child: Column(children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    '添加种子',
+                    style: ShadTheme.of(context).textTheme.h4,
+                  ),
+                ),
+                Expanded(
+                  child: DownloadForm(
+                    categories: controller.categoryMap.values.fold({}, (map, element) {
+                      map[element!.name!] = element;
+                      return map;
+                    }),
+                    downloader: downloader,
+                    info: null,
+                  ),
+                ),
+              ]),
             ),
-          ),
-          Expanded(
-            child: DownloadForm(
-              categories: controller.categoryMap.values.fold({}, (map, element) {
-                map[element!.name!] = element;
-                return map;
-              }),
-              downloader: downloader,
-              info: null,
-            ),
-          ),
-        ]),
-      ),
-    ).whenComplete(() {
-      controller.addTorrentLoading = false;
-    });
+          ).whenComplete(() {
+            controller.addTorrentLoading = false;
+          });
+    } catch (e,trace) {
+      logger_helper.Logger.instance.e(e);
+      logger_helper.Logger.instance.e(trace);
+      Get.snackbar('出错啦！', e.toString());
+    } finally {controller.addTorrentLoading = false;}
   }
 
   void replaceTrackers({

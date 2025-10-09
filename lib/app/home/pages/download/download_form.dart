@@ -47,8 +47,9 @@ class DownloadForm extends StatelessWidget {
     upLimitController.text = website?.limitSpeed.toString() ?? '';
     urlController.text = info?.magnetUrl ?? '';
     tagsController.text = info?.tags.join(',') ?? '';
-    savePathController.text = categories.values.first?.savePath ??
-        (downloader.category.toLowerCase() == 'qb' ? downloader.prefs.savePath : downloader.prefs.downloadDir);
+    savePathController.text = categories.isNotEmpty
+        ? categories.values.first?.savePath
+        : (downloader.category.toLowerCase() == 'qb' ? downloader.prefs.savePath : downloader.prefs.downloadDir);
   }
 
   @override
@@ -65,7 +66,7 @@ class DownloadForm extends StatelessWidget {
     if (savePathController.text.isEmpty) {
       savePathController.text = prefs.savePath;
     }
-    Logger.instance.d("保存路径：${categories.values.first?.savePath}");
+    Logger.instance.d("保存路径：${savePathController.text}");
     RxBool advancedConfig = false.obs;
     RxBool paused = prefs.startPausedEnabled.obs;
     Rx<String> contentLayout = prefs.torrentContentLayout.obs;
