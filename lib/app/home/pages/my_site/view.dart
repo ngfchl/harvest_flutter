@@ -592,13 +592,13 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
               fontSize: 10,
             ),
           ),
-          trailing: IconButton(
+          trailing: ShadIconButton.ghost(
               onPressed: () async {
                 await _showEditBottomSheet(mySite: mySite);
               },
               icon: Icon(
                 Icons.edit,
-                color: shadColorScheme.foreground,
+                color: shadColorScheme.destructive,
               )),
         ),
       );
@@ -638,15 +638,17 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
       child: Slidable(
         key: ValueKey('${mySite.id}_${mySite.nickname}'),
         startActionPane: ActionPane(
-          motion: const ScrollMotion(),
-          extentRatio: 0.35,
+          motion: const DrawerMotion(),
+          extentRatio: GetPlatform.isMobile ? 1 : 0.4,
           children: [
             SlidableAction(
               icon: Icons.refresh_outlined,
               label: '更新',
               backgroundColor: Color(0xFF00796B),
               foregroundColor: Colors.white,
-              borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
+              borderRadius: !mySite.repeatTorrents && !mySite.signIn
+                  ? const BorderRadius.all(Radius.circular(8))
+                  : const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
               onPressed: (context) async {
                 siteRefreshing.value = true;
                 CommonResponse res = await getNewestStatus(mySite.id);
@@ -684,6 +686,9 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                 icon: Icons.edit_calendar_outlined,
                 label: '签到',
                 backgroundColor: Color(0xFF1565C0),
+                borderRadius: mySite.repeatTorrents
+                    ? BorderRadius.zero
+                    : BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
                 foregroundColor: Colors.white,
                 onPressed: (context) async {
                   siteRefreshing.value = true;
@@ -715,6 +720,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                 flex: 1,
                 backgroundColor: Color(0xFF00838F),
                 foregroundColor: Colors.white,
+                borderRadius: BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
                 onPressed: (context) async {
                   CommonResponse res = await repeatSite(mySite.id);
 
@@ -731,12 +737,13 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
           ],
         ),
         endActionPane: ActionPane(
-          motion: const ScrollMotion(),
-          extentRatio: 0.35,
+          motion: const DrawerMotion(),
+          extentRatio: GetPlatform.isMobile ? 1 : 0.4,
           children: [
             if (website.signIn == true && mySite.signIn)
               SlidableAction(
                 flex: 1,
+                borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
                 onPressed: (context) async {
                   _showSignHistory(mySite);
                 },
@@ -747,6 +754,9 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
               ),
             SlidableAction(
               flex: 1,
+              borderRadius: mySite.signIn
+                  ? BorderRadius.zero
+                  : const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
               onPressed: (context) async {
                 _showStatusHistory(mySite);
               },
