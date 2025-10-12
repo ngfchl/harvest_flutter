@@ -40,6 +40,19 @@ class FileManageController extends GetxController {
     return await editSourceApi(path, newName);
   }
 
+  Future<bool> onBackPressed() async {
+    if (currentPath != '/downloads') {
+      isLoading = true;
+      update(['file_manage']);
+      var pathList = currentPath.split('/');
+      pathList.removeLast();
+      currentPath = pathList.join("/");
+      await initSourceData();
+      return true; // 已处理
+    }
+    return false; // 未处理
+  }
+
   @override
   void onReady() {
     // TODO: implement onReady

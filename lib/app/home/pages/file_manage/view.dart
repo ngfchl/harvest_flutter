@@ -8,6 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:harvest/common/card_view.dart';
@@ -55,8 +56,8 @@ class FileManagePage extends StatelessWidget {
                   },
                   icon: Icon(
                     Icons.home_outlined,
-                    color: shadColorScheme.foreground,
-                    size: 16,
+                    color: shadColorScheme.primary,
+                    size: 24,
                   ),
                 ),
                 ShadIconButton.ghost(
@@ -67,26 +68,16 @@ class FileManagePage extends StatelessWidget {
                   },
                   icon: Icon(
                     Icons.refresh,
-                    color: shadColorScheme.foreground,
-                    size: 16,
+                    color: shadColorScheme.primary,
+                    size: 24,
                   ),
                 ),
                 ShadIconButton.ghost(
-                  onPressed: () async {
-                    if (controller.currentPath == '/downloads') {
-                      return;
-                    }
-                    controller.isLoading = true;
-                    controller.update(['file_manage']);
-                    var pathList = controller.currentPath.split('/');
-                    pathList.removeLast();
-                    controller.currentPath = pathList.join("/");
-                    await controller.initSourceData();
-                  },
+                  onPressed: () => controller.onBackPressed(),
                   icon: Icon(
                     Icons.arrow_back_outlined,
-                    color: shadColorScheme.foreground,
-                    size: 16,
+                    color: shadColorScheme.primary,
+                    size: 24,
                   ),
                 ),
               ],
@@ -105,18 +96,26 @@ class FileManagePage extends StatelessWidget {
                     padding: EdgeInsets.symmetric(horizontal: 8),
                     width: double.infinity,
                     child: Wrap(
-                      alignment: WrapAlignment.center,
+                      alignment: WrapAlignment.start,
                       crossAxisAlignment: WrapCrossAlignment.center,
-                      spacing: 2,
+                      spacing: 1,
                       children: [
                         for (int i = 0; i < pathList.length; i++) ...[
                           if (pathList[i].isNotEmpty)
                             ShadButton.ghost(
                               size: ShadButtonSize.sm,
-                              padding: EdgeInsets.symmetric(horizontal: 3),
-                              child: Text(
-                                "/${pathList[i]}",
-                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                              padding: EdgeInsets.symmetric(horizontal: 1),
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(maxWidth: 120),
+                                child: EllipsisText(
+                                  text: "/${pathList[i]}",
+                                  ellipsis: '...',
+                                  maxLines: 1,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: shadColorScheme.foreground,
+                                  ),
+                                ),
                               ),
                               onPressed: () async {
                                 // 点击返回到某层的逻辑
@@ -267,9 +266,12 @@ class FileManagePage extends StatelessWidget {
                                         ],
                                       ),
                                       child: ListTile(
-                                        title: Text(
-                                          item.name,
+                                        title: EllipsisText(
+                                          text: item.name,
+                                          ellipsis: '...',
+                                          maxLines: 2,
                                           style: TextStyle(
+                                            fontSize: 12,
                                             color: shadColorScheme.foreground,
                                           ),
                                         ),
@@ -279,7 +281,7 @@ class FileManagePage extends StatelessWidget {
                                             Text(
                                               item.modified,
                                               style: TextStyle(
-                                                fontSize: 12,
+                                                fontSize: 11,
                                                 color: shadColorScheme.foreground,
                                               ),
                                             ),
@@ -596,7 +598,7 @@ class FileManagePage extends StatelessWidget {
               // 加载中显示占位
               return SizedBox(
                 width: 32,
-                height: 48,
+                height: 32,
                 child: Center(
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
@@ -606,16 +608,16 @@ class FileManagePage extends StatelessWidget {
               );
             } else if (snapshot.hasError || snapshot.data!.isEmpty) {
               // 获取失败显示文件图标
-              return Icon(Icons.insert_drive_file, color: shadColorScheme.foreground, size: 16);
+              return Icon(Icons.insert_drive_file, color: shadColorScheme.foreground, size: 32);
             } else {
               // 成功获取 URL 显示图片
               return CachedNetworkImage(
                 imageUrl: snapshot.data!,
-                height: double.infinity,
-                fit: BoxFit.fitWidth,
+                fit: BoxFit.fitHeight,
+                width: 80,
                 progressIndicatorBuilder: (context, url, progress) => SizedBox(
-                  width: 24,
-                  height: 24,
+                  width: 32,
+                  height: 32,
                   child: CircularProgressIndicator(
                     value: progress.progress,
                     strokeWidth: 2,
@@ -626,7 +628,7 @@ class FileManagePage extends StatelessWidget {
                 errorWidget: (context, url, error) => Icon(
                   Icons.insert_drive_file,
                   color: shadColorScheme.foreground,
-                  size: 16,
+                  size: 32,
                 ),
               );
             }
@@ -671,17 +673,16 @@ class FileManagePage extends StatelessWidget {
                 return Icon(
                   Icons.folder,
                   color: shadColorScheme.foreground,
-                  size: 16,
+                  size: 32,
                 );
               } else {
                 // 成功获取 URL，显示图片
                 return CachedNetworkImage(
                   imageUrl: snapshot.data!,
-                  height: double.infinity,
-                  fit: BoxFit.fitWidth,
+                  fit: BoxFit.cover,
                   progressIndicatorBuilder: (context, url, progress) => SizedBox(
-                    width: 24,
-                    height: 24,
+                    width: 32,
+                    height: 32,
                     child: CircularProgressIndicator(
                       value: progress.progress,
                       strokeWidth: 2,
@@ -692,7 +693,7 @@ class FileManagePage extends StatelessWidget {
                   errorWidget: (context, url, error) => Icon(
                     Icons.folder,
                     color: shadColorScheme.foreground,
-                    size: 16,
+                    size: 32,
                   ),
                 );
               }
@@ -704,7 +705,7 @@ class FileManagePage extends StatelessWidget {
         return Icon(
           Icons.folder,
           color: Colors.deepOrangeAccent,
-          size: 16,
+          size: 32,
         );
       }
     } else {
