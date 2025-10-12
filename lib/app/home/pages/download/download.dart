@@ -109,14 +109,14 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
           ShadIconButton.ghost(
             icon: Icon(
               controller.isLoading ? Icons.pause_outlined : Icons.play_arrow_outlined,
-              size: 20,
+              size: 24,
             ),
             onPressed: () => controller.toggleFetchStatus(),
           ),
           ShadIconButton.ghost(
               icon: Icon(
                 Icons.settings_outlined,
-                size: 20,
+                size: 24,
               ),
               onPressed: () {
                 Get.bottomSheet(
@@ -318,7 +318,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
           ShadIconButton.ghost(
             icon: Icon(
               Icons.add_outlined,
-              size: 20,
+              size: 24,
             ),
             onPressed: () async {
               _showEditBottomSheet();
@@ -2111,45 +2111,47 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
   void _openAddTorrentDialog(DownloadController controller, Downloader downloader) async {
     try {
       if (controller.addTorrentLoading == true) {
-            return;
-          }
+        return;
+      }
       controller.addTorrentLoading = true;
       await controller.getDownloaderCategoryList(downloader);
       var shadColorScheme = ShadTheme.of(context).colorScheme;
       Get.bottomSheet(
-            backgroundColor: shadColorScheme.background,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-            enableDrag: true,
-            SizedBox(
-              height: 400,
-              child: Column(children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    '添加种子',
-                    style: ShadTheme.of(context).textTheme.h4,
-                  ),
-                ),
-                Expanded(
-                  child: DownloadForm(
-                    categories: controller.categoryMap.values.fold({}, (map, element) {
-                      map[element!.name!] = element;
-                      return map;
-                    }),
-                    downloader: downloader,
-                    info: null,
-                  ),
-                ),
-              ]),
+        backgroundColor: shadColorScheme.background,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+        enableDrag: true,
+        SizedBox(
+          height: 400,
+          child: Column(children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                '添加种子',
+                style: ShadTheme.of(context).textTheme.h4,
+              ),
             ),
-          ).whenComplete(() {
-            controller.addTorrentLoading = false;
-          });
-    } catch (e,trace) {
+            Expanded(
+              child: DownloadForm(
+                categories: controller.categoryMap.values.fold({}, (map, element) {
+                  map[element!.name!] = element;
+                  return map;
+                }),
+                downloader: downloader,
+                info: null,
+              ),
+            ),
+          ]),
+        ),
+      ).whenComplete(() {
+        controller.addTorrentLoading = false;
+      });
+    } catch (e, trace) {
       logger_helper.Logger.instance.e(e);
       logger_helper.Logger.instance.e(trace);
       Get.snackbar('出错啦！', e.toString());
-    } finally {controller.addTorrentLoading = false;}
+    } finally {
+      controller.addTorrentLoading = false;
+    }
   }
 
   void replaceTrackers({
@@ -5412,7 +5414,11 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                 }
                 Get.back();
               },
-              icon: Icon(Icons.save_outlined),
+              icon: Icon(
+                Icons.save_outlined,
+                size: 24,
+                color: shadColorScheme.primary,
+              ),
             ),
           ),
         );
@@ -5974,7 +5980,11 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                   }
                   Get.back();
                 },
-                icon: const Icon(Icons.save_outlined),
+                icon: Icon(
+                  Icons.save_outlined,
+                  size: 24,
+                  color: shadColorScheme.primary,
+                ),
               ),
             ),
           );

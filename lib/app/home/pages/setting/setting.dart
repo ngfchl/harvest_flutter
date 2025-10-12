@@ -68,12 +68,20 @@ class SettingPage extends StatelessWidget {
                 onPressed: () {
                   controller.getOptionList();
                 },
-                icon: Icon(Icons.refresh_outlined, size: 28)),
+                icon: Icon(
+                  Icons.refresh_outlined,
+                  size: 24,
+                  color: shadColorScheme.primary,
+                )),
             ShadIconButton.ghost(
               onPressed: () {
                 _openAddOptionForm(context);
               },
-              icon: Icon(Icons.add_outlined, size: 28),
+              icon: Icon(
+                Icons.add_outlined,
+                size: 24,
+                color: shadColorScheme.primary,
+              ),
             ),
           ],
         ),

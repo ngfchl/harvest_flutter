@@ -34,7 +34,8 @@ class _SubscribePageState extends State<SubscribePage> {
         floatingActionButton: ShadIconButton.ghost(
           icon: Icon(
             Icons.add,
-            size: 28,
+            size: 24,
+            color: shadColorScheme.primary,
           ),
           onPressed: () async {
             // await _openEditDialog(null);

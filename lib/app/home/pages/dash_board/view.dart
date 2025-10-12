@@ -89,12 +89,13 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
         ShadMenubar(
           border: ShadBorder.none,
           selectOnHover: false,
+          padding: EdgeInsets.symmetric(vertical: 15),
           items: [
             ShadMenubarItem(
               items: [
                 ...cacheList.map(
                   (item) => ShadContextMenuItem(
-                    height: 30,
+                    height: 36,
                     child: Text(
                       item.name,
                       style: TextStyle(
@@ -118,81 +119,27 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
             ),
           ],
         ),
-        ShadMenubar(
-          border: ShadBorder.none,
-          selectOnHover: false,
-          items: [
-            ShadMenubarItem(
-              items: [
-                ShadContextMenuItem(
-                  height: 30,
-                  onPressed: () async {
-                    Get.back();
-                    await getAllStatusButton();
-                  },
-                  child: Text(
-                    '更新',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: shadColorScheme.primary,
-                    ),
-                  ),
-                ),
-                ShadContextMenuItem(
-                  height: 30,
-                  onPressed: () async {
-                    Get.back();
-                    await signAllSiteButton();
-                  },
-                  child: Text(
-                    '签到',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: shadColorScheme.primary,
-                    ),
-                  ),
-                ),
-                // if (!kIsWeb)
-                ShadContextMenuItem(
-                  height: 30,
-                  onPressed: () async {
-                    Get.back();
-                    await ScreenshotSaver.captureAndSave(_captureKey);
-                  },
-                  child: Text(
-                    '截图',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: shadColorScheme.primary,
-                    ),
-                  ),
-                ),
-                ShadContextMenuItem(
-                  height: 30,
-                  onPressed: () async {
-                    Get.back();
-                    controller.isLoading = true;
-                    controller.update();
-                    await controller.initChartData();
-                    controller.isLoading = false;
-                    controller.update();
-                  },
-                  child: Text(
-                    '加载',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: shadColorScheme.primary,
-                    ),
-                  ),
-                ),
-              ],
-              child: Icon(
-                Icons.settings_outlined,
-                color: shadColorScheme.primary,
-                size: 24,
-              ),
-            ),
-          ],
+        ShadIconButton.ghost(
+          onPressed: () => ScreenshotSaver.captureAndSave(_captureKey),
+          icon: Icon(
+            Icons.camera_outlined,
+            color: shadColorScheme.primary,
+            size: 24,
+          ),
+        ),
+        ShadIconButton.ghost(
+          onPressed: () async {
+            controller.isLoading = true;
+            controller.update();
+            await controller.initChartData();
+            controller.isLoading = false;
+            controller.update();
+          },
+          icon: Icon(
+            Icons.refresh_outlined,
+            color: shadColorScheme.primary,
+            size: 24,
+          ),
         ),
       ],
     );

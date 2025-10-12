@@ -25,6 +25,7 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
 
   @override
   Widget build(BuildContext context) {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     return GetBuilder<SubscribeTagController>(builder: (controller) {
       return Scaffold(
         backgroundColor: Colors.transparent,
@@ -50,12 +51,14 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                 },
                 icon: Icon(
                   Icons.save_alt_outlined,
-                  size: 28,
+                  size: 24,
+                  color: shadColorScheme.primary,
                 )),
             ShadIconButton.ghost(
               icon: Icon(
                 Icons.add,
-                size: 28,
+                size: 24,
+                color: shadColorScheme.primary,
               ),
               onPressed: () {
                 _openEditDialog(null);

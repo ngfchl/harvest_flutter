@@ -45,7 +45,7 @@ class TaskPage extends StatelessWidget {
               Scaffold(
                 backgroundColor: Colors.transparent,
                 floatingActionButton: ShadIconButton.ghost(
-                  icon: Icon(Icons.add, size: 28),
+                  icon: Icon(Icons.add, size: 24, color: shadColorScheme.primary),
                   onPressed: () {
                     editTask(null, context);
                   },
@@ -372,11 +372,9 @@ class TaskPage extends StatelessWidget {
                 CommonResponse res = await controller.changeScheduleState(item);
                 String title = item.enabled == true ? '任务启用通知' : '任务禁用通知';
                 if (res.code == 0) {
-                  Get.snackbar(title, res.msg.toString(),
-                      snackStyle: SnackStyle.FLOATING, colorText: shadColorScheme.foreground);
+                  Get.snackbar(title, res.msg.toString(), colorText: shadColorScheme.foreground);
                 } else {
-                  Get.snackbar(title, res.msg.toString(),
-                      snackStyle: SnackStyle.FLOATING, colorText: shadColorScheme.destructive);
+                  Get.snackbar(title, res.msg.toString(), colorText: shadColorScheme.destructive);
                 }
                 controller.update();
               },

@@ -22,12 +22,15 @@ class _SubscribeHistoryPageState extends State<SubscribeHistoryPage> {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<SubscribeHistoryController>(builder: (controller) {
+      var shadColorScheme = ShadTheme.of(context).colorScheme;
       return Scaffold(
         backgroundColor: Colors.transparent,
         floatingActionButton: ShadIconButton.ghost(
             onPressed: () => controller.getSubHistoryFromServer(),
-            icon: const Icon(
+            icon: Icon(
               Icons.refresh,
+              size: 24,
+              color: shadColorScheme.primary,
             )),
         body: GetBuilder<SubscribeHistoryController>(builder: (controller) {
           return Column(

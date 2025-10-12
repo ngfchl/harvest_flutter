@@ -37,8 +37,6 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
         length: tabs.length,
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-          // floatingActionButton: _buildBottomButtonBar(),
           bottomNavigationBar: CustomCard(
               padding: EdgeInsets.zero,
               child: TabBar(

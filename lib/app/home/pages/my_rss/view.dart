@@ -31,7 +31,7 @@ class _MyRssPageState extends State<MyRssPage> {
         floatingActionButton: ShadIconButton.ghost(
           icon: Icon(
             Icons.add,
-            size: 28,
+            size: 24,
           ),
           onPressed: () {
             _openEditDialog(null);

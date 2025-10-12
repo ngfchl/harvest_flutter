@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
+import 'package:harvest/app/home/pages/file_manage/controller.dart';
+import 'package:harvest/app/home/pages/file_manage/view.dart';
 import 'package:harvest/app/home/pages/web_socket_logging/view.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/form_widgets.dart';
@@ -46,6 +48,13 @@ class HomeView extends GetView<HomeController> {
         canPop: false,
         onPopInvokedWithResult: (didPop, _) async {
           if (didPop) return;
+
+          if (Get.isRegistered<FileManageController>() && controller.pages[controller.initPage] is FileManagePage) {
+            final fileController = Get.find<FileManageController>();
+            final handled = await fileController.onBackPressed();
+            if (handled) return; // ✅ 子页面已处理
+          }
+
           if (controller.initPage != 0) {
             controller.changePage(0);
             return;
@@ -177,7 +186,7 @@ class HomeView extends GetView<HomeController> {
                         ),
                       )
                     : null,
-                drawerEdgeDragWidth: 100,
+                drawerEdgeDragWidth: 75,
               ),
             ],
           ),

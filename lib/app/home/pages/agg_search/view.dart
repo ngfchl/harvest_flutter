@@ -455,8 +455,8 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
           },
           icon: Icon(
             Icons.remove_circle_outline,
-            size: 20,
-            color: shadColorScheme.foreground,
+            size: 24,
+            color: shadColorScheme.primary,
           ),
         ),
         CustomPopup(
@@ -490,8 +490,8 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
           ),
           child: Icon(
             Icons.sort_by_alpha_outlined,
-            size: 20,
-            color: shadColorScheme.foreground,
+            size: 24,
+            color: shadColorScheme.primary,
           ),
         ),
         CustomPopup(
@@ -724,8 +724,8 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
           ),
           child: Icon(
             Icons.filter_tilt_shift,
-            size: 20,
-            color: shadColorScheme.foreground,
+            size: 24,
+            color: shadColorScheme.primary,
           ),
         ),
       ],

@@ -26,10 +26,7 @@ class UserWidget extends StatelessWidget {
       backgroundColor: Colors.transparent,
       floatingActionButton: (controller.userinfo?.isStaff == true || controller.userinfo?.isStaff == true)
           ? ShadIconButton.ghost(
-              icon: Icon(
-                Icons.add,
-                size: 28,
-              ),
+              icon: Icon(Icons.add, size: 24, color: shadColorScheme.primary),
               onPressed: () async {
                 _showEditBottomSheet(context: context);
               },
