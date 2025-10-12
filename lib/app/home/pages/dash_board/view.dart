@@ -1283,7 +1283,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                     (item) => Container(
                       padding: const EdgeInsets.only(top: 6, bottom: 6),
                       child: Text(
-                        '${maskString(item.name)}【${item.value}】',
+                        '${controller.privateMode ? maskString(item.name) : item.name}【${item.value}】',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
@@ -1368,7 +1368,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                     (item) => Padding(
                       padding: const EdgeInsets.only(top: 6),
                       child: Text(
-                        '${maskString(item.name)}【${item.value}】',
+                        '${controller.privateMode ? maskString(item.name) : item.name}【${item.value}】',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
