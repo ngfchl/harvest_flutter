@@ -267,6 +267,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                           children: [
                             if (controller.searchMsg.isNotEmpty)
                               CustomCard(
+                                padding: EdgeInsets.symmetric(horizontal: 8),
                                 child: Obx(() {
                                   return Column(
                                     children: [
@@ -701,6 +702,22 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                             controller.filterResults();
                             controller.update();
                           }),
+                    FilterItem(
+                        name: '第N季',
+                        value: List.generate(20, (i) => 'S${(i + 1).toString().padLeft(2, '0')}'),
+                        selected: controller.selectedSeason,
+                        onUpdate: () {
+                          controller.filterResults();
+                          controller.update();
+                        }),
+                    FilterItem(
+                        name: '第N集',
+                        value: List.generate(20, (i) => 'E${(i + 1).toString().padLeft(2, '0')}'),
+                        selected: controller.selectedEpisode,
+                        onUpdate: () {
+                          controller.filterResults();
+                          controller.update();
+                        }),
                     if (controller.hrResultList.isNotEmpty)
                       CustomCard(
                         child: SwitchListTile(

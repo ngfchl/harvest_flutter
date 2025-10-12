@@ -53,6 +53,8 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
   List<String> selectedSiteList = <String>[];
   List<String> selectedTags = <String>[];
   List<String> selectedResolution = <String>[];
+  List<String> selectedSeason = <String>[];
+  List<String> selectedEpisode = <String>[];
   List<SearchTorrentInfo> hrResultList = <SearchTorrentInfo>[];
   int calcSize = 1024 * 1024 * 1024;
   double maxSize = 100 * 1024 * 1024 * 1024;
@@ -273,38 +275,42 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
 
   void filterResults() {
     // 过滤结果
-    List<SearchTorrentInfo> filteredResults = List.from(searchResults);
+    final filteredResults = searchResults.where((element) {
+      final title = element.title.toLowerCase();
+      final subtitle = element.subtitle.toLowerCase();
 
-    if (hrKey) {
-      filteredResults.removeWhere((element) => !element.hr);
-    }
+      // HR 过滤
+      if (hrKey && !element.hr) return false;
 
-    if (selectedSiteList.isNotEmpty) {
-      filteredResults.retainWhere((element) => selectedSiteList.contains(element.siteId));
-    }
-    if (selectedResolution.isNotEmpty) {
-      filteredResults.retainWhere((element) => selectedResolution.any(
-            (item) =>
-                element.title.toLowerCase().contains(item.toLowerCase()) ||
-                element.subtitle.toLowerCase().contains(item.toLowerCase()),
-          ));
-    }
-    if (selectedCategories.isNotEmpty) {
-      filteredResults.retainWhere((element) => selectedCategories.contains(element.category));
-    }
-    if (selectedTags.isNotEmpty) {
-      filteredResults.retainWhere((element) => selectedTags.any(
-            (item) => element.tags.contains(item),
-          ));
-    }
-    if (selectedSaleStatusList.isNotEmpty) {
-      filteredResults.retainWhere((element) => selectedSaleStatusList.contains(element.saleStatus));
-    }
-    logger_helper.Logger.instance.d(filteredResults.length);
-    // logger_helper.Logger.instance
-    //     .d(filteredResults.map((item) => item.size).toList());
+      // 站点
+      if (selectedSiteList.isNotEmpty && !selectedSiteList.contains(element.siteId)) return false;
 
-    filteredResults.retainWhere((element) => element.size >= minSize && element.size <= maxSize);
+      // 分辨率
+      if (selectedResolution.isNotEmpty &&
+          !selectedResolution.any((r) => title.contains(r.toLowerCase()) || subtitle.contains(r.toLowerCase()))) {
+        return false;
+      }
+
+      // 分类
+      if (selectedCategories.isNotEmpty && !selectedCategories.contains(element.category)) return false;
+
+      // 标签
+      if (selectedTags.isNotEmpty && !selectedTags.any((tag) => element.tags.contains(tag))) return false;
+
+      // 季
+      if (selectedSeason.isNotEmpty && !selectedSeason.any((s) => title.contains(s.toLowerCase()))) return false;
+
+      // 集
+      if (selectedEpisode.isNotEmpty && !selectedEpisode.any((e) => title.contains(e.toLowerCase()))) return false;
+
+      // 销售状态
+      if (selectedSaleStatusList.isNotEmpty && !selectedSaleStatusList.contains(element.saleStatus)) return false;
+
+      // 大小范围
+      if (element.size < minSize || element.size > maxSize) return false;
+
+      return true;
+    }).toList();
     logger_helper.Logger.instance.d(filteredResults.length);
 
     showResults = filteredResults;
