@@ -476,11 +476,8 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                         if (controller.sortKey == item.value) {
                           controller.sortReversed = !controller.sortReversed;
                         }
-
                         controller.sortKey = item.value;
                         controller.sortResults();
-
-                        Navigator.of(context).pop();
                       },
                       child: Text(item.name, style: TextStyle(fontSize: 12, color: shadColorScheme.foreground)),
                     ),
