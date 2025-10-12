@@ -579,7 +579,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
           children: [
             SlidableAction(
               flex: 1,
-              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
               onPressed: (context) async {
                 CommonResponse res = await controller.reseedDownloader(downloader.id!);
                 if (res.code == 0) {
@@ -595,7 +595,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
             ),
             SlidableAction(
               flex: 1,
-              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              borderRadius: const BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
               onPressed: (context) async {
                 _showEditBottomSheet(downloader: downloader);
               },
@@ -998,6 +998,24 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
   }
 
   Future<void> _showEditBottomSheet({Downloader? downloader}) async {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
+    final response = await controller.getTorrentsPathList();
+    if (response.succeed) {
+      controller.pathList = [
+        for (final item in response.data)
+          if (item['path'] is String) item['path'].toString()
+      ];
+      controller.update();
+    } else {
+      Get.snackbar(
+        '获取种子文件夹出错啦！',
+        response.msg,
+        snackPosition: SnackPosition.TOP,
+        colorText: shadColorScheme.destructive,
+        duration: const Duration(seconds: 3),
+      );
+    }
+
     final nameController = TextEditingController(text: downloader?.name ?? 'QBittorrent');
     final categoryController = TextEditingController(text: downloader?.category ?? 'Qb');
     final usernameController = TextEditingController(text: downloader?.username ?? 'admin');
@@ -1012,23 +1030,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
 
     RxBool isActive = downloader != null ? downloader.isActive.obs : true.obs;
     RxBool brush = downloader != null ? downloader.brush.obs : false.obs;
-    final response = await controller.getTorrentsPathList();
-    var shadColorScheme = ShadTheme.of(context).colorScheme;
-    if (response.code == 0) {
-      controller.pathList = [
-        for (final item in response.data)
-          if (item['path'] is String) item['path'].toString()
-      ];
-      controller.update();
-    } else {
-      Get.snackbar(
-        '获取种子文件夹出错啦！',
-        response.msg!,
-        snackPosition: SnackPosition.TOP,
-        colorText: shadColorScheme.destructive,
-        duration: const Duration(seconds: 3),
-      );
-    }
+
     Get.bottomSheet(
       backgroundColor: shadColorScheme.background,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
@@ -1129,7 +1131,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                           child: ShadSelect<String>(
                               placeholder: Text('种子路径', style: TextStyle(color: shadColorScheme.foreground)),
                               trailing: Text('种子路径', style: TextStyle(color: shadColorScheme.foreground)),
-                              initialValue: controller.pathList.first,
+                              initialValue: torrentPathController.text,
                               decoration: ShadDecoration(
                                 border: ShadBorder(
                                   merge: false,
