@@ -25,7 +25,7 @@ jobs:
           flutter pub upgrade
 
       - name: Build web
-        run: flutter build web
+        run: flutter build web  --release --no-tree-shake-icons
 
       - name: Deploy to web branch
         uses: peaceiris/actions-gh-pages@v3

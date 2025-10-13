@@ -319,7 +319,7 @@ class HomeView extends GetView<HomeController> {
           const WebSocketLoggingWidget(),
           const SizedBox(width: 15),
           ThemeIconButton(
-            icon: Icon(LucideIcons.palette, size: 20, color: shadColorScheme.foreground),
+            icon: Icon(Icons.palette_outlined, size: 20, color: shadColorScheme.foreground),
           ),
           const SizedBox(width: 15),
           if (controller.userinfo?.isStaff == true) ...[

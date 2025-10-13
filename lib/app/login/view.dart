@@ -346,7 +346,7 @@ class _LoginPageState extends State<LoginPage> {
                                             controller.isLoading = false;
                                             controller.update();
                                           },
-                                    leading: const Icon(LucideIcons.link),
+                                    leading: const Icon(Icons.link_outlined),
                                     child: const Text('连接服务器'),
                                   ),
                           ),

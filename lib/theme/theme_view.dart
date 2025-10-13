@@ -378,7 +378,7 @@ class ThemeTag extends StatelessWidget {
           ),
           leading: ThemeIconButton(
             // Pass an icon as a parameter
-            icon: Icon(LucideIcons.palette, size: 20, color: shadColorScheme.foreground),
+            icon: Icon(Icons.palette_outlined, size: 20, color: shadColorScheme.foreground),
           ),
           trailing: ShadSwitch(
             value: controller.followSystem.value,
