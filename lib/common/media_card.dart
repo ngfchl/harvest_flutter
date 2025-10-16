@@ -14,9 +14,11 @@ class MediaItemCard extends StatelessWidget {
   final MediaItem media;
   final void Function(MediaItem media) onDetail;
   final Future<void> Function(MediaItem media) onSearch;
+  final void Function()? onTap;
 
   const MediaItemCard({
     super.key,
+    this.onTap,
     required this.media,
     required this.onDetail,
     required this.onSearch,
@@ -177,7 +179,7 @@ class MediaItemCard extends StatelessWidget {
                               ),
                       ],
                     ),
-                    onTap: () async => onDetail(media),
+                    onTap: onTap != null ? () async => onTap!() : null,
                     onLongPress: () async => await onSearch(media),
                   ),
                   Container(
