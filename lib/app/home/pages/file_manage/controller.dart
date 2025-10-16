@@ -1,7 +1,9 @@
 import 'package:get/get.dart';
+import 'package:harvest/app/home/pages/agg_search/models.dart';
 import 'package:harvest/models/common_response.dart';
 
 import '../../../../api/source.dart';
+import '../../../../api/tmdb.dart';
 import '../../../../utils/logger_helper.dart';
 import '../models/source.dart';
 
@@ -63,5 +65,9 @@ class FileManageController extends GetxController {
   void onClose() {
     // TODO: implement onClose
     super.onClose();
+  }
+
+  Future<CommonResponse> writeScrapeInfoApi(String path, MediaItem mediaItem) async {
+    return await saveTMDBMatchApi(path, mediaItem.toJson());
   }
 }

@@ -315,106 +315,186 @@ class FileManagePage extends StatelessWidget {
                                                 //                     size: 16,),
                                                 //   label: Text("打开目录"),
                                                 // ),
-                                                ShadButton.ghost(
-                                                  onPressed: () async {
-                                                    Get.back();
-                                                    controller.isLoading = true;
-                                                    controller.update(['file_manage']);
-                                                    var response = await getTMDBMatchMovieApi(item.name);
-                                                    controller.isLoading = false;
-                                                    controller.update(['file_manage']);
-                                                    if (!response.succeed) {
-                                                      Get.snackbar(
-                                                        "出错啦！",
-                                                        response.msg,
-                                                        colorText: shadColorScheme.foreground,
-                                                        backgroundColor: shadColorScheme.background,
-                                                      );
-                                                      return;
-                                                    }
-                                                    if (response.data != null && response.data!.isEmpty) {
-                                                      Get.snackbar(
-                                                        "出错啦！",
-                                                        "未查询到相关影视信息",
-                                                        colorText: shadColorScheme.foreground,
-                                                        backgroundColor: shadColorScheme.background,
-                                                      );
-                                                      return;
-                                                    }
-                                                    Logger.instance.d(response.data);
-                                                    Get.defaultDialog(
+                                                if (item.isDir)
+                                                  ShadButton.ghost(
+                                                    onPressed: () async {
+                                                      Get.back();
+                                                      controller.isLoading = true;
+                                                      controller.update(['file_manage']);
+                                                      var response = await getTMDBMatchMovieApi(item.name);
+                                                      controller.isLoading = false;
+                                                      controller.update(['file_manage']);
+                                                      if (!response.succeed) {
+                                                        Get.snackbar(
+                                                          "出错啦！",
+                                                          response.msg,
+                                                          colorText: shadColorScheme.foreground,
+                                                          backgroundColor: shadColorScheme.background,
+                                                        );
+                                                        return;
+                                                      }
+                                                      if (response.data != null && response.data!.isEmpty) {
+                                                        Get.snackbar(
+                                                          "出错啦！",
+                                                          "未查询到相关影视信息",
+                                                          colorText: shadColorScheme.foreground,
+                                                          backgroundColor: shadColorScheme.background,
+                                                        );
+                                                        return;
+                                                      }
+                                                      Logger.instance.d(response.data);
+                                                      Get.defaultDialog(
                                                         title: '影视信息查询结果',
                                                         titleStyle: TextStyle(color: shadColorScheme.foreground),
                                                         backgroundColor: shadColorScheme.background,
                                                         content: SizedBox(
-                                                            height: 500,
-                                                            width: double.maxFinite,
-                                                            child: ListView.builder(
-                                                                shrinkWrap: true, // 👈 关键，避免无限高度
-                                                                itemCount:
-                                                                    response.data is List ? response.data!.length : 0,
-                                                                itemBuilder: (context, index) {
-                                                                  MediaItem item =
-                                                                      MediaItem.fromJson(response.data![index]);
-                                                                  return MediaItemCard(
-                                                                    media: item,
-                                                                    onDetail: (item) {},
-                                                                    onSearch: (item) async {},
-                                                                  );
-                                                                })));
-                                                  },
-                                                  leading: Icon(
-                                                    Icons.movie_filter_outlined,
-                                                    color: shadColorScheme.foreground,
-                                                    size: 16,
+                                                          height: 500,
+                                                          width: double.maxFinite,
+                                                          child: ListView.builder(
+                                                              shrinkWrap: true, // 👈 关键，避免无限高度
+                                                              itemCount:
+                                                                  response.data is List ? response.data!.length : 0,
+                                                              itemBuilder: (context, index) {
+                                                                MediaItem media =
+                                                                    MediaItem.fromJson(response.data![index]);
+                                                                return MediaItemCard(
+                                                                  media: media,
+                                                                  onDetail: (media) {},
+                                                                  onSearch: (media) async {},
+                                                                  onTap: () {
+                                                                    Get.defaultDialog(
+                                                                      backgroundColor: shadColorScheme.background,
+                                                                      radius: 10,
+                                                                      title: "写入刮削信息中...",
+                                                                      titleStyle: TextStyle(
+                                                                          fontSize: 16,
+                                                                          color: shadColorScheme.foreground),
+                                                                      content: Text("是否确认写入刮削信息？"),
+                                                                      confirm: ShadButton(
+                                                                        size: ShadButtonSize.sm,
+                                                                        child: Text("确定"),
+                                                                        onPressed: () async {
+                                                                          Get.back();
+                                                                          var response = await controller
+                                                                              .writeScrapeInfoApi(item.path, media);
+                                                                          if (!response.succeed) {
+                                                                            Get.snackbar(
+                                                                              "出错啦！",
+                                                                              response.msg,
+                                                                              colorText: shadColorScheme.foreground,
+                                                                              backgroundColor:
+                                                                                  shadColorScheme.background,
+                                                                            );
+                                                                          } else {
+                                                                            Get.snackbar(
+                                                                              "成功！",
+                                                                              response.msg,
+                                                                              colorText: shadColorScheme.foreground,
+                                                                              backgroundColor:
+                                                                                  shadColorScheme.background,
+                                                                            );
+                                                                          }
+                                                                        },
+                                                                      ),
+                                                                      cancel: ShadButton.destructive(
+                                                                        size: ShadButtonSize.sm,
+                                                                        child: Text("取消"),
+                                                                        onPressed: () {
+                                                                          Get.back();
+                                                                        },
+                                                                      ),
+                                                                    );
+                                                                  },
+                                                                );
+                                                              }),
+                                                        ),
+                                                      );
+                                                    },
+                                                    leading: Icon(
+                                                      Icons.movie_filter_outlined,
+                                                      color: shadColorScheme.foreground,
+                                                      size: 16,
+                                                    ),
+                                                    child: Text("电影刮削"),
                                                   ),
-                                                  child: Text("电影刮削"),
-                                                ),
-                                                ShadButton.ghost(
-                                                  onPressed: () async {
-                                                    Get.back();
-                                                    controller.isLoading = true;
-                                                    controller.update(['file_manage']);
-                                                    var response = await getTMDBMatchTvApi(item.name);
-                                                    controller.isLoading = false;
-                                                    controller.update(['file_manage']);
-                                                    if (!response.succeed) {
-                                                      Get.snackbar("出错啦！", response.msg);
-                                                      return;
-                                                    }
-                                                    if (response.data != null && response.data!.isEmpty) {
-                                                      Get.snackbar("出错啦！", "未查询到相关影视信息");
-                                                      return;
-                                                    }
-                                                    Logger.instance.d(response.data);
-                                                    Get.defaultDialog(
-                                                        title: '影视信息查询结果',
-                                                        titleStyle: TextStyle(color: shadColorScheme.foreground),
-                                                        backgroundColor: shadColorScheme.background,
-                                                        content: SizedBox(
-                                                            height: 500,
-                                                            width: double.maxFinite,
-                                                            child: ListView.builder(
-                                                                shrinkWrap: true, // 👈 关键，避免无限高度
-                                                                itemCount:
-                                                                    response.data is List ? response.data!.length : 0,
-                                                                itemBuilder: (context, index) {
-                                                                  MediaItem item =
-                                                                      MediaItem.fromJson(response.data![index]);
-                                                                  return MediaItemCard(
-                                                                    media: item,
-                                                                    onDetail: (item) {},
-                                                                    onSearch: (item) async {},
-                                                                  );
-                                                                })));
-                                                  },
-                                                  leading: Icon(
-                                                    Icons.movie_filter_outlined,
-                                                    color: shadColorScheme.foreground,
-                                                    size: 16,
+                                                if (item.isDir)
+                                                  ShadButton.ghost(
+                                                    onPressed: () async {
+                                                      Get.back();
+                                                      controller.isLoading = true;
+                                                      controller.update(['file_manage']);
+                                                      var response = await getTMDBMatchTvApi(item.name);
+                                                      controller.isLoading = false;
+                                                      controller.update(['file_manage']);
+                                                      if (!response.succeed) {
+                                                        Get.snackbar("出错啦！", response.msg);
+                                                        return;
+                                                      }
+                                                      if (response.data!.isEmpty) {
+                                                        Get.snackbar("出错啦！", "未查询到相关影视信息");
+                                                        return;
+                                                      }
+                                                      Logger.instance.d(response.data);
+                                                      Get.defaultDialog(
+                                                          title: '影视信息查询结果',
+                                                          titleStyle: TextStyle(
+                                                              color: shadColorScheme.foreground, fontSize: 16),
+                                                          backgroundColor: shadColorScheme.background,
+                                                          content: SizedBox(
+                                                              height: 500,
+                                                              width: double.maxFinite,
+                                                              child: ListView.builder(
+                                                                  shrinkWrap: true, // 👈 关键，避免无限高度
+                                                                  itemCount:
+                                                                      response.data is List ? response.data!.length : 0,
+                                                                  itemBuilder: (context, index) {
+                                                                    MediaItem media =
+                                                                        MediaItem.fromJson(response.data![index]);
+                                                                    return MediaItemCard(
+                                                                      media: media,
+                                                                      onDetail: (media) {},
+                                                                      onSearch: (media) async {},
+                                                                      onTap: () async {
+                                                                        Get.defaultDialog(
+                                                                          title: "写入刮削信息中...",
+                                                                          content: Text("是否确认写入刮削信息？"),
+                                                                          onConfirm: () async {
+                                                                            Get.back();
+                                                                            var response = await controller
+                                                                                .writeScrapeInfoApi(item.path, media);
+                                                                            if (!response.succeed) {
+                                                                              Get.snackbar(
+                                                                                "出错啦！",
+                                                                                response.msg,
+                                                                                colorText: shadColorScheme.foreground,
+                                                                                backgroundColor:
+                                                                                    shadColorScheme.background,
+                                                                              );
+                                                                            } else {
+                                                                              Get.snackbar(
+                                                                                "成功！",
+                                                                                response.msg,
+                                                                                colorText: shadColorScheme.foreground,
+                                                                                backgroundColor:
+                                                                                    shadColorScheme.background,
+                                                                              );
+                                                                            }
+                                                                          },
+                                                                          onCancel: () async {
+                                                                            Get.back();
+                                                                          },
+                                                                        );
+                                                                      },
+                                                                    );
+                                                                  })));
+                                                    },
+                                                    leading: Icon(
+                                                      Icons.movie_filter_outlined,
+                                                      color: shadColorScheme.foreground,
+                                                      size: 16,
+                                                    ),
+                                                    child: Text("电视剧刮削"),
                                                   ),
-                                                  child: Text("电视剧刮削"),
-                                                ),
                                                 ShadButton.ghost(
                                                   onPressed: () async {
                                                     doFileAction(item.path, 'search_seed');
