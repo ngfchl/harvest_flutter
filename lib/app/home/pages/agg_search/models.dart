@@ -37,6 +37,27 @@ class MediaItem {
     this.originCountry, // 可选属性
   });
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'original_title': originalTitle,
+      'overview': overview,
+      'poster_path': posterPath,
+      'backdrop_path': backdropPath,
+      'media_type': mediaType,
+      'original_language': originalLanguage,
+      'popularity': popularity,
+      'vote_average': voteAverage,
+      'vote_count': voteCount,
+      'release_date': releaseDate,
+      'genre_ids': genreIds,
+      'adult': adult,
+      'video': video,
+      'origin_country': originCountry,
+    };
+  }
+
   factory MediaItem.fromJson(Map<String, dynamic> json) {
     if (json['media_type'] == 'movie') {
       return MediaItem(
@@ -206,13 +227,11 @@ class TvShowDetail {
       inProduction: json['in_production'],
       languages: List<dynamic>.from(json['languages']),
       lastAirDate: json['last_air_date'],
-      lastEpisodeToAir: json['last_episode_to_air'] != null
-          ? LastEpisodeToAir.fromJson(json['last_episode_to_air'])
-          : null,
+      lastEpisodeToAir:
+          json['last_episode_to_air'] != null ? LastEpisodeToAir.fromJson(json['last_episode_to_air']) : null,
       title: json['name'],
       nextEpisodeToAir: json['next_episode_to_air'],
-      networks:
-          List<Network>.from(json['networks'].map((x) => Network.fromJson(x))),
+      networks: List<Network>.from(json['networks'].map((x) => Network.fromJson(x))),
       numberOfEpisodes: json['number_of_episodes'],
       numberOfSeasons: json['number_of_seasons'],
       originCountry: List<String>.from(json['origin_country']),
@@ -221,14 +240,11 @@ class TvShowDetail {
       overview: json['overview'],
       popularity: json['popularity'].toDouble(),
       posterPath: json['poster_path'],
-      productionCompanies: List<ProductionCompany>.from(
-          json['production_companies']
-              .map((x) => ProductionCompany.fromJson(x))),
-      productionCountries: List<ProductionCountry>.from(
-          json['production_countries']
-              .map((x) => ProductionCountry.fromJson(x))),
-      seasons:
-          List<Season>.from(json['seasons'].map((x) => Season.fromJson(x))),
+      productionCompanies:
+          List<ProductionCompany>.from(json['production_companies'].map((x) => ProductionCompany.fromJson(x))),
+      productionCountries:
+          List<ProductionCountry>.from(json['production_countries'].map((x) => ProductionCountry.fromJson(x))),
+      seasons: List<Season>.from(json['seasons'].map((x) => Season.fromJson(x))),
       spokenLanguages: List<dynamic>.from(json['spoken_languages']),
       status: json['status'],
       tagline: json['tagline'],
@@ -467,9 +483,8 @@ class MovieDetail {
     return MovieDetail(
       adult: json['adult'],
       backdropPath: json['backdrop_path'],
-      belongsToCollection: json['belongs_to_collection'] != null
-          ? BelongsToCollection.fromJson(json['belongs_to_collection'])
-          : null,
+      belongsToCollection:
+          json['belongs_to_collection'] != null ? BelongsToCollection.fromJson(json['belongs_to_collection']) : null,
       budget: json['budget'],
       genres: (json['genres'] as List).map((e) => Genre.fromJson(e)).toList(),
       homepage: json['homepage'],
@@ -482,18 +497,12 @@ class MovieDetail {
       overview: json['overview'],
       popularity: json['popularity'].toDouble(),
       posterPath: json['poster_path'],
-      productionCompanies: (json['production_companies'] as List)
-          .map((e) => ProductionCompany.fromJson(e))
-          .toList(),
-      productionCountries: (json['production_countries'] as List)
-          .map((e) => ProductionCountry.fromJson(e))
-          .toList(),
+      productionCompanies: (json['production_companies'] as List).map((e) => ProductionCompany.fromJson(e)).toList(),
+      productionCountries: (json['production_countries'] as List).map((e) => ProductionCountry.fromJson(e)).toList(),
       releaseDate: json['release_date'],
       revenue: json['revenue'],
       runtime: json['runtime'],
-      spokenLanguages: (json['spoken_languages'] as List)
-          .map((e) => SpokenLanguage.fromJson(e))
-          .toList(),
+      spokenLanguages: (json['spoken_languages'] as List).map((e) => SpokenLanguage.fromJson(e)).toList(),
       status: json['status'],
       tagline: json['tagline'],
       title: json['title'],
@@ -600,21 +609,16 @@ class Person {
       voteAverage: json['vote_average']?.toDouble(),
       overview: json['overview'],
       firstAirDate: json['first_air_date'],
-      originCountry: json['origin_country'] != null
-          ? List<String>.from(json['origin_country'])
-          : null,
-      genreIds:
-          json['genre_ids'] != null ? List<int>.from(json['genre_ids']) : null,
+      originCountry: json['origin_country'] != null ? List<String>.from(json['origin_country']) : null,
+      genreIds: json['genre_ids'] != null ? List<int>.from(json['genre_ids']) : null,
       originalLanguage: json['original_language'],
       voteCount: json['vote_count'],
       name: json['name'],
       originalName: json['original_name'],
       mediaType: json['media_type'],
       profilePath: json['profile_path'],
-      knownFor: json['known_for'] != null
-          ? List<KnownFor>.from(
-              json['known_for'].map((x) => KnownFor.fromJson(x)))
-          : [],
+      knownFor:
+          json['known_for'] != null ? List<KnownFor>.from(json['known_for'].map((x) => KnownFor.fromJson(x))) : [],
       knownForDepartment: json['known_for_department'],
       gender: json['gender'],
     );
@@ -698,11 +702,8 @@ class KnownFor {
       voteAverage: json['vote_average']?.toDouble() ?? 0.0,
       overview: json['overview'] ?? '',
       firstAirDate: json['first_air_date'],
-      originCountry: json['origin_country'] != null
-          ? List<String>.from(json['origin_country'])
-          : null,
-      genreIds:
-          json['genre_ids'] != null ? List<int>.from(json['genre_ids']) : [],
+      originCountry: json['origin_country'] != null ? List<String>.from(json['origin_country']) : null,
+      genreIds: json['genre_ids'] != null ? List<int>.from(json['genre_ids']) : [],
       originalLanguage: json['original_language'] ?? '',
       voteCount: json['vote_count'] ?? 0,
       name: json['name'],
