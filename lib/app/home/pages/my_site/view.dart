@@ -551,7 +551,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     }
     String url = '${mySite.mirror!.endsWith('/') ? mySite.mirror : '${mySite.mirror}/'}$path';
     if (mySite.mirror!.contains('m-team')) {
-      url = url.replaceFirst("api", "xp");
+      url = url.replaceFirst("api", "next");
     }
     if (kIsWeb || !openByInnerExplorer) {
       Logger.instance.d('使用外部浏览器打开');
@@ -1544,7 +1544,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                             '选择网址',
                                             style: TextStyle(color: shadColorScheme.foreground),
                                           ),
-                                          initialValue: urlList.first,
+                                          initialValue: mirrorController.text,
                                           decoration: ShadDecoration(
                                             border: ShadBorder(
                                               merge: false,
