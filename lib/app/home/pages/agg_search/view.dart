@@ -335,7 +335,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                         deleteButtonTooltipMessage: '确定要删除全部搜索记录吗？',
                                         label: Text('一键清理',
                                             style: TextStyle(
-                                              fontSize: 16,
+                                              fontSize: 13,
                                               color: shadColorScheme.destructiveForeground,
                                             )),
                                         onSelected: (bool value) {
@@ -348,20 +348,22 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                             ),
                                             middleText: '确定要删除全部搜索记录吗？',
                                             middleTextStyle: TextStyle(
-                                              fontSize: 16,
+                                              fontSize: 13,
                                               color: shadColorScheme.foreground,
                                             ),
-                                            cancel: ShadButton.ghost(
+                                            cancel: ShadButton.destructive(
+                                              size: ShadButtonSize.sm,
                                               onPressed: () {
                                                 Get.back();
                                               },
                                               child: Text('取消',
                                                   style: TextStyle(
-                                                    fontSize: 16,
-                                                    color: shadColorScheme.destructive,
+                                                    fontSize: 13,
+                                                    color: shadColorScheme.destructiveForeground,
                                                   )),
                                             ),
-                                            confirm: ShadButton.ghost(
+                                            confirm: ShadButton(
+                                              size: ShadButtonSize.sm,
                                               onPressed: () {
                                                 controller.searchHistory.clear();
                                                 SPUtil.setStringList('search_history', controller.searchHistory);
@@ -369,8 +371,8 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                               },
                                               child: Text('确定',
                                                   style: TextStyle(
-                                                    fontSize: 16,
-                                                    color: shadColorScheme.primary,
+                                                    fontSize: 13,
+                                                    color: shadColorScheme.primaryForeground,
                                                   )),
                                             ),
                                           );
@@ -410,7 +412,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                         deleteButtonTooltipMessage: '确定要删除记录吗？',
                                         label: Text(el,
                                             style: TextStyle(
-                                              fontSize: 16,
+                                              fontSize: 13,
                                               color: shadColorScheme.primaryForeground,
                                             )),
                                         onSelected: (bool value) {
