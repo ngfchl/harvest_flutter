@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -256,6 +257,7 @@ class _SubscribePageState extends State<SubscribePage> {
     } else {
       editDialogController.categories.value = res.data;
     }
+    Rx<String> category = ''.obs;
     controller.isAddFormLoading = false;
     controller.update();
     Get.bottomSheet(
@@ -306,6 +308,7 @@ class _SubscribePageState extends State<SubscribePage> {
                                 },
                                 onChanged: (Downloader? item) async {
                                   controller.downloaderCategoryController.clear();
+                                  controller.categories.clear();
                                   controller.subController.isDownloaderLoading = true;
                                   controller.update();
                                   controller.downloaderController.text = item!.id.toString();
@@ -325,29 +328,39 @@ class _SubscribePageState extends State<SubscribePage> {
                                   controller.update();
                                 })),
                         controller.categories.isNotEmpty
-                            ? Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: ShadSelect<String>(
-                                    placeholder: const Text('选择分类'),
-                                    initialValue: controller.categories.keys.first,
-                                    decoration: ShadDecoration(
-                                      border: ShadBorder(
-                                        merge: false,
-                                        bottom: ShadBorderSide(
-                                            color: shadColorScheme.foreground.withOpacity(0.2), width: 1),
-                                      ),
-                                    ),
-                                    options: controller.categories.keys
-                                        .map((key) => ShadOption(value: key, child: Text(key)))
-                                        .toList(),
-                                    selectedOptionBuilder: (context, value) {
-                                      return Text(value);
-                                    },
-                                    onChanged: (String? value) {
-                                      controller.downloaderCategoryController.text = value!;
-                                      controller.update();
-                                    }),
-                              )
+                            ? Obx(() {
+                                return Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Wrap(
+                                    runSpacing: 8,
+                                    spacing: 8,
+                                    alignment: WrapAlignment.center,
+                                    children: [
+                                      ...controller.categories.keys.sorted().map(
+                                            (key) => FilterChip(
+                                              label: Text(key,
+                                                  style: TextStyle(fontSize: 12, color: shadColorScheme.foreground)),
+                                              selected: category.value == key,
+                                              backgroundColor: shadColorScheme.background,
+                                              selectedColor: shadColorScheme.background,
+                                              checkmarkColor: shadColorScheme.foreground,
+                                              selectedShadowColor: shadColorScheme.primary,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                                              showCheckmark: true,
+                                              elevation: 2,
+                                              onSelected: (bool value) {
+                                                if (value) {
+                                                  category.value = key;
+                                                  controller.downloaderCategoryController.text = key;
+                                                  controller.update();
+                                                }
+                                              },
+                                            ),
+                                          ),
+                                    ],
+                                  ),
+                                );
+                              })
                             : CustomTextField(
                                 controller: controller.downloaderCategoryController,
                                 labelText: '分类',

@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
@@ -70,6 +71,7 @@ class DownloadForm extends StatelessWidget {
     RxBool advancedConfig = false.obs;
     RxBool paused = prefs.startPausedEnabled.obs;
     Rx<String> contentLayout = prefs.torrentContentLayout.obs;
+    Rx<String> category = ''.obs;
     Rx<String?> stopCondition = (prefs.torrentStopCondition == 'None' ? null : prefs.torrentStopCondition).obs;
     Rx<bool> autoTMM = prefs.autoTmmEnabled.obs;
     RxBool firstLastPiecePrio = false.obs;
@@ -79,383 +81,405 @@ class DownloadForm extends StatelessWidget {
     RxBool forced = false.obs;
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     return Form(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          if (info != null)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: EllipsisText(
-                text: info!.subtitle.isNotEmpty ? info!.subtitle : info!.title,
-                style: TextStyle(fontSize: 12, color: ShadTheme.of(context).colorScheme.primary),
-                ellipsis: '...',
-                maxLines: 1,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (info != null)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: EllipsisText(
+                  text: info!.subtitle.isNotEmpty ? info!.subtitle : info!.title,
+                  style: TextStyle(fontSize: 12, color: shadColorScheme.primary),
+                  ellipsis: '...',
+                  maxLines: 1,
+                ),
               ),
-            ),
-          Expanded(
-            child: ListView(children: [
-              CustomTextField(
-                controller: urlController,
-                labelText: '链接',
-              ),
+            Expanded(
+              child: ListView(children: [
+                CustomTextField(
+                  controller: urlController,
+                  labelText: '链接',
+                ),
 
-              // if (downloader.category.toLowerCase() == 'qb')
-              categories.isNotEmpty
-                  ? Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8),
-                      child: ShadSelect<String>(
-                          placeholder: const Text('选择分类'),
-                          decoration: ShadDecoration(
-                            border: ShadBorder(
-                              merge: false,
-                              bottom: ShadBorderSide(color: shadColorScheme.foreground.withOpacity(0.2), width: 1),
-                            ),
-                          ),
-                          initialValue: categories.keys.first,
-                          options: categories.keys.map((key) => ShadOption(value: key, child: Text(key))).toList(),
-                          selectedOptionBuilder: (context, value) {
-                            return Text(value);
-                          },
-                          onChanged: (String? value) {
-                            categoryController.text = value!;
-                            savePathController.text = categories[value]?.savePath ?? downloader.prefs.savePath;
-                          }),
-                    )
-                  : CustomTextField(
-                      controller: categoryController,
-                      labelText: '分类',
-                    ),
-              InkWell(
-                onLongPress: () {
-                  savePathController.text = prefs.savePath;
-                },
-                child: CustomTextField(
-                  controller: savePathController,
-                  labelText: '路径',
-                ),
-              ),
-              CustomTextField(
-                controller: tagsController,
-                labelText: ' 标签',
-                helperText: '多个标签用英文都好`,`分隔',
-              ),
-              Obx(() {
-                return SwitchListTile(
-                    dense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                    title: Text(
-                      '暂停下载',
-                      style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
-                    ),
-                    value: paused.value,
-                    activeColor: shadColorScheme.primary,
-                    onChanged: (bool val) {
-                      paused.value = val;
-                    });
-              }),
-              Obx(() {
-                return SwitchListTile(
-                    dense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                    title: Text(
-                      '高级选项',
-                      style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
-                    ),
-                    activeColor: shadColorScheme.primary,
-                    value: advancedConfig.value,
-                    onChanged: (bool val) {
-                      advancedConfig.value = val;
-                    });
-              }),
-              Obx(() {
-                return advancedConfig.value
-                    ? Column(
-                        children: [
-                          SwitchListTile(
-                              dense: true,
-                              activeColor: shadColorScheme.primary,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                              title: Text(
-                                '添加到队列顶部',
-                                style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
-                              ),
-                              value: addToTopOfQueue.value,
-                              onChanged: (bool val) {
-                                addToTopOfQueue.value = val;
-                              }),
-                          Obx(() {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text('种子停止条件', style: TextStyle(fontSize: 12, color: shadColorScheme.foreground)),
-                                  DropdownButton(
-                                      value: stopCondition.value,
-                                      dropdownColor: shadColorScheme.background,
-                                      items: [
-                                        DropdownMenuItem(
-                                          value: null,
-                                          child: Text(
-                                              style: TextStyle(fontSize: 14, color: shadColorScheme.foreground), '无'),
-                                        ),
-                                        DropdownMenuItem(
-                                          value: 'MetadataReceived',
-                                          child: Text(
-                                              style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
-                                              '已收到元数据'),
-                                        ),
-                                        DropdownMenuItem(
-                                          value: 'FilesChecked',
-                                          child: Text(
-                                              style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
-                                              '选种的文件'),
-                                        ),
-                                      ],
-                                      onChanged: (value) {
-                                        stopCondition.value = value;
-                                      }),
-                                ],
-                              ),
-                            );
-                          }),
-                          Obx(() {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text('内容布局', style: TextStyle(fontSize: 12, color: shadColorScheme.foreground)),
-                                  DropdownButton(
-                                      isDense: true,
-                                      value: contentLayout.value,
-                                      dropdownColor: shadColorScheme.background,
-                                      items: [
-                                        DropdownMenuItem(
-                                            value: 'Original',
-                                            child: Text(
-                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
-                                                '原始')),
-                                        DropdownMenuItem(
-                                            value: 'Subfolder',
-                                            child: Text(
-                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
-                                                '子文件夹')),
-                                        DropdownMenuItem(
-                                            value: 'NoSubfolder',
-                                            child: Text(
-                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
-                                                '不创建子文件夹')),
-                                      ],
-                                      onChanged: (value) {
-                                        contentLayout.value = value!;
-                                      }),
-                                ],
-                              ),
-                            );
-                          }),
-                          Obx(() {
-                            return SwitchListTile(
-                                dense: true,
-                                activeColor: shadColorScheme.primary,
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                                title: Text(
-                                  '跳过哈希校验',
-                                  style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
-                                ),
-                                value: isSkipChecking.value,
-                                onChanged: (bool val) {
-                                  isSkipChecking.value = val;
-                                });
-                          }),
-                          Obx(() {
-                            return SwitchListTile(
-                                dense: true,
-                                activeColor: shadColorScheme.primary,
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                                title: Text(
-                                  '自动管理',
-                                  style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
-                                ),
-                                value: autoTMM.value,
-                                onChanged: (bool val) {
-                                  autoTMM.value = val;
-                                });
-                          }),
-                          Obx(() {
-                            return SwitchListTile(
-                                dense: true,
-                                activeColor: shadColorScheme.primary,
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                                title: Text(
-                                  '强制启动',
-                                  style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
-                                ),
-                                value: forced.value,
-                                onChanged: (bool val) {
-                                  forced.value = val;
-                                });
-                          }),
-                          SwitchListTile(
-                              dense: true,
-                              activeColor: shadColorScheme.primary,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                              title: Text(
-                                '按顺序下载',
-                                style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
-                              ),
-                              value: isSequentialDownload.value,
-                              onChanged: (bool val) {
-                                isSequentialDownload.value = val;
-                              }),
-                          SwitchListTile(
-                              dense: true,
-                              activeColor: shadColorScheme.primary,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                              title: Text(
-                                '优先下载首尾数据块',
-                                style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
-                              ),
-                              value: firstLastPiecePrio.value,
-                              onChanged: (bool val) {
-                                firstLastPiecePrio.value = val;
-                              }),
-                          CustomTextField(
-                            controller: renameController,
-                            labelText: '重命名',
-                          ),
-                          CustomTextField(
-                            controller: cookieController,
-                            labelText: ' Cookie',
-                          ),
-                          CustomTextField(
-                            controller: upLimitController,
-                            labelText: ' 上传限速',
-                            keyboardType: TextInputType.number,
-                            suffixText: 'MB/s',
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                              TextInputFormatter.withFunction((oldValue, newValue) {
-                                try {
-                                  final int value = int.parse(newValue.text);
-                                  if (value < -2) {
-                                    return oldValue;
-                                  }
-                                  return newValue;
-                                } catch (e) {
-                                  return oldValue;
-                                }
-                              }),
+                // if (downloader.category.toLowerCase() == 'qb')
+                categories.isNotEmpty
+                    ? Obx(() {
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Wrap(
+                            runSpacing: 8,
+                            spacing: 8,
+                            alignment: WrapAlignment.center,
+                            children: [
+                              ...categories.keys.sorted().map(
+                                    (key) => FilterChip(
+                                      label:
+                                          Text(key, style: TextStyle(fontSize: 12, color: shadColorScheme.foreground)),
+                                      selected: category.value == key,
+                                      backgroundColor: shadColorScheme.background,
+                                      selectedColor: shadColorScheme.background,
+                                      checkmarkColor: shadColorScheme.foreground,
+                                      selectedShadowColor: shadColorScheme.primary,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                                      showCheckmark: true,
+                                      elevation: 2,
+                                      onSelected: (bool value) {
+                                        if (value) {
+                                          category.value = key;
+                                          categoryController.text = key;
+                                          String? savePath = categories[key]?.savePath;
+                                          savePathController.text = savePath != null && savePath.isNotEmpty
+                                              ? savePath
+                                              : downloader.prefs.savePath;
+                                        }
+                                      },
+                                    ),
+                                  ),
                             ],
                           ),
-                          CustomTextField(
-                            controller: dlLimitController,
-                            labelText: '下载限速',
-                            keyboardType: TextInputType.number,
-                            suffixText: 'MB/s',
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                              TextInputFormatter.withFunction((oldValue, newValue) {
-                                try {
-                                  final int value = int.parse(newValue.text);
-                                  if (value < -2) {
-                                    return oldValue;
-                                  }
-                                  return newValue;
-                                } catch (e) {
-                                  return oldValue;
-                                }
-                              }),
-                            ],
-                          ),
-                          CustomTextField(
-                            controller: ratioLimitController,
-                            labelText: '分享率限制',
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                              TextInputFormatter.withFunction((oldValue, newValue) {
-                                try {
-                                  final int value = int.parse(newValue.text);
-                                  if (value < -2) {
-                                    return oldValue;
-                                  }
-                                  return newValue;
-                                } catch (e) {
-                                  return oldValue;
-                                }
-                              }),
-                            ],
-                          ),
-                        ],
-                      )
-                    : const SizedBox.shrink();
-              }),
-              const SizedBox(height: 10),
-            ]),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ShadButton.destructive(
-                size: ShadButtonSize.sm,
-                onPressed: () => cancelForm(context),
-                leading: const Icon(Icons.cancel_outlined, color: Colors.white),
-                child: Text(
-                  '取消',
-                  style: TextStyle(color: ShadTheme.of(context).colorScheme.destructiveForeground),
-                ),
-              ),
-              Obx(() {
-                return ShadButton(
-                  size: ShadButtonSize.sm,
-                  onPressed: () async {
-                    isLoading.value = true;
-                    double? ratioLimit = double.tryParse(ratioLimitController.text);
-                    int? upLimit = int.tryParse(upLimitController.text);
-                    int? dlLimit = int.tryParse(dlLimitController.text);
-                    await submitForm({
-                      'site_id': info?.siteId,
-                      'tid': info?.tid,
-                      'urls': urlController.text,
-                      'save_path': savePathController.text,
-                      'category': categoryController.text,
-                      'is_paused': paused.value,
-                      'rename': renameController.text,
-                      'tags': tagsController.text,
-                      'cookie': cookieController.text,
-                      'content_layout': contentLayout.value,
-                      'stop_condition': stopCondition.value == 'None' ? null : stopCondition.value,
-                      'is_skip_checking': isSkipChecking.value,
-                      'is_sequential_download': isSequentialDownload.value,
-                      'is_first_last_piece_priority': firstLastPiecePrio.value,
-                      'use_auto_torrent_management': autoTMM.value,
-                      'add_to_top_of_queue': addToTopOfQueue.value,
-                      'forced': forced.value,
-                      'upLimit': (upLimit != null && upLimit > 0) ? upLimit * 1024 : null,
-                      'dlLimit': (dlLimit != null && dlLimit > 0) ? dlLimit * 1024 : null,
-                      'ratioLimit': ratioLimit,
-                    }, context);
-                    isLoading.value = false;
+                        );
+                      })
+                    : CustomTextField(
+                        controller: categoryController,
+                        labelText: '分类',
+                      ),
+                InkWell(
+                  onLongPress: () {
+                    savePathController.text = prefs.savePath;
                   },
-                  leading: isLoading.value
-                      ? SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: Center(
-                            child: const CircularProgressIndicator(),
-                          ),
-                        )
-                      : const Icon(Icons.download),
-                  child: Text(
-                    '下载',
-                    style: TextStyle(color: ShadTheme.of(context).colorScheme.primaryForeground),
+                  child: CustomTextField(
+                    controller: savePathController,
+                    labelText: '路径',
                   ),
-                );
-              }),
-            ],
-          ),
-        ],
+                ),
+                CustomTextField(
+                  controller: tagsController,
+                  labelText: ' 标签',
+                  helperText: '多个标签用英文都好`,`分隔',
+                ),
+                Obx(() {
+                  return SwitchListTile(
+                      dense: true,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                      title: Text(
+                        '暂停下载',
+                        style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
+                      ),
+                      value: paused.value,
+                      activeColor: shadColorScheme.primary,
+                      onChanged: (bool val) {
+                        paused.value = val;
+                      });
+                }),
+                Obx(() {
+                  return SwitchListTile(
+                      dense: true,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                      title: Text(
+                        '高级选项',
+                        style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
+                      ),
+                      activeColor: shadColorScheme.primary,
+                      value: advancedConfig.value,
+                      onChanged: (bool val) {
+                        advancedConfig.value = val;
+                      });
+                }),
+                Obx(() {
+                  return advancedConfig.value
+                      ? Column(
+                          children: [
+                            SwitchListTile(
+                                dense: true,
+                                activeColor: shadColorScheme.primary,
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                                title: Text(
+                                  '添加到队列顶部',
+                                  style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
+                                ),
+                                value: addToTopOfQueue.value,
+                                onChanged: (bool val) {
+                                  addToTopOfQueue.value = val;
+                                }),
+                            Obx(() {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('种子停止条件', style: TextStyle(fontSize: 12, color: shadColorScheme.foreground)),
+                                    DropdownButton(
+                                        value: stopCondition.value,
+                                        dropdownColor: shadColorScheme.background,
+                                        items: [
+                                          DropdownMenuItem(
+                                            value: null,
+                                            child: Text(
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground), '无'),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 'MetadataReceived',
+                                            child: Text(
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                                                '已收到元数据'),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 'FilesChecked',
+                                            child: Text(
+                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                                                '选种的文件'),
+                                          ),
+                                        ],
+                                        onChanged: (value) {
+                                          stopCondition.value = value;
+                                        }),
+                                  ],
+                                ),
+                              );
+                            }),
+                            Obx(() {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('内容布局', style: TextStyle(fontSize: 12, color: shadColorScheme.foreground)),
+                                    DropdownButton(
+                                        isDense: true,
+                                        value: contentLayout.value,
+                                        dropdownColor: shadColorScheme.background,
+                                        items: [
+                                          DropdownMenuItem(
+                                              value: 'Original',
+                                              child: Text(
+                                                  style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                                                  '原始')),
+                                          DropdownMenuItem(
+                                              value: 'Subfolder',
+                                              child: Text(
+                                                  style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                                                  '子文件夹')),
+                                          DropdownMenuItem(
+                                              value: 'NoSubfolder',
+                                              child: Text(
+                                                  style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                                                  '不创建子文件夹')),
+                                        ],
+                                        onChanged: (value) {
+                                          contentLayout.value = value!;
+                                        }),
+                                  ],
+                                ),
+                              );
+                            }),
+                            Obx(() {
+                              return SwitchListTile(
+                                  dense: true,
+                                  activeColor: shadColorScheme.primary,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                                  title: Text(
+                                    '跳过哈希校验',
+                                    style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
+                                  ),
+                                  value: isSkipChecking.value,
+                                  onChanged: (bool val) {
+                                    isSkipChecking.value = val;
+                                  });
+                            }),
+                            Obx(() {
+                              return SwitchListTile(
+                                  dense: true,
+                                  activeColor: shadColorScheme.primary,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                                  title: Text(
+                                    '自动管理',
+                                    style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
+                                  ),
+                                  value: autoTMM.value,
+                                  onChanged: (bool val) {
+                                    autoTMM.value = val;
+                                  });
+                            }),
+                            Obx(() {
+                              return SwitchListTile(
+                                  dense: true,
+                                  activeColor: shadColorScheme.primary,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                                  title: Text(
+                                    '强制启动',
+                                    style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
+                                  ),
+                                  value: forced.value,
+                                  onChanged: (bool val) {
+                                    forced.value = val;
+                                  });
+                            }),
+                            SwitchListTile(
+                                dense: true,
+                                activeColor: shadColorScheme.primary,
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                                title: Text(
+                                  '按顺序下载',
+                                  style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
+                                ),
+                                value: isSequentialDownload.value,
+                                onChanged: (bool val) {
+                                  isSequentialDownload.value = val;
+                                }),
+                            SwitchListTile(
+                                dense: true,
+                                activeColor: shadColorScheme.primary,
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                                title: Text(
+                                  '优先下载首尾数据块',
+                                  style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
+                                ),
+                                value: firstLastPiecePrio.value,
+                                onChanged: (bool val) {
+                                  firstLastPiecePrio.value = val;
+                                }),
+                            CustomTextField(
+                              controller: renameController,
+                              labelText: '重命名',
+                            ),
+                            CustomTextField(
+                              controller: cookieController,
+                              labelText: ' Cookie',
+                            ),
+                            CustomTextField(
+                              controller: upLimitController,
+                              labelText: ' 上传限速',
+                              keyboardType: TextInputType.number,
+                              suffixText: 'MB/s',
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                TextInputFormatter.withFunction((oldValue, newValue) {
+                                  try {
+                                    final int value = int.parse(newValue.text);
+                                    if (value < -2) {
+                                      return oldValue;
+                                    }
+                                    return newValue;
+                                  } catch (e) {
+                                    return oldValue;
+                                  }
+                                }),
+                              ],
+                            ),
+                            CustomTextField(
+                              controller: dlLimitController,
+                              labelText: '下载限速',
+                              keyboardType: TextInputType.number,
+                              suffixText: 'MB/s',
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                TextInputFormatter.withFunction((oldValue, newValue) {
+                                  try {
+                                    final int value = int.parse(newValue.text);
+                                    if (value < -2) {
+                                      return oldValue;
+                                    }
+                                    return newValue;
+                                  } catch (e) {
+                                    return oldValue;
+                                  }
+                                }),
+                              ],
+                            ),
+                            CustomTextField(
+                              controller: ratioLimitController,
+                              labelText: '分享率限制',
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                TextInputFormatter.withFunction((oldValue, newValue) {
+                                  try {
+                                    final int value = int.parse(newValue.text);
+                                    if (value < -2) {
+                                      return oldValue;
+                                    }
+                                    return newValue;
+                                  } catch (e) {
+                                    return oldValue;
+                                  }
+                                }),
+                              ],
+                            ),
+                          ],
+                        )
+                      : const SizedBox.shrink();
+                }),
+                const SizedBox(height: 10),
+              ]),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ShadButton.destructive(
+                  size: ShadButtonSize.sm,
+                  onPressed: () => cancelForm(context),
+                  leading: const Icon(Icons.cancel_outlined, size: 18),
+                  child: Text(
+                    '取消',
+                    style: TextStyle(color: shadColorScheme.destructiveForeground),
+                  ),
+                ),
+                Obx(() {
+                  return ShadButton(
+                    size: ShadButtonSize.sm,
+                    onPressed: () async {
+                      isLoading.value = true;
+                      double? ratioLimit = double.tryParse(ratioLimitController.text);
+                      int? upLimit = int.tryParse(upLimitController.text);
+                      int? dlLimit = int.tryParse(dlLimitController.text);
+                      await submitForm({
+                        'site_id': info?.siteId,
+                        'tid': info?.tid,
+                        'urls': urlController.text,
+                        'save_path': savePathController.text,
+                        'category': categoryController.text,
+                        'is_paused': paused.value,
+                        'rename': renameController.text,
+                        'tags': tagsController.text,
+                        'cookie': cookieController.text,
+                        'content_layout': contentLayout.value,
+                        'stop_condition': stopCondition.value == 'None' ? null : stopCondition.value,
+                        'is_skip_checking': isSkipChecking.value,
+                        'is_sequential_download': isSequentialDownload.value,
+                        'is_first_last_piece_priority': firstLastPiecePrio.value,
+                        'use_auto_torrent_management': autoTMM.value,
+                        'add_to_top_of_queue': addToTopOfQueue.value,
+                        'forced': forced.value,
+                        'upLimit': (upLimit != null && upLimit > 0) ? upLimit * 1024 : null,
+                        'dlLimit': (dlLimit != null && dlLimit > 0) ? dlLimit * 1024 : null,
+                        'ratioLimit': ratioLimit,
+                      }, context);
+                      isLoading.value = false;
+                    },
+                    leading: isLoading.value
+                        ? SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: shadColorScheme.primaryForeground,
+                              ),
+                            ),
+                          )
+                        : const Icon(Icons.download, size: 18),
+                    child: Text(
+                      '下载',
+                      style: TextStyle(color: shadColorScheme.primaryForeground),
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
