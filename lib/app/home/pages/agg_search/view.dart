@@ -247,6 +247,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                     itemCount: controller.results.length,
                                     itemBuilder: (context, int index) => MediaItemCard(
                                           media: controller.results[index],
+                                          onTap: () => _showTMDBDetail(controller.results[index]),
                                           onDetail: (media) => _showTMDBDetail(media),
                                           onSearch: (media) => controller.doTMDBSearch(media),
                                         )),
@@ -830,7 +831,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                               color: shadColorScheme.primary,
                             )),
                             errorWidget: (context, url, error) =>
-                                const Image(image: AssetImage('assets/images/avatar.png')),
+                                const Image(image: AssetImage('assets/images/background.png')),
                             fit: BoxFit.fitWidth,
                             httpHeaders: {
                               "user-agent": mySite.userAgent.toString(),
@@ -857,7 +858,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                             "Cookie": mySite.cookie.toString(),
                           },
                           errorWidget: (context, url, error) =>
-                              const Image(image: AssetImage('assets/images/avatar.png')),
+                              const Image(image: AssetImage('assets/images/background.png')),
                           width: 32,
                           height: 32,
                         ),
@@ -1489,6 +1490,8 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
             topRight: Radius.circular(2),
           ),
         ),
+        backgroundColor: shadColorScheme.background,
+        elevation: 1,
         isScrollControlled: true,
         enableDrag: true, GetBuilder<AggSearchController>(builder: (controller) {
       return CustomCard(
@@ -1512,7 +1515,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                   child: CachedNetworkImage(
                                     imageUrl: '$cacheServer${mediaInfo.target.coverUrl}',
                                     errorWidget: (context, url, error) =>
-                                        const Image(image: AssetImage('assets/images/avatar.png')),
+                                        const Image(image: AssetImage('assets/images/background.png')),
                                     fit: BoxFit.fitWidth,
                                   ),
                                 ),
@@ -1528,7 +1531,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                   child: CircularProgressIndicator(
                                 color: shadColorScheme.primary,
                               )),
-                              errorWidget: (context, url, error) => Image.asset('assets/images/avatar.png'),
+                              errorWidget: (context, url, error) => Image.asset('assets/images/background.png'),
                               width: 120,
                               height: 180,
                               fit: BoxFit.fitWidth,
@@ -1627,7 +1630,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                         child: CachedNetworkImage(
                                           imageUrl: '$cacheServer$imgUrl',
                                           errorWidget: (context, url, error) =>
-                                              const Image(image: AssetImage('assets/images/avatar.png')),
+                                              const Image(image: AssetImage('assets/images/background.png')),
                                           fit: BoxFit.fitWidth,
                                         ),
                                       ),
@@ -1673,7 +1676,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                                   child: CachedNetworkImage(
                                                     imageUrl: '$cacheServer${worker.imgUrl}',
                                                     errorWidget: (context, url, error) =>
-                                                        const Image(image: AssetImage('assets/images/avatar.png')),
+                                                        const Image(image: AssetImage('assets/images/background.png')),
                                                     fit: BoxFit.fitWidth,
                                                   ),
                                                 ),
@@ -1860,7 +1863,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                 color: shadColorScheme.primary,
                               )),
                               errorWidget: (context, url, error) =>
-                                  const Image(image: AssetImage('assets/images/avatar.png')),
+                                  const Image(image: AssetImage('assets/images/background.png')),
                               fit: BoxFit.fitWidth,
                             ),
                           ),
@@ -1878,7 +1881,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                             color: shadColorScheme.primary,
                           )),
                           errorWidget: (context, url, error) =>
-                              const Image(image: AssetImage('assets/images/avatar.png'), fit: BoxFit.fitWidth),
+                              const Image(image: AssetImage('assets/images/background.png'), fit: BoxFit.fitWidth),
                           fit: BoxFit.fitWidth,
                         ),
                       ),
@@ -1967,6 +1970,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
           topRight: Radius.circular(2),
         ),
       ),
+      backgroundColor: shadColorScheme.background,
       isScrollControlled: true,
       enableDrag: true,
       GetBuilder<AggSearchController>(builder: (controller) {
@@ -1991,7 +1995,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                       child: CachedNetworkImage(
                                         imageUrl: posterPath,
                                         errorWidget: (context, url, error) =>
-                                            const Image(image: AssetImage('assets/images/avatar.png')),
+                                            const Image(image: AssetImage('assets/images/background.png')),
                                         fit: BoxFit.fitWidth,
                                       ),
                                     ),
@@ -2007,7 +2011,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                       child: CircularProgressIndicator(
                                     color: shadColorScheme.primary,
                                   )),
-                                  errorWidget: (context, url, error) => Image.asset('assets/images/avatar.png'),
+                                  errorWidget: (context, url, error) => Image.asset('assets/images/background.png'),
                                   width: 120,
                                   height: 180,
                                   fit: BoxFit.fitWidth,
@@ -2045,6 +2049,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                   SingleChildScrollView(
                                     scrollDirection: Axis.horizontal,
                                     child: Wrap(
+                                      spacing: 4,
                                       children: [
                                         ...mediaInfo.genres.map<CustomTextTag>((Genre item) => CustomTextTag(
                                               labelText: item.name,
@@ -2111,7 +2116,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                       },
                       leading: Icon(
                         Icons.search,
-                        color: shadColorScheme.foreground,
+                        size: 16,
                       ),
                       child: const Text('搜索'),
                     ),
@@ -2122,7 +2127,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                       },
                       leading: Icon(
                         Icons.info_outline,
-                        color: shadColorScheme.foreground,
+                        size: 16,
                       ),
                       child: const Text('详情'),
                     ),
