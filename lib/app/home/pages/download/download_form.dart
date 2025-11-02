@@ -71,7 +71,7 @@ class DownloadForm extends StatelessWidget {
     RxBool advancedConfig = false.obs;
     RxBool paused = prefs.startPausedEnabled.obs;
     Rx<String> contentLayout = prefs.torrentContentLayout.obs;
-    Rx<String> category = ''.obs;
+    Rx<String> category = categories.keys.first.obs;
     Rx<String?> stopCondition = (prefs.torrentStopCondition == 'None' ? null : prefs.torrentStopCondition).obs;
     Rx<bool> autoTMM = prefs.autoTmmEnabled.obs;
     RxBool firstLastPiecePrio = false.obs;
@@ -744,9 +744,10 @@ Future<void> openDownloaderListSheet(BuildContext context, SearchTorrentInfo inf
     }
   }
 
-  var themeData = ShadTheme.of(context);
+  var shadColorScheme = ShadTheme.of(context).colorScheme;
   Get.bottomSheet(
-      backgroundColor: themeData.colorScheme.background,
+      backgroundColor: shadColorScheme.background,
+      isScrollControlled: true,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10.0), // 设置圆角半径
       ),
@@ -757,7 +758,10 @@ Future<void> openDownloaderListSheet(BuildContext context, SearchTorrentInfo inf
           children: [
             Text(
               '请选择下载器',
-              style: themeData.textTheme.h4,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
             ),
             Expanded(
               child: ListView(
@@ -770,13 +774,13 @@ Future<void> openDownloaderListSheet(BuildContext context, SearchTorrentInfo inf
                             title: Text(
                               downloader.name,
                               style: TextStyle(
-                                color: themeData.colorScheme.foreground,
+                                color: shadColorScheme.foreground,
                               ),
                             ),
                             subtitle: Text(
                               '${downloader.protocol}://${downloader.host}:${downloader.port}',
                               style: TextStyle(
-                                color: themeData.colorScheme.foreground.withOpacity(0.8),
+                                color: shadColorScheme.foreground.withOpacity(0.8),
                               ),
                             ),
                             leading: CircleAvatar(
@@ -789,7 +793,7 @@ Future<void> openDownloaderListSheet(BuildContext context, SearchTorrentInfo inf
                                     height: 24,
                                     width: 24,
                                     child: CircularProgressIndicator(
-                                      color: themeData.colorScheme.foreground,
+                                      color: shadColorScheme.foreground,
                                       strokeWidth: 2,
                                     ))
                                 : const SizedBox.shrink(),
@@ -799,15 +803,16 @@ Future<void> openDownloaderListSheet(BuildContext context, SearchTorrentInfo inf
                                 Get.snackbar(
                                   '警告',
                                   response.msg,
-                                  colorText: themeData.colorScheme.destructive,
+                                  colorText: shadColorScheme.destructive,
                                 );
                                 downloadController.isCategoryLoading = false;
                                 downloadController.update(["${downloader.host}:${downloader.port}-categories"]);
                                 return;
                               }
+                              Get.back();
                               Map<String, Category?> categorise = response.data;
                               Get.bottomSheet(
-                                backgroundColor: themeData.colorScheme.background,
+                                backgroundColor: shadColorScheme.background,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                                 enableDrag: true,
                                 Padding(
@@ -815,7 +820,10 @@ Future<void> openDownloaderListSheet(BuildContext context, SearchTorrentInfo inf
                                   child: Column(children: [
                                     Text(
                                       '添加种子',
-                                      style: themeData.textTheme.h4,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                     ),
                                     Expanded(
                                       child: DownloadForm(
