@@ -106,6 +106,7 @@ class DownloadForm extends StatelessWidget {
                                     (key) => FilterChip(
                                       label:
                                           Text(key, style: TextStyle(fontSize: 12, color: shadColorScheme.foreground)),
+                                      labelPadding: EdgeInsets.zero,
                                       selected: category.value == key,
                                       backgroundColor: shadColorScheme.background,
                                       selectedColor: shadColorScheme.background,
@@ -503,6 +504,7 @@ class DownloadForm extends StatelessWidget {
                                   selected: category.value == key,
                                   backgroundColor: shadColorScheme.background,
                                   selectedColor: shadColorScheme.background,
+                                  labelPadding: EdgeInsets.zero,
                                   checkmarkColor: shadColorScheme.foreground,
                                   selectedShadowColor: shadColorScheme.primary,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
@@ -744,7 +746,7 @@ Future<void> openDownloaderListSheet(BuildContext context, SearchTorrentInfo inf
         borderRadius: BorderRadius.circular(10.0), // 设置圆角半径
       ), GetBuilder<DownloadController>(builder: (controller) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(16.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -778,9 +780,7 @@ Future<void> openDownloaderListSheet(BuildContext context, SearchTorrentInfo inf
                           return FilterChip(
                             label: Text(
                               downloader.name,
-                              style: TextStyle(
-                                color: shadColorScheme.foreground,
-                              ),
+                              style: TextStyle(color: shadColorScheme.foreground, fontSize: 15),
                             ),
                             tooltip: '${downloader.protocol}://${downloader.host}:${downloader.port}',
                             avatar: SizedBox(
@@ -792,6 +792,7 @@ Future<void> openDownloaderListSheet(BuildContext context, SearchTorrentInfo inf
                                 ).image,
                               ),
                             ),
+                            labelPadding: EdgeInsets.zero,
                             backgroundColor: shadColorScheme.background,
                             selectedColor: shadColorScheme.background,
                             checkmarkColor: shadColorScheme.foreground,
