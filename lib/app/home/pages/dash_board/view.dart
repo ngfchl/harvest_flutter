@@ -333,6 +333,21 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
         maxScale: 5.0,
         scaleEnabled: controller.scaleEnable,
         child: EasyRefresh(
+          header: ClassicHeader(
+            dragText: '下拉刷新...',
+            readyText: '松开刷新',
+            processingText: '正在刷新...',
+            processedText: '刷新完成',
+            textStyle: TextStyle(
+              fontSize: 16,
+              color: shadColorScheme.foreground,
+              fontWeight: FontWeight.bold,
+            ),
+            messageStyle: TextStyle(
+              fontSize: 12,
+              color: shadColorScheme.foreground,
+            ),
+          ),
           key: ValueKey(PlatformTool.isPortrait()),
           onRefresh: () async {
             await controller.initChartData();

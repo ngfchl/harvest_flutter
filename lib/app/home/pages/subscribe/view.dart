@@ -47,6 +47,21 @@ class _SubscribePageState extends State<SubscribePage> {
           return Stack(
             children: [
               EasyRefresh(
+                header: ClassicHeader(
+                  dragText: '下拉刷新...',
+                  readyText: '松开刷新',
+                  processingText: '正在刷新...',
+                  processedText: '刷新完成',
+                  textStyle: TextStyle(
+                    fontSize: 16,
+                    color: shadColorScheme.foreground,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  messageStyle: TextStyle(
+                    fontSize: 12,
+                    color: shadColorScheme.foreground,
+                  ),
+                ),
                 onRefresh: () => controller.getSubscribeFromServer(),
                 child: ListView(
                   children: controller.subList.map((Subscribe sub) => _buildSub(sub)).toList(),

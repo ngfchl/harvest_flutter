@@ -25,6 +25,7 @@ class _MyRssPageState extends State<MyRssPage> {
 
   @override
   Widget build(BuildContext context) {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     return GetBuilder<MyRssController>(builder: (controller) {
       return Scaffold(
         backgroundColor: Colors.transparent,
@@ -38,7 +39,21 @@ class _MyRssPageState extends State<MyRssPage> {
           },
         ),
         body: GetBuilder<MyRssController>(builder: (controller) {
-          return EasyRefresh(
+          return EasyRefresh(header: ClassicHeader(
+            dragText: '下拉刷新...',
+            readyText: '松开刷新',
+            processingText: '正在刷新...',
+            processedText: '刷新完成',
+            textStyle: TextStyle(
+              fontSize: 16,
+              color: shadColorScheme.foreground,
+              fontWeight: FontWeight.bold,
+            ),
+            messageStyle: TextStyle(
+              fontSize: 12,
+              color: shadColorScheme.foreground,
+            ),
+          ),
             onRefresh: () => controller.getMyRssFromServer(),
             child: Column(
               children: [

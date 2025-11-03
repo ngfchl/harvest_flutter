@@ -47,6 +47,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -57,6 +58,21 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
               builder: (context, snapshot) {
                 // controller.isLoaded = snapshot.hasData;
                 return EasyRefresh(
+                    header: ClassicHeader(
+                      dragText: '下拉刷新...',
+                      readyText: '松开刷新',
+                      processingText: '正在刷新...',
+                      processedText: '刷新完成',
+                      textStyle: TextStyle(
+                        fontSize: 16,
+                        color: shadColorScheme.foreground,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      messageStyle: TextStyle(
+                        fontSize: 12,
+                        color: shadColorScheme.foreground,
+                      ),
+                    ),
                     controller: EasyRefreshController(),
                     onRefresh: () => controller.getDownloaderListFromServer(withStatus: true),
                     child: Stack(

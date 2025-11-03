@@ -36,6 +36,21 @@ class SettingPage extends StatelessWidget {
             : ShadTheme.of(context).colorScheme.background.withOpacity(opacity),
         body: GetBuilder<SettingController>(builder: (controller) {
           return EasyRefresh(
+            header: ClassicHeader(
+              dragText: '下拉刷新...',
+              readyText: '松开刷新',
+              processingText: '正在刷新...',
+              processedText: '刷新完成',
+              textStyle: TextStyle(
+                fontSize: 16,
+                color: shadColorScheme.foreground,
+                fontWeight: FontWeight.bold,
+              ),
+              messageStyle: TextStyle(
+                fontSize: 12,
+                color: shadColorScheme.foreground,
+              ),
+            ),
             onRefresh: () => controller.getOptionList,
             child: ListView(
               children: [

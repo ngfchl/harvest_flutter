@@ -32,6 +32,7 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
       Tab(text: '热门剧集'),
       Tab(text: '热门榜单'),
     ];
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     return GetBuilder<DouBanController>(builder: (controller) {
       return DefaultTabController(
         length: tabs.length,
@@ -332,6 +333,21 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                       child: Stack(
                         children: [
                           EasyRefresh(
+                            header: ClassicHeader(
+                              dragText: '下拉刷新...',
+                              readyText: '松开刷新',
+                              processingText: '正在刷新...',
+                              processedText: '刷新完成',
+                              textStyle: TextStyle(
+                                fontSize: 16,
+                                color: shadColorScheme.foreground,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              messageStyle: TextStyle(
+                                fontSize: 12,
+                                color: shadColorScheme.foreground,
+                              ),
+                            ),
                             onRefresh: () async {
                               controller.initPage = 0;
                               await controller.getRankListByType(controller.selectTypeTag);
