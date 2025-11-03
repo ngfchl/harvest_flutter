@@ -257,10 +257,11 @@ class _WebViewPageState extends State<WebViewPage> {
             GetBuilder<WebViewPageController>(builder: (controller) {
               return controller.isLoading
                   ? SizedBox(
-                      width: 20,
-                      height: 20,
+                      width: 18,
+                      height: 18,
                       child: Center(
                           child: CircularProgressIndicator(
+                        value: controller.progress / 100,
                         strokeWidth: 2,
                         color: shadColorScheme.primary,
                       )))
@@ -397,6 +398,8 @@ class _WebViewPageState extends State<WebViewPage> {
 
     var title = selector.queryXPath(controller.website!.detailTitleRule.replaceAll('[1]', '')).attr;
     Logger.instance.d(title);
+    var subTitle = selector.queryXPath(controller.website!.detailSubtitleRule.replaceAll('[1]', '')).attr;
+    Logger.instance.d(subTitle);
     String downloadXpath = htmlContent.contains("右键查看")
         ? "//a[contains(text(), '右键查看')]/@href"
         : controller.website!.detailDownloadUrlRule;
@@ -421,7 +424,7 @@ class _WebViewPageState extends State<WebViewPage> {
         magnetUrl: downloadLink,
         detailUrl: '',
         title: title ?? '',
-        subtitle: '',
+        subtitle: subTitle ?? '',
         saleStatus: '',
         tags: [],
         hr: false,
