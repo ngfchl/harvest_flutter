@@ -6,7 +6,6 @@ import 'package:get/get.dart';
 import 'package:harvest/api/downloader.dart';
 import 'package:harvest/app/home/pages/models/qbittorrent.dart';
 import 'package:harvest/app/home/pages/models/torrent_info.dart';
-import 'package:harvest/common/card_view.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -87,23 +86,12 @@ class DownloadForm extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (info != null)
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: EllipsisText(
-                  text: info!.subtitle.isNotEmpty ? info!.subtitle : info!.title,
-                  style: TextStyle(fontSize: 12, color: shadColorScheme.primary),
-                  ellipsis: '...',
-                  maxLines: 1,
-                ),
-              ),
             Expanded(
               child: ListView(children: [
                 CustomTextField(
                   controller: urlController,
                   labelText: '链接',
                 ),
-
                 // if (downloader.category.toLowerCase() == 'qb')
                 categories.isNotEmpty
                     ? Obx(() {
@@ -487,22 +475,12 @@ class DownloadForm extends StatelessWidget {
   Widget _buildTransmissionForm(BuildContext context) {
     RxBool advancedConfig = false.obs;
     RxBool paused = false.obs;
-
+    Rx<String> category = categories.keys.first.obs;
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     return Form(
         child: Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        if (info != null)
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: EllipsisText(
-              text: info!.subtitle.isNotEmpty ? info!.subtitle : info!.title,
-              style: TextStyle(fontSize: 12, color: shadColorScheme.primary),
-              ellipsis: '...',
-              maxLines: 1,
-            ),
-          ),
         Expanded(
           child: ListView(children: [
             CustomTextField(
@@ -511,26 +489,39 @@ class DownloadForm extends StatelessWidget {
             ),
             // if (downloader.category.toLowerCase() == 'qb')
             categories.isNotEmpty
-                ? Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8),
-                    child: ShadSelect<String>(
-                        placeholder: const Text('选择分类'),
-                        initialValue: categories.keys.first,
-                        decoration: ShadDecoration(
-                          border: ShadBorder(
-                            merge: false,
-                            bottom: ShadBorderSide(color: shadColorScheme.foreground.withOpacity(0.2), width: 1),
-                          ),
-                        ),
-                        options: categories.keys.map((key) => ShadOption(value: key, child: Text(key))).toList(),
-                        selectedOptionBuilder: (context, value) {
-                          return Text(value);
-                        },
-                        onChanged: (String? value) {
-                          categoryController.text = value!;
-                          savePathController.text = categories[value]?.savePath ?? downloader.prefs.downloadDir;
-                        }),
-                  )
+                ? Obx(() {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8),
+                      child: Wrap(
+                        runSpacing: 8,
+                        spacing: 8,
+                        alignment: WrapAlignment.center,
+                        children: [
+                          ...categories.keys.sorted().map(
+                                (key) => FilterChip(
+                                  label: Text(key, style: TextStyle(fontSize: 12, color: shadColorScheme.foreground)),
+                                  selected: category.value == key,
+                                  backgroundColor: shadColorScheme.background,
+                                  selectedColor: shadColorScheme.background,
+                                  checkmarkColor: shadColorScheme.foreground,
+                                  selectedShadowColor: shadColorScheme.primary,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                                  showCheckmark: true,
+                                  elevation: 2,
+                                  onSelected: (bool value) {
+                                    if (value) {
+                                      category.value = key;
+                                      categoryController.text = key;
+                                      savePathController.text =
+                                          categories[key]?.savePath ?? downloader.prefs.downloadDir;
+                                    }
+                                  },
+                                ),
+                              ),
+                        ],
+                      ),
+                    );
+                  })
                 : CustomTextField(
                     controller: categoryController,
                     labelText: '分类',
@@ -745,59 +736,75 @@ Future<void> openDownloaderListSheet(BuildContext context, SearchTorrentInfo inf
   }
 
   var shadColorScheme = ShadTheme.of(context).colorScheme;
+  Rx<Widget> window = SizedBox().obs;
+  Rx<int> selectedDownloader = 0.obs;
   Get.bottomSheet(
       backgroundColor: shadColorScheme.background,
-      isScrollControlled: true,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10.0), // 设置圆角半径
-      ),
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '请选择下载器',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
+      ), GetBuilder<DownloadController>(builder: (controller) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '请选择下载器',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          if (info.subtitle.isNotEmpty && info.title.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: EllipsisText(
+                text: info.subtitle.isNotEmpty ? info.subtitle : info.title,
+                style: TextStyle(fontSize: 12, color: shadColorScheme.primary),
+                ellipsis: '...',
+                maxLines: 1,
               ),
             ),
-            Expanded(
-              child: ListView(
-                children: downloadController.dataList.map((downloader) {
-                  return CustomCard(
-                    child: GetBuilder<DownloadController>(
+          Expanded(
+            child: Column(
+              children: [
+                Wrap(
+                  spacing: 8.0, // 水平间距
+                  runSpacing: 8.0, // 垂直间距
+                  children: downloadController.dataList.map((downloader) {
+                    return GetBuilder<DownloadController>(
                         id: "${downloader.host}:${downloader.port}-categories",
                         builder: (controller) {
-                          return ListTile(
-                            title: Text(
+                          return FilterChip(
+                            label: Text(
                               downloader.name,
                               style: TextStyle(
                                 color: shadColorScheme.foreground,
                               ),
                             ),
-                            subtitle: Text(
-                              '${downloader.protocol}://${downloader.host}:${downloader.port}',
-                              style: TextStyle(
-                                color: shadColorScheme.foreground.withOpacity(0.8),
+                            tooltip: '${downloader.protocol}://${downloader.host}:${downloader.port}',
+                            avatar: SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircleAvatar(
+                                backgroundImage: Image.asset(
+                                  'assets/images/${downloader.category.toLowerCase()}.png',
+                                ).image,
                               ),
                             ),
-                            leading: CircleAvatar(
-                              backgroundImage: Image.asset(
-                                'assets/images/${downloader.category.toLowerCase()}.png',
-                              ).image,
-                            ),
-                            trailing: downloadController.isCategoryLoading
-                                ? SizedBox(
-                                    height: 24,
-                                    width: 24,
-                                    child: CircularProgressIndicator(
-                                      color: shadColorScheme.foreground,
-                                      strokeWidth: 2,
-                                    ))
-                                : const SizedBox.shrink(),
-                            onTap: () async {
+                            backgroundColor: shadColorScheme.background,
+                            selectedColor: shadColorScheme.background,
+                            checkmarkColor: shadColorScheme.foreground,
+                            selectedShadowColor: shadColorScheme.primary,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                            showCheckmark: true,
+                            elevation: 2,
+                            selected: selectedDownloader.value == downloader.id,
+                            onSelected: (value) async {
+                              window.value = SizedBox();
+                              selectedDownloader.value = downloader.id!;
+                              downloadController.isCategoryLoading = true;
+                              downloadController.update();
                               CommonResponse response = await controller.getDownloaderCategoryList(downloader);
                               if (!response.succeed) {
                                 Get.snackbar(
@@ -809,43 +816,35 @@ Future<void> openDownloaderListSheet(BuildContext context, SearchTorrentInfo inf
                                 downloadController.update(["${downloader.host}:${downloader.port}-categories"]);
                                 return;
                               }
-                              Get.back();
                               Map<String, Category?> categorise = response.data;
-                              Get.bottomSheet(
-                                backgroundColor: shadColorScheme.background,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                                enableDrag: true,
-                                Padding(
-                                  padding: const EdgeInsets.all(12.0),
-                                  child: Column(children: [
-                                    Text(
-                                      '添加种子',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: DownloadForm(
-                                        categories: categorise,
-                                        downloader: downloader,
-                                        info: info,
-                                      ),
-                                    ),
-                                  ]),
+                              window.value = SizedBox(
+                                child: DownloadForm(
+                                  categories: categorise,
+                                  downloader: downloader,
+                                  info: info,
                                 ),
-                              ).whenComplete(() {
-                                downloadController.isCategoryLoading = false;
-                                downloadController.update();
-                              });
+                              );
                             },
                           );
-                        }),
-                  );
-                }).toList(),
-              ),
-            )
-          ],
-        ),
-      ));
+                        });
+                  }).toList(),
+                ),
+                Obx(() {
+                  return Expanded(
+                      child: downloadController.isCategoryLoading
+                          ? Center(
+                              child: CircularProgressIndicator(
+                                color: shadColorScheme.foreground,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : window.value);
+                })
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }));
 }
