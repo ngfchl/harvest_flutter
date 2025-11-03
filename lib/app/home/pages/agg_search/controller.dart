@@ -117,6 +117,10 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
   }
 
   updateSearchHistory(String element) async {
+    element = element.trim();
+    if (element.isEmpty) {
+      return;
+    }
     searchHistory.insert(0, element);
     searchHistory = searchHistory.toSet().toList();
     SPUtil.setStringList('search_history', searchHistory);
