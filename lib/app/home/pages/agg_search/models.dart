@@ -408,7 +408,7 @@ class Season {
 
   factory Season.fromJson(Map<String, dynamic> json) {
     return Season(
-      airDate: json['air_date'],
+      airDate: json['air_date'] ?? '',
       episodeCount: json['episode_count'],
       id: json['id'],
       name: json['name'],
@@ -482,7 +482,7 @@ class MovieDetail {
   factory MovieDetail.fromJson(Map<String, dynamic> json) {
     return MovieDetail(
       adult: json['adult'],
-      backdropPath: json['backdrop_path'],
+      backdropPath: json['backdrop_path'] ?? '',
       belongsToCollection:
           json['belongs_to_collection'] != null ? BelongsToCollection.fromJson(json['belongs_to_collection']) : null,
       budget: json['budget'],

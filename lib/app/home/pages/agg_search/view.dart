@@ -2120,17 +2120,17 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                       ),
                       child: const Text('搜索'),
                     ),
-                    ShadButton(
-                      size: ShadButtonSize.sm,
-                      onPressed: () async {
-                        await _openMediaInfoDetail(mediaInfo);
-                      },
-                      leading: Icon(
-                        Icons.info_outline,
-                        size: 16,
-                      ),
-                      child: const Text('详情'),
-                    ),
+                    // ShadButton(
+                    //   size: ShadButtonSize.sm,
+                    //   onPressed: () async {
+                    //     await _openMediaInfoDetail(mediaInfo);
+                    //   },
+                    //   leading: Icon(
+                    //     Icons.info_outline,
+                    //     size: 16,
+                    //   ),
+                    //   child: const Text('详情'),
+                    // ),
                   ],
                 ),
               ],
