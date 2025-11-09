@@ -24,7 +24,8 @@ class VersionManager:
             calc=True,
     ):
         print("初始化 VersionManager")
-        print(f"初始化任务参数：yaml文件路径: {yaml_file_path}   任务列表:{tasks}  是否计算版本号: {calc} {type(calc)}")
+        print(
+            f"初始化任务参数：yaml文件路径: {yaml_file_path}   任务列表:{tasks}  是否计算版本号: {calc} {type(calc)}")
 
         self.yaml_file_path = yaml_file_path
         self.output_folder = os.path.expanduser(output_folder)
@@ -253,11 +254,11 @@ icon_locations = {{
                 )
                 print(res.stdout.decode("utf-8"))
                 print(
-                    f"IOS 编译完成，正在移动到指定文件夹 {self.output_folder}/harvest_{self.new_version}.ipa"
+                    f"IOS 编译完成，正在移动到指定文件夹 {self.output_folder}/harvest_{self.new_version}_ios.ipa"
                 )
                 shutil.move(
                     "build/ios/ipa/harvest.ipa",
-                    f"{self.output_folder}/harvest_{self.new_version}.ipa",
+                    f"{self.output_folder}/harvest_{self.new_version}_ios.ipa",
                 )
 
                 print(f"IOS 打包完成")
@@ -327,7 +328,8 @@ if __name__ == "__main__":
         help="计算版本号（默认：False）",
     )
     args = parser.parse_args()
-    manager = VersionManager(args.output_folder, yaml_file_path=args.yaml, tasks=args.tasks, calc=args.calc)
+    manager = VersionManager(args.output_folder, yaml_file_path=args.yaml, tasks=args.tasks,
+                             calc=args.calc)
     print(manager.tasks)
     #     manager = VersionManager('~/Desktop/harvest')
     manager.compile_and_install()
