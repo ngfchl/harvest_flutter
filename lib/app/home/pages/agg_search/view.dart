@@ -841,27 +841,32 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
         }
       },
       onTap: () async {
-        if (controller.downloaderListLoading == true) {
-          return;
-        }
-        controller.downloaderListLoading = true;
-
-        if (mySite.mirror!.contains('m-team')) {
-          final res = await controller.getMTeamDlLink(mySite, info);
-          if (res.code == 0) {
-            info = info.copyWith(magnetUrl: res.data);
-          } else {
-            Get.snackbar('下载链接', '${mySite.nickname} 获取种子下载链接失败！${res.msg}');
+        try {
+          if (controller.downloaderListLoading == true) {
             return;
           }
+          controller.downloaderListLoading = true;
+
+          // if (mySite.mirror!.contains('m-team')) {
+          //   final res = await controller.getMTeamDlLink(mySite, info);
+          //   if (res.code == 0) {
+          //     info = info.copyWith(magnetUrl: res.data);
+          //   } else {
+          //     Get.snackbar('下载链接', '${mySite.nickname} 获取种子下载链接失败！${res.msg}');
+          //     return;
+          //   }
+          // }
+          info.siteId = mySite.id.toString();
+          info.tags.addAll([
+            mySite.nickname.isNotEmpty ? mySite.nickname : mySite.site,
+            'harvest-app',
+          ]);
+          await openDownloaderListSheet(context, info);
+        } catch (e) {
+          logger_helper.Logger.instance.e(e);
+        } finally {
+          controller.downloaderListLoading = false;
         }
-        info.siteId = mySite.id.toString();
-        info.tags.addAll([
-          mySite.nickname.isNotEmpty ? mySite.nickname : mySite.site,
-          'harvest-app',
-        ]);
-        await openDownloaderListSheet(context, info);
-        controller.downloaderListLoading = false;
       },
       child: CustomCard(
         child: Column(
