@@ -829,7 +829,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
       onLongPress: () async {
         String url = '${mySite.mirror}${website.pageDetail.replaceAll('{}', info.tid)}';
 
-        if (kIsWeb || !Platform.isIOS && !Platform.isAndroid) {
+        if (kIsWeb) {
           logger_helper.Logger.instance.d('外置浏览器打开');
           Uri uri = Uri.parse(url);
           if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
