@@ -3,6 +3,7 @@ import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
 import 'package:get/get.dart';
+import 'package:harvest/app/home/controller/home_controller.dart';
 import 'package:harvest/app/home/pages/models/my_site.dart';
 import 'package:harvest/utils/format_number.dart';
 import 'package:harvest/utils/platform.dart';
@@ -21,6 +22,7 @@ import '../../../../utils/screenshot.dart';
 import '../../../../utils/storage.dart';
 import '../../../../utils/string_utils.dart';
 import '../../controller/common_api.dart';
+import '../my_site/controller.dart';
 import 'controller.dart';
 
 class DashBoardPage extends StatefulWidget {
@@ -131,12 +133,21 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
           onPressed: () async {
             controller.isLoading = true;
             controller.update();
-            await controller.initChartData();
+            // 重新加载Home
+            final homeController = Get.find<HomeController>();
+            homeController.onInit();
+            // 刷新仪表盘数据
+            controller.onInit();
+            Future.microtask(() => () {
+                  // 重新加载我的站点
+                  final mySiteController = Get.find<MySiteController>();
+                  mySiteController.onInit();
+                });
             controller.isLoading = false;
             controller.update();
           },
           icon: Icon(
-            Icons.refresh_outlined,
+            Icons.autorenew_outlined,
             color: shadColorScheme.primary,
             size: 24,
           ),
