@@ -19,10 +19,10 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import '../../api/mysite.dart';
 import '../../api/option.dart';
 import '../../common/custom_ua.dart';
-import '../../common/custom_upgrade.dart';
 import '../../common/invite_user.dart';
 import '../../common/logging.dart';
 import '../../common/site_map.dart';
+import '../../common/upgrade_widget/view.dart';
 import '../../common/video_player_page/video_page.dart';
 import '../../models/common_response.dart';
 import '../../theme/theme_view.dart';
@@ -323,7 +323,7 @@ class HomeView extends GetView<HomeController> {
           ),
           const SizedBox(width: 15),
           if (controller.userinfo?.isStaff == true) ...[
-            CustomUpgradeWidget(),
+            UpgradeWidgetPage(),
             const SizedBox(width: 15),
             SiteMap(
               icon: Icon(

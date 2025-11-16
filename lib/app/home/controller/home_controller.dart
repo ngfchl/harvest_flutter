@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harvest/app/home/pages/agg_search/view.dart';
@@ -11,9 +12,11 @@ import 'package:harvest/app/home/pages/subscribe_history/view.dart';
 import 'package:harvest/app/home/pages/subscribe_tag/view.dart';
 import 'package:harvest/app/home/pages/task/view.dart';
 import 'package:harvest/models/common_response.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../api/api.dart';
 import '../../../api/login.dart';
+import '../../../common/upgrade_widget/model.dart';
 import '../../../models/authinfo.dart';
 import '../../../utils/dio_util.dart';
 import '../../../utils/logger_helper.dart';
@@ -30,6 +33,10 @@ import '../pages/user/view.dart';
 
 class HomeController extends GetxController with WidgetsBindingObserver {
   int initPage = 0;
+  double progressValue = 0.0;
+  AppUpdateInfo? updateInfo;
+  String currentVersion = '';
+  String newVersion = '';
   AuthInfo? userinfo;
   TextEditingController searchController = TextEditingController();
   DioUtil dioUtil = DioUtil();
@@ -104,6 +111,8 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   void onInit() async {
     Logger.instance.d('HomeController onInit');
     try {
+      PackageInfo packageInfo = await PackageInfo.fromPlatform();
+      currentVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
       isDarkMode = Get.isDarkMode;
       useBackground = SPUtil.getBool('useBackground');
       authPrivateMode = SPUtil.getBool('authPrivateMode', defaultValue: false);
@@ -307,5 +316,18 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     initPage = index;
 
     update();
+  }
+
+  Future getAppLatestVersionInfo() async {
+    final response = await Dio().get<Map<String, dynamic>>('https://repeat.ptools.fun/api/app/version/latest');
+    CommonResponse<AppUpdateInfo> res = CommonResponse.fromJson(
+      response.data!,
+      (json) => AppUpdateInfo.fromJson(json),
+    );
+    if (res.succeed) {
+      updateInfo = res.data;
+    } else {
+      Get.snackbar('更新日志', '获取更新日志失败！${res.msg}', colorText: Colors.red);
+    }
   }
 }
