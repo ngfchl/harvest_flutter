@@ -312,19 +312,13 @@ class HomeView extends GetView<HomeController> {
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          if (kDebugMode) ...[
-            const LoggingView(),
-            const SizedBox(width: 15),
-          ],
+          const LoggingView(),
           const WebSocketLoggingWidget(),
-          const SizedBox(width: 15),
           ThemeIconButton(
             icon: Icon(Icons.palette_outlined, size: 20, color: shadColorScheme.foreground),
           ),
-          const SizedBox(width: 15),
           if (controller.userinfo?.isStaff == true) ...[
             UpgradeWidgetPage(),
-            const SizedBox(width: 15),
             SiteMap(
               icon: Icon(
                 Icons.map,
@@ -334,7 +328,6 @@ class HomeView extends GetView<HomeController> {
             ),
           ],
           if (controller.userinfo?.isStaff == true) ...[
-            const SizedBox(width: 15),
             CustomPopup(
               showArrow: false,
               backgroundColor: shadColorScheme.background,
