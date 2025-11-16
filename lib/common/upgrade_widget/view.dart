@@ -272,7 +272,7 @@ class UpgradeWidgetPage extends StatelessWidget {
       downloadUrl = downloadLinks[homeController.newVersion];
       String savePath = "${appDocDir.path}/${homeController.newVersion}";
       await _downloadInstallationPackage(savePath, downloadUrl!);
-      await Process.run('explorer.exe', [savePath]);
+      await Process.run('explorer.exe', [savePath.replaceAll('/', '\\')]);
     } else if (Platform.isMacOS) {
       try {
         final result = await Process.run('uname', ['-m']);
