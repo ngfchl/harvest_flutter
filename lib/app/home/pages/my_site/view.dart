@@ -27,6 +27,7 @@ import '../../../../common/utils.dart';
 import '../../../../utils/calc_weeks.dart';
 import '../../../../utils/format_number.dart';
 import '../../../../utils/logger_helper.dart';
+import '../../../../utils/screenshot.dart';
 import '../../../../utils/storage.dart';
 import '../../../../utils/string_utils.dart';
 import '../../../routes/app_pages.dart';
@@ -49,6 +50,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
   bool get wantKeepAlive => true;
 
   double get opacity => SPUtil.getDouble("cardOpacity", defaultValue: 0.7);
+  final GlobalKey captureKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -516,6 +518,59 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
         ShadIconButton.ghost(
           height: 40,
           onPressed: () async {
+            List<MySite> canInviteSiteList = controller.mySiteList
+                .where((item) => item.available && (item.latestStatusInfo?.invitation ?? 0) > 0)
+                .sorted((a, b) => b.latestStatusInfo!.invitation.compareTo(a.latestStatusInfo!.invitation))
+                .toList();
+            Logger.instance.d('canInviteSiteList: ${canInviteSiteList.length}');
+            if (canInviteSiteList.isEmpty) {
+            } else {
+              Get.bottomSheet(
+                backgroundColor: shadColorScheme.background,
+                isScrollControlled: true,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+                RepaintBoundary(
+                  key: captureKey,
+                  child: Scaffold(
+                    appBar: AppBar(
+                      title: Text('可邀请站点[${canInviteSiteList.length}]',
+                          style:
+                              TextStyle(fontSize: 16, color: shadColorScheme.foreground, fontWeight: FontWeight.bold)),
+                      toolbarHeight: 40,
+                      actions: [
+                        ShadIconButton.ghost(
+                          icon: Icon(Icons.camera_alt_outlined, size: 24, color: shadColorScheme.foreground),
+                          onPressed: () => ScreenshotSaver.captureAndSave(captureKey),
+                        ),
+                      ],
+                    ),
+                    body: SingleChildScrollView(
+                      child: Column(children: [
+                        ...canInviteSiteList.map((item) {
+                          var webSite = controller.webSiteList[item.site];
+                          return ListTile(
+                            dense: true,
+                            leading: siteLogo('${controller.baseUrl}local/icons/${webSite?.name}.png', webSite!, item),
+                            title: Text(item.nickname ?? ''),
+                            trailing: Text(item.latestStatusInfo?.invitation.toString() ?? ''),
+                          );
+                        }),
+                      ]),
+                    ),
+                  ),
+                ),
+              );
+            }
+          },
+          icon: Icon(
+            Icons.man_2_outlined,
+            size: 24,
+            color: shadColorScheme.primary,
+          ),
+        ),
+        ShadIconButton.ghost(
+          height: 40,
+          onPressed: () async {
             Get.back();
             Future.microtask(() async {
               Logger.instance.i('开始从数据库加载数据...');
@@ -810,27 +865,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
               leading: InkWell(
                 onTap: () => _openSitePage(mySite, website, true),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: CachedNetworkImage(
-                    imageUrl: iconUrl,
-                    cacheKey: iconUrl,
-                    fit: BoxFit.fill,
-                    errorWidget: (context, url, error) => CachedNetworkImage(
-                      imageUrl: website.logo.startsWith('http') ? website.logo : '${mySite.mirror}${website.logo}',
-                      fit: BoxFit.fill,
-                      httpHeaders: {
-                        "user-agent": mySite.userAgent.toString(),
-                        "Cookie": mySite.cookie.toString(),
-                      },
-                      errorWidget: (context, url, error) => const Image(image: AssetImage('assets/images/avatar.png')),
-                      width: 32,
-                      height: 32,
-                    ),
-                    width: 32,
-                    height: 32,
-                  ),
-                ),
+                child: siteLogo(iconUrl, website, mySite),
               ),
               onLongPress: () => _openSitePage(mySite, website, false),
               title: Row(
@@ -1311,6 +1346,30 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
               ),
             ),
         ]),
+      ),
+    );
+  }
+
+  ClipRRect siteLogo(String iconUrl, WebSite website, MySite mySite) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: CachedNetworkImage(
+        imageUrl: iconUrl,
+        cacheKey: iconUrl,
+        fit: BoxFit.fill,
+        errorWidget: (context, url, error) => CachedNetworkImage(
+          imageUrl: website.logo.startsWith('http') ? website.logo : '${mySite.mirror}${website.logo}',
+          fit: BoxFit.fill,
+          httpHeaders: {
+            "user-agent": mySite.userAgent.toString(),
+            "Cookie": mySite.cookie.toString(),
+          },
+          errorWidget: (context, url, error) => const Image(image: AssetImage('assets/images/avatar.png')),
+          width: 32,
+          height: 32,
+        ),
+        width: 32,
+        height: 32,
       ),
     );
   }
