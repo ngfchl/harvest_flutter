@@ -51,6 +51,9 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   bool useBackground = false;
   bool useImageProxy = false;
   bool authPrivateMode = false;
+  bool uploading = false;
+  final Dio dio = Dio();
+  List<AppUpdateInfo> appVersions = [];
 
   // final mySiteController = Get.put(MySiteController());
 
@@ -112,6 +115,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     Logger.instance.d('HomeController onInit');
     try {
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
+      await getAppVersionList();
       currentVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
       isDarkMode = Get.isDarkMode;
       useBackground = SPUtil.getBool('useBackground');
@@ -318,8 +322,22 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     update();
   }
 
+  Future<void> getAppVersionList() async {
+    var response = await dio.get('https://repeat.ptools.fun/api/app/version/list');
+    if (response.statusCode == 200) {
+      CommonResponse res = CommonResponse.fromJson(
+          response.data,
+          (p0) =>
+              p0 == null ? [] : (p0 as List).map((e) => AppUpdateInfo.fromJson(e as Map<String, dynamic>)).toList());
+      if (!res.succeed) {
+        return;
+      }
+      appVersions = res.data;
+    }
+  }
+
   Future getAppLatestVersionInfo() async {
-    final response = await Dio().get<Map<String, dynamic>>('https://repeat.ptools.fun/api/app/version/latest');
+    final response = await dio.get<Map<String, dynamic>>('https://repeat.ptools.fun/api/app/version/latest');
     CommonResponse res = CommonResponse.fromJson(
       response.data!,
       (json) => json == null ? null : AppUpdateInfo.fromJson(json),
