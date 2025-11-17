@@ -6,6 +6,7 @@ class Api {
   static const String AUTH_INFO = "auth/auth_info";
   static const String AUTH_USER = "auth/user";
   static const String INVITE_USER = "auth/try";
+  static const String QINIU_UPLOAD_FILES = "source/qiniu/upload_files";
 
   // 我的站点列表增删改查
   static const String DASHBOARD_DATA = "mysite/dashboard";
