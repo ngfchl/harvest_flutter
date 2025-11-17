@@ -320,9 +320,9 @@ class HomeController extends GetxController with WidgetsBindingObserver {
 
   Future getAppLatestVersionInfo() async {
     final response = await Dio().get<Map<String, dynamic>>('https://repeat.ptools.fun/api/app/version/latest');
-    CommonResponse<AppUpdateInfo> res = CommonResponse.fromJson(
+    CommonResponse res = CommonResponse.fromJson(
       response.data!,
-      (json) => AppUpdateInfo.fromJson(json),
+      (json) => json == null ? null : AppUpdateInfo.fromJson(json),
     );
     if (res.succeed) {
       updateInfo = res.data;
