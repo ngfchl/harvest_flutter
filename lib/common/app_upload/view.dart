@@ -32,7 +32,7 @@ class AppUploadPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final shadColorScheme = ShadTheme.of(context).colorScheme;
-    return GetBuilder<HomeController>(builder: (controller) {
+    return GetBuilder<HomeController>(builder: (homeController) {
       return ShadPopover(
         controller: popoverController,
         closeOnTapOutside: false,
@@ -131,10 +131,10 @@ class AppUploadPage extends StatelessWidget {
                 children: [
                   Expanded(
                     child: ListView.builder(
-                      itemCount: controller.appVersions.length,
+                      itemCount: homeController.appVersions.length,
                       itemBuilder: (context, index) {
                         RxBool showlog = false.obs;
-                        AppUpdateInfo appUpdateInfo = controller.appVersions[index];
+                        AppUpdateInfo appUpdateInfo = homeController.appVersions[index];
                         return Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -193,7 +193,7 @@ class AppUploadPage extends StatelessWidget {
               onPressed: () async {
                 if (!popoverController.isOpen) {
                   await homeController.getAppLatestVersionInfo();
-                  await controller.getAppVersionList();
+                  await homeController.getAppVersionList();
                 }
                 popoverController.toggle();
               },
