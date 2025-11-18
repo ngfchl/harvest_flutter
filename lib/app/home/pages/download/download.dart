@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:easy_refresh/easy_refresh.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
@@ -15,6 +16,7 @@ import 'package:qbittorrent_api/qbittorrent_api.dart' as qb;
 import 'package:random_color/random_color.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../common/card_view.dart';
 import '../../../../common/form_widgets.dart';
@@ -25,6 +27,7 @@ import '../../../../utils/date_time_utils.dart';
 import '../../../../utils/logger_helper.dart' as logger_helper;
 import '../../../../utils/storage.dart';
 import '../../../../utils/string_utils.dart';
+import '../../../routes/app_pages.dart';
 import '../models/download.dart';
 import '../models/transmission.dart';
 import '../models/transmission_base_torrent.dart';
@@ -673,77 +676,73 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
           padding: const EdgeInsets.only(bottom: 0),
           child: Column(
             children: [
-              InkWell(
+              ListTile(
                 onTap: () async {
-                  _showTorrents(downloader);
-                  // controller.cancelPeriodicTimer();
-                  // if (downloader.category == 'Qb') {
-                  //   if (kIsWeb) {
-                  //     Uri uri = Uri.parse(pathDownloader);
-                  //     await launchUrl(uri,
-                  //         mode: LaunchMode.externalApplication);
-                  //   } else {
-                  //     Get.toNamed(Routes.QB, arguments: downloader);
-                  //   }
-                  // }
-                  // if (downloader.category == 'Tr') {
-                  //   Get.toNamed(Routes.TR, arguments: downloader);
-                  //   // Get.toNamed(Routes.TORRENT, arguments: downloader);
-                  // }
+                  // _showTorrents(downloader);
+                  controller.cancelPeriodicTimer();
+                  if (kIsWeb) {
+                    Uri uri = Uri.parse(pathDownloader);
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  }
+                  if (downloader.category == 'Qb') {
+                    Get.toNamed(Routes.QB, arguments: downloader);
+                  }
+                  if (downloader.category == 'Tr') {
+                    Get.toNamed(Routes.TR, arguments: downloader);
+                    // Get.toNamed(Routes.TORRENT, arguments: downloader);
+                  }
                 },
                 onLongPress: () async {
                   _showEditBottomSheet(downloader: downloader);
                 },
-                child: ListTile(
-                  leading: ShadAvatar(
-                    'assets/images/${downloader.category.toLowerCase()}.png',
-                    size: Size(28, 28.0),
-                  ),
-                  title: Text(
-                    downloader.name,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: shadColorScheme.foreground,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  subtitle: Text(
-                    pathDownloader,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: shadColorScheme.foreground,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  trailing: downloader.status.isNotEmpty
-                      ? ShadBadge(
-                          shape: RoundedRectangleBorder(
-                            // 0.27+ 官方形状
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(downloader.prefs.version),
-                        )
-                      : ShadIconButton.ghost(
-                          onPressed: () async {
-                            CommonResponse res = await controller.testConnect(downloader);
-                            if (!res.succeed) {
-                              Get.snackbar(
-                                '下载器连接失败',
-                                '下载器 ${res.msg}',
-                                colorText: shadColorScheme.destructive,
-                              );
-                            } else {
-                              await controller.getDownloaderListFromServer(withStatus: true);
-                            }
-                          },
-                          icon: Icon(
-                            Icons.offline_bolt_outlined,
-                            color: shadColorScheme.destructive,
-                            size: 12,
-                          ),
-                        ),
+                leading: ShadAvatar(
+                  'assets/images/${downloader.category.toLowerCase()}.png',
+                  size: Size(28, 28.0),
                 ),
+                title: Text(
+                  downloader.name,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: shadColorScheme.foreground,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: Text(
+                  pathDownloader,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: shadColorScheme.foreground,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                trailing: downloader.status.isNotEmpty
+                    ? ShadBadge(
+                        shape: RoundedRectangleBorder(
+                          // 0.27+ 官方形状
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(downloader.prefs.version),
+                      )
+                    : ShadIconButton.ghost(
+                        onPressed: () async {
+                          CommonResponse res = await controller.testConnect(downloader);
+                          if (!res.succeed) {
+                            Get.snackbar(
+                              '下载器连接失败',
+                              '下载器 ${res.msg}',
+                              colorText: shadColorScheme.destructive,
+                            );
+                          } else {
+                            await controller.getDownloaderListFromServer(withStatus: true);
+                          }
+                        },
+                        icon: Icon(
+                          Icons.offline_bolt_outlined,
+                          color: shadColorScheme.destructive,
+                          size: 12,
+                        ),
+                      ),
               ),
               GetBuilder<DownloadController>(builder: (controller) {
                 return controller.isLoading
@@ -6350,6 +6349,80 @@ class ShowTorrentWidget extends StatelessWidget {
                     ShadContextMenuItem(
                       leading: Icon(
                         size: 18,
+                        Icons.copy_rounded,
+                        color: shadColorScheme.foreground,
+                      ),
+                      items: [
+                        ShadContextMenuItem(
+                          leading: Icon(
+                            size: 18,
+                            Icons.copy_rounded,
+                            color: shadColorScheme.foreground,
+                          ),
+                          child: Text('名称'),
+                          onPressed: () {
+                            Clipboard.setData(ClipboardData(text: torrentInfo.name));
+                            Get.snackbar('复制种子名称', '种子名称复制成功！', colorText: shadColorScheme.foreground);
+                          },
+                        ),
+                        ShadContextMenuItem(
+                          leading: Icon(
+                            size: 18,
+                            Icons.copy_rounded,
+                            color: shadColorScheme.foreground,
+                          ),
+                          child: Text('哈希'),
+                          onPressed: () {
+                            Clipboard.setData(ClipboardData(text: torrentInfo.infohashV1));
+                            Get.snackbar('复制种子HASH', '种子HASH复制成功！', colorText: shadColorScheme.foreground);
+                          },
+                        ),
+                        ShadContextMenuItem(
+                          leading: Icon(
+                            size: 18,
+                            Icons.copy_rounded,
+                            color: shadColorScheme.foreground,
+                          ),
+                          child: Text('磁力链接'),
+                          onPressed: () {
+                            Clipboard.setData(ClipboardData(text: torrentInfo.magnetUri));
+                            Get.snackbar('复制种子磁力链接', '种子磁力链接复制成功！', colorText: shadColorScheme.foreground);
+                          },
+                        ),
+                        // ShadContextMenuItem(
+                        //   child: Text('Torrent ID'),
+                        //   onPressed: () {},
+                        // ),
+                        ShadContextMenuItem(
+                          leading: Icon(
+                            size: 18,
+                            Icons.copy_rounded,
+                            color: shadColorScheme.foreground,
+                          ),
+                          child: Text('Tracker 地址'),
+                          onPressed: () {
+                            Clipboard.setData(ClipboardData(text: torrentInfo.tracker));
+                            Get.snackbar('复制种子Tracker', '种子Tracker复制成功！', colorText: shadColorScheme.foreground);
+                          },
+                        ),
+                        ShadContextMenuItem(
+                          leading: Icon(
+                            size: 18,
+                            Icons.copy_rounded,
+                            color: shadColorScheme.foreground,
+                          ),
+                          child: Text('注释'),
+                          onPressed: () {
+                            Clipboard.setData(ClipboardData(text: torrentInfo.comment));
+                            Get.snackbar('复制种子Tracker', '种子Tracker复制成功！', colorText: shadColorScheme.foreground);
+                          },
+                        ),
+                      ],
+                      child: Text('复制'),
+                    ),
+                    ShadContextMenuItem(
+                      leading: Icon(
+                        size: 18,
                         torrentInfo.autoTmm ? Icons.check_box_outlined : Icons.motion_photos_auto_outlined,
                         color: shadColorScheme.foreground,
                       ),
@@ -6434,80 +6507,7 @@ class ShowTorrentWidget extends StatelessWidget {
                       onPressed: () => controller.controlQbTorrents(
                           downloader: downloader, command: 'reannounce', hashes: [torrentInfo.infohashV1]),
                     ),
-                    ShadContextMenuItem(
-                      leading: Icon(
-                        size: 18,
-                        Icons.copy_rounded,
-                        color: shadColorScheme.foreground,
-                      ),
-                      items: [
-                        ShadContextMenuItem(
-                          leading: Icon(
-                            size: 18,
-                            Icons.copy_rounded,
-                            color: shadColorScheme.foreground,
-                          ),
-                          child: Text('名称'),
-                          onPressed: () {
-                            Clipboard.setData(ClipboardData(text: torrentInfo.name));
-                            Get.snackbar('复制种子名称', '种子名称复制成功！', colorText: shadColorScheme.foreground);
-                          },
-                        ),
-                        ShadContextMenuItem(
-                          leading: Icon(
-                            size: 18,
-                            Icons.copy_rounded,
-                            color: shadColorScheme.foreground,
-                          ),
-                          child: Text('哈希'),
-                          onPressed: () {
-                            Clipboard.setData(ClipboardData(text: torrentInfo.infohashV1));
-                            Get.snackbar('复制种子HASH', '种子HASH复制成功！', colorText: shadColorScheme.foreground);
-                          },
-                        ),
-                        ShadContextMenuItem(
-                          leading: Icon(
-                            size: 18,
-                            Icons.copy_rounded,
-                            color: shadColorScheme.foreground,
-                          ),
-                          child: Text('磁力链接'),
-                          onPressed: () {
-                            Clipboard.setData(ClipboardData(text: torrentInfo.magnetUri));
-                            Get.snackbar('复制种子磁力链接', '种子磁力链接复制成功！', colorText: shadColorScheme.foreground);
-                          },
-                        ),
-                        // ShadContextMenuItem(
-                        //   child: Text('Torrent ID'),
-                        //   onPressed: () {},
-                        // ),
-                        ShadContextMenuItem(
-                          leading: Icon(
-                            size: 18,
-                            Icons.copy_rounded,
-                            color: shadColorScheme.foreground,
-                          ),
-                          child: Text('Tracker 地址'),
-                          onPressed: () {
-                            Clipboard.setData(ClipboardData(text: torrentInfo.tracker));
-                            Get.snackbar('复制种子Tracker', '种子Tracker复制成功！', colorText: shadColorScheme.foreground);
-                          },
-                        ),
-                        ShadContextMenuItem(
-                          leading: Icon(
-                            size: 18,
-                            Icons.copy_rounded,
-                            color: shadColorScheme.foreground,
-                          ),
-                          child: Text('注释'),
-                          onPressed: () {
-                            Clipboard.setData(ClipboardData(text: torrentInfo.comment));
-                            Get.snackbar('复制种子Tracker', '种子Tracker复制成功！', colorText: shadColorScheme.foreground);
-                          },
-                        ),
-                      ],
-                      child: Text('复制'),
-                    ),
+
                     ShadContextMenuItem(
                       leading: Icon(
                         size: 18,
