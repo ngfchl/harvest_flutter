@@ -13,6 +13,7 @@ import 'package:harvest/app/home/pages/subscribe_tag/view.dart';
 import 'package:harvest/app/home/pages/task/view.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../api/api.dart';
 import '../../../api/login.dart';
@@ -58,6 +59,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   // final mySiteController = Get.put(MySiteController());
 
   final PageController pageController = PageController(initialPage: 0);
+  final popoverController = ShadPopoverController();
 
   @override
   void onClose() {
@@ -105,8 +107,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   @override
   void onReady() async {
     Logger.instance.d('HomeController onReady');
-    await getAuthInfo();
-    await initUpdateLogState();
+
     update();
   }
 
@@ -114,10 +115,26 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   void onInit() async {
     Logger.instance.d('HomeController onInit');
     try {
+      Logger.instance.d('开始检测 APP 更新');
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
-      await getAppVersionList();
       currentVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
+      getAppVersionList();
+      getAppLatestVersionInfo();
+    } catch (e, trace) {
+      Logger.instance.e('检测 APP 更新失败');
+      Logger.instance.e(trace);
+    }
+    try {
+      Logger.instance.d('开始检测Docker更新');
+      initUpdateLogState();
+    } catch (e, trace) {
+      Logger.instance.e('检测 Docker 更新失败');
+      Logger.instance.e(trace);
+    }
+
+    try {
       isDarkMode = Get.isDarkMode;
+      getAuthInfo();
       useBackground = SPUtil.getBool('useBackground');
       authPrivateMode = SPUtil.getBool('authPrivateMode', defaultValue: false);
       if (useBackground) {
@@ -135,10 +152,12 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       userinfo = AuthInfo.fromJson(SPUtil.getLocalStorage('userinfo'));
       initMenus();
       update();
-    } catch (e) {
+    } catch (e, trace) {
       Logger.instance.e('初始化失败 $e');
+      Logger.instance.e(trace);
       Get.offAllNamed(Routes.LOGIN);
     }
+
     super.onInit();
     WidgetsBinding.instance.addObserver(this);
     _updateOrientation();
@@ -336,7 +355,8 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  Future getAppLatestVersionInfo() async {
+  Future<void> getAppLatestVersionInfo() async {
+    Logger.instance.d('getAppLatestVersionInfo');
     final response = await dio.get<Map<String, dynamic>>('https://repeat.ptools.fun/api/app/version/latest');
     CommonResponse res = CommonResponse.fromJson(
       response.data!,
@@ -344,6 +364,9 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     );
     if (res.succeed) {
       updateInfo = res.data;
+      if (updateInfo != null && updateInfo?.version != currentVersion) {
+        popoverController.show();
+      }
     } else {
       Get.snackbar('更新日志', '获取更新日志失败！${res.msg}', colorText: Colors.red);
     }

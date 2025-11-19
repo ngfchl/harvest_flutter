@@ -26,7 +26,6 @@ class AppUploadPage extends StatelessWidget {
 
   AppUploadPage({super.key, this.child});
 
-  final popoverController = ShadPopoverController();
   final HomeController homeController = Get.put(HomeController());
 
   @override
@@ -34,7 +33,7 @@ class AppUploadPage extends StatelessWidget {
     final shadColorScheme = ShadTheme.of(context).colorScheme;
     return GetBuilder<HomeController>(builder: (homeController) {
       return ShadPopover(
-        controller: popoverController,
+        controller: homeController.popoverController,
         closeOnTapOutside: false,
         popover: (context) => ShadTabs<String>(
           value: 'latestVersion',
@@ -100,11 +99,16 @@ class AppUploadPage extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        ShadButton(
+                        ShadButton.destructive(
                           size: ShadButtonSize.sm,
                           onPressed: () => getDownloadUrlForCurrentPlatform(context),
                           child:
                               Text(homeController.updateInfo?.version == homeController.currentVersion ? '重新安装' : '更新'),
+                        ),
+                        ShadButton(
+                          size: ShadButtonSize.sm,
+                          onPressed: () => homeController.getAppLatestVersionInfo(),
+                          child: Text('检查更新'),
                         ),
                       ],
                     ),
@@ -187,15 +191,18 @@ class AppUploadPage extends StatelessWidget {
             ShadIconButton.ghost(
               icon: Icon(Icons.update,
                   size: 24,
-                  color: homeController.updateInfo?.version == homeController.currentVersion
-                      ? shadColorScheme.foreground
-                      : shadColorScheme.destructive),
+                  color: homeController.updateInfo != null &&
+                          homeController.updateInfo?.version != homeController.currentVersion
+                      ? shadColorScheme.destructive
+                      : shadColorScheme.foreground),
               onPressed: () async {
-                if (!popoverController.isOpen) {
+                if (homeController.updateInfo == null) {
                   await homeController.getAppLatestVersionInfo();
+                }
+                if (homeController.appVersions.isEmpty) {
                   await homeController.getAppVersionList();
                 }
-                popoverController.toggle();
+                homeController.popoverController.toggle();
               },
             ),
       );
