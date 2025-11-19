@@ -35,14 +35,30 @@ class QBittorrentPage extends GetView<QBittorrentController> {
         onPopInvokedWithResult: (didPop, _) async {
           if (didPop) return;
           Get.defaultDialog(
+            backgroundColor: shadColorScheme.background,
             title: "退出",
-            content: Text('确定要退出 ${controller.downloader.name}？'),
-            onCancel: () {
-              Navigator.of(context).pop(true);
-            },
-            onConfirm: () {
-              Navigator.of(context).pop(false);
-            },
+            content: Text(
+              '确定要退出内置浏览器？',
+              style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+            ),
+            middleTextStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+            titleStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+            radius: 10,
+            cancel: ShadButton.destructive(
+              size: ShadButtonSize.sm,
+              onPressed: () async {
+                Navigator.of(context).pop(true);
+              },
+              child: const Text('取消'),
+            ),
+            confirm: ShadButton(
+              size: ShadButtonSize.sm,
+              onPressed: () async {
+                Navigator.of(context).pop(false);
+                Get.back();
+              },
+              child: const Text('确定'),
+            ),
             textCancel: '退出',
             textConfirm: '取消',
           );
@@ -134,13 +150,18 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                         Expanded(
                           child: controller.isLoading
                               ? const Center(child: CircularProgressIndicator())
-                              : ListView.builder(
-                                  padding: const EdgeInsets.symmetric(horizontal: 5),
-                                  itemCount: controller.showTorrents.length,
-                                  itemBuilder: (BuildContext context, int index) {
-                                    TorrentInfo torrentInfo = controller.showTorrents[index];
-                                    return _buildQbTorrentCard(torrentInfo, context);
-                                  }),
+                              : Stack(
+                                  children: [
+                                    ListView.builder(
+                                        padding: const EdgeInsets.symmetric(horizontal: 5),
+                                        itemCount: controller.showTorrents.length,
+                                        itemBuilder: (BuildContext context, int index) {
+                                          TorrentInfo torrentInfo = controller.showTorrents[index];
+                                          return _buildQbTorrentCard(torrentInfo, context);
+                                        }),
+                                    if (controller.showDetailsLoading) const Center(child: CircularProgressIndicator())
+                                  ],
+                                ),
                         ),
                       ],
                     ),
@@ -821,903 +842,6 @@ class QBittorrentPage extends GetView<QBittorrentController> {
     });
   }
 
-  _showQbTorrent(TorrentInfo torrentInfo, context) {
-    RxBool paused = torrentInfo.state.toString().contains('pause').obs;
-    Rx<bool?> autoTmm = torrentInfo.autoTmm.obs;
-    controller.selectedTorrent = torrentInfo;
-    var shadColorScheme = ShadTheme.of(context).colorScheme;
-    RxBool showDetails = false.obs;
-    return GetBuilder<QBittorrentController>(
-        id: '${controller.downloader.host} - ${controller.downloader.port} - ${torrentInfo.infohashV1}',
-        builder: (controller) {
-          return CustomCard(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-            child: GetBuilder<QBittorrentController>(builder: (controller) {
-              return Slidable(
-                key: ValueKey(torrentInfo.infohashV1),
-                endActionPane: ActionPane(
-                  motion: const ScrollMotion(),
-                  extentRatio: 0.5,
-                  children: [
-                    SlidableAction(
-                      onPressed: (context) async {
-                        RxBool deleteFiles = false.obs;
-                        Get.defaultDialog(
-                          title: '确认',
-                          middleText: '您确定要执行这个操作吗？',
-                          content: Obx(() {
-                            return SwitchListTile(
-                                title: const Text('是否删除种子文件？'),
-                                value: deleteFiles.value,
-                                onChanged: (value) {
-                                  deleteFiles.value = value;
-                                });
-                          }),
-                          actions: [
-                            ShadButton.destructive(
-                              size: ShadButtonSize.sm,
-                              onPressed: () {
-                                Get.back(result: false);
-                              },
-                              child: const Text('取消'),
-                            ),
-                            ShadButton(
-                              size: ShadButtonSize.sm,
-                              onPressed: () async {
-                                Get.back(result: true);
-                                await controller.controlTorrents(
-                                    command: 'delete', hashes: [torrentInfo.infohashV1!], enable: deleteFiles.value);
-
-                                controller.showTorrents.removeWhere((element) => element.hash == torrentInfo.hash);
-                                controller.update();
-                              },
-                              child: const Text('删除'),
-                            )
-                          ],
-                        );
-                      },
-                      flex: 2,
-                      backgroundColor: const Color(0xFFFE4A49),
-                      foregroundColor: Colors.white,
-                      icon: Icons.delete,
-                      label: '删除',
-                    ),
-                    SlidableAction(
-                      onPressed: (context) async {
-                        await controller.controlTorrents(
-                          command: paused.value ? 'resume' : 'pause',
-                          hashes: [torrentInfo.infohashV1!],
-                        );
-                      },
-                      flex: 2,
-                      backgroundColor: paused.value ? const Color(0xFF0392CF) : Colors.deepOrangeAccent,
-                      foregroundColor: Colors.white,
-                      icon: paused.value ? Icons.play_arrow : Icons.pause,
-                      label: paused.value ? '开始' : '暂停',
-                    ),
-                  ],
-                ),
-                child: ShadContextMenuRegion(
-                  decoration: ShadDecoration(
-                    labelStyle: TextStyle(),
-                    descriptionStyle: TextStyle(),
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 100),
-                  items: [
-                    ShadContextMenuItem(
-                      leading: Icon(
-                        size: 18,
-                        Icons.stop_outlined,
-                        color: shadColorScheme.foreground,
-                      ),
-                      child: Text('停止'),
-                      onPressed: () {},
-                    ),
-                    ShadContextMenuItem(
-                      leading: Icon(
-                        size: 18,
-                        torrentInfo.forceStart == true ? Icons.double_arrow : Icons.play_arrow,
-                        color: shadColorScheme.foreground,
-                      ),
-                      child: Text('强制启动'),
-                      onPressed: () => controller.controlTorrents(
-                          command: 'set_force_start',
-                          hashes: [torrentInfo.infohashV1!],
-                          enable: !torrentInfo.forceStart!),
-                    ),
-                    // ShadContextMenuItem(
-                    //   leading: Icon(
-                    //     size: 18,
-                    //     Icons.delete_outline,
-                    //     color: shadColorScheme.foreground,
-                    //   ),
-                    //   child: Text('删除'),
-                    //   onPressed: () {},
-                    // ),
-                    ShadContextMenuItem(
-                      leading: Icon(
-                        size: 18,
-                        Icons.edit_location_outlined,
-                        color: shadColorScheme.foreground,
-                      ),
-                      child: Text('更改保存位置'),
-                      onPressed: () {},
-                    ),
-                    ShadContextMenuItem(
-                      leading: Icon(
-                        size: 18,
-                        Icons.drive_file_rename_outline_outlined,
-                        color: shadColorScheme.foreground,
-                      ),
-                      child: Text('重命名'),
-                      onPressed: () {},
-                    ),
-                    ShadContextMenuItem(
-                      leading: Icon(
-                        size: 18,
-                        Icons.drive_file_rename_outline,
-                        color: shadColorScheme.foreground,
-                      ),
-                      child: Text('重命名文件'),
-                      onPressed: () {},
-                    ),
-                    ShadContextMenuItem(
-                      leading: Icon(
-                        size: 18,
-                        Icons.category_outlined,
-                        color: shadColorScheme.foreground,
-                      ),
-                      items: [
-                        ...controller.categoryMap.values.map((value) => ShadContextMenuItem(
-                              leading: Icon(
-                                size: 18,
-                                value?.name == torrentInfo.category ||
-                                        (torrentInfo.category == '' && value?.name == '未分类')
-                                    ? Icons.check_box_outlined
-                                    : Icons.check_box_outline_blank_outlined,
-                                color: shadColorScheme.foreground,
-                              ),
-                              onPressed: () => controller.controlTorrents(
-                                command: 'set_category',
-                                hashes: [torrentInfo.infohashV1!],
-                                category: value.name != '未分类' ? value.name! : '',
-                              ),
-                              child: Text(value!.name!),
-                            )),
-                      ],
-                      child: Text('分类'),
-                    ),
-                    ShadContextMenuItem(
-                      leading: Icon(
-                        size: 18,
-                        Icons.tag_outlined,
-                        color: shadColorScheme.foreground,
-                      ),
-                      items: [
-                        ...controller.tags.where((item) => item != '全部').map((value) => ShadContextMenuItem(
-                              leading: Icon(
-                                size: 18,
-                                torrentInfo.tags?.contains(value) == true
-                                    ? Icons.check_box_outlined
-                                    : Icons.check_box_outline_blank_outlined,
-                                color: shadColorScheme.foreground,
-                              ),
-                              onPressed: () => controller.controlTorrents(
-                                command: torrentInfo.tags!.contains(value) == true ? 'add_tags' : 'remove_tags',
-                                hashes: [torrentInfo.infohashV1!],
-                                tag: value,
-                              ),
-                              child: Text(value),
-                            ))
-                      ],
-                      child: Text('标签'),
-                    ),
-                    ShadContextMenuItem(
-                      leading: Icon(
-                        size: 18,
-                        Icons.copy_rounded,
-                        color: shadColorScheme.foreground,
-                      ),
-                      items: [
-                        ShadContextMenuItem(
-                          leading: Icon(
-                            size: 18,
-                            Icons.copy_rounded,
-                            color: shadColorScheme.foreground,
-                          ),
-                          child: Text('名称'),
-                          onPressed: () {
-                            Clipboard.setData(ClipboardData(text: torrentInfo.name!));
-                            Get.snackbar('复制种子名称', '种子名称复制成功！', colorText: shadColorScheme.foreground);
-                          },
-                        ),
-                        ShadContextMenuItem(
-                          leading: Icon(
-                            size: 18,
-                            Icons.copy_rounded,
-                            color: shadColorScheme.foreground,
-                          ),
-                          child: Text('哈希'),
-                          onPressed: () {
-                            Clipboard.setData(ClipboardData(text: torrentInfo.infohashV1!));
-                            Get.snackbar('复制种子HASH', '种子HASH复制成功！', colorText: shadColorScheme.foreground);
-                          },
-                        ),
-                        ShadContextMenuItem(
-                          leading: Icon(
-                            size: 18,
-                            Icons.copy_rounded,
-                            color: shadColorScheme.foreground,
-                          ),
-                          child: Text('磁力链接'),
-                          onPressed: () {
-                            Clipboard.setData(ClipboardData(text: torrentInfo.magnetUri!));
-                            Get.snackbar('复制种子磁力链接', '种子磁力链接复制成功！', colorText: shadColorScheme.foreground);
-                          },
-                        ),
-                        // ShadContextMenuItem(
-                        //   child: Text('Torrent ID'),
-                        //   onPressed: () {},
-                        // ),
-                        ShadContextMenuItem(
-                          leading: Icon(
-                            size: 18,
-                            Icons.copy_rounded,
-                            color: shadColorScheme.foreground,
-                          ),
-                          child: Text('Tracker 地址'),
-                          onPressed: () {
-                            Clipboard.setData(ClipboardData(text: torrentInfo.tracker!));
-                            Get.snackbar('复制种子Tracker', '种子Tracker复制成功！', colorText: shadColorScheme.foreground);
-                          },
-                        ),
-                        // ShadContextMenuItem(
-                        //   leading: Icon(
-                        //     size: 18,
-                        //     Icons.copy_rounded,
-                        //     color: shadColorScheme.foreground,
-                        //   ),
-                        //   child: Text('注释'),
-                        //   onPressed: () {
-                        //     Clipboard.setData(ClipboardData(text: torrentInfo.comment!));
-                        //     Get.snackbar('复制种子注释', '种子注释复制成功！', colorText: shadColorScheme.foreground);
-                        //   },
-                        // ),
-                      ],
-                      child: Text('复制'),
-                    ),
-                    ShadContextMenuItem(
-                      leading: Icon(
-                        size: 18,
-                        torrentInfo.autoTmm == true ? Icons.check_box_outlined : Icons.motion_photos_auto_outlined,
-                        color: shadColorScheme.foreground,
-                      ),
-                      child: Text('自动管理'),
-                      onPressed: () => controller.controlTorrents(
-                          command: 'set_auto_management',
-                          hashes: [torrentInfo.infohashV1!],
-                          enable: !torrentInfo.autoTmm!),
-                    ),
-                    ShadContextMenuItem(
-                      leading: Icon(
-                        size: 18,
-                        Icons.upload_outlined,
-                        color: shadColorScheme.foreground,
-                      ),
-                      child: Text('限制上传速度'),
-                      onPressed: () {},
-                    ),
-                    ShadContextMenuItem(
-                      leading: Icon(
-                        size: 18,
-                        Icons.mobile_screen_share,
-                        color: shadColorScheme.foreground,
-                      ),
-                      child: Text('限制分享率'),
-                      onPressed: () {},
-                    ),
-                    ShadContextMenuItem(
-                      leading: Icon(
-                        size: 18,
-                        torrentInfo.superSeeding == true
-                            ? Icons.keyboard_double_arrow_up_outlined
-                            : Icons.keyboard_arrow_up_outlined,
-                        color: shadColorScheme.foreground,
-                      ),
-                      child: Text('超级做种'),
-                      onPressed: () => controller.controlTorrents(
-                          command: 'set_super_seeding',
-                          hashes: [torrentInfo.infohashV1!],
-                          enable: !torrentInfo.superSeeding!),
-                    ),
-                    ShadContextMenuItem(
-                      leading: Icon(
-                        size: 18,
-                        Icons.fact_check,
-                        color: shadColorScheme.foreground,
-                      ),
-                      child: Text('重新校验'),
-                      onPressed: () => Get.defaultDialog(
-                        title: '',
-                        middleText: '重新校验种子？',
-                        actions: [
-                          ShadButton.destructive(
-                            size: ShadButtonSize.sm,
-                            onPressed: () {
-                              Get.back(result: false);
-                            },
-                            child: const Text('取消'),
-                          ),
-                          ShadButton(
-                            size: ShadButtonSize.sm,
-                            onPressed: () async {
-                              // 重新校验种子
-                              Get.back(result: true);
-                              await controller.controlTorrents(
-                                command: 'recheck',
-                                hashes: [torrentInfo.infohashV1!],
-                              );
-                            },
-                            child: const Text('确认'),
-                          ),
-                        ],
-                      ),
-                    ),
-                    ShadContextMenuItem(
-                      leading: Icon(
-                        size: 18,
-                        Icons.announcement_outlined,
-                        color: shadColorScheme.foreground,
-                      ),
-                      child: Text('重新汇报'),
-                      onPressed: () =>
-                          controller.controlTorrents(command: 'reannounce', hashes: [torrentInfo.infohashV1!]),
-                    ),
-
-                    ShadContextMenuItem(
-                      leading: Icon(
-                        size: 18,
-                        Icons.import_export,
-                        color: shadColorScheme.foreground,
-                      ),
-                      child: Text('导出.torrent'),
-                      onPressed: () {},
-                    ),
-                  ],
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        InkWell(
-                          onTap: () async {
-                            if (showDetails.value) {
-                              showDetails.value = false;
-                              // 只更新当前下载器窗口内容
-                              controller.update(
-                                  ["${controller.downloader.host} - ${controller.downloader.port} - torrentList"]);
-                              if (controller.selectedTorrent?.hash == torrentInfo.hash) {
-                                controller.selectedTorrent = null;
-                                controller.update([
-                                  '${controller.downloader.host} - ${controller.downloader.port} - ${torrentInfo.hash}'
-                                ]);
-                                return;
-                              }
-                            }
-
-                            controller.selectedTorrentContents =
-                                await controller.client.torrents.getContents(hash: torrentInfo.infohashV1!);
-
-                            controller.selectedTorrentTrackers =
-                                await controller.client.torrents.getTrackers(hash: torrentInfo.infohashV1!);
-                            controller.selectTab = 'torrentInfo';
-                            // controller.showDetails = true;
-                            showDetails.value = true;
-                            controller.update([
-                              '${controller.downloader.host} - ${controller.downloader.port} - ${controller.selectedTorrent?.hash}'
-                            ]);
-                          },
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  torrentInfo.tracker?.isNotEmpty == true
-                                      ? CustomTextTag(
-                                          labelText: controller.trackers.entries
-                                                  .firstWhereOrNull(
-                                                      (entry) => entry.value.contains(torrentInfo.infohashV1))
-                                                  ?.key ??
-                                              Uri.parse(torrentInfo.tracker!).host,
-                                          icon: const Icon(Icons.file_upload_outlined, size: 10, color: Colors.white),
-                                        )
-                                      : CustomTextTag(
-                                          labelText: controller.trackers.entries
-                                                  .firstWhereOrNull(
-                                                      (entry) => entry.value.contains(torrentInfo.infohashV1))
-                                                  ?.key ??
-                                              (Uri.parse(torrentInfo.magnetUri!).queryParametersAll["tr"]?.first != null
-                                                  ? Uri.parse(Uri.parse(torrentInfo.magnetUri!)
-                                                          .queryParametersAll["tr"]!
-                                                          .first)
-                                                      .host
-                                                  : "未知"),
-                                          icon: const Icon(Icons.link_off, size: 10, color: Colors.white),
-                                          backgroundColor: Colors.red,
-                                        ),
-                                  Text(
-                                    controller.qBitStatus
-                                        .firstWhere((element) => element.value == torrentInfo.state,
-                                            orElse: () => MetaDataItem(name: "未知状态", value: TorrentState.unknown))
-                                        .name,
-                                    style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
-                                  ),
-                                  Text(
-                                    FileSizeConvert.parseToFileSize(torrentInfo.size),
-                                    style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  SizedBox(
-                                    width: 255,
-                                    child: Tooltip(
-                                      message: torrentInfo.name,
-                                      child: Text(
-                                        torrentInfo.name!,
-                                        style: TextStyle(fontSize: 11, color: shadColorScheme.foreground),
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 1,
-                                      ),
-                                    ),
-                                  ),
-                                  Text(
-                                    torrentInfo.category?.isNotEmpty == true ? torrentInfo.category! : '未分类',
-                                    style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  SizedBox(
-                                    width: 80,
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            const Icon(
-                                              Icons.upload,
-                                              size: 12,
-                                            ),
-                                            Text('${FileSizeConvert.parseToFileSize(torrentInfo.upSpeed)}/s',
-                                                style: TextStyle(fontSize: 10, color: shadColorScheme.foreground))
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            const Icon(
-                                              Icons.cloud_upload,
-                                              size: 12,
-                                            ),
-                                            Text(FileSizeConvert.parseToFileSize(torrentInfo.uploaded),
-                                                style: TextStyle(fontSize: 10, color: shadColorScheme.foreground))
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 70,
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            const Icon(
-                                              Icons.download,
-                                              size: 12,
-                                            ),
-                                            Text('${FileSizeConvert.parseToFileSize(torrentInfo.dlSpeed)}/s',
-                                                style: TextStyle(fontSize: 10, color: shadColorScheme.foreground))
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            const Icon(
-                                              Icons.cloud_download,
-                                              size: 12,
-                                            ),
-                                            Text(FileSizeConvert.parseToFileSize(torrentInfo.downloaded),
-                                                style: TextStyle(fontSize: 10, color: shadColorScheme.foreground))
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 128,
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            const Icon(
-                                              Icons.timer,
-                                              size: 12,
-                                            ),
-                                            EllipsisText(
-                                              text: formatDuration(torrentInfo.timeActive!).toString(),
-                                              style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
-                                              maxLines: 1,
-                                              ellipsis: '...',
-                                            )
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            const Icon(
-                                              Icons.timer,
-                                              size: 12,
-                                            ),
-                                            EllipsisText(
-                                              text: DateFormat('yyyy-MM-dd HH:mm:ss')
-                                                  .format(
-                                                      DateTime.fromMillisecondsSinceEpoch(torrentInfo.addedOn! * 1000))
-                                                  .toString(),
-                                              style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
-                                              maxLines: 1,
-                                              ellipsis: '...',
-                                            )
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              ConstrainedBox(
-                                constraints: const BoxConstraints(maxHeight: 6),
-                                child: ShadProgress(value: torrentInfo.progress),
-                              ),
-                            ],
-                          ),
-                        ),
-                        GetBuilder<QBittorrentController>(
-                            // id: '${downloader.host} - ${downloader.port} - ${controller.selectedTorrent.hash} - details',
-                            builder: (controller) {
-                          List<Tracker> trackers = controller.selectedTorrentTrackers
-                              .where((Tracker element) => element.url?.startsWith('http') ?? false)
-                              .toList();
-                          var repeatTorrents = controller.torrents
-                              .where((element) => element.contentPath == controller.selectedTorrent?.contentPath)
-                              .map((e) => MetaDataItem.fromJson({
-                                    "name": controller.trackers.entries
-                                        .firstWhere((entry) => entry.value.contains(e.infohashV1))
-                                        .key,
-                                    "value": e,
-                                  }))
-                              .map((e) => InputChip(
-                                    labelPadding: EdgeInsets.zero,
-                                    backgroundColor: e.value.tracker.isNotEmpty
-                                        ? shadColorScheme.primary
-                                        : shadColorScheme.destructive,
-                                    deleteIconColor: e.value.tracker.isNotEmpty
-                                        ? shadColorScheme.primaryForeground
-                                        : shadColorScheme.destructiveForeground,
-                                    elevation: 1,
-                                    deleteButtonTooltipMessage: '删除种子',
-                                    label: SizedBox(
-                                      width: 52,
-                                      child: Center(
-                                        child: Text(
-                                          e.name,
-                                          style: TextStyle(
-                                            color: e.value.tracker.isNotEmpty
-                                                ? shadColorScheme.primaryForeground
-                                                : shadColorScheme.destructiveForeground,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    avatar: e.value.tracker.isNotEmpty
-                                        ? Icon(Icons.link, color: shadColorScheme.primaryForeground)
-                                        : Icon(Icons.link_off, color: shadColorScheme.destructiveForeground),
-                                    // onPressed: () async {
-                                    // },
-                                    onDeleted: () async {
-                                      RxBool deleteFiles = false.obs;
-                                      Get.defaultDialog(
-                                        title: '确认',
-                                        radius: 10,
-                                        titleStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                                        middleText: '您确定要执行这个操作吗？',
-                                        backgroundColor: shadColorScheme.background,
-                                        content: Obx(() {
-                                          return ShadSwitch(
-                                            value: deleteFiles.value,
-                                            onChanged: (v) => deleteFiles.value = v,
-                                            label: const Text('是否删除种子文件？'),
-                                          );
-                                        }),
-                                        actions: [
-                                          ShadButton.destructive(
-                                            size: ShadButtonSize.sm,
-                                            onPressed: () {
-                                              Get.back(result: false);
-                                            },
-                                            child: const Text('取消'),
-                                          ),
-                                          ShadButton(
-                                            size: ShadButtonSize.sm,
-                                            onPressed: () async {
-                                              Get.back(result: true);
-                                              await controller.controlTorrents(
-                                                  command: 'delete', hashes: [e.value.hash], enable: false);
-
-                                              controller.showTorrents
-                                                  .removeWhere((element) => element.hash == e.value.hash);
-                                              controller.update();
-                                            },
-                                            child: const Text('删除'),
-                                          )
-                                        ],
-                                      );
-                                    },
-                                  ))
-                              .toList();
-
-                          return Obx(() {
-                            if (showDetails.value) {
-                              return SizedBox.shrink();
-                            }
-                            return Container(
-                              height: 360,
-                              padding: const EdgeInsets.only(top: 12),
-                              child: ShadTabs(
-                                value: controller.selectTab,
-                                padding: EdgeInsets.zero,
-                                tabBarConstraints: const BoxConstraints(maxWidth: 600, maxHeight: 40),
-                                contentConstraints: const BoxConstraints(maxWidth: 600, maxHeight: 300),
-                                tabs: [
-                                  ShadTab(
-                                    value: 'torrentInfo',
-                                    onPressed: () {
-                                      controller.selectTab = 'torrentInfo';
-                                    },
-                                    content: ListView(
-                                      children: [
-                                        CustomCard(
-                                          child: ListTile(
-                                            dense: true,
-                                            title: Tooltip(
-                                              message: controller.selectedTorrent?.contentPath,
-                                              child: Text(
-                                                controller.selectedTorrent!.contentPath!,
-                                                maxLines: 2,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                                              ),
-                                            ),
-                                            leading: Text('资源路径'),
-                                            trailing: Text(torrentInfo.category!),
-                                          ),
-                                        ),
-                                        CustomCard(
-                                          width: double.infinity,
-                                          padding: const EdgeInsets.all(12),
-                                          child: Wrap(
-                                            spacing: 10,
-                                            runSpacing: 10,
-                                            alignment: WrapAlignment.spaceAround,
-                                            children: [
-                                              ShadBadge(
-                                                child: Text(
-                                                  '已上传: ${FileSizeConvert.parseToFileSize(controller.selectedTorrent?.uploaded)}',
-                                                  style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
-                                                ),
-                                              ),
-                                              ShadBadge(
-                                                child: Text(
-                                                  '上传速度: ${FileSizeConvert.parseToFileSize(controller.selectedTorrent?.upSpeed)}/S',
-                                                  style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
-                                                ),
-                                              ),
-                                              ShadBadge(
-                                                child: Text(
-                                                  '上传限速: ${FileSizeConvert.parseToFileSize(controller.selectedTorrent?.upLimit)}/S',
-                                                  style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
-                                                ),
-                                              ),
-                                              ShadBadge(
-                                                child: Text(
-                                                  '已下载: ${FileSizeConvert.parseToFileSize(controller.selectedTorrent?.downloaded)}',
-                                                  style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
-                                                ),
-                                              ),
-                                              if ((torrentInfo.progress ?? 0) < 1) ...[
-                                                ShadBadge(
-                                                  child: Text(
-                                                    '下载速度: ${FileSizeConvert.parseToFileSize(controller.selectedTorrent?.dlSpeed)}',
-                                                    style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
-                                                  ),
-                                                ),
-                                                ShadBadge(
-                                                  child: Text(
-                                                    '下载限速: ${FileSizeConvert.parseToFileSize(controller.selectedTorrent?.dlLimit)}',
-                                                    style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
-                                                  ),
-                                                ),
-                                              ],
-                                              ShadBadge(
-                                                child: Text(
-                                                  '分享率: ${controller.selectedTorrent?.ratio?.toStringAsFixed(2)}',
-                                                  style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
-                                                ),
-                                              ),
-                                              ShadBadge(
-                                                child: Text(
-                                                  '分享率限制: ${controller.selectedTorrent?.ratioLimit}',
-                                                  style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        CustomCard(
-                                            padding: const EdgeInsets.all(8),
-                                            child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                              children: [
-                                                ...trackers.map((Tracker e) => CustomCard(
-                                                      padding: const EdgeInsets.all(8.0),
-                                                      child: Column(
-                                                        children: [
-                                                          Row(
-                                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                            children: [
-                                                              Tooltip(
-                                                                message: e.url.toString(),
-                                                                child: InkWell(
-                                                                  onTap: () {
-                                                                    Clipboard.setData(
-                                                                        ClipboardData(text: e.url.toString()));
-                                                                  },
-                                                                  child: CustomTextTag(
-                                                                    backgroundColor: shadColorScheme.foreground,
-                                                                    labelColor: shadColorScheme.background,
-                                                                    labelText:
-                                                                        controller.mySiteController.webSiteList.values
-                                                                                .firstWhereOrNull(
-                                                                                  (element) => element.tracker.contains(
-                                                                                      Uri.parse(e.url.toString()).host),
-                                                                                )
-                                                                                ?.name ??
-                                                                            Uri.parse(e.url.toString()).host,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                              CustomTextTag(
-                                                                  backgroundColor: Colors.transparent,
-                                                                  labelColor: shadColorScheme.foreground,
-                                                                  icon: const Icon(Icons.download_done,
-                                                                      size: 10, color: Colors.white),
-                                                                  labelText:
-                                                                      '完成：${e.numDownloaded! > 0 ? e.numDownloaded.toString() : '0'}'),
-                                                              CustomTextTag(
-                                                                  backgroundColor: Colors.transparent,
-                                                                  labelColor: shadColorScheme.foreground,
-                                                                  icon: const Icon(Icons.download_outlined,
-                                                                      size: 10, color: Colors.white),
-                                                                  labelText: '下载：${e.numLeeches.toString()}'),
-                                                              CustomTextTag(
-                                                                  backgroundColor: Colors.transparent,
-                                                                  labelColor: shadColorScheme.foreground,
-                                                                  icon: const Icon(Icons.insert_link,
-                                                                      size: 10, color: Colors.white),
-                                                                  labelText: '连接：${e.numPeers.toString()}'),
-                                                              CustomTextTag(
-                                                                  backgroundColor: Colors.transparent,
-                                                                  labelColor: shadColorScheme.foreground,
-                                                                  icon: const Icon(Icons.cloud_upload_outlined,
-                                                                      size: 10, color: Colors.white),
-                                                                  labelText: '做种：${e.numSeeds.toString()}'),
-                                                            ],
-                                                          ),
-                                                          if (e.msg != null && e.msg!.isNotEmpty) ...[
-                                                            const SizedBox(height: 5),
-                                                            Row(
-                                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                              children: [
-                                                                CustomTextTag(
-                                                                    backgroundColor: e.status == TrackerStatus.working
-                                                                        ? Colors.transparent
-                                                                        : shadColorScheme.destructiveForeground,
-                                                                    labelColor: e.status == TrackerStatus.working
-                                                                        ? shadColorScheme.foreground
-                                                                        : shadColorScheme.destructive,
-                                                                    labelText: controller.qbTrackerStatus
-                                                                            .firstWhereOrNull(
-                                                                                (element) => element.value == e.status)
-                                                                            ?.name ??
-                                                                        '未知'),
-                                                                CustomTextTag(
-                                                                  backgroundColor: shadColorScheme.destructive,
-                                                                  labelColor: shadColorScheme.destructiveForeground,
-                                                                  icon: Icon(
-                                                                    Icons.message_outlined,
-                                                                    size: 10,
-                                                                    color: shadColorScheme.background,
-                                                                  ),
-                                                                  labelText: e.msg.toString(),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ],
-                                                        ],
-                                                      ),
-                                                    )),
-                                              ],
-                                            )),
-                                      ],
-                                    ),
-                                    child: const Text('种子信息'),
-                                  ),
-                                  ShadTab(
-                                      value: 'files',
-                                      onPressed: () {
-                                        controller.selectTab = 'files';
-                                      },
-                                      content: QBittorrentTreeView(controller.selectedTorrentContents),
-                                      child: const Text('文件列表')),
-                                  ShadTab(
-                                    value: 'repeatInfo',
-                                    onPressed: () {
-                                      controller.selectTab = 'repeatInfo';
-                                    },
-                                    content: ListView(
-                                      children: [
-                                        if (repeatTorrents.isNotEmpty)
-                                          Padding(
-                                              padding: const EdgeInsets.all(12),
-                                              child: Column(
-                                                children: [
-                                                  const SizedBox(
-                                                    height: 10,
-                                                  ),
-                                                  Wrap(
-                                                    spacing: 8,
-                                                    runSpacing: 8,
-                                                    children: repeatTorrents,
-                                                  ),
-                                                ],
-                                              )),
-                                      ],
-                                    ),
-                                    child: const Text('辅种信息'),
-                                  ),
-                                ],
-                              ),
-                            );
-                          });
-                        }),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            }),
-          );
-        });
-  }
-
   Widget _buildQbTorrentCard(TorrentInfo torrentInfo, context) {
     RxBool paused = torrentInfo.state.toString().contains('pause').obs;
     var shadColorScheme = ShadTheme.of(context).colorScheme;
@@ -1728,12 +852,46 @@ class QBittorrentPage extends GetView<QBittorrentController> {
       child: GetBuilder<QBittorrentController>(builder: (controller) {
         return Slidable(
           key: ValueKey(torrentInfo.infohashV1),
-          startActionPane: ActionPane(
+          endActionPane: ActionPane(
             motion: const ScrollMotion(),
+            extentRatio: 0.5,
             children: [
               SlidableAction(
                 onPressed: (context) async {
-                  _removeTorrent(controller, torrentInfo);
+                  RxBool deleteFiles = false.obs;
+                  Get.defaultDialog(
+                    title: '确认',
+                    middleText: '您确定要执行这个操作吗？',
+                    content: Obx(() {
+                      return SwitchListTile(
+                          title: const Text('是否删除种子文件？'),
+                          value: deleteFiles.value,
+                          onChanged: (value) {
+                            deleteFiles.value = value;
+                          });
+                    }),
+                    actions: [
+                      ShadButton.destructive(
+                        size: ShadButtonSize.sm,
+                        onPressed: () {
+                          Get.back(result: false);
+                        },
+                        child: const Text('取消'),
+                      ),
+                      ShadButton(
+                        size: ShadButtonSize.sm,
+                        onPressed: () async {
+                          Get.back(result: true);
+                          await controller.controlTorrents(
+                              command: 'delete', hashes: [torrentInfo.infohashV1!], enable: deleteFiles.value);
+
+                          controller.showTorrents.removeWhere((element) => element.hash == torrentInfo.hash);
+                          controller.update();
+                        },
+                        child: const Text('删除'),
+                      )
+                    ],
+                  );
                 },
                 flex: 2,
                 backgroundColor: const Color(0xFFFE4A49),
@@ -1743,8 +901,10 @@ class QBittorrentPage extends GetView<QBittorrentController> {
               ),
               SlidableAction(
                 onPressed: (context) async {
-                  await controller
-                      .controlTorrents(command: paused.value ? 'resume' : 'pause', hashes: [torrentInfo.hash!]);
+                  await controller.controlTorrents(
+                    command: paused.value ? 'resume' : 'pause',
+                    hashes: [torrentInfo.infohashV1!],
+                  );
                 },
                 flex: 2,
                 backgroundColor: paused.value ? const Color(0xFF0392CF) : Colors.deepOrangeAccent,
@@ -1754,272 +914,504 @@ class QBittorrentPage extends GetView<QBittorrentController> {
               ),
             ],
           ),
-          endActionPane: ActionPane(
-            motion: const ScrollMotion(),
-            children: [
-              SlidableAction(
-                // An action can be bigger than the others.
-                flex: 2,
-                onPressed: (context) async {
-                  Get.defaultDialog(
-                    title: '确认',
-                    backgroundColor: Colors.white54,
-                    radius: 5,
-                    titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
-                    middleText: '确定要重新校验种子吗？',
-                    actions: [
-                      ElevatedButton(
-                        onPressed: () {
-                          Get.back(result: false);
-                        },
-                        child: const Text('取消'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () async {
-                          Get.back(result: true);
-                          await controller.controlTorrents(
-                            command: 'recheck',
-                            hashes: [torrentInfo.hash!],
-                          );
-                        },
-                        child: const Text('确认'),
-                      ),
-                    ],
-                  );
-                },
-                backgroundColor: Colors.purple,
-                foregroundColor: Colors.white,
-                icon: Icons.checklist,
-                label: '校验',
+          child: ShadContextMenuRegion(
+            decoration: ShadDecoration(
+              labelStyle: TextStyle(),
+              descriptionStyle: TextStyle(),
+            ),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 100),
+            items: [
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 18,
+                  Icons.stop_outlined,
+                  color: shadColorScheme.foreground,
+                ),
+                child: Text('停止'),
+                onPressed: () {},
               ),
-              SlidableAction(
-                onPressed: (context) async {
-                  await controller.controlTorrents(
-                      command: 'AutoManagement', hashes: [torrentInfo.hash!], enable: !torrentInfo.autoTmm!);
-                },
-                flex: 2,
-                backgroundColor: torrentInfo.autoTmm! ? Colors.lightBlue : Colors.deepOrangeAccent,
-                foregroundColor: Colors.white,
-                icon: torrentInfo.autoTmm! ? Icons.auto_awesome : Icons.man,
-                label: torrentInfo.autoTmm! ? '自动' : '手动',
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 18,
+                  torrentInfo.forceStart == true ? Icons.double_arrow : Icons.play_arrow,
+                  color: shadColorScheme.foreground,
+                ),
+                child: Text('强制启动'),
+                onPressed: () => controller.controlTorrents(
+                    command: 'set_force_start', hashes: [torrentInfo.infohashV1!], enable: !torrentInfo.forceStart!),
               ),
-            ],
-          ),
-          child: InkWell(
-            onTap: () {
-              _openTorrentInfoDetail(torrentInfo, context);
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Row(
-                    children: [
-                      Row(children: [
-                        torrentInfo.tracker!.isNotEmpty
-                            ? CustomTextTag(
-                                labelText: controller.trackers.entries
-                                        .firstWhereOrNull((entry) => entry.value.contains(torrentInfo.hash))
-                                        ?.key ??
-                                    '未知',
-                                icon: Icon(Icons.file_upload_outlined, size: 10, color: shadColorScheme.foreground),
-                              )
-                            : CustomTextTag(
-                                labelText: controller.trackers.entries
-                                    .firstWhere((entry) => entry.value.contains(torrentInfo.hash))
-                                    .key,
-                                icon: Icon(Icons.link_off, size: 10, color: shadColorScheme.foreground),
-                                backgroundColor: Colors.red,
-                              ),
-                        const SizedBox(width: 10),
-                      ]),
-                      Expanded(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              FileSizeConvert.parseToFileSize(torrentInfo.size),
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: shadColorScheme.foreground,
-                              ),
-                            ),
-                            Text(
-                              controller.qBitStatus
-                                  .firstWhere((element) => element.value == torrentInfo.state!,
-                                      orElse: () => MetaDataItem(name: "未知状态", value: TorrentState.unknown))
-                                  .name,
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: shadColorScheme.foreground,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SizedBox(
-                        width: 255,
-                        child: Tooltip(
-                          message: torrentInfo.name!,
-                          child: Text(
-                            torrentInfo.name!,
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: shadColorScheme.foreground,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        ),
-                      ),
-                      Text(
-                        torrentInfo.category!.isNotEmpty ? torrentInfo.category! : '未分类',
-                        style: TextStyle(
-                          fontSize: 10,
+              // ShadContextMenuItem(
+              //   leading: Icon(
+              //     size: 18,
+              //     Icons.delete_outline,
+              //     color: shadColorScheme.foreground,
+              //   ),
+              //   child: Text('删除'),
+              //   onPressed: () {},
+              // ),
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 18,
+                  Icons.edit_location_outlined,
+                  color: shadColorScheme.foreground,
+                ),
+                child: Text('更改保存位置'),
+                onPressed: () {},
+              ),
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 18,
+                  Icons.drive_file_rename_outline_outlined,
+                  color: shadColorScheme.foreground,
+                ),
+                child: Text('重命名'),
+                onPressed: () {},
+              ),
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 18,
+                  Icons.drive_file_rename_outline,
+                  color: shadColorScheme.foreground,
+                ),
+                child: Text('重命名文件'),
+                onPressed: () {},
+              ),
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 18,
+                  Icons.category_outlined,
+                  color: shadColorScheme.foreground,
+                ),
+                items: [
+                  ...controller.categoryMap.values.map((value) => ShadContextMenuItem(
+                        leading: Icon(
+                          size: 18,
+                          value?.name == torrentInfo.category || (torrentInfo.category == '' && value?.name == '未分类')
+                              ? Icons.check_box_outlined
+                              : Icons.check_box_outline_blank_outlined,
                           color: shadColorScheme.foreground,
                         ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SizedBox(
-                        width: 80,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.upload,
-                                  size: 12,
-                                  color: shadColorScheme.foreground,
-                                ),
-                                Text(FileSizeConvert.parseToFileSize(torrentInfo.upSpeed),
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: shadColorScheme.foreground,
-                                    ))
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.cloud_upload,
-                                  size: 12,
-                                  color: shadColorScheme.foreground,
-                                ),
-                                Text(FileSizeConvert.parseToFileSize(torrentInfo.uploaded),
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: shadColorScheme.foreground,
-                                    ))
-                              ],
-                            ),
-                          ],
+                        onPressed: () => controller.controlTorrents(
+                          command: 'set_category',
+                          hashes: [torrentInfo.infohashV1!],
+                          category: value.name != '未分类' ? value.name! : '',
                         ),
-                      ),
-                      SizedBox(
-                        width: 70,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.download,
-                                  size: 12,
-                                  color: shadColorScheme.foreground,
-                                ),
-                                Text(FileSizeConvert.parseToFileSize(torrentInfo.dlSpeed),
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: shadColorScheme.foreground,
-                                    ))
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.cloud_download,
-                                  size: 12,
-                                  color: shadColorScheme.foreground,
-                                ),
-                                Text(FileSizeConvert.parseToFileSize(torrentInfo.downloaded),
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: shadColorScheme.foreground,
-                                    ))
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        width: 128,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.timer,
-                                  size: 12,
-                                ),
-                                EllipsisText(
-                                  text: formatDuration(torrentInfo.timeActive!).toString(),
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: shadColorScheme.foreground,
-                                  ),
-                                  maxLines: 1,
-                                  ellipsis: '...',
-                                )
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.timer,
-                                  size: 12,
-                                  color: shadColorScheme.foreground,
-                                ),
-                                EllipsisText(
-                                  text: DateFormat('yyyy-MM-dd HH:mm:ss')
-                                      .format(DateTime.fromMillisecondsSinceEpoch(torrentInfo.addedOn! * 1000))
-                                      .toString(),
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: shadColorScheme.foreground,
-                                  ),
-                                  maxLines: 1,
-                                  ellipsis: '...',
-                                )
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 8,
-                    // width: 100,
-                    child: ShadProgress(
-                      value: torrentInfo.progress!,
-                      color: ShadTheme.of(context).colorScheme.primary,
-                      backgroundColor: ShadTheme.of(context).colorScheme.background,
-                    ),
-                  ),
+                        child: Text(value!.name!),
+                      )),
                 ],
+                child: Text('分类'),
+              ),
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 18,
+                  Icons.tag_outlined,
+                  color: shadColorScheme.foreground,
+                ),
+                items: [
+                  ...controller.tags.where((item) => item != '全部').map((value) => ShadContextMenuItem(
+                        leading: Icon(
+                          size: 18,
+                          torrentInfo.tags?.contains(value) == true
+                              ? Icons.check_box_outlined
+                              : Icons.check_box_outline_blank_outlined,
+                          color: shadColorScheme.foreground,
+                        ),
+                        onPressed: () => controller.controlTorrents(
+                          command: torrentInfo.tags!.contains(value) == true ? 'add_tags' : 'remove_tags',
+                          hashes: [torrentInfo.infohashV1!],
+                          tag: value,
+                        ),
+                        child: Text(value),
+                      ))
+                ],
+                child: Text('标签'),
+              ),
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 18,
+                  Icons.copy_rounded,
+                  color: shadColorScheme.foreground,
+                ),
+                items: [
+                  ShadContextMenuItem(
+                    leading: Icon(
+                      size: 18,
+                      Icons.copy_rounded,
+                      color: shadColorScheme.foreground,
+                    ),
+                    child: Text('名称'),
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: torrentInfo.name!));
+                      Get.snackbar('复制种子名称', '种子名称复制成功！', colorText: shadColorScheme.foreground);
+                    },
+                  ),
+                  ShadContextMenuItem(
+                    leading: Icon(
+                      size: 18,
+                      Icons.copy_rounded,
+                      color: shadColorScheme.foreground,
+                    ),
+                    child: Text('哈希'),
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: torrentInfo.infohashV1!));
+                      Get.snackbar('复制种子HASH', '种子HASH复制成功！', colorText: shadColorScheme.foreground);
+                    },
+                  ),
+                  ShadContextMenuItem(
+                    leading: Icon(
+                      size: 18,
+                      Icons.copy_rounded,
+                      color: shadColorScheme.foreground,
+                    ),
+                    child: Text('磁力链接'),
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: torrentInfo.magnetUri!));
+                      Get.snackbar('复制种子磁力链接', '种子磁力链接复制成功！', colorText: shadColorScheme.foreground);
+                    },
+                  ),
+                  // ShadContextMenuItem(
+                  //   child: Text('Torrent ID'),
+                  //   onPressed: () {},
+                  // ),
+                  ShadContextMenuItem(
+                    leading: Icon(
+                      size: 18,
+                      Icons.copy_rounded,
+                      color: shadColorScheme.foreground,
+                    ),
+                    child: Text('Tracker 地址'),
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: torrentInfo.tracker!));
+                      Get.snackbar('复制种子Tracker', '种子Tracker复制成功！', colorText: shadColorScheme.foreground);
+                    },
+                  ),
+                  // ShadContextMenuItem(
+                  //   leading: Icon(
+                  //     size: 18,
+                  //     Icons.copy_rounded,
+                  //     color: shadColorScheme.foreground,
+                  //   ),
+                  //   child: Text('注释'),
+                  //   onPressed: () {
+                  //     Clipboard.setData(ClipboardData(text: torrentInfo.comment!));
+                  //     Get.snackbar('复制种子注释', '种子注释复制成功！', colorText: shadColorScheme.foreground);
+                  //   },
+                  // ),
+                ],
+                child: Text('复制'),
+              ),
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 18,
+                  torrentInfo.autoTmm == true ? Icons.check_box_outlined : Icons.motion_photos_auto_outlined,
+                  color: shadColorScheme.foreground,
+                ),
+                child: Text('自动管理'),
+                onPressed: () => controller.controlTorrents(
+                    command: 'set_auto_management', hashes: [torrentInfo.infohashV1!], enable: !torrentInfo.autoTmm!),
+              ),
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 18,
+                  Icons.upload_outlined,
+                  color: shadColorScheme.foreground,
+                ),
+                child: Text('限制上传速度'),
+                onPressed: () {},
+              ),
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 18,
+                  Icons.mobile_screen_share,
+                  color: shadColorScheme.foreground,
+                ),
+                child: Text('限制分享率'),
+                onPressed: () {},
+              ),
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 18,
+                  torrentInfo.superSeeding == true
+                      ? Icons.keyboard_double_arrow_up_outlined
+                      : Icons.keyboard_arrow_up_outlined,
+                  color: shadColorScheme.foreground,
+                ),
+                child: Text('超级做种'),
+                onPressed: () => controller.controlTorrents(
+                    command: 'set_super_seeding',
+                    hashes: [torrentInfo.infohashV1!],
+                    enable: !torrentInfo.superSeeding!),
+              ),
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 18,
+                  Icons.fact_check,
+                  color: shadColorScheme.foreground,
+                ),
+                child: Text('重新校验'),
+                onPressed: () => Get.defaultDialog(
+                  title: '',
+                  middleText: '重新校验种子？',
+                  actions: [
+                    ShadButton.destructive(
+                      size: ShadButtonSize.sm,
+                      onPressed: () {
+                        Get.back(result: false);
+                      },
+                      child: const Text('取消'),
+                    ),
+                    ShadButton(
+                      size: ShadButtonSize.sm,
+                      onPressed: () async {
+                        // 重新校验种子
+                        Get.back(result: true);
+                        await controller.controlTorrents(
+                          command: 'recheck',
+                          hashes: [torrentInfo.infohashV1!],
+                        );
+                      },
+                      child: const Text('确认'),
+                    ),
+                  ],
+                ),
+              ),
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 18,
+                  Icons.announcement_outlined,
+                  color: shadColorScheme.foreground,
+                ),
+                child: Text('重新汇报'),
+                onPressed: () => controller.controlTorrents(command: 'reannounce', hashes: [torrentInfo.infohashV1!]),
+              ),
+
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 18,
+                  Icons.import_export,
+                  color: shadColorScheme.foreground,
+                ),
+                child: Text('导出.torrent'),
+                onPressed: () {},
+              ),
+            ],
+            child: InkWell(
+              onTap: () {
+                _openTorrentInfoDetail(torrentInfo, context);
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Row(
+                      children: [
+                        Row(children: [
+                          torrentInfo.tracker!.isNotEmpty
+                              ? CustomTextTag(
+                                  labelText: controller.trackers.entries
+                                          .firstWhereOrNull((entry) => entry.value.contains(torrentInfo.hash))
+                                          ?.key ??
+                                      '未知',
+                                  icon: Icon(Icons.file_upload_outlined, size: 10, color: shadColorScheme.foreground),
+                                )
+                              : CustomTextTag(
+                                  labelText: controller.trackers.entries
+                                      .firstWhere((entry) => entry.value.contains(torrentInfo.hash))
+                                      .key,
+                                  icon: Icon(Icons.link_off, size: 10, color: shadColorScheme.foreground),
+                                  backgroundColor: Colors.red,
+                                ),
+                          const SizedBox(width: 10),
+                        ]),
+                        Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                FileSizeConvert.parseToFileSize(torrentInfo.size),
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: shadColorScheme.foreground,
+                                ),
+                              ),
+                              Text(
+                                controller.qBitStatus
+                                    .firstWhere((element) => element.value == torrentInfo.state!,
+                                        orElse: () => MetaDataItem(name: "未知状态", value: TorrentState.unknown))
+                                    .name,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: shadColorScheme.foreground,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        SizedBox(
+                          width: 255,
+                          child: Tooltip(
+                            message: torrentInfo.name!,
+                            child: Text(
+                              torrentInfo.name!,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: shadColorScheme.foreground,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          torrentInfo.category!.isNotEmpty ? torrentInfo.category! : '未分类',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: shadColorScheme.foreground,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        SizedBox(
+                          width: 80,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.upload,
+                                    size: 12,
+                                    color: shadColorScheme.foreground,
+                                  ),
+                                  Text(FileSizeConvert.parseToFileSize(torrentInfo.upSpeed),
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: shadColorScheme.foreground,
+                                      ))
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.cloud_upload,
+                                    size: 12,
+                                    color: shadColorScheme.foreground,
+                                  ),
+                                  Text(FileSizeConvert.parseToFileSize(torrentInfo.uploaded),
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: shadColorScheme.foreground,
+                                      ))
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(
+                          width: 70,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.download,
+                                    size: 12,
+                                    color: shadColorScheme.foreground,
+                                  ),
+                                  Text(FileSizeConvert.parseToFileSize(torrentInfo.dlSpeed),
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: shadColorScheme.foreground,
+                                      ))
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.cloud_download,
+                                    size: 12,
+                                    color: shadColorScheme.foreground,
+                                  ),
+                                  Text(FileSizeConvert.parseToFileSize(torrentInfo.downloaded),
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: shadColorScheme.foreground,
+                                      ))
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(
+                          width: 128,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.timer,
+                                    size: 12,
+                                  ),
+                                  EllipsisText(
+                                    text: formatDuration(torrentInfo.timeActive!).toString(),
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: shadColorScheme.foreground,
+                                    ),
+                                    maxLines: 1,
+                                    ellipsis: '...',
+                                  )
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.timer,
+                                    size: 12,
+                                    color: shadColorScheme.foreground,
+                                  ),
+                                  EllipsisText(
+                                    text: DateFormat('yyyy-MM-dd HH:mm:ss')
+                                        .format(DateTime.fromMillisecondsSinceEpoch(torrentInfo.addedOn! * 1000))
+                                        .toString(),
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: shadColorScheme.foreground,
+                                    ),
+                                    maxLines: 1,
+                                    ellipsis: '...',
+                                  )
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 8,
+                      // width: 100,
+                      child: ShadProgress(
+                        value: torrentInfo.progress!,
+                        color: ShadTheme.of(context).colorScheme.primary,
+                        backgroundColor: ShadTheme.of(context).colorScheme.background,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -2028,52 +1420,22 @@ class QBittorrentPage extends GetView<QBittorrentController> {
     );
   }
 
-  void _removeTorrent(QBittorrentController controller, TorrentInfo torrentInfo) {
-    RxBool deleteFile = false.obs;
-    Get.defaultDialog(
-      title: '确认',
-      // backgroundColor: Colors.white54,
-      radius: 5,
-      titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
-      middleText: '确定要删除种子吗？',
-      content: Obx(() {
-        return SwitchListTile(
-            dense: true,
-            title: const Text('是否删除种子文件？'),
-            value: deleteFile.value,
-            onChanged: (value) {
-              deleteFile.value = value;
-            });
-      }),
-      actions: [
-        ElevatedButton(
-          onPressed: () {
-            Get.back(result: false);
-          },
-          child: const Text('取消'),
-        ),
-        ElevatedButton(
-          onPressed: () async {
-            Get.back(result: true);
-            controller.showTorrents.removeWhere((element) => element.hash == torrentInfo.hash);
-            await controller.controlTorrents(
-                command: 'delete', hashes: [torrentInfo.hash!], deleteFiles: deleteFile.value);
-            controller.update();
-          },
-          child: const Text('确认'),
-        ),
-      ],
-    );
-  }
-
   void _openTorrentInfoDetail(TorrentInfo torrentInfo, context) async {
+    if (controller.showDetails) {
+      return;
+    }
+    controller.showDetails = true;
     controller.selectedTorrent = torrentInfo;
+    controller.showDetailsLoading = true;
+    controller.update();
     List<TorrentContents> contents = await controller.client.torrents.getContents(hash: torrentInfo.infohashV1!);
     var shadColorScheme = ShadTheme.of(context).colorScheme;
 
     // TorrentProperties prop =
     //     await controller.client.torrents.getProperties(hash: controller.selectedTorrent.hash!);
     List<Tracker> selectedTorrentTrackers = await controller.client.torrents.getTrackers(hash: torrentInfo.infohashV1!);
+    controller.showDetailsLoading = false;
+    controller.update();
     Get.bottomSheet(
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
@@ -2081,7 +1443,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
           topRight: Radius.circular(2),
         ),
       ),
-      // isScrollControlled: true,
+      isScrollControlled: true,
       enableDrag: true,
       CustomCard(
         height: MediaQuery.of(context).size.height * 0.9,
@@ -2169,7 +1531,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
             value: controller.selectTab,
             padding: EdgeInsets.zero,
             tabBarConstraints: const BoxConstraints(maxWidth: 600, maxHeight: 40),
-            contentConstraints: const BoxConstraints(maxWidth: 600, maxHeight: 300),
+            contentConstraints: const BoxConstraints(maxWidth: 600, maxHeight: 600),
             tabs: [
               ShadTab(
                 value: 'torrentInfo',
@@ -2202,27 +1564,33 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                       child: Wrap(
                         spacing: 10,
                         runSpacing: 10,
-                        alignment: WrapAlignment.spaceAround,
+                        alignment: WrapAlignment.center,
+                        runAlignment: WrapAlignment.center,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           ShadBadge(
+                            backgroundColor: Colors.transparent,
                             child: Text(
                               '已上传: ${FileSizeConvert.parseToFileSize(controller.selectedTorrent?.uploaded)}',
                               style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
                             ),
                           ),
                           ShadBadge(
+                            backgroundColor: Colors.transparent,
                             child: Text(
                               '上传速度: ${FileSizeConvert.parseToFileSize(controller.selectedTorrent?.upSpeed)}/S',
                               style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
                             ),
                           ),
                           ShadBadge(
+                            backgroundColor: Colors.transparent,
                             child: Text(
                               '上传限速: ${FileSizeConvert.parseToFileSize(controller.selectedTorrent?.upLimit)}/S',
                               style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
                             ),
                           ),
                           ShadBadge(
+                            backgroundColor: Colors.transparent,
                             child: Text(
                               '已下载: ${FileSizeConvert.parseToFileSize(controller.selectedTorrent?.downloaded)}',
                               style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
@@ -2230,12 +1598,14 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                           ),
                           if ((torrentInfo.progress ?? 0) < 1) ...[
                             ShadBadge(
+                              backgroundColor: Colors.transparent,
                               child: Text(
                                 '下载速度: ${FileSizeConvert.parseToFileSize(controller.selectedTorrent?.dlSpeed)}',
                                 style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
                               ),
                             ),
                             ShadBadge(
+                              backgroundColor: Colors.transparent,
                               child: Text(
                                 '下载限速: ${FileSizeConvert.parseToFileSize(controller.selectedTorrent?.dlLimit)}',
                                 style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
@@ -2243,12 +1613,14 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                             ),
                           ],
                           ShadBadge(
+                            backgroundColor: Colors.transparent,
                             child: Text(
                               '分享率: ${controller.selectedTorrent?.ratio?.toStringAsFixed(2)}',
                               style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
                             ),
                           ),
                           ShadBadge(
+                            backgroundColor: Colors.transparent,
                             child: Text(
                               '分享率限制: ${controller.selectedTorrent?.ratioLimit}',
                               style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
@@ -2257,97 +1629,92 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                         ],
                       ),
                     ),
-                    CustomCard(
-                        color: shadColorScheme.background,
-                        padding: const EdgeInsets.all(8),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            ...trackers.map((Tracker e) => CustomCard(
-                                  color: shadColorScheme.background,
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Column(
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        ...trackers.map((Tracker e) => CustomCard(
+                              color: shadColorScheme.background,
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Tooltip(
-                                            message: e.url.toString(),
-                                            child: InkWell(
-                                              onTap: () {
-                                                Clipboard.setData(ClipboardData(text: e.url.toString()));
-                                              },
-                                              child: CustomTextTag(
-                                                backgroundColor: shadColorScheme.foreground,
-                                                labelColor: shadColorScheme.background,
-                                                labelText: controller.mySiteController.webSiteList.values
-                                                        .firstWhereOrNull(
-                                                          (element) => element.tracker
-                                                              .contains(Uri.parse(e.url.toString()).host),
-                                                        )
-                                                        ?.name ??
-                                                    Uri.parse(e.url.toString()).host,
-                                              ),
-                                            ),
+                                      Tooltip(
+                                        message: e.url.toString(),
+                                        child: InkWell(
+                                          onTap: () {
+                                            Clipboard.setData(ClipboardData(text: e.url.toString()));
+                                          },
+                                          child: CustomTextTag(
+                                            backgroundColor: shadColorScheme.foreground,
+                                            labelColor: shadColorScheme.background,
+                                            labelText: controller.mySiteController.webSiteList.values
+                                                    .firstWhereOrNull(
+                                                      (element) =>
+                                                          element.tracker.contains(Uri.parse(e.url.toString()).host),
+                                                    )
+                                                    ?.name ??
+                                                Uri.parse(e.url.toString()).host,
                                           ),
-                                          CustomTextTag(
-                                              backgroundColor: Colors.transparent,
-                                              labelColor: shadColorScheme.foreground,
-                                              icon: const Icon(Icons.download_done, size: 10, color: Colors.white),
-                                              labelText:
-                                                  '完成：${e.numDownloaded! > 0 ? e.numDownloaded.toString() : '0'}'),
-                                          CustomTextTag(
-                                              backgroundColor: Colors.transparent,
-                                              labelColor: shadColorScheme.foreground,
-                                              icon: const Icon(Icons.download_outlined, size: 10, color: Colors.white),
-                                              labelText: '下载：${e.numLeeches.toString()}'),
-                                          CustomTextTag(
-                                              backgroundColor: Colors.transparent,
-                                              labelColor: shadColorScheme.foreground,
-                                              icon: const Icon(Icons.insert_link, size: 10, color: Colors.white),
-                                              labelText: '连接：${e.numPeers.toString()}'),
-                                          CustomTextTag(
-                                              backgroundColor: Colors.transparent,
-                                              labelColor: shadColorScheme.foreground,
-                                              icon: const Icon(Icons.cloud_upload_outlined,
-                                                  size: 10, color: Colors.white),
-                                              labelText: '做种：${e.numSeeds.toString()}'),
-                                        ],
-                                      ),
-                                      if (e.msg != null && e.msg!.isNotEmpty) ...[
-                                        const SizedBox(height: 5),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            CustomTextTag(
-                                                backgroundColor: e.status == TrackerStatus.working
-                                                    ? Colors.transparent
-                                                    : shadColorScheme.destructiveForeground,
-                                                labelColor: e.status == TrackerStatus.working
-                                                    ? shadColorScheme.foreground
-                                                    : shadColorScheme.destructive,
-                                                labelText: controller.qbTrackerStatus
-                                                        .firstWhereOrNull((element) => element.value == e.status)
-                                                        ?.name ??
-                                                    '未知'),
-                                            CustomTextTag(
-                                              backgroundColor: shadColorScheme.destructive,
-                                              labelColor: shadColorScheme.destructiveForeground,
-                                              icon: Icon(
-                                                Icons.message_outlined,
-                                                size: 10,
-                                                color: shadColorScheme.background,
-                                              ),
-                                              labelText: e.msg.toString(),
-                                            ),
-                                          ],
                                         ),
-                                      ],
+                                      ),
+                                      CustomTextTag(
+                                          backgroundColor: Colors.transparent,
+                                          labelColor: shadColorScheme.foreground,
+                                          icon: const Icon(Icons.download_done, size: 10, color: Colors.white),
+                                          labelText: '完成：${e.numDownloaded! > 0 ? e.numDownloaded.toString() : '0'}'),
+                                      CustomTextTag(
+                                          backgroundColor: Colors.transparent,
+                                          labelColor: shadColorScheme.foreground,
+                                          icon: const Icon(Icons.download_outlined, size: 10, color: Colors.white),
+                                          labelText: '下载：${e.numLeeches.toString()}'),
+                                      CustomTextTag(
+                                          backgroundColor: Colors.transparent,
+                                          labelColor: shadColorScheme.foreground,
+                                          icon: const Icon(Icons.insert_link, size: 10, color: Colors.white),
+                                          labelText: '连接：${e.numPeers.toString()}'),
+                                      CustomTextTag(
+                                          backgroundColor: Colors.transparent,
+                                          labelColor: shadColorScheme.foreground,
+                                          icon: const Icon(Icons.cloud_upload_outlined, size: 10, color: Colors.white),
+                                          labelText: '做种：${e.numSeeds.toString()}'),
                                     ],
                                   ),
-                                )),
-                          ],
-                        )),
+                                  if (e.msg != null && e.msg!.isNotEmpty) ...[
+                                    const SizedBox(height: 5),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        CustomTextTag(
+                                            backgroundColor: e.status == TrackerStatus.working
+                                                ? Colors.transparent
+                                                : shadColorScheme.destructiveForeground,
+                                            labelColor: e.status == TrackerStatus.working
+                                                ? shadColorScheme.foreground
+                                                : shadColorScheme.destructive,
+                                            labelText: controller.qbTrackerStatus
+                                                    .firstWhereOrNull((element) => element.value == e.status)
+                                                    ?.name ??
+                                                '未知'),
+                                        CustomTextTag(
+                                          backgroundColor: shadColorScheme.destructive,
+                                          labelColor: shadColorScheme.destructiveForeground,
+                                          icon: Icon(
+                                            Icons.message_outlined,
+                                            size: 10,
+                                            color: shadColorScheme.background,
+                                          ),
+                                          labelText: e.msg.toString(),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            )),
+                      ],
+                    ),
                   ],
                 ),
                 child: const Text('种子信息'),
@@ -2393,6 +1760,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
       ),
     ).whenComplete(() {
       controller.selectTab = 'torrentInfo';
+      controller.showDetails = false;
     });
   }
 }

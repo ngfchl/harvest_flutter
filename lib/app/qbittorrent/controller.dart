@@ -126,6 +126,7 @@ class QBittorrentController extends GetxController {
 
   bool trackerLoading = false;
   bool showDetails = false;
+  bool showDetailsLoading = false;
   String? selectedTag;
   List<String> tags = [];
   List<TorrentContents> selectedTorrentContents = [];
@@ -174,7 +175,7 @@ class QBittorrentController extends GetxController {
     }
     mainDataSubscription = client.sync.subscribeMainData(interval: Duration(seconds: subInterval)).listen((event) {
       allTorrents = event.torrents?.values.toList() ?? [];
-      torrents.assignAll(allTorrents);
+      // torrents.assignAll(allTorrents);
       serverState = event.serverState;
       statusList.add(event.serverState!);
       trackers.addAll(mergeTrackers(event.trackers));
@@ -228,11 +229,11 @@ class QBittorrentController extends GetxController {
     if (torrentState != null) {
       showTorrents = showTorrents.where((torrent) => torrent.state == torrentState).toList();
     }
-    Logger.instance.d('当前 种子数: ${showTorrents.length}');
+    // Logger.instance.d('当前 种子数: ${showTorrents.length}');
     if (selectedCategory != null) {
       showTorrents = showTorrents.where((torrent) => torrent.category == selectedCategory).toList();
     }
-    Logger.instance.d('当前 种子数: ${showTorrents.length}');
+    // Logger.instance.d('当前 种子数: ${showTorrents.length}');
     if (selectedTracker == '红种') {
       showTorrents = showTorrents.where((torrent) => torrent.tracker!.isEmpty).toList();
     } else if (selectedTracker != '全部') {
@@ -240,7 +241,7 @@ class QBittorrentController extends GetxController {
           .where((torrent) => trackers[selectedTracker] != null && trackers[selectedTracker]!.contains(torrent.hash))
           .toList();
     }
-    Logger.instance.d('当前 种子数: ${showTorrents.length}');
+    // Logger.instance.d('当前 种子数: ${showTorrents.length}');
     if (searchKey.isNotEmpty) {
       showTorrents = showTorrents
           .where((TorrentInfo torrent) =>
@@ -252,7 +253,7 @@ class QBittorrentController extends GetxController {
     if (sortReversed) {
       showTorrents = showTorrents.reversed.toList();
     }
-    Logger.instance.d('当前 种子数: ${showTorrents.length}');
+    Logger.instance.d('筛选后的种子数: ${showTorrents.length}');
     update();
   }
 
