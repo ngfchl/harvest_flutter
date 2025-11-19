@@ -43,6 +43,7 @@ class ThemeIconButton extends StatelessWidget {
       return Obx(() {
         return ShadPopover(
           controller: popoverController,
+          closeOnTapOutside: false,
           decoration: ShadDecoration(
             color: shadColorScheme.background.withOpacity(opacity.value),
           ),
@@ -297,6 +298,11 @@ class ThemeIconButton extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        ShadButton.destructive(
+                          size: ShadButtonSize.sm,
+                          onPressed: () => popoverController.hide(),
+                          child: Text('关闭'),
+                        ),
                         if (useBackground.value)
                           ShadButton.secondary(
                             size: ShadButtonSize.sm,
