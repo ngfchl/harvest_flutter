@@ -336,12 +336,12 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                     children: [
                       controller.sortReversed
                           ? Icon(
-                              Icons.sim_card_download_sharp,
+                              Icons.sim_card_download_outlined,
                               size: 13,
                               color: shadColorScheme.foreground,
                             )
                           : Icon(
-                              Icons.upload_file_sharp,
+                              Icons.upload_file_outlined,
                               size: 13,
                               color: shadColorScheme.foreground,
                             ),
@@ -350,14 +350,14 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                           ? Text(
                               '正序',
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 10,
                                 color: shadColorScheme.foreground,
                               ),
                             )
                           : Text(
                               '倒序',
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 10,
                                 color: shadColorScheme.foreground,
                               ),
                             ),
@@ -381,6 +381,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                     item.name,
                                     style: TextStyle(
                                       color: shadColorScheme.foreground,
+                                      fontSize: 12,
                                     ),
                                   ),
                                   onTap: () async {
@@ -430,6 +431,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                               '全部[${controller.torrents.length}]',
                               style: TextStyle(
                                 color: shadColorScheme.foreground,
+                                fontSize: 12,
                               ),
                             ),
                             onTap: () async {
@@ -444,6 +446,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                   '$item[${controller.allTorrents.where((element) => element.tags?.contains(item) ?? false).length}]',
                                   style: TextStyle(
                                     color: shadColorScheme.foreground,
+                                    fontSize: 12,
                                   ),
                                 ),
                                 onTap: () async {
@@ -476,7 +479,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                   backgroundColor: shadColorScheme.background,
                   content: SingleChildScrollView(
                     child: SizedBox(
-                      width: 120,
+                      width: 150,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -486,6 +489,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                               '全部[${controller.allTorrents.length}]',
                               style: TextStyle(
                                 color: shadColorScheme.foreground,
+                                fontSize: 12,
                               ),
                             ),
                             onTap: () async {
@@ -500,6 +504,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                               '红种[${controller.allTorrents.where((element) => element.tracker?.isEmpty == true).toList().length}]',
                               style: TextStyle(
                                 color: shadColorScheme.foreground,
+                                fontSize: 12,
                               ),
                             ),
                             onTap: () async {
@@ -513,6 +518,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                   '$item[${controller.trackers[item]?.length ?? 0}]',
                                   style: TextStyle(
                                     color: shadColorScheme.foreground,
+                                    fontSize: 12,
                                   ),
                                 ),
                                 onTap: () async {
@@ -555,7 +561,10 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                   "${item?.name ?? '未分类'}[${item?.name == '全部' ? controller.allTorrents.length : controller.allTorrents.where((torrent) => torrent.category == (item?.name != '未分类' ? item?.name : '')).toList().length}]",
                                 ),
                                 style: ListTileStyle.list,
-                                titleTextStyle: TextStyle(color: shadColorScheme.foreground),
+                                titleTextStyle: TextStyle(
+                                  color: shadColorScheme.foreground,
+                                  fontSize: 12,
+                                ),
                                 selected:
                                     controller.selectedCategory == (item?.savePath != null ? (item?.name ?? '') : null),
                                 selectedColor: shadColorScheme.destructive,
@@ -624,7 +633,10 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                           return PopupMenuItem(
                             child: Text(
                               '${state.name}(${torrentsMatchingState.length})',
-                              style: TextStyle(color: shadColorScheme.foreground),
+                              style: TextStyle(
+                                color: shadColorScheme.foreground,
+                                fontSize: 12,
+                              ),
                             ),
                             onTap: () {
                               // Get.back();
@@ -669,6 +681,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                               '清除红种',
                               style: TextStyle(
                                 color: shadColorScheme.foreground,
+                                fontSize: 12,
                               ),
                             ),
                           ),
@@ -686,6 +699,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                               '切换限速',
                               style: TextStyle(
                                 color: shadColorScheme.foreground,
+                                fontSize: 12,
                               ),
                             ),
                           ),
@@ -699,6 +713,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                             '替换Tracker',
                             style: TextStyle(
                               color: shadColorScheme.foreground,
+                              fontSize: 12,
                             ),
                           )),
                           onTap: () {
@@ -711,84 +726,83 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(5.0), // 圆角半径
                               ),
+                              backgroundColor: shadColorScheme.background,
                               SizedBox(
                                 height: 240,
-                                child: Scaffold(
-                                  body: Column(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      Text('Tracker替换',
-                                          style: TextStyle(
-                                              color: shadColorScheme.foreground,
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold)),
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: ConstrainedBox(
-                                          constraints: const BoxConstraints(minWidth: double.infinity),
-                                          child: ShadSelect<String>(
-                                              placeholder: const Text('要替换的站点'),
-                                              trailing: const Text('要替换的站点'),
-                                              initialValue: sites.first,
-                                              decoration: ShadDecoration(
-                                                border: ShadBorder(
-                                                  merge: false,
-                                                  bottom: ShadBorderSide(
-                                                      color: shadColorScheme.foreground.withOpacity(0.2), width: 1),
-                                                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    Text('Tracker替换',
+                                        style: TextStyle(
+                                            color: shadColorScheme.foreground,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold)),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: ConstrainedBox(
+                                        constraints: const BoxConstraints(minWidth: double.infinity),
+                                        child: ShadSelect<String>(
+                                            placeholder: const Text('要替换的站点'),
+                                            trailing: const Text('要替换的站点'),
+                                            initialValue: sites.first,
+                                            decoration: ShadDecoration(
+                                              border: ShadBorder(
+                                                merge: false,
+                                                bottom: ShadBorderSide(
+                                                    color: shadColorScheme.foreground.withOpacity(0.2), width: 1),
+                                                padding: const EdgeInsets.symmetric(horizontal: 16),
                                               ),
-                                              options:
-                                                  sites.map((key) => ShadOption(value: key, child: Text(key))).toList(),
-                                              selectedOptionBuilder: (context, value) {
-                                                return Text(value);
-                                              },
-                                              onChanged: (String? value) {
-                                                keyController.text = value!;
-                                              }),
-                                        ),
-                                      ),
-                                      CustomTextField(controller: valueController, labelText: "替换为"),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                        children: [
-                                          ShadButton.destructive(
-                                            size: ShadButtonSize.sm,
-                                            onPressed: () {
-                                              Get.back(result: false);
+                                            ),
+                                            options:
+                                                sites.map((key) => ShadOption(value: key, child: Text(key))).toList(),
+                                            selectedOptionBuilder: (context, value) {
+                                              return Text(value);
                                             },
-                                            child: const Text('取消'),
-                                          ),
-                                          Stack(
-                                            children: [
-                                              ShadButton(
-                                                size: ShadButtonSize.sm,
-                                                onPressed: () async {
-                                                  controller.trackerLoading = true;
-                                                  controller.update();
-                                                  CommonResponse res = await controller.replaceTrackers(
-                                                      site: keyController.text, newTracker: valueController.text);
-                                                  controller.trackerLoading = false;
-                                                  controller.update();
-                                                  if (res.succeed) {
-                                                    Get.back(result: true);
-                                                  }
-                                                  Get.snackbar('Tracker替换ing', res.msg,
-                                                      colorText: res.succeed
-                                                          ? shadColorScheme.foreground
-                                                          : shadColorScheme.destructive);
-                                                },
-                                                leading: controller.trackerLoading
-                                                    ? const Center(child: CircularProgressIndicator())
-                                                    : null,
-                                                child: const Text('确认'),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      )
-                                    ],
-                                  ),
+                                            onChanged: (String? value) {
+                                              keyController.text = value!;
+                                            }),
+                                      ),
+                                    ),
+                                    CustomTextField(controller: valueController, labelText: "替换为"),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                      children: [
+                                        ShadButton.destructive(
+                                          size: ShadButtonSize.sm,
+                                          onPressed: () {
+                                            Get.back(result: false);
+                                          },
+                                          child: const Text('取消'),
+                                        ),
+                                        Stack(
+                                          children: [
+                                            ShadButton(
+                                              size: ShadButtonSize.sm,
+                                              onPressed: () async {
+                                                controller.trackerLoading = true;
+                                                controller.update();
+                                                CommonResponse res = await controller.replaceTrackers(
+                                                    site: keyController.text, newTracker: valueController.text);
+                                                controller.trackerLoading = false;
+                                                controller.update();
+                                                if (res.succeed) {
+                                                  Get.back(result: true);
+                                                }
+                                                Get.snackbar('Tracker替换ing', res.msg,
+                                                    colorText: res.succeed
+                                                        ? shadColorScheme.foreground
+                                                        : shadColorScheme.destructive);
+                                              },
+                                              leading: controller.trackerLoading
+                                                  ? const Center(child: CircularProgressIndicator())
+                                                  : null,
+                                              child: const Text('确认'),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    )
+                                  ],
                                 ),
                               ),
                             );
@@ -798,14 +812,14 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                     ),
                   ),
                   child: Icon(
-                    Icons.settings,
-                    size: 18,
+                    Icons.settings_outlined,
+                    size: 13,
                     color: shadColorScheme.foreground,
                   )),
               ShadIconButton.ghost(
                 icon: Icon(
-                  Icons.add,
-                  size: 18,
+                  Icons.add_outlined,
+                  size: 13,
                   color: shadColorScheme.foreground,
                 ),
                 onPressed: () {
@@ -902,7 +916,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
               SlidableAction(
                 onPressed: (context) async {
                   await controller.controlTorrents(
-                    command: paused.value ? 'resume' : 'pause',
+                    command: paused.value ? 'resumeTorrents' : 'pauseTorrents',
                     hashes: [torrentInfo.infohashV1!],
                   );
                 },
@@ -922,125 +936,244 @@ class QBittorrentPage extends GetView<QBittorrentController> {
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 100),
             items: [
+              torrentInfo.state?.name.toLowerCase().contains('stop') == true ||
+                      torrentInfo.state?.name.toLowerCase().contains('paused') == true
+                  ? ShadContextMenuItem(
+                      leading: Icon(
+                        size: 14,
+                        Icons.play_arrow_outlined,
+                        color: shadColorScheme.foreground,
+                      ),
+                      child: Text(style: TextStyle(fontSize: 12), '继续'),
+                      onPressed: () =>
+                          controller.controlTorrents(command: 'resumeTorrents', hashes: [torrentInfo.infohashV1!]),
+                    )
+                  : ShadContextMenuItem(
+                      leading: Icon(
+                        size: 14,
+                        Icons.stop_outlined,
+                        color: shadColorScheme.foreground,
+                      ),
+                      child: Text(style: TextStyle(fontSize: 12), '停止'),
+                      onPressed: () =>
+                          controller.controlTorrents(command: 'pauseTorrents', hashes: [torrentInfo.infohashV1!]),
+                    ),
               ShadContextMenuItem(
                 leading: Icon(
-                  size: 18,
-                  Icons.stop_outlined,
-                  color: shadColorScheme.foreground,
+                  size: 14,
+                  torrentInfo.forceStart == true ? Icons.double_arrow_outlined : Icons.play_arrow_outlined,
+                  color: torrentInfo.forceStart == true ? shadColorScheme.primary : shadColorScheme.foreground,
                 ),
-                child: Text('停止'),
-                onPressed: () {},
-              ),
-              ShadContextMenuItem(
-                leading: Icon(
-                  size: 18,
-                  torrentInfo.forceStart == true ? Icons.double_arrow : Icons.play_arrow,
-                  color: shadColorScheme.foreground,
-                ),
-                child: Text('强制启动'),
+                child: Text(style: TextStyle(fontSize: 12), '强制启动'),
                 onPressed: () => controller.controlTorrents(
-                    command: 'set_force_start', hashes: [torrentInfo.infohashV1!], enable: !torrentInfo.forceStart!),
+                    command: 'setForceStart', hashes: [torrentInfo.infohashV1!], enable: !torrentInfo.forceStart!),
+              ),
+              const Divider(height: 5),
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 14,
+                  Icons.delete_outline,
+                  color: shadColorScheme.foreground,
+                ),
+                child: Text(style: TextStyle(fontSize: 12), '删除'),
+                onPressed: () {
+                  RxBool deleteFiles = false.obs;
+                  RxBool doDeleteWithOutOthers = true.obs;
+                  Get.defaultDialog(
+                    title: '确认',
+                    radius: 5,
+                    middleText: '您确定要执行这个操作吗？',
+                    content: Obx(() {
+                      return Column(
+                        children: [
+                          SwitchListTile(
+                              dense: true,
+                              title: const Text(
+                                '删除种子文件？',
+                                style: TextStyle(fontSize: 12),
+                              ),
+                              value: deleteFiles.value,
+                              activeColor: shadColorScheme.primary,
+                              onChanged: (value) {
+                                deleteFiles.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              title: const Text(
+                                '无其他站点保种删除数据？',
+                                style: TextStyle(fontSize: 12),
+                              ),
+                              value: doDeleteWithOutOthers.value,
+                              activeColor: shadColorScheme.primary,
+                              onChanged: (value) {
+                                doDeleteWithOutOthers.value = value;
+                              }),
+                        ],
+                      );
+                    }),
+                    actions: [
+                      ShadButton(
+                        size: ShadButtonSize.sm,
+                        onPressed: () {
+                          Get.back(result: false);
+                        },
+                        child: const Text('取消'),
+                      ),
+                      ShadButton.destructive(
+                        size: ShadButtonSize.sm,
+                        onPressed: () async {
+                          Get.back(result: true);
+                          // 判断尤其其他站点做种
+                          if (doDeleteWithOutOthers.value) {
+                            // 删除其他站点的种子数据
+                            deleteFiles.value =
+                                controller.torrents.map((t) => t.contentPath == torrentInfo.contentPath).isEmpty;
+                          }
+                          await controller.controlTorrents(
+                              command: 'deleteTorrents', enable: deleteFiles.value, hashes: [torrentInfo.infohashV1!]);
+                          controller.showTorrents
+                              .removeWhere((element) => element.infohashV1 == torrentInfo.infohashV1);
+                          controller.update();
+                        },
+                        child: const Text('确认'),
+                      ),
+                    ],
+                  );
+                },
+              ),
+              const Divider(height: 5),
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 14,
+                  Icons.edit_location_outlined,
+                  color: shadColorScheme.foreground,
+                ),
+                child: Text(style: TextStyle(fontSize: 12), '更改保存位置'),
+                onPressed: () {
+                  TextEditingController newPathController = TextEditingController(text: torrentInfo.savePath);
+                  Get.defaultDialog(
+                    title: '修改目录',
+                    radius: 5,
+                    backgroundColor: shadColorScheme.background,
+                    contentPadding: EdgeInsets.all(16),
+                    content: Column(
+                      spacing: 8.0,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            '当前种子：${torrentInfo.name}',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ),
+                        CustomTextField(
+                          controller: newPathController,
+                          labelText: '新目录',
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      ShadButton.destructive(
+                        size: ShadButtonSize.sm,
+                        onPressed: () {
+                          Get.back();
+                        },
+                        child: const Text('取消'),
+                      ),
+                      ShadButton(
+                        size: ShadButtonSize.sm,
+                        onPressed: () async {
+                          await controller.controlTorrents(
+                            command: 'setLocation',
+                            hashes: [torrentInfo.infohashV1!],
+                            savePath: newPathController.text,
+                          );
+                        },
+                        child: const Text('确认'),
+                      ),
+                    ],
+                  );
+                },
               ),
               // ShadContextMenuItem(
               //   leading: Icon(
-              //     size: 18,
-              //     Icons.delete_outline,
+              //     size: 14,
+              //     Icons.drive_file_rename_outline_outlined,
               //     color: shadColorScheme.foreground,
               //   ),
-              //   child: Text('删除'),
+              //   child: Text(style: TextStyle(fontSize: 12), '重命名'),
               //   onPressed: () {},
               // ),
               ShadContextMenuItem(
                 leading: Icon(
-                  size: 18,
-                  Icons.edit_location_outlined,
-                  color: shadColorScheme.foreground,
-                ),
-                child: Text('更改保存位置'),
-                onPressed: () {},
-              ),
-              ShadContextMenuItem(
-                leading: Icon(
-                  size: 18,
-                  Icons.drive_file_rename_outline_outlined,
-                  color: shadColorScheme.foreground,
-                ),
-                child: Text('重命名'),
-                onPressed: () {},
-              ),
-              ShadContextMenuItem(
-                leading: Icon(
-                  size: 18,
-                  Icons.drive_file_rename_outline,
-                  color: shadColorScheme.foreground,
-                ),
-                child: Text('重命名文件'),
-                onPressed: () {},
-              ),
-              ShadContextMenuItem(
-                leading: Icon(
-                  size: 18,
+                  size: 14,
                   Icons.category_outlined,
                   color: shadColorScheme.foreground,
                 ),
                 items: [
                   ...controller.categoryMap.values.map((value) => ShadContextMenuItem(
                         leading: Icon(
-                          size: 18,
+                          size: 14,
                           value?.name == torrentInfo.category || (torrentInfo.category == '' && value?.name == '未分类')
                               ? Icons.check_box_outlined
                               : Icons.check_box_outline_blank_outlined,
                           color: shadColorScheme.foreground,
                         ),
                         onPressed: () => controller.controlTorrents(
-                          command: 'set_category',
+                          command: 'setCategory',
                           hashes: [torrentInfo.infohashV1!],
                           category: value.name != '未分类' ? value.name! : '',
                         ),
                         child: Text(value!.name!),
                       )),
                 ],
-                child: Text('分类'),
+                child: Text(style: TextStyle(fontSize: 12), '分类'),
               ),
               ShadContextMenuItem(
                 leading: Icon(
-                  size: 18,
+                  size: 14,
                   Icons.tag_outlined,
                   color: shadColorScheme.foreground,
                 ),
                 items: [
                   ...controller.tags.where((item) => item != '全部').map((value) => ShadContextMenuItem(
                         leading: Icon(
-                          size: 18,
+                          size: 14,
                           torrentInfo.tags?.contains(value) == true
                               ? Icons.check_box_outlined
                               : Icons.check_box_outline_blank_outlined,
                           color: shadColorScheme.foreground,
                         ),
                         onPressed: () => controller.controlTorrents(
-                          command: torrentInfo.tags!.contains(value) == true ? 'add_tags' : 'remove_tags',
+                          command: torrentInfo.tags!.contains(value) == true ? 'addTags' : 'removeTags',
                           hashes: [torrentInfo.infohashV1!],
                           tag: value,
                         ),
                         child: Text(value),
                       ))
                 ],
-                child: Text('标签'),
+                child: Text(style: TextStyle(fontSize: 12), '标签'),
               ),
+              const Divider(height: 5),
               ShadContextMenuItem(
                 leading: Icon(
-                  size: 18,
+                  size: 14,
                   Icons.copy_rounded,
+                  color: shadColorScheme.foreground,
+                ),
+                trailing: Icon(
+                  size: 14,
+                  Icons.keyboard_arrow_right_outlined,
                   color: shadColorScheme.foreground,
                 ),
                 items: [
                   ShadContextMenuItem(
                     leading: Icon(
-                      size: 18,
+                      size: 14,
                       Icons.copy_rounded,
                       color: shadColorScheme.foreground,
                     ),
-                    child: Text('名称'),
+                    child: Text(style: TextStyle(fontSize: 12), '名称'),
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: torrentInfo.name!));
                       Get.snackbar('复制种子名称', '种子名称复制成功！', colorText: shadColorScheme.foreground);
@@ -1048,11 +1181,11 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                   ),
                   ShadContextMenuItem(
                     leading: Icon(
-                      size: 18,
+                      size: 14,
                       Icons.copy_rounded,
                       color: shadColorScheme.foreground,
                     ),
-                    child: Text('哈希'),
+                    child: Text(style: TextStyle(fontSize: 12), '哈希'),
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: torrentInfo.infohashV1!));
                       Get.snackbar('复制种子HASH', '种子HASH复制成功！', colorText: shadColorScheme.foreground);
@@ -1060,27 +1193,27 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                   ),
                   ShadContextMenuItem(
                     leading: Icon(
-                      size: 18,
+                      size: 14,
                       Icons.copy_rounded,
                       color: shadColorScheme.foreground,
                     ),
-                    child: Text('磁力链接'),
+                    child: Text(style: TextStyle(fontSize: 12), '磁力链接'),
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: torrentInfo.magnetUri!));
                       Get.snackbar('复制种子磁力链接', '种子磁力链接复制成功！', colorText: shadColorScheme.foreground);
                     },
                   ),
                   // ShadContextMenuItem(
-                  //   child: Text('Torrent ID'),
+                  //   child: Text(style: TextStyle(fontSize: 12),'Torrent ID'),
                   //   onPressed: () {},
                   // ),
                   ShadContextMenuItem(
                     leading: Icon(
-                      size: 18,
+                      size: 14,
                       Icons.copy_rounded,
                       color: shadColorScheme.foreground,
                     ),
-                    child: Text('Tracker 地址'),
+                    child: Text(style: TextStyle(fontSize: 12), 'Tracker 地址'),
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: torrentInfo.tracker!));
                       Get.snackbar('复制种子Tracker', '种子Tracker复制成功！', colorText: shadColorScheme.foreground);
@@ -1088,70 +1221,213 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                   ),
                   // ShadContextMenuItem(
                   //   leading: Icon(
-                  //     size: 18,
+                  //     size: 14,
                   //     Icons.copy_rounded,
                   //     color: shadColorScheme.foreground,
                   //   ),
-                  //   child: Text('注释'),
+                  //   child: Text(style: TextStyle(fontSize: 12),'注释'),
                   //   onPressed: () {
                   //     Clipboard.setData(ClipboardData(text: torrentInfo.comment!));
                   //     Get.snackbar('复制种子注释', '种子注释复制成功！', colorText: shadColorScheme.foreground);
                   //   },
                   // ),
                 ],
-                child: Text('复制'),
+                child: Text(style: TextStyle(fontSize: 12), '复制'),
               ),
+              const Divider(height: 5),
               ShadContextMenuItem(
                 leading: Icon(
-                  size: 18,
+                  size: 14,
                   torrentInfo.autoTmm == true ? Icons.check_box_outlined : Icons.motion_photos_auto_outlined,
-                  color: shadColorScheme.foreground,
+                  color: torrentInfo.autoTmm == true ? shadColorScheme.primary : shadColorScheme.foreground,
                 ),
-                child: Text('自动管理'),
+                child: Text(style: TextStyle(fontSize: 12), '自动管理'),
                 onPressed: () => controller.controlTorrents(
-                    command: 'set_auto_management', hashes: [torrentInfo.infohashV1!], enable: !torrentInfo.autoTmm!),
+                    command: 'setAutoManagement', hashes: [torrentInfo.infohashV1!], enable: !torrentInfo.autoTmm!),
               ),
               ShadContextMenuItem(
                 leading: Icon(
-                  size: 18,
+                  size: 14,
                   Icons.upload_outlined,
                   color: shadColorScheme.foreground,
                 ),
-                child: Text('限制上传速度'),
-                onPressed: () {},
+                child: Text(style: TextStyle(fontSize: 12), '限制上传速度'),
+                onPressed: () {
+                  TextEditingController upSpeedController = TextEditingController(text: torrentInfo.upLimit.toString());
+                  Get.defaultDialog(
+                    title: '限制上传速度',
+                    radius: 5,
+                    backgroundColor: shadColorScheme.background,
+                    contentPadding: EdgeInsets.all(16),
+                    content: Column(
+                      spacing: 8.0,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            '当前种子：${torrentInfo.name}',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ),
+                        CustomTextField(
+                          controller: upSpeedController,
+                          labelText: '上传限制（KiB/s）',
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      ShadButton.destructive(
+                        size: ShadButtonSize.sm,
+                        onPressed: () {
+                          Get.back();
+                        },
+                        child: const Text('取消'),
+                      ),
+                      ShadButton(
+                        size: ShadButtonSize.sm,
+                        onPressed: () async {
+                          await controller.controlTorrents(
+                            command: 'setUploadLimit',
+                            hashes: [torrentInfo.infohashV1!],
+                            limit: int.tryParse(upSpeedController.text) ?? 0,
+                          );
+                        },
+                        child: const Text('确认'),
+                      ),
+                    ],
+                  );
+                },
               ),
               ShadContextMenuItem(
                 leading: Icon(
-                  size: 18,
+                  size: 14,
                   Icons.mobile_screen_share,
                   color: shadColorScheme.foreground,
                 ),
-                child: Text('限制分享率'),
-                onPressed: () {},
+                child: Text(style: TextStyle(fontSize: 12), '限制分享率'),
+                onPressed: () {
+                  Rx<double?> shareLimit = torrentInfo.ratioLimit.obs;
+                  TextEditingController ratioController =
+                      TextEditingController(text: torrentInfo.ratioLimit.toString());
+                  TextEditingController seedingTimeController =
+                      TextEditingController(text: torrentInfo.seedingTimeLimit.toString());
+                  // TextEditingController inactiveSeedingTimeController =
+                  //     TextEditingController(text: torrentInfo.limit.toString());
+                  Get.defaultDialog(
+                    title: '限制上传速度',
+                    radius: 5,
+                    backgroundColor: shadColorScheme.background,
+                    contentPadding: EdgeInsets.all(16),
+                    content: Column(
+                      spacing: 8.0,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            '当前种子：${torrentInfo.name}',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ShadRadioGroup<double>(
+                            initialValue: shareLimit.value,
+                            items: [
+                              ShadRadio(
+                                label: Text(style: TextStyle(fontSize: 12), '使用全局分享率限制'),
+                                value: -2.0,
+                              ),
+                              ShadRadio(
+                                label: Text(style: TextStyle(fontSize: 12), '设置为无分享率限制'),
+                                value: -1.0,
+                              ),
+                              ShadRadio(
+                                label: Text(style: TextStyle(fontSize: 12), '设置分享率限制为'),
+                                value: 0.0,
+                              ),
+                            ],
+                            onChanged: (double? val) {
+                              shareLimit.value = val;
+                            },
+                          ),
+                        ),
+                        Obx(() {
+                          if (shareLimit.value! < 0) return const SizedBox.shrink();
+                          return Column(
+                            children: [
+                              CustomTextField(
+                                controller: ratioController,
+                                labelText: '分享率限制',
+                              ),
+                              CustomTextField(
+                                controller: seedingTimeController,
+                                labelText: '做种时间限制',
+                              ),
+                            ],
+                          );
+                        }),
+                        // CustomTextField(
+                        //   controller: inactiveSeedingTimeController,
+                        //   labelText: '非活跃时间限制',
+                        // ),
+                      ],
+                    ),
+                    actions: [
+                      ShadButton.destructive(
+                        size: ShadButtonSize.sm,
+                        onPressed: () {
+                          Get.back();
+                        },
+                        child: const Text('取消'),
+                      ),
+                      ShadButton(
+                        size: ShadButtonSize.sm,
+                        onPressed: () async {
+                          if (shareLimit.value! < 0) {
+                            await controller.controlTorrents(
+                              command: 'setShareLimit',
+                              hashes: [torrentInfo.infohashV1!],
+                              ratioLimit: shareLimit.value!,
+                              seedingTimeLimit: -1,
+                            );
+                            return;
+                          }
+                          await controller.controlTorrents(
+                            command: 'setShareLimit',
+                            hashes: [torrentInfo.infohashV1!],
+                            ratioLimit: double.tryParse(ratioController.text) ?? -2,
+                            seedingTimeLimit: double.tryParse(seedingTimeController.text) ?? -2,
+                          );
+                        },
+                        child: const Text('确认'),
+                      ),
+                    ],
+                  );
+                },
               ),
               ShadContextMenuItem(
                 leading: Icon(
-                  size: 18,
+                  size: 14,
                   torrentInfo.superSeeding == true
                       ? Icons.keyboard_double_arrow_up_outlined
                       : Icons.keyboard_arrow_up_outlined,
                   color: shadColorScheme.foreground,
                 ),
-                child: Text('超级做种'),
+                child: Text(style: TextStyle(fontSize: 12), '超级做种'),
                 onPressed: () => controller.controlTorrents(
-                    command: 'set_super_seeding',
-                    hashes: [torrentInfo.infohashV1!],
-                    enable: !torrentInfo.superSeeding!),
+                    command: 'setSuperSeeding', hashes: [torrentInfo.infohashV1!], enable: !torrentInfo.superSeeding!),
               ),
+              const Divider(height: 5),
               ShadContextMenuItem(
                 leading: Icon(
-                  size: 18,
+                  size: 14,
                   Icons.fact_check,
                   color: shadColorScheme.foreground,
                 ),
-                child: Text('重新校验'),
+                child: Text(style: TextStyle(fontSize: 12), '重新校验'),
                 onPressed: () => Get.defaultDialog(
-                  title: '',
+                  title: '校验种子',
                   middleText: '重新校验种子？',
                   actions: [
                     ShadButton.destructive(
@@ -1167,7 +1443,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                         // 重新校验种子
                         Get.back(result: true);
                         await controller.controlTorrents(
-                          command: 'recheck',
+                          command: 'recheckTorrents',
                           hashes: [torrentInfo.infohashV1!],
                         );
                       },
@@ -1178,22 +1454,23 @@ class QBittorrentPage extends GetView<QBittorrentController> {
               ),
               ShadContextMenuItem(
                 leading: Icon(
-                  size: 18,
+                  size: 14,
                   Icons.announcement_outlined,
                   color: shadColorScheme.foreground,
                 ),
-                child: Text('重新汇报'),
-                onPressed: () => controller.controlTorrents(command: 'reannounce', hashes: [torrentInfo.infohashV1!]),
+                child: Text(style: TextStyle(fontSize: 12), '重新汇报'),
+                onPressed: () =>
+                    controller.controlTorrents(command: 'reannounceTorrents', hashes: [torrentInfo.infohashV1!]),
               ),
-
               ShadContextMenuItem(
                 leading: Icon(
-                  size: 18,
+                  size: 14,
                   Icons.import_export,
                   color: shadColorScheme.foreground,
                 ),
-                child: Text('导出.torrent'),
-                onPressed: () {},
+                child: Text(style: TextStyle(fontSize: 12), '导出.torrent'),
+                onPressed: () => controller.controlTorrents(
+                    command: 'exportTorrent', hashes: [torrentInfo.infohashV1!], name: torrentInfo.name!),
               ),
             ],
             child: InkWell(

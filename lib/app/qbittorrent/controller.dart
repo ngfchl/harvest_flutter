@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harvest/common/meta_item.dart';
@@ -260,48 +263,79 @@ class QBittorrentController extends GetxController {
   Future<void> controlTorrents({
     required String command,
     required List<String> hashes,
+    String name = '',
     String category = '',
+    String savePath = '',
     String tag = '',
     bool deleteFiles = false,
     bool enable = true,
     int limit = 0,
-    RatioLimit ratioLimit = const RatioLimit.none(),
-    RatioLimit seedingTimeLimit = const RatioLimit.none(),
+    double ratioLimit = -2,
+    double seedingTimeLimit = -2,
   }) async {
     Logger.instance.d(command);
     Logger.instance.d(hashes);
+
     switch (command) {
-      case 'pause':
-        await client.torrents.pauseTorrents(torrents: Torrents(hashes: hashes));
-      case 'reannounce':
+      case 'rename':
+        await client.torrents.rename(hash: hashes.first, name: name);
+      case 'renameFile':
+        await client.torrents.renameFile(hash: hashes.first, oldPath: '', newPath: '');
+      case 'renameFolder':
+        await client.torrents.renameFolder(hash: hashes.first, oldPath: '', newPath: '');
+      case 'setLocation':
+        await client.torrents.setLocation(torrents: Torrents(hashes: hashes), location: savePath);
+      case 'reannounceTorrents':
         await client.torrents.reannounceTorrents(torrents: Torrents(hashes: hashes));
-      case 'recheck':
+      case 'recheckTorrents':
         await client.torrents.recheckTorrents(torrents: Torrents(hashes: hashes));
-      case 'resume':
+      case 'resumeTorrents':
         await client.torrents.resumeTorrents(torrents: Torrents(hashes: hashes));
-      case 'SuperSeeding':
+      case 'pauseTorrents':
+        await client.torrents.pauseTorrents(torrents: Torrents(hashes: hashes));
+      case 'setSuperSeeding':
         await client.torrents.setSuperSeeding(torrents: Torrents(hashes: hashes), enable: enable);
-      case 'AutoManagement':
+      case 'setAutoManagement':
         await client.torrents.setAutoManagement(torrents: Torrents(hashes: hashes), enable: enable);
-      case 'Category':
+      case 'setCategory':
         await client.torrents.setCategory(torrents: Torrents(hashes: hashes), category: category);
       case 'DownloadLimit':
         await client.torrents.setDownloadLimit(torrents: Torrents(hashes: hashes), limit: limit);
-      case 'UploadLimit':
+      case 'setUploadLimit':
         await client.torrents.setUploadLimit(torrents: Torrents(hashes: hashes), limit: limit);
-      case 'ForceStart':
+      case 'setForceStart':
         await client.torrents.setForceStart(torrents: Torrents(hashes: hashes), enable: enable);
-      case 'ShareLimit':
+      case 'setShareLimit':
         await client.torrents.setShareLimit(
             torrents: Torrents(hashes: hashes),
-            ratioLimit: ratioLimit,
-            seedingTimeLimit: seedingTimeLimit,
+            ratioLimit: RatioLimit(ratioLimit),
+            seedingTimeLimit: RatioLimit(seedingTimeLimit),
             inactiveSeedingTimeLimit: const RatioLimit.none());
-      case 'delete':
+      case 'deleteTorrents':
         await client.torrents.deleteTorrents(torrents: Torrents(hashes: hashes));
-      case 'add_tags':
+      case 'exportTorrent':
+        Uint8List response = await client.torrents.exportTorrent(hash: hashes.first);
+        String? savePath = await FilePicker.platform.saveFile(
+          dialogTitle: '保存种子',
+          fileName: '$name.torrent', // 例如 "harvest_2025.1103.01+181_arm64.apk"
+          // 可选：限制类型（但 saveFile 不强制校验扩展名）
+          type: FileType.custom,
+          allowedExtensions: ['torrent'],
+        );
+        if (savePath == null) return; // 取消
+
+        File file = File(savePath);
+        await file.writeAsBytes(response);
+      // await FileSaver.instance.saveFile(
+      //   name: name,
+      //   fileExtension: "torrent",
+      //   bytes: response,
+      //   filePath: savePath,
+      //   mimeType: MimeType.other,
+      // );
+      case 'addTags':
         await client.torrents.addTags(torrents: Torrents(hashes: hashes), tags: [tag]);
-      case 'remove_tags':
+      case 'removeTags':
         await client.torrents.removeTags(torrents: Torrents(hashes: hashes), tags: [tag]);
       default:
         Get.snackbar('出错啦！', '未知操作：$command');
