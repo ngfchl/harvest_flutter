@@ -3177,10 +3177,15 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 --------------------------------------------------------------------------------
 cross_file
+file_selector_linux
 file_selector_platform_interface
+file_selector_windows
 flutter_plugin_android_lifecycle
+image_picker_for_web
 image_picker_platform_interface
 path_provider_android
+url_launcher_linux
+url_launcher_windows
 
 Copyright 2013 The Flutter Authors
 
@@ -6004,13 +6009,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 --------------------------------------------------------------------------------
-file_selector_linux
 file_selector_macos
-file_selector_windows
 flutter_lints
 flutter_markdown_plus
 flutter_shaders
-image_picker_for_web
 image_picker_linux
 image_picker_macos
 image_picker_windows
@@ -6031,10 +6033,8 @@ two_dimensional_scrollables
 url_launcher
 url_launcher_android
 url_launcher_ios
-url_launcher_linux
 url_launcher_macos
 url_launcher_platform_interface
-url_launcher_windows
 vector_graphics
 vector_graphics_codec
 vector_graphics_compiler
