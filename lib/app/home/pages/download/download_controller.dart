@@ -1350,7 +1350,7 @@ class DownloadController extends GetxController {
     if (selectedTorrent != null && data['torrents'] != null) {
       selectedTorrent = QbittorrentTorrentInfo.fromJson({
         ...selectedTorrent.toJson(), // 原始对象
-        ...data['torrents'][selectedTorrent.infohashV1], // 新的数据覆盖
+        ...?data['torrents'][selectedTorrent.infohashV1] ?? {}, // 新的数据覆盖
       });
     }
     isTorrentsLoading = false;
