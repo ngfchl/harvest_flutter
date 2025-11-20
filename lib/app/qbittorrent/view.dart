@@ -389,7 +389,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                     controller.sortKey = item.value;
                                     logger_helper.Logger.instance.d('当前排序字段: ${controller.sortKey}');
                                     SPUtil.setLocalStorage(
-                                        '${controller.downloader.host}:${controller.downloader.port}-sortKey',
+                                        '${controller.downloader.host}:${controller.downloader.port}-sortKey-DIRECT',
                                         controller.sortKey?.name);
                                     controller.subTorrentList();
                                   },

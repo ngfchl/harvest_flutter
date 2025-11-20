@@ -207,7 +207,7 @@ class TrPage extends StatelessWidget {
                                           controller.sortKey == item.value ? !controller.sortReversed : false;
                                       controller.sortKey = item.value;
                                       SPUtil.setLocalStorage(
-                                          '${controller.downloader.host}:${controller.downloader.port}-sortKey',
+                                          '${controller.downloader.host}:${controller.downloader.port}-sortKey-DIRECT',
                                           controller.sortKey);
                                       controller.sortTorrents();
                                       controller.update();

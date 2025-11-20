@@ -147,7 +147,7 @@ class QBittorrentController extends GetxController {
   }
 
   Future<void> initData() async {
-    sortKey = stringToTorrentSort(SPUtil.getLocalStorage('${downloader.host}:${downloader.port}-sortKey'));
+    sortKey = stringToTorrentSort(SPUtil.getLocalStorage('${downloader.host}:${downloader.port}-sortKey-DIRECT'));
     Logger.instance.d('初始化排序字段: $sortKey');
 
     /// 获取分类信息

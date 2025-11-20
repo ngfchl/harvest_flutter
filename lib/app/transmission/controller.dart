@@ -90,7 +90,7 @@ class TrController extends GetxController {
     timerDuration = SPUtil.getDouble('timerDuration', defaultValue: 3.0);
 
     /// 初始化 qb 客户端
-    sortKey = SPUtil.getLocalStorage('${downloader.host}:${downloader.port}-sortKey') ?? 'name';
+    sortKey = SPUtil.getLocalStorage('${downloader.host}:${downloader.port}-sortKey-DIRECT') ?? 'name';
     client = getTrInstance(downloader);
 
     /// 获取分类信息
