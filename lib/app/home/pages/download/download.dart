@@ -722,7 +722,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                           // 0.27+ 官方形状
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: Text(downloader.prefs.version),
+                        child: Text('${downloader.prefs.version.split('(')?.first ?? ''}'),
                       )
                     : ShadIconButton.ghost(
                         onPressed: () async {
@@ -6174,6 +6174,7 @@ class ShowTorrentWidget extends StatelessWidget {
                             return SwitchListTile(
                                 title: const Text('是否删除种子文件？'),
                                 value: deleteFiles.value,
+                                activeColor: shadColorScheme.primary,
                                 onChanged: (value) {
                                   deleteFiles.value = value;
                                 });
@@ -6371,7 +6372,7 @@ class ShowTorrentWidget extends StatelessWidget {
                             Icons.copy_rounded,
                             color: shadColorScheme.foreground,
                           ),
-                          child: Text('哈希'),
+                          child: Text('复制哈希'),
                           onPressed: () {
                             Clipboard.setData(ClipboardData(text: torrentInfo.infohashV1));
                             Get.snackbar('复制种子HASH', '种子HASH复制成功！', colorText: shadColorScheme.foreground);
@@ -7083,6 +7084,7 @@ class ShowTorrentWidget extends StatelessWidget {
                       return SwitchListTile(
                           title: const Text('是否删除种子文件？'),
                           value: deleteFiles.value,
+                          activeColor: shadColorScheme.primary,
                           onChanged: (value) {
                             deleteFiles.value = value;
                           });
@@ -7231,182 +7233,629 @@ class ShowTorrentWidget extends StatelessWidget {
               ),
             ],
           ),
-          child: InkWell(
-              onTap: () {
-                _openTrTorrentInfoDetail(downloader, torrentInfo, context);
-              },
-              // onLongPress: () {
-              //   Get.snackbar('长按', '长按！',colorText: ShadTheme.of(context).colorScheme.primary);
-              // },
-              // onDoubleTap: () {
-              //   Get.snackbar('双击', '双击！',colorText: ShadTheme.of(context).colorScheme.primary);
-              // },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        torrentInfo.error <= 0
-                            ? CustomTextTag(
-                                labelText: host.isEmpty ? '未知' : (controller.trackerToWebSiteMap[host]?.name ?? host),
-                                icon: const Icon(Icons.file_upload_outlined, size: 10, color: Colors.white),
-                              )
-                            : CustomTextTag(
-                                labelText: Uri.parse(torrentInfo.magnetLink).queryParametersAll["tr"]?.first != null
-                                    ? Uri.parse(Uri.parse(torrentInfo.magnetLink).queryParametersAll["tr"]!.first).host
-                                    : "未知",
-                                icon: const Icon(Icons.link_off, size: 10, color: Colors.white),
-                                backgroundColor: Colors.red,
+          child: ShadContextMenuRegion(
+            decoration: ShadDecoration(
+              labelStyle: TextStyle(),
+              descriptionStyle: TextStyle(),
+            ),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 100),
+            items: [
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 14,
+                  Icons.double_arrow_outlined,
+                  color: shadColorScheme.foreground,
+                ),
+                child: Text(style: TextStyle(fontSize: 12), '强制开始'),
+                onPressed: () {},
+              ),
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 14,
+                  Icons.play_arrow_outlined,
+                  color: shadColorScheme.foreground,
+                ),
+                child: Text(style: TextStyle(fontSize: 12), '开始种子'),
+                onPressed: () {},
+              ),
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 14,
+                  Icons.pause_outlined,
+                  color: shadColorScheme.foreground,
+                ),
+                child: Text(style: TextStyle(fontSize: 12), '暂停种子'),
+                onPressed: () {},
+              ),
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 14,
+                  Icons.delete_outlined,
+                  color: shadColorScheme.foreground,
+                ),
+                child: Text(style: TextStyle(fontSize: 12), '删除种子'),
+                onPressed: () {
+                  RxBool deleteFiles = false.obs;
+                  RxBool doDeleteWithOutOthers = true.obs;
+                  Get.defaultDialog(
+                    title: '确认',
+                    radius: 5,
+                    middleText: '您确定要执行这个操作吗？',
+                    content: Obx(() {
+                      return Column(
+                        children: [
+                          SwitchListTile(
+                              dense: true,
+                              title: const Text(
+                                '删除种子文件？',
+                                style: TextStyle(fontSize: 12),
                               ),
-                        Expanded(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                FileSizeConvert.parseToFileSize(torrentInfo.totalSize),
-                                style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
+                              value: deleteFiles.value,
+                              activeColor: shadColorScheme.primary,
+                              onChanged: (value) {
+                                deleteFiles.value = value;
+                              }),
+                          SwitchListTile(
+                              dense: true,
+                              title: const Text(
+                                '无其他站点保种删除数据？',
+                                style: TextStyle(fontSize: 12),
                               ),
-                              SizedBox(
-                                height: 12,
-                                child: Text(
-                                  '${controller.trStatus.firstWhere((element) => element.value == torrentInfo.status, orElse: () => MetaDataItem(name: "未知状态", value: null)).name}[${torrentInfo.status}]',
-                                  style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                              value: doDeleteWithOutOthers.value,
+                              activeColor: shadColorScheme.primary,
+                              onChanged: (value) {
+                                doDeleteWithOutOthers.value = value;
+                              }),
+                        ],
+                      );
+                    }),
+                    actions: [
+                      ShadButton(
+                        size: ShadButtonSize.sm,
+                        onPressed: () {
+                          Get.back(result: false);
+                        },
+                        child: const Text('取消'),
+                      ),
+                      ShadButton.destructive(
+                        size: ShadButtonSize.sm,
+                        onPressed: () async {
+                          Get.back(result: true);
+                          // 判断尤其其他站点做种
+                          if (doDeleteWithOutOthers.value) {
+                            // 删除其他站点的种子数据
+                            deleteFiles.value = controller.torrents.map((t) => t.hashString).isEmpty;
+                          }
+                          var res = await controller.controlTrTorrents(
+                              downloader: downloader,
+                              command: 'remove_torrent',
+                              enable: deleteFiles.value,
+                              ids: [torrentInfo.hashString]);
+                          if (res.succeed) {
+                            controller.showTorrents
+                                .removeWhere((element) => element.hashString == torrentInfo.hashString);
+                            controller.update();
+                          }
+                        },
+                        child: const Text('确认'),
+                      ),
+                    ],
+                  );
+                },
+              ),
+              const Divider(height: 5),
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 14,
+                  Icons.checklist_rtl_outlined,
+                  color: shadColorScheme.foreground,
+                ),
+                child: Text(style: TextStyle(fontSize: 12), '重新校验'),
+                onPressed: () => Get.defaultDialog(
+                  title: '确认',
+                  backgroundColor: shadColorScheme.background,
+                  radius: 5,
+                  middleText: '确定要重新校验种子吗？',
+                  actions: [
+                    ShadButton(
+                      size: ShadButtonSize.sm,
+                      onPressed: () {
+                        Get.back(result: false);
+                      },
+                      child: const Text('取消'),
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        SizedBox(
-                          width: 235,
-                          child: Tooltip(
-                            message: torrentInfo.name,
-                            child: Text(
-                              torrentInfo.name,
-                              style: TextStyle(
-                                  fontSize: 11, color: shadColorScheme.foreground, fontWeight: FontWeight.bold),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          torrentInfo.downloadDir.isNotEmpty ? torrentInfo.downloadDir : '未分类',
-                          style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
-                        ),
-                      ],
+                    ShadButton.destructive(
+                      size: ShadButtonSize.sm,
+                      onPressed: () async {
+                        Get.back(result: true);
+                        await controller.controlTrTorrents(
+                          downloader: downloader,
+                          command: 'verify_torrent',
+                          ids: [torrentInfo.hashString],
+                        );
+                      },
+                      child: const Text('确认'),
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        SizedBox(
-                          width: 80,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(Icons.upload, size: 12, color: shadColorScheme.foreground),
-                                  Text('${FileSizeConvert.parseToFileSize(torrentInfo.rateUpload)}/s',
-                                      style: TextStyle(fontSize: 10, color: shadColorScheme.foreground))
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  Icon(Icons.cloud_upload, size: 12, color: shadColorScheme.foreground),
-                                  Text(FileSizeConvert.parseToFileSize(torrentInfo.uploadedEver as int?),
-                                      style: TextStyle(fontSize: 10, color: shadColorScheme.foreground))
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(
-                          width: 70,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(Icons.download, size: 12, color: shadColorScheme.foreground),
-                                  Text('${FileSizeConvert.parseToFileSize(torrentInfo.rateDownload)}/s',
-                                      style: TextStyle(fontSize: 10, color: shadColorScheme.foreground))
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  Icon(Icons.cloud_download, size: 12, color: shadColorScheme.foreground),
-                                  Text(FileSizeConvert.parseToFileSize(torrentInfo.downloadedEver),
-                                      style: TextStyle(fontSize: 10, color: shadColorScheme.foreground))
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(
-                          width: 128,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.timer,
-                                    size: 12,
-                                    color: shadColorScheme.foreground,
-                                  ),
-                                  EllipsisText(
-                                    text: formatDuration(torrentInfo.activityDate).toString(),
-                                    style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
-                                    maxLines: 1,
-                                    ellipsis: '...',
-                                  )
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.timer,
-                                    size: 12,
-                                    color: shadColorScheme.foreground,
-                                  ),
-                                  EllipsisText(
-                                    text: DateFormat('yyyy-MM-dd HH:mm:ss')
-                                        .format(DateTime.fromMillisecondsSinceEpoch(torrentInfo.addedDate * 1000))
-                                        .toString(),
-                                    style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
-                                    maxLines: 1,
-                                    ellipsis: '...',
-                                  )
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxHeight: 6),
-                      child: ShadProgress(value: torrentInfo.percentDone.toDouble()),
-                    ),
-                    if (torrentInfo.error > 0)
-                      EllipsisText(
-                        text: '${torrentInfo.error} - ${torrentInfo.errorString}',
-                        ellipsis: '...',
-                        maxLines: 1,
-                        style: TextStyle(
-                          color: shadColorScheme.destructive,
-                          fontSize: 10,
-                        ),
-                      )
                   ],
                 ),
-              )),
+              ),
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 14,
+                  Icons.announcement_outlined,
+                  color: shadColorScheme.foreground,
+                ),
+                child: Text(style: TextStyle(fontSize: 12), '重新汇报'),
+                onPressed: () => controller.controlTrTorrents(
+                    downloader: downloader, command: 'reannounce_torrent', ids: [torrentInfo.hashString]),
+              ),
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 14,
+                  Icons.folder_outlined,
+                  color: shadColorScheme.foreground,
+                ),
+                child: Text(style: TextStyle(fontSize: 12), '修改目录'),
+                onPressed: () {
+                  RxBool changeDataDir = false.obs;
+                  TextEditingController newPathController = TextEditingController(text: torrentInfo.downloadDir);
+                  Get.defaultDialog(
+                    title: '修改目录',
+                    radius: 5,
+                    backgroundColor: shadColorScheme.background,
+                    contentPadding: EdgeInsets.all(16),
+                    content: Obx(() {
+                      return Column(
+                        spacing: 8.0,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              '当前种子：${torrentInfo.name}',
+                              style: TextStyle(fontSize: 12),
+                            ),
+                          ),
+                          CustomTextField(
+                            controller: newPathController,
+                            labelText: '新目录',
+                          ),
+                          SwitchListTile(
+                              dense: true,
+                              title: const Text(
+                                '同时移动数据？',
+                                style: TextStyle(fontSize: 12),
+                              ),
+                              subtitle: const Text(
+                                '不勾选则从新目录下查找文件数据',
+                                style: TextStyle(fontSize: 8),
+                              ),
+                              activeColor: shadColorScheme.primary,
+                              value: changeDataDir.value,
+                              onChanged: (value) {
+                                changeDataDir.value = value;
+                              }),
+                        ],
+                      );
+                    }),
+                    actions: [
+                      ShadButton.destructive(
+                        size: ShadButtonSize.sm,
+                        onPressed: () {
+                          Get.back();
+                        },
+                        child: const Text('取消'),
+                      ),
+                      ShadButton(
+                        size: ShadButtonSize.sm,
+                        onPressed: () async {
+                          await controller.controlTrTorrents(
+                              downloader: downloader,
+                              command: 'move_torrent_data',
+                              ids: [torrentInfo.hashString],
+                              location: torrentInfo.downloadDir,
+                              move: changeDataDir.value);
+                        },
+                        child: const Text('确认'),
+                      ),
+                    ],
+                  );
+                },
+              ),
+              const Divider(height: 8),
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 14,
+                  Icons.copy_rounded,
+                  color: shadColorScheme.foreground,
+                ),
+                trailing: Icon(
+                  size: 14,
+                  Icons.keyboard_arrow_right_outlined,
+                  color: shadColorScheme.foreground,
+                ),
+                items: [
+                  ShadContextMenuItem(
+                    leading: Icon(
+                      size: 14,
+                      Icons.file_copy_outlined,
+                      color: shadColorScheme.foreground,
+                    ),
+                    child: Text(style: TextStyle(fontSize: 12), '复制名称'),
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: torrentInfo.name));
+                      Get.snackbar('复制种子名称', '种子名称复制成功！', colorText: shadColorScheme.foreground);
+                    },
+                  ),
+                  ShadContextMenuItem(
+                    leading: Icon(
+                      size: 14,
+                      Icons.copy_rounded,
+                      color: shadColorScheme.foreground,
+                    ),
+                    child: Text(style: TextStyle(fontSize: 12), '复制哈希'),
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: torrentInfo.hashString));
+                      Get.snackbar('复制种子HASH', '种子HASH复制成功！', colorText: shadColorScheme.foreground);
+                    },
+                  ),
+                  ShadContextMenuItem(
+                    leading: Icon(
+                      size: 14,
+                      Icons.folder_copy_outlined,
+                      color: shadColorScheme.foreground,
+                    ),
+                    child: Text(style: TextStyle(fontSize: 12), '复制路径'),
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: '${torrentInfo.downloadDir}/${torrentInfo.name}'));
+                      Get.snackbar('复制种子HASH', '种子HASH复制成功！', colorText: shadColorScheme.foreground);
+                    },
+                  ),
+                  ShadContextMenuItem(
+                    leading: Icon(
+                      size: 14,
+                      Icons.content_copy_outlined,
+                      color: shadColorScheme.foreground,
+                    ),
+                    child: Text(style: TextStyle(fontSize: 12), '复制磁力'),
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: torrentInfo.magnetLink));
+                      Get.snackbar('复制磁力链接', '磁力链接复制成功！', colorText: shadColorScheme.foreground);
+                    },
+                  ),
+                ],
+                child: Text(style: TextStyle(fontSize: 12), '复制'),
+              ),
+              const Divider(height: 8),
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 14,
+                  Icons.view_list_outlined,
+                  color: shadColorScheme.foreground,
+                ),
+                trailing: Icon(
+                  size: 14,
+                  Icons.keyboard_arrow_right_outlined,
+                  color: shadColorScheme.foreground,
+                ),
+                items: [
+                  ShadContextMenuItem(
+                    leading: Icon(
+                      size: 14,
+                      Icons.tag_outlined,
+                      color: shadColorScheme.foreground,
+                    ),
+                    child: Text(style: TextStyle(fontSize: 12), '队列顶部'),
+                    onPressed: () {
+                      controller.controlTrTorrents(
+                        downloader: downloader,
+                        command: 'queue_top',
+                        ids: [torrentInfo.hashString],
+                      );
+                    },
+                  ),
+                  ShadContextMenuItem(
+                    leading: Icon(
+                      size: 14,
+                      Icons.tag_outlined,
+                      color: shadColorScheme.foreground,
+                    ),
+                    child: Text(style: TextStyle(fontSize: 12), '队列向上'),
+                    onPressed: () {
+                      controller.controlTrTorrents(
+                        downloader: downloader,
+                        command: 'queue_up',
+                        ids: [torrentInfo.hashString],
+                      );
+                    },
+                  ),
+                  ShadContextMenuItem(
+                    leading: Icon(
+                      size: 14,
+                      Icons.tag_outlined,
+                      color: shadColorScheme.foreground,
+                    ),
+                    child: Text(style: TextStyle(fontSize: 12), '队列向下'),
+                    onPressed: () {
+                      controller.controlTrTorrents(
+                        downloader: downloader,
+                        command: 'queue_down',
+                        ids: [torrentInfo.hashString],
+                      );
+                    },
+                  ),
+                  ShadContextMenuItem(
+                    leading: Icon(
+                      size: 14,
+                      Icons.tag_outlined,
+                      color: shadColorScheme.foreground,
+                    ),
+                    child: Text(style: TextStyle(fontSize: 12), '队列底部'),
+                    onPressed: () {
+                      controller.controlTrTorrents(
+                        downloader: downloader,
+                        command: 'queue_bottom',
+                        ids: [torrentInfo.hashString],
+                      );
+                    },
+                  ),
+                ],
+                child: Text(style: TextStyle(fontSize: 12), '队列'),
+              ),
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 14,
+                  Icons.tag_outlined,
+                  color: shadColorScheme.foreground,
+                ),
+                child: Text(style: TextStyle(fontSize: 12), '标签'),
+                onPressed: () {},
+              ),
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 14,
+                  Icons.language_outlined,
+                  color: shadColorScheme.foreground,
+                ),
+                child: Text(style: TextStyle(fontSize: 12), '修改Tracker'),
+                onPressed: () {
+                  logger_helper.Logger.instance.d(torrentInfo.torrentFile);
+                  TextEditingController trackerController = TextEditingController(
+                      text: torrentInfo.trackerStats.map((tracker) => tracker.announce).join('\n'));
+                  Get.defaultDialog(
+                    title: '修改Tracker',
+                    radius: 5,
+                    backgroundColor: shadColorScheme.background,
+                    contentPadding: EdgeInsets.all(16),
+                    content: Column(
+                      spacing: 8.0,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            '当前种子：${torrentInfo.name}',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ),
+                        CustomTextField(
+                          controller: trackerController,
+                          labelText: 'Tracker地址',
+                          maxLines: 5,
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      ShadButton.destructive(
+                        size: ShadButtonSize.sm,
+                        onPressed: () {
+                          Get.back();
+                        },
+                        child: const Text('取消'),
+                      ),
+                      ShadButton(
+                        size: ShadButtonSize.sm,
+                        onPressed: () async {
+                          await controller.controlTrTorrents(
+                            downloader: downloader,
+                            command: 'change_torrent',
+                            ids: [torrentInfo.hashString],
+                            trackerList: trackerController.text.split('\n'),
+                          );
+                        },
+                        child: const Text('确认'),
+                      ),
+                    ],
+                  );
+                },
+              ),
+              ShadContextMenuItem(
+                leading: Icon(
+                  size: 14,
+                  Icons.speed_outlined,
+                  color: shadColorScheme.foreground,
+                ),
+                child: Text(style: TextStyle(fontSize: 12), '设置限速'),
+                onPressed: () {},
+              ),
+            ],
+            child: InkWell(
+                onTap: () {
+                  _openTrTorrentInfoDetail(downloader, torrentInfo, context);
+                },
+                // onLongPress: () {
+                //   Get.snackbar('长按', '长按！',colorText: ShadTheme.of(context).colorScheme.primary);
+                // },
+                // onDoubleTap: () {
+                //   Get.snackbar('双击', '双击！',colorText: ShadTheme.of(context).colorScheme.primary);
+                // },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          torrentInfo.error <= 0
+                              ? CustomTextTag(
+                                  labelText: host.isEmpty ? '未知' : (controller.trackerToWebSiteMap[host]?.name ?? host),
+                                  icon: const Icon(Icons.file_upload_outlined, size: 10, color: Colors.white),
+                                )
+                              : CustomTextTag(
+                                  labelText: Uri.parse(torrentInfo.magnetLink).queryParametersAll["tr"]?.first != null
+                                      ? Uri.parse(Uri.parse(torrentInfo.magnetLink).queryParametersAll["tr"]!.first)
+                                          .host
+                                      : "未知",
+                                  icon: const Icon(Icons.link_off, size: 10, color: Colors.white),
+                                  backgroundColor: Colors.red,
+                                ),
+                          Expanded(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  FileSizeConvert.parseToFileSize(torrentInfo.totalSize),
+                                  style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
+                                ),
+                                SizedBox(
+                                  height: 12,
+                                  child: Text(
+                                    '${controller.trStatus.firstWhere((element) => element.value == torrentInfo.status, orElse: () => MetaDataItem(name: "未知状态", value: null)).name}[${torrentInfo.status}]',
+                                    style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(
+                            width: 235,
+                            child: Tooltip(
+                              message: torrentInfo.name,
+                              child: Text(
+                                torrentInfo.name,
+                                style: TextStyle(
+                                    fontSize: 11, color: shadColorScheme.foreground, fontWeight: FontWeight.bold),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            torrentInfo.downloadDir.isNotEmpty ? torrentInfo.downloadDir : '未分类',
+                            style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(
+                            width: 80,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.upload, size: 12, color: shadColorScheme.foreground),
+                                    Text('${FileSizeConvert.parseToFileSize(torrentInfo.rateUpload)}/s',
+                                        style: TextStyle(fontSize: 10, color: shadColorScheme.foreground))
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    Icon(Icons.cloud_upload, size: 12, color: shadColorScheme.foreground),
+                                    Text(FileSizeConvert.parseToFileSize(torrentInfo.uploadedEver as int?),
+                                        style: TextStyle(fontSize: 10, color: shadColorScheme.foreground))
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            width: 70,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.download, size: 12, color: shadColorScheme.foreground),
+                                    Text('${FileSizeConvert.parseToFileSize(torrentInfo.rateDownload)}/s',
+                                        style: TextStyle(fontSize: 10, color: shadColorScheme.foreground))
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    Icon(Icons.cloud_download, size: 12, color: shadColorScheme.foreground),
+                                    Text(FileSizeConvert.parseToFileSize(torrentInfo.downloadedEver),
+                                        style: TextStyle(fontSize: 10, color: shadColorScheme.foreground))
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            width: 128,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.timer,
+                                      size: 12,
+                                      color: shadColorScheme.foreground,
+                                    ),
+                                    EllipsisText(
+                                      text: formatDuration(torrentInfo.activityDate).toString(),
+                                      style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
+                                      maxLines: 1,
+                                      ellipsis: '...',
+                                    )
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.timer,
+                                      size: 12,
+                                      color: shadColorScheme.foreground,
+                                    ),
+                                    EllipsisText(
+                                      text: DateFormat('yyyy-MM-dd HH:mm:ss')
+                                          .format(DateTime.fromMillisecondsSinceEpoch(torrentInfo.addedDate * 1000))
+                                          .toString(),
+                                      style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
+                                      maxLines: 1,
+                                      ellipsis: '...',
+                                    )
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 6),
+                        child: ShadProgress(value: torrentInfo.percentDone.toDouble()),
+                      ),
+                      if (torrentInfo.error > 0)
+                        EllipsisText(
+                          text: '${torrentInfo.error} - ${torrentInfo.errorString}',
+                          ellipsis: '...',
+                          maxLines: 1,
+                          style: TextStyle(
+                            color: shadColorScheme.destructive,
+                            fontSize: 10,
+                          ),
+                        )
+                    ],
+                  ),
+                )),
+          ),
         ),
       );
     });

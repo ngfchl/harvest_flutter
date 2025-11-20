@@ -220,53 +220,60 @@ class TrController extends GetxController {
     logger_helper.Logger.instance.i(showTorrents.length);
   }
 
-  Future<void> controlTorrents({
+  Future<Map<dynamic, dynamic>> controlTorrents({
     required String command,
-    required List<String> hashes,
-    String category = '',
+    required List<String> ids,
+    String location = '',
+    String name = '',
     bool deleteFiles = false,
     bool enable = true,
     int limit = 0,
     int ratioLimit = 0,
     int seedingTimeLimit = 0,
+    List<String> trackerList = const [],
   }) async {
     logger_helper.Logger.instance.d(command);
-    logger_helper.Logger.instance.d(hashes);
+    logger_helper.Logger.instance.d(ids);
+    Map<dynamic, dynamic> result = {};
     switch (command) {
       case 'reannounce':
-        await client.torrent.torrentReannounce(ids: hashes);
+        result = await client.torrent.torrentReannounce(ids: ids);
         break;
       case 'delete':
-        torrents.removeWhere((element) => hashes.contains(element.hashString));
+        torrents.removeWhere((element) => ids.contains(element.hashString));
         filterTorrents();
-        await client.torrent.torrentRemove(ids: hashes, deleteLocalData: deleteFiles);
+        result = await client.torrent.torrentRemove(ids: ids, deleteLocalData: deleteFiles);
         break;
       case 'resume':
-        await client.torrent.torrentStart(ids: hashes);
+        result = await client.torrent.torrentStart(ids: ids);
         break;
       case 'ForceStart':
-        await client.torrent.torrentStartNow(ids: hashes);
+        result = await client.torrent.torrentStartNow(ids: ids);
         break;
       case 'pause':
-        await client.torrent.torrentStop(ids: hashes);
+        result = await client.torrent.torrentStop(ids: ids);
         break;
       case 'recheck':
-        await client.torrent.torrentVerify(ids: hashes);
+        result = await client.torrent.torrentVerify(ids: ids);
+        break;
+      case 'rename_torrent_path':
+        result = await client.torrent.torrentRenamePath(ids: ids, path: location, name: name);
         break;
       case 'uploadLimit':
-        await client.torrent.torrentSet(TorrentSetArgs().uploadLimited(true).uploadLimit(limit), ids: hashes);
+        result = await client.torrent.torrentSet(TorrentSetArgs().uploadLimited(true).uploadLimit(limit), ids: ids);
         break;
       case 'downloadLimit':
-        await client.torrent.torrentSet(TorrentSetArgs().downloadLimited(true).downloadLimit(limit), ids: hashes);
+        result = await client.torrent.torrentSet(TorrentSetArgs().downloadLimited(true).downloadLimit(limit), ids: ids);
         break;
       case 'ShareLimit':
-        await client.torrent.torrentSet(TorrentSetArgs().seedRatioLimit(limit as double), ids: hashes);
+        result = await client.torrent.torrentSet(TorrentSetArgs().seedRatioLimit(limit as double), ids: ids);
         break;
     }
 
     await getAllTorrents();
     logger_helper.Logger.instance.i(categories);
     update();
+    return result;
   }
 
   Future<void> getAllTorrents() async {
@@ -362,6 +369,14 @@ class TrController extends GetxController {
       });
     }
     logger_helper.Logger.instance.d(trackerHashes);
+  }
+
+  String getTrMetaName(String hashString) {
+    // 查找第一个匹配的 tracker 键
+    final trackerKey = trackerHashes.entries.firstWhereOrNull((entry) => entry.value.contains(hashString))?.key;
+
+    // 根据 trackerKey 查找对应的 WebSite 名称
+    return trackerToWebSiteMap[trackerKey]?.name ?? trackerKey ?? '未知';
   }
 
   void sortTorrents() {
@@ -501,7 +516,7 @@ class TrController extends GetxController {
       if (toRemoveTorrentList.isEmpty) {
         return CommonResponse.success(msg: '没有需要清理的种子！');
       }
-      await controlTorrents(command: 'delete', hashes: toRemoveTorrentList, deleteFiles: false);
+      await controlTorrents(command: 'delete', ids: toRemoveTorrentList, deleteFiles: false);
       showTorrents.removeWhere((element) => toRemoveTorrentList.contains(element.hashString));
       String msg = '清理出错种子成功，本次共清理${toRemoveTorrentList.length}个种子！';
       logger_helper.Logger.instance.i(msg);

@@ -942,6 +942,8 @@ class DownloadController extends GetxController {
     required Downloader downloader,
     required String command,
     List<String> ids = const [],
+    List<String> trackerList = const [],
+    List<String> labels = const [],
     bool? enable,
     bool? move,
     String? location,
@@ -966,7 +968,9 @@ class DownloadController extends GetxController {
         response = await controlTorrent(
             downloaderId: downloader.id!,
             command: {'command': command, 'ids': ids, 'location': location, 'move': move});
-      // case 'rename_torrent_path':
+      case 'rename_torrent_path':
+        response = await controlTorrent(
+            downloaderId: downloader.id!, command: {'command': command, 'ids': ids, 'location': location});
       case 'queue_top':
       case 'queue_bottom':
       case 'queue_up':
@@ -974,6 +978,13 @@ class DownloadController extends GetxController {
         response = await controlTorrent(downloaderId: downloader.id!, command: {
           'command': command,
           'ids': ids,
+        });
+      case 'change_torrent':
+        response = await controlTorrent(downloaderId: downloader.id!, command: {
+          'command': command,
+          'ids': ids,
+          'tracker_list': trackerList,
+          'labels': labels,
         });
       default:
         String msg = '未知命令：$command';
