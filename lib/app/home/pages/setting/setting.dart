@@ -31,9 +31,8 @@ class SettingPage extends StatelessWidget {
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     return SafeArea(
       child: Scaffold(
-        backgroundColor: SPUtil.getBool('useBackground')
-            ? Colors.transparent
-            : ShadTheme.of(context).colorScheme.background.withOpacity(opacity),
+        backgroundColor:
+            SPUtil.getBool('useBackground') ? Colors.transparent : shadColorScheme.background.withOpacity(opacity),
         body: GetBuilder<SettingController>(builder: (controller) {
           return EasyRefresh(
             header: ClassicHeader(
@@ -105,6 +104,7 @@ class SettingPage extends StatelessWidget {
   }
 
   CustomCard _versionCard(BuildContext context) {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     return CustomCard(
       padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
       child: ListTile(
@@ -113,7 +113,7 @@ class SettingPage extends StatelessWidget {
         leading: ShadIconButton.ghost(
           icon: Icon(
             Icons.info_outline,
-            color: ShadTheme.of(context).colorScheme.foreground,
+            color: shadColorScheme.foreground,
           ),
           onPressed: null,
         ),
@@ -122,11 +122,11 @@ class SettingPage extends StatelessWidget {
           children: [
             Text(
               'Version',
-              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+              style: TextStyle(color: shadColorScheme.foreground),
             ),
             Text(
               '${controller.packageInfo.version}+${controller.packageInfo.buildNumber}',
-              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+              style: TextStyle(color: shadColorScheme.foreground),
             ),
           ],
         ),
@@ -148,7 +148,7 @@ class SettingPage extends StatelessWidget {
                   padding: EdgeInsets.all(8),
                   child: Text(
                     'Harvest 本义收割,收获，本软件致力于让你更轻松的玩转国内 PT 站点，与收割机有异曲同工之妙，故此得名。',
-                    style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                    style: TextStyle(color: shadColorScheme.foreground),
                   ),
                 )
               ],
@@ -166,6 +166,7 @@ class SettingPage extends StatelessWidget {
   Widget _autoImportTagsForm(Option? option, BuildContext context) {
     Logger.instance.d('自动添加标签: ${option?.value.repeat}');
     RxBool repeat = (option == null ? false : (option.value.repeat ?? false)).obs;
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     final isEdit = (option == null).obs;
     return Obx(() {
       return Column(
@@ -176,7 +177,7 @@ class SettingPage extends StatelessWidget {
             contentPadding: EdgeInsets.zero,
             title: Text(
               '自动添加标签',
-              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+              style: TextStyle(color: shadColorScheme.foreground),
             ),
             leading: ShadIconButton.ghost(
               icon: repeat.value
@@ -194,7 +195,7 @@ class SettingPage extends StatelessWidget {
             ),
             subtitle: Text(
               '站点未设置标签时是否自动添加配置文件中的标签',
-              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+              style: TextStyle(color: shadColorScheme.foreground),
             ),
             onTap: () {
               isEdit.value = !isEdit.value;
@@ -204,7 +205,7 @@ class SettingPage extends StatelessWidget {
                 onPressed: (value) {
                   isEdit.value = !isEdit.value;
                 },
-                color: ShadTheme.of(context).colorScheme.foreground),
+                color: shadColorScheme.foreground),
           ),
           if (isEdit.value)
             Padding(
@@ -216,7 +217,7 @@ class SettingPage extends StatelessWidget {
                       contentPadding: EdgeInsets.zero,
                       title: Text(
                         '自动添加标签',
-                        style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                        style: TextStyle(color: shadColorScheme.foreground),
                       ),
                       value: repeat.value,
                       onChanged: (bool v) async {
@@ -242,10 +243,10 @@ class SettingPage extends StatelessWidget {
                         final res = await controller.saveOption(option!);
                         if (res.code == 0) {
                           Get.snackbar('配置保存成功', '${controller.optionMap['auto_import_tags']} 配置：${res.msg}',
-                              colorText: ShadTheme.of(context).colorScheme.foreground);
+                              colorText: shadColorScheme.foreground);
                         } else {
                           Get.snackbar('配置保存失败', '${controller.optionMap['auto_import_tags']} 配置出错啦：${res.msg}',
-                              colorText: ShadTheme.of(context).colorScheme.destructive);
+                              colorText: shadColorScheme.destructive);
                         }
                       }),
                 ],
@@ -404,6 +405,7 @@ class SettingPage extends StatelessWidget {
   Widget _aggregationSearchForm(Option? option, BuildContext context) {
     TextEditingController limitController = TextEditingController(text: option?.value.limit.toString() ?? '30');
     TextEditingController maxCountController = TextEditingController(text: option?.value.maxCount.toString() ?? '30');
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     final isActive = (option == null ? true : option.isActive).obs;
     final isEdit = (option == null).obs;
     return Obx(() {
@@ -413,7 +415,7 @@ class SettingPage extends StatelessWidget {
           ListTile(
               title: Text(
                 '聚合搜索配置',
-                style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                style: TextStyle(color: shadColorScheme.foreground),
               ),
               dense: true,
               contentPadding: EdgeInsets.zero,
@@ -435,7 +437,7 @@ class SettingPage extends StatelessWidget {
                   onPressed: (value) {
                     isEdit.value = !isEdit.value;
                   },
-                  color: ShadTheme.of(context).colorScheme.foreground)),
+                  color: shadColorScheme.foreground)),
           if (isEdit.value)
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -480,11 +482,11 @@ class SettingPage extends StatelessWidget {
                             if (res.code == 0) {
                               Get.back();
                               Get.snackbar('配置保存成功', '${controller.optionMap['aggregation_search']} 配置：${res.msg}',
-                                  colorText: ShadTheme.of(context).colorScheme.foreground);
+                                  colorText: shadColorScheme.foreground);
                               isEdit.value = false;
                             } else {
                               Get.snackbar('配置保存失败', '${controller.optionMap['aggregation_search']} 配置出错啦：${res.msg}',
-                                  colorText: ShadTheme.of(context).colorScheme.destructive);
+                                  colorText: shadColorScheme.destructive);
                             }
                           }),
                     ],
@@ -501,6 +503,7 @@ class SettingPage extends StatelessWidget {
     TextEditingController proxyController = TextEditingController(text: option?.value.proxy ?? '');
     TextEditingController apiKeyController = TextEditingController(text: option?.value.apiKey ?? '');
     TextEditingController secretController = TextEditingController(text: option?.value.secretKey ?? '');
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     final isActive = (option == null ? true : option.isActive).obs;
     final isEdit = (option == null).obs;
     return Obx(() {
@@ -510,7 +513,7 @@ class SettingPage extends StatelessWidget {
           ListTile(
               title: Text(
                 'TMDB配置',
-                style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                style: TextStyle(color: shadColorScheme.foreground),
               ),
               dense: true,
               contentPadding: EdgeInsets.zero,
@@ -532,7 +535,7 @@ class SettingPage extends StatelessWidget {
                   onPressed: (value) {
                     isEdit.value = !isEdit.value;
                   },
-                  color: ShadTheme.of(context).colorScheme.foreground)),
+                  color: shadColorScheme.foreground)),
           if (isEdit.value)
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -550,7 +553,7 @@ class SettingPage extends StatelessWidget {
                       contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                       title: Text(
                         'TMDB开关',
-                        style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                        style: TextStyle(color: shadColorScheme.foreground),
                       ),
                       value: isActive.value,
                       onChanged: (value) {
@@ -585,11 +588,11 @@ class SettingPage extends StatelessWidget {
                             if (res.code == 0) {
                               Get.back();
                               Get.snackbar('配置保存成功', '${controller.optionMap['tmdb_api_auth']} 配置：${res.msg}',
-                                  colorText: ShadTheme.of(context).colorScheme.foreground);
+                                  colorText: shadColorScheme.foreground);
                               isEdit.value = false;
                             } else {
                               Get.snackbar('配置保存失败', '${controller.optionMap['tmdb_api_auth']} 配置出错啦：${res.msg}',
-                                  colorText: ShadTheme.of(context).colorScheme.destructive);
+                                  colorText: shadColorScheme.destructive);
                             }
                           }),
                     ],
@@ -621,13 +624,13 @@ class SettingPage extends StatelessWidget {
     final isEdit = (option == null).obs;
     Logger.instance.d(option);
     Logger.instance.d(aliyundriveNotice.value);
-
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     return Obx(() {
       return Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
         ListTile(
             title: Text(
               '通知开关',
-              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+              style: TextStyle(color: shadColorScheme.foreground),
             ),
             dense: true,
             contentPadding: EdgeInsets.zero,
@@ -649,7 +652,7 @@ class SettingPage extends StatelessWidget {
                 onPressed: (value) {
                   isEdit.value = !isEdit.value;
                 },
-                color: ShadTheme.of(context).colorScheme.foreground)),
+                color: shadColorScheme.foreground)),
         if (isEdit.value)
           SizedBox(
             height: 300,
@@ -665,7 +668,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               '阿里云盘',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: aliyundriveNotice.value!,
                             onChanged: (value) {
@@ -676,7 +679,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               '站点数据',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: siteData.value!,
                             onChanged: (value) {
@@ -687,7 +690,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               '成功站点消息',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: siteDataSuccess.value!,
                             onChanged: (value) {
@@ -698,7 +701,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               '今日数据',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: todayData.value!,
                             onChanged: (value) {
@@ -709,7 +712,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               '拆包',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: packageTorrent.value!,
                             onChanged: (value) {
@@ -720,7 +723,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               '删种',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: deleteTorrent.value!,
                             onChanged: (value) {
@@ -731,7 +734,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               'RSS',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: rssTorrent.value!,
                             onChanged: (value) {
@@ -742,7 +745,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               '种子推送',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: pushTorrent.value!,
                             onChanged: (value) {
@@ -753,7 +756,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               'Docker 升级',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: programUpgrade.value!,
                             onChanged: (value) {
@@ -764,7 +767,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               'PTPP 导入',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: ptppImport.value!,
                             onChanged: (value) {
@@ -775,7 +778,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               '公告详情',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: announcement.value!,
                             onChanged: (value) {
@@ -786,7 +789,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               '短消息详情',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: message.value!,
                             onChanged: (value) {
@@ -797,7 +800,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               '签到成功消息',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: signInSuccess.value!,
                             onChanged: (value) {
@@ -808,7 +811,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               'CookieCloud 同步',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: cookieSync.value!,
                             onChanged: (value) {
@@ -866,11 +869,11 @@ class SettingPage extends StatelessWidget {
                         if (res.code == 0) {
                           Get.back();
                           Get.snackbar('配置保存成功', '${controller.optionMap['notice_category_enable']} 配置：${res.msg}',
-                              colorText: ShadTheme.of(context).colorScheme.foreground);
+                              colorText: shadColorScheme.foreground);
                           isEdit.value = false;
                         } else {
                           Get.snackbar('配置保存失败', '${controller.optionMap['notice_category_enable']} 配置出错啦：${res.msg}',
-                              colorText: ShadTheme.of(context).colorScheme.destructive);
+                              colorText: shadColorScheme.destructive);
                         }
                       }),
                 ],
@@ -895,7 +898,7 @@ class SettingPage extends StatelessWidget {
     final leeching = (option == null ? true : option.value.leeching).obs;
     final invite = (option == null ? true : option.value.invite).obs;
     final hr = (option == null ? true : option.value.hr).obs;
-
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     final isEdit = (option == null).obs;
     Logger.instance.d(option);
 
@@ -904,7 +907,7 @@ class SettingPage extends StatelessWidget {
         ListTile(
             title: Text(
               '站点详情',
-              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+              style: TextStyle(color: shadColorScheme.foreground),
             ),
             dense: true,
             contentPadding: EdgeInsets.zero,
@@ -926,7 +929,7 @@ class SettingPage extends StatelessWidget {
                 onPressed: (value) {
                   isEdit.value = !isEdit.value;
                 },
-                color: ShadTheme.of(context).colorScheme.foreground)),
+                color: shadColorScheme.foreground)),
         if (isEdit.value)
           SizedBox(
             height: 300,
@@ -942,7 +945,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               '等级',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: level.value!,
                             onChanged: (value) {
@@ -953,7 +956,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               '魔力',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: bonus.value!,
                             onChanged: (value) {
@@ -964,7 +967,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               '时魔',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: perBonus.value!,
                             onChanged: (value) {
@@ -975,7 +978,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               '积分',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: score.value!,
                             onChanged: (value) {
@@ -986,7 +989,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               '分享率',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: ratio.value!,
                             onChanged: (value) {
@@ -997,7 +1000,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               '做种体积',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: seedingVol.value!,
                             onChanged: (value) {
@@ -1008,7 +1011,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               '上传量',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: uploaded.value!,
                             onChanged: (value) {
@@ -1019,7 +1022,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               '下载量',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: downloaded.value!,
                             onChanged: (value) {
@@ -1030,7 +1033,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               '做种数量',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: seeding.value!,
                             onChanged: (value) {
@@ -1041,7 +1044,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               '吸血数量',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: leeching.value!,
                             onChanged: (value) {
@@ -1052,7 +1055,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               '邀请',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: invite.value!,
                             onChanged: (value) {
@@ -1063,7 +1066,7 @@ class SettingPage extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                             title: Text(
                               'HR',
-                              style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                             value: hr.value!,
                             onChanged: (value) {
@@ -1120,12 +1123,12 @@ class SettingPage extends StatelessWidget {
                               if (res.code == 0) {
                                 Get.back();
                                 Get.snackbar('配置保存成功', '${controller.optionMap['notice_content_item']} 配置：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.foreground);
+                                    colorText: shadColorScheme.foreground);
                                 isEdit.value = false;
                               } else {
                                 Get.snackbar(
                                     '配置保存失败', '${controller.optionMap['notice_content_item']} 配置出错啦：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.destructive);
+                                    colorText: shadColorScheme.destructive);
                               }
                             }),
                       ),
@@ -1141,6 +1144,7 @@ class SettingPage extends StatelessWidget {
 
   Widget _monkeyTokenForm(Option? option, BuildContext context) {
     TextEditingController tokenController = TextEditingController(text: option?.value.token ?? '');
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     final isActive = (option == null ? true : option.isActive).obs;
     final isEdit = (option == null).obs;
     return Obx(() {
@@ -1150,7 +1154,7 @@ class SettingPage extends StatelessWidget {
           ListTile(
               title: Text(
                 '安全 Token',
-                style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                style: TextStyle(color: shadColorScheme.foreground),
               ),
               dense: true,
               contentPadding: EdgeInsets.zero,
@@ -1172,7 +1176,7 @@ class SettingPage extends StatelessWidget {
                   onPressed: (value) {
                     isEdit.value = !isEdit.value;
                   },
-                  color: ShadTheme.of(context).colorScheme.foreground)),
+                  color: shadColorScheme.foreground)),
           if (isEdit.value)
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -1215,11 +1219,11 @@ class SettingPage extends StatelessWidget {
                             if (res.code == 0) {
                               Get.back();
                               Get.snackbar('配置保存成功', '${controller.optionMap['monkey_token']} 配置：${res.msg}',
-                                  colorText: ShadTheme.of(context).colorScheme.foreground);
+                                  colorText: shadColorScheme.foreground);
                               isEdit.value = false;
                             } else {
                               Get.snackbar('配置保存失败', '${controller.optionMap['monkey_token']} 配置出错啦：${res.msg}',
-                                  colorText: ShadTheme.of(context).colorScheme.destructive);
+                                  colorText: shadColorScheme.destructive);
                             }
                           }),
                     ],
@@ -1241,6 +1245,7 @@ class SettingPage extends StatelessWidget {
     TextEditingController tokenController = TextEditingController(text: option?.value.token ?? '');
     TextEditingController serverController = TextEditingController(text: option?.value.server ?? '');
     TextEditingController proxyController = TextEditingController(text: option?.value.proxy ?? '');
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     final isActive = (option == null ? true : option.isActive).obs;
     final isEdit = (option == null).obs;
     return Obx(() {
@@ -1250,7 +1255,7 @@ class SettingPage extends StatelessWidget {
           ListTile(
               title: Text(
                 '企业微信',
-                style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                style: TextStyle(color: shadColorScheme.foreground),
               ),
               dense: true,
               contentPadding: EdgeInsets.zero,
@@ -1272,7 +1277,7 @@ class SettingPage extends StatelessWidget {
                   onPressed: (value) {
                     isEdit.value = !isEdit.value;
                   },
-                  color: ShadTheme.of(context).colorScheme.foreground)),
+                  color: shadColorScheme.foreground)),
           if (isEdit.value)
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -1324,11 +1329,11 @@ class SettingPage extends StatelessWidget {
                               if (res.code == 0) {
                                 Get.back();
                                 Get.snackbar('配置保存成功', '${controller.optionMap['wechat_work_push']} 配置：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.foreground);
+                                    colorText: shadColorScheme.foreground);
                                 isEdit.value = false;
                               } else {
                                 Get.snackbar('配置保存失败', '${controller.optionMap['wechat_work_push']} 配置出错啦：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.destructive);
+                                    colorText: shadColorScheme.destructive);
                               }
                             }),
                       ),
@@ -1343,6 +1348,7 @@ class SettingPage extends StatelessWidget {
   }
 
   Widget _fileListForm(Option? option, BuildContext context) {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     TextEditingController usernameController = TextEditingController(text: option?.value.username ?? '');
     TextEditingController passwordController = TextEditingController(text: option?.value.password ?? '');
     final isActive = (option == null ? true : option.isActive).obs;
@@ -1354,7 +1360,7 @@ class SettingPage extends StatelessWidget {
           ListTile(
               title: Text(
                 'FileList',
-                style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                style: TextStyle(color: shadColorScheme.foreground),
               ),
               dense: true,
               contentPadding: EdgeInsets.zero,
@@ -1376,7 +1382,7 @@ class SettingPage extends StatelessWidget {
                   onPressed: (value) {
                     isEdit.value = !isEdit.value;
                   },
-                  color: ShadTheme.of(context).colorScheme.foreground)),
+                  color: shadColorScheme.foreground)),
           if (isEdit.value)
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -1411,11 +1417,11 @@ class SettingPage extends StatelessWidget {
                               if (res.code == 0) {
                                 Get.back();
                                 Get.snackbar('配置保存成功', '${controller.optionMap['FileList']} 配置：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.foreground);
+                                    colorText: shadColorScheme.foreground);
                                 isEdit.value = false;
                               } else {
                                 Get.snackbar('配置保存失败', '${controller.optionMap['FileList']} 配置出错啦：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.destructive);
+                                    colorText: shadColorScheme.destructive);
                               }
                             }),
                       ),
@@ -1432,6 +1438,7 @@ class SettingPage extends StatelessWidget {
   Widget _noticeTestForm(BuildContext context) {
     TextEditingController titleController = TextEditingController(text: '这是一个消息标题');
     TextEditingController messageController = TextEditingController(text: '*这是一条测试消息*  \n__这是二号标题__\n```这是消息```');
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     final isEdit = false.obs;
     return Obx(() {
       return CustomCard(
@@ -1442,13 +1449,12 @@ class SettingPage extends StatelessWidget {
             ListTile(
                 title: Text(
                   '通知测试',
-                  style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                  style: TextStyle(color: shadColorScheme.foreground),
                 ),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: ShadIconButton.ghost(
-                  icon:
-                      Icon(Icons.notification_important_outlined, color: ShadTheme.of(context).colorScheme.foreground),
+                  icon: Icon(Icons.notification_important_outlined, color: shadColorScheme.foreground),
                   onPressed: null,
                 ),
                 onTap: () {
@@ -1459,7 +1465,7 @@ class SettingPage extends StatelessWidget {
                     onPressed: (value) {
                       isEdit.value = !isEdit.value;
                     },
-                    color: ShadTheme.of(context).colorScheme.foreground)),
+                    color: shadColorScheme.foreground)),
             if (isEdit.value)
               Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -1485,11 +1491,11 @@ class SettingPage extends StatelessWidget {
                                 if (res.code == 0) {
                                   Get.back();
                                   Get.snackbar('测试消息内容发送成功', '测试消息内容发送成功：${res.msg}',
-                                      colorText: ShadTheme.of(context).colorScheme.foreground);
+                                      colorText: shadColorScheme.foreground);
                                   isEdit.value = false;
                                 } else {
                                   Get.snackbar('测试消息内容发送失败', '测试消息内容发送出错啦：${res.msg}',
-                                      colorText: ShadTheme.of(context).colorScheme.destructive);
+                                      colorText: shadColorScheme.destructive);
                                 }
                               }),
                         ),
@@ -1507,6 +1513,7 @@ class SettingPage extends StatelessWidget {
   Widget _iyuuForm(Option? option, BuildContext context) {
     TextEditingController tokenController = TextEditingController(text: option?.value.token ?? '');
     TextEditingController proxyController = TextEditingController(text: option?.value.proxy ?? '');
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     RxBool repeat = (option == null ? true : option.value.repeat!).obs;
     final isActive = (option == null ? true : option.isActive).obs;
     final isEdit = (option == null).obs;
@@ -1517,7 +1524,7 @@ class SettingPage extends StatelessWidget {
           ListTile(
               title: Text(
                 '爱语飞飞',
-                style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                style: TextStyle(color: shadColorScheme.foreground),
               ),
               dense: true,
               contentPadding: EdgeInsets.zero,
@@ -1539,7 +1546,7 @@ class SettingPage extends StatelessWidget {
                   onPressed: (value) {
                     isEdit.value = !isEdit.value;
                   },
-                  color: ShadTheme.of(context).colorScheme.foreground)),
+                  color: shadColorScheme.foreground)),
           if (isEdit.value)
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -1551,7 +1558,7 @@ class SettingPage extends StatelessWidget {
                       contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                       title: Text(
                         '辅种开关',
-                        style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                        style: TextStyle(color: shadColorScheme.foreground),
                       ),
                       value: repeat.value,
                       onChanged: (value) {
@@ -1589,11 +1596,11 @@ class SettingPage extends StatelessWidget {
                               if (res.code == 0) {
                                 Get.back();
                                 Get.snackbar('配置保存成功', '${controller.optionMap['iyuu_push']} 配置：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.foreground);
+                                    colorText: shadColorScheme.foreground);
                                 isEdit.value = false;
                               } else {
                                 Get.snackbar('配置保存失败', '${controller.optionMap['iyuu_push']} 配置出错啦：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.destructive);
+                                    colorText: shadColorScheme.destructive);
                               }
                             }),
                       ),
@@ -1611,6 +1618,7 @@ class SettingPage extends StatelessWidget {
     TextEditingController tokenController = TextEditingController(text: option?.value.token ?? '');
     TextEditingController serverController = TextEditingController(text: option?.value.server ?? '');
     TextEditingController maxCountController = TextEditingController(text: option?.value.maxCount.toString() ?? '200');
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     final isActive = (option == null ? true : option.isActive).obs;
     final isEdit = (option == null).obs;
     return Obx(() {
@@ -1620,7 +1628,7 @@ class SettingPage extends StatelessWidget {
           ListTile(
               title: Text(
                 '喵呜通知',
-                style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                style: TextStyle(color: shadColorScheme.foreground),
               ),
               dense: true,
               contentPadding: EdgeInsets.zero,
@@ -1642,7 +1650,7 @@ class SettingPage extends StatelessWidget {
                   onPressed: (value) {
                     isEdit.value = !isEdit.value;
                   },
-                  color: ShadTheme.of(context).colorScheme.foreground)),
+                  color: shadColorScheme.foreground)),
           if (isEdit.value)
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -1681,11 +1689,11 @@ class SettingPage extends StatelessWidget {
                               if (res.succeed) {
                                 Get.back();
                                 Get.snackbar('配置保存成功', '${controller.optionMap['meow_push']} 配置：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.foreground);
+                                    colorText: shadColorScheme.foreground);
                                 isEdit.value = false;
                               } else {
                                 Get.snackbar('配置保存失败', '${controller.optionMap['meow_push']} 配置出错啦：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.destructive);
+                                    colorText: shadColorScheme.destructive);
                               }
                             }),
                       ),
@@ -1715,7 +1723,7 @@ class SettingPage extends StatelessWidget {
           ListTile(
               title: Text(
                 'Server酱',
-                style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                style: TextStyle(color: shadColorScheme.foreground),
               ),
               dense: true,
               contentPadding: EdgeInsets.zero,
@@ -1737,7 +1745,7 @@ class SettingPage extends StatelessWidget {
                   onPressed: (value) {
                     isEdit.value = !isEdit.value;
                   },
-                  color: ShadTheme.of(context).colorScheme.foreground)),
+                  color: shadColorScheme.foreground)),
           if (isEdit.value)
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -1801,6 +1809,7 @@ class SettingPage extends StatelessWidget {
   Widget _pushDeerForm(Option? option, BuildContext context) {
     TextEditingController keyController = TextEditingController(text: option?.value.key ?? '');
     TextEditingController proxyController = TextEditingController(text: option?.value.proxy ?? '');
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     final isActive = (option == null ? true : option.isActive).obs;
     final isEdit = (option == null).obs;
     return Obx(() {
@@ -1810,7 +1819,7 @@ class SettingPage extends StatelessWidget {
           ListTile(
               title: Text(
                 'PushDeer',
-                style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                style: TextStyle(color: shadColorScheme.foreground),
               ),
               dense: true,
               contentPadding: EdgeInsets.zero,
@@ -1832,7 +1841,7 @@ class SettingPage extends StatelessWidget {
                   onPressed: (value) {
                     isEdit.value = !isEdit.value;
                   },
-                  color: ShadTheme.of(context).colorScheme.foreground)),
+                  color: shadColorScheme.foreground)),
           if (isEdit.value)
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -1868,11 +1877,11 @@ class SettingPage extends StatelessWidget {
                               if (res.code == 0) {
                                 Get.back();
                                 Get.snackbar('配置保存成功', '${controller.optionMap['pushdeer_push']} 配置：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.foreground);
+                                    colorText: shadColorScheme.foreground);
                                 isEdit.value = false;
                               } else {
                                 Get.snackbar('配置保存失败', '${controller.optionMap['pushdeer_push']} 配置出错啦：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.destructive);
+                                    colorText: shadColorScheme.destructive);
                               }
                             }),
                       ),
@@ -1888,6 +1897,7 @@ class SettingPage extends StatelessWidget {
 
   Widget _aliDriveForm(Option? option, BuildContext context) {
     TextEditingController tokenController = TextEditingController(text: option?.value.refreshToken ?? '');
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     RxBool welfare = true.obs;
     final isActive = (option == null ? true : option.isActive).obs;
     final isEdit = (option == null).obs;
@@ -1898,7 +1908,7 @@ class SettingPage extends StatelessWidget {
           ListTile(
               title: Text(
                 '阿里云盘',
-                style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                style: TextStyle(color: shadColorScheme.foreground),
               ),
               dense: true,
               contentPadding: EdgeInsets.zero,
@@ -1920,7 +1930,7 @@ class SettingPage extends StatelessWidget {
                   onPressed: (value) {
                     isEdit.value = !isEdit.value;
                   },
-                  color: ShadTheme.of(context).colorScheme.foreground)),
+                  color: shadColorScheme.foreground)),
           if (isEdit.value)
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -1932,7 +1942,7 @@ class SettingPage extends StatelessWidget {
                       contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                       title: Text(
                         '领取福利',
-                        style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                        style: TextStyle(color: shadColorScheme.foreground),
                       ),
                       value: welfare.value,
                       onChanged: (value) {
@@ -1966,11 +1976,11 @@ class SettingPage extends StatelessWidget {
                               if (res.code == 0) {
                                 Get.back();
                                 Get.snackbar('配置保存成功', '${controller.optionMap['aliyun_drive']} 配置：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.foreground);
+                                    colorText: shadColorScheme.foreground);
                                 isEdit.value = false;
                               } else {
                                 Get.snackbar('配置保存失败', '${controller.optionMap['aliyun_drive']} 配置出错啦：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.destructive);
+                                    colorText: shadColorScheme.destructive);
                               }
                             }),
                       ),
@@ -1987,6 +1997,7 @@ class SettingPage extends StatelessWidget {
   Widget _ssdForumForm(Option? option, BuildContext context) {
     TextEditingController cookieController = TextEditingController(text: option?.value.cookie ?? '');
     TextEditingController userAgentController = TextEditingController(text: option?.value.userAgent ?? '');
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     TextEditingController todaySayController =
         TextEditingController(text: option != null ? option.value.todaySay! : '');
     final isActive = (option == null ? true : option.isActive).obs;
@@ -1998,7 +2009,7 @@ class SettingPage extends StatelessWidget {
           ListTile(
               title: Text(
                 'SSDForum',
-                style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                style: TextStyle(color: shadColorScheme.foreground),
               ),
               dense: true,
               contentPadding: EdgeInsets.zero,
@@ -2020,7 +2031,7 @@ class SettingPage extends StatelessWidget {
                   onPressed: (value) {
                     isEdit.value = !isEdit.value;
                   },
-                  color: ShadTheme.of(context).colorScheme.foreground)),
+                  color: shadColorScheme.foreground)),
           if (isEdit.value)
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -2060,11 +2071,11 @@ class SettingPage extends StatelessWidget {
                               if (res.code == 0) {
                                 Get.back();
                                 Get.snackbar('配置保存成功', '${controller.optionMap['ssdforum']} 配置：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.foreground);
+                                    colorText: shadColorScheme.foreground);
                                 isEdit.value = false;
                               } else {
                                 Get.snackbar('配置保存失败', '${controller.optionMap['ssdforum']} 配置出错啦：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.destructive);
+                                    colorText: shadColorScheme.destructive);
                               }
                             }),
                       ),
@@ -2082,6 +2093,7 @@ class SettingPage extends StatelessWidget {
     TextEditingController appIdController = TextEditingController(text: option?.value.appId ?? '');
     TextEditingController apiKeyController = TextEditingController(text: option?.value.apiKey ?? '');
     TextEditingController secretController = TextEditingController(text: option?.value.secretKey ?? '');
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     final isActive = (option == null ? true : option.isActive).obs;
     final isEdit = (option == null).obs;
     return Obx(() {
@@ -2091,7 +2103,7 @@ class SettingPage extends StatelessWidget {
           ListTile(
               title: Text(
                 '百度 OCR',
-                style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                style: TextStyle(color: shadColorScheme.foreground),
               ),
               dense: true,
               contentPadding: EdgeInsets.zero,
@@ -2113,7 +2125,7 @@ class SettingPage extends StatelessWidget {
                   onPressed: (value) {
                     isEdit.value = !isEdit.value;
                   },
-                  color: ShadTheme.of(context).colorScheme.foreground)),
+                  color: shadColorScheme.foreground)),
           if (isEdit.value)
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -2152,11 +2164,11 @@ class SettingPage extends StatelessWidget {
                               if (res.code == 0) {
                                 Get.back();
                                 Get.snackbar('配置保存成功', '${controller.optionMap['baidu_ocr']} 配置：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.foreground);
+                                    colorText: shadColorScheme.foreground);
                                 isEdit.value = false;
                               } else {
                                 Get.snackbar('配置保存失败', '${controller.optionMap['baidu_ocr']} 配置出错啦：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.destructive);
+                                    colorText: shadColorScheme.destructive);
                               }
                             }),
                       ),
@@ -2173,6 +2185,7 @@ class SettingPage extends StatelessWidget {
   Widget _barkForm(Option? option, BuildContext context) {
     TextEditingController deviceIdController = TextEditingController(text: option?.value.deviceKey ?? '');
     TextEditingController serverController = TextEditingController(text: option?.value.server ?? '');
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     final isActive = (option == null ? true : option.isActive).obs;
     final isEdit = (option == null).obs;
     return Obx(() {
@@ -2182,7 +2195,7 @@ class SettingPage extends StatelessWidget {
           ListTile(
               title: Text(
                 'Bark',
-                style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                style: TextStyle(color: shadColorScheme.foreground),
               ),
               dense: true,
               contentPadding: EdgeInsets.zero,
@@ -2204,7 +2217,7 @@ class SettingPage extends StatelessWidget {
                   onPressed: (value) {
                     isEdit.value = !isEdit.value;
                   },
-                  color: ShadTheme.of(context).colorScheme.foreground)),
+                  color: shadColorScheme.foreground)),
           if (isEdit.value)
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -2240,11 +2253,11 @@ class SettingPage extends StatelessWidget {
                               if (res.code == 0) {
                                 Get.back();
                                 Get.snackbar('配置保存成功', '${controller.optionMap['bark_push']} 配置：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.foreground);
+                                    colorText: shadColorScheme.foreground);
                                 isEdit.value = false;
                               } else {
                                 Get.snackbar('配置保存失败', '${controller.optionMap['bark_push']} 配置出错啦：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.destructive);
+                                    colorText: shadColorScheme.destructive);
                               }
                             }),
                       ),
@@ -2264,6 +2277,7 @@ class SettingPage extends StatelessWidget {
     TextEditingController urlController = TextEditingController(
       text: baseUrl != null && baseUrl.startsWith('https') ? baseUrl : webhook,
     );
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     final isEdit = false.obs;
     return Obx(() {
       return CustomCard(
@@ -2274,13 +2288,13 @@ class SettingPage extends StatelessWidget {
             ListTile(
                 title: Text(
                   "Telegram Webhook",
-                  style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                  style: TextStyle(color: shadColorScheme.foreground),
                 ),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: ShadIconButton.ghost(
                   onPressed: () async {},
-                  icon: Icon(Icons.telegram_outlined, color: ShadTheme.of(context).colorScheme.foreground),
+                  icon: Icon(Icons.telegram_outlined, color: shadColorScheme.foreground),
                 ),
                 onTap: () {
                   isEdit.value = !isEdit.value;
@@ -2290,7 +2304,7 @@ class SettingPage extends StatelessWidget {
                     onPressed: (value) {
                       isEdit.value = !isEdit.value;
                     },
-                    color: ShadTheme.of(context).colorScheme.foreground)),
+                    color: shadColorScheme.foreground)),
             if (isEdit.value)
               Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -2323,12 +2337,13 @@ class SettingPage extends StatelessWidget {
   }
 
   void _saveWebHook(BuildContext context, String url) async {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     if (url.isNotEmpty) {
       if (!url.startsWith('https://')) {
         Get.snackbar(
           'WebHook 地址验证失败！',
           'WebHook 必须使用 https 协议且只能使用 80、443、88、8443端口！',
-          colorText: ShadTheme.of(context).colorScheme.destructive,
+          colorText: shadColorScheme.destructive,
         );
         return;
       }
@@ -2340,15 +2355,13 @@ class SettingPage extends StatelessWidget {
       Get.snackbar(
         '保存成功',
         response.msg,
-        colorText: response.succeed
-            ? ShadTheme.of(context).colorScheme.foreground
-            : ShadTheme.of(context).colorScheme.destructive,
+        colorText: response.succeed ? shadColorScheme.foreground : shadColorScheme.destructive,
       );
     } else {
       Get.snackbar(
         '保存失败',
         'WebHook 地址不能为空！',
-        colorText: ShadTheme.of(context).colorScheme.destructive,
+        colorText: shadColorScheme.destructive,
       );
     }
   }
@@ -2357,6 +2370,7 @@ class SettingPage extends StatelessWidget {
     TextEditingController tokenController = TextEditingController(text: option?.value.token ?? '');
     final isActive = (option == null ? true : option.isActive).obs;
     final isEdit = (option == null).obs;
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     return Obx(() {
       return Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -2364,7 +2378,7 @@ class SettingPage extends StatelessWidget {
           ListTile(
               title: Text(
                 'PushPlus',
-                style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                style: TextStyle(color: shadColorScheme.foreground),
               ),
               dense: true,
               contentPadding: EdgeInsets.zero,
@@ -2386,7 +2400,7 @@ class SettingPage extends StatelessWidget {
                   onPressed: (value) {
                     isEdit.value = !isEdit.value;
                   },
-                  color: ShadTheme.of(context).colorScheme.foreground)),
+                  color: shadColorScheme.foreground)),
           if (isEdit.value)
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -2421,11 +2435,11 @@ class SettingPage extends StatelessWidget {
                               if (res.code == 0) {
                                 Get.back();
                                 Get.snackbar('配置保存成功', '${controller.optionMap['pushplus_push']} 保存成功：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.foreground);
+                                    colorText: shadColorScheme.foreground);
                                 isEdit.value = false;
                               } else {
                                 Get.snackbar('配置保存失败', '${controller.optionMap['pushplus_push']} 保存出错啦：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.destructive);
+                                    colorText: shadColorScheme.destructive);
                               }
                             }),
                       ),
@@ -2445,6 +2459,7 @@ class SettingPage extends StatelessWidget {
     TextEditingController uidController = TextEditingController(text: option?.value.uids ?? '');
     final isActive = (option == null ? true : option.isActive).obs;
     final isEdit = (option == null).obs;
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     return Obx(() {
       return Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -2452,7 +2467,7 @@ class SettingPage extends StatelessWidget {
           ListTile(
               title: Text(
                 'WxPusher',
-                style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                style: TextStyle(color: shadColorScheme.foreground),
               ),
               dense: true,
               contentPadding: EdgeInsets.zero,
@@ -2474,7 +2489,7 @@ class SettingPage extends StatelessWidget {
                   onPressed: (value) {
                     isEdit.value = !isEdit.value;
                   },
-                  color: ShadTheme.of(context).colorScheme.foreground)),
+                  color: shadColorScheme.foreground)),
           if (isEdit.value)
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -2513,11 +2528,11 @@ class SettingPage extends StatelessWidget {
                               if (res.code == 0) {
                                 Get.back();
                                 Get.snackbar('配置保存成功', '${controller.optionMap['wxpusher_push']} 配置：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.foreground);
+                                    colorText: shadColorScheme.foreground);
                                 isEdit.value = false;
                               } else {
                                 Get.snackbar('配置保存失败', '${controller.optionMap['wxpusher_push']} 配置出错啦：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.destructive);
+                                    colorText: shadColorScheme.destructive);
                               }
                             }),
                       ),
@@ -2537,6 +2552,7 @@ class SettingPage extends StatelessWidget {
     TextEditingController chatIdController = TextEditingController(text: option?.value.telegramChatId ?? '');
     final isActive = (option == null ? true : option.isActive).obs;
     final isEdit = (option == null).obs;
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     return Obx(() {
       return Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -2544,7 +2560,7 @@ class SettingPage extends StatelessWidget {
           ListTile(
               title: Text(
                 'Telegram配置',
-                style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                style: TextStyle(color: shadColorScheme.foreground),
               ),
               dense: true,
               contentPadding: EdgeInsets.zero,
@@ -2566,7 +2582,7 @@ class SettingPage extends StatelessWidget {
                   onPressed: (value) {
                     isEdit.value = !isEdit.value;
                   },
-                  color: ShadTheme.of(context).colorScheme.foreground)),
+                  color: shadColorScheme.foreground)),
           if (isEdit.value)
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -2606,11 +2622,11 @@ class SettingPage extends StatelessWidget {
                               if (res.code == 0) {
                                 Get.back();
                                 Get.snackbar('配置保存成功', '${controller.optionMap['telegram_push']} 配置：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.foreground);
+                                    colorText: shadColorScheme.foreground);
                                 isEdit.value = false;
                               } else {
                                 Get.snackbar('配置保存失败', '${controller.optionMap['telegram_push']} 配置出错啦：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.destructive);
+                                    colorText: shadColorScheme.destructive);
                               }
                             }),
                       ),
@@ -2630,6 +2646,7 @@ class SettingPage extends StatelessWidget {
     TextEditingController passwordController = TextEditingController(text: option?.value.password ?? '');
     final isActive = (option == null ? true : option.isActive).obs;
     final isEdit = (option == null).obs;
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     return Obx(() {
       return Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -2637,7 +2654,7 @@ class SettingPage extends StatelessWidget {
           ListTile(
               title: Text(
                 'CookieCloud',
-                style: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
+                style: TextStyle(color: shadColorScheme.foreground),
               ),
               dense: true,
               contentPadding: EdgeInsets.zero,
@@ -2659,7 +2676,7 @@ class SettingPage extends StatelessWidget {
                   onPressed: (value) {
                     isEdit.value = !isEdit.value;
                   },
-                  color: ShadTheme.of(context).colorScheme.foreground)),
+                  color: shadColorScheme.foreground)),
           if (isEdit.value)
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -2698,11 +2715,11 @@ class SettingPage extends StatelessWidget {
                               if (res.code == 0) {
                                 Get.back();
                                 Get.snackbar('配置保存成功', '${controller.optionMap['cookie_cloud']} 配置：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.foreground);
+                                    colorText: shadColorScheme.foreground);
                                 isEdit.value = false;
                               } else {
                                 Get.snackbar('配置保存失败', '${controller.optionMap['cookie_cloud']} 配置出错啦：${res.msg}',
-                                    colorText: ShadTheme.of(context).colorScheme.destructive);
+                                    colorText: shadColorScheme.destructive);
                               }
                             }),
                       ),
