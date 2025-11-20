@@ -19,6 +19,7 @@ import '../../models/common_response.dart';
 import '../../utils/dio_util.dart';
 import '../../utils/logger_helper.dart';
 import '../../utils/storage.dart';
+import '../card_view.dart';
 import '../form_widgets.dart';
 
 class AppUploadPage extends StatelessWidget {
@@ -42,18 +43,19 @@ class AppUploadPage extends StatelessWidget {
           tabs: [
             ShadTab(
               value: 'latestVersion',
-              content: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(left: 16.0),
-                      child: Column(
+              content: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    // crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 8,
+                    children: [
+                      Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('当前版本：${homeController.currentVersion}',
-                              style: TextStyle(fontSize: 10, color: shadColorScheme.foreground)),
+                              style: TextStyle(fontSize: 12, color: shadColorScheme.foreground)),
                           Text('服务器版本：v${homeController.updateInfo?.version}',
                               style: TextStyle(
                                   fontSize: 16,
@@ -67,52 +69,58 @@ class AppUploadPage extends StatelessWidget {
                                 if (controller.progressValue != 0 && controller.progressValue < 1) {
                                   return Text(
                                       '正在下载: ${homeController.newVersion} ${(controller.progressValue * 100).toStringAsFixed(0)}%',
-                                      style: TextStyle(fontSize: 10, color: shadColorScheme.foreground));
+                                      style: TextStyle(fontSize: 12, color: shadColorScheme.foreground));
                                 }
                                 return const SizedBox.shrink();
                               }),
                         ],
-                      ),
-                    ), // TODO: 修改为百分比显示
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ...?homeController.updateInfo?.changelog.split('\n').map((e) => Padding(
-                                  padding: const EdgeInsets.only(left: 16.0),
-                                  child: Text(e, style: TextStyle(fontSize: 10, color: shadColorScheme.foreground)),
-                                )),
-                            ...?homeController.updateInfo?.downloadLinks.entries.map((e) => Builder(builder: (context) {
-                                  final buttonKey = GlobalKey();
-                                  return ShadButton.link(
-                                      key: buttonKey,
-                                      onPressed: () => doInstallationPackage(context, e, buttonKey),
-                                      child: Text(e.key, style: TextStyle(fontSize: 10)));
-                                }))
-                          ],
+                      ), // TODO: 修改为百分比显示
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ...?homeController.updateInfo?.changelog.split('\n').map(
+                                  (e) => Text(e, style: TextStyle(fontSize: 12, color: shadColorScheme.foreground))),
+                              ...?homeController.updateInfo?.downloadLinks.entries
+                                  .map((e) => Builder(builder: (context) {
+                                        final buttonKey = GlobalKey();
+                                        return ShadButton.link(
+                                            key: buttonKey,
+                                            padding: EdgeInsets.zero,
+                                            onPressed: () => doInstallationPackage(context, e, buttonKey),
+                                            child: Text(e.key, style: TextStyle(fontSize: 12)));
+                                      }))
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        ShadButton.destructive(
-                          size: ShadButtonSize.sm,
-                          onPressed: () => getDownloadUrlForCurrentPlatform(context),
-                          child:
-                              Text(homeController.updateInfo?.version == homeController.currentVersion ? '重新安装' : '更新'),
-                        ),
-                        ShadButton(
-                          size: ShadButtonSize.sm,
-                          onPressed: () => homeController.getAppLatestVersionInfo(),
-                          child: Text('检查更新'),
-                        ),
-                      ],
-                    ),
-                  ]),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        mainAxisSize: MainAxisSize.min,
+                        spacing: 10,
+                        children: [
+                          ShadButton.outline(
+                            size: ShadButtonSize.sm,
+                            onPressed: () => homeController.popoverController.hide(),
+                            child: Text('关闭'),
+                          ),
+                          ShadButton.destructive(
+                            size: ShadButtonSize.sm,
+                            onPressed: () => getDownloadUrlForCurrentPlatform(context),
+                            child: Text(
+                                homeController.updateInfo?.version == homeController.currentVersion ? '重新安装' : '更新'),
+                          ),
+                          ShadButton(
+                            size: ShadButtonSize.sm,
+                            onPressed: () => homeController.getAppLatestVersionInfo(),
+                            child: Text('检查更新'),
+                          ),
+                        ],
+                      ),
+                    ]),
+              ),
               child: Text(
                 'APP更新',
                 style: TextStyle(
@@ -131,57 +139,68 @@ class AppUploadPage extends StatelessWidget {
               ),
             ShadTab(
               value: 'versionList',
-              content: Column(
-                children: [
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: homeController.appVersions.length,
-                      itemBuilder: (context, index) {
-                        RxBool showlog = false.obs;
-                        AppUpdateInfo appUpdateInfo = homeController.appVersions[index];
-                        return Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ListTile(
-                              dense: true,
-                              title: Text('v${appUpdateInfo.version}',
-                                  style: TextStyle(
-                                    color: shadColorScheme.foreground,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                  )),
-                              subtitle: Obx(() {
-                                if (showlog.value) {
-                                  return Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(appUpdateInfo.changelog,
-                                          style: TextStyle(color: shadColorScheme.foreground.withOpacity(0.7))),
-                                      ...appUpdateInfo.downloadLinks.entries.map((e) => Builder(builder: (context) {
-                                            final buttonKey = GlobalKey();
-                                            return ShadButton.link(
-                                                key: buttonKey,
-                                                padding: EdgeInsets.zero,
-                                                onPressed: () => doInstallationPackage(context, e, buttonKey),
-                                                child: Text(e.key, style: TextStyle(fontSize: 10)));
-                                          }))
-                                    ],
-                                  );
-                                }
-                                return const SizedBox.shrink();
-                              }),
-                              onTap: () => showlog.value = !showlog.value,
+              content: Padding(
+                padding: const EdgeInsets.only(bottom: 12.0),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: homeController.appVersions.length,
+                        itemBuilder: (context, index) {
+                          RxBool showlog = false.obs;
+                          AppUpdateInfo appUpdateInfo = homeController.appVersions[index];
+                          return CustomCard(
+                            color: shadColorScheme.background,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ListTile(
+                                  dense: true,
+                                  title: Text('v${appUpdateInfo.version}',
+                                      style: TextStyle(
+                                        color: shadColorScheme.foreground,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      )),
+                                  subtitle: Obx(() {
+                                    if (showlog.value) {
+                                      return Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(appUpdateInfo.changelog,
+                                              style: TextStyle(color: shadColorScheme.foreground.withOpacity(0.7))),
+                                          ...appUpdateInfo.downloadLinks.entries.map((e) => Builder(builder: (context) {
+                                                final buttonKey = GlobalKey();
+                                                return ShadButton.link(
+                                                    key: buttonKey,
+                                                    padding: EdgeInsets.zero,
+                                                    onPressed: () => doInstallationPackage(context, e, buttonKey),
+                                                    child: Text(e.key, style: TextStyle(fontSize: 10)));
+                                              }))
+                                        ],
+                                      );
+                                    }
+                                    return const SizedBox.shrink();
+                                  }),
+                                  onTap: () => showlog.value = !showlog.value,
+                                ),
+                              ],
                             ),
-                          ],
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                    ShadButton.outline(
+                      size: ShadButtonSize.sm,
+                      onPressed: () => homeController.popoverController.hide(),
+                      child: Text('关闭'),
+                    ),
+                  ],
+                ),
               ),
               child: Text('版本列表页面', style: TextStyle(color: shadColorScheme.foreground)),
             ),
@@ -252,7 +271,7 @@ update. 优化下拉刷新的提示文字显示
         id: 'selectedFiles',
         builder: (controller) {
           return Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.only(bottom: 12.0),
             child: Column(
               spacing: 10,
               children: [
@@ -352,6 +371,11 @@ update. 优化下拉刷新的提示文字显示
                   mainAxisSize: MainAxisSize.min,
                   spacing: 10,
                   children: [
+                    ShadButton.outline(
+                      size: ShadButtonSize.sm,
+                      onPressed: () => homeController.popoverController.hide(),
+                      child: Text('关闭'),
+                    ),
                     ShadButton(
                       size: ShadButtonSize.sm,
                       child: Text('上传'),
