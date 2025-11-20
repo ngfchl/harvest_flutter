@@ -29,6 +29,7 @@ class TrController extends GetxController {
   List<Map<String, String>> categories = <Map<String, String>>[];
   String category = '全部';
   Downloader downloader;
+  List<String> labels = [];
   Map<String, List<String>> trackers = {};
   String defaultSavePath = '/downloads/';
   int? trTorrentState;
@@ -40,6 +41,7 @@ class TrController extends GetxController {
   int torrentCount = 0;
   String? selectedTracker = '全部';
   bool exitState = false;
+  int pageSize = 20;
 
   TrController(this.downloader);
 
@@ -85,6 +87,7 @@ class TrController extends GetxController {
   }
 
   Future<void> initData() async {
+    pageSize = SPUtil.getInt('pageSize', defaultValue: 30) * 100;
     trackerToWebSiteMap.addAll(mySiteController.buildTrackerToWebSite());
     duration = SPUtil.getDouble('duration', defaultValue: 3.0);
     timerDuration = SPUtil.getDouble('timerDuration', defaultValue: 3.0);
@@ -99,7 +102,6 @@ class TrController extends GetxController {
     await getTrSpeed();
 
     /// 订阅所有种子
-
     await getAllTorrents();
     getTrackerList();
   }
@@ -141,7 +143,7 @@ class TrController extends GetxController {
   V1 getTrInstance(Downloader downloader) {
     Transmission transmission = Transmission('${downloader.protocol}://${downloader.host}:${downloader.port}',
         AuthKeys(downloader.username, downloader.password),
-        logConfig: const ConfigLogger.showNone());
+        logConfig: const ConfigLogger.showAll());
     return transmission.v1;
   }
 
@@ -223,6 +225,7 @@ class TrController extends GetxController {
   Future<Map<dynamic, dynamic>> controlTorrents({
     required String command,
     required List<String> ids,
+    List<String> labels = const [],
     String location = '',
     String name = '',
     bool deleteFiles = false,
@@ -230,34 +233,55 @@ class TrController extends GetxController {
     int limit = 0,
     int ratioLimit = 0,
     int seedingTimeLimit = 0,
-    List<String> trackerList = const [],
+    String trackerList = '',
   }) async {
     logger_helper.Logger.instance.d(command);
     logger_helper.Logger.instance.d(ids);
     Map<dynamic, dynamic> result = {};
     switch (command) {
-      case 'reannounce':
+      case 'torrentReannounce':
         result = await client.torrent.torrentReannounce(ids: ids);
         break;
-      case 'delete':
+      case 'torrentSetLabels':
+        result = await client.torrent.torrentSet(TorrentSetArgs().labels(labels), ids: ids);
+        break;
+      case 'torrentSetTrackerList':
+        result = await client.torrent.torrentSet(TorrentSetArgs().trackerList(trackerList), ids: ids);
+        break;
+      case 'torrentRemove':
         torrents.removeWhere((element) => ids.contains(element.hashString));
         filterTorrents();
         result = await client.torrent.torrentRemove(ids: ids, deleteLocalData: deleteFiles);
         break;
-      case 'resume':
+      case 'torrentStart':
         result = await client.torrent.torrentStart(ids: ids);
         break;
-      case 'ForceStart':
+      case 'torrentStartNow':
         result = await client.torrent.torrentStartNow(ids: ids);
         break;
-      case 'pause':
+      case 'torrentStop':
         result = await client.torrent.torrentStop(ids: ids);
         break;
-      case 'recheck':
+      case 'queueMoveTop':
+        result = await client.queue.queueMoveTop(ids: ids);
+        break;
+      case 'queueMoveBottom':
+        result = await client.queue.queueMoveBottom(ids: ids);
+        break;
+      case 'queueMoveUp':
+        result = await client.queue.queueMoveUp(ids: ids);
+        break;
+      case 'queueMoveDown':
+        result = await client.queue.queueMoveDown(ids: ids);
+        break;
+      case 'torrentVerify':
         result = await client.torrent.torrentVerify(ids: ids);
         break;
-      case 'rename_torrent_path':
+      case 'torrentRenamePath':
         result = await client.torrent.torrentRenamePath(ids: ids, path: location, name: name);
+        break;
+      case 'torrentSetLocation':
+        result = await client.torrent.torrentSetLocation(ids: ids, location: location, move: enable);
         break;
       case 'uploadLimit':
         result = await client.torrent.torrentSet(TorrentSetArgs().uploadLimited(true).uploadLimit(limit), ids: ids);
@@ -265,11 +289,11 @@ class TrController extends GetxController {
       case 'downloadLimit':
         result = await client.torrent.torrentSet(TorrentSetArgs().downloadLimited(true).downloadLimit(limit), ids: ids);
         break;
-      case 'ShareLimit':
+      case 'setShareLimit':
         result = await client.torrent.torrentSet(TorrentSetArgs().seedRatioLimit(limit as double), ids: ids);
         break;
     }
-
+    logger_helper.Logger.instance.d(result);
     await getAllTorrents();
     logger_helper.Logger.instance.i(categories);
     update();
@@ -296,6 +320,7 @@ class TrController extends GetxController {
         .isFinished
         .isStalled
         .leftUntilDone
+        .labels
         .magnetLink
         .name
         .peersGettingFromUs
@@ -316,6 +341,7 @@ class TrController extends GetxController {
         .status
         .totalSize
         .trackerStats
+        .trackerList
         .uploadLimitMode
         .uploadLimited
         .uploadLimit
@@ -324,12 +350,11 @@ class TrController extends GetxController {
 
     if (torrents.isEmpty) {
       List<int> ids = await getTorrentIds();
-      int batchSize = 2000;
-      for (int i = 0; i < ids.length; i += batchSize) {
+      for (int i = 0; i < ids.length; i += pageSize) {
         if (exitState) {
           break;
         }
-        List<int> batchIds = ids.sublist(i, (i + batchSize) >= ids.length ? ids.length : (i + batchSize));
+        List<int> batchIds = ids.sublist(i, (i + pageSize) >= ids.length ? ids.length : (i + pageSize));
         Map res = await client.torrent.torrentGet(fields: fields, ids: batchIds);
         torrents.addAll(res['arguments']["torrents"].map<TrTorrent>((item) => TrTorrent.fromJson(item)).toList());
         await getAllCategory();
@@ -344,6 +369,7 @@ class TrController extends GetxController {
         filterTorrents();
       }
     }
+    labels = torrents.expand((e) => e.labels).toSet().toList();
   }
 
   Future<List<int>> getTorrentIds() async {
@@ -368,7 +394,7 @@ class TrController extends GetxController {
         }
       });
     }
-    logger_helper.Logger.instance.d(trackerHashes);
+    // logger_helper.Logger.instance.d(trackerHashes);
   }
 
   String getTrMetaName(String hashString) {

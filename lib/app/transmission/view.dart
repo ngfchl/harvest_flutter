@@ -29,7 +29,7 @@ class TrPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     TextEditingController searchKeyController = TextEditingController();
-
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     return GetBuilder<TrController>(builder: (controller) {
       return PopScope(
         canPop: false,
@@ -83,7 +83,7 @@ class TrPage extends StatelessWidget {
                                           Padding(
                                             padding: const EdgeInsets.all(5.0),
                                             child: Text('计数：${controller.showTorrents.length}',
-                                                style: const TextStyle(fontSize: 12, color: Colors.orange)),
+                                                style: TextStyle(fontSize: 12, color: shadColorScheme.primary)),
                                           ),
                                         ],
                                       ),
@@ -110,7 +110,13 @@ class TrPage extends StatelessWidget {
                                   width: 5,
                                 ),
                                 if (controller.torrentCount > controller.torrents.length)
-                                  const SizedBox(height: 20, width: 20, child: CircularProgressIndicator()),
+                                  SizedBox(
+                                      height: 14,
+                                      width: 14,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: shadColorScheme.foreground,
+                                      )),
                                 if (controller.searchKey.isNotEmpty)
                                   IconButton(
                                       onPressed: () {
@@ -803,7 +809,10 @@ class TrPage extends StatelessWidget {
                   color: shadColorScheme.foreground,
                 ),
                 child: Text(style: TextStyle(fontSize: 12), '强制开始'),
-                onPressed: () {},
+                onPressed: () => controller.controlTorrents(
+                  command: 'torrentStartNow',
+                  ids: [torrentInfo.hashString],
+                ),
               ),
               ShadContextMenuItem(
                 leading: Icon(
@@ -812,7 +821,10 @@ class TrPage extends StatelessWidget {
                   color: shadColorScheme.foreground,
                 ),
                 child: Text(style: TextStyle(fontSize: 12), '开始种子'),
-                onPressed: () {},
+                onPressed: () => controller.controlTorrents(
+                  command: 'torrentStart',
+                  ids: [torrentInfo.hashString],
+                ),
               ),
               ShadContextMenuItem(
                 leading: Icon(
@@ -821,7 +833,10 @@ class TrPage extends StatelessWidget {
                   color: shadColorScheme.foreground,
                 ),
                 child: Text(style: TextStyle(fontSize: 12), '暂停种子'),
-                onPressed: () {},
+                onPressed: () => controller.controlTorrents(
+                  command: 'torrentStop',
+                  ids: [torrentInfo.hashString],
+                ),
               ),
               ShadContextMenuItem(
                 leading: Icon(
@@ -883,7 +898,7 @@ class TrPage extends StatelessWidget {
                             deleteFiles.value = controller.torrents.map((t) => t.hashString).isEmpty;
                           }
                           var res = await controller.controlTorrents(
-                              command: 'remove_torrent', enable: deleteFiles.value, ids: [torrentInfo.hashString]);
+                              command: 'torrentRemove', enable: deleteFiles.value, ids: [torrentInfo.hashString]);
                           // if (res.succeed) {
                           controller.showTorrents
                               .removeWhere((element) => element.hashString == torrentInfo.hashString);
@@ -922,7 +937,7 @@ class TrPage extends StatelessWidget {
                       onPressed: () async {
                         Get.back(result: true);
                         await controller.controlTorrents(
-                          command: 'verify_torrent',
+                          command: 'torrentVerify',
                           ids: [torrentInfo.hashString],
                         );
                       },
@@ -939,7 +954,7 @@ class TrPage extends StatelessWidget {
                 ),
                 child: Text(style: TextStyle(fontSize: 12), '重新汇报'),
                 onPressed: () =>
-                    controller.controlTorrents(command: 'reannounce_torrent', ids: [torrentInfo.hashString]),
+                    controller.controlTorrents(command: 'torrentReannounce', ids: [torrentInfo.hashString]),
               ),
               ShadContextMenuItem(
                 leading: Icon(
@@ -1001,7 +1016,7 @@ class TrPage extends StatelessWidget {
                         size: ShadButtonSize.sm,
                         onPressed: () async {
                           await controller.controlTorrents(
-                              command: 'move_torrent_data',
+                              command: 'torrentSetLocation',
                               ids: [torrentInfo.hashString],
                               location: torrentInfo.downloadDir,
                               enable: changeDataDir.value);
@@ -1057,7 +1072,9 @@ class TrPage extends StatelessWidget {
                     ),
                     child: Text(style: TextStyle(fontSize: 12), '复制路径'),
                     onPressed: () {
-                      Clipboard.setData(ClipboardData(text: '${torrentInfo.torrentFile}'));
+                      Clipboard.setData(ClipboardData(
+                          text:
+                              '${torrentInfo.downloadDir.endsWith('/') ? torrentInfo.downloadDir : '${torrentInfo.downloadDir}/'}${torrentInfo.name}'));
                       Get.snackbar('复制路径', '种子路径复制成功！', colorText: shadColorScheme.foreground);
                     },
                   ),
@@ -1098,7 +1115,7 @@ class TrPage extends StatelessWidget {
                     child: Text(style: TextStyle(fontSize: 12), '队列顶部'),
                     onPressed: () {
                       controller.controlTorrents(
-                        command: 'queue_top',
+                        command: 'queueMoveTop',
                         ids: [torrentInfo.hashString],
                       );
                     },
@@ -1112,7 +1129,7 @@ class TrPage extends StatelessWidget {
                     child: Text(style: TextStyle(fontSize: 12), '队列向上'),
                     onPressed: () {
                       controller.controlTorrents(
-                        command: 'queue_up',
+                        command: 'queueMoveUp',
                         ids: [torrentInfo.hashString],
                       );
                     },
@@ -1126,7 +1143,7 @@ class TrPage extends StatelessWidget {
                     child: Text(style: TextStyle(fontSize: 12), '队列向下'),
                     onPressed: () {
                       controller.controlTorrents(
-                        command: 'queue_down',
+                        command: 'queueMoveDown',
                         ids: [torrentInfo.hashString],
                       );
                     },
@@ -1140,7 +1157,7 @@ class TrPage extends StatelessWidget {
                     child: Text(style: TextStyle(fontSize: 12), '队列底部'),
                     onPressed: () {
                       controller.controlTorrents(
-                        command: 'queue_bottom',
+                        command: 'queueMoveBottom',
                         ids: [torrentInfo.hashString],
                       );
                     },
@@ -1154,8 +1171,34 @@ class TrPage extends StatelessWidget {
                   Icons.tag_outlined,
                   color: shadColorScheme.foreground,
                 ),
+                trailing: Icon(
+                  size: 14,
+                  Icons.keyboard_arrow_right_outlined,
+                  color: shadColorScheme.foreground,
+                ),
+                items: [
+                  ...controller.labels.map((label) => ShadContextMenuItem(
+                        leading: Icon(
+                          size: 14,
+                          torrentInfo.labels.contains(label) == true
+                              ? Icons.check_box_outlined
+                              : Icons.check_box_outline_blank_outlined,
+                          color: shadColorScheme.foreground,
+                        ),
+                        onPressed: () {
+                          List<String> labels = torrentInfo.labels;
+                          labels.contains(label) == true ? labels.remove(label) : labels.add(label);
+                          logger_helper.Logger.instance.d('设置标签中...$labels');
+                          controller.controlTorrents(
+                            command: 'torrentSetLabels',
+                            ids: [torrentInfo.hashString],
+                            labels: labels,
+                          );
+                        },
+                        child: Text(style: TextStyle(fontSize: 12), label),
+                      ))
+                ],
                 child: Text(style: TextStyle(fontSize: 12), '标签'),
-                onPressed: () {},
               ),
               ShadContextMenuItem(
                 leading: Icon(
@@ -1165,7 +1208,7 @@ class TrPage extends StatelessWidget {
                 ),
                 child: Text(style: TextStyle(fontSize: 12), '修改Tracker'),
                 onPressed: () {
-                  logger_helper.Logger.instance.d(torrentInfo.torrentFile);
+                  logger_helper.Logger.instance.d(torrentInfo.trackerList);
                   TextEditingController trackerController = TextEditingController(
                       text: torrentInfo.trackerStats.map((tracker) => tracker.announce).join('\n'));
                   Get.defaultDialog(
@@ -1202,9 +1245,9 @@ class TrPage extends StatelessWidget {
                         size: ShadButtonSize.sm,
                         onPressed: () async {
                           await controller.controlTorrents(
-                            command: 'change_torrent',
+                            command: 'torrentSetTrackerList',
                             ids: [torrentInfo.hashString],
-                            trackerList: trackerController.text.split('\n'),
+                            trackerList: trackerController.text,
                           );
                         },
                         child: const Text('确认'),
@@ -1213,15 +1256,15 @@ class TrPage extends StatelessWidget {
                   );
                 },
               ),
-              ShadContextMenuItem(
-                leading: Icon(
-                  size: 14,
-                  Icons.speed_outlined,
-                  color: shadColorScheme.foreground,
-                ),
-                child: Text(style: TextStyle(fontSize: 12), '设置限速'),
-                onPressed: () {},
-              ),
+              // ShadContextMenuItem(
+              //   leading: Icon(
+              //     size: 14,
+              //     Icons.speed_outlined,
+              //     color: shadColorScheme.foreground,
+              //   ),
+              //   child: Text(style: TextStyle(fontSize: 12), '设置限速'),
+              //   onPressed: () {},
+              // ),
             ],
             child: InkWell(
                 onTap: () {
