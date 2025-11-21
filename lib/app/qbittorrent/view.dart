@@ -678,6 +678,112 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                         PopupMenuItem<String>(
                           child: Center(
                             child: Text(
+                              '添加标签',
+                              style: TextStyle(
+                                color: shadColorScheme.foreground,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                          onTap: () async {
+                            TextEditingController nameController = TextEditingController();
+                            Get.defaultDialog(
+                                radius: 5,
+                                title: '添加标签',
+                                titleStyle: TextStyle(fontSize: 14),
+                                backgroundColor: shadColorScheme.background,
+                                content: Column(children: [
+                                  CustomTextField(
+                                    controller: nameController,
+                                    labelText: '标签',
+                                  ),
+                                ]),
+                                actions: [
+                                  ShadButton.outline(
+                                    size: ShadButtonSize.sm,
+                                    leading: const Icon(Icons.cancel_outlined),
+                                    onPressed: () {
+                                      Get.back();
+                                    },
+                                    child: Text('取消'),
+                                  ),
+                                  ShadButton.destructive(
+                                    size: ShadButtonSize.sm,
+                                    leading: const Icon(Icons.add_outlined),
+                                    onPressed: () async {
+                                      if (nameController.text.trim().isEmpty) {
+                                        return;
+                                      }
+                                      await controller.client.torrents.createTags(
+                                        tags: [nameController.text.trim()],
+                                      );
+                                      Get.back();
+                                    },
+                                    child: Text('添加'),
+                                  ),
+                                ]);
+                          },
+                        ),
+                        PopupMenuItem<String>(
+                          child: Center(
+                            child: Text(
+                              '添加分类',
+                              style: TextStyle(
+                                color: shadColorScheme.foreground,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                          onTap: () async {
+                            TextEditingController nameController = TextEditingController();
+                            TextEditingController pathController = TextEditingController(text: '/downloads');
+                            Get.defaultDialog(
+                                radius: 5,
+                                title: '添加分类',
+                                titleStyle: TextStyle(fontSize: 14),
+                                backgroundColor: shadColorScheme.background,
+                                content: Column(children: [
+                                  CustomTextField(
+                                    controller: nameController,
+                                    labelText: '分类名称',
+                                  ),
+                                  CustomTextField(
+                                    controller: pathController,
+                                    labelText: '保存路径',
+                                    helperText: '保存路径可以为空',
+                                  )
+                                ]),
+                                actions: [
+                                  ShadButton.outline(
+                                    size: ShadButtonSize.sm,
+                                    leading: const Icon(Icons.cancel_outlined),
+                                    onPressed: () {
+                                      Get.back();
+                                    },
+                                    child: Text('取消'),
+                                  ),
+                                  ShadButton.destructive(
+                                    size: ShadButtonSize.sm,
+                                    leading: const Icon(Icons.add_outlined),
+                                    onPressed: () async {
+                                      if (nameController.text.trim().isEmpty) {
+                                        return;
+                                      }
+
+                                      await controller.client.torrents.createCategory(
+                                        name: nameController.text.trim(),
+                                        savePath: pathController.text.trim(),
+                                      );
+                                      Get.back();
+                                    },
+                                    child: Text('添加'),
+                                  ),
+                                ]);
+                          },
+                        ),
+                        PopupMenuItem<String>(
+                          child: Center(
+                            child: Text(
                               '清除红种',
                               style: TextStyle(
                                 color: shadColorScheme.foreground,
