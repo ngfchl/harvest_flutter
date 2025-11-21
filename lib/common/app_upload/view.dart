@@ -47,7 +47,7 @@ class AppUploadPage extends StatelessWidget {
                 padding: const EdgeInsets.all(12.0),
                 child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    // crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     spacing: 8,
                     children: [
                       Column(
@@ -97,25 +97,35 @@ class AppUploadPage extends StatelessWidget {
                         ),
                       ),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        mainAxisSize: MainAxisSize.min,
-                        spacing: 10,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           ShadButton.outline(
                             size: ShadButtonSize.sm,
                             onPressed: () => homeController.popoverController.hide(),
+                            leading: Icon(
+                              Icons.close_outlined,
+                              size: 16,
+                            ),
                             child: Text('关闭'),
+                          ),
+                          ShadButton(
+                            size: ShadButtonSize.sm,
+                            leading: Icon(
+                              Icons.downloading_outlined,
+                              size: 16,
+                            ),
+                            onPressed: () => homeController.getAppLatestVersionInfo(),
+                            child: Text('检查'),
                           ),
                           ShadButton.destructive(
                             size: ShadButtonSize.sm,
                             onPressed: () => getDownloadUrlForCurrentPlatform(context),
+                            leading: Icon(
+                              Icons.install_desktop_outlined,
+                              size: 16,
+                            ),
                             child: Text(
                                 homeController.updateInfo?.version == homeController.currentVersion ? '重新安装' : '更新'),
-                          ),
-                          ShadButton(
-                            size: ShadButtonSize.sm,
-                            onPressed: () => homeController.getAppLatestVersionInfo(),
-                            child: Text('检查更新'),
                           ),
                         ],
                       ),
@@ -132,9 +142,11 @@ class AppUploadPage extends StatelessWidget {
             if (homeController.authInfo?.username == 'ngfchl@126.com')
               ShadTab(
                 value: 'versionUpload',
-                content: GetBuilder<HomeController>(builder: (controller) {
-                  return editAppUpdateForm(context);
-                }),
+                content: GetBuilder<HomeController>(
+                    id: 'versionUpload',
+                    builder: (controller) {
+                      return editAppUpdateForm(context);
+                    }),
                 child: Text('上传新版本', style: TextStyle(color: shadColorScheme.foreground)),
               ),
             ShadTab(
@@ -197,6 +209,10 @@ class AppUploadPage extends StatelessWidget {
                     ShadButton.outline(
                       size: ShadButtonSize.sm,
                       onPressed: () => homeController.popoverController.hide(),
+                      leading: Icon(
+                        Icons.close_outlined,
+                        size: 16,
+                      ),
                       child: Text('关闭'),
                     ),
                   ],
@@ -251,20 +267,24 @@ class AppUploadPage extends StatelessWidget {
     RxList<File> selectedFiles = <File>[].obs;
     if (kDebugMode) {
       changeLogController.text = '''
-update. 更新版本号：2025.1116.01+182
-fixed. 修复windows下打开更新包位置
-update. 优化调整移动端安装包下载
-update. 优化调整顶栏按钮
-update. 调整更新依赖版本
-update. 更新模块增加自动检测当前平台并下载更新包
-add. 添加新依赖：install_plugin_v3、device_info_plus
-update. 优化仪表盘数据重载方法
-update. 优化main方法依赖加载
-update. 调整搜索结果条目长按客户端进入浏览器，浏览器打开新页面
-fixed. 修复点击搜索项目偶现无法打开下载窗口的BUG
-update. 打包ipa命名添加ios标志
-update. 内置浏览器完善种子详情页种子小标题抓取
-update. 优化下拉刷新的提示文字显示
+update. 更新版本号：2025.1120.01+183
+update. 完成直连TR功能菜单
+update. 完成直连QB功能菜单
+fixed. 区分下载器直连与中转模式排序Key
+update. 开始更新Transmission
+update. 优化设置页面主题细节
+fixed. 修复 qbittorrent 种子详情页未加载完时显示异常的 BUG
+update. 优化APP升级页面下显示效果
+update. 优化 Qbittorrent 直连
+update. 优化启动时 APP 更新检测逻辑
+update. 调整主题设置页面关闭逻辑
+update. 恢复下载器智联模块
+update. 微调APP升级模块
+update. 添加有邀请站点列表
+add. 完成APP更新发布界面
+update. APP更新相关代码移出到指定文件
+add. 添加七牛上传接口地址
+fixed. 修复App更新日志访问失败导致升级窗口打开失败的BUG
 ''';
     }
     return GetBuilder<HomeController>(
@@ -358,11 +378,7 @@ update. 优化下拉刷新的提示文字显示
                         ],
                       ),
                       if (controller.uploading)
-                        Center(
-                            child: CircularProgressIndicator(
-                          color: shadColorScheme.foreground,
-                          strokeWidth: 2,
-                        )),
+                        Center(child: CircularProgressIndicator(color: shadColorScheme.foreground)),
                     ],
                   ),
                 ),
@@ -374,24 +390,27 @@ update. 优化下拉刷新的提示文字显示
                     ShadButton.outline(
                       size: ShadButtonSize.sm,
                       onPressed: () => homeController.popoverController.hide(),
+                      leading: Icon(
+                        Icons.close_outlined,
+                        size: 16,
+                      ),
                       child: Text('关闭'),
                     ),
                     ShadButton(
                       size: ShadButtonSize.sm,
+                      leading: controller.uploading
+                          ? SizedBox(
+                              height: 16,
+                              width: 16,
+                              child: Center(child: CircularProgressIndicator(color: shadColorScheme.primaryForeground)))
+                          : Icon(
+                              Icons.upload_outlined,
+                              size: 16,
+                              color: shadColorScheme.primaryForeground,
+                            ),
+                      onPressed: () => uploadFiles(context, changeLogController.text, selectedFiles),
                       child: Text('上传'),
-                      onPressed: () => uploadFiles(changeLogController.text, selectedFiles),
                     ),
-                    ShadButton(
-                        size: ShadButtonSize.sm,
-                        child: Text('保存'),
-                        onPressed: () async {
-                          // String version = versionController.text;
-                          // Map<String, String> downloadLinks = controller.selectedFiles.asMap().map((index, file) =>
-                          //     MapEntry(file.uri.pathSegments.last,
-                          //         'http://file.ptools.fun/app/$version/${file.uri.pathSegments.last}'));
-                          // downloadLinksController.text = jsonEncode(downloadLinks);
-                          // await controller.uploadFiles(version);
-                        }),
                   ],
                 ),
               ],
@@ -401,11 +420,13 @@ update. 优化下拉刷新的提示文字显示
   }
 
   // 假设你已有 CommonResponse 类和 DioUtil
-  Future<CommonResponse?> uploadFiles(String changelog, List<File> files, {CancelToken? cancelToken}) async {
+  Future<void> uploadFiles(BuildContext context, String changelog, List<File> files, {CancelToken? cancelToken}) async {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     homeController.uploading = true;
-    homeController.update(['selectFiles']);
+    homeController.update(['versionUpload']);
 
     try {
+      Logger.instance.i('开始上传APP文件');
       // 2. 构建 FormData
       final formData = FormData();
       formData.fields.add(MapEntry('changelog', changelog));
@@ -421,15 +442,16 @@ update. 优化下拉刷新的提示文字显示
           ),
         );
       }
-
+      Logger.instance.i('组装好FormData，开始上传');
       // 3. 调用你的 addData 方法（或直接用 Dio）
       final response = await DioUtil().post(
         Api.QINIU_UPLOAD_FILES,
         formData: formData,
         cancelToken: cancelToken,
       );
+      Logger.instance.i('上传成功，返回数据: ${response.data}');
       homeController.uploading = false;
-      homeController.update(['selectFiles']);
+      homeController.update(['versionUpload']);
       CommonResponse? commonResponse;
       if (response.statusCode == 200) {
         commonResponse = CommonResponse.fromJson(response.data, (p0) => null);
@@ -438,16 +460,16 @@ update. 优化下拉刷新的提示文字显示
         commonResponse = CommonResponse.error(msg: msg);
       }
       if (commonResponse.succeed == true) {
-        Logger.instance.i('✅ 文件上传请求成功，链接已返回');
-        // response.data 应该是 { "harvest_v1.0.apk": "http://...", ... }
-        return commonResponse;
+        Logger.instance.i('✅ APP文件上传请求成功，链接已返回');
+        homeController.popoverController.hide();
+        Get.snackbar('✅ APP文件上传请求成功', commonResponse.msg, colorText: shadColorScheme.foreground);
       } else {
-        Logger.instance.e('❌ 上传失败: ${commonResponse.msg}');
-        return commonResponse;
+        Logger.instance.e('❌ APP上传失败: ${commonResponse.msg}');
+        Get.snackbar('❌ APP文件上传失败', commonResponse.msg, colorText: shadColorScheme.destructive);
       }
     } catch (e, stack) {
       Logger.instance.e('上传异常: $e', error: e, stackTrace: stack);
-      return CommonResponse.error(msg: '上传过程中发生错误: $e');
+      Get.snackbar('❌ APP文件上传失败', '上传异常: $e', colorText: shadColorScheme.destructive);
     }
   }
 
