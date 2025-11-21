@@ -348,7 +348,7 @@ class QBittorrentController extends GetxController {
 
   Future<QBittorrentApiV2> getQbInstance(Downloader downloader) async {
     QBittorrentApiV2 qbittorrent = QBittorrentApiV2(
-      baseUrl: '${downloader.protocol}://${downloader.host}:${downloader.port}',
+      baseUrl: downloader.externalHost,
       cookiePath: '${(await getApplicationDocumentsDirectory()).path}/${downloader.host}/${downloader.port}',
       connectTimeout: const Duration(seconds: 10),
       sendTimeout: const Duration(seconds: 10),

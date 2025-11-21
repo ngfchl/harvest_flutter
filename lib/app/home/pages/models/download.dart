@@ -10,6 +10,7 @@ class Downloader {
   String password;
   String protocol; // 请注意：使用String来模拟'http'或'https'
   String host;
+  String externalHost;
   int port;
   String category;
   String torrentPath;
@@ -25,6 +26,7 @@ class Downloader {
     required this.username,
     required this.password,
     required this.protocol,
+    required this.externalHost,
     required this.host,
     required this.port,
     required this.category,
@@ -44,6 +46,7 @@ class Downloader {
       password: json['password'],
       protocol: json['protocol'],
       host: json['host'],
+      externalHost: json['external_host'],
       port: json['port'],
       category: json['category'],
       torrentPath: json['torrent_path'],
@@ -73,6 +76,7 @@ class Downloader {
       'password': password,
       'protocol': protocol,
       'host': host,
+      'external_host': externalHost,
       'port': port,
       'category': category,
       'torrent_path': torrentPath,

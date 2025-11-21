@@ -685,6 +685,10 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                     Uri uri = Uri.parse(pathDownloader);
                     await launchUrl(uri, mode: LaunchMode.externalApplication);
                   }
+                  if (downloader.externalHost.isEmpty) {
+                    Get.snackbar('提示', '请先配置下载外部访问地址！', colorText: shadColorScheme.destructive);
+                    return;
+                  }
                   if (downloader.category == 'Qb') {
                     Get.toNamed(Routes.QB, arguments: downloader);
                   }
@@ -1167,6 +1171,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
     final sortIdController = TextEditingController(text: downloader?.sortId.toString() ?? '0');
 
     final hostController = TextEditingController(text: downloader?.host ?? '192.168.');
+    final externalHostController = TextEditingController(text: downloader?.externalHost ?? '192.168.');
     final portController = TextEditingController(text: downloader?.port.toString() ?? '8999');
 
     final torrentPathController = TextEditingController(text: downloader?.torrentPath ?? '/downloaders');
@@ -1254,6 +1259,10 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                       CustomTextField(
                         controller: passwordController,
                         labelText: '密码',
+                      ),
+                      CustomTextField(
+                        controller: externalHostController,
+                        labelText: '外部地址',
                       ),
                       CustomTextField(
                         controller: hostController,
@@ -1344,6 +1353,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                         downloader?.password = passwordController.text;
                         downloader?.protocol = protocolController.text;
                         downloader?.host = hostController.text;
+                        downloader?.externalHost = externalHostController.text;
                         downloader?.port = int.tryParse(portController.text) ?? 8999;
                         downloader?.sortId = int.tryParse(sortIdController.text) ?? 0;
                         downloader?.torrentPath = torrentPathController.text;
@@ -1360,6 +1370,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                           protocol: protocolController.text,
                           sortId: int.tryParse(sortIdController.text) ?? 0,
                           host: hostController.text,
+                          externalHost: externalHostController.text,
                           port: int.tryParse(portController.text) ?? 8999,
                           torrentPath: torrentPathController.text,
                           isActive: isActive.value,

@@ -200,7 +200,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                     ),
                   ),
                   Text(
-                    '${controller.downloader.protocol}://${controller.downloader.host}:${controller.downloader.port}',
+                    controller.downloader.externalHost,
                     style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
                   ),
                 ],
@@ -389,8 +389,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                         .d('当前排序规则：${controller.sortKey},正序：${controller.sortReversed}！');
                                     controller.sortKey = item.value;
                                     logger_helper.Logger.instance.d('当前排序字段: ${controller.sortKey}');
-                                    SPUtil.setLocalStorage(
-                                        '${controller.downloader.host}:${controller.downloader.port}-sortKey-DIRECT',
+                                    SPUtil.setLocalStorage('${controller.downloader.externalHost}-sortKey-DIRECT',
                                         controller.sortKey?.name);
                                     controller.subTorrentList();
                                   },
@@ -1833,7 +1832,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
         color: shadColorScheme.background,
         padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
         child: GetBuilder<QBittorrentController>(
-            // id: '${downloader.host} - ${downloader.port} - ${controller.selectedTorrent.hash} - details',
+            // id: '${downloader.externalHost} - ${controller.selectedTorrent.hash} - details',
             builder: (controller) {
           List<Tracker> trackers =
               selectedTorrentTrackers.where((Tracker element) => element.url?.startsWith('http') ?? false).toList();
