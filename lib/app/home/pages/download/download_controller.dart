@@ -575,12 +575,13 @@ class DownloadController extends GetxController {
     if (!response.succeed) {
       return;
     }
-
-    categoryMap.addAll({
-      for (var entry in response.data['categories'].entries)
-        entry.key: Category.fromJson(entry.value as Map<String, dynamic>)
-    });
-
+    if (response.data['categories'].isEmpty) {
+    } else {
+      categoryMap.addAll({
+        for (var entry in response.data['categories'].entries)
+          entry.key: Category.fromJson(entry.value as Map<String, dynamic>)
+      });
+    }
     trackers.addAll(mergeTrackers(Map<String, List<dynamic>>.from(response.data['trackers'])));
     update();
   }
@@ -624,11 +625,29 @@ class DownloadController extends GetxController {
     if (!response.succeed) {
       return response;
     }
-    categoryMap = {for (var item in response.data) (item)['name']!: Category.fromJson(item as Map<String, dynamic>)};
+    if (categoryMap.isEmpty) {
+      categoryMap = {
+        for (final path in torrents.map((t) => t.savePath).whereType<String>().toSet())
+          _extractName(path): Category(
+            name: _extractName(path),
+            savePath: path,
+          )
+      };
+    } else {
+      categoryMap = {for (var item in response.data) (item)['name']!: Category.fromJson(item as Map<String, dynamic>)};
+    }
     isCategoryLoading = false;
 
     update([key]);
     return CommonResponse.success(data: categoryMap);
+  }
+
+  String _extractName(String path) {
+    // 去掉尾部斜杠
+    var p = path.endsWith('/') ? path.substring(0, path.length - 1) : path;
+
+    // 获取最后一个 / 后的名字
+    return p.split('/').last;
   }
 
   void filterTrTorrents() {
