@@ -589,6 +589,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
     ChartSeriesController? chartSeriesController;
     var pathDownloader = '${downloader.protocol}://${downloader.host}:${downloader.port}';
     var shadColorScheme = ShadTheme.of(context).colorScheme;
+    ShadPopoverController popoverController = ShadPopoverController();
 
     return CustomCard(
       child: Slidable(
@@ -795,13 +796,140 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                     //       size: 18,
                     //       color: ShadTheme.of(context).colorScheme.foreground,
                     //     )),
-                    ShadIconButton.ghost(
-                        onPressed: () => _openAddTorrentDialog(controller, downloader),
-                        icon: Icon(
-                          Icons.add_outlined,
-                          size: 18,
-                          color: shadColorScheme.foreground,
-                        )),
+                    ShadPopover(
+                      controller: popoverController,
+                      popover: (BuildContext context) {
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          spacing: 8,
+                          children: [
+                            ShadButton.outline(
+                              size: ShadButtonSize.sm,
+                              onPressed: () => _openAddTorrentDialog(downloader),
+                              child: Text('添加种子'),
+                            ),
+                            if (isQb) ...[
+                              ShadButton.outline(
+                                size: ShadButtonSize.sm,
+                                onPressed: () {
+                                  TextEditingController nameController = TextEditingController();
+                                  TextEditingController pathController =
+                                      TextEditingController(text: downloader.prefs.savePath ?? '');
+                                  Get.defaultDialog(
+                                      radius: 5,
+                                      title: '添加分类',
+                                      titleStyle: TextStyle(fontSize: 14),
+                                      backgroundColor: shadColorScheme.background,
+                                      content: Column(children: [
+                                        CustomTextField(
+                                          controller: nameController,
+                                          labelText: '分类名称',
+                                        ),
+                                        CustomTextField(
+                                          controller: pathController,
+                                          labelText: '保存路径',
+                                          helperText: '保存路径可以为空',
+                                        )
+                                      ]),
+                                      actions: [
+                                        ShadButton.outline(
+                                          size: ShadButtonSize.sm,
+                                          leading: const Icon(Icons.cancel_outlined),
+                                          onPressed: () {
+                                            Get.back();
+                                          },
+                                          child: Text('取消'),
+                                        ),
+                                        ShadButton.destructive(
+                                          size: ShadButtonSize.sm,
+                                          leading: const Icon(Icons.add_outlined),
+                                          onPressed: () async {
+                                            if (nameController.text.trim().isEmpty) {
+                                              return;
+                                            }
+                                            CommonResponse res;
+                                            if (pathController.text.trim().isNotEmpty) {
+                                              res = await controller.controlQbTorrents(
+                                                  downloader: downloader,
+                                                  command: 'create_category',
+                                                  category: nameController.text,
+                                                  newPath: pathController.text);
+                                            } else {
+                                              res = await controller.controlQbTorrents(
+                                                downloader: downloader,
+                                                command: 'create_category',
+                                                category: nameController.text,
+                                              );
+                                            }
+                                            if (res.succeed) {
+                                              Get.back();
+                                            }
+                                          },
+                                          child: Text('添加'),
+                                        ),
+                                      ]);
+                                },
+                                child: Text('添加分类'),
+                              ),
+                              ShadButton.outline(
+                                size: ShadButtonSize.sm,
+                                onPressed: () {
+                                  TextEditingController nameController = TextEditingController();
+                                  Get.defaultDialog(
+                                      radius: 5,
+                                      title: '添加标签',
+                                      titleStyle: TextStyle(fontSize: 14),
+                                      backgroundColor: shadColorScheme.background,
+                                      content: Column(children: [
+                                        CustomTextField(
+                                          controller: nameController,
+                                          labelText: '标签',
+                                        ),
+                                      ]),
+                                      actions: [
+                                        ShadButton.outline(
+                                          size: ShadButtonSize.sm,
+                                          leading: const Icon(Icons.cancel_outlined),
+                                          onPressed: () {
+                                            Get.back();
+                                          },
+                                          child: Text('取消'),
+                                        ),
+                                        ShadButton.destructive(
+                                          size: ShadButtonSize.sm,
+                                          leading: const Icon(Icons.add_outlined),
+                                          onPressed: () async {
+                                            if (nameController.text.trim().isEmpty) {
+                                              return;
+                                            }
+
+                                            var res = await controller.controlQbTorrents(
+                                              downloader: downloader,
+                                              command: 'create_tags',
+                                              tag: nameController.text,
+                                            );
+                                            if (res.succeed) {
+                                              Get.back();
+                                            }
+                                          },
+                                          child: Text('添加'),
+                                        ),
+                                      ]);
+                                },
+                                child: Text('添加标签'),
+                              )
+                            ]
+                          ],
+                        );
+                      },
+                      child: ShadIconButton.ghost(
+                          onPressed: () => popoverController.toggle(),
+                          icon: Icon(
+                            Icons.add_outlined,
+                            size: 18,
+                            color: shadColorScheme.foreground,
+                          )),
+                    ),
                   ],
                 ),
               ),
@@ -1918,7 +2046,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                             '添加种子',
                                           ),
                                         ),
-                                        onTap: () => _openAddTorrentDialog(controller, downloader),
+                                        onTap: () => _openAddTorrentDialog(downloader),
                                       ),
                                     ],
                                   ),
@@ -2125,7 +2253,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
     }
   }
 
-  void _openAddTorrentDialog(DownloadController controller, Downloader downloader) async {
+  void _openAddTorrentDialog(Downloader downloader) async {
     try {
       if (controller.addTorrentLoading == true) {
         return;
@@ -2137,28 +2265,30 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
         backgroundColor: shadColorScheme.background,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
         enableDrag: true,
-        SizedBox(
-          height: 400,
-          child: Column(children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                '添加种子',
-                style: ShadTheme.of(context).textTheme.h4,
+        GetBuilder<DownloadController>(builder: (controller) {
+          return SizedBox(
+            height: 400,
+            child: Column(children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  '添加种子',
+                  style: ShadTheme.of(context).textTheme.h4,
+                ),
               ),
-            ),
-            Expanded(
-              child: DownloadForm(
-                categories: controller.categoryMap.values.fold({}, (map, element) {
-                  map[element!.name!] = element;
-                  return map;
-                }),
-                downloader: downloader,
-                info: null,
+              Expanded(
+                child: DownloadForm(
+                  categories: controller.categoryMap.values.fold({}, (map, element) {
+                    map[element!.name!] = element;
+                    return map;
+                  }),
+                  downloader: downloader,
+                  info: null,
+                ),
               ),
-            ),
-          ]),
-        ),
+            ]),
+          );
+        }),
       ).whenComplete(() {
         controller.addTorrentLoading = false;
       });

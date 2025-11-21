@@ -1003,7 +1003,7 @@ class DownloadController extends GetxController {
   Future<CommonResponse> controlQbTorrents({
     required Downloader downloader,
     required String command,
-    required List<String> hashes,
+    List<String>? hashes,
     String? category,
     String? tag,
     dynamic fileId,
@@ -1023,14 +1023,14 @@ class DownloadController extends GetxController {
       case 'rename':
         response = await controlTorrent(downloaderId: downloader.id!, command: {
           'command': command,
-          'torrent_hash': hashes[0],
+          'torrent_hash': hashes?.first,
           'new_torrent_name': newTorrentName,
         });
         break;
       case 'rename_file':
         response = await controlTorrent(downloaderId: downloader.id!, command: {
           'command': command,
-          'torrent_hash': hashes[0],
+          'torrent_hash': hashes?.first,
           'file_id': fileId,
           'new_file_name': newFileName,
           'old_path': oldPath,
@@ -1040,7 +1040,7 @@ class DownloadController extends GetxController {
       case 'rename_folder':
         response = await controlTorrent(downloaderId: downloader.id!, command: {
           'command': command,
-          'torrent_hash': hashes[0],
+          'torrent_hash': hashes?.first,
           'old_path': oldPath,
           'new_path': newPath,
         });
@@ -1048,7 +1048,7 @@ class DownloadController extends GetxController {
       case 'export':
         response = await controlTorrent(downloaderId: downloader.id!, command: {
           'command': command,
-          'torrent_hash': hashes[0],
+          'torrent_hash': hashes?.first,
         });
         break;
       case 'start':
@@ -1137,6 +1137,27 @@ class DownloadController extends GetxController {
           'category': category,
         });
         break;
+      case 'create_tags':
+      case 'delete_tags':
+        response = await controlTorrent(downloaderId: downloader.id!, command: {
+          'command': command,
+          'tags': tag,
+        });
+        break;
+      case 'create_category':
+      case 'edit_category':
+        response = await controlTorrent(downloaderId: downloader.id!, command: {
+          'command': command,
+          'name': category,
+          'save_path': newPath,
+        });
+        break;
+      case 'remove_categories':
+        response = await controlTorrent(downloaderId: downloader.id!, command: {
+          'command': command,
+          'category': category,
+        });
+        break;
       default:
         String msg = '未知命令：$command';
         response = CommonResponse.error(msg: msg);
@@ -1146,6 +1167,7 @@ class DownloadController extends GetxController {
     }
     update();
     if (!response.succeed) {
+      logger_helper.Logger.instance.e(response.msg);
       Get.snackbar(response.succeed ? '成功啦！' : '出错啦！', response.msg, colorText: Colors.red);
     }
     return response;
