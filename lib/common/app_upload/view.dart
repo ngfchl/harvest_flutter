@@ -32,6 +32,8 @@ class AppUploadPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final shadColorScheme = ShadTheme.of(context).colorScheme;
+    final buttonKey = GlobalKey();
+
     return GetBuilder<HomeController>(builder: (homeController) {
       return ShadPopover(
         controller: homeController.popoverController,
@@ -96,38 +98,55 @@ class AppUploadPage extends StatelessWidget {
                           ),
                         ),
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          ShadButton.outline(
-                            size: ShadButtonSize.sm,
-                            onPressed: () => homeController.popoverController.hide(),
-                            leading: Icon(
-                              Icons.close_outlined,
-                              size: 16,
-                            ),
-                            child: Text('关闭'),
+                      Center(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Wrap(
+                            alignment: WrapAlignment.center,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            runAlignment: WrapAlignment.center,
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              ShadButton.outline(
+                                size: ShadButtonSize.sm,
+                                onPressed: () => homeController.popoverController.hide(),
+                                leading: Icon(
+                                  Icons.close_outlined,
+                                  size: 16,
+                                ),
+                                child: Text('关闭'),
+                              ),
+                              ShadButton(
+                                size: ShadButtonSize.sm,
+                                leading: Icon(
+                                  Icons.downloading_outlined,
+                                  size: 16,
+                                ),
+                                onPressed: () => homeController.getAppLatestVersionInfo(),
+                                child: Text('检查'),
+                              ),
+                              ShadButton.destructive(
+                                size: ShadButtonSize.sm,
+                                key: buttonKey,
+                                onPressed: () => getDownloadUrlForCurrentPlatform(context, buttonKey),
+                                leading: Icon(
+                                  Icons.install_desktop_outlined,
+                                  size: 16,
+                                ),
+                                child: Text(
+                                    homeController.updateInfo?.version == homeController.currentVersion ? '重装' : '更新'),
+                              ),
+                              if (Platform.isIOS)
+                                ShadButton.link(
+                                  size: ShadButtonSize.sm,
+                                  onPressed: () => launchUrl(Uri.parse('https://testflight.apple.com/join/kwLil5xf'),
+                                      mode: LaunchMode.externalApplication),
+                                  child: Text('TestFlight'),
+                                ),
+                            ],
                           ),
-                          ShadButton(
-                            size: ShadButtonSize.sm,
-                            leading: Icon(
-                              Icons.downloading_outlined,
-                              size: 16,
-                            ),
-                            onPressed: () => homeController.getAppLatestVersionInfo(),
-                            child: Text('检查'),
-                          ),
-                          ShadButton.destructive(
-                            size: ShadButtonSize.sm,
-                            onPressed: () => getDownloadUrlForCurrentPlatform(context),
-                            leading: Icon(
-                              Icons.install_desktop_outlined,
-                              size: 16,
-                            ),
-                            child: Text(
-                                homeController.updateInfo?.version == homeController.currentVersion ? '重新安装' : '更新'),
-                          ),
-                        ],
+                        ),
                       ),
                     ]),
               ),
@@ -419,7 +438,7 @@ fixed. 修复App更新日志访问失败导致升级窗口打开失败的BUG
         });
   }
 
-  // 假设你已有 CommonResponse 类和 DioUtil
+// 假设你已有 CommonResponse 类和 DioUtil
   Future<void> uploadFiles(BuildContext context, String changelog, List<File> files, {CancelToken? cancelToken}) async {
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     homeController.uploading = true;
@@ -474,7 +493,7 @@ fixed. 修复App更新日志访问失败导致升级窗口打开失败的BUG
   }
 
   /// 根据当前设备平台，从 downloadLinks 中返回最匹配的下载 URL
-  Future getDownloadUrlForCurrentPlatform(BuildContext context) async {
+  Future getDownloadUrlForCurrentPlatform(BuildContext context, GlobalKey buttonKey) async {
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     final String prefix = 'harvest_${homeController.updateInfo?.version}';
     Map<String, String> downloadLinks = homeController.updateInfo?.downloadLinks ?? {};
@@ -497,9 +516,10 @@ fixed. 修复App更新日志访问失败导致升级窗口打开失败的BUG
       await _downloadInstallationPackage(savePath, downloadUrl!);
       await InstallPlugin.install(savePath);
     } else if (Platform.isIOS) {
-      // downloadUrl = downloadLinks['${prefix}_ios.ipa'];
-      downloadUrl = 'https://testflight.apple.com/join/kwLil5xf';
-      await launchUrl(Uri.parse(downloadUrl), mode: LaunchMode.externalApplication);
+      homeController.newVersion = '${prefix}_ios.ipa';
+
+      downloadUrl = downloadLinks[homeController.newVersion];
+      await downloadAndSaveWithFilePicker(downloadUrl!, homeController.newVersion, buttonKey);
     } else if (Platform.isWindows) {
       homeController.newVersion = '${prefix}_x86_64-win.zip';
       downloadUrl = downloadLinks[homeController.newVersion];
@@ -592,7 +612,7 @@ fixed. 修复App更新日志访问失败导致升级窗口打开失败的BUG
         final savePath = '${dir.path}/$suggestedName';
         final file = File(savePath);
         await file.writeAsBytes(Uint8List.fromList(response.data!));
-// 获取按钮在屏幕上的位置
+        // 获取按钮在屏幕上的位置
         Rect? originRect;
         try {
           final renderBox = buttonKey.currentContext?.findRenderObject() as RenderBox?;
@@ -616,11 +636,6 @@ fixed. 修复App更新日志访问失败导致升级窗口打开失败的BUG
           text: '分享安装包到...',
           sharePositionOrigin: originRect, // ✅ 关键：非零有效 Rect
         ));
-        // await Share.shareXFiles(
-        //   [XFile(savePath)],
-        //   subject: '安装包',
-        //   text: '请通过“文件”App 安装此应用',
-        // );
 
         Logger.instance.i('✅ 已分享文件，用户可保存到“文件”App');
       }
