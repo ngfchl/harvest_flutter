@@ -3,6 +3,7 @@ class Api {
   static const String LOGIN_URL = "auth/login";
   static const String USER_INFO = "auth/userinfo";
   static const String UPDATE_LOG = "auth/update/log";
+  static const String UPDATE_SITES = "auth/update/sites";
   static const String AUTH_INFO = "auth/auth_info";
   static const String AUTH_USER = "auth/user";
   static const String INVITE_USER = "auth/try";

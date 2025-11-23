@@ -19,7 +19,8 @@ class UpgradeWidgetPage extends StatelessWidget {
         popover: (context) => GetBuilder<HomeController>(builder: (controller) {
           List<Tab> tabs = [
             // if (controller.homeController.updateLogState != null)
-            const Tab(text: '更新日志'),
+            const Tab(text: 'Docker更新'),
+            const Tab(text: '配置更新'),
             const Tab(text: '手动更新'),
           ];
           return ConstrainedBox(
@@ -99,6 +100,73 @@ class UpgradeWidgetPage extends StatelessWidget {
                       );
                     }),
                     GetBuilder<HomeController>(builder: (homeController) {
+                      return Column(
+                        children: [
+                          Expanded(
+                            child: ListView(
+                              children: homeController.updateSitesState?.updateNotes.map((note) {
+                                    return CheckboxListTile(
+                                      dense: true,
+                                      value: homeController.updateSitesState?.localLogs.hex == note.hex,
+                                      selected: homeController.updateSitesState?.localLogs.hex == note.hex,
+                                      onChanged: null,
+                                      title: Text(
+                                        note.data.trimRight(),
+                                        style: TextStyle(
+                                            fontSize: 12,
+                                            color: homeController.updateSitesState?.update == true &&
+                                                    note.date.compareTo(
+                                                            homeController.updateSitesState!.localLogs.date) >
+                                                        0
+                                                ? Colors.red
+                                                : shadColorScheme.foreground,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      subtitle: Text(
+                                        note.date,
+                                        style:
+                                            TextStyle(fontSize: 10, color: shadColorScheme.background.withOpacity(0.8)),
+                                      ),
+                                    );
+                                  }).toList() ??
+                                  [],
+                            ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              ShadButton.destructive(
+                                size: ShadButtonSize.sm,
+                                onPressed: () {
+                                  Get.back();
+                                },
+                                child: Text(
+                                  '取消',
+                                  style: TextStyle(color: shadColorScheme.destructiveForeground),
+                                ),
+                              ),
+                              ShadButton(
+                                size: ShadButtonSize.sm,
+                                onPressed: () => homeController.initUpdateSitesState(),
+                                child: const Text('检查更新'),
+                              ),
+                              if (homeController.updateSitesState?.update == true)
+                                ShadButton(
+                                  size: ShadButtonSize.sm,
+                                  onPressed: () async {
+                                    final res = await homeController.doSitesUpdate();
+                                    Get.back();
+                                    Get.snackbar('更新通知', res.msg, colorText: shadColorScheme.foreground);
+                                  },
+                                  child: const Text('更新'),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 8)
+                        ],
+                      );
+                    }),
+                    GetBuilder<HomeController>(builder: (homeController) {
                       return SizedBox(
                         height: 300,
                         child: Column(
@@ -146,13 +214,15 @@ class UpgradeWidgetPage extends StatelessWidget {
           return ShadIconButton.ghost(
             icon: Icon(Icons.upload_outlined,
                 size: 24,
-                color: homeController.updateLogState?.update == true
+                color: homeController.updateLogState?.update == true || homeController.updateSitesState?.update == true
                     ? shadColorScheme.destructive
                     : shadColorScheme.foreground),
             onPressed: () async {
               if (homeController.updateLogState == null) {
                 homeController.initUpdateLogState();
-                // Get.snackbar('请稍后', '更新日志获取中，请稍后...', colorText: shadColorScheme.foreground);
+              }
+              if (homeController.updateSitesState == null) {
+                homeController.initUpdateSitesState();
               }
               popoverController.toggle();
             },

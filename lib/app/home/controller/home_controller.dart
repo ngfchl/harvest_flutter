@@ -45,6 +45,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   bool isPortrait = false; // 是否是竖屏
   bool isSmallHorizontalScreen = false; // 是否是竖屏
   UpdateLogState? updateLogState;
+  UpdateLogState? updateSitesState;
   AuthPeriod? authInfo;
   String backgroundImage = '';
   bool useLocalBackground = false;
@@ -129,6 +130,14 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       initUpdateLogState();
     } catch (e, trace) {
       Logger.instance.e('检测 Docker 更新失败');
+      Logger.instance.e(trace);
+    }
+
+    try {
+      Logger.instance.d('开始检测站点配置文件更新');
+      initUpdateSitesState();
+    } catch (e, trace) {
+      Logger.instance.e('检测站点配置文件更新失败');
       Logger.instance.e(trace);
     }
 
@@ -313,6 +322,18 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       Get.snackbar('更新日志', '获取更新日志失败！${res.msg}', colorText: Colors.red);
     }
     Logger.instance.d(updateLogState?.localLogs);
+    update();
+  }
+
+  Future<void> initUpdateSitesState() async {
+    final res = await getGitUpdateSites();
+    if (res.code == 0) {
+      updateSitesState = res.data;
+    } else {
+      Logger.instance.e(res.msg);
+      Get.snackbar('更新站点', '获取更新站点失败！${res.msg}', colorText: Colors.red);
+    }
+    Logger.instance.d(updateSitesState?.localLogs);
     update();
   }
 
