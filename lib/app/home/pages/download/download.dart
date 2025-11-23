@@ -54,58 +54,58 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: GetBuilder<DownloadController>(builder: (controller) {
-          return StreamBuilder<List<Downloader>>(
-              stream: controller.downloadStream,
-              // initialData: controller.dataList,
-              builder: (context, snapshot) {
-                // controller.isLoaded = snapshot.hasData;
-                return EasyRefresh(
-                    header: ClassicHeader(
-                      dragText: '下拉刷新...',
-                      readyText: '松开刷新',
-                      processingText: '正在刷新...',
-                      processedText: '刷新完成',
-                      textStyle: TextStyle(
-                        fontSize: 16,
-                        color: shadColorScheme.foreground,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      messageStyle: TextStyle(
-                        fontSize: 12,
-                        color: shadColorScheme.foreground,
-                      ),
-                    ),
-                    controller: EasyRefreshController(),
-                    onRefresh: () => controller.getDownloaderListFromServer(withStatus: true),
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: SingleChildScrollView(
-                            child: Wrap(
-                              alignment: WrapAlignment.start,
-                              direction: Axis.horizontal,
-                              crossAxisAlignment: WrapCrossAlignment.start,
-                              runAlignment: WrapAlignment.start,
-                              children: controller.dataList
-                                  .map((downloader) => FractionallySizedBox(
-                                        widthFactor: getWidthFactor(context),
-                                        child: buildDownloaderCard(downloader),
-                                      ))
-                                  .toList(),
-                            ),
+        body: GetBuilder<DownloadController>(
+            id: 'downloaderList',
+            builder: (controller) {
+              return StreamBuilder<List<Downloader>>(
+                  stream: controller.downloadStream,
+                  // initialData: controller.dataList,
+                  builder: (context, snapshot) {
+                    // controller.isLoaded = snapshot.hasData;
+                    return EasyRefresh(
+                        header: ClassicHeader(
+                          dragText: '下拉刷新...',
+                          readyText: '松开刷新',
+                          processingText: '正在刷新...',
+                          processedText: '刷新完成',
+                          textStyle: TextStyle(
+                            fontSize: 16,
+                            color: shadColorScheme.foreground,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          messageStyle: TextStyle(
+                            fontSize: 12,
+                            color: shadColorScheme.foreground,
                           ),
                         ),
-                        if (controller.loading)
-                          const Center(
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
+                        controller: EasyRefreshController(),
+                        onRefresh: () => controller.getDownloaderListFromServer(withStatus: true),
+                        child: Stack(
+                          children: [
+                            Positioned.fill(
+                              child: SingleChildScrollView(
+                                child: Wrap(
+                                  alignment: WrapAlignment.start,
+                                  direction: Axis.horizontal,
+                                  crossAxisAlignment: WrapCrossAlignment.start,
+                                  runAlignment: WrapAlignment.start,
+                                  children: controller.dataList
+                                      .map((downloader) => FractionallySizedBox(
+                                            widthFactor: getWidthFactor(context),
+                                            child: buildDownloaderCard(downloader),
+                                          ))
+                                      .toList(),
+                                ),
+                              ),
                             ),
-                          ),
-                      ],
-                    ));
-              });
-        }),
+                            if (controller.loading || controller.isCategoryLoading)
+                              const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                          ],
+                        ));
+                  });
+            }),
         floatingActionButton: _buildBottomButtonBar(),
       ),
     );
@@ -2270,7 +2270,9 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
         return;
       }
       controller.addTorrentLoading = true;
+      logger_helper.Logger.instance.i('开始加载种子分类 2');
       await controller.getDownloaderCategoryList(downloader);
+      logger_helper.Logger.instance.i('加载种子分类完成 2');
       var shadColorScheme = ShadTheme.of(context).colorScheme;
       Get.bottomSheet(
         backgroundColor: shadColorScheme.background,
@@ -2302,6 +2304,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
         }),
       ).whenComplete(() {
         controller.addTorrentLoading = false;
+        controller.isCategoryLoading = false;
       });
     } catch (e, trace) {
       logger_helper.Logger.instance.e(e);
@@ -2309,6 +2312,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
       Get.snackbar('出错啦！', e.toString());
     } finally {
       controller.addTorrentLoading = false;
+      controller.isCategoryLoading = false;
     }
   }
 

@@ -70,7 +70,7 @@ class DownloadForm extends StatelessWidget {
     RxBool advancedConfig = false.obs;
     RxBool paused = prefs.startPausedEnabled.obs;
     Rx<String> contentLayout = prefs.torrentContentLayout.obs;
-    Rx<String> category = categories.keys.first.obs;
+    Rx<String> category = (categories.isEmpty ? '' : categories.keys.first).obs;
     Rx<String?> stopCondition = (prefs.torrentStopCondition == 'None' ? null : prefs.torrentStopCondition).obs;
     Rx<bool> autoTMM = prefs.autoTmmEnabled.obs;
     RxBool firstLastPiecePrio = false.obs;

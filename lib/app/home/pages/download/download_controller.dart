@@ -620,12 +620,14 @@ class DownloadController extends GetxController {
   Future getDownloaderCategoryList(Downloader downloader) async {
     var key = "${downloader.host}:${downloader.port}-categories";
     isCategoryLoading = true;
-    update([key]);
+    update(['downloaderList', key]);
     CommonResponse response = await getDownloaderCategories(downloader.id!);
     if (!response.succeed) {
       return response;
     }
-    if (categoryMap.isEmpty) {
+    logger_helper.Logger.instance.d(response.data);
+    if (response.data == null || response.data.isEmpty) {
+      logger_helper.Logger.instance.d('${downloader.name} 获取到的没有获取到分类列表，正在解析种子下载路径');
       categoryMap = {
         for (final path in torrents.map((t) => t.savePath).whereType<String>().toSet())
           _extractName(path): Category(
@@ -634,11 +636,12 @@ class DownloadController extends GetxController {
           )
       };
     } else {
+      logger_helper.Logger.instance.d('${downloader.name} 获取到的分类列表不为空，正在解析');
       categoryMap = {for (var item in response.data) (item)['name']!: Category.fromJson(item as Map<String, dynamic>)};
     }
     isCategoryLoading = false;
 
-    update([key]);
+    update(['downloaderList', key]);
     return CommonResponse.success(data: categoryMap);
   }
 
