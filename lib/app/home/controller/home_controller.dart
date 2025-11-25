@@ -16,7 +16,6 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../api/api.dart';
-import '../../../api/login.dart';
 import '../../../common/upgrade_widget/model.dart';
 import '../../../models/authinfo.dart';
 import '../../../utils/dio_util.dart';
@@ -158,7 +157,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
         Logger.instance.d('背景图：$backgroundImage');
       }
       initDio();
-      userinfo = AuthInfo.fromJson(SPUtil.getLocalStorage('userinfo'));
+      userinfo = AuthInfo.fromJson(SPUtil.getLocalStorage('userinfo') ?? {});
       initMenus();
       update();
     } catch (e, trace) {
@@ -390,6 +389,51 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       }
     } else {
       Get.snackbar('更新日志', '获取更新日志失败！${res.msg}', colorText: Colors.red);
+    }
+  }
+
+  Future<CommonResponse> getGitUpdateLog() async {
+    final response = await DioUtil().get(Api.UPDATE_LOG);
+    if (response.statusCode == 200) {
+      Logger.instance.d(response.data);
+      return CommonResponse.fromJson(response.data, (p0) {
+        if (p0 == null) {
+          return null;
+        }
+        return UpdateLogState.fromJson(p0);
+      });
+    } else {
+      String msg = '获取Docker更新日志失败: ${response.statusCode}';
+      // GFToast.showToast(msg, context);
+      return CommonResponse.error(msg: msg);
+    }
+  }
+
+  Future<CommonResponse> getGitUpdateSites() async {
+    final response = await DioUtil().get(Api.UPDATE_SITES);
+    if (response.statusCode == 200) {
+      Logger.instance.d(response.data);
+      return CommonResponse.fromJson(response.data, (p0) {
+        if (p0 == null) {
+          return null;
+        }
+        return UpdateLogState.fromJson(p0);
+      });
+    } else {
+      String msg = '获取Docker更新日志失败: ${response.statusCode}';
+      // GFToast.showToast(msg, context);
+      return CommonResponse.error(msg: msg);
+    }
+  }
+
+  Future<CommonResponse> doDockerUpdateApi({String upgradeTag = "upgrade_all"}) async {
+    final response = await DioUtil().get("${Api.DOCKER_UPDATE}?upgrade_tag=$upgradeTag");
+    if (response.statusCode == 200) {
+      return CommonResponse.fromJson(response.data, (p0) => null);
+    } else {
+      String msg = '获取Docker更新日志失败: ${response.statusCode}';
+      // GFToast.showToast(msg, context);
+      return CommonResponse.error(msg: msg);
     }
   }
 }
