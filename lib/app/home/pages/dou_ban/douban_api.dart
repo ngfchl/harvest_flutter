@@ -67,7 +67,7 @@ class DouBanHelper {
         'poster': poster,
         'title': title,
         'subtitle': subtitle,
-        'cast': desc?[0].trim(),
+        'cast': desc?[0].trim() ?? cast,
         'desc': desc?[1].split('/').map((e) => e.trim()).toList(),
         'rating_num': ratingNum,
         'evaluate_num': evaluateNum,
