@@ -40,6 +40,10 @@ class VersionManager:
         if calc:
             # 执行版本号自增
             self.calc_version()
+        # 按照新的版本号创建输出目录
+        print(f"当前编译版本号：{self.new_version}")
+        self.output_folder = os.path.join(self.output_folder, self.new_version)
+        print(f"当前输出文件夹：{self.output_folder}")
         if not tasks:
             self.tasks = ["macos"]
 
@@ -52,6 +56,8 @@ class VersionManager:
                 self.tasks = ["windows"]
         else:
             self.tasks = tasks
+        # 确保输出目录存在
+        os.makedirs(self.output_folder, exist_ok=True)
         self.fvm = self.get_fvm_command()
 
     @staticmethod
