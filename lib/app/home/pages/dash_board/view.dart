@@ -7,7 +7,6 @@ import 'package:harvest/app/home/controller/home_controller.dart';
 import 'package:harvest/app/home/pages/models/my_site.dart';
 import 'package:harvest/utils/format_number.dart';
 import 'package:harvest/utils/platform.dart';
-import 'package:random_color/random_color.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -1436,12 +1435,6 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
 
     int maxDownloaded = controller.statusList.map((item) => item.value['downloaded']).reduce((a, b) => a > b ? a : b);
 
-    var uploadColor = RandomColor().randomColor(
-        colorHue: ColorHue.multiple(colorHues: [ColorHue.green, ColorHue.blue]), colorBrightness: ColorBrightness.dark);
-    var downloadColor = RandomColor().randomColor(
-        colorHue: ColorHue.multiple(colorHues: [ColorHue.red, ColorHue.orange]),
-        colorBrightness: ColorBrightness.dark,
-        colorSaturation: ColorSaturation.highSaturation);
     return GetBuilder<DashBoardController>(builder: (controller) {
       return CustomCard(
         height: controller.cardHeight,
