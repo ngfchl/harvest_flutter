@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
+import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -280,20 +281,33 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(width: 15),
               ],
             ),
-            body: CustomCard(
-              width: double.infinity,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Center(
-                    child: SingleChildScrollView(
+            body: EasyRefresh(
+              onRefresh: () => controller.initServerList(),
+              child: CustomCard(
+                width: double.infinity,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          Wrap(spacing: 20, runSpacing: 20, children: [
-                            ...controller.serverList.map((server) => _buildGridTile(server)),
-                            _buildAddServerTile(),
-                          ]),
+                          Expanded(
+                            child: Center(
+                              child: SingleChildScrollView(
+                                child: Wrap(
+                                    alignment: WrapAlignment.center,
+                                    runAlignment: WrapAlignment.center,
+                                    crossAxisAlignment: WrapCrossAlignment.center,
+                                    spacing: 20,
+                                    runSpacing: 20,
+                                    children: [
+                                      ...controller.serverList.map((server) => _buildGridTile(server)),
+                                      _buildAddServerTile(),
+                                    ]),
+                              ),
+                            ),
+                          ),
                           Padding(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 36.0,
@@ -303,6 +317,11 @@ class _LoginPageState extends State<LoginPage> {
                                 ? ShadButton.destructive(
                                     onPressed: () {
                                       cancelToken.cancel();
+                                      Logger.instance.d('取消登录：${cancelToken.isCancelled}');
+                                      controller.isLoading = false;
+                                      controller.update();
+                                      Get.forceAppUpdate();
+                                      // Get.offAndToNamed(Routes.LOGIN);
                                     },
                                     leading: SizedBox.square(
                                       dimension: 16,
@@ -349,13 +368,13 @@ class _LoginPageState extends State<LoginPage> {
                         ],
                       ),
                     ),
-                  ),
-                  if (controller.switchServerLoading)
-                    Center(
-                        child: CircularProgressIndicator(
-                      color: shadColorScheme.primary,
-                    ))
-                ],
+                    if (controller.switchServerLoading)
+                      Center(
+                          child: CircularProgressIndicator(
+                        color: shadColorScheme.primary,
+                      ))
+                  ],
+                ),
               ),
             ),
           ),
