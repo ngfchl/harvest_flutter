@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harvest/common/meta_item.dart';
 import 'package:harvest/models/common_response.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
 
 import '../../utils/logger_helper.dart';
@@ -70,6 +69,8 @@ class QBittorrentController extends GetxController {
     {"name": "全部", "value": null},
     {"name": "下载中", "value": TorrentState.downloading},
     {"name": "下载暂停", "value": TorrentState.pausedDL},
+    {"name": "下载停止", "value": TorrentState.stoppedDL},
+    {"name": "上传停止", "value": TorrentState.stoppedUP},
     {"name": "上传中", "value": TorrentState.uploading},
     {"name": "做种中", "value": TorrentState.stalledUP},
     {"name": "等待下载", "value": TorrentState.stalledDL},
@@ -77,16 +78,15 @@ class QBittorrentController extends GetxController {
     {"name": "上传暂停", "value": TorrentState.pausedUP},
     {"name": "队列下载中", "value": TorrentState.queuedDL},
     {"name": "队列上传中", "value": TorrentState.queuedUP},
-    // {"name": "分配中", "value": TorrentState.allocating},
+    {"name": "分配中", "value": TorrentState.allocating},
     {"name": "检查下载", "value": TorrentState.checkingDL},
-    // {"name": "检查恢复数据", "value": TorrentState.checkingResumeData},
+    {"name": "检查恢复数据", "value": TorrentState.checkingResumeData},
     {"name": "检查上传", "value": TorrentState.checkingUP},
     {"name": "强制下载", "value": TorrentState.forcedDL},
-    // {"name": "强制元数据下载", "value": TorrentState.forcedMetaDL},
+    {"name": "强制元数据下载", "value": TorrentState.forcedMetaDL},
     {"name": "强制上传", "value": TorrentState.forcedUP},
-    // {"name": "元数据下载中", "value": TorrentState.metaDL},
+    {"name": "元数据下载中", "value": TorrentState.metaDL},
     {"name": "缺失文件", "value": TorrentState.missingFiles},
-
     // {"name": "未知状态", "value": TorrentState.unknown},
     {"name": "错误", "value": TorrentState.error},
   ].map((e) => MetaDataItem.fromJson(e)).toList();
@@ -349,7 +349,6 @@ class QBittorrentController extends GetxController {
   Future<QBittorrentApiV2> getQbInstance(Downloader downloader) async {
     QBittorrentApiV2 qbittorrent = QBittorrentApiV2(
       baseUrl: downloader.externalHost,
-      cookiePath: '${(await getApplicationDocumentsDirectory()).path}/${downloader.host}/${downloader.port}',
       connectTimeout: const Duration(seconds: 10),
       sendTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
