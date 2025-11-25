@@ -48,9 +48,7 @@ class _LoginPageState extends State<LoginPage> {
             controller.selectServer(server, shouldSave: true);
           }
         },
-        onDoubleTap: () async {
-          showEditOrCreateServerSheet(server);
-        },
+        onDoubleTap: () => showEditOrCreateServerSheet(server),
         onLongPress: () async {
           await Get.defaultDialog(
             title: '确认删除',
@@ -130,9 +128,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget _buildAddServerTile() {
     var themeData = ShadTheme.of(context);
     return GestureDetector(
-      onTap: () {
-        showEditOrCreateServerSheet(null);
-      },
+      onTap: () => showEditOrCreateServerSheet(null),
       child: SizedBox(
         height: 150,
         width: 150,
@@ -368,11 +364,11 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
-  void showEditOrCreateServerSheet(Server? serverToEdit) async {
+  void showEditOrCreateServerSheet(Server? serverToEdit) {
     final formKey = GlobalKey<FormState>();
-    String defaultEntry = kIsWeb ? Uri.base.origin : 'http://192.168.1';
+    String defaultEntry = kIsWeb ? Uri.base.origin : (serverToEdit?.entry ?? 'http://192.168.1');
     TextEditingController nameController = TextEditingController(text: serverToEdit?.name ?? 'DefaultServer');
-    TextEditingController entryController = TextEditingController(text: serverToEdit?.entry ?? defaultEntry);
+    TextEditingController entryController = TextEditingController(text: defaultEntry);
     TextEditingController usernameController = TextEditingController(text: serverToEdit?.username ?? 'admin');
     TextEditingController passwordController = TextEditingController(text: serverToEdit?.password ?? 'adminadmin');
     CancelToken cancelToken = CancelToken();
@@ -397,10 +393,9 @@ class _LoginPageState extends State<LoginPage> {
       'http://127.0.0.1:25173',
       'http://127.0.0.1:5173',
     ];
-    await Get.bottomSheet(
-      enableDrag: true,
+    Get.bottomSheet(
+      // enableDrag: true,
       GetBuilder<LoginController>(builder: (controller) {
-        var themeData = ShadTheme.of(context);
         return CustomCard(
           padding: const EdgeInsets.all(8),
           child: SingleChildScrollView(
@@ -497,7 +492,7 @@ class _LoginPageState extends State<LoginPage> {
                       maxLines: 1,
                       style: TextStyle(
                         fontSize: 13,
-                        color: themeData.colorScheme.foreground,
+                        color: shadColorScheme.foreground,
                       ),
                       decoration: InputDecoration(
                         labelText: '密码',
@@ -516,7 +511,7 @@ class _LoginPageState extends State<LoginPage> {
                           icon: Icon(
                             controller.showPassword ? Icons.visibility : Icons.visibility_off,
                             size: 18,
-                            color: themeData.colorScheme.foreground,
+                            color: shadColorScheme.foreground,
                           ),
                           onPressed: () {
                             controller.showPassword = !controller.showPassword;
@@ -539,12 +534,11 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       // 新增取消按钮
                       ShadButton.destructive(
-                        leading:
-                            Icon(Icons.cancel_outlined, size: 18, color: themeData.colorScheme.destructiveForeground),
+                        leading: Icon(Icons.cancel_outlined, size: 18, color: shadColorScheme.destructiveForeground),
                         child: Text(
                           '取消',
                           style: TextStyle(
-                            color: themeData.colorScheme.destructiveForeground,
+                            color: shadColorScheme.destructiveForeground,
                           ),
                         ),
                         onPressed: () {
@@ -587,18 +581,17 @@ class _LoginPageState extends State<LoginPage> {
                                   // snackPosition: SnackPosition.BOTTOM,
                                   duration: const Duration(seconds: 3),
                                   colorText: server.id == 0
-                                      ? themeData.colorScheme.foreground
-                                      : themeData.colorScheme.destructiveForeground);
+                                      ? shadColorScheme.foreground
+                                      : shadColorScheme.destructiveForeground);
                               Navigator.pop(context);
                             } else {
-                              Get.snackbar('测试失败', flag.msg, colorText: themeData.colorScheme.destructiveForeground);
+                              Get.snackbar('测试失败', flag.msg, colorText: shadColorScheme.destructiveForeground);
                               controller.isLoading = false;
                               controller.update();
                             }
                           } else {
                             Get.snackbar('出错啦', '服务器信息校验失败！',
-                                duration: const Duration(seconds: 3),
-                                colorText: themeData.colorScheme.destructiveForeground);
+                                duration: const Duration(seconds: 3), colorText: shadColorScheme.destructiveForeground);
                           }
                           controller.isLoading = false;
                           controller.update();
@@ -609,18 +602,18 @@ class _LoginPageState extends State<LoginPage> {
                                     height: 18,
                                     width: 18,
                                     child: CircularProgressIndicator(
-                                      color: themeData.colorScheme.primaryForeground,
+                                      color: shadColorScheme.primaryForeground,
                                     )),
                               )
                             : Icon(
                                 Icons.autorenew,
                                 size: 18,
-                                color: themeData.colorScheme.primaryForeground,
+                                color: shadColorScheme.primaryForeground,
                               ),
                         child: Text(
                           controller.isLoading ? '测试...' : '保存',
                           style: TextStyle(
-                            color: themeData.colorScheme.primaryForeground,
+                            color: shadColorScheme.primaryForeground,
                           ),
                         ),
                       ),
