@@ -23,17 +23,15 @@ class CustomUAWidget extends StatelessWidget {
 
   void _showCustomUADialog(BuildContext context) {
     TextEditingController tokenController = TextEditingController(
-      text:
-          SPUtil.getString("CustomUA", defaultValue: 'Harvest APP Client/1.0'),
+      text: SPUtil.getString("CustomUA", defaultValue: 'Harvest APP Client/1.0'),
     );
 
-    double opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.defaultDialog(
       title: "自定义 UserAgent",
       titleStyle: TextStyle(fontSize: 16, color: shadColorScheme.foreground),
       radius: 10,
-      backgroundColor: shadColorScheme.background.withOpacity(opacity * 1.2),
+      backgroundColor: shadColorScheme.background,
       content: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -50,15 +48,12 @@ class CustomUAWidget extends StatelessWidget {
                 Expanded(
                   child: ShadButton.destructive(
                     onPressed: () {
-                      tokenController.text =
-                          generateRandomString(16, includeSpecialChars: false)
-                              .toUpperCase();
+                      tokenController.text = generateRandomString(16, includeSpecialChars: false).toUpperCase();
                     },
                     size: ShadButtonSize.sm,
                     child: Text(
                       '随机Token',
-                      style: TextStyle(
-                          color: shadColorScheme.destructiveForeground),
+                      style: TextStyle(color: shadColorScheme.destructiveForeground),
                     ),
                   ),
                 ),
@@ -71,8 +66,7 @@ class CustomUAWidget extends StatelessWidget {
                     },
                     child: Text(
                       '保存',
-                      style:
-                          TextStyle(color: shadColorScheme.primaryForeground),
+                      style: TextStyle(color: shadColorScheme.primaryForeground),
                     ),
                   ),
                 ),
