@@ -536,9 +536,14 @@ fixed. 修复App更新日志访问失败导致升级窗口打开失败的BUG
           homeController.newVersion = '${prefix}_x86_64-macos.dmg';
         }
         downloadUrl ??= downloadLinks[homeController.newVersion];
-        String savePath = "${appDocDir.path}/${homeController.newVersion}";
-        await _downloadInstallationPackage(savePath, downloadUrl!);
-        await Process.run('open', [savePath]);
+        String? savedPath = await FilePicker.platform.saveFile(
+          dialogTitle: '保存安装包',
+          fileName: homeController.newVersion,
+          type: FileType.custom,
+          allowedExtensions: ['apk', 'ipa', 'dmg', 'zip'],
+        );
+        await _downloadInstallationPackage(savedPath!, downloadUrl!);
+        await Process.run('open', [savedPath]);
       } catch (e, stackTrace) {
         Logger.instance.e('打开安装包失败: $e', stackTrace: stackTrace);
         Get.snackbar('更新通知', '当前设备不支持更新', colorText: shadColorScheme.destructiveForeground);
