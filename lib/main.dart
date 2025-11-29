@@ -10,6 +10,7 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'app/routes/app_pages.dart';
+import 'common/app_upgrade/controller.dart';
 import 'theme/theme_controller.dart';
 
 void main() async {
@@ -98,7 +99,7 @@ Future<void> initDependencies() async {
   // 强制竖屏
   // SystemChrome.setPreferredOrientations(
   //     [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
-
+  Get.lazyPut<AppUpgradeController>(() => AppUpgradeController());
   // 固定写法，处理状态栏背景颜色透明问题
   Logger.instance.i("============处理状态栏背景颜色透明问题===========");
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
