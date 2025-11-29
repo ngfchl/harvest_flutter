@@ -71,28 +71,29 @@ class InviteUser extends StatelessWidget {
   }
 
   void _inviteUser(BuildContext context, String email) async {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     if (email.isNotEmpty) {
-      var response = await addData(Api.INVITE_USER, null, queryParameters: {'invite_email': email});
+      var response = await addData(Api.ADMIN_USER, null, queryParameters: {'invite_email': email});
       if (response.succeed) {
         Get.back();
 
         Get.snackbar(
           '邀请成功',
           response.msg,
-          colorText: ShadTheme.of(context).colorScheme.foreground,
+          colorText: shadColorScheme.foreground,
         );
       } else {
         Get.snackbar(
           '邀请失败',
           response.msg,
-          colorText: ShadTheme.of(context).colorScheme.destructive,
+          colorText: shadColorScheme.destructive,
         );
       }
     } else {
       Get.snackbar(
         '邀请失败',
         '邮箱不能为空！',
-        colorText: ShadTheme.of(context).colorScheme.ring,
+        colorText: shadColorScheme.ring,
       );
     }
   }
