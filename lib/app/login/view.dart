@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../api/api.dart';
+import '../../common/app_upgrade/view.dart';
 import '../../common/card_view.dart';
 import '../../common/custom_ua.dart';
 import '../../common/form_widgets.dart';
@@ -272,6 +273,7 @@ class _LoginPageState extends State<LoginPage> {
                       )),
                   const LoggingView(),
                 ],
+                AppUpgradePage(),
                 CustomUAWidget(
                   child: Icon(
                     Icons.verified_user,
