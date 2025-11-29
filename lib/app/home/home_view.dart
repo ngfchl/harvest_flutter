@@ -18,7 +18,7 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../api/mysite.dart';
 import '../../api/option.dart';
-import '../../common/app_upload/view.dart';
+import '../../common/app_upgrade/view.dart';
 import '../../common/custom_ua.dart';
 import '../../common/invite_user.dart';
 import '../../common/logging.dart';
@@ -318,7 +318,7 @@ class HomeView extends GetView<HomeController> {
           ThemeIconButton(
             icon: Icon(Icons.palette_outlined, size: 20, color: shadColorScheme.foreground),
           ),
-          AppUploadPage(),
+          AppUpgradePage(),
           if (controller.userinfo?.isStaff == true) ...[
             UpgradeWidgetPage(),
             SiteMap(

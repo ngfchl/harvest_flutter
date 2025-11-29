@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harvest/app/home/pages/agg_search/view.dart';
@@ -12,17 +11,16 @@ import 'package:harvest/app/home/pages/subscribe_history/view.dart';
 import 'package:harvest/app/home/pages/subscribe_tag/view.dart';
 import 'package:harvest/app/home/pages/task/view.dart';
 import 'package:harvest/models/common_response.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../api/api.dart';
-import '../../../common/upgrade_widget/model.dart';
 import '../../../models/authinfo.dart';
 import '../../../utils/dio_util.dart';
 import '../../../utils/logger_helper.dart';
 import '../../../utils/platform.dart';
 import '../../../utils/storage.dart';
 import '../../routes/app_pages.dart';
+import '../pages/app_publish/view.dart';
 import '../pages/download/download_controller.dart';
 import '../pages/file_manage/view.dart';
 import '../pages/models/AuthPeriod.dart';
@@ -33,10 +31,7 @@ import '../pages/user/view.dart';
 
 class HomeController extends GetxController with WidgetsBindingObserver {
   int initPage = 0;
-  double progressValue = 0.0;
-  AppUpdateInfo? updateInfo;
-  String currentVersion = '';
-  String newVersion = '';
+
   AuthInfo? userinfo;
   TextEditingController searchController = TextEditingController();
   DioUtil dioUtil = DioUtil();
@@ -52,9 +47,6 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   bool useBackground = false;
   bool useImageProxy = false;
   bool authPrivateMode = false;
-  bool uploading = false;
-  final Dio dio = Dio();
-  List<AppUpdateInfo> appVersions = [];
 
   // final mySiteController = Get.put(MySiteController());
 
@@ -114,16 +106,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   @override
   void onInit() async {
     Logger.instance.d('HomeController onInit');
-    try {
-      Logger.instance.d('开始检测 APP 更新');
-      PackageInfo packageInfo = await PackageInfo.fromPlatform();
-      currentVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
-      getAppVersionList();
-      getAppLatestVersionInfo();
-    } catch (e, trace) {
-      Logger.instance.e('检测 APP 更新失败');
-      Logger.instance.e(trace);
-    }
+
     try {
       Logger.instance.d('开始检测Docker更新');
       initUpdateLogState();
@@ -142,7 +125,6 @@ class HomeController extends GetxController with WidgetsBindingObserver {
 
     try {
       isDarkMode = Get.isDarkMode;
-      getAuthInfo();
       useBackground = SPUtil.getBool('useBackground');
       authPrivateMode = SPUtil.getBool('authPrivateMode', defaultValue: false);
       if (useBackground) {
@@ -157,7 +139,9 @@ class HomeController extends GetxController with WidgetsBindingObserver {
         Logger.instance.d('背景图：$backgroundImage');
       }
       initDio();
+      await getAuthInfo();
       userinfo = AuthInfo.fromJson(SPUtil.getLocalStorage('userinfo') ?? {});
+      Logger.instance.d('是否后台管理员：${authInfo?.username} ${authInfo?.username == 'ngfchl@126.com'}');
       initMenus();
       update();
     } catch (e, trace) {
@@ -233,6 +217,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       if (userinfo?.isStaff == true) const SubscribeTagPage(),
       const DouBanPage(),
       if (userinfo?.isStaff == true) SshWidget(),
+      if (authInfo?.username == 'ngfchl@126.com') AppPublishPage(),
     ];
     destinations = [
       const NavigationRailDestination(
@@ -299,6 +284,11 @@ class HomeController extends GetxController with WidgetsBindingObserver {
           icon: Icon(Icons.description, size: 18),
           label: Text('SSH终端'),
         ),
+      if (authInfo?.username == 'ngfchl@126.com')
+        const NavigationRailDestination(
+          icon: Icon(Icons.cloud_upload, size: 18),
+          label: Text('后台管理'),
+        ),
     ];
   }
 
@@ -359,37 +349,6 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     initPage = index;
 
     update();
-  }
-
-  Future<void> getAppVersionList() async {
-    var response = await dio.get('https://repeat.ptools.fun/api/app/version/list');
-    if (response.statusCode == 200) {
-      CommonResponse res = CommonResponse.fromJson(
-          response.data,
-          (p0) =>
-              p0 == null ? [] : (p0 as List).map((e) => AppUpdateInfo.fromJson(e as Map<String, dynamic>)).toList());
-      if (!res.succeed) {
-        return;
-      }
-      appVersions = res.data;
-    }
-  }
-
-  Future<void> getAppLatestVersionInfo() async {
-    Logger.instance.d('getAppLatestVersionInfo');
-    final response = await dio.get<Map<String, dynamic>>('https://repeat.ptools.fun/api/app/version/latest');
-    CommonResponse res = CommonResponse.fromJson(
-      response.data!,
-      (json) => json == null ? null : AppUpdateInfo.fromJson(json),
-    );
-    if (res.succeed) {
-      updateInfo = res.data;
-      if (updateInfo != null && updateInfo?.version != currentVersion) {
-        popoverController.show();
-      }
-    } else {
-      Get.snackbar('更新日志', '获取更新日志失败！${res.msg}', colorText: Colors.red);
-    }
   }
 
   Future<CommonResponse> getGitUpdateLog() async {
