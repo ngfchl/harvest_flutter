@@ -6,7 +6,10 @@ class Api {
   static const String UPDATE_SITES = "auth/update/sites";
   static const String AUTH_INFO = "auth/auth_info";
   static const String AUTH_USER = "auth/user";
-  static const String INVITE_USER = "auth/try";
+  static const String ADMIN_USER = "auth/admin/users";
+  static const String ADMIN_SEND_TOKEN = "auth/admin/send";
+  static const String ADMIN_RESET_TOKEN = "auth/admin/reset/token";
+  static const String ADMIN_RESET_INVITE = "auth/admin/reset/invite";
   static const String QINIU_UPLOAD_FILES = "source/qiniu/upload_files";
 
   // 我的站点列表增删改查
