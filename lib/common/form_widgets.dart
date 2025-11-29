@@ -6,6 +6,7 @@ class SwitchTile extends StatelessWidget {
   final String title;
   final bool value;
   final double size;
+  final Widget? leading;
   final void Function(bool)? onChanged;
 
   const SwitchTile({
@@ -14,6 +15,7 @@ class SwitchTile extends StatelessWidget {
     required this.value,
     required this.onChanged,
     this.size = 32,
+    this.leading,
   });
 
   @override
@@ -26,6 +28,7 @@ class SwitchTile extends StatelessWidget {
           color: ShadTheme.of(context).colorScheme.foreground,
         ),
       ),
+      leading: leading,
       trailing: Transform.scale(
         scale: 0.5,
         child: ShadSwitch(
@@ -45,6 +48,8 @@ class CustomTextField extends StatelessWidget {
   final Widget? prefixIcon;
   final String? suffixText;
   final Widget? suffixIcon;
+  final Widget? suffix;
+  final Widget? prefix;
   final String? helperText;
   final List<TextInputFormatter> inputFormatters;
   final TextInputType? keyboardType;
@@ -71,6 +76,8 @@ class CustomTextField extends StatelessWidget {
     this.prefixIcon,
     this.suffixText,
     this.suffixIcon,
+    this.suffix,
+    this.prefix,
     this.onChanged,
     this.onTap,
     this.validator,
@@ -119,6 +126,8 @@ class CustomTextField extends StatelessWidget {
           prefixIcon: prefixIcon,
           suffixText: suffixText,
           suffixIcon: suffixIcon,
+          suffix: suffix,
+          prefix: prefix,
           helperStyle: TextStyle(fontSize: 12, color: scheme.foreground),
           prefixStyle: TextStyle(fontSize: 12, color: scheme.foreground),
           suffixStyle: TextStyle(fontSize: 12, color: scheme.foreground),
