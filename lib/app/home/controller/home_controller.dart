@@ -105,10 +105,39 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     Logger.instance.d('HomeController onReady');
   }
 
-  @override
-  void onInit() async {
-    Logger.instance.d('HomeController onInit');
+  void initData() {
+    try {
+      Logger.instance.d('初始化主题模式');
+      isDarkMode = Get.isDarkMode;
+      useBackground = SPUtil.getBool('useBackground');
+      authPrivateMode = SPUtil.getBool('authPrivateMode', defaultValue: false);
+      if (useBackground) {
+        Logger.instance.d('初始化主题壁纸');
+        useImageProxy = SPUtil.getBool('useImageProxy');
+        useImageCache = SPUtil.getBool('useImageCache');
+        useLocalBackground = SPUtil.getBool('useLocalBackground');
 
+        backgroundImage = SPUtil.getString(
+          'backgroundImage',
+          defaultValue: 'https://pic4.zhimg.com/v2-12ed225c3144a726284fe048870f72d1_r.jpg',
+        );
+        Logger.instance.d('背景图：$backgroundImage');
+      }
+      initDio();
+      initMenus();
+      update();
+      Logger.instance.d('初始化用户信息');
+      userinfo = AuthInfo.fromJson(SPUtil.getLocalStorage('userinfo') ?? {});
+      getAuthInfo();
+      Logger.instance.d('是否后台管理员：${authInfo?.username} ${authInfo?.username == 'ngfchl@126.com'}');
+    } catch (e, trace) {
+      Logger.instance.e('初始化失败 $e');
+      Logger.instance.e(trace);
+      Get.offAllNamed(Routes.LOGIN);
+    }
+  }
+
+  void checkUpdate() {
     try {
       Logger.instance.d('开始检测Docker更新');
       initUpdateLogState();
@@ -124,33 +153,13 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       Logger.instance.e('检测站点配置文件更新失败');
       Logger.instance.e(trace);
     }
+  }
 
-    try {
-      isDarkMode = Get.isDarkMode;
-      useBackground = SPUtil.getBool('useBackground');
-      authPrivateMode = SPUtil.getBool('authPrivateMode', defaultValue: false);
-      if (useBackground) {
-        useImageProxy = SPUtil.getBool('useImageProxy');
-        useImageCache = SPUtil.getBool('useImageCache');
-        useLocalBackground = SPUtil.getBool('useLocalBackground');
-
-        backgroundImage = SPUtil.getString(
-          'backgroundImage',
-          defaultValue: 'https://pic4.zhimg.com/v2-12ed225c3144a726284fe048870f72d1_r.jpg',
-        );
-        Logger.instance.d('背景图：$backgroundImage');
-      }
-      initDio();
-      initMenus();
-      update();
-      userinfo = AuthInfo.fromJson(SPUtil.getLocalStorage('userinfo') ?? {});
-      getAuthInfo();
-      Logger.instance.d('是否后台管理员：${authInfo?.username} ${authInfo?.username == 'ngfchl@126.com'}');
-    } catch (e, trace) {
-      Logger.instance.e('初始化失败 $e');
-      Logger.instance.e(trace);
-      Get.offAllNamed(Routes.LOGIN);
-    }
+  @override
+  void onInit() async {
+    Logger.instance.d('HomeController onInit');
+    initData();
+    checkUpdate();
     super.onInit();
 
     WidgetsBinding.instance.addObserver(this);
@@ -160,7 +169,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
         Logger.instance.d("HomeController 收到生命周期变化：$state");
         if (state == AppLifecycleState.resumed) {
           Logger.instance.d("回到前台");
-          onInit();
+          initData();
           Get.find<DashBoardController>().onInit();
           Get.find<MySiteController>().initData();
         } else if (state == AppLifecycleState.paused) {
@@ -189,6 +198,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   }
 
   void initDio() async {
+    Logger.instance.d('初始化Dio');
     String? baseUrl = SPUtil.getLocalStorage('server');
     if (baseUrl == null) {
       Get.offAllNamed(Routes.LOGIN);
@@ -199,6 +209,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<void> getAuthInfo() async {
+    Logger.instance.d('检测授权信息');
     final response = await DioUtil().get(Api.AUTH_INFO);
     if (response.statusCode == 200) {
       // Logger.instance.d(response.data['data']);
@@ -217,6 +228,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   }
 
   void initMenus() {
+    Logger.instance.d('初始化菜单');
     pages = [
       const DashBoardPage(),
       const AggSearchPage(),
