@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harvest/app/home/pages/agg_search/view.dart';
+import 'package:harvest/app/home/pages/dash_board/controller.dart';
 import 'package:harvest/app/home/pages/dash_board/view.dart';
 import 'package:harvest/app/home/pages/dou_ban/view.dart';
 import 'package:harvest/app/home/pages/download/download.dart';
@@ -14,6 +15,7 @@ import 'package:harvest/models/common_response.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../api/api.dart';
+import '../../../common/app_lifecycle_server.dart';
 import '../../../models/authinfo.dart';
 import '../../../utils/dio_util.dart';
 import '../../../utils/logger_helper.dart';
@@ -52,6 +54,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
 
   final PageController pageController = PageController(initialPage: 0);
   final popoverController = ShadPopoverController();
+  final appLifecycle = Get.find<AppLifecycleService>();
 
   @override
   void onClose() {
@@ -99,8 +102,6 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   @override
   void onReady() async {
     Logger.instance.d('HomeController onReady');
-
-    update();
   }
 
   @override
@@ -149,9 +150,21 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       Logger.instance.e(trace);
       Get.offAllNamed(Routes.LOGIN);
     }
-
     super.onInit();
+
     WidgetsBinding.instance.addObserver(this);
+    ever(appLifecycle.lifecycle, (state) {
+      if (state == null) return;
+      Logger.instance.d("HomeController 收到生命周期变化：$state");
+      if (state == AppLifecycleState.resumed) {
+        Logger.instance.d("回到前台");
+        onInit();
+        Get.find<DashBoardController>().onInit();
+        Get.find<MySiteController>().initData();
+      } else if (state == AppLifecycleState.paused) {
+        Logger.instance.d("进入后台");
+      }
+    });
     _updateOrientation();
   }
 

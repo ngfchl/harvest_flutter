@@ -10,6 +10,7 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'app/routes/app_pages.dart';
+import 'common/app_lifecycle_server.dart';
 import 'common/app_upgrade/controller.dart';
 import 'theme/theme_controller.dart';
 
@@ -19,6 +20,18 @@ void main() async {
   Logger.instance.i("============初始化项目依赖===========");
   await initDependencies();
   Logger.instance.i("============项目依赖初始化完成===========");
+  Logger.instance.i("============添加APP状态监听器===========");
+  // SystemChannels.lifecycle.setMessageHandler((msg) async {
+  //   debugPrint('SystemChannels> $msg');
+  //   // msg是个字符串，是下面的值
+  //   // AppLifecycleState.resumed
+  //   // AppLifecycleState.inactive
+  //   // AppLifecycleState.paused
+  //   // AppLifecycleState.detached
+  //   return msg;
+  // });
+  Get.put(AppLifecycleService());
+  Logger.instance.i("============添加APP状态监听器完成===========");
   runApp(const MyApp());
 }
 
