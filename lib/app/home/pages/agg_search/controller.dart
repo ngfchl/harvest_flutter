@@ -202,7 +202,7 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
     await doWebsocketSearch();
   }
 
-  initData() async {
+  Future<void> initData() async {
     // minSize = SPUtil.getDouble('searchFilterFileMinSize',
     //     defaultValue: 1.0 * calcSize)!;
     // maxSize = SPUtil.getDouble('searchFilterFileMaxSize',
@@ -221,13 +221,18 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
     update();
   }
 
-  saveDefaultSites() async {
+  Future<void> saveDefaultSites() async {
     maxCount = sites.length;
     SPUtil.setStringList('custom_search_sites', sites.map((e) => e.toString()).toList());
     update();
   }
 
-  sortResults() {
+  Future<void> initDefaultSites() async {
+    sites = SPUtil.getStringList('custom_search_sites', defaultValue: []).map((e) => int.parse(e)).toList();
+    update();
+  }
+
+  void sortResults() {
     if (sortKey.isEmpty) {
       return;
     }
@@ -322,7 +327,7 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
     update();
   }
 
-  cancelSearch() async {
+  Future<void> cancelSearch() async {
     isLoading = false;
     // SSEClient.disableRetry();
     // SSEClient.unsubscribeFromSSE();
@@ -334,7 +339,7 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
     update();
   }
 
-  doDouBanSearch() async {
+  Future<void> doDouBanSearch() async {
     if (searchKeyController.text.isEmpty) {
       logger_helper.Logger.instance.d("搜索关键字不能为空");
       return;
@@ -355,7 +360,7 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
     update();
   }
 
-  getSubjectInfo(String subject) async {
+  Future<void> getSubjectInfo(String subject) async {
     isLoading = true;
     update();
     DouBanHelper helper = DouBanHelper();
@@ -364,7 +369,7 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
     update();
   }
 
-  goSearchPage(String subject) async {
+  Future<void> goSearchPage(String subject) async {
     await getSubjectInfo(subject);
     String searchKey = selectVideoDetail.title;
     if (selectVideoDetail.imdb.isNotEmpty) {
@@ -374,12 +379,12 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
     await doWebsocketSearch();
   }
 
-  changeTab(int index) {
+  void changeTab(int index) {
     tabController.animateTo(index);
     update();
   }
 
-  doWebsocketSearch() async {
+  Future<void> doWebsocketSearch() async {
     // 打开加载状态
     isLoading = true;
     // 清空搜索记录
@@ -463,7 +468,7 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
     }
   }
 
-  doSearch() async {
+  Future<void> doSearch() async {
     // 打开加载状态
     isLoading = true;
     // 清空搜索记录
@@ -606,7 +611,7 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
     return CommonResponse.error(msg: res.data['message']);
   }
 
-  getDownloaderCategoryList(Downloader downloader) async {
+  Future<CommonResponse> getDownloaderCategoryList(Downloader downloader) async {
     isDownloaderLoading = true;
     update();
     try {

@@ -1125,90 +1125,89 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    GetBuilder<AggSearchController>(builder: (controller) {
-                      return ShadButton(
-                          size: ShadButtonSize.sm,
-                          onPressed: () {
-                            if (controller.sites.isEmpty) {
-                              controller.sites.addAll(canSearchList.map((e) => e.id).toList());
-                            } else {
-                              controller.sites.clear();
+                    ShadButton.outline(
+                        size: ShadButtonSize.sm, onPressed: () => controller.initDefaultSites(), child: Text('加载')),
+                    ShadButton.destructive(
+                        size: ShadButtonSize.sm,
+                        onPressed: () {
+                          if (controller.sites.isEmpty) {
+                            controller.sites.addAll(canSearchList.map((e) => e.id).toList());
+                          } else {
+                            controller.sites.clear();
+                          }
+                          controller.update();
+                        },
+                        child: Text('${controller.sites.isEmpty ? '全选' : '清除'} ${canSearchList.length}')),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        InkWell(
+                          child: const Icon(Icons.remove),
+                          onTap: () {
+                            if (controller.maxCount > 0) {
+                              controller.maxCount--;
                             }
                             controller.update();
                           },
-                          child: Text(
-                            '${controller.sites.isEmpty ? '全选' : '清除'} ${canSearchList.length}',
-                            style: TextStyle(color: shadColorScheme.foreground),
-                          ));
-                    }),
+                          onLongPress: () {
+                            controller.maxCount = 0;
+                            controller.sites.clear();
+                            controller.update();
+                          },
+                        ),
+                        ShadButton(
+                          onPressed: () => controller.saveDefaultSites(),
+                          size: ShadButtonSize.sm,
+                          child: Text('默认${controller.maxCount}'),
+                        ),
+                        InkWell(
+                          child: const Icon(Icons.add),
+                          onTap: () {
+                            if (controller.maxCount < canSearchList.length) {
+                              controller.maxCount++;
+                              controller.update();
+                            }
+                          },
+                          onLongPress: () {
+                            controller.maxCount = canSearchList.length;
+                            controller.sites.addAll(canSearchList.map((e) => e.id));
+                            controller.update();
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0, right: 16.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: CustomTextField(
+                        controller: searchKey,
+                        labelText: '筛选',
+                        onChanged: (String value) {
+                          // searchKey.text = value;
+                          controller.update();
+                        },
+                      ),
+                    ),
                     GetBuilder<AggSearchController>(builder: (controller) {
-                      return ShadButton(
+                      return ShadButton.ghost(
                           size: ShadButtonSize.sm,
                           onPressed: () {
                             _getRandomSites();
                           },
-                          child: Text(
-                            '随机',
-                            style: TextStyle(color: shadColorScheme.foreground),
-                          ));
-                    }),
-                    GetBuilder<AggSearchController>(builder: (controller) {
-                      return Row(
-                        children: [
-                          InkWell(
-                            child: const Icon(Icons.remove),
-                            onTap: () {
-                              if (controller.maxCount > 0) {
-                                controller.maxCount--;
-                              }
-                              controller.update();
-                            },
-                            onLongPress: () {
-                              controller.maxCount = 0;
-                              controller.sites.clear();
-                              controller.update();
-                            },
-                          ),
-                          ShadButton(
-                            onPressed: () => controller.saveDefaultSites(),
-                            size: ShadButtonSize.sm,
-                            child: Text(
-                              '默认${controller.maxCount}',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
-                          ),
-                          InkWell(
-                            child: const Icon(Icons.add),
-                            onTap: () {
-                              if (controller.maxCount < canSearchList.length) {
-                                controller.maxCount++;
-                                controller.update();
-                              }
-                            },
-                            onLongPress: () {
-                              controller.maxCount = canSearchList.length;
-                              controller.sites.addAll(canSearchList.map((e) => e.id));
-                              controller.update();
-                            },
-                          ),
-                        ],
-                      );
+                          child: Text('随机'));
                     }),
                   ],
                 ),
               ),
-              CustomTextField(
-                controller: searchKey,
-                labelText: '筛选',
-                onChanged: (String value) {
-                  // searchKey.text = value;
-                  controller.update();
-                },
-              ),
               Expanded(
                 child: GetBuilder<AggSearchController>(builder: (controller) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
                     child: SingleChildScrollView(
                       child: Wrap(
                         spacing: 8,
