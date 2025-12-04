@@ -139,11 +139,11 @@ class HomeController extends GetxController with WidgetsBindingObserver {
         Logger.instance.d('背景图：$backgroundImage');
       }
       initDio();
-      await getAuthInfo();
-      userinfo = AuthInfo.fromJson(SPUtil.getLocalStorage('userinfo') ?? {});
-      Logger.instance.d('是否后台管理员：${authInfo?.username} ${authInfo?.username == 'ngfchl@126.com'}');
       initMenus();
       update();
+      userinfo = AuthInfo.fromJson(SPUtil.getLocalStorage('userinfo') ?? {});
+      getAuthInfo();
+      Logger.instance.d('是否后台管理员：${authInfo?.username} ${authInfo?.username == 'ngfchl@126.com'}');
     } catch (e, trace) {
       Logger.instance.e('初始化失败 $e');
       Logger.instance.e(trace);
@@ -182,7 +182,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  getAuthInfo() async {
+  Future<void> getAuthInfo() async {
     final response = await DioUtil().get(Api.AUTH_INFO);
     if (response.statusCode == 200) {
       // Logger.instance.d(response.data['data']);
@@ -196,10 +196,11 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       String msg = '获取数据列表失败: ${response.statusCode}';
       Logger.instance.e(msg);
     }
+    initMenus();
     update();
   }
 
-  initMenus() {
+  void initMenus() {
     pages = [
       const DashBoardPage(),
       const AggSearchPage(),
