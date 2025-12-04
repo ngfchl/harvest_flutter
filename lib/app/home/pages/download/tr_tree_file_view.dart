@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../../common/card_view.dart';
 import '../../../../utils/string_utils.dart';
@@ -29,7 +30,7 @@ class TransmissionTreeView extends StatelessWidget {
       itemCount: nodes.length,
       itemBuilder: (context, index) {
         TreeNode node = nodes[index];
-        return _buildTreeTile(node, 0);
+        return _buildTreeTile(node, 0, context);
       },
     );
   }
@@ -58,16 +59,18 @@ class TransmissionTreeView extends StatelessWidget {
     return nodesMap.values.toList();
   }
 
-  Widget _buildTreeTile(TreeNode node, int level) {
+  Widget _buildTreeTile(TreeNode node, int level, context) {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     EdgeInsetsGeometry padding = EdgeInsets.only(left: level * 16.0);
     if (node.content != null) {
       return ListTile(
         // contentPadding: padding,
-        leading: const Icon(Icons.file_copy_sharp),
+        leading: Icon(Icons.file_copy_sharp, color: shadColorScheme.foreground),
         dense: true,
         title: Text(
           node.name,
           overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
         ),
         subtitle: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -95,9 +98,10 @@ class TransmissionTreeView extends StatelessWidget {
       title: Text(
         node.name,
         overflow: TextOverflow.ellipsis,
+        style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
       ),
       children: [
-        ...node.children.values.map((child) => _buildTreeTile(child, level + 1)),
+        ...node.children.values.map((child) => _buildTreeTile(child, level + 1, context)),
       ],
     );
   }
