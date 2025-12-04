@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harvest/app/home/pages/agg_search/view.dart';
@@ -153,18 +154,20 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     super.onInit();
 
     WidgetsBinding.instance.addObserver(this);
-    ever(appLifecycle.lifecycle, (state) {
-      if (state == null) return;
-      Logger.instance.d("HomeController 收到生命周期变化：$state");
-      if (state == AppLifecycleState.resumed) {
-        Logger.instance.d("回到前台");
-        onInit();
-        Get.find<DashBoardController>().onInit();
-        Get.find<MySiteController>().initData();
-      } else if (state == AppLifecycleState.paused) {
-        Logger.instance.d("进入后台");
-      }
-    });
+    if (!kDebugMode) {
+      ever(appLifecycle.lifecycle, (state) {
+        if (state == null) return;
+        Logger.instance.d("HomeController 收到生命周期变化：$state");
+        if (state == AppLifecycleState.resumed) {
+          Logger.instance.d("回到前台");
+          onInit();
+          Get.find<DashBoardController>().onInit();
+          Get.find<MySiteController>().initData();
+        } else if (state == AppLifecycleState.paused) {
+          Logger.instance.d("进入后台");
+        }
+      });
+    }
     _updateOrientation();
   }
 
