@@ -3518,7 +3518,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
           topRight: Radius.circular(2),
         ),
       ),
-      isScrollControlled: true,
+      backgroundColor: shadColorScheme.background,
       enableDrag: true,
       GetBuilder<DownloadController>(builder: (controller) {
         return DefaultTabController(
@@ -5724,434 +5724,446 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
           topRight: Radius.circular(2),
         ),
       ),
-      isScrollControlled: true,
+      backgroundColor: shadColorScheme.background,
       enableDrag: true,
-      CustomCard(
-        height: MediaQuery.of(context).size.height * 0.9,
-        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
-        child: GetBuilder<DownloadController>(builder: (controller) {
-          return DefaultTabController(
-            length: tabs.length,
-            child: Scaffold(
+      GetBuilder<DownloadController>(builder: (controller) {
+        return DefaultTabController(
+          length: tabs.length,
+          child: Scaffold(
+            backgroundColor: shadColorScheme.background,
+            appBar: AppBar(
+              title: Text('配置选项', style: TextStyle(color: shadColorScheme.foreground)),
               backgroundColor: shadColorScheme.background,
-              appBar: AppBar(
-                title: Text('配置选项', style: TextStyle(color: shadColorScheme.foreground)),
-                backgroundColor: shadColorScheme.background,
-                bottom: TabBar(
-                  tabs: tabs,
-                  isScrollable: true,
-                  labelColor: shadColorScheme.foreground,
-                  labelStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
-                ),
-              ),
-              body: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TabBarView(children: [
-                  ListView(
-                    children: [
-                      Obx(() {
-                        return Column(
-                          children: [
-                            CustomTextField(controller: downloadDirController, labelText: '默认保存目录'),
-                            CheckboxListTile(
-                              value: renamePartialFiles.value,
-                              onChanged: (value) {
-                                renamePartialFiles.value = value == true;
-                              },
-                              title:
-                                  Text('在未完成的文件名后加上 “.part” 后缀', style: TextStyle(color: shadColorScheme.foreground)),
-                            ),
-                            CheckboxListTile(
-                              value: incompleteDirEnabled.value,
-                              onChanged: (value) {
-                                incompleteDirEnabled.value = value == true;
-                              },
-                              title: Text(
-                                '启用临时目录',
-                                style: TextStyle(color: shadColorScheme.foreground),
-                              ),
-                            ),
-                            if (incompleteDirEnabled.value)
-                              CustomTextField(
-                                controller: incompleteDirController,
-                                labelText: '临时目录',
-                              ),
-                            CheckboxListTile(
-                              value: seedRatioLimited.value,
-                              onChanged: (value) {
-                                seedRatioLimited.value = value == true;
-                              },
-                              title: Text(
-                                '默认分享率上限',
-                                style: TextStyle(color: shadColorScheme.foreground),
-                              ),
-                            ),
-                            if (seedRatioLimited.value)
-                              CustomTextField(controller: seedRatioLimitController, labelText: '默认分享率上限'),
-                            CheckboxListTile(
-                              value: idleSeedingLimitEnabled.value,
-                              onChanged: (value) {
-                                idleSeedingLimitEnabled.value = value == true;
-                              },
-                              title: Text(
-                                '默认停止无流量种子',
-                                style: TextStyle(color: shadColorScheme.foreground),
-                              ),
-                            ),
-                            if (idleSeedingLimitEnabled.value)
-                              CustomTextField(controller: idleSeedingLimitController, labelText: '默认停止无流量种子持续时间(分钟)'),
-                            CustomTextField(controller: cacheSizeMbController, labelText: '磁盘缓存大小（MB）'),
-                          ],
-                        );
-                      }),
-                    ],
-                  ),
-                  ListView(
-                    children: [
-                      Obx(() {
-                        return Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(right: 16.0),
-                              child: Row(
-                                children: [
-                                  Expanded(child: CustomPortField(controller: peerPortController, labelText: '连接端口号')),
-                                  ShadButton.outline(
-                                    size: ShadButtonSize.sm,
-                                    onPressed: null,
-                                    child: Text(
-                                      '测试端口',
-                                      style: TextStyle(color: shadColorScheme.foreground),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            CheckboxListTile(
-                              value: peerPortRandomOnStart.value,
-                              onChanged: (value) {
-                                peerPortRandomOnStart.value = value == true;
-                              },
-                              title: Text(
-                                '启用随机端口',
-                                style: TextStyle(color: shadColorScheme.foreground),
-                              ),
-                            ),
-                            CheckboxListTile(
-                              value: portForwardingEnabled.value,
-                              onChanged: (value) {
-                                portForwardingEnabled.value = value == true;
-                              },
-                              title: Text(
-                                '启用端口转发 (UPnP)',
-                                style: TextStyle(color: shadColorScheme.foreground),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    '加密',
-                                    style: TextStyle(color: shadColorScheme.foreground),
-                                  ),
-                                  DropdownButton(
-                                      dropdownColor: shadColorScheme.background,
-                                      isDense: true,
-                                      value: encryption.value,
-                                      items: [
-                                        DropdownMenuItem(
-                                            value: 'tolerated',
-                                            child: Text(
-                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
-                                                '允许加密')),
-                                        DropdownMenuItem(
-                                            value: 'preferred',
-                                            child: Text(
-                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
-                                                '优先加密')),
-                                        DropdownMenuItem(
-                                            value: 'required',
-                                            child: Text(
-                                                style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
-                                                ' 强制加密')),
-                                      ],
-                                      onChanged: (value) {
-                                        encryption.value = value!;
-                                      }),
-                                ],
-                              ),
-                            ),
-                            CustomTextField(controller: peerLimitGlobalController, labelText: '全局最大链接数'),
-                            CustomTextField(controller: peerLimitPerTorrentController, labelText: '单种最大链接数'),
-                            CheckboxListTile(
-                              value: pexEnabled.value,
-                              onChanged: (value) {
-                                pexEnabled.value = value == true;
-                              },
-                              title: Text(
-                                '启用本地用户交换',
-                                style: TextStyle(color: shadColorScheme.foreground),
-                              ),
-                            ),
-                            CheckboxListTile(
-                              value: lpdEnabled.value,
-                              onChanged: (value) {
-                                lpdEnabled.value = value == true;
-                              },
-                              title: Text(
-                                '对等交换',
-                                style: TextStyle(color: shadColorScheme.foreground),
-                              ),
-                            ),
-                            CheckboxListTile(
-                              value: dhtEnabled.value,
-                              onChanged: (value) {
-                                dhtEnabled.value = value == true;
-                              },
-                              title: Text(
-                                '启用分布式哈希表 (DHT)',
-                                style: TextStyle(color: shadColorScheme.foreground),
-                              ),
-                            ),
-                            CheckboxListTile(
-                              value: blocklistEnabled.value,
-                              onChanged: (value) {
-                                blocklistEnabled.value = value == true;
-                              },
-                              title: Text('启用黑名单列表:', style: TextStyle(color: shadColorScheme.foreground)),
-                            ),
-                            if (blocklistEnabled.value)
-                              Column(
-                                children: [
-                                  CustomTextField(controller: blocklistUrlController, labelText: '黑名单列表'),
-                                  ShadButton(
-                                    size: ShadButtonSize.sm,
-                                    onPressed: null,
-                                    child: Text(
-                                        style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
-                                        '更新黑名单【$blocklistSize】'),
-                                  ),
-                                ],
-                              ),
-                          ],
-                        );
-                      })
-                    ],
-                  ),
-                  Obx(() {
-                    return ListView(
-                      children: [
-                        CheckboxListTile(
-                          value: speedLimitDownEnabled.value,
-                          onChanged: (value) {
-                            speedLimitDownEnabled.value = value == true;
-                          },
-                          title: Text(
-                            '最大下载速度 (KB/s):',
-                            style: TextStyle(color: shadColorScheme.foreground),
-                          ),
-                        ),
-                        if (speedLimitDownEnabled.value)
-                          Column(
-                            children: [
-                              CustomNumberField(controller: speedLimitDownController, labelText: '正常最大下载速度(KB/s)'),
-                              CustomNumberField(controller: altSpeedDownController, labelText: '备用最大下载速度(KB/s)'),
-                            ],
-                          ),
-                        CheckboxListTile(
-                          value: speedLimitUpEnabled.value,
-                          onChanged: (value) {
-                            speedLimitUpEnabled.value = value == true;
-                          },
-                          title: Text(
-                            '最大上传速度 (KB/s):',
-                            style: TextStyle(color: shadColorScheme.foreground),
-                          ),
-                        ),
-                        if (speedLimitUpEnabled.value)
-                          Column(
-                            children: [
-                              CustomNumberField(controller: speedLimitUpController, labelText: '正常最大上传速度(KB/s)'),
-                              CustomNumberField(controller: altSpeedUpController, labelText: '备用最大上传速度(KB/s)'),
-                            ],
-                          ),
-                        CheckboxListTile(
-                          value: altSpeedEnabled.value,
-                          onChanged: (value) {
-                            altSpeedEnabled.value = value == true;
-                          },
-                          title: Text(
-                            '启用备用带宽',
-                            style: TextStyle(color: shadColorScheme.foreground),
-                          ),
-                        ),
-                        CheckboxListTile(
-                          value: altSpeedTimeEnabled.value,
-                          onChanged: (value) {
-                            altSpeedTimeEnabled.value = value == true;
-                          },
-                          title: Text(
-                            '自动启用备用带宽设置 (时间段内)',
-                            style: TextStyle(color: shadColorScheme.foreground),
-                          ),
-                        ),
-                        if (altSpeedTimeEnabled.value)
-                          Obx(() {
-                            return Column(
-                              children: [
-                                CustomTextField(controller: altSpeedTimeBeginController, labelText: '自动启用备用带宽设置开始时间'),
-                                CustomTextField(controller: altSpeedTimeEndController, labelText: '自动启用备用带宽设置结束时间'),
-                                Text('${altSpeedTimeDay.value}'),
-                                Obx(() {
-                                  return Wrap(
-                                    children: [
-                                      ...daysOfWeek.map(
-                                        (item) => CheckboxListTile(
-                                          value: daysOfWeekMask.contains(item.value),
-                                          onChanged: (value) {
-                                            logger_helper.Logger.instance.d(value);
-                                            if (value == true) {
-                                              altSpeedTimeDay.value = (altSpeedTimeDay.value + item.value).toInt();
-                                            } else {
-                                              altSpeedTimeDay.value = (altSpeedTimeDay.value - item.value).toInt();
-                                            }
-                                            daysOfWeekMask.value = TransmissionUtils.getEnabledDaysFromAltSpeedTimeDay(
-                                                altSpeedTimeDay.value);
-                                            logger_helper.Logger.instance.d(daysOfWeekMask);
-                                          },
-                                          title: Text(
-                                            item.name,
-                                            style: TextStyle(color: shadColorScheme.foreground),
-                                          ),
-                                        ),
-                                      )
-                                    ],
-                                  );
-                                }),
-                              ],
-                            );
-                          })
-                      ],
-                    );
-                  }),
-                  Obx(() {
-                    return ListView(children: [
-                      CheckboxListTile(
-                        value: downloadQueueEnabled.value,
-                        onChanged: (value) {
-                          downloadQueueEnabled.value = value == true;
-                        },
-                        title: Text(
-                          '启用下载队列，最大同时下载数',
-                          style: TextStyle(color: shadColorScheme.foreground),
-                        ),
-                      ),
-                      if (downloadQueueEnabled.value)
-                        CustomTextField(controller: downloadQueueSizeController, labelText: '启用下载队列，最大同时下载数'),
-                      CheckboxListTile(
-                        value: seedQueueEnabled.value,
-                        onChanged: (value) {
-                          seedQueueEnabled.value = value == true;
-                        },
-                        title: Text(
-                          '启用上传队列，最大同时上传数',
-                          style: TextStyle(color: shadColorScheme.foreground),
-                        ),
-                      ),
-                      if (seedQueueEnabled.value)
-                        CustomTextField(controller: seedQueueSizeController, labelText: '启用上传队列，最大同时上传数'),
-                      CheckboxListTile(
-                        value: queueStalledEnabled.value,
-                        onChanged: (value) {
-                          queueStalledEnabled.value = value == true;
-                        },
-                        title: Text(
-                          '种子超过该时间无流量，移出队列',
-                          style: TextStyle(color: shadColorScheme.foreground),
-                        ),
-                      ),
-                      if (queueStalledEnabled.value)
-                        CustomTextField(controller: queueStalledMinutesController, labelText: '种子超过该时间无流量，移出队列(分钟)'),
-                    ]);
-                  }),
-                ]),
-              ),
-              floatingActionButton: ShadIconButton(
-                onPressed: () async {
-                  TransmissionConfig prefs = controller.currentPrefs.copyWith(
-                    altSpeedDown: int.parse(altSpeedDownController.text),
-                    altSpeedEnabled: altSpeedEnabled.value,
-                    altSpeedTimeBegin: int.parse(altSpeedTimeBeginController.text),
-                    altSpeedTimeDay: altSpeedTimeDay.value,
-                    altSpeedTimeEnabled: altSpeedTimeEnabled.value,
-                    altSpeedTimeEnd: int.parse(altSpeedTimeEndController.text),
-                    altSpeedUp: int.parse(altSpeedUpController.text),
-                    blocklistEnabled: blocklistEnabled.value,
-                    blocklistUrl: blocklistUrlController.text,
-                    cacheSizeMb: int.parse(cacheSizeMbController.text),
-                    configDir: configDirController.text,
-                    defaultTrackers: defaultTrackersController.text,
-                    dhtEnabled: dhtEnabled.value,
-                    downloadDir: downloadDirController.text,
-                    downloadQueueEnabled: downloadQueueEnabled.value,
-                    downloadQueueSize: int.parse(downloadQueueSizeController.text),
-                    encryption: encryption.value,
-                    idleSeedingLimit: int.parse(idleSeedingLimitController.text),
-                    idleSeedingLimitEnabled: idleSeedingLimitEnabled.value,
-                    incompleteDir: incompleteDirController.text,
-                    incompleteDirEnabled: incompleteDirEnabled.value,
-                    lpdEnabled: lpdEnabled.value,
-                    peerLimitGlobal: int.parse(peerLimitGlobalController.text),
-                    peerLimitPerTorrent: int.parse(peerLimitPerTorrentController.text),
-                    peerPort: int.parse(peerPortController.text),
-                    peerPortRandomOnStart: peerPortRandomOnStart.value,
-                    pexEnabled: pexEnabled.value,
-                    portForwardingEnabled: portForwardingEnabled.value,
-                    queueStalledEnabled: queueStalledEnabled.value,
-                    queueStalledMinutes: int.parse(queueStalledMinutesController.text),
-                    renamePartialFiles: renamePartialFiles.value,
-                    // scriptTorrentAddedEnabled: scriptTorrentAddedEnabled.value,
-                    // scriptTorrentAddedFilename:
-                    //     scriptTorrentAddedFilenameController.text,
-                    // scriptTorrentDoneEnabled: scriptTorrentDoneEnabled.value,
-                    // scriptTorrentDoneFilename:
-                    //     scriptTorrentDoneFilenameController.text,
-                    // scriptTorrentDoneSeedingEnabled:
-                    //     scriptTorrentDoneSeedingEnabled.value,
-                    // scriptTorrentDoneSeedingFilename:
-                    //     scriptTorrentDoneSeedingFilenameController.text,
-                    seedQueueEnabled: seedQueueEnabled.value,
-                    seedQueueSize: int.parse(seedQueueSizeController.text),
-                    seedRatioLimit: double.parse(seedRatioLimitController.text),
-                    seedRatioLimited: seedRatioLimited.value,
-                    speedLimitDown: int.parse(speedLimitDownController.text),
-                    speedLimitDownEnabled: speedLimitDownEnabled.value,
-                    speedLimitUp: int.parse(speedLimitUpController.text),
-                    speedLimitUpEnabled: speedLimitUpEnabled.value,
-                    // startAddedTorrents: startAddedTorrents.value,
-                    // tcpEnabled: tcpEnabled.value,
-                    // trashOriginalTorrentFiles: trashOriginalTorrentFiles.value,
-                  );
-                  CommonResponse response = await controller.setPrefs(downloader, prefs);
-                  if (!response.succeed) {
-                    Get.snackbar('修改配置失败', response.msg);
-                  } else {
-                    controller.getDownloaderListFromServer();
-                  }
-                  Get.back();
-                },
-                icon: Icon(
-                  Icons.save_outlined,
-                  size: 24,
-                  color: shadColorScheme.primary,
-                ),
+              bottom: TabBar(
+                tabs: tabs,
+                isScrollable: true,
+                labelColor: shadColorScheme.foreground,
+                labelStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
               ),
             ),
-          );
-        }),
-      ),
+            body: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TabBarView(children: [
+                ListView(
+                  children: [
+                    Obx(() {
+                      return Column(
+                        children: [
+                          CustomTextField(controller: downloadDirController, labelText: '默认保存目录'),
+                          CheckboxListTile(
+                            dense: true,
+                            value: renamePartialFiles.value,
+                            onChanged: (value) {
+                              renamePartialFiles.value = value == true;
+                            },
+                            title: Text('在未完成的文件名后加上 “.part” 后缀', style: TextStyle(color: shadColorScheme.foreground)),
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: incompleteDirEnabled.value,
+                            onChanged: (value) {
+                              incompleteDirEnabled.value = value == true;
+                            },
+                            title: Text(
+                              '启用临时目录',
+                              style: TextStyle(color: shadColorScheme.foreground, fontSize: 14),
+                            ),
+                          ),
+                          if (incompleteDirEnabled.value)
+                            CustomTextField(
+                              controller: incompleteDirController,
+                              labelText: '临时目录',
+                            ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: seedRatioLimited.value,
+                            onChanged: (value) {
+                              seedRatioLimited.value = value == true;
+                            },
+                            title: Text(
+                              '默认分享率上限',
+                              style: TextStyle(color: shadColorScheme.foreground),
+                            ),
+                          ),
+                          if (seedRatioLimited.value)
+                            CustomTextField(controller: seedRatioLimitController, labelText: '默认分享率上限'),
+                          CheckboxListTile(
+                            dense: true,
+                            value: idleSeedingLimitEnabled.value,
+                            onChanged: (value) {
+                              idleSeedingLimitEnabled.value = value == true;
+                            },
+                            title: Text(
+                              '默认停止无流量种子',
+                              style: TextStyle(color: shadColorScheme.foreground),
+                            ),
+                          ),
+                          if (idleSeedingLimitEnabled.value)
+                            CustomTextField(controller: idleSeedingLimitController, labelText: '默认停止无流量种子持续时间(分钟)'),
+                          CustomTextField(controller: cacheSizeMbController, labelText: '磁盘缓存大小（MB）'),
+                        ],
+                      );
+                    }),
+                  ],
+                ),
+                ListView(
+                  children: [
+                    Obx(() {
+                      return Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(right: 16.0),
+                            child: Row(
+                              children: [
+                                Expanded(child: CustomPortField(controller: peerPortController, labelText: '连接端口号')),
+                                ShadButton.outline(
+                                  size: ShadButtonSize.sm,
+                                  onPressed: null,
+                                  child: Text(
+                                    '测试端口',
+                                    style: TextStyle(color: shadColorScheme.foreground),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: peerPortRandomOnStart.value,
+                            onChanged: (value) {
+                              peerPortRandomOnStart.value = value == true;
+                            },
+                            title: Text(
+                              '启用随机端口',
+                              style: TextStyle(color: shadColorScheme.foreground),
+                            ),
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: portForwardingEnabled.value,
+                            onChanged: (value) {
+                              portForwardingEnabled.value = value == true;
+                            },
+                            title: Text(
+                              '启用端口转发 (UPnP)',
+                              style: TextStyle(color: shadColorScheme.foreground),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  '加密',
+                                  style: TextStyle(color: shadColorScheme.foreground),
+                                ),
+                                DropdownButton(
+                                    dropdownColor: shadColorScheme.background,
+                                    isDense: true,
+                                    value: encryption.value,
+                                    items: [
+                                      DropdownMenuItem(
+                                          value: 'tolerated',
+                                          child: Text(
+                                              style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                                              '允许加密')),
+                                      DropdownMenuItem(
+                                          value: 'preferred',
+                                          child: Text(
+                                              style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                                              '优先加密')),
+                                      DropdownMenuItem(
+                                          value: 'required',
+                                          child: Text(
+                                              style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                                              ' 强制加密')),
+                                    ],
+                                    onChanged: (value) {
+                                      encryption.value = value!;
+                                    }),
+                              ],
+                            ),
+                          ),
+                          CustomTextField(controller: peerLimitGlobalController, labelText: '全局最大链接数'),
+                          CustomTextField(controller: peerLimitPerTorrentController, labelText: '单种最大链接数'),
+                          CheckboxListTile(
+                            dense: true,
+                            value: pexEnabled.value,
+                            onChanged: (value) {
+                              pexEnabled.value = value == true;
+                            },
+                            title: Text(
+                              '启用本地用户交换',
+                              style: TextStyle(color: shadColorScheme.foreground),
+                            ),
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: lpdEnabled.value,
+                            onChanged: (value) {
+                              lpdEnabled.value = value == true;
+                            },
+                            title: Text(
+                              '对等交换',
+                              style: TextStyle(color: shadColorScheme.foreground),
+                            ),
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: dhtEnabled.value,
+                            onChanged: (value) {
+                              dhtEnabled.value = value == true;
+                            },
+                            title: Text(
+                              '启用分布式哈希表 (DHT)',
+                              style: TextStyle(color: shadColorScheme.foreground),
+                            ),
+                          ),
+                          CheckboxListTile(
+                            dense: true,
+                            value: blocklistEnabled.value,
+                            onChanged: (value) {
+                              blocklistEnabled.value = value == true;
+                            },
+                            title: Text('启用黑名单列表:', style: TextStyle(color: shadColorScheme.foreground)),
+                          ),
+                          if (blocklistEnabled.value)
+                            Column(
+                              children: [
+                                CustomTextField(controller: blocklistUrlController, labelText: '黑名单列表'),
+                                ShadButton(
+                                  size: ShadButtonSize.sm,
+                                  onPressed: null,
+                                  child: Text(
+                                      style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                                      '更新黑名单【$blocklistSize】'),
+                                ),
+                              ],
+                            ),
+                        ],
+                      );
+                    })
+                  ],
+                ),
+                Obx(() {
+                  return ListView(
+                    children: [
+                      CheckboxListTile(
+                        dense: true,
+                        value: speedLimitDownEnabled.value,
+                        onChanged: (value) {
+                          speedLimitDownEnabled.value = value == true;
+                        },
+                        title: Text(
+                          '最大下载速度 (KB/s):',
+                          style: TextStyle(color: shadColorScheme.foreground),
+                        ),
+                      ),
+                      if (speedLimitDownEnabled.value)
+                        Column(
+                          children: [
+                            CustomNumberField(controller: speedLimitDownController, labelText: '正常最大下载速度(KB/s)'),
+                            CustomNumberField(controller: altSpeedDownController, labelText: '备用最大下载速度(KB/s)'),
+                          ],
+                        ),
+                      CheckboxListTile(
+                        dense: true,
+                        value: speedLimitUpEnabled.value,
+                        onChanged: (value) {
+                          speedLimitUpEnabled.value = value == true;
+                        },
+                        title: Text(
+                          '最大上传速度 (KB/s):',
+                          style: TextStyle(color: shadColorScheme.foreground),
+                        ),
+                      ),
+                      if (speedLimitUpEnabled.value)
+                        Column(
+                          children: [
+                            CustomNumberField(controller: speedLimitUpController, labelText: '正常最大上传速度(KB/s)'),
+                            CustomNumberField(controller: altSpeedUpController, labelText: '备用最大上传速度(KB/s)'),
+                          ],
+                        ),
+                      CheckboxListTile(
+                        dense: true,
+                        value: altSpeedEnabled.value,
+                        onChanged: (value) {
+                          altSpeedEnabled.value = value == true;
+                        },
+                        title: Text(
+                          '启用备用带宽',
+                          style: TextStyle(color: shadColorScheme.foreground),
+                        ),
+                      ),
+                      CheckboxListTile(
+                        dense: true,
+                        value: altSpeedTimeEnabled.value,
+                        onChanged: (value) {
+                          altSpeedTimeEnabled.value = value == true;
+                        },
+                        title: Text(
+                          '自动启用备用带宽设置 (时间段内)',
+                          style: TextStyle(color: shadColorScheme.foreground),
+                        ),
+                      ),
+                      if (altSpeedTimeEnabled.value)
+                        Obx(() {
+                          return Column(
+                            children: [
+                              CustomTextField(controller: altSpeedTimeBeginController, labelText: '自动启用备用带宽设置开始时间'),
+                              CustomTextField(controller: altSpeedTimeEndController, labelText: '自动启用备用带宽设置结束时间'),
+                              Text('${altSpeedTimeDay.value}'),
+                              Obx(() {
+                                return Wrap(
+                                  children: [
+                                    ...daysOfWeek.map(
+                                      (item) => CheckboxListTile(
+                                        dense: true,
+                                        value: daysOfWeekMask.contains(item.value),
+                                        onChanged: (value) {
+                                          logger_helper.Logger.instance.d(value);
+                                          if (value == true) {
+                                            altSpeedTimeDay.value = (altSpeedTimeDay.value + item.value).toInt();
+                                          } else {
+                                            altSpeedTimeDay.value = (altSpeedTimeDay.value - item.value).toInt();
+                                          }
+                                          daysOfWeekMask.value = TransmissionUtils.getEnabledDaysFromAltSpeedTimeDay(
+                                              altSpeedTimeDay.value);
+                                          logger_helper.Logger.instance.d(daysOfWeekMask);
+                                        },
+                                        title: Text(
+                                          item.name,
+                                          style: TextStyle(color: shadColorScheme.foreground),
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                );
+                              }),
+                            ],
+                          );
+                        })
+                    ],
+                  );
+                }),
+                Obx(() {
+                  return ListView(children: [
+                    CheckboxListTile(
+                      dense: true,
+                      value: downloadQueueEnabled.value,
+                      onChanged: (value) {
+                        downloadQueueEnabled.value = value == true;
+                      },
+                      title: Text(
+                        '启用下载队列，最大同时下载数',
+                        style: TextStyle(color: shadColorScheme.foreground),
+                      ),
+                    ),
+                    if (downloadQueueEnabled.value)
+                      CustomTextField(controller: downloadQueueSizeController, labelText: '启用下载队列，最大同时下载数'),
+                    CheckboxListTile(
+                      dense: true,
+                      value: seedQueueEnabled.value,
+                      onChanged: (value) {
+                        seedQueueEnabled.value = value == true;
+                      },
+                      title: Text(
+                        '启用上传队列，最大同时上传数',
+                        style: TextStyle(color: shadColorScheme.foreground),
+                      ),
+                    ),
+                    if (seedQueueEnabled.value)
+                      CustomTextField(controller: seedQueueSizeController, labelText: '启用上传队列，最大同时上传数'),
+                    CheckboxListTile(
+                      dense: true,
+                      value: queueStalledEnabled.value,
+                      onChanged: (value) {
+                        queueStalledEnabled.value = value == true;
+                      },
+                      title: Text(
+                        '种子超过该时间无流量，移出队列',
+                        style: TextStyle(color: shadColorScheme.foreground),
+                      ),
+                    ),
+                    if (queueStalledEnabled.value)
+                      CustomTextField(controller: queueStalledMinutesController, labelText: '种子超过该时间无流量，移出队列(分钟)'),
+                  ]);
+                }),
+              ]),
+            ),
+            floatingActionButton: ShadIconButton.ghost(
+              onPressed: () async {
+                TransmissionConfig prefs = controller.currentPrefs.copyWith(
+                  altSpeedDown: int.parse(altSpeedDownController.text),
+                  altSpeedEnabled: altSpeedEnabled.value,
+                  altSpeedTimeBegin: int.parse(altSpeedTimeBeginController.text),
+                  altSpeedTimeDay: altSpeedTimeDay.value,
+                  altSpeedTimeEnabled: altSpeedTimeEnabled.value,
+                  altSpeedTimeEnd: int.parse(altSpeedTimeEndController.text),
+                  altSpeedUp: int.parse(altSpeedUpController.text),
+                  blocklistEnabled: blocklistEnabled.value,
+                  blocklistUrl: blocklistUrlController.text,
+                  cacheSizeMb: int.parse(cacheSizeMbController.text),
+                  configDir: configDirController.text,
+                  defaultTrackers: defaultTrackersController.text,
+                  dhtEnabled: dhtEnabled.value,
+                  downloadDir: downloadDirController.text,
+                  downloadQueueEnabled: downloadQueueEnabled.value,
+                  downloadQueueSize: int.parse(downloadQueueSizeController.text),
+                  encryption: encryption.value,
+                  idleSeedingLimit: int.parse(idleSeedingLimitController.text),
+                  idleSeedingLimitEnabled: idleSeedingLimitEnabled.value,
+                  incompleteDir: incompleteDirController.text,
+                  incompleteDirEnabled: incompleteDirEnabled.value,
+                  lpdEnabled: lpdEnabled.value,
+                  peerLimitGlobal: int.parse(peerLimitGlobalController.text),
+                  peerLimitPerTorrent: int.parse(peerLimitPerTorrentController.text),
+                  peerPort: int.parse(peerPortController.text),
+                  peerPortRandomOnStart: peerPortRandomOnStart.value,
+                  pexEnabled: pexEnabled.value,
+                  portForwardingEnabled: portForwardingEnabled.value,
+                  queueStalledEnabled: queueStalledEnabled.value,
+                  queueStalledMinutes: int.parse(queueStalledMinutesController.text),
+                  renamePartialFiles: renamePartialFiles.value,
+                  // scriptTorrentAddedEnabled: scriptTorrentAddedEnabled.value,
+                  // scriptTorrentAddedFilename:
+                  //     scriptTorrentAddedFilenameController.text,
+                  // scriptTorrentDoneEnabled: scriptTorrentDoneEnabled.value,
+                  // scriptTorrentDoneFilename:
+                  //     scriptTorrentDoneFilenameController.text,
+                  // scriptTorrentDoneSeedingEnabled:
+                  //     scriptTorrentDoneSeedingEnabled.value,
+                  // scriptTorrentDoneSeedingFilename:
+                  //     scriptTorrentDoneSeedingFilenameController.text,
+                  seedQueueEnabled: seedQueueEnabled.value,
+                  seedQueueSize: int.parse(seedQueueSizeController.text),
+                  seedRatioLimit: double.parse(seedRatioLimitController.text),
+                  seedRatioLimited: seedRatioLimited.value,
+                  speedLimitDown: int.parse(speedLimitDownController.text),
+                  speedLimitDownEnabled: speedLimitDownEnabled.value,
+                  speedLimitUp: int.parse(speedLimitUpController.text),
+                  speedLimitUpEnabled: speedLimitUpEnabled.value,
+                  // startAddedTorrents: startAddedTorrents.value,
+                  // tcpEnabled: tcpEnabled.value,
+                  // trashOriginalTorrentFiles: trashOriginalTorrentFiles.value,
+                );
+                CommonResponse response = await controller.setPrefs(downloader, prefs);
+                if (!response.succeed) {
+                  Get.snackbar('修改配置失败', response.msg);
+                } else {
+                  controller.getDownloaderListFromServer();
+                }
+                Get.back();
+              },
+              icon: Icon(
+                Icons.save_outlined,
+                size: 24,
+              ),
+            ),
+          ),
+        );
+      }),
     );
   }
 
