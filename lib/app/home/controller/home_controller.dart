@@ -163,19 +163,23 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     super.onInit();
 
     WidgetsBinding.instance.addObserver(this);
-    if (!kDebugMode) {
-      ever(appLifecycle.lifecycle, (state) {
-        if (state == null) return;
-        Logger.instance.d("HomeController 收到生命周期变化：$state");
-        if (state == AppLifecycleState.resumed) {
-          Logger.instance.d("回到前台");
-          initData();
-          Get.find<DashBoardController>().onInit();
-          Get.find<MySiteController>().initData();
-        } else if (state == AppLifecycleState.paused) {
-          Logger.instance.d("进入后台");
-        }
-      });
+    if (!kIsWeb) {
+      interval(
+        appLifecycle.lifecycle,
+        (state) {
+          if (state == null) return;
+          Logger.instance.d("HomeController 收到生命周期变化 ====== 当前状态$state");
+          if (state == AppLifecycleState.resumed) {
+            Logger.instance.d("回到前台");
+            initData();
+            Get.find<DashBoardController>().initData();
+            Get.find<MySiteController>().initData();
+          } else if (state == AppLifecycleState.paused) {
+            Logger.instance.d("进入后台");
+          }
+        },
+        time: const Duration(minutes: 10),
+      );
     }
     _updateOrientation();
   }
