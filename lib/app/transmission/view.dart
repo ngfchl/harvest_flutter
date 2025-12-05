@@ -207,39 +207,21 @@ class TrPage extends StatelessWidget {
                   controller.filterTorrents();
                   logger_helper.Logger.instance.d('当前排序规则：${controller.sortKey},正序：${controller.sortReversed}！');
                 },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    controller.sortReversed
-                        ? Icon(
-                            Icons.sim_card_download_outlined,
-                            size: 13,
-                            color: shadColorScheme.foreground,
-                          )
-                        : Icon(
-                            Icons.upload_file_outlined,
-                            size: 13,
-                            color: shadColorScheme.foreground,
-                          ),
-                    SizedBox(width: 3),
-                    controller.sortReversed
-                        ? Text(
-                            '正序',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: shadColorScheme.foreground,
-                            ),
-                          )
-                        : Text(
-                            '倒序',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: shadColorScheme.foreground,
-                            ),
-                          ),
-                  ],
+                child: CustomTextTag(
+                  fontSize: 12,
+                  icon: controller.sortReversed
+                      ? Icon(
+                          Icons.sim_card_download_outlined,
+                          size: 13,
+                          color: shadColorScheme.foreground,
+                        )
+                      : Icon(
+                          Icons.upload_file_outlined,
+                          size: 13,
+                          color: shadColorScheme.foreground,
+                        ),
+                  labelText: controller.sortReversed ? '「正序」' : '「倒序」',
+                  backgroundColor: Colors.transparent,
                 ),
               ),
               GetBuilder<TrController>(builder: (controller) {
@@ -275,6 +257,7 @@ class TrPage extends StatelessWidget {
                     ),
                   ),
                   child: CustomTextTag(
+                    fontSize: 12,
                     backgroundColor: Colors.transparent,
                     icon: Icon(
                       Icons.sort_by_alpha_outlined,
@@ -331,6 +314,7 @@ class TrPage extends StatelessWidget {
                     ),
                   ),
                   child: CustomTextTag(
+                    fontSize: 12,
                     backgroundColor: Colors.transparent,
                     icon: Icon(
                       Icons.tag,
@@ -414,6 +398,7 @@ class TrPage extends StatelessWidget {
                     ),
                   ),
                   child: CustomTextTag(
+                    fontSize: 12,
                     backgroundColor: Colors.transparent,
                     icon: Icon(
                       Icons.language_outlined,
@@ -483,6 +468,7 @@ class TrPage extends StatelessWidget {
                     ),
                   ),
                   child: CustomTextTag(
+                    fontSize: 12,
                     mainAxisAlignment: MainAxisAlignment.center,
                     icon: Icon(
                       Icons.category_outlined,
@@ -543,6 +529,7 @@ class TrPage extends StatelessWidget {
                     ),
                   ),
                   child: CustomTextTag(
+                    fontSize: 12,
                     mainAxisAlignment: MainAxisAlignment.center,
                     icon: Icon(
                       Icons.info_outlined,
@@ -611,6 +598,7 @@ class TrPage extends StatelessWidget {
                   child: Tooltip(
                     message: '错误筛选【${controller.selectedError}】',
                     child: CustomTextTag(
+                      fontSize: 12,
                       mainAxisAlignment: MainAxisAlignment.center,
                       icon: Icon(
                         Icons.warning_amber_outlined,
@@ -626,6 +614,101 @@ class TrPage extends StatelessWidget {
                   ),
                 );
               }),
+              CustomPopup(
+                backgroundColor: shadColorScheme.background,
+                content: SizedBox(
+                  width: 80,
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        PopupMenuItem(
+                          onTap: () {
+                            controller.selectedTorrents.addAll(controller.showTorrents.map((t) => t.hashString));
+                            controller.selectedTorrents = controller.selectedTorrents.toSet().toList();
+                            controller.update();
+                          },
+                          child: Text('全选', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
+                        ),
+                        PopupMenuItem(
+                          onTap: () {
+                            List<String> temp = controller.showTorrents
+                                .where((t) => !controller.selectedTorrents.contains(t.hashString))
+                                .map((t) => t.hashString)
+                                .toSet()
+                                .toList();
+                            controller.selectedTorrents.clear();
+                            controller.selectedTorrents.addAll(temp);
+                            controller.update();
+                          },
+                          child: Text('反选', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
+                        ),
+                        PopupMenuItem(
+                          onTap: () => _removeTorrent(controller.selectedTorrents, context),
+                          child: Text('删除', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
+                        ),
+                        PopupMenuItem(
+                          onTap: () async {
+                            await controller.controlTorrents(
+                                command: 'torrentReannounce', ids: controller.selectedTorrents);
+                            controller.getAllTorrents();
+                          },
+                          child: Text('汇报', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
+                        ),
+                        PopupMenuItem(
+                          onTap: () async {
+                            await controller.controlTorrents(
+                                command: 'torrentStartNow', ids: controller.selectedTorrents);
+                            controller.getAllTorrents();
+                          },
+                          child: Text('强制开始', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
+                        ),
+                        PopupMenuItem(
+                          onTap: () async {
+                            await controller.controlTorrents(command: 'torrentStart', ids: controller.selectedTorrents);
+                            controller.getAllTorrents();
+                          },
+                          child: Text('开始', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
+                        ),
+                        PopupMenuItem(
+                          onTap: () async {
+                            await controller.controlTorrents(command: 'torrentStop', ids: controller.selectedTorrents);
+                            controller.getAllTorrents();
+                          },
+                          child: Text('停止', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
+                        ),
+                        controller.selectMode
+                            ? PopupMenuItem(
+                                onTap: () {
+                                  controller.selectMode = false;
+                                  controller.selectedTorrents.clear();
+                                  controller.update();
+                                },
+                                child: Text('取消', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
+                              )
+                            : PopupMenuItem(
+                                onTap: () {
+                                  controller.selectMode = true;
+                                  controller.selectedTorrents.clear();
+                                  controller.update();
+                                },
+                                child: Text('多选', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
+                              ),
+                      ]),
+                ),
+                child: CustomTextTag(
+                  fontSize: 12,
+                  icon: Icon(
+                    Icons.more_vert,
+                    size: 13,
+                    color: controller.selectMode ? shadColorScheme.destructive : shadColorScheme.foreground,
+                  ),
+                  backgroundColor: Colors.transparent,
+                  labelColor: controller.selectMode ? shadColorScheme.destructive : shadColorScheme.foreground,
+                  labelText: '多选${controller.selectMode ? '「${controller.selectedTorrents.length}」' : ''}',
+                ),
+              ),
               CustomPopup(
                   showArrow: false,
                   backgroundColor: shadColorScheme.background,
@@ -794,94 +877,6 @@ class TrPage extends StatelessWidget {
                   );
                 },
               ),
-              if (controller.selectMode)
-                CustomPopup(
-                  backgroundColor: shadColorScheme.background,
-                  content: SizedBox(
-                    width: 80,
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          PopupMenuItem(
-                            onTap: () {
-                              controller.selectedTorrents.addAll(controller.showTorrents.map((t) => t.hashString));
-                              controller.selectedTorrents = controller.selectedTorrents.toSet().toList();
-                              controller.update();
-                            },
-                            child: Text('全选', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
-                          ),
-                          PopupMenuItem(
-                            onTap: () {
-                              List<String> temp = controller.showTorrents
-                                  .where((t) => !controller.selectedTorrents.contains(t.hashString))
-                                  .map((t) => t.hashString)
-                                  .toSet()
-                                  .toList();
-                              controller.selectedTorrents.clear();
-                              controller.selectedTorrents.addAll(temp);
-                              controller.update();
-                            },
-                            child: Text('反选', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
-                          ),
-                          PopupMenuItem(
-                            onTap: () => _removeTorrent(controller.selectedTorrents, context),
-                            child: Text('删除', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
-                          ),
-                          PopupMenuItem(
-                            onTap: () async {
-                              await controller.controlTorrents(
-                                  command: 'torrentReannounce', ids: controller.selectedTorrents);
-                              controller.getAllTorrents();
-                            },
-                            child: Text('汇报', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
-                          ),
-                          PopupMenuItem(
-                            onTap: () async {
-                              await controller.controlTorrents(
-                                  command: 'torrentStartNow', ids: controller.selectedTorrents);
-                              controller.getAllTorrents();
-                            },
-                            child: Text('强制开始', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
-                          ),
-                          PopupMenuItem(
-                            onTap: () async {
-                              await controller.controlTorrents(
-                                  command: 'torrentStart', ids: controller.selectedTorrents);
-                              controller.getAllTorrents();
-                            },
-                            child: Text('开始', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
-                          ),
-                          PopupMenuItem(
-                            onTap: () async {
-                              await controller.controlTorrents(
-                                  command: 'torrentStop', ids: controller.selectedTorrents);
-                              controller.getAllTorrents();
-                            },
-                            child: Text('停止', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
-                          ),
-                          PopupMenuItem(
-                            onTap: () {
-                              controller.selectMode = false;
-                              controller.selectedTorrents.clear();
-                              controller.update();
-                            },
-                            child: Text('取消', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
-                          ),
-                        ]),
-                  ),
-                  child: CustomTextTag(
-                    icon: Icon(
-                      Icons.more_vert,
-                      size: 13,
-                      color: shadColorScheme.foreground,
-                    ),
-                    backgroundColor: Colors.transparent,
-                    labelColor: shadColorScheme.foreground,
-                    labelText: '操作[${controller.selectedTorrents.length}]',
-                  ),
-                ),
             ],
           ),
         ),
@@ -1493,13 +1488,11 @@ class TrPage extends StatelessWidget {
                 onTap: () {
                   _openTorrentInfoDetail(torrentInfo, context);
                 },
-                onLongPress: () {
-                  controller.selectMode = true;
+                onDoubleTap: () {
+                  controller.selectMode = !controller.selectMode;
+                  controller.selectedTorrents.clear();
                   controller.update();
                 },
-                // onDoubleTap: () {
-                //   Get.snackbar('双击', '双击！',colorText:shadColorScheme.primary);
-                // },
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Row(
