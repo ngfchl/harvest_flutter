@@ -508,11 +508,8 @@ class TrController extends GetxController {
       return CommonResponse.success(msg: '本下载器没有 $site 站点的种子！');
     }
     try {
-      for (String infoHash in hashes) {
-        var res = await client.torrent.torrentSet(TorrentSetArgs().trackerReplace([newTracker]), ids: infoHash);
-        logger_helper.Logger.instance.d("当前种子：$infoHash Tracker 替换响应：$res");
-        Future.delayed(Duration(milliseconds: 100));
-      }
+      var res = await client.torrent.torrentSet(TorrentSetArgs().trackerList(newTracker), ids: hashes);
+      logger_helper.Logger.instance.d("Tracker 替换响应：$res");
     } catch (e, trace) {
       logger_helper.Logger.instance.e(e);
       logger_helper.Logger.instance.e(trace);
