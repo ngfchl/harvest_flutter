@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
+import 'package:harvest/theme/theme_service.dart';
 import 'package:harvest/utils/dio_util.dart';
 import 'package:harvest/utils/logger_helper.dart';
 import 'package:harvest/utils/storage.dart';
@@ -30,6 +31,7 @@ void main() async {
   //   // AppLifecycleState.detached
   //   return msg;
   // });
+  await Get.putAsync(() => BackgroundService().init());
   Get.put(AppLifecycleService());
   Logger.instance.i("============添加APP状态监听器完成===========");
   runApp(const MyApp());
