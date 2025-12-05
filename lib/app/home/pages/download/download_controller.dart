@@ -740,7 +740,7 @@ class DownloadController extends GetxController {
     logger_helper.Logger.instance.i(selectedTag);
     if (selectedTag.isNotEmpty && selectedTag != '全部') {
       showTorrents = showTorrents.where((torrent) {
-        return torrent.errorString.contains(selectedTag);
+        return torrent.labels.contains(selectedTag);
       }).toList();
     }
   }

@@ -35,14 +35,30 @@ class TrPage extends StatelessWidget {
         onPopInvokedWithResult: (didPop, _) async {
           if (didPop) return;
           Get.defaultDialog(
+            backgroundColor: shadColorScheme.background,
             title: "退出",
-            content: Text('确定要退出 ${controller.downloader.name}？'),
-            onCancel: () {
-              Navigator.of(context).pop(true);
-            },
-            onConfirm: () {
-              Navigator.of(context).pop(false);
-            },
+            content: Text(
+              '确定要退出内置浏览器？',
+              style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+            ),
+            middleTextStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+            titleStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+            radius: 10,
+            cancel: ShadButton.destructive(
+              size: ShadButtonSize.sm,
+              onPressed: () async {
+                Navigator.of(context).pop(true);
+              },
+              child: const Text('取消'),
+            ),
+            confirm: ShadButton(
+              size: ShadButtonSize.sm,
+              onPressed: () async {
+                Navigator.of(context).pop(false);
+                Get.back();
+              },
+              child: const Text('确定'),
+            ),
             textCancel: '退出',
             textConfirm: '取消',
           );
@@ -54,6 +70,7 @@ class TrPage extends StatelessWidget {
               '${controller.downloader.name} - ${controller.torrentCount}',
               style: TextStyle(color: shadColorScheme.foreground),
             ),
+            foregroundColor: shadColorScheme.foreground,
           ),
           backgroundColor: shadColorScheme.background,
           body: EasyRefresh(
@@ -134,7 +151,7 @@ class TrPage extends StatelessWidget {
                                       },
                                       icon: const Icon(
                                         Icons.backspace_outlined,
-                                        size: 18,
+                                        size: 13,
                                       ))
                               ],
                             );
@@ -539,6 +556,76 @@ class TrPage extends StatelessWidget {
                   ),
                 );
               }),
+              GetBuilder<TrController>(builder: (controller) {
+                return CustomPopup(
+                  showArrow: false,
+                  contentDecoration: BoxDecoration(
+                    color: shadColorScheme.background,
+                  ),
+                  content: SingleChildScrollView(
+                    child: SizedBox(
+                      width: 200,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ListTile(
+                            dense: true,
+                            title: Text(
+                              '全部【${controller.showTorrents.where((torrent) => torrent.error == 2).length}】',
+                            ),
+                            titleTextStyle: TextStyle(color: shadColorScheme.foreground),
+                            selected: controller.selectedError == '全部',
+                            selectedColor: shadColorScheme.destructive,
+                            onTap: () {
+                              Get.back();
+                              controller.selectedError = '全部';
+                              controller.filterTorrents();
+                            },
+                          ),
+                          ...controller.errors.map((error) {
+                            int count = controller.torrents
+                                .where((torrent) => torrent.errorString.contains(error))
+                                .toList()
+                                .length;
+
+                            bool selected = controller.selectedError == error;
+                            return ListTile(
+                              dense: true,
+                              title: Text(
+                                '$error($count)',
+                              ),
+                              titleTextStyle: TextStyle(color: shadColorScheme.foreground),
+                              selected: selected,
+                              selectedColor: shadColorScheme.destructive,
+                              onTap: () {
+                                Get.back();
+                                controller.selectedError = error;
+                                controller.filterTorrents();
+                              },
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
+                  ),
+                  child: Tooltip(
+                    message: '错误筛选【${controller.selectedError}】',
+                    child: CustomTextTag(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      icon: Icon(
+                        Icons.warning_amber_outlined,
+                        size: 13,
+                        color:
+                            controller.selectedError == '全部' ? shadColorScheme.foreground : shadColorScheme.destructive,
+                      ),
+                      backgroundColor: Colors.transparent,
+                      labelColor:
+                          controller.selectedError == '全部' ? shadColorScheme.foreground : shadColorScheme.destructive,
+                      labelText: '错误',
+                    ),
+                  ),
+                );
+              }),
               CustomPopup(
                   showArrow: false,
                   backgroundColor: shadColorScheme.background,
@@ -599,72 +686,70 @@ class TrPage extends StatelessWidget {
                               SizedBox(
                                 height: 240,
                                 // width: 240,
-                                child: Scaffold(
-                                  body: Column(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: ConstrainedBox(
-                                          constraints: const BoxConstraints(minWidth: double.infinity),
-                                          child: ShadSelect<String>(
-                                              placeholder: const Text('要替换的站点'),
-                                              trailing: const Text('要替换的站点'),
-                                              initialValue: sites.first,
-                                              decoration: ShadDecoration(
-                                                border: ShadBorder(
-                                                  merge: false,
-                                                  bottom: ShadBorderSide(
-                                                      color: shadColorScheme.foreground.withOpacity(0.2), width: 1),
-                                                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
+                                      child: ConstrainedBox(
+                                        constraints: const BoxConstraints(minWidth: double.infinity),
+                                        child: ShadSelect<String>(
+                                            placeholder: const Text('要替换的站点'),
+                                            trailing: Text('替换站点', style: TextStyle(color: shadColorScheme.foreground)),
+                                            initialValue: sites.first,
+                                            decoration: ShadDecoration(
+                                              border: ShadBorder(
+                                                merge: false,
+                                                bottom: ShadBorderSide(
+                                                    color: shadColorScheme.foreground.withOpacity(0.2), width: 1),
+                                                padding: const EdgeInsets.symmetric(horizontal: 16),
                                               ),
-                                              options:
-                                                  sites.map((key) => ShadOption(value: key, child: Text(key))).toList(),
-                                              selectedOptionBuilder: (context, value) {
-                                                return Text(value);
-                                              },
-                                              onChanged: (String? value) {
-                                                keyController.text = value!;
-                                              }),
-                                        ),
+                                            ),
+                                            options:
+                                                sites.map((key) => ShadOption(value: key, child: Text(key))).toList(),
+                                            selectedOptionBuilder: (context, value) {
+                                              return Text(value);
+                                            },
+                                            onChanged: (String? value) {
+                                              keyController.text = value!;
+                                            }),
                                       ),
-                                      CustomTextField(controller: valueController, labelText: "替换为"),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                        children: [
-                                          ShadButton(
-                                            onPressed: () {
-                                              Get.back(result: false);
-                                            },
-                                            child: const Text('取消'),
-                                          ),
-                                          ShadButton.destructive(
-                                            onPressed: () async {
-                                              controller.trackerLoading = true;
-                                              controller.update();
-                                              CommonResponse res = await controller.replaceTrackers(
-                                                  site: keyController.text, newTracker: valueController.text);
-                                              controller.trackerLoading = false;
-                                              controller.update();
-                                              if (res.succeed) {
-                                                Get.back(result: true);
-                                              }
-                                              Get.snackbar('Tracker替换ing', res.msg,
-                                                  colorText: res.succeed
-                                                      ? shadColorScheme.primary
-                                                      : shadColorScheme.destructive);
-                                            },
-                                            leading: controller.trackerLoading
-                                                ? SizedBox(
-                                                    height: 18, width: 18, child: const CircularProgressIndicator())
-                                                : null,
-                                            child: const Text('确认'),
-                                          ),
-                                        ],
-                                      )
-                                    ],
-                                  ),
+                                    ),
+                                    CustomTextField(controller: valueController, labelText: "替换为"),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                      children: [
+                                        ShadButton(
+                                          onPressed: () {
+                                            Get.back(result: false);
+                                          },
+                                          child: const Text('取消'),
+                                        ),
+                                        ShadButton.destructive(
+                                          onPressed: () async {
+                                            controller.trackerLoading = true;
+                                            controller.update();
+                                            CommonResponse res = await controller.replaceTrackers(
+                                                site: keyController.text, newTracker: valueController.text);
+                                            controller.trackerLoading = false;
+                                            controller.update();
+                                            if (res.succeed) {
+                                              Get.back(result: true);
+                                            }
+                                            Get.snackbar('Tracker替换ing', res.msg,
+                                                colorText: res.succeed
+                                                    ? shadColorScheme.primary
+                                                    : shadColorScheme.destructive);
+                                          },
+                                          leading: controller.trackerLoading
+                                              ? SizedBox(
+                                                  height: 18, width: 18, child: const CircularProgressIndicator())
+                                              : null,
+                                          child: const Text('确认'),
+                                        ),
+                                      ],
+                                    )
+                                  ],
                                 ),
                               ),
                             );
@@ -674,14 +759,15 @@ class TrPage extends StatelessWidget {
                     ),
                   ),
                   child: Icon(
-                    Icons.settings,
-                    size: 18,
-                    color: shadColorScheme.primary,
+                    Icons.settings_outlined,
+                    size: 13,
+                    color: shadColorScheme.foreground,
                   )),
               ShadIconButton.ghost(
-                icon: const Icon(
+                icon: Icon(
                   Icons.add_outlined,
-                  size: 18,
+                  size: 13,
+                  color: shadColorScheme.foreground,
                 ),
                 onPressed: () {
                   Get.bottomSheet(
@@ -788,7 +874,7 @@ class TrPage extends StatelessWidget {
                   child: CustomTextTag(
                     icon: Icon(
                       Icons.more_vert,
-                      size: 18,
+                      size: 13,
                       color: shadColorScheme.foreground,
                     ),
                     backgroundColor: Colors.transparent,
@@ -2240,7 +2326,7 @@ class TrPage extends StatelessWidget {
         children: [
           Obx(() {
             return ShadCheckbox(
-              size: 18,
+              size: 13,
               onChanged: (value) {
                 deleteFile.value = value;
               },

@@ -41,6 +41,8 @@ class TrController extends GetxController {
   int torrentCount = 0;
   String? selectedTracker = '全部';
   String? selectedLabel = '全部';
+  String selectedError = '全部';
+  List<String> errors = [];
   bool exitState = false;
   int pageSize = 20;
 
@@ -66,7 +68,7 @@ class TrController extends GetxController {
   ].map((e) => MetaDataItem.fromJson(e)).toList();
   List<MetaDataItem> trStatus = [
     {"name": "全部", "value": null},
-    {"name": "红种", "value": 99},
+    // {"name": "红种", "value": 99},
     {"name": "下载中", "value": 4},
     // {"name": "活动中", "value": 100},
     {"name": "做种中", "value": 6},
@@ -189,6 +191,15 @@ class TrController extends GetxController {
     }
   }
 
+  void filterTorrentsByError() {
+    logger_helper.Logger.instance.i(selectedCategory);
+    if (selectedError.isNotEmpty && selectedError != '全部') {
+      showTorrents = showTorrents.where((torrent) {
+        return torrent.errorString.contains(selectedError);
+      }).toList();
+    }
+  }
+
   void filterTorrentsBySearchKey() {
     // LoggerHelper.Logger.instance.d('搜索关键字：${searchKey.value}');
 
@@ -228,6 +239,8 @@ class TrController extends GetxController {
     filterTorrentsBySearchKey();
     // LoggerHelper.Logger.instance.d(showTorrents.length);
     filterTorrentsByTracker();
+    filterTorrentsByError();
+    // logger_helper.Logger.instance.d(showTorrents.length);
     sortTorrents();
     update();
     logger_helper.Logger.instance.i(showTorrents.length);
@@ -368,7 +381,6 @@ class TrController extends GetxController {
         List<int> batchIds = ids.sublist(i, (i + pageSize) >= ids.length ? ids.length : (i + pageSize));
         Map res = await client.torrent.torrentGet(fields: fields, ids: batchIds);
         torrents.addAll(res['arguments']["torrents"].map<TrTorrent>((item) => TrTorrent.fromJson(item)).toList());
-        await getAllCategory();
         filterTorrents();
         isLoading = false;
       }
@@ -376,12 +388,13 @@ class TrController extends GetxController {
       Map res = await client.torrent.torrentGet(fields: fields);
       if (res['result'] == "success") {
         torrents = res['arguments']["torrents"].map<TrTorrent>((item) => TrTorrent.fromJson(item)).toList();
-        await getAllCategory();
-        filterTorrents();
       }
     }
     labels = torrents.expand((e) => e.labels).toSet().toList();
+    errors.addAll(torrents.map<String>((item) => item.errorString).toSet().where((el) => el.isNotEmpty).toList());
     getTrackerList();
+    await getAllCategory();
+    filterTorrents();
   }
 
   Future<List<int>> getTorrentIds() async {
