@@ -27,7 +27,7 @@ class TrController extends GetxController {
   List<TrTorrent> showTorrents = [];
   Map<String, qb.Category> categoryMap = {};
   List<Map<String, String>> categories = <Map<String, String>>[];
-  String category = '全部';
+  String selectedCategory = '全部';
   Downloader downloader;
   List<String> labels = [];
   Map<String, List<String>> trackers = {};
@@ -40,10 +40,14 @@ class TrController extends GetxController {
   TransmissionStats? trStats;
   int torrentCount = 0;
   String? selectedTracker = '全部';
+  String? selectedLabel = '全部';
   bool exitState = false;
   int pageSize = 20;
 
   TrController(this.downloader);
+
+  List<String> selectedTorrents = [];
+  bool selectMode = false;
 
   List<MetaDataItem> trSortOptions = [
     {'name': '名称', 'value': 'name'},
@@ -52,7 +56,7 @@ class TrController extends GetxController {
     {'name': '总大小', 'value': 'totalSize'},
     {'name': '队列位置', 'value': 'queuePosition'},
     {'name': '完成日期', 'value': 'doneDate'},
-    {'name': '完成百分比', 'value': 'percentDone'},
+    {'name': '下载进度', 'value': 'percentDone'},
     {'name': '已上传', 'value': 'uploadedEver'},
     {'name': '已下载', 'value': 'downloaded'},
     {'name': '下载速度', 'value': 'rateDownload'},
@@ -103,7 +107,6 @@ class TrController extends GetxController {
 
     /// 订阅所有种子
     await getAllTorrents();
-    getTrackerList();
   }
 
   void getTrackerList() {
@@ -112,10 +115,19 @@ class TrController extends GetxController {
         continue;
       }
       String host = Uri.parse(torrent.trackerStats.first.announce).host;
-      trackers[host] ??= [];
-      trackers[host]!.add(torrent.hashString);
+      trackers.putIfAbsent(host, () => []).add(torrent.hashString);
     }
-    buildSiteToHashList();
+
+    /// 生成Map site.name: hashes
+    for (final website in mySiteController.webSiteList.values) {
+      for (final entry in trackers.entries) {
+        if (website.tracker.contains(entry.key)) {
+          trackerHashes.putIfAbsent(website.name, () => []).addAll(entry.value);
+        }
+      }
+    }
+    // 去重 value
+    trackerHashes.updateAll((_, list) => list.toSet().toList());
   }
 
   void startPeriodicTimer() {
@@ -195,12 +207,11 @@ class TrController extends GetxController {
     if (selectedTracker == null) {
       showTorrents = showTorrents.where((torrent) => torrent.trackerStats.isEmpty == true).toList();
     } else if (selectedTracker != null && selectedTracker == '全部') {
+    } else if (selectedTracker != null && selectedTracker == '红种') {
+      showTorrents = showTorrents.where((torrent) => torrent.error == 2).toList();
     } else if (selectedTracker != null && selectedTracker?.isNotEmpty == true) {
       showTorrents = showTorrents
-          .where((torrent) =>
-              torrent.trackerStats.isNotEmpty &&
-              torrent.trackerStats.first.announce.toLowerCase().contains(selectedTracker.toString().toLowerCase()) ==
-                  true)
+          .where((torrent) => trackerHashes[selectedTracker]?.contains(torrent.hashString) == true)
           .toList();
     }
     logger_helper.Logger.instance.i(showTorrents.length);
@@ -236,7 +247,7 @@ class TrController extends GetxController {
     String trackerList = '',
   }) async {
     logger_helper.Logger.instance.d(command);
-    logger_helper.Logger.instance.d(ids);
+    logger_helper.Logger.instance.d("正在操作 ${ids.length} 个种子");
     Map<dynamic, dynamic> result = {};
     switch (command) {
       case 'torrentReannounce':
@@ -370,6 +381,7 @@ class TrController extends GetxController {
       }
     }
     labels = torrents.expand((e) => e.labels).toSet().toList();
+    getTrackerList();
   }
 
   Future<List<int>> getTorrentIds() async {
@@ -381,20 +393,6 @@ class TrController extends GetxController {
       logger_helper.Logger.instance.e('Failed to fetch torrent count');
       return [];
     }
-  }
-
-  ////@title 生成Map site.name: hashes
-  ///@description TODO
-  ///@updateTime 2024.10.07 16:03
-  void buildSiteToHashList() {
-    for (var website in mySiteController.webSiteList.values) {
-      trackers.forEach((trackerKey, hashList) {
-        if (website.tracker.contains(trackerKey)) {
-          trackerHashes.putIfAbsent(website.name, () => []).addAll(hashList);
-        }
-      });
-    }
-    // logger_helper.Logger.instance.d(trackerHashes);
   }
 
   String getTrMetaName(String hashString) {
@@ -464,7 +462,6 @@ class TrController extends GetxController {
       map[key] = qb.Category(name: key, savePath: element);
       return map;
     });
-    categoryMap['全部'] = qb.Category(name: '全部');
     logger_helper.Logger.instance.d('TR 路径：$categoryMap');
     logger_helper.Logger.instance.d('TR 路径：$defaultSavePath');
     categories = uniqueCategories.toList();
@@ -479,10 +476,10 @@ class TrController extends GetxController {
   }
 
   void filterTorrentsByCategory() {
-    logger_helper.Logger.instance.i(category);
-    if (category != '全部') {
+    logger_helper.Logger.instance.i(selectedCategory);
+    if (selectedCategory != '全部') {
       showTorrents = showTorrents.where((torrent) {
-        return torrent.downloadDir.contains(category);
+        return torrent.downloadDir.contains(selectedCategory);
       }).toList();
     }
   }
@@ -505,13 +502,16 @@ class TrController extends GetxController {
   */
   Future<CommonResponse> replaceTrackers({required String site, required String newTracker}) async {
     List<String> hashes = trackerHashes[site] ?? [];
+    hashes = hashes.toSet().toList();
     logger_helper.Logger.instance.d(hashes);
     if (hashes.isEmpty) {
       return CommonResponse.success(msg: '本下载器没有 $site 站点的种子！');
     }
     try {
       for (String infoHash in hashes) {
-        await client.torrent.torrentSet(TorrentSetArgs().trackerReplace([newTracker]), ids: infoHash);
+        var res = await client.torrent.torrentSet(TorrentSetArgs().trackerReplace([newTracker]), ids: infoHash);
+        logger_helper.Logger.instance.d("当前种子：$infoHash Tracker 替换响应：$res");
+        Future.delayed(Duration(milliseconds: 100));
       }
     } catch (e, trace) {
       logger_helper.Logger.instance.e(e);

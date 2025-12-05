@@ -8,7 +8,6 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/meta_item.dart';
-import 'package:qbittorrent_api/qbittorrent_api.dart';
 import 'package:random_color/random_color.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
@@ -143,7 +142,10 @@ class TrPage extends StatelessWidget {
                         ),
                         Expanded(
                           child: controller.isLoading
-                              ? const Center(child: CircularProgressIndicator())
+                              ? Center(
+                                  child: CircularProgressIndicator(
+                                  color: shadColorScheme.foreground,
+                                ))
                               : ListView.builder(
                                   padding: const EdgeInsets.symmetric(horizontal: 5),
                                   itemCount: controller.showTorrents.length,
@@ -155,11 +157,11 @@ class TrPage extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 70),
+                  _buildActionButtons(context),
                 ],
               )),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-          floatingActionButton: _buildActionButtons(context),
+          // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+          // floatingActionButton: _buildActionButtons(context),
         ),
       );
     });
@@ -169,437 +171,645 @@ class TrPage extends StatelessWidget {
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     return GetBuilder<TrController>(builder: (controller) {
       return CustomCard(
-        padding: const EdgeInsets.all(8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            ShadButton.ghost(
-              size: ShadButtonSize.sm,
-              leading: const Icon(
-                Icons.sort_by_alpha,
-                size: 18,
-              ),
-              child: Text(controller.trSortOptions.firstWhere((item) => item.value == controller.sortKey).name),
-              onPressed: () {
-                Get.bottomSheet(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                  backgroundColor: shadColorScheme.background,
-                  CustomCard(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      children: [
-                        Text('种子排序', style: TextStyle(color: shadColorScheme.foreground)),
-                        Expanded(
-                          child: GetBuilder<TrController>(builder: (controller) {
-                            return ListView.builder(
-                                shrinkWrap: true,
-                                itemCount: controller.trSortOptions.length,
-                                itemBuilder: (context, index) {
-                                  MetaDataItem item = controller.trSortOptions[index];
-                                  bool isSelected = controller.sortKey == item.value;
-                                  return ListTile(
-                                    dense: true,
-                                    title: Text(
-                                      item.name,
-                                      style: TextStyle(color: shadColorScheme.foreground),
-                                    ),
-                                    style: ListTileStyle.list,
-                                    selectedColor: shadColorScheme.primary,
-                                    trailing: Icon(
-                                      isSelected ? Icons.check_box : Icons.check_box_outline_blank,
-                                    ),
-                                    selected: isSelected,
-                                    onTap: () async {
-                                      Get.back();
-                                      controller.sortReversed =
-                                          controller.sortKey == item.value ? !controller.sortReversed : false;
-                                      controller.sortKey = item.value;
-                                      SPUtil.setLocalStorage(
-                                          '${controller.downloader.host}:${controller.downloader.port}-sortKey-DIRECT',
-                                          controller.sortKey);
-                                      controller.sortTorrents();
-                                      controller.update();
-                                      await controller.getAllTorrents();
-                                    },
-                                  );
-                                });
-                          }),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-            ShadButton.ghost(
-              size: ShadButtonSize.sm,
-              leading: const Icon(
-                Icons.category_outlined,
-                size: 18,
-              ),
-              child: Text(controller
-                      .categoryMap[controller.categoryMap.keys.firstWhereOrNull((item) => item == controller.category)]
-                      ?.name ??
-                  '全部'),
-              onPressed: () {
-                Get.bottomSheet(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                  backgroundColor: shadColorScheme.background,
-                  CustomCard(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      children: [
-                        Text('种子分类', style: TextStyle(color: shadColorScheme.foreground)),
-                        Expanded(
-                          child: GetBuilder<TrController>(builder: (controller) {
-                            List<String> keys = controller.categoryMap.keys.toList();
-                            keys.remove('全部');
-                            keys.sort();
-                            keys.insert(0, '全部');
-
-                            return ListView.builder(
-                                shrinkWrap: true,
-                                itemCount: keys.length,
-                                itemBuilder: (context, index) {
-                                  String c = keys[index];
-                                  Category? category = controller.categoryMap[c];
-                                  int count = 0;
-                                  if (category?.name == '全部') {
-                                    count = controller.torrents.length;
-                                  } else {
-                                    count = controller.torrents
-                                        .where((torrent) => torrent.downloadDir.contains(category.toString()) == true)
-                                        .toList()
-                                        .length;
-                                  }
-                                  return ListTile(
-                                    dense: true,
-                                    title: Text(
-                                      '$c($count)',
-                                      style: TextStyle(color: shadColorScheme.foreground),
-                                    ),
-                                    subtitle: c != '全部' ? Text(category?.name ?? '未知') : null,
-                                    selected: controller.category == category?.name,
-                                    selectedColor: shadColorScheme.primary,
-                                    onTap: () {
-                                      Get.back();
-                                      controller.category = category?.name ?? '未知';
-                                      controller.filterTorrents();
-                                    },
-                                  );
-                                });
-                          }),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-            ShadButton.ghost(
-              size: ShadButtonSize.sm,
-              leading: const Icon(
-                Icons.info_outline,
-                size: 18,
-              ),
-              child: Text(controller.trStatus.firstWhere((item) => item.value == controller.trTorrentState).name),
-              onPressed: () {
-                Get.bottomSheet(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                  backgroundColor: shadColorScheme.background,
-                  GetBuilder<TrController>(builder: (controller) {
-                    return Column(
-                      children: [
-                        Text('种子状态', style: TextStyle(color: shadColorScheme.foreground)),
-                        Expanded(
-                          child: ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: controller.trStatus.length,
-                              itemBuilder: (context, index) {
-                                MetaDataItem state = controller.trStatus[index];
-                                return ListTile(
-                                  dense: true,
-                                  title: Text(
-                                    '${state.name}(${controller.torrents.where((TrTorrent torrent) => state.value != null ? state.value == 99 ? torrent.error > 0 : torrent.status == state.value : true).toList().length})',
-                                  ),
-                                  style: ListTileStyle.list,
-                                  selected: controller.trTorrentState == state.value,
-                                  selectedColor: shadColorScheme.primary,
-                                  onTap: () async {
-                                    Get.back();
-                                    controller.trTorrentState = state.value;
-                                    controller.filterTorrents();
-                                    controller.update();
-                                    await controller.getAllTorrents();
-                                  },
-                                );
-                              }),
-                        ),
-                        ListTile(
-                          dense: true,
-                          title: Text(
-                            '活动中(${controller.torrents.where((torrent) => torrent.rateUpload > 0 || torrent.rateDownload > 0).toList().length})',
-                            style: TextStyle(color: shadColorScheme.foreground),
-                          ),
-                          style: ListTileStyle.list,
-                          selected: controller.trTorrentState == 100,
-                          selectedColor: shadColorScheme.primary,
-                          onTap: () {
-                            Get.back();
-                            controller.trTorrentState = 100;
-                            controller.filterTorrents();
-                            controller.update();
-                          },
-                        ),
-                      ],
-                    );
-                  }),
-                );
-              },
-            ),
-            ShadButton.ghost(
-              size: ShadButtonSize.sm,
-              leading: const Icon(
-                Icons.language,
-                size: 18,
-              ),
-              child: Text(controller.trackerToWebSiteMap[controller.selectedTracker]?.name ??
-                  controller.selectedTracker?.trim() ??
-                  "未知"),
-              onPressed: () {
-                TextEditingController searchKey = TextEditingController();
-                Get.bottomSheet(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                  backgroundColor: shadColorScheme.background,
-                  CustomCard(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      children: [
-                        Text('站点筛选', style: TextStyle(color: shadColorScheme.foreground)),
-                        CustomTextField(
-                          controller: searchKey,
-                          labelText: '筛选',
-                          onChanged: (String value) {
-                            // searchKey.text = value;
-                            controller.update();
-                          },
-                        ),
-                        Expanded(
-                          child: GetBuilder<TrController>(builder: (controller) {
-                            List<String> keys = controller.trackers.keys
-                                .where((element) => element.toLowerCase().contains(searchKey.text.toLowerCase()))
-                                .toList();
-                            keys.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
-                            keys.insert(0, '全部');
-                            return ListView.builder(
-                                shrinkWrap: true,
-                                itemCount: keys.length,
-                                itemBuilder: (context, index) {
-                                  String? key = keys[index];
-                                  List<String>? hashList;
-                                  if (key == '全部') {
-                                    hashList = controller.torrents.map((e) => e.hashString).toList();
-                                  } else {
-                                    hashList = controller.trackers[key];
-                                  }
-                                  return ListTile(
-                                    dense: true,
-                                    title: Text(
-                                      '${controller.trackerToWebSiteMap[controller.trackerToWebSiteMap.keys.firstWhereOrNull((String element) => element.contains(key))]?.name ?? key.trim()}(${hashList?.length})',
-                                      style: TextStyle(color: shadColorScheme.foreground),
-                                    ),
-                                    style: ListTileStyle.list,
-                                    selected: controller.selectedTracker == key,
-                                    selectedColor: shadColorScheme.primary,
-                                    onTap: () async {
-                                      Get.back();
-                                      controller.trTorrentState = null;
-
-                                      controller.selectedTracker = key;
-                                      controller.filterTorrents();
-                                      controller.update();
-                                    },
-                                  );
-                                });
-                          }),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-            CustomPopup(
-                showArrow: false,
-                backgroundColor: shadColorScheme.foreground,
-                barrierColor: Colors.transparent,
-                content: SizedBox(
-                  width: 120,
-                  child: Column(
+        color: shadColorScheme.background,
+        padding: const EdgeInsets.all(0),
+        width: double.infinity,
+        child: Center(
+          child: Wrap(
+            direction: Axis.horizontal,
+            alignment: WrapAlignment.center,
+            runAlignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              InkWell(
+                onTap: () {
+                  logger_helper.Logger.instance.d('当前排序规则：${controller.sortKey},正序：${controller.sortReversed}！');
+                  controller.sortReversed = !controller.sortReversed;
+                  controller.filterTorrents();
+                  logger_helper.Logger.instance.d('当前排序规则：${controller.sortKey},正序：${controller.sortReversed}！');
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      PopupMenuItem<String>(
-                        child: Center(
-                          child: Text(
-                            '清除红种',
-                          ),
-                        ),
-                        onTap: () async {
-                          CommonResponse res = await controller.removeErrorTracker();
-                          Get.snackbar('清理红种', res.msg,
-                              colorText: res.code == 0 ? shadColorScheme.primary : shadColorScheme.destructive);
-                          await controller.getAllTorrents();
-                          controller.update();
-                        },
-                      ),
-                      PopupMenuItem<String>(
-                        child: Center(
-                          child: Text(
-                            '切换限速',
-                          ),
-                        ),
-                        onTap: () async {
-                          CommonResponse res = await controller.toggleSpeedLimit();
-                          if (res.code == 0) {
-                            Get.snackbar('限速切换成功', res.msg, colorText: shadColorScheme.primary);
-                          } else {
-                            Get.snackbar('限速切换失败', res.msg, colorText: shadColorScheme.destructive);
-                          }
-                        },
-                      ),
-                      PopupMenuItem<String>(
-                        child: Center(
-                            child: Text(
-                          '替换Tracker',
-                          style: TextStyle(color: shadColorScheme.destructive),
-                        )),
-                        onTap: () async {
-                          TextEditingController keyController = TextEditingController(text: '');
-                          TextEditingController valueController = TextEditingController(text: '');
-                          List<String> sites =
-                              controller.trackerHashes.keys.where((e) => e != ' All' && e != ' 红种').toList();
-                          sites.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
-                          Get.bottomSheet(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5.0), // 圆角半径
+                      controller.sortReversed
+                          ? Icon(
+                              Icons.sim_card_download_outlined,
+                              size: 13,
+                              color: shadColorScheme.foreground,
+                            )
+                          : Icon(
+                              Icons.upload_file_outlined,
+                              size: 13,
+                              color: shadColorScheme.foreground,
                             ),
-                            backgroundColor: shadColorScheme.background,
-                            SizedBox(
-                              height: 240,
-                              // width: 240,
-                              child: Scaffold(
-                                body: Column(
-                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: ConstrainedBox(
-                                        constraints: const BoxConstraints(minWidth: double.infinity),
-                                        child: ShadSelect<String>(
-                                            placeholder: const Text('要替换的站点'),
-                                            trailing: const Text('要替换的站点'),
-                                            initialValue: sites.first,
-                                            decoration: ShadDecoration(
-                                              border: ShadBorder(
-                                                merge: false,
-                                                bottom: ShadBorderSide(
-                                                    color: shadColorScheme.foreground.withOpacity(0.2), width: 1),
-                                                padding: const EdgeInsets.symmetric(horizontal: 16),
-                                              ),
-                                            ),
-                                            options:
-                                                sites.map((key) => ShadOption(value: key, child: Text(key))).toList(),
-                                            selectedOptionBuilder: (context, value) {
-                                              return Text(value);
-                                            },
-                                            onChanged: (String? value) {
-                                              keyController.text = value!;
-                                            }),
-                                      ),
-                                    ),
-                                    CustomTextField(controller: valueController, labelText: "替换为"),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                      children: [
-                                        ShadButton(
-                                          onPressed: () {
-                                            Get.back(result: false);
-                                          },
-                                          child: const Text('取消'),
-                                        ),
-                                        ShadButton.destructive(
-                                          onPressed: () async {
-                                            controller.trackerLoading = true;
-                                            controller.update();
-                                            CommonResponse res = await controller.replaceTrackers(
-                                                site: keyController.text, newTracker: valueController.text);
-                                            controller.trackerLoading = false;
-                                            controller.update();
-                                            if (res.succeed) {
-                                              Get.back(result: true);
-                                            }
-                                            Get.snackbar('Tracker替换ing', res.msg,
-                                                colorText: res.succeed
-                                                    ? shadColorScheme.primary
-                                                    : shadColorScheme.destructive);
-                                          },
-                                          leading: controller.trackerLoading
-                                              ? SizedBox(
-                                                  height: 18, width: 18, child: const CircularProgressIndicator())
-                                              : null,
-                                          child: const Text('确认'),
-                                        ),
-                                      ],
-                                    )
-                                  ],
-                                ),
+                      SizedBox(width: 3),
+                      controller.sortReversed
+                          ? Text(
+                              '正序',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: shadColorScheme.foreground,
+                              ),
+                            )
+                          : Text(
+                              '倒序',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: shadColorScheme.foreground,
                               ),
                             ),
-                          );
-                        },
-                      ),
                     ],
                   ),
                 ),
-                child: Icon(
-                  Icons.settings,
-                  size: 18,
-                  color: shadColorScheme.primary,
-                )),
-            ShadIconButton.ghost(
-              icon: const Icon(
-                Icons.add,
-                size: 18,
               ),
-              onPressed: () {
-                Get.bottomSheet(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+              GetBuilder<TrController>(builder: (controller) {
+                return CustomPopup(
+                  showArrow: false,
                   backgroundColor: shadColorScheme.background,
-                  enableDrag: true,
-                  CustomCard(
-                    height: 400,
-                    padding: const EdgeInsets.all(12),
-                    child: Column(children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text('添加种子', style: TextStyle(color: shadColorScheme.foreground)),
+                  content: SingleChildScrollView(
+                    child: SizedBox(
+                      width: 100,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: controller.trSortOptions
+                            .map((item) => PopupMenuItem<String>(
+                                  height: 32,
+                                  child: Text(
+                                    item.name,
+                                    style: TextStyle(
+                                      color: shadColorScheme.foreground,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  onTap: () async {
+                                    logger_helper.Logger.instance
+                                        .d('当前排序规则：${controller.sortKey},正序：${controller.sortReversed}！');
+                                    controller.sortKey = item.value;
+                                    logger_helper.Logger.instance.d('当前排序字段: ${controller.sortKey}');
+                                    SPUtil.setLocalStorage(
+                                        '${controller.downloader.externalHost}-sortKey-DIRECT', controller.sortKey);
+                                  },
+                                ))
+                            .toList(),
                       ),
-                      Expanded(
-                        child: DownloadForm(
-                          categories: controller.categoryMap,
-                          downloader: controller.downloader,
-                          info: null,
-                        ),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
+                    child: CustomTextTag(
+                      backgroundColor: Colors.transparent,
+                      icon: Icon(
+                        Icons.sort_by_alpha_outlined,
+                        size: 13,
+                        color: shadColorScheme.foreground,
                       ),
-                    ]),
+                      labelText:
+                          '【${controller.trSortOptions.firstWhereOrNull((item) => item.value == controller.sortKey)?.name ?? "无"}】',
+                      labelColor: shadColorScheme.foreground,
+                    ),
                   ),
                 );
-              },
-            ),
-          ],
+              }),
+              GetBuilder<TrController>(builder: (controller) {
+                return CustomPopup(
+                  showArrow: false,
+                  backgroundColor: shadColorScheme.background,
+                  content: SingleChildScrollView(
+                    child: SizedBox(
+                      width: 180,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          PopupMenuItem<String>(
+                            height: 32,
+                            child: Text(
+                              '全部[${controller.torrents.length}]',
+                              style: TextStyle(
+                                color: shadColorScheme.foreground,
+                                fontSize: 12,
+                              ),
+                            ),
+                            onTap: () async {
+                              controller.selectedLabel = null;
+                              controller.showTorrents.clear();
+                              controller.filterTorrents();
+                            },
+                          ),
+                          ...controller.labels.map((item) => PopupMenuItem<String>(
+                                height: 32,
+                                child: Text(
+                                  '$item[${controller.torrents.where((element) => element.labels.contains(item)).length}]',
+                                  style: TextStyle(
+                                    color: shadColorScheme.foreground,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                onTap: () async {
+                                  controller.selectedLabel = item;
+                                  controller.filterTorrents();
+                                },
+                              )),
+                        ],
+                      ),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
+                    child: CustomTextTag(
+                      backgroundColor: Colors.transparent,
+                      icon: Icon(
+                        Icons.tag,
+                        size: 13,
+                        color: shadColorScheme.foreground,
+                      ),
+                      labelText: '【${controller.selectedLabel ?? "全部"}】',
+                      labelColor: shadColorScheme.foreground,
+                    ),
+                  ),
+                );
+              }),
+              GetBuilder<TrController>(builder: (controller) {
+                TextEditingController searchKey = TextEditingController();
+                List<String> keys = controller.trackerHashes.keys
+                    .where((element) => element.toLowerCase().contains(searchKey.text.toLowerCase()))
+                    .toList();
+                keys.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+                return CustomPopup(
+                  showArrow: false,
+                  backgroundColor: shadColorScheme.background,
+                  content: SingleChildScrollView(
+                    child: SizedBox(
+                      width: 150,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('站点筛选', style: TextStyle(color: shadColorScheme.foreground)),
+                          CustomTextField(
+                            controller: searchKey,
+                            labelText: '筛选',
+                            onChanged: (String value) {
+                              // searchKey.text = value;
+                              controller.update();
+                            },
+                          ),
+                          PopupMenuItem<String>(
+                            height: 32,
+                            child: Text(
+                              '全部[${controller.torrents.length}]',
+                              style: TextStyle(
+                                color: shadColorScheme.foreground,
+                                fontSize: 12,
+                              ),
+                            ),
+                            onTap: () async {
+                              controller.selectedTracker = '全部';
+                              controller.showTorrents.clear();
+                              controller.filterTorrents();
+                            },
+                          ),
+                          PopupMenuItem<String>(
+                            height: 32,
+                            child: Text(
+                              '红种[${controller.torrents.where((element) => element.error == 2).toList().length}]',
+                              style: TextStyle(
+                                color: shadColorScheme.destructive,
+                                fontSize: 12,
+                              ),
+                            ),
+                            onTap: () async {
+                              controller.selectedTracker = '红种';
+                              controller.filterTorrents();
+                            },
+                          ),
+                          ...keys.map((item) => PopupMenuItem<String>(
+                                height: 32,
+                                child: Text(
+                                  '$item[${controller.trackerHashes[item]?.toSet().length ?? 0}]',
+                                  style: TextStyle(
+                                    color: shadColorScheme.foreground,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                onTap: () async {
+                                  controller.selectedTracker = item;
+                                  controller.filterTorrents();
+                                },
+                              )),
+                        ],
+                      ),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
+                    child: CustomTextTag(
+                      backgroundColor: Colors.transparent,
+                      icon: Icon(
+                        Icons.language_outlined,
+                        size: 13,
+                        color: shadColorScheme.foreground,
+                      ),
+                      labelText: controller.trackerToWebSiteMap[controller.selectedTracker]?.name ??
+                          controller.selectedTracker?.trim() ??
+                          "未知",
+                      labelColor: shadColorScheme.foreground,
+                    ),
+                  ),
+                );
+              }),
+              GetBuilder<TrController>(builder: (controller) {
+                return CustomPopup(
+                  showArrow: false,
+                  backgroundColor: shadColorScheme.background,
+                  content: SingleChildScrollView(
+                    child: SizedBox(
+                      width: 180,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ListTile(
+                            dense: true,
+                            title: Text(
+                              "全部[${controller.torrents.length}]",
+                            ),
+                            style: ListTileStyle.list,
+                            titleTextStyle: TextStyle(
+                              color: shadColorScheme.foreground,
+                              fontSize: 12,
+                            ),
+                            selected: controller.selectedCategory == '全部',
+                            selectedColor: shadColorScheme.destructive,
+                            selectedTileColor: Colors.amber,
+                            onTap: () {
+                              Get.back();
+                              controller.selectedCategory = '全部';
+
+                              controller.showTorrents.clear();
+
+                              controller.filterTorrents();
+                            },
+                          ),
+                          ...controller.categoryMap.values.map((item) => ListTile(
+                                dense: true,
+                                title: Text(
+                                  "${item.name}[${controller.torrents.where((torrent) => torrent.downloadDir.contains(item.savePath!.substring(0, item.savePath!.length - 1))).toList().length}]",
+                                ),
+                                style: ListTileStyle.list,
+                                titleTextStyle: TextStyle(
+                                  color: shadColorScheme.foreground,
+                                  fontSize: 12,
+                                ),
+                                selected: controller.selectedCategory == item.name,
+                                selectedColor: shadColorScheme.destructive,
+                                selectedTileColor: Colors.amber,
+                                onTap: () {
+                                  Get.back();
+                                  controller.selectedCategory = item.name!;
+                                  controller.filterTorrents();
+                                },
+                              )),
+                        ],
+                      ),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
+                    child: CustomTextTag(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      icon: Icon(
+                        Icons.category_outlined,
+                        size: 13,
+                        color: shadColorScheme.foreground,
+                      ),
+                      backgroundColor: Colors.transparent,
+                      labelColor: shadColorScheme.foreground,
+                      labelText:
+                          '【${controller.categoryMap.keys.firstWhereOrNull((item) => item == controller.selectedCategory) ?? "全部"}】',
+                    ),
+                  ),
+                );
+              }),
+              GetBuilder<TrController>(builder: (controller) {
+                return CustomPopup(
+                  showArrow: false,
+                  backgroundColor: shadColorScheme.background,
+                  content: SingleChildScrollView(
+                    child: SizedBox(
+                      width: 150,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: controller.trStatus.map((state) {
+                          var torrentsMatchingState = [];
+                          if (state.value == 'all') {
+                            torrentsMatchingState = controller.torrents;
+                          } else if (state.value == 'active') {
+                            torrentsMatchingState = controller.torrents
+                                .where((torrent) =>
+                                    [
+                                      4,
+                                      2,
+                                    ].contains(torrent.status) ||
+                                    (torrent.rateDownload + torrent.rateUpload) > 0)
+                                .toList();
+                          } else {
+                            torrentsMatchingState = controller.torrents
+                                .where((torrent) => state.value != null ? torrent.status == state.value : true)
+                                .toList();
+                          }
+                          return PopupMenuItem(
+                            child: Text(
+                              '${state.name}(${torrentsMatchingState.length})',
+                              style: TextStyle(
+                                color: shadColorScheme.foreground,
+                                fontSize: 12,
+                              ),
+                            ),
+                            onTap: () {
+                              // Get.back();
+                              logger_helper.Logger.instance.d("状态筛选...${state.name}");
+                              controller.trTorrentState = state.value;
+                              controller.filterTorrents();
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
+                    child: CustomTextTag(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      icon: Icon(
+                        Icons.info_outlined,
+                        size: 13,
+                        color: shadColorScheme.foreground,
+                      ),
+                      backgroundColor: Colors.transparent,
+                      labelText:
+                          '【${controller.trStatus.firstWhereOrNull((item) => item.value == controller.trTorrentState)?.name ?? "全部"}】',
+                      labelColor: shadColorScheme.foreground,
+                    ),
+                  ),
+                );
+              }),
+              CustomPopup(
+                  showArrow: false,
+                  backgroundColor: shadColorScheme.background,
+                  barrierColor: Colors.transparent,
+                  content: SizedBox(
+                    width: 120,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        PopupMenuItem<String>(
+                          child: Center(
+                            child: Text(
+                              '清除红种',
+                            ),
+                          ),
+                          onTap: () async {
+                            CommonResponse res = await controller.removeErrorTracker();
+                            Get.snackbar('清理红种', res.msg,
+                                colorText: res.code == 0 ? shadColorScheme.primary : shadColorScheme.destructive);
+                            await controller.getAllTorrents();
+                            controller.update();
+                          },
+                        ),
+                        PopupMenuItem<String>(
+                          child: Center(
+                            child: Text(
+                              '切换限速',
+                            ),
+                          ),
+                          onTap: () async {
+                            CommonResponse res = await controller.toggleSpeedLimit();
+                            if (res.code == 0) {
+                              Get.snackbar('限速切换成功', res.msg, colorText: shadColorScheme.primary);
+                            } else {
+                              Get.snackbar('限速切换失败', res.msg, colorText: shadColorScheme.destructive);
+                            }
+                          },
+                        ),
+                        PopupMenuItem<String>(
+                          child: Center(
+                              child: Text(
+                            '替换Tracker',
+                            style: TextStyle(color: shadColorScheme.destructive),
+                          )),
+                          onTap: () async {
+                            TextEditingController keyController = TextEditingController(text: '');
+                            TextEditingController valueController = TextEditingController(text: '');
+                            List<String> sites =
+                                controller.trackerHashes.keys.where((e) => e != ' All' && e != ' 红种').toList();
+                            sites.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+                            Get.bottomSheet(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5.0), // 圆角半径
+                              ),
+                              backgroundColor: shadColorScheme.background,
+                              SizedBox(
+                                height: 240,
+                                // width: 240,
+                                child: Scaffold(
+                                  body: Column(
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: ConstrainedBox(
+                                          constraints: const BoxConstraints(minWidth: double.infinity),
+                                          child: ShadSelect<String>(
+                                              placeholder: const Text('要替换的站点'),
+                                              trailing: const Text('要替换的站点'),
+                                              initialValue: sites.first,
+                                              decoration: ShadDecoration(
+                                                border: ShadBorder(
+                                                  merge: false,
+                                                  bottom: ShadBorderSide(
+                                                      color: shadColorScheme.foreground.withOpacity(0.2), width: 1),
+                                                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                                                ),
+                                              ),
+                                              options:
+                                                  sites.map((key) => ShadOption(value: key, child: Text(key))).toList(),
+                                              selectedOptionBuilder: (context, value) {
+                                                return Text(value);
+                                              },
+                                              onChanged: (String? value) {
+                                                keyController.text = value!;
+                                              }),
+                                        ),
+                                      ),
+                                      CustomTextField(controller: valueController, labelText: "替换为"),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                        children: [
+                                          ShadButton(
+                                            onPressed: () {
+                                              Get.back(result: false);
+                                            },
+                                            child: const Text('取消'),
+                                          ),
+                                          ShadButton.destructive(
+                                            onPressed: () async {
+                                              controller.trackerLoading = true;
+                                              controller.update();
+                                              CommonResponse res = await controller.replaceTrackers(
+                                                  site: keyController.text, newTracker: valueController.text);
+                                              controller.trackerLoading = false;
+                                              controller.update();
+                                              if (res.succeed) {
+                                                Get.back(result: true);
+                                              }
+                                              Get.snackbar('Tracker替换ing', res.msg,
+                                                  colorText: res.succeed
+                                                      ? shadColorScheme.primary
+                                                      : shadColorScheme.destructive);
+                                            },
+                                            leading: controller.trackerLoading
+                                                ? SizedBox(
+                                                    height: 18, width: 18, child: const CircularProgressIndicator())
+                                                : null,
+                                            child: const Text('确认'),
+                                          ),
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.settings,
+                    size: 18,
+                    color: shadColorScheme.primary,
+                  )),
+              ShadIconButton.ghost(
+                icon: const Icon(
+                  Icons.add,
+                  size: 18,
+                ),
+                onPressed: () {
+                  Get.bottomSheet(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+                    backgroundColor: shadColorScheme.background,
+                    enableDrag: true,
+                    CustomCard(
+                      height: 400,
+                      padding: const EdgeInsets.all(12),
+                      child: Column(children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text('添加种子', style: TextStyle(color: shadColorScheme.foreground)),
+                        ),
+                        Expanded(
+                          child: DownloadForm(
+                            categories: controller.categoryMap,
+                            downloader: controller.downloader,
+                            info: null,
+                          ),
+                        ),
+                      ]),
+                    ),
+                  );
+                },
+              ),
+              if (controller.selectMode)
+                CustomPopup(
+                  content: SizedBox(
+                    width: 80,
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          PopupMenuItem(
+                            onTap: () {
+                              controller.selectedTorrents.addAll(controller.showTorrents.map((t) => t.hashString));
+                              controller.selectedTorrents = controller.selectedTorrents.toSet().toList();
+                              controller.update();
+                            },
+                            child: Text('全选'),
+                          ),
+                          PopupMenuItem(
+                            onTap: () {
+                              List<String> temp = controller.showTorrents
+                                  .where((t) => !controller.selectedTorrents.contains(t.hashString))
+                                  .map((t) => t.hashString)
+                                  .toSet()
+                                  .toList();
+                              controller.selectedTorrents.clear();
+                              controller.selectedTorrents.addAll(temp);
+                              controller.update();
+                            },
+                            child: Text('反选'),
+                          ),
+                          PopupMenuItem(
+                            onTap: () => _removeTorrent(controller.selectedTorrents, context),
+                            child: Text('删除'),
+                          ),
+                          PopupMenuItem(
+                            onTap: () async {
+                              await controller.controlTorrents(
+                                  command: 'torrentReannounce', ids: controller.selectedTorrents);
+                              controller.getAllTorrents();
+                            },
+                            child: Text('汇报'),
+                          ),
+                          PopupMenuItem(
+                            onTap: () async {
+                              await controller.controlTorrents(
+                                  command: 'torrentStartNow', ids: controller.selectedTorrents);
+                              controller.getAllTorrents();
+                            },
+                            child: Text('强制开始'),
+                          ),
+                          PopupMenuItem(
+                            onTap: () async {
+                              await controller.controlTorrents(
+                                  command: 'torrentStart', ids: controller.selectedTorrents);
+                              controller.getAllTorrents();
+                            },
+                            child: Text('开始'),
+                          ),
+                          PopupMenuItem(
+                            onTap: () async {
+                              await controller.controlTorrents(
+                                  command: 'torrentStop', ids: controller.selectedTorrents);
+                              controller.getAllTorrents();
+                            },
+                            child: Text('停止'),
+                          ),
+                          PopupMenuItem(
+                            onTap: () {
+                              controller.selectMode = false;
+                              controller.selectedTorrents.clear();
+                              controller.update();
+                            },
+                            child: const Text('取消'),
+                          ),
+                        ]),
+                  ),
+                  child: CustomTextTag(
+                    icon: Icon(
+                      Icons.more_vert,
+                      size: 18,
+                    ),
+                    backgroundColor: Colors.transparent,
+                    labelColor: shadColorScheme.foreground,
+                    labelText: '操作[${controller.selectedTorrents.length}]',
+                  ),
+                ),
+            ],
+          ),
         ),
       );
     });
@@ -618,7 +828,7 @@ class TrPage extends StatelessWidget {
             children: [
               SlidableAction(
                 onPressed: (context) async {
-                  await _removeTorrent(torrentInfo);
+                  await _removeTorrent([torrentInfo.hashString], context);
                 },
                 flex: 2,
                 backgroundColor: const Color(0xFFFE4A49),
@@ -1209,190 +1419,215 @@ class TrPage extends StatelessWidget {
                 onTap: () {
                   _openTorrentInfoDetail(torrentInfo, context);
                 },
-                // onLongPress: () {
-                //   Get.snackbar('长按', '长按！',colorText:shadColorScheme.primary);
-                // },
+                onLongPress: () {
+                  controller.selectMode = true;
+                  controller.update();
+                },
                 // onDoubleTap: () {
                 //   Get.snackbar('双击', '双击！',colorText:shadColorScheme.primary);
                 // },
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Column(
+                  child: Row(
+                    spacing: 8.0,
                     children: [
-                      Row(
-                        children: [
-                          if (torrentInfo.trackerStats.isNotEmpty)
-                            Row(children: [
-                              const Icon(
-                                Icons.link,
-                                size: 10,
-                              ),
-                              Text(
-                                controller
-                                        .trackerToWebSiteMap[controller.trackerToWebSiteMap.keys.firstWhereOrNull(
-                                            (String element) => element
-                                                .contains(Uri.parse(torrentInfo.trackerStats.first.announce).host))]
-                                        ?.name ??
-                                    Uri.parse(torrentInfo.trackerStats.first.announce).host,
-                                style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                              const SizedBox(width: 10),
-                            ]),
-                          Expanded(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      if (controller.selectMode)
+                        ShadCheckbox(
+                          value: controller.selectedTorrents.contains(torrentInfo.hashString),
+                          onChanged: (v) {
+                            if (v == true) {
+                              controller.selectedTorrents.add(torrentInfo.hashString);
+                            } else {
+                              controller.selectedTorrents.remove(torrentInfo.hashString);
+                            }
+                            controller.update();
+                            logger_helper.Logger.instance.i('选中的种子：${controller.selectedTorrents.length}');
+                          },
+                        ),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Row(
                               children: [
-                                Text(
-                                  FileSizeConvert.parseToFileSize(torrentInfo.totalSize),
-                                  style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
-                                ),
-                                SizedBox(
-                                  height: 12,
-                                  child: Text(
-                                    controller.trStatus
-                                        .firstWhere((element) => element.value == torrentInfo.status,
-                                            orElse: () => MetaDataItem(name: "未知状态", value: null))
-                                        .name,
-                                    style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
+                                if (torrentInfo.trackerStats.isNotEmpty)
+                                  Row(children: [
+                                    const Icon(
+                                      Icons.link,
+                                      size: 10,
+                                    ),
+                                    Tooltip(
+                                      message: torrentInfo.trackerStats.first.announce,
+                                      child: Text(
+                                        controller
+                                                .trackerToWebSiteMap[controller.trackerToWebSiteMap.keys
+                                                    .firstWhereOrNull((String element) => element.contains(
+                                                        Uri.parse(torrentInfo.trackerStats.first.announce).host))]
+                                                ?.name ??
+                                            Uri.parse(torrentInfo.trackerStats.first.announce).host,
+                                        style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                  ]),
+                                Expanded(
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        FileSizeConvert.parseToFileSize(torrentInfo.totalSize),
+                                        style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
+                                      ),
+                                      SizedBox(
+                                        height: 12,
+                                        child: Text(
+                                          controller.trStatus
+                                              .firstWhere((element) => element.value == torrentInfo.status,
+                                                  orElse: () => MetaDataItem(name: "未知状态", value: null))
+                                              .name,
+                                          style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          SizedBox(
-                            width: 235,
-                            child: Tooltip(
-                              message: torrentInfo.name,
-                              child: Text(
-                                torrentInfo.name,
-                                style: TextStyle(
-                                    fontSize: 11, color: shadColorScheme.foreground, fontWeight: FontWeight.bold),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                SizedBox(
+                                  width: 235,
+                                  child: Tooltip(
+                                    message: torrentInfo.name,
+                                    child: Text(
+                                      torrentInfo.name,
+                                      style: TextStyle(
+                                          fontSize: 11, color: shadColorScheme.foreground, fontWeight: FontWeight.bold),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  torrentInfo.downloadDir.isNotEmpty ? torrentInfo.downloadDir : '未分类',
+                                  style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                SizedBox(
+                                  width: 80,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(Icons.upload, size: 12, color: shadColorScheme.foreground),
+                                          Text(FileSizeConvert.parseToFileSize(torrentInfo.rateUpload),
+                                              style: TextStyle(fontSize: 10, color: shadColorScheme.foreground))
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.cloud_upload, size: 12, color: shadColorScheme.foreground),
+                                          Text(FileSizeConvert.parseToFileSize(torrentInfo.uploadedEver),
+                                              style: TextStyle(fontSize: 10, color: shadColorScheme.foreground))
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 70,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(Icons.download, size: 12, color: shadColorScheme.foreground),
+                                          Text(FileSizeConvert.parseToFileSize(torrentInfo.rateDownload),
+                                              style: TextStyle(fontSize: 10, color: shadColorScheme.foreground))
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.cloud_download, size: 12, color: shadColorScheme.foreground),
+                                          Text(FileSizeConvert.parseToFileSize(torrentInfo.downloadedEver),
+                                              style: TextStyle(fontSize: 10, color: shadColorScheme.foreground))
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 128,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.timer,
+                                            size: 12,
+                                            color: shadColorScheme.foreground,
+                                          ),
+                                          EllipsisText(
+                                            text: formatDuration(torrentInfo.activityDate).toString(),
+                                            style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
+                                            maxLines: 1,
+                                            ellipsis: '...',
+                                          )
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.timer,
+                                            size: 12,
+                                            color: shadColorScheme.foreground,
+                                          ),
+                                          EllipsisText(
+                                            text: DateFormat('yyyy-MM-dd HH:mm:ss')
+                                                .format(
+                                                    DateTime.fromMillisecondsSinceEpoch(torrentInfo.addedDate * 1000))
+                                                .toString(),
+                                            style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
+                                            maxLines: 1,
+                                            ellipsis: '...',
+                                          )
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(
+                              height: 8,
+                              // width: 100,
+                              child: ShadProgress(
+                                value: torrentInfo.percentDone.toDouble(),
+                                color: shadColorScheme.primary,
+                                backgroundColor: shadColorScheme.background,
                               ),
                             ),
-                          ),
-                          Text(
-                            torrentInfo.downloadDir.isNotEmpty ? torrentInfo.downloadDir : '未分类',
-                            style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          SizedBox(
-                            width: 80,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(Icons.upload, size: 12, color: shadColorScheme.foreground),
-                                    Text(FileSizeConvert.parseToFileSize(torrentInfo.rateUpload),
-                                        style: TextStyle(fontSize: 10, color: shadColorScheme.foreground))
-                                  ],
+                            if (torrentInfo.error > 0)
+                              EllipsisText(
+                                text: '${torrentInfo.error} - ${torrentInfo.errorString}',
+                                ellipsis: '...',
+                                maxLines: 1,
+                                style: TextStyle(
+                                  color: shadColorScheme.destructive,
+                                  fontSize: 10,
                                 ),
-                                Row(
-                                  children: [
-                                    Icon(Icons.cloud_upload, size: 12, color: shadColorScheme.foreground),
-                                    Text(FileSizeConvert.parseToFileSize(torrentInfo.uploadedEver),
-                                        style: TextStyle(fontSize: 10, color: shadColorScheme.foreground))
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(
-                            width: 70,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(Icons.download, size: 12, color: shadColorScheme.foreground),
-                                    Text(FileSizeConvert.parseToFileSize(torrentInfo.rateDownload),
-                                        style: TextStyle(fontSize: 10, color: shadColorScheme.foreground))
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Icon(Icons.cloud_download, size: 12, color: shadColorScheme.foreground),
-                                    Text(FileSizeConvert.parseToFileSize(torrentInfo.downloadedEver),
-                                        style: TextStyle(fontSize: 10, color: shadColorScheme.foreground))
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(
-                            width: 128,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.timer,
-                                      size: 12,
-                                      color: shadColorScheme.foreground,
-                                    ),
-                                    EllipsisText(
-                                      text: formatDuration(torrentInfo.activityDate).toString(),
-                                      style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
-                                      maxLines: 1,
-                                      ellipsis: '...',
-                                    )
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.timer,
-                                      size: 12,
-                                      color: shadColorScheme.foreground,
-                                    ),
-                                    EllipsisText(
-                                      text: DateFormat('yyyy-MM-dd HH:mm:ss')
-                                          .format(DateTime.fromMillisecondsSinceEpoch(torrentInfo.addedDate * 1000))
-                                          .toString(),
-                                      style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
-                                      maxLines: 1,
-                                      ellipsis: '...',
-                                    )
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(
-                        height: 8,
-                        // width: 100,
-                        child: ShadProgress(
-                          value: torrentInfo.percentDone.toDouble(),
-                          color: shadColorScheme.primary,
-                          backgroundColor: shadColorScheme.background,
+                              )
+                          ],
                         ),
                       ),
-                      if (torrentInfo.error > 0)
-                        EllipsisText(
-                          text: '${torrentInfo.error} - ${torrentInfo.errorString}',
-                          ellipsis: '...',
-                          maxLines: 1,
-                          style: TextStyle(
-                            color: shadColorScheme.destructive,
-                            fontSize: 10,
-                          ),
-                        )
                     ],
                   ),
                 )),
@@ -1450,7 +1685,7 @@ class TrPage extends StatelessWidget {
                       _openTorrentInfoDetail(e.value, context);
                     },
                     onDeleted: () {
-                      _removeTorrent(e.value);
+                      _removeTorrent([e.value.hashString], context);
                     },
                   ),
                 ))
@@ -2000,17 +2235,20 @@ class TrPage extends StatelessWidget {
     );
   }
 
-  Future<void> _removeTorrent(TrTorrent torrentInfo) async {
+  Future<void> _removeTorrent(List<String> ids, BuildContext context) async {
     final deleteFile = false.obs;
+    final deleteLoading = false.obs;
 
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.defaultDialog(
       title: '确认',
-      backgroundColor: Colors.white54,
+      backgroundColor: shadColorScheme.background,
       radius: 5,
-      titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
-      middleText: '确定要删除种子吗？',
+      titleStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: shadColorScheme.foreground),
+      middleText: '确定要删除「${ids.length}」个种子吗？',
       content: Row(
         mainAxisAlignment: MainAxisAlignment.center,
+        spacing: 8,
         children: [
           Obx(() {
             return ShadCheckbox(
@@ -2032,14 +2270,32 @@ class TrPage extends StatelessWidget {
           child: const Text('取消'),
         ),
         GetBuilder<TrController>(builder: (controller) {
-          return ShadButton(
-            onPressed: () async {
-              Get.back(result: true);
-              await controller.controlTorrents(
-                  command: 'delete', ids: [torrentInfo.hashString], deleteFiles: deleteFile.value);
-            },
-            child: const Text('确认'),
-          );
+          return Obx(() {
+            return ShadButton.destructive(
+              leading: deleteLoading.value
+                  ? SizedBox(
+                      width: 18,
+                      child: CircularProgressIndicator(
+                        color: shadColorScheme.foreground,
+                      ),
+                    )
+                  : null,
+              onPressed: () async {
+                Get.back(result: true);
+                deleteLoading.value = true;
+                var response =
+                    await controller.controlTorrents(command: 'torrentRemove', ids: ids, deleteFiles: deleteFile.value);
+                logger_helper.Logger.instance.i(response);
+                if (response['result'] == 'success') {
+                  Get.snackbar('删除成功', '种子已删除');
+                } else {
+                  Get.snackbar('删除失败', '种子删除失败，${response['message']}');
+                }
+                deleteLoading.value = false;
+              },
+              child: const Text('确认'),
+            );
+          });
         }),
       ],
     );
