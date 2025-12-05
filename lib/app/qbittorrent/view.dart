@@ -38,7 +38,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
             backgroundColor: shadColorScheme.background,
             title: "退出",
             content: Text(
-              '确定要退出内置浏览器？',
+              '确定要退出QB浏览器？',
               style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
             ),
             middleTextStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
@@ -93,6 +93,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                   child: TextField(
                                     controller: searchKeyController,
                                     textAlignVertical: TextAlignVertical.center,
+                                    style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                     decoration: InputDecoration(
                                       isDense: true,
                                       hintText: '请输入搜索关键字',

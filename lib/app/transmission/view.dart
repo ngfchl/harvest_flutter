@@ -93,11 +93,11 @@ class TrPage extends StatelessWidget {
                                   child: TextField(
                                     controller: searchKeyController,
                                     textAlignVertical: TextAlignVertical.center,
+                                    style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                                     decoration: InputDecoration(
                                       isDense: true,
                                       hintText: '请输入搜索关键字',
-                                      hintStyle:
-                                          TextStyle(fontSize: 14, color: shadColorScheme.foreground.withRed(122)),
+                                      hintStyle: const TextStyle(fontSize: 14),
                                       contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
                                       suffixIcon: Column(
                                         mainAxisAlignment: MainAxisAlignment.center,
