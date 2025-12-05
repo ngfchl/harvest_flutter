@@ -180,6 +180,8 @@ class TrPage extends StatelessWidget {
             alignment: WrapAlignment.center,
             runAlignment: WrapAlignment.center,
             crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 5,
+            runSpacing: 5,
             children: [
               InkWell(
                 onTap: () {
@@ -188,42 +190,39 @@ class TrPage extends StatelessWidget {
                   controller.filterTorrents();
                   logger_helper.Logger.instance.d('当前排序规则：${controller.sortKey},正序：${controller.sortReversed}！');
                 },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      controller.sortReversed
-                          ? Icon(
-                              Icons.sim_card_download_outlined,
-                              size: 13,
-                              color: shadColorScheme.foreground,
-                            )
-                          : Icon(
-                              Icons.upload_file_outlined,
-                              size: 13,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    controller.sortReversed
+                        ? Icon(
+                            Icons.sim_card_download_outlined,
+                            size: 13,
+                            color: shadColorScheme.foreground,
+                          )
+                        : Icon(
+                            Icons.upload_file_outlined,
+                            size: 13,
+                            color: shadColorScheme.foreground,
+                          ),
+                    SizedBox(width: 3),
+                    controller.sortReversed
+                        ? Text(
+                            '正序',
+                            style: TextStyle(
+                              fontSize: 10,
                               color: shadColorScheme.foreground,
                             ),
-                      SizedBox(width: 3),
-                      controller.sortReversed
-                          ? Text(
-                              '正序',
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: shadColorScheme.foreground,
-                              ),
-                            )
-                          : Text(
-                              '倒序',
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: shadColorScheme.foreground,
-                              ),
+                          )
+                        : Text(
+                            '倒序',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: shadColorScheme.foreground,
                             ),
-                    ],
-                  ),
+                          ),
+                  ],
                 ),
               ),
               GetBuilder<TrController>(builder: (controller) {
@@ -258,19 +257,16 @@ class TrPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
-                    child: CustomTextTag(
-                      backgroundColor: Colors.transparent,
-                      icon: Icon(
-                        Icons.sort_by_alpha_outlined,
-                        size: 13,
-                        color: shadColorScheme.foreground,
-                      ),
-                      labelText:
-                          '【${controller.trSortOptions.firstWhereOrNull((item) => item.value == controller.sortKey)?.name ?? "无"}】',
-                      labelColor: shadColorScheme.foreground,
+                  child: CustomTextTag(
+                    backgroundColor: Colors.transparent,
+                    icon: Icon(
+                      Icons.sort_by_alpha_outlined,
+                      size: 13,
+                      color: shadColorScheme.foreground,
                     ),
+                    labelText:
+                        '【${controller.trSortOptions.firstWhereOrNull((item) => item.value == controller.sortKey)?.name ?? "无"}】',
+                    labelColor: shadColorScheme.foreground,
                   ),
                 );
               }),
@@ -317,18 +313,15 @@ class TrPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
-                    child: CustomTextTag(
-                      backgroundColor: Colors.transparent,
-                      icon: Icon(
-                        Icons.tag,
-                        size: 13,
-                        color: shadColorScheme.foreground,
-                      ),
-                      labelText: '【${controller.selectedLabel ?? "全部"}】',
-                      labelColor: shadColorScheme.foreground,
+                  child: CustomTextTag(
+                    backgroundColor: Colors.transparent,
+                    icon: Icon(
+                      Icons.tag,
+                      size: 13,
+                      color: shadColorScheme.foreground,
                     ),
+                    labelText: '【${controller.selectedLabel ?? "全部"}】',
+                    labelColor: shadColorScheme.foreground,
                   ),
                 );
               }),
@@ -403,20 +396,17 @@ class TrPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
-                    child: CustomTextTag(
-                      backgroundColor: Colors.transparent,
-                      icon: Icon(
-                        Icons.language_outlined,
-                        size: 13,
-                        color: shadColorScheme.foreground,
-                      ),
-                      labelText: controller.trackerToWebSiteMap[controller.selectedTracker]?.name ??
-                          controller.selectedTracker?.trim() ??
-                          "未知",
-                      labelColor: shadColorScheme.foreground,
+                  child: CustomTextTag(
+                    backgroundColor: Colors.transparent,
+                    icon: Icon(
+                      Icons.language_outlined,
+                      size: 13,
+                      color: shadColorScheme.foreground,
                     ),
+                    labelText: controller.trackerToWebSiteMap[controller.selectedTracker]?.name ??
+                        controller.selectedTracker?.trim() ??
+                        "未知",
+                    labelColor: shadColorScheme.foreground,
                   ),
                 );
               }),
@@ -475,20 +465,17 @@ class TrPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
-                    child: CustomTextTag(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      icon: Icon(
-                        Icons.category_outlined,
-                        size: 13,
-                        color: shadColorScheme.foreground,
-                      ),
-                      backgroundColor: Colors.transparent,
-                      labelColor: shadColorScheme.foreground,
-                      labelText:
-                          '【${controller.categoryMap.keys.firstWhereOrNull((item) => item == controller.selectedCategory) ?? "全部"}】',
+                  child: CustomTextTag(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    icon: Icon(
+                      Icons.category_outlined,
+                      size: 13,
+                      color: shadColorScheme.foreground,
                     ),
+                    backgroundColor: Colors.transparent,
+                    labelColor: shadColorScheme.foreground,
+                    labelText:
+                        '【${controller.categoryMap.keys.firstWhereOrNull((item) => item == controller.selectedCategory) ?? "全部"}】',
                   ),
                 );
               }),
@@ -538,20 +525,17 @@ class TrPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
-                    child: CustomTextTag(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      icon: Icon(
-                        Icons.info_outlined,
-                        size: 13,
-                        color: shadColorScheme.foreground,
-                      ),
-                      backgroundColor: Colors.transparent,
-                      labelText:
-                          '【${controller.trStatus.firstWhereOrNull((item) => item.value == controller.trTorrentState)?.name ?? "全部"}】',
-                      labelColor: shadColorScheme.foreground,
+                  child: CustomTextTag(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    icon: Icon(
+                      Icons.info_outlined,
+                      size: 13,
+                      color: shadColorScheme.foreground,
                     ),
+                    backgroundColor: Colors.transparent,
+                    labelText:
+                        '【${controller.trStatus.firstWhereOrNull((item) => item.value == controller.trTorrentState)?.name ?? "全部"}】',
+                    labelColor: shadColorScheme.foreground,
                   ),
                 );
               }),
@@ -568,6 +552,7 @@ class TrPage extends StatelessWidget {
                           child: Center(
                             child: Text(
                               '清除红种',
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                           ),
                           onTap: () async {
@@ -582,6 +567,7 @@ class TrPage extends StatelessWidget {
                           child: Center(
                             child: Text(
                               '切换限速',
+                              style: TextStyle(color: shadColorScheme.foreground),
                             ),
                           ),
                           onTap: () async {
@@ -694,7 +680,7 @@ class TrPage extends StatelessWidget {
                   )),
               ShadIconButton.ghost(
                 icon: const Icon(
-                  Icons.add,
+                  Icons.add_outlined,
                   size: 18,
                 ),
                 onPressed: () {
@@ -724,6 +710,7 @@ class TrPage extends StatelessWidget {
               ),
               if (controller.selectMode)
                 CustomPopup(
+                  backgroundColor: shadColorScheme.background,
                   content: SizedBox(
                     width: 80,
                     child: Column(
@@ -737,7 +724,7 @@ class TrPage extends StatelessWidget {
                               controller.selectedTorrents = controller.selectedTorrents.toSet().toList();
                               controller.update();
                             },
-                            child: Text('全选'),
+                            child: Text('全选', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
                           ),
                           PopupMenuItem(
                             onTap: () {
@@ -750,11 +737,11 @@ class TrPage extends StatelessWidget {
                               controller.selectedTorrents.addAll(temp);
                               controller.update();
                             },
-                            child: Text('反选'),
+                            child: Text('反选', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
                           ),
                           PopupMenuItem(
                             onTap: () => _removeTorrent(controller.selectedTorrents, context),
-                            child: Text('删除'),
+                            child: Text('删除', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
                           ),
                           PopupMenuItem(
                             onTap: () async {
@@ -762,7 +749,7 @@ class TrPage extends StatelessWidget {
                                   command: 'torrentReannounce', ids: controller.selectedTorrents);
                               controller.getAllTorrents();
                             },
-                            child: Text('汇报'),
+                            child: Text('汇报', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
                           ),
                           PopupMenuItem(
                             onTap: () async {
@@ -770,7 +757,7 @@ class TrPage extends StatelessWidget {
                                   command: 'torrentStartNow', ids: controller.selectedTorrents);
                               controller.getAllTorrents();
                             },
-                            child: Text('强制开始'),
+                            child: Text('强制开始', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
                           ),
                           PopupMenuItem(
                             onTap: () async {
@@ -778,7 +765,7 @@ class TrPage extends StatelessWidget {
                                   command: 'torrentStart', ids: controller.selectedTorrents);
                               controller.getAllTorrents();
                             },
-                            child: Text('开始'),
+                            child: Text('开始', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
                           ),
                           PopupMenuItem(
                             onTap: () async {
@@ -786,7 +773,7 @@ class TrPage extends StatelessWidget {
                                   command: 'torrentStop', ids: controller.selectedTorrents);
                               controller.getAllTorrents();
                             },
-                            child: Text('停止'),
+                            child: Text('停止', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
                           ),
                           PopupMenuItem(
                             onTap: () {
@@ -794,7 +781,7 @@ class TrPage extends StatelessWidget {
                               controller.selectedTorrents.clear();
                               controller.update();
                             },
-                            child: const Text('取消'),
+                            child: Text('取消', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
                           ),
                         ]),
                   ),
@@ -802,6 +789,7 @@ class TrPage extends StatelessWidget {
                     icon: Icon(
                       Icons.more_vert,
                       size: 18,
+                      color: shadColorScheme.foreground,
                     ),
                     backgroundColor: Colors.transparent,
                     labelColor: shadColorScheme.foreground,
