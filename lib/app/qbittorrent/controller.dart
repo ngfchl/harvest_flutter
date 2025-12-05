@@ -137,6 +137,8 @@ class QBittorrentController extends GetxController {
   TorrentInfo? selectedTorrent;
 
   String selectTab = 'torrentInfo';
+  List<String> selectedTorrents = [];
+  bool selectMode = false;
 
   @override
   void onInit() async {
