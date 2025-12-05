@@ -15,6 +15,7 @@ import 'package:qbittorrent_api/qbittorrent_api.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../common/meta_item.dart';
+import '../../theme/background_container.dart';
 import '../../utils/date_time_utils.dart';
 import '../../utils/logger_helper.dart' as logger_helper;
 import '../../utils/storage.dart';
@@ -63,117 +64,120 @@ class QBittorrentPage extends GetView<QBittorrentController> {
             textConfirm: '取消',
           );
         },
-        child: Scaffold(
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            foregroundColor: shadColorScheme.foreground,
-            title: Text(
-              '${controller.downloader.name} - ${controller.allTorrents.length}',
-              style: TextStyle(color: shadColorScheme.foreground),
+        child: BackgroundContainer(
+          child: Scaffold(
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              foregroundColor: shadColorScheme.foreground,
+              title: Text(
+                '${controller.downloader.name} - ${controller.allTorrents.length}',
+                style: TextStyle(color: shadColorScheme.foreground),
+              ),
             ),
-          ),
-          backgroundColor: shadColorScheme.background,
-          body: EasyRefresh(
-              controller: EasyRefreshController(),
-              onRefresh: () async {
-                await controller.initData();
-              },
-              child: Column(
-                children: [
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                          child: GetBuilder<QBittorrentController>(builder: (controller) {
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: TextField(
-                                    controller: searchKeyController,
-                                    textAlignVertical: TextAlignVertical.center,
-                                    style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
-                                    decoration: InputDecoration(
-                                      isDense: true,
-                                      hintText: '请输入搜索关键字',
-                                      hintStyle: const TextStyle(fontSize: 14),
-                                      contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-                                      border: OutlineInputBorder(
-                                        borderSide: BorderSide.none,
-                                        // 不绘制边框
-                                        borderRadius: BorderRadius.circular(0.0),
-                                        // 确保角落没有圆角
-                                        gapPadding: 0.0, // 移除边框与hintText之间的间距
+            backgroundColor: Colors.transparent,
+            body: EasyRefresh(
+                controller: EasyRefreshController(),
+                onRefresh: () async {
+                  await controller.initData();
+                },
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                            child: GetBuilder<QBittorrentController>(builder: (controller) {
+                              return Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: TextField(
+                                      controller: searchKeyController,
+                                      textAlignVertical: TextAlignVertical.center,
+                                      style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                                      decoration: InputDecoration(
+                                        isDense: true,
+                                        hintText: '请输入搜索关键字',
+                                        hintStyle: const TextStyle(fontSize: 14),
+                                        contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+                                        border: OutlineInputBorder(
+                                          borderSide: BorderSide.none,
+                                          // 不绘制边框
+                                          borderRadius: BorderRadius.circular(0.0),
+                                          // 确保角落没有圆角
+                                          gapPadding: 0.0, // 移除边框与hintText之间的间距
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide.none,
+                                          // 仅在聚焦时绘制底部边框
+                                          borderRadius: BorderRadius.circular(0.0),
+                                        ),
+                                        suffixIcon: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.all(5.0),
+                                              child: Text('计数：${controller.showTorrents.length}',
+                                                  style: const TextStyle(fontSize: 12, color: Colors.orange)),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide.none,
-                                        // 仅在聚焦时绘制底部边框
-                                        borderRadius: BorderRadius.circular(0.0),
-                                      ),
-                                      suffixIcon: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.all(5.0),
-                                            child: Text('计数：${controller.showTorrents.length}',
-                                                style: const TextStyle(fontSize: 12, color: Colors.orange)),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    onChanged: (value) {
-                                      controller.searchKey = value;
-                                      controller.filterTorrents();
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(
-                                  width: 5,
-                                ),
-                                if (controller.searchKey.isNotEmpty)
-                                  ShadIconButton.ghost(
-                                      onPressed: () {
-                                        if (controller.searchController.text.isNotEmpty) {
-                                          controller.searchController.text = controller.searchController.text
-                                              .substring(0, controller.searchController.text.length - 1);
-                                          controller.searchKey = controller.searchController.text;
-                                          controller.filterTorrents();
-                                        }
+                                      onChanged: (value) {
+                                        controller.searchKey = value;
+                                        controller.filterTorrents();
                                       },
-                                      icon: const Icon(
-                                        Icons.backspace_outlined,
-                                        size: 18,
-                                      ))
-                              ],
-                            );
-                          }),
-                        ),
-                        Expanded(
-                          child: controller.isLoading
-                              ? const Center(child: CircularProgressIndicator())
-                              : Stack(
-                                  children: [
-                                    ListView.builder(
-                                        padding: const EdgeInsets.symmetric(horizontal: 5),
-                                        itemCount: controller.showTorrents.length,
-                                        itemBuilder: (BuildContext context, int index) {
-                                          TorrentInfo torrentInfo = controller.showTorrents[index];
-                                          return _buildQbTorrentCard(torrentInfo, context);
-                                        }),
-                                    if (controller.showDetailsLoading) const Center(child: CircularProgressIndicator())
-                                  ],
-                                ),
-                        ),
-                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    width: 5,
+                                  ),
+                                  if (controller.searchKey.isNotEmpty)
+                                    ShadIconButton.ghost(
+                                        onPressed: () {
+                                          if (controller.searchController.text.isNotEmpty) {
+                                            controller.searchController.text = controller.searchController.text
+                                                .substring(0, controller.searchController.text.length - 1);
+                                            controller.searchKey = controller.searchController.text;
+                                            controller.filterTorrents();
+                                          }
+                                        },
+                                        icon: const Icon(
+                                          Icons.backspace_outlined,
+                                          size: 18,
+                                        ))
+                                ],
+                              );
+                            }),
+                          ),
+                          Expanded(
+                            child: controller.isLoading
+                                ? const Center(child: CircularProgressIndicator())
+                                : Stack(
+                                    children: [
+                                      ListView.builder(
+                                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                                          itemCount: controller.showTorrents.length,
+                                          itemBuilder: (BuildContext context, int index) {
+                                            TorrentInfo torrentInfo = controller.showTorrents[index];
+                                            return _buildQbTorrentCard(torrentInfo, context);
+                                          }),
+                                      if (controller.showDetailsLoading)
+                                        const Center(child: CircularProgressIndicator())
+                                    ],
+                                  ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  _buildActionButtons(context),
-                ],
-              )),
-          endDrawer: _buildGfDrawer(context),
-          // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-          // floatingActionButton: _buildActionButtons(context),
+                    _buildActionButtons(context),
+                  ],
+                )),
+            endDrawer: _buildGfDrawer(context),
+            // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+            // floatingActionButton: _buildActionButtons(context),
+          ),
         ),
       );
     });
@@ -312,7 +316,6 @@ class QBittorrentPage extends GetView<QBittorrentController> {
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     return GetBuilder<QBittorrentController>(builder: (controller) {
       return CustomCard(
-        color: shadColorScheme.background,
         padding: const EdgeInsets.all(0),
         width: double.infinity,
         child: Center(
@@ -1092,7 +1095,6 @@ class QBittorrentPage extends GetView<QBittorrentController> {
     RxBool paused = torrentInfo.state.toString().contains('pause').obs;
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     return CustomCard(
-      color: shadColorScheme.background,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       margin: const EdgeInsets.all(2.5),
       child: GetBuilder<QBittorrentController>(builder: (controller) {

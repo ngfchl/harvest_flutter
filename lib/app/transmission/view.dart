@@ -14,6 +14,7 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import '../../../../utils/logger_helper.dart' as logger_helper;
 import '../../common/form_widgets.dart';
 import '../../models/common_response.dart';
+import '../../theme/background_container.dart';
 import '../../utils/date_time_utils.dart';
 import '../../utils/storage.dart';
 import '../../utils/string_utils.dart';
@@ -63,122 +64,124 @@ class TrPage extends StatelessWidget {
             textConfirm: '取消',
           );
         },
-        child: Scaffold(
-          appBar: AppBar(
-            backgroundColor: shadColorScheme.background,
-            title: Text(
-              '${controller.downloader.name} - ${controller.torrentCount}',
-              style: TextStyle(color: shadColorScheme.foreground),
+        child: BackgroundContainer(
+          child: Scaffold(
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              title: Text(
+                '${controller.downloader.name} - ${controller.torrentCount}',
+                style: TextStyle(color: shadColorScheme.foreground),
+              ),
+              foregroundColor: shadColorScheme.foreground,
             ),
-            foregroundColor: shadColorScheme.foreground,
-          ),
-          backgroundColor: shadColorScheme.background,
-          body: EasyRefresh(
-              controller: EasyRefreshController(),
-              onRefresh: () async {
-                await controller.initData();
-              },
-              child: Column(
-                children: [
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                          child: GetBuilder<TrController>(builder: (controller) {
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: TextField(
-                                    controller: searchKeyController,
-                                    textAlignVertical: TextAlignVertical.center,
-                                    style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
-                                    decoration: InputDecoration(
-                                      isDense: true,
-                                      hintText: '请输入搜索关键字',
-                                      hintStyle: const TextStyle(fontSize: 14),
-                                      contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-                                      suffixIcon: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.all(5.0),
-                                            child: Text('计数：${controller.showTorrents.length}',
-                                                style: TextStyle(fontSize: 12, color: shadColorScheme.primary)),
-                                          ),
-                                        ],
+            backgroundColor: Colors.transparent,
+            body: EasyRefresh(
+                controller: EasyRefreshController(),
+                onRefresh: () async {
+                  await controller.initData();
+                },
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                            child: GetBuilder<TrController>(builder: (controller) {
+                              return Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: TextField(
+                                      controller: searchKeyController,
+                                      textAlignVertical: TextAlignVertical.center,
+                                      style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                                      decoration: InputDecoration(
+                                        isDense: true,
+                                        hintText: '请输入搜索关键字',
+                                        hintStyle: const TextStyle(fontSize: 14),
+                                        contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+                                        suffixIcon: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.all(5.0),
+                                              child: Text('计数：${controller.showTorrents.length}',
+                                                  style: TextStyle(fontSize: 12, color: shadColorScheme.primary)),
+                                            ),
+                                          ],
+                                        ),
+                                        border: OutlineInputBorder(
+                                          borderSide: BorderSide.none,
+                                          // 不绘制边框
+                                          borderRadius: BorderRadius.circular(0.0),
+                                          // 确保角落没有圆角
+                                          gapPadding: 0.0, // 移除边框与hintText之间的间距
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide.none,
+                                          // 仅在聚焦时绘制底部边框
+                                          borderRadius: BorderRadius.circular(0.0),
+                                        ),
                                       ),
-                                      border: OutlineInputBorder(
-                                        borderSide: BorderSide.none,
-                                        // 不绘制边框
-                                        borderRadius: BorderRadius.circular(0.0),
-                                        // 确保角落没有圆角
-                                        gapPadding: 0.0, // 移除边框与hintText之间的间距
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide.none,
-                                        // 仅在聚焦时绘制底部边框
-                                        borderRadius: BorderRadius.circular(0.0),
-                                      ),
-                                    ),
-                                    onChanged: (value) {
-                                      controller.searchKey = value;
-                                      controller.filterTorrents();
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(
-                                  width: 5,
-                                ),
-                                if (controller.torrentCount > controller.torrents.length)
-                                  SizedBox(
-                                      height: 14,
-                                      width: 14,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: shadColorScheme.foreground,
-                                      )),
-                                if (controller.searchKey.isNotEmpty)
-                                  ShadIconButton.ghost(
-                                      onPressed: () {
-                                        if (searchKeyController.text.isNotEmpty) {
-                                          searchKeyController.text = searchKeyController.text
-                                              .substring(0, searchKeyController.text.length - 1);
-                                          controller.searchKey = searchKeyController.text;
-                                          controller.filterTorrents();
-                                        }
+                                      onChanged: (value) {
+                                        controller.searchKey = value;
+                                        controller.filterTorrents();
                                       },
-                                      icon: const Icon(
-                                        Icons.backspace_outlined,
-                                        size: 13,
-                                      ))
-                              ],
-                            );
-                          }),
-                        ),
-                        Expanded(
-                          child: controller.isLoading
-                              ? Center(
-                                  child: CircularProgressIndicator(
-                                  color: shadColorScheme.foreground,
-                                ))
-                              : ListView.builder(
-                                  padding: const EdgeInsets.symmetric(horizontal: 5),
-                                  itemCount: controller.showTorrents.length,
-                                  itemBuilder: (BuildContext context, int index) {
-                                    TrTorrent torrentInfo = controller.showTorrents[index];
-                                    return _buildTrTorrentCard(torrentInfo, context);
-                                  }),
-                        ),
-                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    width: 5,
+                                  ),
+                                  if (controller.torrentCount > controller.torrents.length)
+                                    SizedBox(
+                                        height: 14,
+                                        width: 14,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: shadColorScheme.foreground,
+                                        )),
+                                  if (controller.searchKey.isNotEmpty)
+                                    ShadIconButton.ghost(
+                                        onPressed: () {
+                                          if (searchKeyController.text.isNotEmpty) {
+                                            searchKeyController.text = searchKeyController.text
+                                                .substring(0, searchKeyController.text.length - 1);
+                                            controller.searchKey = searchKeyController.text;
+                                            controller.filterTorrents();
+                                          }
+                                        },
+                                        icon: const Icon(
+                                          Icons.backspace_outlined,
+                                          size: 13,
+                                        ))
+                                ],
+                              );
+                            }),
+                          ),
+                          Expanded(
+                            child: controller.isLoading
+                                ? Center(
+                                    child: CircularProgressIndicator(
+                                    color: shadColorScheme.foreground,
+                                  ))
+                                : ListView.builder(
+                                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                                    itemCount: controller.showTorrents.length,
+                                    itemBuilder: (BuildContext context, int index) {
+                                      TrTorrent torrentInfo = controller.showTorrents[index];
+                                      return _buildTrTorrentCard(torrentInfo, context);
+                                    }),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  _buildActionButtons(context),
-                ],
-              )),
-          // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-          // floatingActionButton: _buildActionButtons(context),
+                    _buildActionButtons(context),
+                  ],
+                )),
+            // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+            // floatingActionButton: _buildActionButtons(context),
+          ),
         ),
       );
     });
@@ -188,7 +191,6 @@ class TrPage extends StatelessWidget {
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     return GetBuilder<TrController>(builder: (controller) {
       return CustomCard(
-        color: shadColorScheme.background,
         padding: const EdgeInsets.all(0),
         width: double.infinity,
         child: Center(
