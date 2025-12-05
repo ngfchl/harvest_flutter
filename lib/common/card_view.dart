@@ -146,6 +146,7 @@ class CurvePainter extends CustomPainter {
 
 class CustomTextTag extends StatelessWidget {
   final String labelText;
+  final double fontSize;
   final Color? labelColor;
   final Color? backgroundColor;
   final BorderRadius? borderRadius;
@@ -160,6 +161,7 @@ class CustomTextTag extends StatelessWidget {
     this.backgroundColor = Colors.green,
     this.borderRadius = const BorderRadius.all(Radius.circular(4)),
     this.icon,
+    this.fontSize = 10,
     this.mainAxisAlignment = MainAxisAlignment.center,
     this.crossAxisAlignment = CrossAxisAlignment.center,
   });
@@ -181,7 +183,7 @@ class CustomTextTag extends StatelessWidget {
           if (icon != null) const SizedBox(width: 2),
           Text(
             labelText,
-            style: TextStyle(fontSize: 10, color: labelColor),
+            style: TextStyle(fontSize: fontSize, color: labelColor),
           ),
         ],
       ),
