@@ -13,6 +13,7 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import '../../../../api/api.dart';
 import '../../../../common/form_widgets.dart';
 import '../../../../models/common_response.dart';
+import '../../../../utils/calc_weeks.dart';
 import '../../../../utils/dio_util.dart';
 import '../../../../utils/logger_helper.dart';
 import '../../../../utils/platform.dart';
@@ -574,12 +575,17 @@ class AppPublishPage extends StatelessWidget {
                                                 ],
                                               ),
                                               child: ListTile(
-                                                title: Text(
-                                                  user.email.toString(),
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.w500,
-                                                    color: shadColorScheme.foreground,
+                                                dense: true,
+                                                title: Tooltip(
+                                                  message:
+                                                      "创建时间：${user.createdAt.toString()}${user.updatedAt?.startsWith('000') == true ? '' : '，更新时间：${user.updatedAt.toString()}'}",
+                                                  child: Text(
+                                                    "${user.email}${user.updatedAt?.startsWith('000') == true ? '' : ' 更新于：${calculateTimeElapsed(user.updatedAt.toString())}'}",
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      fontWeight: FontWeight.w500,
+                                                      color: shadColorScheme.foreground,
+                                                    ),
                                                   ),
                                                 ),
                                                 subtitle: Text(
@@ -605,11 +611,12 @@ class AppPublishPage extends StatelessWidget {
                                       ]),
                                     ),
                                     if (controller.loading)
-                                      SizedBox(
-                                          height: 32,
-                                          width: 32,
-                                          child: Center(
-                                              child: CircularProgressIndicator(color: shadColorScheme.foreground))),
+                                      Center(
+                                        child: SizedBox(
+                                            height: 32,
+                                            width: 32,
+                                            child: CircularProgressIndicator(color: shadColorScheme.foreground)),
+                                      ),
                                   ],
                                 ),
                               ),

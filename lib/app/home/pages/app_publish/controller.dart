@@ -45,6 +45,9 @@ class AppPublishController extends GetxController {
             element.email.toLowerCase().contains(searchKey.toLowerCase()) ||
             (element.username?.toLowerCase().contains(searchKey.toLowerCase()) == true))
         .toList();
+    showUsers.sort((a, b) {
+      return b.updatedAt?.toLowerCase().compareTo(a.updatedAt?.toLowerCase() ?? '') ?? 0;
+    });
     update();
   }
 
