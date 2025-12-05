@@ -66,6 +66,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
         child: Scaffold(
           appBar: AppBar(
             backgroundColor: Colors.transparent,
+            foregroundColor: shadColorScheme.foreground,
             title: Text(
               '${controller.downloader.name} - ${controller.allTorrents.length}',
               style: TextStyle(color: shadColorScheme.foreground),
@@ -319,6 +320,8 @@ class QBittorrentPage extends GetView<QBittorrentController> {
             alignment: WrapAlignment.center,
             runAlignment: WrapAlignment.center,
             crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 5,
+            runSpacing: 5,
             children: [
               InkWell(
                 onTap: () {
@@ -327,42 +330,39 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                   controller.filterTorrents();
                   logger_helper.Logger.instance.d('当前排序规则：${controller.sortKey},正序：${controller.sortReversed}！');
                 },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      controller.sortReversed
-                          ? Icon(
-                              Icons.sim_card_download_outlined,
-                              size: 13,
-                              color: shadColorScheme.foreground,
-                            )
-                          : Icon(
-                              Icons.upload_file_outlined,
-                              size: 13,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    controller.sortReversed
+                        ? Icon(
+                            Icons.sim_card_download_outlined,
+                            size: 13,
+                            color: shadColorScheme.foreground,
+                          )
+                        : Icon(
+                            Icons.upload_file_outlined,
+                            size: 13,
+                            color: shadColorScheme.foreground,
+                          ),
+                    SizedBox(width: 3),
+                    controller.sortReversed
+                        ? Text(
+                            '正序',
+                            style: TextStyle(
+                              fontSize: 10,
                               color: shadColorScheme.foreground,
                             ),
-                      SizedBox(width: 3),
-                      controller.sortReversed
-                          ? Text(
-                              '正序',
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: shadColorScheme.foreground,
-                              ),
-                            )
-                          : Text(
-                              '倒序',
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: shadColorScheme.foreground,
-                              ),
+                          )
+                        : Text(
+                            '倒序',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: shadColorScheme.foreground,
                             ),
-                    ],
-                  ),
+                          ),
+                  ],
                 ),
               ),
               GetBuilder<QBittorrentController>(builder: (controller) {
@@ -398,19 +398,16 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                       ),
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
-                    child: CustomTextTag(
-                      backgroundColor: Colors.transparent,
-                      icon: Icon(
-                        Icons.sort_by_alpha_outlined,
-                        size: 13,
-                        color: shadColorScheme.foreground,
-                      ),
-                      labelText:
-                          '【${controller.qbSortOptions.firstWhereOrNull((item) => item.value == controller.sortKey)?.name ?? "无"}】',
-                      labelColor: shadColorScheme.foreground,
+                  child: CustomTextTag(
+                    backgroundColor: Colors.transparent,
+                    icon: Icon(
+                      Icons.sort_by_alpha_outlined,
+                      size: 13,
+                      color: shadColorScheme.foreground,
                     ),
+                    labelText:
+                        '【${controller.qbSortOptions.firstWhereOrNull((item) => item.value == controller.sortKey)?.name ?? "无"}】',
+                    labelColor: shadColorScheme.foreground,
                   ),
                 );
               }),
@@ -457,18 +454,15 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                       ),
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
-                    child: CustomTextTag(
-                      backgroundColor: Colors.transparent,
-                      icon: Icon(
-                        Icons.tag,
-                        size: 13,
-                        color: shadColorScheme.foreground,
-                      ),
-                      labelText: '【${controller.selectedTag ?? "全部"}】',
-                      labelColor: shadColorScheme.foreground,
+                  child: CustomTextTag(
+                    backgroundColor: Colors.transparent,
+                    icon: Icon(
+                      Icons.tag,
+                      size: 13,
+                      color: shadColorScheme.foreground,
                     ),
+                    labelText: '【${controller.selectedTag ?? "全部"}】',
+                    labelColor: shadColorScheme.foreground,
                   ),
                 );
               }),
@@ -529,18 +523,15 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                       ),
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
-                    child: CustomTextTag(
-                      backgroundColor: Colors.transparent,
-                      icon: Icon(
-                        Icons.language_outlined,
-                        size: 13,
-                        color: shadColorScheme.foreground,
-                      ),
-                      labelText: '【${controller.selectedTracker}】',
-                      labelColor: shadColorScheme.foreground,
+                  child: CustomTextTag(
+                    backgroundColor: Colors.transparent,
+                    icon: Icon(
+                      Icons.language_outlined,
+                      size: 13,
+                      color: shadColorScheme.foreground,
                     ),
+                    labelText: '【${controller.selectedTracker}】',
+                    labelColor: shadColorScheme.foreground,
                   ),
                 );
               }),
@@ -581,20 +572,17 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                       ),
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
-                    child: CustomTextTag(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      icon: Icon(
-                        Icons.category_outlined,
-                        size: 13,
-                        color: shadColorScheme.foreground,
-                      ),
-                      backgroundColor: Colors.transparent,
-                      labelColor: shadColorScheme.foreground,
-                      labelText:
-                          '【${controller.categoryMap.keys.firstWhereOrNull((item) => item == controller.selectedCategory) ?? "全部"}】',
+                  child: CustomTextTag(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    icon: Icon(
+                      Icons.category_outlined,
+                      size: 13,
+                      color: shadColorScheme.foreground,
                     ),
+                    backgroundColor: Colors.transparent,
+                    labelColor: shadColorScheme.foreground,
+                    labelText:
+                        '【${controller.categoryMap.keys.firstWhereOrNull((item) => item == controller.selectedCategory) ?? "全部"}】',
                   ),
                 );
               }),
@@ -648,20 +636,17 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                       ),
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
-                    child: CustomTextTag(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      icon: Icon(
-                        Icons.info_outlined,
-                        size: 13,
-                        color: shadColorScheme.foreground,
-                      ),
-                      backgroundColor: Colors.transparent,
-                      labelText:
-                          '【${controller.qBitStatus.firstWhereOrNull((item) => item.value == controller.torrentState)?.name ?? "全部"}】',
-                      labelColor: shadColorScheme.foreground,
+                  child: CustomTextTag(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    icon: Icon(
+                      Icons.info_outlined,
+                      size: 13,
+                      color: shadColorScheme.foreground,
                     ),
+                    backgroundColor: Colors.transparent,
+                    labelText:
+                        '【${controller.qBitStatus.firstWhereOrNull((item) => item.value == controller.torrentState)?.name ?? "全部"}】',
+                    labelColor: shadColorScheme.foreground,
                   ),
                 );
               }),
