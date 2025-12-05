@@ -99,9 +99,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               ),
                             ),
                             if (controller.loading || controller.isCategoryLoading)
-                              const Center(
-                                child: CircularProgressIndicator(),
-                              ),
+                              Center(child: CircularProgressIndicator(color: shadColorScheme.foreground)),
                           ],
                         ));
                   });
@@ -361,11 +359,12 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
         ],
       );
     }
-    if (downloader.status.isEmpty) {
-      return Center(child: const CircularProgressIndicator());
-    }
     double chartHeight = 80;
     var shadColorScheme = ShadTheme.of(context).colorScheme;
+
+    if (downloader.status.isEmpty) {
+      return Center(child: CircularProgressIndicator(color: shadColorScheme.foreground));
+    }
 
     var tooltipBehavior = TooltipBehavior(
       enable: true,
@@ -945,10 +944,10 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
   }
 
   Widget getSpeedInfo(Downloader downloader) {
-    if (downloader.status.isEmpty) {
-      return Center(child: const CircularProgressIndicator());
-    }
     var shadColorScheme = ShadTheme.of(context).colorScheme;
+    if (downloader.status.isEmpty) {
+      return Center(child: CircularProgressIndicator(color: shadColorScheme.foreground));
+    }
     if (downloader.category == 'Qb') {
       qb.ServerState res = downloader.status.last;
 
@@ -2078,8 +2077,8 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                             }),
                             Expanded(
                               child: controller.isTorrentsLoading
-                                  ? const Center(
-                                      child: CircularProgressIndicator(),
+                                  ? Center(
+                                      child: CircularProgressIndicator(color: shadColorScheme.foreground),
                                     )
                                   : controller.showTorrents.isEmpty
                                       ? Center(
