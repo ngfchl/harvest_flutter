@@ -1720,13 +1720,16 @@ class TrPage extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            SizedBox(
-                              height: 8,
-                              // width: 100,
-                              child: ShadProgress(
-                                value: torrentInfo.percentDone.toDouble(),
-                                color: shadColorScheme.primary,
-                                backgroundColor: shadColorScheme.background,
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 2.0),
+                              child: SizedBox(
+                                height: 4,
+                                // width: 100,
+                                child: ShadProgress(
+                                  value: torrentInfo.percentDone.toDouble(),
+                                  color: shadColorScheme.primary,
+                                  backgroundColor: shadColorScheme.background,
+                                ),
                               ),
                             ),
                             if (torrentInfo.error > 0)

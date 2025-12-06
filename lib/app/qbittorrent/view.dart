@@ -1981,13 +1981,16 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                               ),
                             ],
                           ),
-                          SizedBox(
-                            height: 8,
-                            // width: 100,
-                            child: ShadProgress(
-                              value: torrentInfo.progress!,
-                              color: ShadTheme.of(context).colorScheme.primary,
-                              backgroundColor: ShadTheme.of(context).colorScheme.background,
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2.0),
+                            child: SizedBox(
+                              height: 4,
+                              // width: 100,
+                              child: ShadProgress(
+                                value: torrentInfo.progress!,
+                                color: ShadTheme.of(context).colorScheme.primary,
+                                backgroundColor: ShadTheme.of(context).colorScheme.background,
+                              ),
                             ),
                           ),
                         ],
