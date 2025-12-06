@@ -1,11 +1,9 @@
-import 'dart:io';
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:harvest/theme/background_container.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../api/api.dart';
@@ -182,205 +180,175 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    String cacheServer = 'https://images.weserv.nl/?url=';
     double opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     return GetBuilder<LoginController>(builder: (controller) {
       CancelToken cancelToken = CancelToken();
       var themeData = ShadTheme.of(context);
-      return Stack(
-        children: [
-          GetBuilder<LoginController>(
-              id: 'login_view_background_image',
-              builder: (controller) {
-                if (controller.useBackground) {
-                  return Positioned.fill(
-                    child: controller.useLocalBackground && !controller.backgroundImage.startsWith('http')
-                        ? Image.file(
-                            File(controller.backgroundImage),
-                            fit: BoxFit.cover,
-                          )
-                        : CachedNetworkImage(
-                            imageUrl: '${controller.useImageProxy ? cacheServer : ''}${controller.backgroundImage}',
-                            placeholder: (context, url) => Center(
-                                child: CircularProgressIndicator(
-                              color: shadColorScheme.primary,
-                            )),
-                            errorWidget: (context, url, error) =>
-                                Image.asset('assets/images/background.png', fit: BoxFit.cover),
-                            fit: BoxFit.cover,
-                            cacheKey: controller.backgroundImage,
-                          ),
-                  );
-                }
-
-                return SizedBox.shrink();
-              }),
-          Scaffold(
-            backgroundColor: Colors.transparent,
-            appBar: AppBar(
-              backgroundColor: themeData.colorScheme.background.withOpacity(opacity),
-              elevation: 1,
-              title: Text(
-                '服务器列表',
-                style: themeData.textTheme.h4,
-              ),
-              actions: [
-                ...[
-                  ShadIconButton.ghost(
-                      onPressed: () async {
-                        showShadDialog(
-                          context: context,
-                          builder: (context) => ShadDialog.alert(
-                            title: const Text('警告'),
-                            description: const Padding(
-                              padding: EdgeInsets.only(bottom: 8),
-                              child: Text('确认清除服务器列表？'),
-                            ),
-                            actions: [
-                              ShadButton.destructive(
-                                child: const Text('取消'),
-                                onPressed: () => Navigator.of(context).pop(false),
-                              ),
-                              ShadButton(
-                                child: const Text('清除'),
-                                onPressed: () async {
-                                  Navigator.of(context).pop(true);
-                                  final CommonResponse res = await controller.clearServerCache();
-                                  if (res.succeed) {
-                                    controller.initServerList();
-                                    ShadToaster.of(context).show(
-                                      ShadToast(
-                                        description: Text('服务器缓存已成功清除'),
-                                      ),
-                                    );
-                                  } else {
-                                    ShadToaster.of(context).show(
-                                      ShadToast.destructive(
-                                        description: Text('清除服务器缓存失败：${res.msg}'),
-                                      ),
-                                    );
-                                  }
-                                },
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                      icon: Icon(
-                        Icons.cleaning_services_outlined,
-                        size: 18,
-                      )),
-                  const LoggingView(),
-                ],
-                AppUpgradePage(),
-                CustomUAWidget(
-                  child: Icon(
-                    Icons.verified_user,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 15),
-              ],
+      return BackgroundContainer(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            backgroundColor: themeData.colorScheme.background.withOpacity(opacity),
+            elevation: 1,
+            title: Text(
+              '服务器列表',
+              style: themeData.textTheme.h4,
             ),
-            body: EasyRefresh(
-              onRefresh: () => controller.initServerList(),
-              child: CustomCard(
-                width: double.infinity,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Expanded(
-                            child: Center(
-                              child: SingleChildScrollView(
-                                child: Wrap(
-                                    alignment: WrapAlignment.center,
-                                    runAlignment: WrapAlignment.center,
-                                    crossAxisAlignment: WrapCrossAlignment.center,
-                                    spacing: 20,
-                                    runSpacing: 20,
-                                    children: [
-                                      ...controller.serverList.map((server) => _buildGridTile(server)),
-                                      _buildAddServerTile(),
-                                    ]),
-                              ),
+            actions: [
+              ...[
+                ShadIconButton.ghost(
+                    onPressed: () async {
+                      showShadDialog(
+                        context: context,
+                        builder: (context) => ShadDialog.alert(
+                          title: const Text('警告'),
+                          description: const Padding(
+                            padding: EdgeInsets.only(bottom: 8),
+                            child: Text('确认清除服务器列表？'),
+                          ),
+                          actions: [
+                            ShadButton.destructive(
+                              child: const Text('取消'),
+                              onPressed: () => Navigator.of(context).pop(false),
+                            ),
+                            ShadButton(
+                              child: const Text('清除'),
+                              onPressed: () async {
+                                Navigator.of(context).pop(true);
+                                final CommonResponse res = await controller.clearServerCache();
+                                if (res.succeed) {
+                                  controller.initServerList();
+                                  ShadToaster.of(context).show(
+                                    ShadToast(
+                                      description: Text('服务器缓存已成功清除'),
+                                    ),
+                                  );
+                                } else {
+                                  ShadToaster.of(context).show(
+                                    ShadToast.destructive(
+                                      description: Text('清除服务器缓存失败：${res.msg}'),
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    icon: Icon(
+                      Icons.cleaning_services_outlined,
+                      size: 18,
+                    )),
+                const LoggingView(),
+              ],
+              AppUpgradePage(),
+              CustomUAWidget(
+                child: Icon(
+                  Icons.verified_user,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 15),
+            ],
+          ),
+          body: EasyRefresh(
+            onRefresh: () => controller.initServerList(),
+            child: CustomCard(
+              width: double.infinity,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Expanded(
+                          child: Center(
+                            child: SingleChildScrollView(
+                              child: Wrap(
+                                  alignment: WrapAlignment.center,
+                                  runAlignment: WrapAlignment.center,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  spacing: 20,
+                                  runSpacing: 20,
+                                  children: [
+                                    ...controller.serverList.map((server) => _buildGridTile(server)),
+                                    _buildAddServerTile(),
+                                  ]),
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 36.0,
-                              vertical: 20,
-                            ),
-                            child: controller.isLoading
-                                ? ShadButton.destructive(
-                                    onPressed: () {
-                                      cancelToken.cancel();
-                                      Logger.instance.d('取消登录：${cancelToken.isCancelled}');
-                                      controller.isLoading = false;
-                                      controller.update();
-                                      Get.forceAppUpdate();
-                                      // Get.offAndToNamed(Routes.LOGIN);
-                                    },
-                                    leading: SizedBox.square(
-                                      dimension: 16,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: shadColorScheme.destructiveForeground,
-                                      ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 36.0,
+                            vertical: 20,
+                          ),
+                          child: controller.isLoading
+                              ? ShadButton.destructive(
+                                  onPressed: () {
+                                    cancelToken.cancel();
+                                    Logger.instance.d('取消登录：${cancelToken.isCancelled}');
+                                    controller.isLoading = false;
+                                    controller.update();
+                                    Get.forceAppUpdate();
+                                    // Get.offAndToNamed(Routes.LOGIN);
+                                  },
+                                  leading: SizedBox.square(
+                                    dimension: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: shadColorScheme.destructiveForeground,
                                     ),
-                                    child: const Text('连接中，点击取消'),
-                                  )
-                                : ShadButton(
-                                    onPressed: !controller.hasSelectedServer
-                                        ? null
-                                        : () async {
-                                            // 连接服务器的操作逻辑
-                                            CommonResponse res = await controller.doLogin(cancelToken);
+                                  ),
+                                  child: const Text('连接中，点击取消'),
+                                )
+                              : ShadButton(
+                                  onPressed: !controller.hasSelectedServer
+                                      ? null
+                                      : () async {
+                                          // 连接服务器的操作逻辑
+                                          CommonResponse res = await controller.doLogin(cancelToken);
 
-                                            if (res.succeed) {
-                                              await Future.delayed(Duration(milliseconds: 1500), () {
-                                                Get.offNamed(Routes.HOME);
+                                          if (res.succeed) {
+                                            await Future.delayed(Duration(milliseconds: 1500), () {
+                                              Get.offNamed(Routes.HOME);
 
-                                                ShadToaster.of(context).show(
-                                                  ShadToast(
-                                                    description:
-                                                        Text('登录成功！欢迎回来，${controller.selectedServer?.username}'),
-                                                  ),
-                                                );
-                                              });
-                                            } else {
                                               ShadToaster.of(context).show(
-                                                ShadToast.destructive(
-                                                  description: Text(res.msg),
+                                                ShadToast(
+                                                  description: Text('登录成功！欢迎回来，${controller.selectedServer?.username}'),
                                                 ),
                                               );
-                                            }
+                                            });
+                                          } else {
+                                            ShadToaster.of(context).show(
+                                              ShadToast.destructive(
+                                                description: Text(res.msg),
+                                              ),
+                                            );
+                                          }
 
-                                            controller.isLoading = false;
-                                            controller.update();
-                                          },
-                                    leading: const Icon(Icons.link_outlined),
-                                    child: const Text('连接服务器'),
-                                  ),
-                          ),
-                        ],
-                      ),
+                                          controller.isLoading = false;
+                                          controller.update();
+                                        },
+                                  leading: const Icon(Icons.link_outlined),
+                                  child: const Text('连接服务器'),
+                                ),
+                        ),
+                      ],
                     ),
-                    if (controller.switchServerLoading)
-                      Center(
-                          child: CircularProgressIndicator(
-                        color: shadColorScheme.primary,
-                      ))
-                  ],
-                ),
+                  ),
+                  if (controller.switchServerLoading)
+                    Center(
+                        child: CircularProgressIndicator(
+                      color: shadColorScheme.primary,
+                    ))
+                ],
               ),
             ),
           ),
-        ],
+        ),
       );
     });
   }

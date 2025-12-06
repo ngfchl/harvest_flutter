@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +12,7 @@ import 'package:harvest/app/home/pages/web_socket_logging/view.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/form_widgets.dart';
 import 'package:harvest/common/utils.dart';
+import 'package:harvest/theme/background_container.dart';
 import 'package:harvest/utils/logger_helper.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
@@ -90,106 +90,66 @@ class HomeView extends GetView<HomeController> {
         },
         child: RepaintBoundary(
           key: _captureKey,
-          child: Stack(
-            children: [
-              GetBuilder<HomeController>(
-                  id: 'home_view_background_image',
-                  builder: (controller) {
-                    // Logger.instance.d(
-                    //     "useBackground: ${controller.useBackground} useLocalBackground: ${controller.useLocalBackground} backgroundImage: ${controller.backgroundImage}");
-                    if (controller.useBackground) {
-                      return Positioned.fill(
-                        child: controller.useLocalBackground && !controller.backgroundImage.startsWith('http')
-                            ? Image.file(
-                                File(controller.backgroundImage.isNotEmpty
-                                    ? controller.backgroundImage
-                                    : 'assets/images/background.png'),
-                                fit: BoxFit.cover,
-                              )
-                            : controller.useImageCache
-                                ? CachedNetworkImage(
-                                    imageUrl:
-                                        '${controller.useImageProxy ? cacheServer : ''}${controller.backgroundImage}',
-                                    placeholder: (context, url) => Image.asset(
-                                      'assets/images/background.png',
-                                      fit: BoxFit.cover,
-                                    ),
-                                    errorWidget: (context, url, error) => Image.asset(
-                                      'assets/images/background.png',
-                                      fit: BoxFit.cover,
-                                    ),
-                                    fit: BoxFit.cover,
-                                    cacheKey: controller.backgroundImage,
-                                  )
-                                : Image.network(
-                                    '${controller.useImageProxy ? cacheServer : ''}${controller.backgroundImage}',
-                                    fit: BoxFit.cover,
-                                  ),
-                      );
-                    }
-                    return SizedBox.shrink();
-                  }),
-              Scaffold(
-                key: _globalKey,
-                backgroundColor: controller.useBackground
-                    ? Colors.transparent
-                    : shadColorScheme.background.withOpacity(opacity * 1.2),
-                extendBody: true,
-                appBar: AppBar(
-                  backgroundColor: shadColorScheme.background.withOpacity(opacity),
-                  iconTheme: IconThemeData(color: shadColorScheme.foreground),
-                  toolbarHeight: 40,
-                  elevation: 0,
-                  actions: <Widget>[
-                    _actionButtonList(context),
-                  ],
-                ),
-                body: GetBuilder<HomeController>(builder: (controller) {
-                  return Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (!controller.isPortrait)
-                        controller.isSmallHorizontalScreen
-                            ? SizedBox(
-                                width: 120,
-                                // height: double.infinity,
-                                child: _buildMenuBar(context),
-                              )
-                            : CustomCard(
-                                width: 200,
-                                // height: double.infinity,
-                                child: _buildMenuBar(context),
-                              ),
-                      Expanded(
-                          child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 3),
-                        child: PageView(
-                          controller: controller.pageController,
-                          physics: const NeverScrollableScrollPhysics(),
-                          onPageChanged: (index) {
-                            // controller.initPage.value = index;
-                            // controller.update();
-                          },
-                          children: controller.pages,
-                        ),
-                      ))
-                    ],
-                  );
-                }),
-                drawer: controller.isPortrait
-                    ? SizedBox(
-                        width: 200,
-                        child: Drawer(
-                          semanticLabel: 'Harvest',
-                          elevation: 10,
-                          backgroundColor: shadColorScheme.background,
-                          child: _buildMenuBar(context),
-                        ),
-                      )
-                    : null,
-                drawerEdgeDragWidth: 75,
+          child: BackgroundContainer(
+            child: Scaffold(
+              key: _globalKey,
+              backgroundColor:
+                  controller.useBackground ? Colors.transparent : shadColorScheme.background.withOpacity(opacity * 1.2),
+              extendBody: true,
+              appBar: AppBar(
+                backgroundColor: shadColorScheme.background.withOpacity(opacity),
+                iconTheme: IconThemeData(color: shadColorScheme.foreground),
+                toolbarHeight: 40,
+                elevation: 0,
+                actions: <Widget>[
+                  _actionButtonList(context),
+                ],
               ),
-            ],
+              body: GetBuilder<HomeController>(builder: (controller) {
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!controller.isPortrait)
+                      controller.isSmallHorizontalScreen
+                          ? SizedBox(
+                              width: 120,
+                              // height: double.infinity,
+                              child: _buildMenuBar(context),
+                            )
+                          : CustomCard(
+                              width: 200,
+                              // height: double.infinity,
+                              child: _buildMenuBar(context),
+                            ),
+                    Expanded(
+                        child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 3),
+                      child: PageView(
+                        controller: controller.pageController,
+                        physics: const NeverScrollableScrollPhysics(),
+                        onPageChanged: (index) {
+                          // controller.initPage.value = index;
+                          // controller.update();
+                        },
+                        children: controller.pages,
+                      ),
+                    ))
+                  ],
+                );
+              }),
+              drawer: controller.isPortrait
+                  ? SizedBox(
+                      width: 200,
+                      child: Drawer(
+                        semanticLabel: 'Harvest',
+                        elevation: 10,
+                        backgroundColor: shadColorScheme.background,
+                        child: _buildMenuBar(context),
+                      ),
+                    )
+                  : null,
+              drawerEdgeDragWidth: 75,
+            ),
           ),
         ),
       );

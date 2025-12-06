@@ -28,17 +28,6 @@ class LoginController extends GetxController {
   @override
   void onInit() async {
     Logger.instance.i('初始化登录页面');
-
-    useBackground = SPUtil.getBool('useBackground');
-    if (useBackground) {
-      useImageProxy = SPUtil.getBool('useImageProxy');
-      useLocalBackground = SPUtil.getBool('useLocalBackground');
-
-      backgroundImage = SPUtil.getString('backgroundImage',
-          defaultValue:
-              'https://cci1.yiimii.com/uploads/2023/11/20231114005921427.jpg');
-      Logger.instance.d('背景图：$backgroundImage');
-    }
     await serverRepository.init();
     Logger.instance.i(serverRepository.serverList);
     initServerList();
@@ -50,8 +39,7 @@ class LoginController extends GetxController {
   ///@description 获取网络权限
   ///@updateTime
   Future<void> getNetworkPermission() async {
-    canConnectInternet =
-        SPUtil.getBool('canConnectInternet', defaultValue: false);
+    canConnectInternet = SPUtil.getBool('canConnectInternet', defaultValue: false);
     // 触发 网络权限授权
     if (!kIsWeb && !canConnectInternet) {
       Logger.instance.i('触发网络访问权限中...');
@@ -97,16 +85,14 @@ class LoginController extends GetxController {
   ////@title 测试服务器连接
   ///@description
   ///@updateTime
-  Future<CommonResponse> testServerConnection(Server server,
-      {CancelToken? cancelToken}) async {
+  Future<CommonResponse> testServerConnection(Server server, {CancelToken? cancelToken}) async {
     try {
       await dioUtil.initialize(server.entry);
       LoginUser loginUser = LoginUser(
         username: server.username,
         password: server.password,
       );
-      CommonResponse response =
-          await connectToServer(loginUser, cancelToken: cancelToken);
+      CommonResponse response = await connectToServer(loginUser, cancelToken: cancelToken);
       return response;
     } catch (e) {
       // 发生错误，如网络问题或服务器不可达
@@ -190,14 +176,12 @@ class LoginController extends GetxController {
   ///@title 登录服务器
   ///@description
   ///@updateTime
-  Future<CommonResponse> connectToServer(LoginUser loginUser,
-      {CancelToken? cancelToken}) async {
+  Future<CommonResponse> connectToServer(LoginUser loginUser, {CancelToken? cancelToken}) async {
     try {
       await SPUtil.remove('userinfo');
       SPUtil.setBool('isLogin', false);
       DioUtil.instance.clearAuthToken();
-      CommonResponse res =
-          await UserAPI.login(loginUser, cancelToken: cancelToken);
+      CommonResponse res = await UserAPI.login(loginUser, cancelToken: cancelToken);
       Logger.instance.i(res.code);
       Logger.instance.i(res.data);
       if (res.code == 0) {

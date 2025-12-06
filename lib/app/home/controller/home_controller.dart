@@ -44,11 +44,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   UpdateLogState? updateLogState;
   UpdateLogState? updateSitesState;
   AuthPeriod? authInfo;
-  String backgroundImage = '';
-  bool useLocalBackground = false;
-  bool useImageCache = false;
   bool useBackground = false;
-  bool useImageProxy = false;
   bool authPrivateMode = false;
 
   // final mySiteController = Get.put(MySiteController());
@@ -111,18 +107,6 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       isDarkMode = Get.isDarkMode;
       useBackground = SPUtil.getBool('useBackground');
       authPrivateMode = SPUtil.getBool('authPrivateMode', defaultValue: false);
-      if (useBackground) {
-        Logger.instance.d('初始化主题壁纸');
-        useImageProxy = SPUtil.getBool('useImageProxy');
-        useImageCache = SPUtil.getBool('useImageCache');
-        useLocalBackground = SPUtil.getBool('useLocalBackground');
-
-        backgroundImage = SPUtil.getString(
-          'backgroundImage',
-          defaultValue: 'https://pic4.zhimg.com/v2-12ed225c3144a726284fe048870f72d1_r.jpg',
-        );
-        Logger.instance.d('背景图：$backgroundImage');
-      }
       initDio();
       initMenus();
       update();
