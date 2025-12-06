@@ -140,7 +140,8 @@ class TrPage extends StatelessWidget {
                                       decoration: InputDecoration(
                                         isDense: true,
                                         hintText: '请输入搜索关键字',
-                                        hintStyle: const TextStyle(fontSize: 14),
+                                        hintStyle:
+                                            TextStyle(fontSize: 14, color: shadColorScheme.foreground.withAlpha(122)),
                                         contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
                                         suffixIcon: Column(
                                           mainAxisAlignment: MainAxisAlignment.center,
