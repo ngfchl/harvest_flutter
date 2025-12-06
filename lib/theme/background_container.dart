@@ -66,10 +66,10 @@ class BackgroundContainer extends GetView<BackgroundService> {
               ),
             ),
 
-          /// 半透明遮罩
+          // /// 半透明遮罩
           Positioned.fill(
             child: Container(
-              color: Colors.black.withOpacity(1 - opacity),
+              color: Colors.black.withOpacity(opacity),
             ),
           ),
 
