@@ -68,9 +68,50 @@ class TrPage extends StatelessWidget {
           child: Scaffold(
             appBar: AppBar(
               backgroundColor: Colors.transparent,
-              title: Text(
-                '${controller.downloader.name} - ${controller.torrentCount}',
-                style: TextStyle(color: shadColorScheme.foreground),
+              title: Row(
+                children: [
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        '${controller.downloader.name} - ${controller.torrentCount}',
+                        style: TextStyle(color: shadColorScheme.foreground),
+                      ),
+                    ),
+                  ),
+                  if (controller.trStats != null)
+                    SizedBox(
+                      width: 150,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CustomTextTag(
+                              icon: Icon(
+                                Icons.keyboard_arrow_up_outlined,
+                                color: shadColorScheme.primary,
+                                size: 14,
+                              ),
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              backgroundColor: Colors.transparent,
+                              labelColor: shadColorScheme.primary,
+                              labelText:
+                                  "${FileSizeConvert.parseToFileSize(controller.trStats?.uploadSpeed)}/s[${FileSizeConvert.parseToFileSize((controller.prefs?.speedLimitUp ?? 0) * 1024)}]"),
+                          CustomTextTag(
+                              icon: Icon(
+                                Icons.keyboard_arrow_down_outlined,
+                                color: shadColorScheme.destructive,
+                                size: 14,
+                              ),
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              backgroundColor: Colors.transparent,
+                              labelColor: shadColorScheme.destructive,
+                              labelText:
+                                  "${FileSizeConvert.parseToFileSize(controller.trStats?.downloadSpeed)}/s[${FileSizeConvert.parseToFileSize((controller.prefs?.speedLimitDown ?? 0) * 1024)}]"),
+                        ],
+                      ),
+                    ),
+                ],
               ),
               foregroundColor: shadColorScheme.foreground,
             ),
@@ -898,52 +939,7 @@ class TrPage extends StatelessWidget {
             motion: const ScrollMotion(),
             children: [
               SlidableAction(
-                onPressed: (context) async {
-                  await _removeTorrent([torrentInfo.hashString], context);
-                },
-                flex: 2,
-                backgroundColor: const Color(0xFFFE4A49),
-                foregroundColor: Colors.white,
-                icon: Icons.delete,
-                label: '删除',
-              ),
-              SlidableAction(
-                // An action can be bigger than the others.
-                flex: 2,
-                onPressed: (context) async {
-                  Get.defaultDialog(
-                    title: '确认',
-                    middleText: '您确定要执行这个操作吗？',
-                    actions: [
-                      ShadButton(
-                        onPressed: () {
-                          Get.back(result: false);
-                        },
-                        child: const Text('取消'),
-                      ),
-                      ShadButton(
-                        onPressed: () async {
-                          Get.back(result: true);
-                          await controller.controlTorrents(
-                              command: torrentInfo.status == 0 ? 'resume' : 'pause', ids: [torrentInfo.hashString]);
-                        },
-                        child: const Text('确认'),
-                      ),
-                    ],
-                  );
-                },
-                backgroundColor: torrentInfo.status == 0 ? const Color(0xFF0392CF) : Colors.deepOrangeAccent,
-                foregroundColor: Colors.white,
-                icon: torrentInfo.status == 0 ? Icons.play_arrow : Icons.pause,
-                label: torrentInfo.status == 0 ? '继续' : '暂停',
-              ),
-            ],
-          ),
-          endActionPane: ActionPane(
-            motion: const ScrollMotion(),
-            children: [
-              SlidableAction(
-                // An action can be bigger than the others.
+                borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
                 onPressed: (context) async {
                   Get.defaultDialog(
                     title: '确认',
@@ -972,12 +968,13 @@ class TrPage extends StatelessWidget {
                   );
                 },
                 flex: 2,
-                backgroundColor: Colors.purple,
+                backgroundColor: const Color(0xFF0A9D96),
                 foregroundColor: Colors.white,
                 icon: Icons.checklist,
                 label: '校验',
               ),
               SlidableAction(
+                borderRadius: const BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
                 onPressed: (context) async {
                   Get.defaultDialog(
                     title: '确认',
@@ -1004,6 +1001,54 @@ class TrPage extends StatelessWidget {
                 foregroundColor: Colors.white,
                 icon: Icons.campaign,
                 label: '汇报',
+              ),
+            ],
+          ),
+          endActionPane: ActionPane(
+            motion: const ScrollMotion(),
+            children: [
+              SlidableAction(
+                // An action can be bigger than the others.
+                flex: 2,
+
+                onPressed: (context) async {
+                  Get.defaultDialog(
+                    title: '确认',
+                    middleText: '您确定要执行这个操作吗？',
+                    actions: [
+                      ShadButton(
+                        onPressed: () {
+                          Get.back(result: false);
+                        },
+                        child: const Text('取消'),
+                      ),
+                      ShadButton(
+                        onPressed: () async {
+                          Get.back(result: true);
+                          await controller.controlTorrents(
+                              command: torrentInfo.status == 0 ? 'resume' : 'pause', ids: [torrentInfo.hashString]);
+                        },
+                        child: const Text('确认'),
+                      ),
+                    ],
+                  );
+                },
+                borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
+                backgroundColor: torrentInfo.status == 0 ? shadColorScheme.primary : Colors.deepOrangeAccent,
+                foregroundColor: Colors.white,
+                icon: torrentInfo.status == 0 ? Icons.play_arrow : Icons.pause,
+                label: torrentInfo.status == 0 ? '继续' : '暂停',
+              ),
+              SlidableAction(
+                onPressed: (context) async {
+                  await _removeTorrent([torrentInfo.hashString], context);
+                },
+                flex: 2,
+                borderRadius: const BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
+                backgroundColor: shadColorScheme.destructive,
+                foregroundColor: Colors.white,
+                icon: Icons.delete,
+                label: '删除',
               ),
             ],
           ),

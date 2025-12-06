@@ -69,10 +69,54 @@ class QBittorrentPage extends GetView<QBittorrentController> {
             appBar: AppBar(
               backgroundColor: Colors.transparent,
               foregroundColor: shadColorScheme.foreground,
-              title: Text(
-                '${controller.downloader.name} - ${controller.allTorrents.length}',
-                style: TextStyle(color: shadColorScheme.foreground),
+              title: Row(
+                children: [
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        '${controller.downloader.name} - ${controller.allTorrents.length}',
+                        style: TextStyle(color: shadColorScheme.foreground),
+                      ),
+                    ),
+                  ),
+                  if (controller.transferInfo != null)
+                    SizedBox(
+                      width: 150,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ...[
+                            CustomTextTag(
+                                icon: Icon(
+                                  Icons.keyboard_arrow_up_outlined,
+                                  color: shadColorScheme.primary,
+                                  size: 14,
+                                ),
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                backgroundColor: Colors.transparent,
+                                labelColor: shadColorScheme.primary,
+                                labelText:
+                                    "${FileSizeConvert.parseToFileSize(controller.transferInfo?.upInfoSpeed ?? 0)}/s[${FileSizeConvert.parseToFileSize(controller.transferInfo?.upRateLimit ?? 0)}]"),
+                            CustomTextTag(
+                                icon: Icon(
+                                  Icons.keyboard_arrow_down_outlined,
+                                  color: shadColorScheme.destructive,
+                                  size: 14,
+                                ),
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                backgroundColor: Colors.transparent,
+                                labelColor: shadColorScheme.destructive,
+                                labelText:
+                                    "${FileSizeConvert.parseToFileSize(controller.transferInfo?.dlInfoSpeed ?? 0)}[${FileSizeConvert.parseToFileSize(controller.transferInfo?.dlRateLimit ?? 0)}]"),
+                          ],
+                        ],
+                      ),
+                    ),
+                ],
               ),
+              actions: [],
             ),
             backgroundColor: Colors.transparent,
             body: EasyRefresh(
@@ -1106,6 +1150,20 @@ class QBittorrentPage extends GetView<QBittorrentController> {
             children: [
               SlidableAction(
                 onPressed: (context) async {
+                  await controller.controlTorrents(
+                    command: paused.value ? 'resumeTorrents' : 'pauseTorrents',
+                    hashes: [torrentInfo.infohashV1!],
+                  );
+                },
+                flex: 2,
+                borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
+                backgroundColor: paused.value ? const Color(0xFF0392CF) : shadColorScheme.primary,
+                foregroundColor: Colors.white,
+                icon: paused.value ? Icons.play_arrow : Icons.pause,
+                label: paused.value ? '开始' : '暂停',
+              ),
+              SlidableAction(
+                onPressed: (context) async {
                   RxBool deleteFiles = false.obs;
                   Get.defaultDialog(
                     title: '确认',
@@ -1142,23 +1200,11 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                   );
                 },
                 flex: 2,
-                backgroundColor: const Color(0xFFFE4A49),
+                borderRadius: const BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
+                backgroundColor: shadColorScheme.destructive,
                 foregroundColor: Colors.white,
                 icon: Icons.delete,
                 label: '删除',
-              ),
-              SlidableAction(
-                onPressed: (context) async {
-                  await controller.controlTorrents(
-                    command: paused.value ? 'resumeTorrents' : 'pauseTorrents',
-                    hashes: [torrentInfo.infohashV1!],
-                  );
-                },
-                flex: 2,
-                backgroundColor: paused.value ? const Color(0xFF0392CF) : Colors.deepOrangeAccent,
-                foregroundColor: Colors.white,
-                icon: paused.value ? Icons.play_arrow : Icons.pause,
-                label: paused.value ? '开始' : '暂停',
               ),
             ],
           ),

@@ -32,6 +32,7 @@ class QBittorrentController extends GetxController {
   Map<String, Category?> categoryMap = {};
   Map<String, WebSite> trackerToWebSiteMap = {};
   ServerState? serverState;
+  TransferInfo? transferInfo;
   String? selectedCategory;
   String selectedTracker = '全部';
   TorrentSort? sortKey = TorrentSort.name;
@@ -205,12 +206,13 @@ class QBittorrentController extends GetxController {
 
     torrentListSubscription = client.torrents
         .subscribeTorrentsList(options: options, interval: Duration(seconds: subInterval))
-        .listen((event) {
+        .listen((event) async {
       isLoading = false;
       Logger.instance.d('subTorrentList: ${event.length}');
       if (event.isNotEmpty) {
         torrents = event;
         filterTorrents();
+        transferInfo = await client.transfer.getGlobalTransferInfo();
       }
       update();
     });

@@ -663,7 +663,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                   ],
                 );
               },
-              backgroundColor: const Color(0xFFFE4A49),
+              backgroundColor: shadColorScheme.destructive,
               foregroundColor: Colors.white,
               // icon: Icons.delete,
               label: '删除',

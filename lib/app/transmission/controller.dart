@@ -38,6 +38,7 @@ class TrController extends GetxController {
   Timer? periodicTimer;
   Map<String, WebSite?> trackerToWebSiteMap = {'全部': null};
   TransmissionStats? trStats;
+  TransmissionConfig? prefs;
   int torrentCount = 0;
   String? selectedTracker = '全部';
   String? selectedLabel = '全部';
@@ -486,6 +487,9 @@ class TrController extends GetxController {
 
     Map response = await client.system.freeSpace(path: defaultSavePath);
     freeSpace = TrFreeSpace.fromJson(response['arguments'] as Map<String, dynamic>).sizeBytes!;
+    Map trConfigMap = await client.session.sessionGet(
+        fields: SessionArgs().speedLimitUp().speedLimitDown().speedLimitUpEnabled().speedLimitDownEnabled());
+    prefs = TransmissionConfig.fromJson(trConfigMap['arguments'] as Map<String, dynamic>);
   }
 
   void filterTorrentsByCategory() {
