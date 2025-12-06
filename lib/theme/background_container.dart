@@ -16,11 +16,11 @@ class BackgroundContainer extends GetView<BackgroundService> {
     return Obx(() {
       if (!controller.useBackground.value) return child;
 
-      final image = controller.backgroundImage.value;
-      final blur = controller.blur.value;
-      final opacity = controller.opacity.value;
-      final useLocal = controller.useLocalBackground.value;
-      final useProxy = controller.useImageProxy.value;
+      String image = controller.backgroundImage.value;
+      double blur = controller.blur.value;
+      double opacity = controller.opacity.value;
+      bool useLocal = controller.useLocalBackground.value;
+      bool useProxy = controller.useImageProxy.value;
 
       final proxy = 'https://images.weserv.nl/?url=';
 
@@ -60,7 +60,9 @@ class BackgroundContainer extends GetView<BackgroundService> {
                   sigmaX: blur,
                   sigmaY: blur,
                 ),
-                child: Container(color: Colors.black.withOpacity(0)),
+                child: Container(
+                  color: Colors.transparent, // 透明，不遮挡
+                ),
               ),
             ),
 

@@ -4,7 +4,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:harvest/theme/background_container.dart';
 import 'package:harvest/theme/theme_controller.dart';
+import 'package:harvest/theme/theme_service.dart';
 import 'package:harvest/utils/platform.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:window_manager/window_manager.dart';
@@ -23,18 +25,17 @@ class ThemeIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final popoverController = ShadPopoverController();
-
-    RxString? baseUrl = SPUtil.getString('backgroundImage', defaultValue: 'https://bing.img.run/rand_uhd.php').obs;
-    RxDouble? opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7).obs;
-    RxBool useLocalBackground = SPUtil.getBool('useLocalBackground', defaultValue: false).obs;
-    RxBool useBackground = SPUtil.getBool('useBackground', defaultValue: false).obs;
-    RxBool useImageProxy = SPUtil.getBool('useImageProxy', defaultValue: false).obs;
-    RxBool useImageCache = SPUtil.getBool('useImageCache', defaultValue: true).obs;
-    TextEditingController urlController = TextEditingController(
-      text: baseUrl.value,
-    );
+    final bg = Get.find<BackgroundService>();
+    TextEditingController urlController = TextEditingController(text: bg.backgroundImage.value);
+    // RxString? baseUrl = SPUtil.getString('backgroundImage', defaultValue: 'https://bing.img.run/rand_uhd.php').obs;
+    // RxDouble? opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7).obs;
+    // RxBool useLocalBackground = SPUtil.getBool('useLocalBackground', defaultValue: false).obs;
+    // RxBool useBackground = SPUtil.getBool('useBackground', defaultValue: false).obs;
+    // RxBool useImageProxy = SPUtil.getBool('useImageProxy', defaultValue: false).obs;
+    // RxBool useImageCache = SPUtil.getBool('useImageCache', defaultValue: true).obs;
+    //
     if (kIsWeb) {
-      useLocalBackground.value = false;
+      bg.useLocalBackground.value = false;
     }
     final showPreview = false.obs;
     var shadColorScheme = ShadTheme.of(context).colorScheme;
@@ -45,7 +46,7 @@ class ThemeIconButton extends StatelessWidget {
           controller: popoverController,
           closeOnTapOutside: false,
           decoration: ShadDecoration(
-            color: shadColorScheme.background.withOpacity(opacity.value),
+            color: shadColorScheme.background.withOpacity(bg.opacity.value),
           ),
           popover: (context) => ConstrainedBox(
             constraints: BoxConstraints(maxHeight: 430, maxWidth: 450, minHeight: 300),
@@ -134,18 +135,18 @@ class ThemeIconButton extends StatelessWidget {
                               children: [
                                 ShadSwitch(
                                   label: Text('背景图片'),
-                                  value: useBackground.value,
+                                  value: bg.useBackground.value,
                                   onChanged: (value) {
-                                    useBackground.value = value;
+                                    bg.useBackground.value = value;
                                     SPUtil.setBool('useBackground', value);
                                   },
                                 ),
-                                if (useBackground.value)
+                                if (bg.useBackground.value)
                                   ShadSwitch(
                                     label: Text('使用缓存'),
-                                    value: useImageCache.value,
+                                    value: bg.useImageCache.value,
                                     onChanged: (value) {
-                                      useImageCache.value = value;
+                                      bg.useImageCache.value = value;
                                       SPUtil.setBool('useImageCache', value);
                                     },
                                   ),
@@ -153,29 +154,29 @@ class ThemeIconButton extends StatelessWidget {
                             );
                           }),
                           Obx(() {
-                            return useBackground.value && !kIsWeb
+                            return bg.useBackground.value && !kIsWeb
                                 ? Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       ShadSwitch(
-                                        label: Text(useLocalBackground.value ? '本地图片' : '网络图片'),
+                                        label: Text(bg.useLocalBackground.value ? '本地图片' : '网络图片'),
                                         sublabel: Text(
                                           '默认网络图片',
                                           style: TextStyle(fontSize: 10),
                                         ),
-                                        value: kIsWeb ? false : useLocalBackground.value,
+                                        value: kIsWeb ? false : bg.useLocalBackground.value,
                                         onChanged: (value) {
-                                          useLocalBackground.value = value;
+                                          bg.useLocalBackground.value = value;
                                           SPUtil.setBool('useLocalBackground', value);
                                         },
                                       ),
-                                      if (!useLocalBackground.value)
+                                      if (!bg.useLocalBackground.value)
                                         Obx(() {
                                           return ShadSwitch(
                                             label: Text('图片加速'),
-                                            value: useImageProxy.value,
+                                            value: bg.useImageProxy.value,
                                             onChanged: (value) {
-                                              useImageProxy.value = value;
+                                              bg.useImageProxy.value = value;
                                               SPUtil.setBool('useImageProxy', value);
                                             },
                                           );
@@ -187,7 +188,7 @@ class ThemeIconButton extends StatelessWidget {
 
                           Obx(() {
                             return Column(spacing: 10, children: [
-                              useBackground.value && useLocalBackground.value
+                              bg.useBackground.value && bg.useLocalBackground.value
                                   ? ImagePickerRow(
                                       onImagePicked: (String? path) {
                                         if (path != null) {
@@ -201,30 +202,37 @@ class ThemeIconButton extends StatelessWidget {
                                       keyboardType: TextInputType.url,
                                     ),
                               Obx(() {
-                                if (showPreview.value && baseUrl.value.isNotEmpty) {
-                                  Logger.instance
-                                      .d('backgroundImage: $baseUrl , useLocalBackground: $useLocalBackground');
-                                  return useLocalBackground.value
-                                      ? baseUrl.value.startsWith('http')
-                                          ? SizedBox.shrink()
-                                          : Image.file(
-                                              File(baseUrl.value),
-                                              width: double.infinity,
-                                              fit: BoxFit.fitWidth,
-                                            )
-                                      : Obx(() {
-                                          return CachedNetworkImage(
-                                            imageUrl:
-                                                '${useImageProxy.value ? 'https://images.weserv.nl/?url=' : ''}${baseUrl.value}',
-                                            placeholder: (context, url) => Center(
-                                                child: CircularProgressIndicator(
-                                              color: shadColorScheme.primary,
-                                            )),
-                                            errorWidget: (context, url, error) =>
-                                                Image.asset('assets/images/background.png'),
-                                            fit: BoxFit.fitWidth,
-                                          );
-                                        });
+                                if (showPreview.value && bg.backgroundImage.value.isNotEmpty) {
+                                  Logger.instance.d(
+                                      'backgroundImage: ${bg.backgroundImage.value} , useLocalBackground: ${bg.useLocalBackground.value}');
+                                  return SizedBox(
+                                    height: 200,
+                                    child: BackgroundContainer(
+                                      child: bg.useLocalBackground.value
+                                          ? bg.backgroundImage.value.startsWith('http')
+                                              ? SizedBox.shrink()
+                                              : Image.file(
+                                                  File(bg.backgroundImage.value),
+                                                  width: double.infinity,
+                                                  fit: BoxFit.fitWidth,
+                                                )
+                                          : Obx(
+                                              () {
+                                                return CachedNetworkImage(
+                                                  imageUrl:
+                                                      '${bg.useImageProxy.value ? 'https://images.weserv.nl/?url=' : ''}${bg.backgroundImage.value}',
+                                                  placeholder: (context, url) => Center(
+                                                      child: CircularProgressIndicator(
+                                                    color: shadColorScheme.primary,
+                                                  )),
+                                                  errorWidget: (context, url, error) =>
+                                                      Image.asset('assets/images/background.png'),
+                                                  fit: BoxFit.fitWidth,
+                                                );
+                                              },
+                                            ),
+                                    ),
+                                  );
                                 }
                                 return SizedBox.shrink();
                               }),
@@ -242,12 +250,32 @@ class ThemeIconButton extends StatelessWidget {
                                       min: 0.1,
                                       max: 1,
                                       // divisions: 10,
-                                      label: opacity.value.toString(),
-                                      initialValue: opacity.value,
+                                      label: bg.opacity.value.toString(),
+                                      initialValue: bg.opacity.value,
                                       onChanged: (value) async {
-                                        opacity.value = value;
-                                        SPUtil.setDouble('cardOpacity', opacity.value);
+                                        bg.opacity.value = value;
+                                        bg.save();
                                       }),
+                                ),
+                              ],
+                            );
+                          }),
+                          Obx(() {
+                            return Row(
+                              children: [
+                                Text("背景模糊:", style: TextStyle(color: shadColorScheme.foreground)),
+                                Expanded(
+                                  child: ShadSlider(
+                                    min: 0,
+                                    max: 20,
+                                    divisions: 20,
+                                    label: bg.blur.value.toStringAsFixed(1),
+                                    initialValue: bg.blur.value,
+                                    onChanged: (v) {
+                                      bg.blur.value = v;
+                                      bg.save();
+                                    },
+                                  ),
                                 ),
                               ],
                             );
@@ -303,13 +331,13 @@ class ThemeIconButton extends StatelessWidget {
                           onPressed: () => popoverController.hide(),
                           child: Text('关闭'),
                         ),
-                        if (useBackground.value)
+                        if (bg.useBackground.value)
                           ShadButton.secondary(
                             size: ShadButtonSize.sm,
                             child: Text('预览'),
                             onPressed: () {
                               if (urlController.text.isNotEmpty) {
-                                baseUrl.value = urlController.text;
+                                bg.backgroundImage.value = urlController.text;
                                 showPreview.value = !showPreview.value;
                               } else {
                                 showPreview.value = false;
@@ -320,7 +348,7 @@ class ThemeIconButton extends StatelessWidget {
                           size: ShadButtonSize.sm,
                           onPressed: () {
                             if (urlController.text.isNotEmpty) {
-                              if (useLocalBackground.value && baseUrl.value.startsWith('http')) {
+                              if (bg.useLocalBackground.value && bg.backgroundImage.value.startsWith('http')) {
                                 Get.snackbar(
                                   '出错啦',
                                   "请选择正确的背景图片！",
@@ -328,7 +356,7 @@ class ThemeIconButton extends StatelessWidget {
                                 );
                                 return;
                               }
-                              baseUrl.value = urlController.text;
+                              bg.backgroundImage.value = urlController.text;
                               Logger.instance.d('backgroundImage: ${urlController.text}');
                               SPUtil.setString('backgroundImage', urlController.text);
                               HomeController homeController = Get.find();

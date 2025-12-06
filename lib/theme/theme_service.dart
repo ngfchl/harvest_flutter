@@ -9,6 +9,13 @@ class BackgroundService extends GetxService {
   final backgroundImage = ''.obs;
   final blur = 0.0.obs; // 0 = no blur
   final opacity = 0.7.obs;
+  RxBool useImageCache = true.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    init();
+  }
 
   Future<BackgroundService> init() async {
     useBackground.value = SPUtil.getBool('useBackground');
@@ -16,7 +23,7 @@ class BackgroundService extends GetxService {
     useLocalBackground.value = SPUtil.getBool('useLocalBackground');
     blur.value = SPUtil.getDouble('backgroundBlur', defaultValue: 0);
     opacity.value = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
-
+    useImageCache.value = SPUtil.getBool('useImageCache', defaultValue: true);
     backgroundImage.value = SPUtil.getString(
       'backgroundImage',
       defaultValue: 'https://cci1.yiimii.com/uploads/2023/11/20231114005921427.jpg',
@@ -25,22 +32,15 @@ class BackgroundService extends GetxService {
     return this;
   }
 
-  /// 修改并立即生效
-  void setBackgroundImage(String path, {bool local = true}) {
-    SPUtil.setBool('useLocalBackground', local);
-    SPUtil.setString('backgroundImage', path);
+  Future<void> save() async {
+    await SPUtil.setBool('useBackground', useBackground.value);
+    await SPUtil.setBool('useLocalBackground', useLocalBackground.value);
+    await SPUtil.setBool('useImageProxy', useImageProxy.value);
+    await SPUtil.setBool('useImageCache', useImageCache.value);
 
-    useLocalBackground.value = local;
-    backgroundImage.value = path; // 自动触发 UI 刷新
-  }
+    await SPUtil.setString('backgroundImage', backgroundImage.value);
 
-  void setBlur(double value) {
-    SPUtil.setDouble('backgroundBlur', value);
-    blur.value = value;
-  }
-
-  void setOpacity(double value) {
-    SPUtil.setDouble('cardOpacity', value);
-    opacity.value = value;
+    await SPUtil.setDouble('cardOpacity', opacity.value);
+    await SPUtil.setDouble('backgroundBlur', blur.value);
   }
 }
