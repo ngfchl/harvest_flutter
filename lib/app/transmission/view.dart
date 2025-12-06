@@ -695,6 +695,7 @@ class TrPage extends StatelessWidget {
                           onTap: () async {
                             await controller.controlTorrents(
                                 command: 'torrentReannounce', ids: controller.selectedTorrents);
+                            controller.selectedTorrents.clear();
                             controller.getAllTorrents();
                           },
                           child: Text('汇报', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
@@ -703,6 +704,7 @@ class TrPage extends StatelessWidget {
                           onTap: () async {
                             await controller.controlTorrents(
                                 command: 'torrentStartNow', ids: controller.selectedTorrents);
+                            controller.selectedTorrents.clear();
                             controller.getAllTorrents();
                           },
                           child: Text('强制开始', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
@@ -710,6 +712,7 @@ class TrPage extends StatelessWidget {
                         PopupMenuItem(
                           onTap: () async {
                             await controller.controlTorrents(command: 'torrentStart', ids: controller.selectedTorrents);
+                            controller.selectedTorrents.clear();
                             controller.getAllTorrents();
                           },
                           child: Text('开始', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
@@ -717,6 +720,7 @@ class TrPage extends StatelessWidget {
                         PopupMenuItem(
                           onTap: () async {
                             await controller.controlTorrents(command: 'torrentStop', ids: controller.selectedTorrents);
+                            controller.selectedTorrents.clear();
                             controller.getAllTorrents();
                           },
                           child: Text('停止', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
@@ -2401,6 +2405,9 @@ class TrPage extends StatelessWidget {
                     await controller.controlTorrents(command: 'torrentRemove', ids: ids, deleteFiles: deleteFile.value);
                 logger_helper.Logger.instance.i(response);
                 if (response['result'] == 'success') {
+                  controller.selectedTorrents.clear();
+                  controller.getAllTorrents();
+                  controller.update();
                   Get.snackbar('删除成功', '种子已删除');
                 } else {
                   Get.snackbar('删除失败', '种子删除失败，${response['message']}');

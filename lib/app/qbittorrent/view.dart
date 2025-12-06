@@ -747,6 +747,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                         enable: deleteFiles.value);
                                     controller.showTorrents.removeWhere(
                                         (element) => controller.selectedTorrents.contains(element.infohashV1));
+                                    controller.selectedTorrents.clear();
                                     controller.update();
                                   },
                                   child: const Text('删除'),
@@ -760,6 +761,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                           onTap: () async {
                             await controller.controlTorrents(
                                 command: 'torrentReannounce', hashes: controller.selectedTorrents);
+                            controller.selectedTorrents.clear();
                             controller.subTorrentList();
                           },
                           child: Text('汇报', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
@@ -776,6 +778,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                           onTap: () async {
                             await controller.controlTorrents(
                                 command: 'setSuperSeeding', hashes: controller.selectedTorrents);
+                            controller.selectedTorrents.clear();
                             controller.subTorrentList();
                           },
                           child: Text('超级做种', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
@@ -784,6 +787,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                           onTap: () async {
                             await controller.controlTorrents(
                                 command: 'setAutoManagement', hashes: controller.selectedTorrents);
+                            controller.selectedTorrents.clear();
                             controller.subTorrentList();
                           },
                           child: Text('自动管理', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
@@ -792,6 +796,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                           onTap: () async {
                             await controller.controlTorrents(
                                 command: 'resumeTorrents', hashes: controller.selectedTorrents);
+                            controller.selectedTorrents.clear();
                             controller.subTorrentList();
                           },
                           child: Text('开始', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
@@ -800,6 +805,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                           onTap: () async {
                             await controller.controlTorrents(
                                 command: 'pauseTorrents', hashes: controller.selectedTorrents);
+                            controller.selectedTorrents.clear();
                             controller.subTorrentList();
                           },
                           child: Text('停止', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
