@@ -91,12 +91,12 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                             CustomTextTag(
                                 icon: Icon(
                                   Icons.keyboard_arrow_up_outlined,
-                                  color: shadColorScheme.primary,
+                                  color: Colors.green,
                                   size: 14,
                                 ),
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 backgroundColor: Colors.transparent,
-                                labelColor: shadColorScheme.primary,
+                                labelColor: Colors.green,
                                 labelText:
                                     "${FileSizeConvert.parseToFileSize(controller.transferInfo?.upInfoSpeed ?? 0)}/s[${FileSizeConvert.parseToFileSize(controller.transferInfo?.upRateLimit ?? 0)}]"),
                             CustomTextTag(
@@ -2033,7 +2033,8 @@ class QBittorrentPage extends GetView<QBittorrentController> {
       isScrollControlled: true,
       enableDrag: true,
       backgroundColor: shadColorScheme.background,
-      Padding(
+      Container(
+        height: MediaQuery.of(context).size.height * 0.8,
         padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
         child: Column(
           spacing: 10,
@@ -2134,7 +2135,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                   children: [
                     ShadAccordionItem<String>(
                       value: 'torrentInfo',
-                      title: const Text('种子信息'),
+                      title: Center(child: const Text('种子信息')),
                       titleStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                       padding: EdgeInsets.zero,
                       child: Padding(
@@ -2329,7 +2330,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                     ),
                     ShadAccordionItem<String>(
                         value: 'files',
-                        title: const Text('文件列表'),
+                        title: Center(child: const Text('文件列表')),
                         titleStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                         padding: EdgeInsets.zero,
                         child: ConstrainedBox(
@@ -2343,26 +2344,20 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                         )),
                     ShadAccordionItem<String>(
                       value: 'repeatInfo',
-                      title: const Text('辅种信息'),
+                      title: Center(child: const Text('辅种信息')),
                       titleStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                       padding: EdgeInsets.zero,
                       child: Padding(
                         padding: const EdgeInsets.all(12.0),
                         child: SingleChildScrollView(
                           child: Column(
+                            spacing: 8,
                             children: [
                               if (repeatTorrents.isNotEmpty)
-                                Column(
-                                  children: [
-                                    const SizedBox(
-                                      height: 10,
-                                    ),
-                                    Wrap(
-                                      spacing: 8,
-                                      runSpacing: 8,
-                                      children: repeatTorrents,
-                                    ),
-                                  ],
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: repeatTorrents,
                                 ),
                             ],
                           ),

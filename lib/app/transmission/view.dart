@@ -89,12 +89,12 @@ class TrPage extends StatelessWidget {
                           CustomTextTag(
                               icon: Icon(
                                 Icons.keyboard_arrow_up_outlined,
-                                color: shadColorScheme.primary,
+                                color: Colors.green,
                                 size: 14,
                               ),
                               mainAxisAlignment: MainAxisAlignment.start,
                               backgroundColor: Colors.transparent,
-                              labelColor: shadColorScheme.primary,
+                              labelColor: Colors.green,
                               labelText:
                                   "${FileSizeConvert.parseToFileSize(controller.trStats?.uploadSpeed)}/s[${FileSizeConvert.parseToFileSize((controller.prefs?.speedLimitUp ?? 0) * 1024)}]"),
                           CustomTextTag(
@@ -1010,7 +1010,6 @@ class TrPage extends StatelessWidget {
               SlidableAction(
                 // An action can be bigger than the others.
                 flex: 2,
-
                 onPressed: (context) async {
                   Get.defaultDialog(
                     title: '确认',
@@ -1767,8 +1766,9 @@ class TrPage extends StatelessWidget {
       backgroundColor: shadColorScheme.background,
       isScrollControlled: true,
       enableDrag: true,
-      Padding(
-        padding: const EdgeInsets.all(8.0),
+      Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           spacing: 10,
