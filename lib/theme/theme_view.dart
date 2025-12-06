@@ -4,7 +4,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:harvest/theme/background_container.dart';
 import 'package:harvest/theme/theme_controller.dart';
 import 'package:harvest/theme/theme_service.dart';
 import 'package:harvest/utils/platform.dart';
@@ -205,34 +204,29 @@ class ThemeIconButton extends StatelessWidget {
                                 if (showPreview.value && bg.backgroundImage.value.isNotEmpty) {
                                   Logger.instance.d(
                                       'backgroundImage: ${bg.backgroundImage.value} , useLocalBackground: ${bg.useLocalBackground.value}');
-                                  return SizedBox(
-                                    height: 200,
-                                    child: BackgroundContainer(
-                                      child: bg.useLocalBackground.value
-                                          ? bg.backgroundImage.value.startsWith('http')
-                                              ? SizedBox.shrink()
-                                              : Image.file(
-                                                  File(bg.backgroundImage.value),
-                                                  width: double.infinity,
-                                                  fit: BoxFit.fitWidth,
-                                                )
-                                          : Obx(
-                                              () {
-                                                return CachedNetworkImage(
-                                                  imageUrl:
-                                                      '${bg.useImageProxy.value ? 'https://images.weserv.nl/?url=' : ''}${bg.backgroundImage.value}',
-                                                  placeholder: (context, url) => Center(
-                                                      child: CircularProgressIndicator(
-                                                    color: shadColorScheme.primary,
-                                                  )),
-                                                  errorWidget: (context, url, error) =>
-                                                      Image.asset('assets/images/background.png'),
-                                                  fit: BoxFit.fitWidth,
-                                                );
-                                              },
-                                            ),
-                                    ),
-                                  );
+                                  return bg.useLocalBackground.value
+                                      ? bg.backgroundImage.value.startsWith('http')
+                                          ? SizedBox.shrink()
+                                          : Image.file(
+                                              File(bg.backgroundImage.value),
+                                              width: double.infinity,
+                                              fit: BoxFit.fitWidth,
+                                            )
+                                      : Obx(
+                                          () {
+                                            return CachedNetworkImage(
+                                              imageUrl:
+                                                  '${bg.useImageProxy.value ? 'https://images.weserv.nl/?url=' : ''}${bg.backgroundImage.value}',
+                                              placeholder: (context, url) => Center(
+                                                  child: CircularProgressIndicator(
+                                                color: shadColorScheme.primary,
+                                              )),
+                                              errorWidget: (context, url, error) =>
+                                                  Image.asset('assets/images/background.png'),
+                                              fit: BoxFit.fitWidth,
+                                            );
+                                          },
+                                        );
                                 }
                                 return SizedBox.shrink();
                               }),
