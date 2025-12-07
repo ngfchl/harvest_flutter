@@ -22,7 +22,6 @@ import '../../../../api/mysite.dart';
 import '../../../../common/card_view.dart';
 import '../../../../common/corner_badge.dart';
 import '../../../../common/form_widgets.dart';
-import '../../../../common/meta_item.dart';
 import '../../../../common/utils.dart';
 import '../../../../utils/calc_weeks.dart';
 import '../../../../utils/format_number.dart';
@@ -551,7 +550,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                           return ListTile(
                             dense: true,
                             leading: siteLogo('${controller.baseUrl}local/icons/${webSite?.name}.png', webSite!, item),
-                            title: Text(item.nickname ?? ''),
+                            title: Text(item.nickname),
                             trailing: Text(item.latestStatusInfo?.invitation.toString() ?? ''),
                           );
                         }),
@@ -593,7 +592,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
         ShadIconButton.ghost(
           onPressed: () async {
             Get.back();
-            await _showEditBottomSheet();
+            await _showEditBottomSheet(context: context);
           },
           icon: Icon(
             Icons.add_outlined,
@@ -668,7 +667,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
           ),
           trailing: ShadIconButton.ghost(
               onPressed: () async {
-                await _showEditBottomSheet(mySite: mySite);
+                await _showEditBottomSheet(mySite: mySite, context: context);
               },
               icon: Icon(
                 Icons.edit,
@@ -724,35 +723,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                   ? const BorderRadius.all(Radius.circular(8))
                   : const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
               onPressed: (context) async {
-                siteRefreshing.value = true;
-                CommonResponse res = await getNewestStatus(mySite.id);
-                if (res.succeed) {
-                  Get.snackbar('站点数据刷新成功', '${mySite.nickname} 数据刷新：${res.msg}', colorText: shadColorScheme.foreground);
-                  StatusInfo? status = StatusInfo.fromJson(res.data);
-                  Map<String, StatusInfo>? statusInfo = mySite.statusInfo;
-                  statusInfo.assign(getTodayString(), status);
-                  Logger.instance.d(statusInfo);
-                  MySite newSite = mySite.copyWith(statusInfo: statusInfo);
-                  controller.mySiteList = controller.mySiteList.map<MySite>((item) {
-                    if (item.id == mySite.id) {
-                      return newSite;
-                    }
-                    return item;
-                  }).toList();
-                  // controller.filterByKey();
-                  controller.update();
-
-                  Future.delayed(Duration(microseconds: 500), () async {
-                    controller.getSiteStatusFromServer();
-                    DashBoardController dController = Get.find();
-                    dController.initChartData();
-                    dController.update();
-                  });
-                } else {
-                  Get.snackbar('站点数据刷新失败', '${mySite.nickname} 数据刷新出错啦：${res.msg}',
-                      colorText: shadColorScheme.destructive);
-                }
-                siteRefreshing.value = false;
+                await refreshSiteData(siteRefreshing, mySite, shadColorScheme);
               },
             ),
             if (website.signIn == true && mySite.signIn && !signed)
@@ -765,28 +736,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                     : BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
                 foregroundColor: Colors.white,
                 onPressed: (context) async {
-                  siteRefreshing.value = true;
-                  CommonResponse res = await signIn(mySite.id);
-                  if (res.succeed) {
-                    Get.snackbar('签到成功', '${mySite.nickname} 签到信息：${res.msg}', colorText: shadColorScheme.foreground);
-                    SignInInfo? info = SignInInfo(updatedAt: getTodayString(), info: res.msg);
-                    Map<String, SignInInfo>? signInInfo = mySite.signInInfo;
-                    signInInfo.assign(getTodayString(), info);
-                    Logger.instance.d(signInInfo);
-                    MySite newSite = mySite.copyWith(signInInfo: signInInfo);
-                    controller.mySiteList = controller.mySiteList.map<MySite>((item) {
-                      if (item.id == mySite.id) {
-                        return newSite;
-                      }
-                      return item;
-                    }).toList();
-                    // controller.filterByKey();
-                    controller.update();
-                  } else {
-                    Get.snackbar('签到失败', '${mySite.nickname} 签到任务执行出错啦：${res.msg}',
-                        colorText: shadColorScheme.destructive);
-                  }
-                  siteRefreshing.value = false;
+                  await signSite(siteRefreshing, mySite, shadColorScheme);
                 },
               ),
             if (website.repeatTorrents == true && mySite.repeatTorrents)
@@ -796,14 +746,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                 foregroundColor: Colors.white,
                 borderRadius: BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
                 onPressed: (context) async {
-                  CommonResponse res = await repeatSite(mySite.id);
-
-                  if (res.succeed) {
-                    Get.snackbar('辅种任务发送成功', '${mySite.nickname} ${res.msg}', colorText: shadColorScheme.foreground);
-                  } else {
-                    Get.snackbar('辅种任务发送失败', '${mySite.nickname} 辅种出错啦：${res.msg}',
-                        colorText: shadColorScheme.destructive);
-                  }
+                  await repeatSite(mySite, shadColorScheme);
                 },
                 icon: Icons.copy_outlined,
                 label: '辅种',
@@ -843,7 +786,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
               flex: 1,
               borderRadius: BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
               onPressed: (context) async {
-                await _showEditBottomSheet(mySite: mySite);
+                await _showEditBottomSheet(mySite: mySite, context: context);
               },
               backgroundColor: Color(0xFFD32F2F),
               foregroundColor: Colors.white,
@@ -1350,6 +1293,71 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     );
   }
 
+  Future<void> repeatSite(MySite mySite, ShadColorScheme shadColorScheme) async {
+    CommonResponse res = await repeatSiteApi(mySite.id);
+
+    if (res.succeed) {
+      Get.snackbar('辅种任务发送成功', '${mySite.nickname} ${res.msg}', colorText: shadColorScheme.foreground);
+    } else {
+      Get.snackbar('辅种任务发送失败', '${mySite.nickname} 辅种出错啦：${res.msg}', colorText: shadColorScheme.destructive);
+    }
+  }
+
+  Future<void> signSite(RxBool siteRefreshing, MySite mySite, ShadColorScheme shadColorScheme) async {
+    siteRefreshing.value = true;
+    CommonResponse res = await signIn(mySite.id);
+    if (res.succeed) {
+      Get.snackbar('签到成功', '${mySite.nickname} 签到信息：${res.msg}', colorText: shadColorScheme.foreground);
+      SignInInfo? info = SignInInfo(updatedAt: getTodayString(), info: res.msg);
+      Map<String, SignInInfo>? signInInfo = mySite.signInInfo;
+      signInInfo.assign(getTodayString(), info);
+      Logger.instance.d(signInInfo);
+      MySite newSite = mySite.copyWith(signInInfo: signInInfo);
+      controller.mySiteList = controller.mySiteList.map<MySite>((item) {
+        if (item.id == mySite.id) {
+          return newSite;
+        }
+        return item;
+      }).toList();
+      // controller.filterByKey();
+      controller.update();
+    } else {
+      Get.snackbar('签到失败', '${mySite.nickname} 签到任务执行出错啦：${res.msg}', colorText: shadColorScheme.destructive);
+    }
+    siteRefreshing.value = false;
+  }
+
+  Future<void> refreshSiteData(RxBool siteRefreshing, MySite mySite, ShadColorScheme shadColorScheme) async {
+    siteRefreshing.value = true;
+    CommonResponse res = await getNewestStatus(mySite.id);
+    if (res.succeed) {
+      Get.snackbar('站点数据刷新成功', '${mySite.nickname} 数据刷新：${res.msg}', colorText: shadColorScheme.foreground);
+      StatusInfo? status = StatusInfo.fromJson(res.data);
+      Map<String, StatusInfo>? statusInfo = mySite.statusInfo;
+      statusInfo.assign(getTodayString(), status);
+      Logger.instance.d(statusInfo);
+      MySite newSite = mySite.copyWith(statusInfo: statusInfo);
+      controller.mySiteList = controller.mySiteList.map<MySite>((item) {
+        if (item.id == mySite.id) {
+          return newSite;
+        }
+        return item;
+      }).toList();
+      // controller.filterByKey();
+      controller.update();
+
+      Future.delayed(Duration(microseconds: 500), () async {
+        controller.getSiteStatusFromServer();
+        DashBoardController dController = Get.find();
+        dController.initChartData();
+        dController.update();
+      });
+    } else {
+      Get.snackbar('站点数据刷新失败', '${mySite.nickname} 数据刷新出错啦：${res.msg}', colorText: shadColorScheme.destructive);
+    }
+    siteRefreshing.value = false;
+  }
+
   ClipRRect siteLogo(String iconUrl, WebSite website, MySite mySite) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
@@ -1374,7 +1382,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     );
   }
 
-  Future<void> _showEditBottomSheet({MySite? mySite}) async {
+  Future<void> _showEditBottomSheet({MySite? mySite, required BuildContext context}) async {
     var shadThemeData = ShadTheme.of(context);
     var shadColorScheme = shadThemeData.colorScheme;
     if (mySite != null) {
@@ -1845,93 +1853,86 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
             OverflowBar(
               alignment: MainAxisAlignment.spaceAround,
               children: [
-                ShadButton.destructive(
+                ShadButton.ghost(
                   size: ShadButtonSize.sm,
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    Get.back();
                   },
                   leading: Icon(
                     Icons.cancel,
-                    color: shadColorScheme.destructiveForeground,
+                    size: 16,
                   ),
                   child: Text(
                     '取消',
-                    style: TextStyle(
-                      color: shadColorScheme.destructiveForeground,
-                    ),
+                    style: TextStyle(),
                   ),
                 ),
                 if (mySite != null)
-                  ShadButton.destructive(
+                  ShadButton.outline(
                     size: ShadButtonSize.sm,
                     onPressed: () async {
                       Get.defaultDialog(
-                          title: '删除站点：${mySite?.nickname}',
-                          radius: 5,
-                          titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
-                          middleText: '确定要删除吗？',
-                          actions: [
-                            ShadButton.destructive(
-                              size: ShadButtonSize.sm,
-                              onPressed: () {
-                                Get.back(result: false);
-                              },
-                              child: const Text('取消'),
-                            ),
-                            ShadButton(
-                              size: ShadButtonSize.sm,
-                              onPressed: () async {
-                                Get.back(result: true);
-                                Navigator.of(context).pop();
-                                var res = await controller.removeSiteFromServer(mySite!);
-                                if (res.succeed) {
-                                  Get.snackbar(
-                                    '删除站点',
-                                    res.msg.toString(),
-                                    colorText: shadColorScheme.foreground,
-                                  );
-                                  await controller.getSiteStatusFromServer();
-                                } else {
-                                  Logger.instance.e(res.msg);
-                                  Get.snackbar(
-                                    '删除站点',
-                                    res.msg.toString(),
-                                    colorText: shadColorScheme.destructive,
-                                  );
-                                }
-                              },
-                              child: const Text('确认'),
-                            ),
-                          ]);
+                        title: '删除站点：${mySite?.nickname}',
+                        radius: 5,
+                        titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+                        middleText: '确定要删除吗？',
+                        actions: [
+                          ShadButton(
+                            size: ShadButtonSize.sm,
+                            onPressed: () {
+                              Get.back(result: false);
+                            },
+                            child: const Text('取消'),
+                          ),
+                          ShadButton.destructive(
+                            size: ShadButtonSize.sm,
+                            onPressed: () async {
+                              Get.back(result: true);
+                              Navigator.of(context).pop();
+                              var res = await controller.removeSiteFromServer(mySite!);
+                              if (res.succeed) {
+                                Get.snackbar(
+                                  '删除站点',
+                                  res.msg.toString(),
+                                  colorText: shadColorScheme.foreground,
+                                );
+                                await controller.getSiteStatusFromServer();
+                              } else {
+                                Logger.instance.e(res.msg);
+                                Get.snackbar(
+                                  '删除站点',
+                                  res.msg.toString(),
+                                  colorText: shadColorScheme.destructive,
+                                );
+                              }
+                            },
+                            child: const Text('确认'),
+                          ),
+                        ],
+                      );
                     },
-                    leading: Icon(Icons.delete, color: shadColorScheme.destructiveForeground),
-                    child: Text(
-                      '删除',
-                      style: TextStyle(
-                        color: shadColorScheme.destructiveForeground,
-                      ),
-                    ),
+                    foregroundColor: shadColorScheme.destructive,
+                    leading: Icon(Icons.delete, size: 16),
+                    child: Text('删除'),
                   ),
                 if (selectedSite.value != null)
-                  ShadButton(
+                  ShadButton.destructive(
                     size: ShadButtonSize.sm,
-                    leading: Obx(() {
-                      return doSaveLoading.value
-                          ? SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: Center(
-                                  child: CircularProgressIndicator(
-                                color: shadColorScheme.primaryForeground,
-                              )))
-                          : Icon(Icons.save, color: shadColorScheme.primaryForeground);
-                    }),
-                    child: Text(
-                      '保存',
-                      style: TextStyle(
-                        color: shadColorScheme.primaryForeground,
-                      ),
+                    leading: Obx(
+                      () {
+                        return doSaveLoading.value
+                            ? SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: Center(
+                                    child: CircularProgressIndicator(
+                                  color: shadColorScheme.foreground,
+                                )))
+                            : Icon(Icons.save, size: 16);
+                      },
                     ),
+                    foregroundColor: shadColorScheme.foreground,
+                    child: Text('保存'),
                     onPressed: () async {
                       doSaveLoading.value = true;
                       if (mySite != null) {
@@ -2029,98 +2030,6 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
         ),
       ),
     );
-  }
-
-  void _showSortBottomSheet() {
-    var shadColorScheme = ShadTheme.of(context).colorScheme;
-    Get.bottomSheet(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-        CustomCard(
-          width: 550,
-          child: Column(children: [
-            Expanded(
-              child: GetBuilder<MySiteController>(builder: (controller) {
-                return ListView.builder(
-                  itemCount: controller.siteSortOptions.length,
-                  itemBuilder: (context, index) {
-                    MetaDataItem item = controller.siteSortOptions[index];
-                    return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: ListTile(
-                        title: Text(item.name),
-                        dense: true,
-                        selectedColor: Colors.amber,
-                        selected: controller.sortKey == item.value,
-                        titleTextStyle: TextStyle(
-                          fontSize: 13,
-                          color: shadColorScheme.foreground,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                        trailing: controller.sortKey == item.value
-                            ? Icon(
-                                Icons.check_box_outlined,
-                                color: shadColorScheme.foreground,
-                              )
-                            : Icon(
-                                Icons.check_box_outline_blank_rounded,
-                                color: shadColorScheme.foreground,
-                              ),
-                        onTap: () {
-                          controller.sortKey = item.value!;
-                          controller.sortStatusList();
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    );
-                  },
-                );
-              }),
-            ),
-          ]),
-        ));
-  }
-
-  void _showFilterBottomSheet() {
-    var shadColorScheme = ShadTheme.of(context).colorScheme;
-    Get.bottomSheet(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-        CustomCard(
-          width: 550,
-          child: Column(children: [
-            Expanded(child: GetBuilder<MySiteController>(builder: (controller) {
-              return ListView.builder(
-                  itemCount: controller.filterOptions.length,
-                  itemBuilder: (context, index) {
-                    MetaDataItem item = controller.filterOptions[index];
-                    return ListTile(
-                        title: Text(item.name),
-                        titleTextStyle: TextStyle(
-                          fontSize: 13,
-                          color: shadColorScheme.foreground,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                        dense: true,
-                        trailing: controller.filterKey == item.value
-                            ? Icon(
-                                Icons.check_box_outlined,
-                                color: shadColorScheme.foreground,
-                              )
-                            : Icon(
-                                Icons.check_box_outline_blank_rounded,
-                                color: shadColorScheme.foreground,
-                              ),
-                        selectedColor: Colors.amber,
-                        selected: controller.filterKey == item.value,
-                        onTap: () {
-                          controller.filterKey = item.value!;
-                          controller.filterByKey();
-
-                          Navigator.of(context).pop();
-                        });
-                  });
-            }))
-          ]),
-        ));
   }
 
   void _showSignHistory(MySite mySite) async {

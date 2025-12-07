@@ -62,14 +62,14 @@ class _WebViewPageState extends State<WebViewPage> {
           middleTextStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
           titleStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
           radius: 10,
-          cancel: ShadButton.destructive(
+          cancel: ShadButton.ghost(
             size: ShadButtonSize.sm,
             onPressed: () async {
               Navigator.of(context).pop(true);
             },
             child: const Text('取消'),
           ),
-          confirm: ShadButton(
+          confirm: ShadButton.destructive(
             size: ShadButtonSize.sm,
             onPressed: () async {
               Navigator.of(context).pop(false);
