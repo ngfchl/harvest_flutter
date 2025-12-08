@@ -58,61 +58,62 @@ jobs:
           export QINIU_ZONE="app/${VERSION}"
           qiniu upload --access-key ${{ secrets.QINIU_ACCESS_KEY }} --secret-key ${{ secrets.QINIU_SECRET_KEY }} --bucket "laonie" --zone ${{ secrets.QINIU_ZONE }} ${{ github.workspace }}/${{ steps.build_web.outputs.file_name }}
 
-    linux: # 构建 Linux 桌面应用
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout repository
-          uses: actions/checkout@v4
-          with:
-            fetch-depth: 0
 
-        - name: Set up Flutter
-          uses: subosito/flutter-action@v2
-          with:
-            flutter-version: '3.32.4'
-        - run: |
-            sudo apt-get update -y  # 更新系统包信息
-            sudo apt-get install -y ninja-build libgtk-3-dev  # 安装依赖（用于 Linux 构建）
+  linux: # 构建 Linux 桌面应用
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-        - name: Install Flutter dependencies
-          run: flutter pub get
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.4'
+      - run: |
+          sudo apt-get update -y  # 更新系统包信息
+          sudo apt-get install -y ninja-build libgtk-3-dev  # 安装依赖（用于 Linux 构建）
 
-        - name: Build Linux Dist
-        - run: flutter build linux --release
-        # - run: tar -czvf linux-x64.tar.gz -C build/linux/x64/release/bundle .  # 压缩为 tar 包
-        - name: Archive Linux Dist To Release Archive
-          id: build_linux_x64  # 定义一个步骤 ID，用于后续引用
-          run: |
-            VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
-            ARCH="linux-x64"
-            SYSTEM="linux"
-            FILE_NAME="harvest_${VERSION}_${ARCH}_${SYSTEM}.tar.gz"
-            tar -czvf $FILE_NAME -C build/linux/x64/release/bundle .
-            echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
+      - name: Install Flutter dependencies
+        run: flutter pub get
 
-        - name: Archive Linux Dist To Release Archive
-          uses: softprops/action-gh-release@v2
-          with:
-            github_token: ${{ secrets.TOKEN_GITHUB }}
-            files: ${{ github.workspace }}/${{ steps.build_linux_x64.outputs.file_name }}
-            tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-            name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-            draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
-            prerelease: false
+      - name: Build Linux Dist
+      - run: flutter build linux --release
+      # - run: tar -czvf linux-x64.tar.gz -C build/linux/x64/release/bundle .  # 压缩为 tar 包
+      - name: Archive Linux Dist To Release Archive
+        id: build_linux_x64  # 定义一个步骤 ID，用于后续引用
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          ARCH="linux-x64"
+          SYSTEM="linux"
+          FILE_NAME="harvest_${VERSION}_${ARCH}_${SYSTEM}.tar.gz"
+          tar -czvf $FILE_NAME -C build/linux/x64/release/bundle .
+          echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
 
-        - name: Install Qiniu CLI
-          run: |
-            curl -L https://github.com/qiniu/x-cli/releases/download/v1.2.1/x-cli-macos-amd64.tar.gz -o x-cli.tar.gz
-            tar -xvzf x-cli.tar.gz
-            sudo mv x-cli /usr/local/bin
-        - name: Upload Linux Dist to Qiniu Cloud
-          run: |
-            export QINIU_ACCESS_KEY=${{ secrets.QINIU_ACCESS_KEY }}
-            export QINIU_SECRET_KEY=${{ secrets.QINIU_SECRET_KEY }}
+      - name: Archive Linux Dist To Release Archive
+        uses: softprops/action-gh-release@v2
+        with:
+          github_token: ${{ secrets.TOKEN_GITHUB }}
+          files: ${{ github.workspace }}/${{ steps.build_linux_x64.outputs.file_name }}
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
+          name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
+          draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
+          prerelease: false
 
-            export VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
-            export QINIU_ZONE="app/${VERSION}"
-            qiniu upload --access-key ${{ secrets.QINIU_ACCESS_KEY }} --secret-key ${{ secrets.QINIU_SECRET_KEY }} --bucket "laonie" --zone ${{ secrets.QINIU_ZONE }} ${{ github.workspace }}/${{ steps.build_linux_x64.outputs.file_name }}
+      - name: Install Qiniu CLI
+        run: |
+          curl -L https://github.com/qiniu/x-cli/releases/download/v1.2.1/x-cli-macos-amd64.tar.gz -o x-cli.tar.gz
+          tar -xvzf x-cli.tar.gz
+          sudo mv x-cli /usr/local/bin
+      - name: Upload Linux Dist to Qiniu Cloud
+        run: |
+          export QINIU_ACCESS_KEY=${{ secrets.QINIU_ACCESS_KEY }}
+          export QINIU_SECRET_KEY=${{ secrets.QINIU_SECRET_KEY }}
+
+          export VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          export QINIU_ZONE="app/${VERSION}"
+          qiniu upload --access-key ${{ secrets.QINIU_ACCESS_KEY }} --secret-key ${{ secrets.QINIU_SECRET_KEY }} --bucket "laonie" --zone ${{ secrets.QINIU_ZONE }} ${{ github.workspace }}/${{ steps.build_linux_x64.outputs.file_name }}
 
   android: # 构建 Android 应用
     runs-on: ubuntu-latest
