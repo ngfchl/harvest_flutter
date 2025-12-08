@@ -79,7 +79,7 @@ jobs:
         run: flutter pub get
 
       - name: Build Linux Dist
-      - run: flutter build linux --release
+        run: flutter build linux --release
       # - run: tar -czvf linux-x64.tar.gz -C build/linux/x64/release/bundle .  # 压缩为 tar 包
       - name: Archive Linux Dist To Release Archive
         id: build_linux_x64  # 定义一个步骤 ID，用于后续引用
