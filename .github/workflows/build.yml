@@ -288,8 +288,8 @@ jobs:
           $arch="x86_64"
           $FILE_NAME="harvest_${version}_${arch}-win.zip"
           Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath $FILE_NAME  # 压缩为 zip 文件
-          echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
-          echo "app_version=$version" >> $GITHUB_OUTPUT
+          echo "file_name=$FILE_NAME" >> $env:GITHUB_OUTPUT
+          echo "app_version=$version" >> $env:GITHUB_OUTPUT
           ls -l $FILE_NAME
       - name: Archive Windows Dist To Release Archive
         uses: softprops/action-gh-release@v2
