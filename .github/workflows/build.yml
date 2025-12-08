@@ -19,7 +19,98 @@ jobs:
         uses: subosito/flutter-action@v2  # 安装 Flutter 环境
         with:
           flutter-version: '3.32.4'
+      - name: Generate Changelog
+        id: changelog
+        shell: bash
+        run: |
+          CURRENT_TAG=${GITHUB_REF#refs/tags/}
+          PREV_TAG=$(git describe --tags --abbrev=0 ${CURRENT_TAG}^ 2>/dev/null || echo "")
 
+          echo "当前 TAG: $CURRENT_TAG"
+          echo "上一个 TAG: $PREV_TAG"
+
+          if [ -z "$PREV_TAG" ]; then
+            RANGE=""
+          else
+            RANGE="$PREV_TAG..$CURRENT_TAG"
+          fi
+
+          # 获取原始 git log（排除 chore 和 merge）
+          RAW_LOG=$(git log $RANGE --pretty=format:"%H|%s" --no-merges | grep -v -E '^.*\|(chore|chore:)' || true)
+
+          # 分类存储
+          FEAT=""
+          FIX=""
+          DOCS=""
+          REFACTOR=""
+          PERF=""
+          TEST=""
+          OTHER=""
+
+          while IFS='|' read -r HASH MSG; do
+            [ -z "$HASH" ] && continue
+
+            # 如果是 GitHub PR merge 提交，跳过（已被上方 --no-merges 排除）
+            # 查询 PR 标题（如果 commit 提到 #PR_NUMBER）
+            PR_TITLE=""
+            if [[ "$MSG" =~ \#([0-9]+) ]]; then
+              PR_NUM="${BASH_REMATCH[1]}"
+              PR_TITLE=$(gh pr view "$PR_NUM" --json title --jq '.title' 2>/dev/null || echo "")
+            fi
+
+            DISPLAY_MSG="$MSG"
+            if [ -n "$PR_TITLE" ]; then
+              DISPLAY_MSG="$PR_TITLE (#$PR_NUM)"
+            fi
+
+            SHORT_HASH=$(echo "$HASH" | cut -c1-7)
+
+            if [[ "$MSG" =~ ^feat ]]; then
+                FEAT+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
+            elif [[ "$MSG" =~ ^fix ]]; then
+                FIX+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
+            elif [[ "$MSG" =~ ^docs ]]; then
+                DOCS+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
+            elif [[ "$MSG" =~ ^refactor ]]; then
+                REFACTOR+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
+            elif [[ "$MSG" =~ ^perf ]]; then
+                PERF+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
+            elif [[ "$MSG" =~ ^test ]]; then
+                TEST+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
+            else
+                OTHER+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
+            fi
+          done <<< "$RAW_LOG"
+
+          # 组合中文日志
+          FINAL_LOG=""
+
+          if [ -n "$FEAT" ]; then
+            FINAL_LOG+="\n### ✨ 新增功能\n${FEAT}\n"
+          fi
+          if [ -n "$FIX" ]; then
+            FINAL_LOG+="\n### 🐛 修复问题\n${FIX}\n"
+          fi
+          if [ -n "$DOCS" ]; then
+            FINAL_LOG+="\n### 📖 文档更新\n${DOCS}\n"
+          fi
+          if [ -n "$REFACTOR" ]; then
+            FINAL_LOG+="\n### 🔨 重构\n${REFACTOR}\n"
+          fi
+          if [ -n "$PERF" ]; then
+            FINAL_LOG+="\n### ⚡ 性能优化\n${PERF}\n"
+          fi
+          if [ -n "$TEST" ]; then
+            FINAL_LOG+="\n### 🧪 测试相关\n${TEST}\n"
+          fi
+          if [ -n "$OTHER" ]; then
+            FINAL_LOG+="\n### 📌 其他变更\n${OTHER}\n"
+          fi
+
+          # 回写到 GitHub 输出
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$FINAL_LOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
       - name: Install Flutter dependencies
         run: flutter pub get  # 下载项目依赖
 
@@ -45,13 +136,16 @@ jobs:
           name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
           draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}  # 如果不是 tag，作为草稿
           prerelease: false  # 不标记为预发布版本
+          body: |
+            ## 📌 更新日志
+            ${{ steps.changelog.outputs.changelog }}
       - name: 上传到七牛云
         uses: qiniu/upload-action@main
         with:
           bucket: laonie # 空间名称，按实际情况填写
           access_key: ${{ secrets.QINIU_ACCESS_KEY }} # 七牛云 AccessKey 备注2
           secret_key: ${{ secrets.QINIU_SECRET_KEY }} # 七牛云 SecretKey 备注2
-          artifacts: ${{ github.workspace }}/${{ steps.build_web.outputs.file_name }} # 本地文件夹
+          artifacts: ${{ steps.build_web.outputs.file_name }} # 本地文件夹
           prefix: app/${{ steps.build_web.outputs.app_version }} # 要上传到七牛云中的文件夹
           overwrite: true # 是否覆盖已有文件
 
@@ -112,7 +206,7 @@ jobs:
           bucket: laonie # 空间名称，按实际情况填写
           access_key: ${{ secrets.QINIU_ACCESS_KEY }} # 七牛云 AccessKey 备注2
           secret_key: ${{ secrets.QINIU_SECRET_KEY }} # 七牛云 SecretKey 备注2
-          artifacts: ${{ github.workspace }}/${{ steps.build_linux_x64.outputs.file_name }} # 本地文件夹
+          artifacts: ${{ steps.build_linux_x64.outputs.file_name }} # 本地文件夹
           prefix: app/${{ steps.build_linux_x64.outputs.app_version }}  # 文件路径前缀 # 要上传到七牛云中的文件夹
           overwrite: true # 是否覆盖已有文件
 
@@ -166,7 +260,7 @@ jobs:
           bucket: laonie # 空间名称，按实际情况填写
           access_key: ${{ secrets.QINIU_ACCESS_KEY }} # 七牛云 AccessKey 备注2
           secret_key: ${{ secrets.QINIU_SECRET_KEY }} # 七牛云 SecretKey 备注2
-          artifacts: ${{ github.workspace }}/${{ steps.build_android_arm64.outputs.file_name }} # 本地文件夹
+          artifacts: ${{ steps.build_android_arm64.outputs.file_name }} # 本地文件夹
           prefix: app/${{ steps.build_android_arm64.outputs.app_version }}  # 文件路径前缀 # 要上传到七牛云中的文件夹
           overwrite: true # 是否覆盖已有文件
 
@@ -212,7 +306,7 @@ jobs:
           bucket: laonie # 空间名称，按实际情况填写
           access_key: ${{ secrets.QINIU_ACCESS_KEY }} # 七牛云 AccessKey 备注2
           secret_key: ${{ secrets.QINIU_SECRET_KEY }} # 七牛云 SecretKey 备注2
-          artifacts: ${{ github.workspace }}/${{ steps.build_windows_x86.outputs.file_name }} # 本地文件夹
+          artifacts: ${{ steps.build_windows_x86.outputs.file_name }} # 本地文件夹
           prefix: app/${{ steps.build_windows_x86.outputs.app_version }}  # 文件路径前缀 # 要上传到七牛云中的文件夹
           overwrite: true # 是否覆盖已有文件
 
@@ -260,7 +354,7 @@ jobs:
           bucket: laonie # 空间名称，按实际情况填写
           access_key: ${{ secrets.QINIU_ACCESS_KEY }} # 七牛云 AccessKey 备注2
           secret_key: ${{ secrets.QINIU_SECRET_KEY }} # 七牛云 SecretKey 备注2
-          artifacts: ${{ github.workspace }}/${{ steps.build_macos_x86.outputs.file_name }} # 本地文件夹
+          artifacts: ${{ steps.build_macos_x86.outputs.file_name }} # 本地文件夹
           prefix: app/${{ steps.build_macos_x86.outputs.app_version }}  # 文件路径前缀 # 要上传到七牛云中的文件夹
           overwrite: true # 是否覆盖已有文件
 
@@ -309,7 +403,7 @@ jobs:
           bucket: laonie # 空间名称，按实际情况填写
           access_key: ${{ secrets.QINIU_ACCESS_KEY }} # 七牛云 AccessKey 备注2
           secret_key: ${{ secrets.QINIU_SECRET_KEY }} # 七牛云 SecretKey 备注2
-          artifacts: ${{ github.workspace }}/${{ steps.build_macos_arm.outputs.file_name }} # 本地文件夹
+          artifacts: ${{ steps.build_macos_arm.outputs.file_name }} # 本地文件夹
           prefix: app/${{ steps.build_macos_arm.outputs.app_version }}  # 文件路径前缀 # 要上传到七牛云中的文件夹
           overwrite: true # 是否覆盖已有文件
 
@@ -359,6 +453,6 @@ jobs:
           bucket: laonie # 空间名称，按实际情况填写
           access_key: ${{ secrets.QINIU_ACCESS_KEY }} # 七牛云 AccessKey 备注2
           secret_key: ${{ secrets.QINIU_SECRET_KEY }} # 七牛云 SecretKey 备注2
-          artifacts: ${{ github.workspace }}/${{ steps.build_ios.outputs.file_name }} # 本地文件夹
+          artifacts: ${{ steps.build_ios.outputs.file_name }} # 本地文件夹
           prefix: app/${{ steps.build_ios.outputs.app_version }}  # 文件路径前缀 # 要上传到七牛云中的文件夹
           overwrite: true # 是否覆盖已有文件
