@@ -12,12 +12,12 @@ jobs:
   linux: # 构建 Linux 桌面应用
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: 签出仓库
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - name: Set up Flutter
+      - name: 指定 Flutter 版本
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.32.4'
@@ -34,13 +34,13 @@ jobs:
                libmpv-dev \
                pkg-config  # 安装依赖（用于 Linux 构建）
 
-      - name: Install Flutter dependencies
+      - name: 安装 Flutter 依赖
         run: flutter pub get
 
-      - name: Build Linux Dist
+      - name: 打包 Linux x64 发行版
         run: flutter build linux --release
       # - run: tar -czvf linux-x64.tar.gz -C build/linux/x64/release/bundle .  # 压缩为 tar 包
-      - name: Archive Linux Dist To Release Archive
+      - name: 生成 Linux x64 发行版文件名
         id: build_linux_x64  # 定义一个步骤 ID，用于后续引用
         run: |
           VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
@@ -51,7 +51,7 @@ jobs:
           echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
           echo "app_version=${VERSION}" >> $GITHUB_OUTPUT
           ls -l $FILE_NAME
-      - name: Archive Linux Dist To Release Archive
+      - name: 发布 Linux x64 发行版到 GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
           token: ${{ secrets.TOKEN_GITHUB }}
@@ -74,27 +74,43 @@ jobs:
   android: # 构建 Android 应用
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: 签出仓库
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - name: Set up Java
+      - name: 设置 Java 环境
         uses: actions/setup-java@v5  # 设置 Java 环境（Android 编译需要）
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Set up Flutter
+          # 👇 关键步骤：还原 keystore 文件
+      - name: 还原 Android 上传 keystore 文件
+        run: |
+          mkdir -p android/app
+          echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          # 👇 生成 key.properties 文件
+      - name: 生成 Android key.properties 文件
+        run: |
+          cat <<EOF > android/key.properties
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=app/upload-keystore.jks
+          EOF
+      - name: 指定 Flutter 版本
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.32.4'
-      - name: Accept Android SDK licenses
+      - name: 同意 Android SDK 许可证
         run: yes | flutter doctor --android-licenses
-      - name: Install Flutter dependencies
+      - name: 安装 Flutter 依赖
         run: flutter pub get
-      - name: Build Android Dist
+      - name: 打包 Android arm64 发行版
         run: flutter build apk --release --obfuscate --split-debug-info=build/symbols --split-per-abi  # 构建 64 位 Android 安装包
       # - run: cp build/app/outputs/flutter-apk/app-release.apk android.apk
-      - name: Archive Android Dist To Release Archive
+      - name: 生成 Android arm64 发行版文件名
         id: build_android_arm64  # 定义一个步骤 ID，用于后续引用
         run: |
           VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
@@ -105,7 +121,7 @@ jobs:
           echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
           echo "app_version=${VERSION}" >> $GITHUB_OUTPUT
           ls -l $FILE_NAME
-      - name: Archive Android Dist To Release Archive
+      - name: 发布 Android arm64 发行版到 GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
           token: ${{ secrets.TOKEN_GITHUB }}
@@ -127,20 +143,20 @@ jobs:
   windows: # 构建 Windows 桌面应用
     runs-on: windows-latest
     steps:
-      - name: Checkout repository
+      - name: 签出仓库
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - name: Set up Flutter
+      - name: 指定 Flutter 版本
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.32.4'
-      - name: Install Flutter dependencies
+      - name: 安装 Flutter 依赖
         run: flutter pub get
-      - name: Build Windows Dist
+      - name: 打包 Windows x86 发行版
         run: flutter build windows --release
       # - run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath windows-x64.zip  # 压缩为 zip 文件
-      - name: Archive Windows Dist To Release Archive
+      - name: 生成 Windows x86 发行版文件名
         id: build_windows_x86  # 定义一个步骤 ID，用于后续引用
         run: |
           $versionLine = Get-Content pubspec.yaml | Where-Object { $_ -match '^version:' }
@@ -151,7 +167,7 @@ jobs:
           echo "file_name=$FILE_NAME" >> $env:GITHUB_OUTPUT
           echo "app_version=$version" >> $env:GITHUB_OUTPUT
           ls -l $FILE_NAME
-      - name: Archive Windows Dist To Release Archive
+      - name: 发布 Windows x86 发行版到 GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
           token: ${{ secrets.TOKEN_GITHUB }}
@@ -173,20 +189,20 @@ jobs:
   macos_intel: # 构建 macOS 桌面应用
     runs-on: macos-15-intel
     steps:
-      - name: Checkout repository
+      - name: 签出仓库
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - name: Set up Flutter
+      - name: 指定 Flutter 版本
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.32.4'
-      - name: Install Flutter dependencies
+      - name: 安装 Flutter 依赖
         run: flutter pub get
-      - name: Build macOS Dist
+      - name: 打包 macOS x86 发行版
         run: flutter build macos --release
       # - run: tar -czvf macos.tar.gz -C build/macos/Build/Products/Release app.app  # 打包为 .tar.gz
-      - name: Archive macOS Dist To Release Archive
+      - name: 生成 macOS x86 发行版文件名
         id: build_macos_x86  # 定义一个步骤 ID，用于后续引用
         run: |
           VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
@@ -199,7 +215,7 @@ jobs:
           echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
           echo "app_version=$VERSION" >> $GITHUB_OUTPUT
           ls -l $FILE_NAME.dmg
-      - name: Archive macOS Dist To Release Archive
+      - name: 发布 macOS x86 发行版到 GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
           token: ${{ secrets.TOKEN_GITHUB }}
@@ -222,20 +238,20 @@ jobs:
   macos_arm: # 构建 macOS 桌面应用
     runs-on: macos-latest
     steps:
-      - name: Checkout repository
+      - name: 签出仓库
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - name: Set up Flutter
+      - name: 指定 Flutter 版本
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.32.4'
-      - name: Install Flutter dependencies
+      - name: 安装 Flutter 依赖
         run: flutter pub get
-      - name: Build macOS Dist
+      - name: 打包 macOS arm64 发行版
         run: flutter build macos --release
       # - run: tar -czvf macos.tar.gz -C build/macos/Build/Products/Release app.app  # 打包为 .tar.gz
-      - name: Archive macOS Dist To Release Archive
+      - name: 生成 macOS arm64 发行版文件名
         id: build_macos_arm  # 定义一个步骤 ID，用于后续引用
         run: |
           VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
@@ -248,7 +264,7 @@ jobs:
           echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
           echo "app_version=$VERSION" >> $GITHUB_OUTPUT
           ls -l $FILE_NAME.dmg
-      - name: Archive macOS Dist To Release Archive
+      - name: 发布 macOS arm64 发行版到 GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
           token: ${{ secrets.TOKEN_GITHUB }}
@@ -270,20 +286,20 @@ jobs:
   ios: # 构建 iOS 应用（需要 macOS 系统）
     runs-on: macos-latest
     steps:
-      - name: Checkout repository
+      - name: 签出仓库
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - name: Set up Flutter
+      - name: 指定 Flutter 版本
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.32.4'
-      - name: Install Flutter dependencies
+      - name: 安装 Flutter 依赖
         run: flutter pub get
-      - name: Build iOS Dist
+      - name: 打包 iOS arm64 发行版
         run: flutter build ios --release --no-codesign  # 构建 iOS 应用，但不签名（用于测试）
       #      - run: tar -czvf ios.tar.gz -C build/ios/iphoneos Runner.app  # 压缩打包
-      - name: Archive iOS Dist To Release IPA
+      - name: 生成 iOS arm64 发行版文件名
         id: build_ios  # 定义一个步骤 ID，用于后续引用
         run: |
           VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
@@ -298,7 +314,7 @@ jobs:
           echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
           echo "app_version=$VERSION" >> $GITHUB_OUTPUT
           ls -l $FILE_NAME
-      - name: Archive iOS Dist To Release Archive
+      - name: 发布 iOS arm64 发行版到 GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
           token: ${{ secrets.TOKEN_GITHUB }}
@@ -322,15 +338,15 @@ jobs:
     needs: [ linux, android, windows, macos_intel, macos_arm, ios ]
 
     steps:
-      - name: Checkout repository
+      - name: 签出仓库
         uses: actions/checkout@v6  # 拉取代码仓库
         with:
           fetch-depth: 0  # 获取完整的提交历史（用于生成变更日志等）
-      - name: Set up Flutter
+      - name: 指定 Flutter 版本
         uses: subosito/flutter-action@v2  # 安装 Flutter 环境
         with:
           flutter-version: '3.32.4'
-      - name: Generate Changelog
+      - name: 生成发行版变更日志
         id: changelog
         shell: bash
         run: |
@@ -422,13 +438,13 @@ jobs:
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
           echo -e "$FINAL_LOG" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-      - name: Install Flutter dependencies
+      - name: 安装 Flutter 依赖
         run: flutter pub get  # 下载项目依赖
 
-      - name: Build WebDist
+      - name: 打包 Web 发行版
         run: flutter build web --release  # 构建 Web 版本的发布包
       #      - run: tar -czvf web.tar.gz -C build/web .  # 压缩打包为 web.tar.gz
-      - name: Archive WebDist To Release Archive
+      - name: 生成 Web 发行版文件名
         id: build_web  # 定义一个步骤 ID，用于后续引用
         run: |
           VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
@@ -438,7 +454,7 @@ jobs:
           echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
           echo "app_version=${VERSION}" >> $GITHUB_OUTPUT
           ls -l $FILE_NAME
-      - name: Archive WebDist To Release Archive
+      - name: 发布 Web 发行版到 GitHub Releases
         uses: softprops/action-gh-release@v2  # 发布 GitHub Release
         with:
           token: ${{ secrets.TOKEN_GITHUB }}
@@ -459,7 +475,7 @@ jobs:
           artifacts: ${{ steps.build_web.outputs.file_name }} # 本地文件夹
           prefix: app/${{ steps.build_web.outputs.app_version }}/ # 要上传到七牛云中的文件夹
           overwrite: true # 是否覆盖已有文件
-      - name: 生成链接并发布
+      - name: 生成链接并发布到 Repeat Publish API
         id: gen_links
         run: |
           CHANGELOG="${{ needs.changelog.outputs.changelog }}"
