@@ -478,7 +478,7 @@ jobs:
       - name: 生成链接并发布到 Repeat Publish API
         id: gen_links
         run: |
-          CHANGELOG="${{ needs.changelog.outputs.changelog }}"
+          CHANGELOG="${{ steps.changelog.outputs.changelog }}"
           PUBLISH_URL="https://repeat.ptools.fun/api/app/upload"
           TOKEN="${{ secrets.HARVEST_TOKEN }}"
           EMAIL="${{ secrets.HARVEST_EMAIL }}"
