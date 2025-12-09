@@ -56,7 +56,9 @@ class AppUpgradePage extends StatelessWidget {
                               style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: appUpgradeController.updateInfo?.version == appUpgradeController.currentVersion
+                                  color: (appUpgradeController.updateInfo?.version ?? '0.0.0')
+                                              .compareTo(appUpgradeController.currentVersion) >
+                                          0
                                       ? shadColorScheme.foreground
                                       : shadColorScheme.destructive)),
                           GetBuilder<AppUpgradeController>(
@@ -128,10 +130,11 @@ class AppUpgradePage extends StatelessWidget {
                                   Icons.install_desktop_outlined,
                                   size: 16,
                                 ),
-                                child: Text(
-                                    appUpgradeController.updateInfo?.version == appUpgradeController.currentVersion
-                                        ? '重装'
-                                        : '更新'),
+                                child: Text((appUpgradeController.updateInfo?.version ?? '0.0.0')
+                                            .compareTo(appUpgradeController.currentVersion) >
+                                        0
+                                    ? '重装'
+                                    : '更新'),
                               ),
                               if (Platform.isIOS)
                                 ShadButton.link(
@@ -149,7 +152,9 @@ class AppUpgradePage extends StatelessWidget {
               child: Text(
                 'APP更新',
                 style: TextStyle(
-                    color: appUpgradeController.updateInfo?.version == appUpgradeController.currentVersion
+                    color: (appUpgradeController.updateInfo?.version ?? '0.0.0')
+                                .compareTo(appUpgradeController.currentVersion) >
+                            0
                         ? shadColorScheme.foreground
                         : shadColorScheme.destructive),
               ),
@@ -207,11 +212,11 @@ class AppUpgradePage extends StatelessWidget {
       final androidInfo = await DeviceInfoPlugin().androidInfo;
       final abis = androidInfo.supportedAbis;
       if (abis.any((abi) => abi.contains('armeabi-v7a'))) {
-        appUpgradeController.newVersion = '${prefix}_arm32.apk';
+        appUpgradeController.newVersion = '${prefix}_arm32-android.apk';
       } else if (abis.any((abi) => abi.contains('x86_64'))) {
-        appUpgradeController.newVersion = '${prefix}_x86_64.apk';
+        appUpgradeController.newVersion = '${prefix}_x86_64-android.apk';
       } else {
-        appUpgradeController.newVersion = '${prefix}_arm64.apk';
+        appUpgradeController.newVersion = '${prefix}_arm64-android.apk';
       }
       appDocDir = await getExternalStorageDirectory();
       String savePath = "${appDocDir?.path}/${appUpgradeController.newVersion}";
@@ -219,12 +224,12 @@ class AppUpgradePage extends StatelessWidget {
       await _downloadInstallationPackage(savePath, downloadUrl!);
       await InstallPlugin.install(savePath);
     } else if (Platform.isIOS) {
-      appUpgradeController.newVersion = '${prefix}_ios.ipa';
+      appUpgradeController.newVersion = '${prefix}_arm64-ios.ipa';
 
       downloadUrl = downloadLinks[appUpgradeController.newVersion];
       await downloadAndSaveWithFilePicker(downloadUrl!, appUpgradeController.newVersion, buttonKey);
     } else if (Platform.isWindows) {
-      appUpgradeController.newVersion = '${prefix}_x86_64-win.zip';
+      appUpgradeController.newVersion = '${prefix}_x86_64-windows.zip';
       downloadUrl = downloadLinks[appUpgradeController.newVersion];
       String savePath = "${appDocDir.path}/${appUpgradeController.newVersion}";
       await _downloadInstallationPackage(savePath, downloadUrl!);
