@@ -592,7 +592,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
         ShadIconButton.ghost(
           onPressed: () async {
             Get.back();
-            await _showEditBottomSheet(context: context);
+            await _showEditBottomSheet();
           },
           icon: Icon(
             Icons.add_outlined,
@@ -667,7 +667,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
           ),
           trailing: ShadIconButton.ghost(
               onPressed: () async {
-                await _showEditBottomSheet(mySite: mySite, context: context);
+                await _showEditBottomSheet(mySite: mySite);
               },
               icon: Icon(
                 Icons.edit,
@@ -786,7 +786,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
               flex: 1,
               borderRadius: BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
               onPressed: (context) async {
-                await _showEditBottomSheet(mySite: mySite, context: context);
+                await _showEditBottomSheet(mySite: mySite);
               },
               backgroundColor: Color(0xFFD32F2F),
               foregroundColor: Colors.white,
@@ -1382,7 +1382,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     );
   }
 
-  Future<void> _showEditBottomSheet({MySite? mySite, required BuildContext context}) async {
+  Future<void> _showEditBottomSheet({MySite? mySite}) async {
     var shadThemeData = ShadTheme.of(context);
     var shadColorScheme = shadThemeData.colorScheme;
     if (mySite != null) {
@@ -1874,7 +1874,10 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                       Get.defaultDialog(
                         title: '删除站点：${mySite?.nickname}',
                         radius: 5,
-                        titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+                        backgroundColor: shadColorScheme.background,
+                        middleTextStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                        titleStyle:
+                            TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: shadColorScheme.foreground),
                         middleText: '确定要删除吗？',
                         actions: [
                           ShadButton(
@@ -1888,14 +1891,16 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                             size: ShadButtonSize.sm,
                             onPressed: () async {
                               Get.back(result: true);
-                              Navigator.of(context).pop();
                               var res = await controller.removeSiteFromServer(mySite!);
                               if (res.succeed) {
+                                Get.back(result: true);
                                 Get.snackbar(
                                   '删除站点',
                                   res.msg.toString(),
                                   colorText: shadColorScheme.foreground,
                                 );
+                                controller.showStatusList.removeWhere((item) => mySite?.id == item.id);
+                                controller.update();
                                 await controller.getSiteStatusFromServer();
                               } else {
                                 Logger.instance.e(res.msg);
@@ -2002,8 +2007,9 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                       }
                       Logger.instance.d(mySite?.toJson());
                       CommonResponse response = await controller.saveMySiteToServer(mySite!);
+
                       if (response.succeed) {
-                        Navigator.of(context).pop();
+                        Get.back();
                         controller.initFlag = false;
                         controller.getSiteStatusFromServer();
                         Future.delayed(Duration(seconds: 2), () async {
@@ -2011,9 +2017,6 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                           dController.initChartData();
                           dController.update();
                         });
-                      }
-
-                      if (response.succeed) {
                         Get.snackbar('保存成功！', response.msg, snackPosition: SnackPosition.TOP);
                         controller.update();
                         Future.microtask(() => controller.getSiteStatusFromServer());
