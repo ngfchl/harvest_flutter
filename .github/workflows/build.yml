@@ -8,8 +8,318 @@ on:
 
 # 定义多个“任务”（jobs），每个任务表示构建一个平台的应用
 jobs:
+
+  linux: # 构建 Linux 桌面应用
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.4'
+      - run: |
+          sudo apt-get update -y  # 更新系统包信息
+          sudo apt-get install -y \
+               ninja-build \
+               libgtk-3-dev \
+               libasound2-dev \
+               libudev-dev \
+               liblzma-dev \
+               clang \
+               cmake \
+               libmpv-dev \
+               pkg-config  # 安装依赖（用于 Linux 构建）
+
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
+      - name: Build Linux Dist
+        run: flutter build linux --release
+      # - run: tar -czvf linux-x64.tar.gz -C build/linux/x64/release/bundle .  # 压缩为 tar 包
+      - name: Archive Linux Dist To Release Archive
+        id: build_linux_x64  # 定义一个步骤 ID，用于后续引用
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          ARCH="x64"
+          SYSTEM="linux"
+          FILE_NAME="harvest_${VERSION}_${ARCH}_${SYSTEM}.tar.gz"
+          tar -czvf $FILE_NAME -C build/linux/x64/release/bundle .
+          echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
+          echo "app_version=${VERSION}" >> $GITHUB_OUTPUT
+          ls -l $FILE_NAME
+      - name: Archive Linux Dist To Release Archive
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.TOKEN_GITHUB }}
+          files: ${{ github.workspace }}/${{ steps.build_linux_x64.outputs.file_name }}
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
+          name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
+          draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
+          prerelease: false
+      - name: 上传到七牛云
+        uses: qiniu/upload-action@main
+        with:
+          bucket: laonie # 空间名称，按实际情况填写
+          access_key: ${{ secrets.QINIU_ACCESS_KEY }} # 七牛云 AccessKey 备注2
+          secret_key: ${{ secrets.QINIU_SECRET_KEY }} # 七牛云 SecretKey 备注2
+          artifacts: ${{ steps.build_linux_x64.outputs.file_name }} # 本地文件夹
+          prefix: app/${{ steps.build_linux_x64.outputs.app_version }}/  # 文件路径前缀 # 要上传到七牛云中的文件夹
+          overwrite: true # 是否覆盖已有文件
+
+
+  android: # 构建 Android 应用
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Set up Java
+        uses: actions/setup-java@v5  # 设置 Java 环境（Android 编译需要）
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.4'
+      - name: Accept Android SDK licenses
+        run: yes | flutter doctor --android-licenses
+      - name: Install Flutter dependencies
+        run: flutter pub get
+      - name: Build Android Dist
+        run: flutter build apk --release --obfuscate --split-debug-info=build/symbols --split-per-abi  # 构建 64 位 Android 安装包
+      # - run: cp build/app/outputs/flutter-apk/app-release.apk android.apk
+      - name: Archive Android Dist To Release Archive
+        id: build_android_arm64  # 定义一个步骤 ID，用于后续引用
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          ARCH="arm64"
+          SYSTEM="android"
+          FILE_NAME="harvest_${VERSION}_${ARCH}-${SYSTEM}.apk"
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk $FILE_NAME
+          echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
+          echo "app_version=${VERSION}" >> $GITHUB_OUTPUT
+          ls -l $FILE_NAME
+      - name: Archive Android Dist To Release Archive
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.TOKEN_GITHUB }}
+          files: ${{ github.workspace }}/${{ steps.build_android_arm64.outputs.file_name }}  # 上传 APK 文件
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
+          name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
+          draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
+          prerelease: false
+      - name: 上传到七牛云
+        uses: qiniu/upload-action@main
+        with:
+          bucket: laonie # 空间名称，按实际情况填写
+          access_key: ${{ secrets.QINIU_ACCESS_KEY }} # 七牛云 AccessKey 备注2
+          secret_key: ${{ secrets.QINIU_SECRET_KEY }} # 七牛云 SecretKey 备注2
+          artifacts: ${{ steps.build_android_arm64.outputs.file_name }} # 本地文件夹
+          prefix: app/${{ steps.build_android_arm64.outputs.app_version }}/  # 文件路径前缀 # 要上传到七牛云中的文件夹
+          overwrite: true # 是否覆盖已有文件
+
+  windows: # 构建 Windows 桌面应用
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.4'
+      - name: Install Flutter dependencies
+        run: flutter pub get
+      - name: Build Windows Dist
+        run: flutter build windows --release
+      # - run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath windows-x64.zip  # 压缩为 zip 文件
+      - name: Archive Windows Dist To Release Archive
+        id: build_windows_x86  # 定义一个步骤 ID，用于后续引用
+        run: |
+          $versionLine = Get-Content pubspec.yaml | Where-Object { $_ -match '^version:' }
+          $version = ($versionLine -split ':\s*')[1].Trim()
+          $arch="x86_64"
+          $FILE_NAME="harvest_${version}_${arch}-windows.zip"
+          Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath $FILE_NAME  # 压缩为 zip 文件
+          echo "file_name=$FILE_NAME" >> $env:GITHUB_OUTPUT
+          echo "app_version=$version" >> $env:GITHUB_OUTPUT
+          ls -l $FILE_NAME
+      - name: Archive Windows Dist To Release Archive
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.TOKEN_GITHUB }}
+          files: ${{ github.workspace }}/${{ steps.build_windows_x86.outputs.file_name }}
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
+          name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
+          draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
+          prerelease: false
+      - name: 上传到七牛云
+        uses: qiniu/upload-action@main
+        with:
+          bucket: laonie # 空间名称，按实际情况填写
+          access_key: ${{ secrets.QINIU_ACCESS_KEY }} # 七牛云 AccessKey 备注2
+          secret_key: ${{ secrets.QINIU_SECRET_KEY }} # 七牛云 SecretKey 备注2
+          artifacts: ${{ steps.build_windows_x86.outputs.file_name }} # 本地文件夹
+          prefix: app/${{ steps.build_windows_x86.outputs.app_version }}/  # 文件路径前缀 # 要上传到七牛云中的文件夹
+          overwrite: true # 是否覆盖已有文件
+
+  macos_intel: # 构建 macOS 桌面应用
+    runs-on: macos-15-intel
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.4'
+      - name: Install Flutter dependencies
+        run: flutter pub get
+      - name: Build macOS Dist
+        run: flutter build macos --release
+      # - run: tar -czvf macos.tar.gz -C build/macos/Build/Products/Release app.app  # 打包为 .tar.gz
+      - name: Archive macOS Dist To Release Archive
+        id: build_macos_x86  # 定义一个步骤 ID，用于后续引用
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          ARCH="x86_64"
+          SYSTEM="macos"
+          FILE_NAME="harvest_${VERSION}_${ARCH}-${SYSTEM}"
+          BUILD_PATH="build/macos/Build/Products/Release/"
+          APP_PATH="${BUILD_PATH}/harvest.app"
+          hdiutil create -volname $FILE_NAME -srcfolder $APP_PATH -ov -format UDZO ${FILE_NAME}.dmg
+          echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
+          echo "app_version=$VERSION" >> $GITHUB_OUTPUT
+          ls -l $FILE_NAME.dmg
+      - name: Archive macOS Dist To Release Archive
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.TOKEN_GITHUB }}
+          files: ${{ github.workspace }}/${{ steps.build_macos_x86.outputs.file_name }}.dmg
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
+          name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
+          draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
+          prerelease: false
+      - name: 上传到七牛云
+        uses: qiniu/upload-action@main
+        with:
+          bucket: laonie # 空间名称，按实际情况填写
+          access_key: ${{ secrets.QINIU_ACCESS_KEY }} # 七牛云 AccessKey 备注2
+          secret_key: ${{ secrets.QINIU_SECRET_KEY }} # 七牛云 SecretKey 备注2
+          artifacts: ${{ steps.build_macos_x86.outputs.file_name }} # 本地文件夹
+          prefix: app/${{ steps.build_macos_x86.outputs.app_version }}/  # 文件路径前缀 # 要上传到七牛云中的文件夹
+          overwrite: true # 是否覆盖已有文件
+
+
+  macos_arm: # 构建 macOS 桌面应用
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.4'
+      - name: Install Flutter dependencies
+        run: flutter pub get
+      - name: Build macOS Dist
+        run: flutter build macos --release
+      # - run: tar -czvf macos.tar.gz -C build/macos/Build/Products/Release app.app  # 打包为 .tar.gz
+      - name: Archive macOS Dist To Release Archive
+        id: build_macos_arm  # 定义一个步骤 ID，用于后续引用
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          ARCH="arm64"
+          SYSTEM="macos"
+          FILE_NAME="harvest_${VERSION}_${ARCH}-${SYSTEM}"
+          BUILD_PATH="build/macos/Build/Products/Release/"
+          APP_PATH="${BUILD_PATH}/harvest.app"
+          hdiutil create -volname $FILE_NAME -srcfolder $APP_PATH -ov -format UDZO ${FILE_NAME}.dmg
+          echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
+          echo "app_version=$VERSION" >> $GITHUB_OUTPUT
+          ls -l $FILE_NAME.dmg
+      - name: Archive macOS Dist To Release Archive
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.TOKEN_GITHUB }}
+          files: ${{ github.workspace }}/${{ steps.build_macos_arm.outputs.file_name }}.dmg  # 上传 DMG 文件
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
+          name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
+          draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
+          prerelease: false
+      - name: 上传到七牛云
+        uses: qiniu/upload-action@main
+        with:
+          bucket: laonie # 空间名称，按实际情况填写
+          access_key: ${{ secrets.QINIU_ACCESS_KEY }} # 七牛云 AccessKey 备注2
+          secret_key: ${{ secrets.QINIU_SECRET_KEY }} # 七牛云 SecretKey 备注2
+          artifacts: ${{ steps.build_macos_arm.outputs.file_name }} # 本地文件夹
+          prefix: app/${{ steps.build_macos_arm.outputs.app_version }}/  # 文件路径前缀 # 要上传到七牛云中的文件夹
+          overwrite: true # 是否覆盖已有文件
+
+  ios: # 构建 iOS 应用（需要 macOS 系统）
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.4'
+      - name: Install Flutter dependencies
+        run: flutter pub get
+      - name: Build iOS Dist
+        run: flutter build ios --release --no-codesign  # 构建 iOS 应用，但不签名（用于测试）
+      #      - run: tar -czvf ios.tar.gz -C build/ios/iphoneos Runner.app  # 压缩打包
+      - name: Archive iOS Dist To Release IPA
+        id: build_ios  # 定义一个步骤 ID，用于后续引用
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          ARCH="arm64"
+          SYSTEM="ios"
+          FILE_NAME="harvest_${VERSION}_${ARCH}-${SYSTEM}.ipa"
+          BUILD_PATH="build/ios/iphoneos"
+          APP_PATH="${BUILD_PATH}/Runner.app"
+          mkdir Payload
+          cp -R $APP_PATH ./Payload/Runner.app
+          zip -r $FILE_NAME Payload
+          echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
+          echo "app_version=$VERSION" >> $GITHUB_OUTPUT
+          ls -l $FILE_NAME
+      - name: Archive iOS Dist To Release Archive
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.TOKEN_GITHUB }}
+          files: ${{ github.workspace }}/${{ steps.build_ios.outputs.file_name }}  # 上传 IPA 文件
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
+          name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
+          draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
+          prerelease: false
+      - name: 上传到七牛云
+        uses: qiniu/upload-action@main
+        with:
+          bucket: laonie # 空间名称，按实际情况填写
+          access_key: ${{ secrets.QINIU_ACCESS_KEY }} # 七牛云 AccessKey 备注2
+          secret_key: ${{ secrets.QINIU_SECRET_KEY }} # 七牛云 SecretKey 备注2
+          artifacts: ${{ steps.build_ios.outputs.file_name }} # 本地文件夹
+          prefix: app/${{ steps.build_ios.outputs.app_version }}/  # 文件路径前缀 # 要上传到七牛云中的文件夹
+          overwrite: true # 是否覆盖已有文件
   web: # 构建 Web 版本
     runs-on: ubuntu-latest  # 使用最新的 Ubuntu 系统执行
+    needs: [ linux, android, windows, macos_intel, macos_arm, ios ]
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6  # 拉取代码仓库
@@ -146,313 +456,66 @@ jobs:
           access_key: ${{ secrets.QINIU_ACCESS_KEY }} # 七牛云 AccessKey 备注2
           secret_key: ${{ secrets.QINIU_SECRET_KEY }} # 七牛云 SecretKey 备注2
           artifacts: ${{ steps.build_web.outputs.file_name }} # 本地文件夹
-          prefix: app/${{ steps.build_web.outputs.app_version }} # 要上传到七牛云中的文件夹
+          prefix: app/${{ steps.build_web.outputs.app_version }}/ # 要上传到七牛云中的文件夹
           overwrite: true # 是否覆盖已有文件
-
-  linux: # 构建 Linux 桌面应用
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.32.4'
-      - run: |
-          sudo apt-get update -y  # 更新系统包信息
-          sudo apt-get install -y \
-               ninja-build \
-               libgtk-3-dev \
-               libasound2-dev \
-               libudev-dev \
-               liblzma-dev \
-               clang \
-               cmake \
-               libmpv-dev \
-               pkg-config  # 安装依赖（用于 Linux 构建）
-
-      - name: Install Flutter dependencies
-        run: flutter pub get
-
-      - name: Build Linux Dist
-        run: flutter build linux --release
-      # - run: tar -czvf linux-x64.tar.gz -C build/linux/x64/release/bundle .  # 压缩为 tar 包
-      - name: Archive Linux Dist To Release Archive
-        id: build_linux_x64  # 定义一个步骤 ID，用于后续引用
+      - name: 生成链接并发布
+        id: gen_links
         run: |
-          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
-          ARCH="linux-x64"
-          SYSTEM="linux"
-          FILE_NAME="harvest_${VERSION}_${ARCH}_${SYSTEM}.tar.gz"
-          tar -czvf $FILE_NAME -C build/linux/x64/release/bundle .
-          echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
-          echo "app_version=${VERSION}" >> $GITHUB_OUTPUT
-          ls -l $FILE_NAME
-      - name: Archive Linux Dist To Release Archive
-        uses: softprops/action-gh-release@v2
-        with:
-          token: ${{ secrets.TOKEN_GITHUB }}
-          files: ${{ github.workspace }}/${{ steps.build_linux_x64.outputs.file_name }}
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
-          prerelease: false
-      - name: 上传到七牛云
-        uses: qiniu/upload-action@main
-        with:
-          bucket: laonie # 空间名称，按实际情况填写
-          access_key: ${{ secrets.QINIU_ACCESS_KEY }} # 七牛云 AccessKey 备注2
-          secret_key: ${{ secrets.QINIU_SECRET_KEY }} # 七牛云 SecretKey 备注2
-          artifacts: ${{ steps.build_linux_x64.outputs.file_name }} # 本地文件夹
-          prefix: app/${{ steps.build_linux_x64.outputs.app_version }}  # 文件路径前缀 # 要上传到七牛云中的文件夹
-          overwrite: true # 是否覆盖已有文件
-
-
-  android: # 构建 Android 应用
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-      - name: Set up Java
-        uses: actions/setup-java@v5  # 设置 Java 环境（Android 编译需要）
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.32.4'
-      - name: Accept Android SDK licenses
-        run: yes | flutter doctor --android-licenses
-      - name: Install Flutter dependencies
-        run: flutter pub get
-      - name: Build Android Dist
-        run: flutter build apk --release --obfuscate --split-debug-info=build/symbols --split-per-abi  # 构建 64 位 Android 安装包
-      # - run: cp build/app/outputs/flutter-apk/app-release.apk android.apk
-      - name: Archive Android Dist To Release Archive
-        id: build_android_arm64  # 定义一个步骤 ID，用于后续引用
-        run: |
-          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
-          ARCH="arm64"
-          SYSTEM="android"
-          FILE_NAME="harvest_${VERSION}_${ARCH}-${SYSTEM}.apk"
-          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk $FILE_NAME
-          echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
-          echo "app_version=${VERSION}" >> $GITHUB_OUTPUT
-          ls -l $FILE_NAME
-      - name: Archive Android Dist To Release Archive
-        uses: softprops/action-gh-release@v2
-        with:
-          token: ${{ secrets.TOKEN_GITHUB }}
-          files: ${{ github.workspace }}/${{ steps.build_android_arm64.outputs.file_name }}  # 上传 APK 文件
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
-          prerelease: false
-      - name: 上传到七牛云
-        uses: qiniu/upload-action@main
-        with:
-          bucket: laonie # 空间名称，按实际情况填写
-          access_key: ${{ secrets.QINIU_ACCESS_KEY }} # 七牛云 AccessKey 备注2
-          secret_key: ${{ secrets.QINIU_SECRET_KEY }} # 七牛云 SecretKey 备注2
-          artifacts: ${{ steps.build_android_arm64.outputs.file_name }} # 本地文件夹
-          prefix: app/${{ steps.build_android_arm64.outputs.app_version }}  # 文件路径前缀 # 要上传到七牛云中的文件夹
-          overwrite: true # 是否覆盖已有文件
-
-  windows: # 构建 Windows 桌面应用
-    runs-on: windows-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.32.4'
-      - name: Install Flutter dependencies
-        run: flutter pub get
-      - name: Build Windows Dist
-        run: flutter build windows --release
-      # - run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath windows-x64.zip  # 压缩为 zip 文件
-      - name: Archive Windows Dist To Release Archive
-        id: build_windows_x86  # 定义一个步骤 ID，用于后续引用
-        run: |
-          $versionLine = Get-Content pubspec.yaml | Where-Object { $_ -match '^version:' }
-          $version = ($versionLine -split ':\s*')[1].Trim()
-          $arch="x86_64"
-          $FILE_NAME="harvest_${version}_${arch}-win.zip"
-          Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath $FILE_NAME  # 压缩为 zip 文件
-          echo "file_name=$FILE_NAME" >> $env:GITHUB_OUTPUT
-          echo "app_version=$version" >> $env:GITHUB_OUTPUT
-          ls -l $FILE_NAME
-      - name: Archive Windows Dist To Release Archive
-        uses: softprops/action-gh-release@v2
-        with:
-          token: ${{ secrets.TOKEN_GITHUB }}
-          files: ${{ github.workspace }}/${{ steps.build_windows_x86.outputs.file_name }}
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
-          prerelease: false
-      - name: 上传到七牛云
-        uses: qiniu/upload-action@main
-        with:
-          bucket: laonie # 空间名称，按实际情况填写
-          access_key: ${{ secrets.QINIU_ACCESS_KEY }} # 七牛云 AccessKey 备注2
-          secret_key: ${{ secrets.QINIU_SECRET_KEY }} # 七牛云 SecretKey 备注2
-          artifacts: ${{ steps.build_windows_x86.outputs.file_name }} # 本地文件夹
-          prefix: app/${{ steps.build_windows_x86.outputs.app_version }}  # 文件路径前缀 # 要上传到七牛云中的文件夹
-          overwrite: true # 是否覆盖已有文件
-
-  macos_intel: # 构建 macOS 桌面应用
-    runs-on: macos-15-intel
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.32.4'
-      - name: Install Flutter dependencies
-        run: flutter pub get
-      - name: Build macOS Dist
-        run: flutter build macos --release
-      # - run: tar -czvf macos.tar.gz -C build/macos/Build/Products/Release app.app  # 打包为 .tar.gz
-      - name: Archive macOS Dist To Release Archive
-        id: build_macos_x86  # 定义一个步骤 ID，用于后续引用
-        run: |
-          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
-          ARCH="x86_64"
-          SYSTEM="macos"
-          BUILD_PATH="build/macos/Build/Products/Release/"
-          APP_PATH="${BUILD_PATH}/harvest.app"
-          FILE_NAME="harvest_${VERSION}_${ARCH}-${SYSTEM}"
-          hdiutil create -volname $FILE_NAME -srcfolder $APP_PATH -ov -format UDZO ${FILE_NAME}.dmg
-          echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
-          echo "app_version=$VERSION" >> $GITHUB_OUTPUT
-          ls -l $FILE_NAME.dmg
-      - name: Archive macOS Dist To Release Archive
-        uses: softprops/action-gh-release@v2
-        with:
-          token: ${{ secrets.TOKEN_GITHUB }}
-          files: ${{ github.workspace }}/${{ steps.build_macos_x86.outputs.file_name }}.dmg
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
-          prerelease: false
-      - name: 上传到七牛云
-        uses: qiniu/upload-action@main
-        with:
-          bucket: laonie # 空间名称，按实际情况填写
-          access_key: ${{ secrets.QINIU_ACCESS_KEY }} # 七牛云 AccessKey 备注2
-          secret_key: ${{ secrets.QINIU_SECRET_KEY }} # 七牛云 SecretKey 备注2
-          artifacts: ${{ steps.build_macos_x86.outputs.file_name }} # 本地文件夹
-          prefix: app/${{ steps.build_macos_x86.outputs.app_version }}  # 文件路径前缀 # 要上传到七牛云中的文件夹
-          overwrite: true # 是否覆盖已有文件
-
-
-  macos_arm: # 构建 macOS 桌面应用
-    runs-on: macos-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.32.4'
-      - name: Install Flutter dependencies
-        run: flutter pub get
-      - name: Build macOS Dist
-        run: flutter build macos --release
-      # - run: tar -czvf macos.tar.gz -C build/macos/Build/Products/Release app.app  # 打包为 .tar.gz
-      - name: Archive macOS Dist To Release Archive
-        id: build_macos_arm  # 定义一个步骤 ID，用于后续引用
-        run: |
-          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
-          ARCH="arm64"
-          SYSTEM="macos"
-          BUILD_PATH="build/macos/Build/Products/Release/"
-          APP_PATH="${BUILD_PATH}/harvest.app"
-          FILE_NAME="harvest_${VERSION}_${ARCH}-${SYSTEM}"
-          hdiutil create -volname $FILE_NAME -srcfolder $APP_PATH -ov -format UDZO ${FILE_NAME}.dmg
-          echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
-          echo "app_version=$VERSION" >> $GITHUB_OUTPUT
-          ls -l $FILE_NAME.dmg
-      - name: Archive macOS Dist To Release Archive
-        uses: softprops/action-gh-release@v2
-        with:
-          token: ${{ secrets.TOKEN_GITHUB }}
-          files: ${{ github.workspace }}/${{ steps.build_macos_arm.outputs.file_name }}.dmg  # 上传 DMG 文件
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
-          prerelease: false
-      - name: 上传到七牛云
-        uses: qiniu/upload-action@main
-        with:
-          bucket: laonie # 空间名称，按实际情况填写
-          access_key: ${{ secrets.QINIU_ACCESS_KEY }} # 七牛云 AccessKey 备注2
-          secret_key: ${{ secrets.QINIU_SECRET_KEY }} # 七牛云 SecretKey 备注2
-          artifacts: ${{ steps.build_macos_arm.outputs.file_name }} # 本地文件夹
-          prefix: app/${{ steps.build_macos_arm.outputs.app_version }}  # 文件路径前缀 # 要上传到七牛云中的文件夹
-          overwrite: true # 是否覆盖已有文件
-
-  ios: # 构建 iOS 应用（需要 macOS 系统）
-    runs-on: macos-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.32.4'
-      - name: Install Flutter dependencies
-        run: flutter pub get
-      - name: Build iOS Dist
-        run: flutter build ios --release --no-codesign  # 构建 iOS 应用，但不签名（用于测试）
-      #      - run: tar -czvf ios.tar.gz -C build/ios/iphoneos Runner.app  # 压缩打包
-      - name: Archive iOS Dist To Release IPA
-        id: build_ios  # 定义一个步骤 ID，用于后续引用
-        run: |
-          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
-          ARCH="arm64"
-          SYSTEM="ios"
-          BUILD_PATH="build/ios/iphoneos"
-          APP_PATH="${BUILD_PATH}/Runner.app"
-          FILE_NAME="harvest_${VERSION}_${ARCH}-${SYSTEM}.ipa"
-          mkdir Payload
-          cp -R $APP_PATH ./Payload/Runner.app
-          zip -r $FILE_NAME Payload
-          echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
-          echo "app_version=$VERSION" >> $GITHUB_OUTPUT
-          ls -l $FILE_NAME
-      - name: Archive iOS Dist To Release Archive
-        uses: softprops/action-gh-release@v2
-        with:
-          token: ${{ secrets.TOKEN_GITHUB }}
-          files: ${{ github.workspace }}/${{ steps.build_ios.outputs.file_name }}  # 上传 IPA 文件
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
-          prerelease: false
-      - name: 上传到七牛云
-        uses: qiniu/upload-action@main
-        with:
-          bucket: laonie # 空间名称，按实际情况填写
-          access_key: ${{ secrets.QINIU_ACCESS_KEY }} # 七牛云 AccessKey 备注2
-          secret_key: ${{ secrets.QINIU_SECRET_KEY }} # 七牛云 SecretKey 备注2
-          artifacts: ${{ steps.build_ios.outputs.file_name }} # 本地文件夹
-          prefix: app/${{ steps.build_ios.outputs.app_version }}  # 文件路径前缀 # 要上传到七牛云中的文件夹
-          overwrite: true # 是否覆盖已有文件
+          CHANGELOG="${{ needs.changelog.outputs.changelog }}"
+          PUBLISH_URL="https://repeat.ptools.fun/api/app/upload"
+          TOKEN="${{ secrets.HARVEST_TOKEN }}"
+          EMAIL="${{ secrets.HARVEST_EMAIL }}"
+          VERSION="${{ steps.build_web.outputs.app_version }}"
+          BASE_URL="http://file.ptools.fun/app/$VERSION"
+          # 使用 jq 自动构建 links JSON
+          LINKS_JSON=$(jq -n --arg v "$VERSION" --arg base "$BASE_URL" '
+          {
+            # Linux
+            ("harvest_\($v)_x64_linux.tar.gz"): "\($base)/harvest_\($v)_x64_linux.tar.gz",
+            # ("harvest_\($v)_arm64_linux.tar.gz"): "\($base)/harvest_\($v)_arm64_linux.tar.gz",
+          
+            # Android
+            # ("harvest_\($v)_arm32-android.apk"): "\($base)/harvest_\($v)_arm32-android.apk",
+            ("harvest_\($v)_arm64-android.apk"): "\($base)/harvest_\($v)_arm64-android.apk",
+            # ("harvest_\($v)_x86_64-android.apk"): "\($base)/harvest_\($v)_x86_64-android.apk",
+          
+            # Windows
+            ("harvest_\($v)_x86_64-windows.zip"): "\($base)/harvest_\($v)_x86_64-windows.zip",
+          
+            # macOS
+            ("harvest_\($v)_x86_64-macos.dmg"): "\($base)/harvest_\($v)_x86_64-macos.dmg",
+            ("harvest_\($v)_arm64-macos.dmg"): "\($base)/harvest_\($v)_arm64-macos.dmg",
+          
+            # iOS
+            ("harvest_\($v)_arm64-ios.ipa"): "\($base)/harvest_\($v)_arm64-ios.ipa",
+          
+            # Web
+            ("harvest_\($v)_web.tar.gz"): "\($base)/harvest_\($v)_web.tar.gz"
+          }
+          ')
+          
+          echo "生成的下载链接 JSON:"
+          echo "$LINKS_JSON"
+          
+          # 构建最终请求 JSON
+          REQUEST_JSON=$(jq -n \
+            --arg version "$VERSION" \
+            --arg changelog "$CHANGELOG" \
+            --argjson links "$LINKS_JSON" \
+            '
+          {
+            version: $version,
+            changelog: $changelog,
+            downloadLinks: $links
+          }
+          ')
+          
+          echo "请求 JSON:"
+          echo "$REQUEST_JSON"
+          
+          # 发送发布请求
+          curl -X POST "$PUBLISH_URL" \
+          -H "Authorization: $TOKEN" \
+          -H "EMAIL: $EMAIL" \
+          -H "Content-Type: application/json" \
+          -d "$REQUEST_JSON"
