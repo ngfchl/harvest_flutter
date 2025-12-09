@@ -214,7 +214,7 @@ jobs:
           bucket: laonie # 空间名称，按实际情况填写
           access_key: ${{ secrets.QINIU_ACCESS_KEY }} # 七牛云 AccessKey 备注2
           secret_key: ${{ secrets.QINIU_SECRET_KEY }} # 七牛云 SecretKey 备注2
-          artifacts: ${{ steps.build_macos_x86.outputs.file_name }} # 本地文件夹
+          artifacts: ${{ steps.build_macos_x86.outputs.file_name }}.dmg # 本地文件夹
           prefix: app/${{ steps.build_macos_x86.outputs.app_version }}/  # 文件路径前缀 # 要上传到七牛云中的文件夹
           overwrite: true # 是否覆盖已有文件
 
@@ -263,7 +263,7 @@ jobs:
           bucket: laonie # 空间名称，按实际情况填写
           access_key: ${{ secrets.QINIU_ACCESS_KEY }} # 七牛云 AccessKey 备注2
           secret_key: ${{ secrets.QINIU_SECRET_KEY }} # 七牛云 SecretKey 备注2
-          artifacts: ${{ steps.build_macos_arm.outputs.file_name }} # 本地文件夹
+          artifacts: ${{ steps.build_macos_arm.outputs.file_name }}.dmg # 本地文件夹
           prefix: app/${{ steps.build_macos_arm.outputs.app_version }}/  # 文件路径前缀 # 要上传到七牛云中的文件夹
           overwrite: true # 是否覆盖已有文件
 
@@ -316,6 +316,7 @@ jobs:
           artifacts: ${{ steps.build_ios.outputs.file_name }} # 本地文件夹
           prefix: app/${{ steps.build_ios.outputs.app_version }}/  # 文件路径前缀 # 要上传到七牛云中的文件夹
           overwrite: true # 是否覆盖已有文件
+
   web: # 构建 Web 版本
     runs-on: ubuntu-latest  # 使用最新的 Ubuntu 系统执行
     needs: [ linux, android, windows, macos_intel, macos_arm, ios ]
@@ -497,11 +498,14 @@ jobs:
           echo "生成的下载链接 JSON:"
           echo "$LINKS_JSON"
           
+          # ⬅⬅⬅⬅⬅ 关键点：links 需要变成字符串，而不是对象
+          LINKS_STRING=$(jq -n --argjson links "$LINKS_JSON" '$links | @json')
+          echo "LINKS_STRING: $LINKS_STRING"  
           # 构建最终请求 JSON
           REQUEST_JSON=$(jq -n \
             --arg version "$VERSION" \
             --arg changelog "$CHANGELOG" \
-            --argjson links "$LINKS_JSON" \
+            --arg links "$LINKS_JSON" \
             '
           {
             version: $version,
