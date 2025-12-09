@@ -97,7 +97,7 @@ jobs:
           storePassword=${{ secrets.KEYSTORE_PASSWORD }}
           keyPassword=${{ secrets.KEY_PASSWORD }}
           keyAlias=${{ secrets.KEY_ALIAS }}
-          storeFile=app/upload-keystore.jks
+          storeFile=upload-keystore.jks
           EOF
       - name: 指定 Flutter 版本
         uses: subosito/flutter-action@v2
