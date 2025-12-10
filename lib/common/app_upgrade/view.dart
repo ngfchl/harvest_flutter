@@ -6,6 +6,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide FormData, MultipartFile;
+import 'package:harvest/common/form_widgets.dart';
+import 'package:harvest/utils/storage.dart';
 import 'package:install_plugin_v3/install_plugin_v3.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -50,17 +52,30 @@ class AppUpgradePage extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('当前版本：${appUpgradeController.currentVersion}',
+                          Text(
+                              '当前版本：${appUpgradeController.currentVersion} ${(appUpgradeController.hasNewVersion ? ' -- 新版本!' : '')}',
                               style: TextStyle(fontSize: 12, color: shadColorScheme.foreground)),
-                          Text('服务器版本：v${appUpgradeController.updateInfo?.version}',
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: (appUpgradeController.updateInfo?.version ?? '0.0.0')
-                                              .compareTo(appUpgradeController.currentVersion) >
-                                          0
-                                      ? shadColorScheme.foreground
-                                      : shadColorScheme.destructive)),
+                          appUpgradeController.hasNewVersion
+                              ? SwitchTile(
+                                  title: '服务器版本：v${appUpgradeController.updateInfo?.version}',
+                                  contentPadding: EdgeInsets.zero,
+                                  scale: 0.75,
+                                  value: appUpgradeController.notShowNewVersion,
+                                  label:
+                                      Text('不再提醒', style: TextStyle(fontSize: 16, color: shadColorScheme.destructive)),
+                                  onChanged: (value) {
+                                    appUpgradeController.notShowNewVersion = value;
+                                    appUpgradeController.update();
+                                    SPUtil.setBool('notShowNewVersion', value);
+                                  })
+                              : Text(
+                                  '服务器版本：v${appUpgradeController.updateInfo?.version} ${(appUpgradeController.hasNewVersion ? ' -- 新版本!' : '')}',
+                                  style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: appUpgradeController.hasNewVersion
+                                          ? shadColorScheme.destructive
+                                          : shadColorScheme.foreground)),
                           GetBuilder<AppUpgradeController>(
                               id: 'progressValue',
                               builder: (controller) {
@@ -152,11 +167,8 @@ class AppUpgradePage extends StatelessWidget {
               child: Text(
                 'APP更新',
                 style: TextStyle(
-                    color: (appUpgradeController.updateInfo?.version ?? '0.0.0')
-                                .compareTo(appUpgradeController.currentVersion) >
-                            0
-                        ? shadColorScheme.foreground
-                        : shadColorScheme.destructive),
+                    color:
+                        appUpgradeController.hasNewVersion ? shadColorScheme.destructive : shadColorScheme.foreground),
               ),
             ),
           ],

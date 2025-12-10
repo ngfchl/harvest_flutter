@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:harvest/utils/storage.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
@@ -12,6 +13,8 @@ class AppUpgradeController extends GetxController {
   double progressValue = 0.0;
   final popoverController = ShadPopoverController();
   AppUpdateInfo? updateInfo;
+  bool notShowNewVersion = false;
+  bool hasNewVersion = false;
   String currentTab = 'latestVersion';
   String newVersion = '';
   String currentVersion = '';
@@ -23,6 +26,7 @@ class AppUpgradeController extends GetxController {
   void onInit() async {
     try {
       Logger.instance.d('开始检测 APP 更新');
+      notShowNewVersion = SPUtil.getBool('notShowNewVersion', defaultValue: false);
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
       currentVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
       getAppVersionList();
@@ -59,7 +63,8 @@ class AppUpgradeController extends GetxController {
     );
     if (res.succeed) {
       updateInfo = res.data;
-      if (updateInfo != null && updateInfo?.version != currentVersion) {
+      hasNewVersion = (updateInfo?.version ?? '0.0.0').compareTo(currentVersion) > 0;
+      if (notShowNewVersion && hasNewVersion) {
         popoverController.show();
       }
     } else {
