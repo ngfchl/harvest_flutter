@@ -23,11 +23,12 @@ class VersionManager:
             tasks=[],
             calc=True,
             push=False,
+            tag=False,
     ):
         print("初始化 VersionManager")
         print(
-            f"初始化任务参数：yaml文件路径: {yaml_file_path}   任务列表:{tasks}  是否计算版本号: {calc} {type(calc)}")
-
+            f"初始化任务参数：yaml文件路径: {yaml_file_path}   任务列表:{tasks}  是否计算版本号: {calc} {type(calc)}  当前是否推送：{push}  {type(push)}")
+        self.tag = tag
         self.yaml_file_path = yaml_file_path
         self.output_folder = os.path.expanduser(output_folder)
         # 确保输出目录存在
@@ -39,6 +40,7 @@ class VersionManager:
         self.new_version = self.current_version
         self.machine = self.calc_machine()
         self.push = push
+        print(f"当前是否推送：self.push {self.push}")
         if calc:
             # 执行版本号自增
             self.calc_version()
@@ -320,33 +322,59 @@ icon_locations = {{
             raise Exception(f"Git 命令执行失败: {' '.join(cmd)}")
         return result
 
+    def git_push(self):
+        if not self.push:
+            return
+        try:
+            print(f"是否推送：{self.push}")
+            # 推送 commit & tag
+            self.git_run("git", "push")
+
+            cmds = [
+                ["git", "push"],
+                ["git", "checkout", "master"],
+                ["git", "merge", "dev"],
+                ["git", "push"],
+                ["git", "checkout", "build"],
+                ["git", "merge", "dev"],
+                ["git", "push"],
+                ["git", "checkout", "dev"],
+            ]
+            
+            for cmd in cmds:
+                print("执行:", cmd)
+                subprocess.run(cmd, check=True)
+
+            self.git_run("git", "push", "origin", self.new_version)
+
+            print("🎉 Git 提交与 Tag 推送完成！")
+        except Exception as e:
+            print(f"Git 推送失败: {e}")
+            print(f"回滚版本号到 {self.current_version}")
+            self.update_version(self.current_version)
+            print(traceback.format_exc())
+
     def git_commit_and_tag(self):
         """提交版本号并打标签"""
+        if not self.tag:
+            return
         try:
-            version = self.new_version
-            tag_name = f"v{version}"
 
-            print(f"开始进行 Git 版本发布: {tag_name}")
+            print(f"开始进行 Git 版本发布: {self.new_version}")
 
             # 添加文件
             self.git_run("git", "add", self.yaml_file_path)
 
             # 提交
-            commit_msg = f"update. 更新版本号：{version}"
+            commit_msg = f"update. 更新版本号：{self.new_version}"
             self.git_run("git", "commit", "-m", commit_msg)
 
             # 创建 Tag
-            self.git_run("git", "tag", tag_name)
+            self.git_run("git", "tag", self.new_version)
             print(f"🎉 Git 提交与 Tag 创建成功！")
-            if self.push:
-                # 推送 commit & tag
-                self.git_run("git", "push")
-                self.git_run("git", "push", "origin", tag_name)
-                command = "git push && git checkout master && git merge dev && git push && git checkout build && git merge dev && git push && git checkout dev"
-                self.git_run(command)
-                print("🎉 Git 提交与 Tag 推送完成！")
+
         except Exception as e:
-            print(f"Git 提交与 Tag 推送失败: {e}")
+            print(f"Git 提交与 Tag 创建失败: {e}")
             print(f"回滚版本号到 {self.current_version}")
             self.update_version(self.current_version)
 
@@ -354,10 +382,11 @@ icon_locations = {{
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Flutter build helper.")
     parser.add_argument(
-        "output_folder",
+        "--output_folder",
+        "-o",
         nargs='?',
-        default="~/Desktop/harvest",
-        help="目标输出目录，支持相对路径，默认路径： ~/Desktop/harvest",
+        default="/Volumes/DataSet/Sync/harvest",
+        help="目标输出目录，支持相对路径，默认路径： /Volumes/DataSet/Sync/harvest",
     )
     parser.add_argument(
         "--yaml",
@@ -387,12 +416,21 @@ if __name__ == "__main__":
         default=False,
         help="计算版本号（默认：False）",
     )
+    parser.add_argument(
+        "--tag",
+        "--tag",
+        action="store_true",
+        default=False,
+        help="计算版本号（默认：False）",
+    )
     args = parser.parse_args()
-    manager = VersionManager(args.output_folder, yaml_file_path=args.yaml, tasks=args.tasks,
-                             calc=args.calc)
+    manager = VersionManager(output_folder=args.output_folder, yaml_file_path=args.yaml,
+                             tasks=args.tasks,
+                             calc=args.calc, push=args.push, tag=args.tag)
     print(f"当前任务列表：{manager.tasks}")
     #     manager = VersionManager('~/Desktop/harvest')
     if len(manager.tasks) > 0:
         manager.compile_and_install()
     # manager.calc_version()
     manager.git_commit_and_tag()
+    manager.git_push()
