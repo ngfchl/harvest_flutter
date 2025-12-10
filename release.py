@@ -20,8 +20,9 @@ class VersionManager:
             self,
             output_folder,
             yaml_file_path="pubspec.yaml",
-            tasks=None,
+            tasks=[],
             calc=True,
+            push=False,
     ):
         print("初始化 VersionManager")
         print(
@@ -37,6 +38,7 @@ class VersionManager:
         self.current_version = self.read_version()
         self.new_version = self.current_version
         self.machine = self.calc_machine()
+        self.push = push
         if calc:
             # 执行版本号自增
             self.calc_version()
@@ -44,18 +46,20 @@ class VersionManager:
         print(f"当前编译版本号：{self.new_version}")
         self.output_folder = os.path.join(self.output_folder, self.new_version)
         print(f"当前输出文件夹：{self.output_folder}")
-        if not tasks:
-            self.tasks = ["macos"]
-
-            is_mac = sys.platform.startswith("darwin")
-            if is_mac:
-                self.tasks = ["apk", "ipa", "macos"]
-
-            if sys.platform.startswith("win32"):
-                self.output_folder = self.output_folder.replace("/", "\\")
-                self.tasks = ["windows"]
-        else:
-            self.tasks = tasks
+        self.tasks = tasks
+        if sys.platform.startswith("win32"):
+            self.output_folder = self.output_folder.replace("/", "\\")
+        # if not tasks:
+        #     self.tasks = ["macos"]
+        #
+        #     is_mac = sys.platform.startswith("darwin")
+        #     if is_mac:
+        #         self.tasks = ["apk", "ipa", "macos"]
+        #
+        #     if sys.platform.startswith("win32"):
+        #         self.tasks = ["windows"]
+        # else:
+        #     self.tasks = tasks
         # 确保输出目录存在
         os.makedirs(self.output_folder, exist_ok=True)
         self.fvm = self.get_fvm_command()
@@ -303,6 +307,49 @@ icon_locations = {{
                 ]
             )
 
+    def git_run(self, *cmd):
+        """运行 git 命令并输出"""
+
+        print(f"执行命令: {' '.join(cmd)}")
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.stdout:
+            print(result.stdout)
+        if result.stderr:
+            print(result.stderr)
+        if result.returncode != 0:
+            raise Exception(f"Git 命令执行失败: {' '.join(cmd)}")
+        return result
+
+    def git_commit_and_tag(self):
+        """提交版本号并打标签"""
+        try:
+            version = self.new_version
+            tag_name = f"v{version}"
+
+            print(f"开始进行 Git 版本发布: {tag_name}")
+
+            # 添加文件
+            self.git_run("git", "add", self.yaml_file_path)
+
+            # 提交
+            commit_msg = f"update. 更新版本号：{version}"
+            self.git_run("git", "commit", "-m", commit_msg)
+
+            # 创建 Tag
+            self.git_run("git", "tag", tag_name)
+            print(f"🎉 Git 提交与 Tag 创建成功！")
+            if self.push:
+                # 推送 commit & tag
+                self.git_run("git", "push")
+                self.git_run("git", "push", "origin", tag_name)
+                command = "git push && git checkout master && git merge dev && git push && git checkout build && git merge dev && git push && git checkout dev"
+                self.git_run(command)
+                print("🎉 Git 提交与 Tag 推送完成！")
+        except Exception as e:
+            print(f"Git 提交与 Tag 推送失败: {e}")
+            print(f"回滚版本号到 {self.current_version}")
+            self.update_version(self.current_version)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Flutter build helper.")
@@ -323,7 +370,7 @@ if __name__ == "__main__":
         "--tasks",
         "-t",
         nargs="*",
-        default=None,
+        default=[],
         help="任务列表（默认：None）",
     )
     parser.add_argument(
@@ -333,10 +380,19 @@ if __name__ == "__main__":
         default=False,
         help="计算版本号（默认：False）",
     )
+    parser.add_argument(
+        "--push",
+        "-p",
+        action="store_true",
+        default=False,
+        help="计算版本号（默认：False）",
+    )
     args = parser.parse_args()
     manager = VersionManager(args.output_folder, yaml_file_path=args.yaml, tasks=args.tasks,
                              calc=args.calc)
-    print(manager.tasks)
+    print(f"当前任务列表：{manager.tasks}")
     #     manager = VersionManager('~/Desktop/harvest')
-    manager.compile_and_install()
+    if len(manager.tasks) > 0:
+        manager.compile_and_install()
     # manager.calc_version()
+    manager.git_commit_and_tag()
