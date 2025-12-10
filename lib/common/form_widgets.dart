@@ -6,7 +6,10 @@ class SwitchTile extends StatelessWidget {
   final String title;
   final bool value;
   final double size;
+  final double? scale;
   final Widget? leading;
+  final Widget? label;
+  final EdgeInsetsGeometry? contentPadding;
   final void Function(bool)? onChanged;
 
   const SwitchTile({
@@ -15,7 +18,10 @@ class SwitchTile extends StatelessWidget {
     required this.value,
     required this.onChanged,
     this.size = 32,
+    this.scale = 0.5,
     this.leading,
+    this.label,
+    this.contentPadding,
   });
 
   @override
@@ -29,11 +35,13 @@ class SwitchTile extends StatelessWidget {
         ),
       ),
       leading: leading,
+      contentPadding: contentPadding,
       trailing: Transform.scale(
-        scale: 0.5,
+        scale: scale,
         child: ShadSwitch(
           value: value,
           onChanged: onChanged,
+          label: label,
         ),
       ),
     );
