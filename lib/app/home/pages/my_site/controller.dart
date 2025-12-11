@@ -18,7 +18,6 @@ class MySiteController extends GetxController {
   List<MySite> mySiteList = <MySite>[];
   List<MySite> showStatusList = <MySite>[];
   bool loading = false;
-  bool singleLoading = false;
   bool initFlag = false;
   bool loadingFromServer = false;
   bool openByInnerExplorer = true;
