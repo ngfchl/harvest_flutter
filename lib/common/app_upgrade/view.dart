@@ -145,11 +145,7 @@ class AppUpgradePage extends StatelessWidget {
                                   Icons.install_desktop_outlined,
                                   size: 16,
                                 ),
-                                child: Text((appUpgradeController.updateInfo?.version ?? '0.0.0')
-                                            .compareTo(appUpgradeController.currentVersion) >
-                                        0
-                                    ? '重装'
-                                    : '更新'),
+                                child: Text(appUpgradeController.hasNewVersion ? '更新' : '重装'),
                               ),
                               if (Platform.isIOS)
                                 ShadButton.link(
@@ -185,9 +181,9 @@ class AppUpgradePage extends StatelessWidget {
                 if (appUpgradeController.updateInfo == null) {
                   await appUpgradeController.getAppLatestVersionInfo();
                 }
-                if (appUpgradeController.appVersions.isEmpty) {
-                  await appUpgradeController.getAppVersionList();
-                }
+                // if (appUpgradeController.appVersions.isEmpty) {
+                //   await appUpgradeController.getAppVersionList();
+                // }
                 appUpgradeController.popoverController.toggle();
               },
             ),

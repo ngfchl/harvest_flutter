@@ -29,7 +29,7 @@ class AppUpgradeController extends GetxController {
       notShowNewVersion = SPUtil.getBool('notShowNewVersion', defaultValue: false);
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
       currentVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
-      getAppVersionList();
+      // getAppVersionList();
       getAppLatestVersionInfo();
     } catch (e, trace) {
       Logger.instance.e('检测 APP 更新失败');
@@ -64,7 +64,7 @@ class AppUpgradeController extends GetxController {
     if (res.succeed) {
       updateInfo = res.data;
       hasNewVersion = (updateInfo?.version ?? '0.0.0').compareTo(currentVersion) > 0;
-      if (notShowNewVersion && hasNewVersion) {
+      if (!notShowNewVersion && hasNewVersion) {
         popoverController.show();
       }
     } else {
