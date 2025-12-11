@@ -299,7 +299,7 @@ class ThemeIconButton extends StatelessWidget {
                                       double height = item["height"]!;
                                       WindowOptions windowOptions = WindowOptions(
                                         // size: Size(1200, 900),
-                                        size: Size(width, height),
+                                        size: Size(width, height + 28),
                                         center: true,
                                         backgroundColor: Colors.transparent,
                                         skipTaskbar: false,

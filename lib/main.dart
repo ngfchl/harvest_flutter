@@ -129,7 +129,7 @@ Future<void> initDependencies() async {
     double width = SPUtil.getDouble('ScreenSizeWidth', defaultValue: 1200).toDouble();
     Logger.instance.d('已缓存的窗口大小: $width, $height');
     WindowOptions windowOptions = WindowOptions(
-      size: Size(width, height),
+      size: Size(width, height + 28),
       center: true,
       backgroundColor: Colors.transparent,
       skipTaskbar: false,
