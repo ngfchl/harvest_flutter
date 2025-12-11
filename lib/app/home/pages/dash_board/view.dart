@@ -121,6 +121,214 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
           ],
         ),
         ShadIconButton.ghost(
+          onPressed: () {
+            Get.defaultDialog(
+              title: '小部件',
+              radius: 5,
+              backgroundColor: shadColorScheme.background,
+              titleStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: shadColorScheme.foreground),
+              content: SizedBox(
+                  height: controller.cardHeight,
+                  width: 280,
+                  child: GetBuilder<DashBoardController>(builder: (controller) {
+                    return ListView(
+                      children: [
+                        // CheckboxListTile(
+                        //     title: const Text("站点数据汇总"),
+                        //     value: controller
+                        //         .buildSiteInfoCard,
+                        //     onChanged: (bool? value) {
+                        //       controller.buildSiteInfoCard =
+                        //           value!;
+                        //       controller.update();
+                        //     }),
+
+                        CustomCheckboxListTile(
+                          title: '开启隐私模式',
+                          value: controller.privateMode,
+                          storageKey: 'privateMode',
+                          onUpdate: (bool newValue) async {
+                            controller.privateMode = newValue;
+                            Logger.instance.d("privateMode: ${controller.privateMode}");
+                            await controller.loadCacheDashData();
+                            controller.update();
+                          },
+                        ),
+                        CustomCheckboxListTile(
+                          title: '账户数据信息',
+                          value: controller.buildAccountInfoCard,
+                          storageKey: 'buildAccountInfoCard',
+                          onUpdate: (bool newValue) {
+                            controller.buildAccountInfoCard = newValue;
+                            controller.update();
+                          },
+                        ),
+                        CustomCheckboxListTile(
+                          title: '站点数据柱图',
+                          value: controller.buildSiteInfo,
+                          storageKey: 'buildSiteInfo',
+                          onUpdate: (bool newValue) {
+                            controller.buildSiteInfo = newValue;
+                            controller.update();
+                          },
+                        ),
+                        CustomCheckboxListTile(
+                          title: '发种数量量饼图',
+                          value: controller.buildPublishedPieChart,
+                          storageKey: 'buildPublishedPieChart',
+                          onUpdate: (bool newValue) {
+                            controller.buildPublishedPieChart = newValue;
+                            controller.update();
+                          },
+                        ),
+                        CustomCheckboxListTile(
+                          title: '做种总量饼图',
+                          value: controller.buildSeedVolumePieChart,
+                          storageKey: 'buildSeedVolumePieChart',
+                          onUpdate: (bool newValue) {
+                            controller.buildSeedVolumePieChart = newValue;
+                            controller.update();
+                          },
+                        ),
+                        CustomCheckboxListTile(
+                          title: '上传总量饼图',
+                          value: controller.buildSmartLabelPieChart,
+                          storageKey: 'buildSmartLabelPieChart',
+                          onUpdate: (bool newValue) {
+                            controller.buildSmartLabelPieChart = newValue;
+                            controller.update();
+                          },
+                        ),
+
+                        CustomCheckboxListTile(
+                          title: '每日上传柱图',
+                          value: controller.buildStackedBar,
+                          storageKey: 'buildStackedBar',
+                          onUpdate: (bool newValue) {
+                            controller.buildStackedBar = newValue;
+                            controller.update();
+                          },
+                        ),
+                        CustomCheckboxListTile(
+                          title: '今日上传增量',
+                          value: controller.showTodayUploadedIncrement,
+                          storageKey: 'showTodayUploadedIncrement',
+                          onUpdate: (bool newValue) {
+                            controller.showTodayUploadedIncrement = newValue;
+                            controller.update();
+                          },
+                        ),
+                        CustomCheckboxListTile(
+                          title: '今日下载增量',
+                          value: controller.showTodayDownloadedIncrement,
+                          storageKey: 'showTodayDownloadedIncrement',
+                          onUpdate: (bool newValue) {
+                            controller.showTodayDownloadedIncrement = newValue;
+                            controller.update();
+                          },
+                        ),
+                        CustomCheckboxListTile(
+                          title: '每月发种柱图',
+                          value: controller.buildMonthPublishedBar,
+                          storageKey: 'buildMonthPublishedBar',
+                          onUpdate: (bool newValue) {
+                            controller.buildMonthPublishedBar = newValue;
+                            controller.update();
+                          },
+                        ),
+                        CustomCheckboxListTile(
+                          title: '每月上传柱图',
+                          value: controller.buildMonthStackedBar,
+                          storageKey: 'buildMonthStackedBar',
+                          onUpdate: (bool newValue) {
+                            controller.buildMonthStackedBar = newValue;
+                            controller.update();
+                          },
+                        ),
+                        CustomCheckboxListTile(
+                          title: '每月下载柱图',
+                          value: controller.buildMonthDownloadedBar,
+                          storageKey: 'buildMonthDownloadedBar',
+                          onUpdate: (bool newValue) {
+                            controller.buildMonthDownloadedBar = newValue;
+                            controller.update();
+                          },
+                        ),
+                        CustomCheckboxListTile(
+                          title: '仪表缩放开关',
+                          value: controller.scaleEnable,
+                          storageKey: 'scaleEnable',
+                          onUpdate: (bool newValue) {
+                            controller.scaleEnable = newValue;
+                            controller.update();
+                          },
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                          child: Row(
+                            children: [
+                              CustomTextTag(
+                                  backgroundColor: shadColorScheme.card,
+                                  labelColor: shadColorScheme.cardForeground,
+                                  labelText: '卡片高度'),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 12.0),
+                                  child: Row(
+                                    children: [
+                                      // InkWell(
+                                      //   child: const Icon(Icons.remove),
+                                      //   onTap: () async {
+                                      //     if (controller.days > 1) {
+                                      //       controller.days--;
+                                      //       await controller.initChartData();
+                                      //       controller.update();
+                                      //     }
+                                      //   },
+                                      // ),
+                                      Expanded(
+                                        child: Slider(
+                                            min: 240,
+                                            max: 500,
+                                            divisions: 13,
+                                            label: controller.cardHeight.toInt().toString(),
+                                            value: controller.cardHeight,
+                                            onChanged: (value) async {
+                                              controller.cardHeight = value.toDouble();
+                                              await SPUtil.setDouble('buildCardHeight', value);
+                                              // await controller.loadCacheDashData();
+                                              controller.update();
+                                            }),
+                                      ),
+                                      // InkWell(
+                                      //   child: const Icon(Icons.add),
+                                      //   onTap: () {
+                                      //     if (controller.days < 14) {
+                                      //       controller.days++;
+                                      //       controller.initChartData();
+                                      //       controller.update();
+                                      //     }
+                                      //   },
+                                      // ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  })),
+            );
+          },
+          icon: Icon(
+            Icons.settings_outlined,
+            color: shadColorScheme.primary,
+            size: 24,
+          ),
+        ),
+        ShadIconButton.ghost(
           onPressed: () => ScreenshotSaver.captureAndSave(_captureKey),
           icon: Icon(
             Icons.camera_outlined,
@@ -157,6 +365,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
 
   Widget _showTodayDownloadedIncrement() {
     return GetBuilder<DashBoardController>(builder: (controller) {
+      var shadColorScheme = ShadTheme.of(context).colorScheme;
       return CustomCard(
         height: controller.cardHeight,
         child: SfCircularChart(
@@ -164,7 +373,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
           title: ChartTitle(
             text:
                 '今日下载增量：${FileSizeConvert.parseToFileSize(controller.todayDownloadIncrement)}【${controller.downloadIncrementDataList.length}个站点】',
-            textStyle: TextStyle(fontSize: 11, color: ShadTheme.of(context).colorScheme.foreground),
+            textStyle: TextStyle(fontSize: 11, color: shadColorScheme.foreground),
           ),
           legend: Legend(
             position: LegendPosition.left,
@@ -178,7 +387,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
             isResponsive: true,
             textStyle: TextStyle(
               fontSize: 8,
-              color: ShadTheme.of(context).colorScheme.foreground,
+              color: shadColorScheme.foreground,
             ),
           ),
           series: <DoughnutSeries<MetaDataItem, String>>[
@@ -204,7 +413,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                 labelPosition: ChartDataLabelPosition.outside,
                 textStyle: TextStyle(
                   fontSize: 8,
-                  color: ShadTheme.of(context).colorScheme.foreground,
+                  color: shadColorScheme.foreground,
                 ),
                 showZeroValue: false,
                 connectorLineSettings: const ConnectorLineSettings(
@@ -228,13 +437,13 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
               }
 
               return Container(
-                color: ShadTheme.of(context).colorScheme.background,
+                color: shadColorScheme.background,
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   '${point.x}: ${FileSizeConvert.parseToFileSize(point.y ?? 0)}',
                   style: TextStyle(
                     fontSize: 14,
-                    color: ShadTheme.of(context).colorScheme.foreground,
+                    color: shadColorScheme.foreground,
                   ),
                 ),
               );
@@ -247,6 +456,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
 
   Widget _showTodayUploadedIncrement() {
     return GetBuilder<DashBoardController>(builder: (controller) {
+      var shadColorScheme = ShadTheme.of(context).colorScheme;
       return CustomCard(
         height: controller.cardHeight,
         child: SfCircularChart(
@@ -254,7 +464,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
           title: ChartTitle(
             text:
                 '今日上传增量：${FileSizeConvert.parseToFileSize(controller.todayUploadIncrement)}【${controller.uploadIncrementDataList.length}个站点】',
-            textStyle: TextStyle(fontSize: 11, color: ShadTheme.of(context).colorScheme.foreground),
+            textStyle: TextStyle(fontSize: 11, color: shadColorScheme.foreground),
           ),
           legend: Legend(
             position: LegendPosition.left,
@@ -268,7 +478,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
             isResponsive: true,
             textStyle: TextStyle(
               fontSize: 8,
-              color: ShadTheme.of(context).colorScheme.foreground,
+              color: shadColorScheme.foreground,
             ),
           ),
           series: <DoughnutSeries<MetaDataItem, String>>[
@@ -294,7 +504,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                 labelPosition: ChartDataLabelPosition.outside,
                 textStyle: TextStyle(
                   fontSize: 8,
-                  color: ShadTheme.of(context).colorScheme.foreground,
+                  color: shadColorScheme.foreground,
                 ),
                 showZeroValue: false,
                 connectorLineSettings: const ConnectorLineSettings(
@@ -318,13 +528,13 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
               }
 
               return Container(
-                color: ShadTheme.of(context).colorScheme.background,
+                color: shadColorScheme.background,
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   '${point.x}: ${FileSizeConvert.parseToFileSize(point.y ?? 0)}',
                   style: TextStyle(
                     fontSize: 14,
-                    color: ShadTheme.of(context).colorScheme.foreground,
+                    color: shadColorScheme.foreground,
                   ),
                 ),
               );
@@ -394,243 +604,40 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                 ),
               Expanded(
                 child: GetBuilder<DashBoardController>(builder: (controller) {
-                  return InkWell(
-                    onLongPress: () {
-                      Get.defaultDialog(
-                        title: '小部件',
-                        radius: 5,
-                        titleStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900),
-                        content: SizedBox(
-                            height: controller.cardHeight,
-                            width: 280,
-                            child: GetBuilder<DashBoardController>(builder: (controller) {
-                              return ListView(
-                                children: [
-                                  // CheckboxListTile(
-                                  //     title: const Text("站点数据汇总"),
-                                  //     value: controller
-                                  //         .buildSiteInfoCard,
-                                  //     onChanged: (bool? value) {
-                                  //       controller.buildSiteInfoCard =
-                                  //           value!;
-                                  //       controller.update();
-                                  //     }),
-
-                                  CustomCheckboxListTile(
-                                    title: '开启隐私模式',
-                                    value: controller.privateMode,
-                                    storageKey: 'privateMode',
-                                    onUpdate: (bool newValue) async {
-                                      controller.privateMode = newValue;
-                                      Logger.instance.d("privateMode: ${controller.privateMode}");
-                                      await controller.loadCacheDashData();
-                                      controller.update();
-                                    },
-                                  ),
-                                  CustomCheckboxListTile(
-                                    title: '账户数据信息',
-                                    value: controller.buildAccountInfoCard,
-                                    storageKey: 'buildAccountInfoCard',
-                                    onUpdate: (bool newValue) {
-                                      controller.buildAccountInfoCard = newValue;
-                                      controller.update();
-                                    },
-                                  ),
-                                  CustomCheckboxListTile(
-                                    title: '站点数据柱图',
-                                    value: controller.buildSiteInfo,
-                                    storageKey: 'buildSiteInfo',
-                                    onUpdate: (bool newValue) {
-                                      controller.buildSiteInfo = newValue;
-                                      controller.update();
-                                    },
-                                  ),
-                                  CustomCheckboxListTile(
-                                    title: '发种数量量饼图',
-                                    value: controller.buildPublishedPieChart,
-                                    storageKey: 'buildPublishedPieChart',
-                                    onUpdate: (bool newValue) {
-                                      controller.buildPublishedPieChart = newValue;
-                                      controller.update();
-                                    },
-                                  ),
-                                  CustomCheckboxListTile(
-                                    title: '做种总量饼图',
-                                    value: controller.buildSeedVolumePieChart,
-                                    storageKey: 'buildSeedVolumePieChart',
-                                    onUpdate: (bool newValue) {
-                                      controller.buildSeedVolumePieChart = newValue;
-                                      controller.update();
-                                    },
-                                  ),
-                                  CustomCheckboxListTile(
-                                    title: '上传总量饼图',
-                                    value: controller.buildSmartLabelPieChart,
-                                    storageKey: 'buildSmartLabelPieChart',
-                                    onUpdate: (bool newValue) {
-                                      controller.buildSmartLabelPieChart = newValue;
-                                      controller.update();
-                                    },
-                                  ),
-
-                                  CustomCheckboxListTile(
-                                    title: '每日上传柱图',
-                                    value: controller.buildStackedBar,
-                                    storageKey: 'buildStackedBar',
-                                    onUpdate: (bool newValue) {
-                                      controller.buildStackedBar = newValue;
-                                      controller.update();
-                                    },
-                                  ),
-                                  CustomCheckboxListTile(
-                                    title: '今日上传增量',
-                                    value: controller.showTodayUploadedIncrement,
-                                    storageKey: 'showTodayUploadedIncrement',
-                                    onUpdate: (bool newValue) {
-                                      controller.showTodayUploadedIncrement = newValue;
-                                      controller.update();
-                                    },
-                                  ),
-                                  CustomCheckboxListTile(
-                                    title: '今日下载增量',
-                                    value: controller.showTodayDownloadedIncrement,
-                                    storageKey: 'showTodayDownloadedIncrement',
-                                    onUpdate: (bool newValue) {
-                                      controller.showTodayDownloadedIncrement = newValue;
-                                      controller.update();
-                                    },
-                                  ),
-                                  CustomCheckboxListTile(
-                                    title: '每月发种柱图',
-                                    value: controller.buildMonthPublishedBar,
-                                    storageKey: 'buildMonthPublishedBar',
-                                    onUpdate: (bool newValue) {
-                                      controller.buildMonthPublishedBar = newValue;
-                                      controller.update();
-                                    },
-                                  ),
-                                  CustomCheckboxListTile(
-                                    title: '每月上传柱图',
-                                    value: controller.buildMonthStackedBar,
-                                    storageKey: 'buildMonthStackedBar',
-                                    onUpdate: (bool newValue) {
-                                      controller.buildMonthStackedBar = newValue;
-                                      controller.update();
-                                    },
-                                  ),
-                                  CustomCheckboxListTile(
-                                    title: '每月下载柱图',
-                                    value: controller.buildMonthDownloadedBar,
-                                    storageKey: 'buildMonthDownloadedBar',
-                                    onUpdate: (bool newValue) {
-                                      controller.buildMonthDownloadedBar = newValue;
-                                      controller.update();
-                                    },
-                                  ),
-                                  CustomCheckboxListTile(
-                                    title: '仪表缩放开关',
-                                    value: controller.scaleEnable,
-                                    storageKey: 'scaleEnable',
-                                    onUpdate: (bool newValue) {
-                                      controller.scaleEnable = newValue;
-                                      controller.update();
-                                    },
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                                    child: Row(
-                                      children: [
-                                        CustomTextTag(
-                                            backgroundColor: shadColorScheme.card,
-                                            labelColor: shadColorScheme.cardForeground,
-                                            labelText: '卡片高度'),
-                                        Expanded(
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(left: 12.0),
-                                            child: Row(
-                                              children: [
-                                                // InkWell(
-                                                //   child: const Icon(Icons.remove),
-                                                //   onTap: () async {
-                                                //     if (controller.days > 1) {
-                                                //       controller.days--;
-                                                //       await controller.initChartData();
-                                                //       controller.update();
-                                                //     }
-                                                //   },
-                                                // ),
-                                                Expanded(
-                                                  child: Slider(
-                                                      min: 240,
-                                                      max: 500,
-                                                      divisions: 13,
-                                                      label: controller.cardHeight.toInt().toString(),
-                                                      value: controller.cardHeight,
-                                                      onChanged: (value) async {
-                                                        controller.cardHeight = value.toDouble();
-                                                        await SPUtil.setDouble('buildCardHeight', value);
-                                                        // await controller.loadCacheDashData();
-                                                        controller.update();
-                                                      }),
-                                                ),
-                                                // InkWell(
-                                                //   child: const Icon(Icons.add),
-                                                //   onTap: () {
-                                                //     if (controller.days < 14) {
-                                                //       controller.days++;
-                                                //       controller.initChartData();
-                                                //       controller.update();
-                                                //     }
-                                                //   },
-                                                // ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              );
-                            })),
-                      );
-                    },
-                    child: GetBuilder<DashBoardController>(builder: (controller) {
-                      return SingleChildScrollView(
-                        child: controller.isCacheLoading
-                            ? Center(
-                                child: CircularProgressIndicator(
-                                color: shadColorScheme.primary,
-                              ))
-                            : RepaintBoundary(
-                                key: _captureKey,
-                                child: Wrap(
-                                    alignment: WrapAlignment.spaceAround,
-                                    direction: Axis.horizontal,
-                                    children: [
-                                      if (controller.buildSiteInfoCard) _buildSiteInfoCard(),
-                                      if (controller.buildAccountInfoCard) _buildAccountInfoCard(),
-                                      if (controller.buildSiteInfo && controller.statusList.isNotEmpty)
-                                        _buildSiteInfo(),
-                                      if (controller.buildPublishedPieChart) _buildPublishedPieChart(),
-                                      if (controller.buildSeedVolumePieChart) _buildSeedVolumePieChart(),
-                                      if (controller.buildSmartLabelPieChart) _buildSmartLabelPieChart(),
-                                      if (controller.buildStackedBar) _buildStackedBar(),
-                                      if (controller.showTodayUploadedIncrement) _showTodayUploadedIncrement(),
-                                      if (controller.showTodayDownloadedIncrement) _showTodayDownloadedIncrement(),
-                                      if (controller.buildMonthPublishedBar) _buildMonthPublishedBar(),
-                                      if (controller.buildMonthStackedBar) _buildMonthStackedBar(),
-                                      if (controller.buildMonthDownloadedBar) _buildMonthDownloadedBar(),
-                                    ]
-                                        .map((item) => FractionallySizedBox(
-                                              widthFactor: getWidthFactor(context),
-                                              child: item,
-                                            ))
-                                        .toList()),
-                              ),
-                      );
-                    }),
-                  );
+                  return GetBuilder<DashBoardController>(builder: (controller) {
+                    return SingleChildScrollView(
+                      child: controller.isCacheLoading
+                          ? Center(
+                              child: CircularProgressIndicator(
+                              color: shadColorScheme.primary,
+                            ))
+                          : RepaintBoundary(
+                              key: _captureKey,
+                              child: Wrap(
+                                  alignment: WrapAlignment.spaceAround,
+                                  direction: Axis.horizontal,
+                                  children: [
+                                    if (controller.buildSiteInfoCard) _buildSiteInfoCard(),
+                                    if (controller.buildAccountInfoCard) _buildAccountInfoCard(),
+                                    if (controller.buildSiteInfo && controller.statusList.isNotEmpty) _buildSiteInfo(),
+                                    if (controller.buildPublishedPieChart) _buildPublishedPieChart(),
+                                    if (controller.buildSeedVolumePieChart) _buildSeedVolumePieChart(),
+                                    if (controller.buildSmartLabelPieChart) _buildSmartLabelPieChart(),
+                                    if (controller.buildStackedBar) _buildStackedBar(),
+                                    if (controller.showTodayUploadedIncrement) _showTodayUploadedIncrement(),
+                                    if (controller.showTodayDownloadedIncrement) _showTodayDownloadedIncrement(),
+                                    if (controller.buildMonthPublishedBar) _buildMonthPublishedBar(),
+                                    if (controller.buildMonthStackedBar) _buildMonthStackedBar(),
+                                    if (controller.buildMonthDownloadedBar) _buildMonthDownloadedBar(),
+                                  ]
+                                      .map((item) => FractionallySizedBox(
+                                            widthFactor: getWidthFactor(context),
+                                            child: item,
+                                          ))
+                                      .toList()),
+                            ),
+                    );
+                  });
                   // : Center(
                   //     child: ElevatedButton.icon(
                   //     onPressed: () async {
@@ -662,6 +669,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
 
       RxBool showDescTitle = SPUtil.getBool("showDescTitle", defaultValue: true).obs;
       RxBool showYear = SPUtil.getBool("showYear", defaultValue: true).obs;
+      var shadColorScheme = ShadTheme.of(context).colorScheme;
       return CustomCard(
         height: controller.cardHeight,
         borderRadius: const BorderRadius.only(
@@ -706,7 +714,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                           fontWeight: FontWeight.w500,
                                           fontSize: 11,
                                           letterSpacing: -0.1,
-                                          color: ShadTheme.of(context).colorScheme.foreground,
+                                          color: shadColorScheme.foreground,
                                         ),
                                       ),
                                     ),
@@ -731,7 +739,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                             style: TextStyle(
                                               fontWeight: FontWeight.w600,
                                               fontSize: 11,
-                                              color: ShadTheme.of(context).colorScheme.foreground,
+                                              color: shadColorScheme.foreground,
                                             ),
                                           ),
                                         ),
@@ -744,7 +752,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                               fontWeight: FontWeight.w600,
                                               fontSize: 12,
                                               letterSpacing: -0.2,
-                                              color: ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
+                                              color: shadColorScheme.foreground.withOpacity(0.8),
                                             ),
                                           ),
                                         ),
@@ -781,7 +789,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                           fontWeight: FontWeight.w500,
                                           fontSize: 11,
                                           letterSpacing: -0.1,
-                                          color: ShadTheme.of(context).colorScheme.foreground,
+                                          color: shadColorScheme.foreground,
                                         ),
                                       ),
                                     ),
@@ -806,7 +814,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                             style: TextStyle(
                                               fontWeight: FontWeight.w600,
                                               fontSize: 11,
-                                              color: ShadTheme.of(context).colorScheme.foreground,
+                                              color: shadColorScheme.foreground,
                                             ),
                                           ),
                                         ),
@@ -819,7 +827,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                               fontWeight: FontWeight.w600,
                                               fontSize: 12,
                                               letterSpacing: -0.2,
-                                              color: ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
+                                              color: shadColorScheme.foreground.withOpacity(0.8),
                                             ),
                                           ),
                                         ),
@@ -887,7 +895,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                               style: TextStyle(
                                                 fontWeight: FontWeight.w600,
                                                 fontSize: 14,
-                                                color: ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
+                                                color: shadColorScheme.foreground.withOpacity(0.8),
                                               ),
                                             );
                                     }),
@@ -941,7 +949,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                             fontWeight: FontWeight.w500,
                             fontSize: 11,
                             letterSpacing: -0.2,
-                            color: ShadTheme.of(context).colorScheme.foreground,
+                            color: shadColorScheme.foreground,
                           ),
                         ),
                         Padding(
@@ -978,7 +986,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 11,
-                              color: ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
+                              color: shadColorScheme.foreground.withOpacity(0.8),
                             ),
                           ),
                         ),
@@ -997,7 +1005,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                             fontWeight: FontWeight.w500,
                             fontSize: 11,
                             letterSpacing: -0.2,
-                            color: ShadTheme.of(context).colorScheme.foreground,
+                            color: shadColorScheme.foreground,
                           ),
                         ),
                         Padding(
@@ -1036,7 +1044,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                               letterSpacing: -1,
                               wordSpacing: -1,
                               fontSize: 11,
-                              color: ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
+                              color: shadColorScheme.foreground.withOpacity(0.8),
                             ),
                           ),
                         ),
@@ -1059,7 +1067,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                 fontWeight: FontWeight.w500,
                                 fontSize: 11,
                                 letterSpacing: -0.2,
-                                color: ShadTheme.of(context).colorScheme.foreground,
+                                color: shadColorScheme.foreground,
                               ),
                             ),
                             Padding(
@@ -1096,7 +1104,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 11,
-                                  color: ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
+                                  color: shadColorScheme.foreground.withOpacity(0.8),
                                 ),
                               ),
                             ),
@@ -1120,7 +1128,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                 fontWeight: FontWeight.w500,
                                 fontSize: 11,
                                 letterSpacing: -0.2,
-                                color: ShadTheme.of(context).colorScheme.foreground,
+                                color: shadColorScheme.foreground,
                               ),
                             ),
                             Padding(
@@ -1157,7 +1165,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 11,
-                                  color: ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
+                                  color: shadColorScheme.foreground.withOpacity(0.8),
                                 ),
                               ),
                             ),
@@ -1192,7 +1200,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 11,
-                          color: ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
+                          color: shadColorScheme.foreground.withOpacity(0.8),
                         ),
                       ),
                       controller.earliestSite == null
@@ -1212,7 +1220,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                     fontWeight: FontWeight.normal,
                                     fontSize: 11,
                                     letterSpacing: 0.0,
-                                    color: ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
+                                    color: shadColorScheme.foreground.withOpacity(0.8),
                                   ),
                                 ),
                               );
@@ -1227,13 +1235,13 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                               fontWeight: FontWeight.w500,
                               fontSize: 11,
                               letterSpacing: -0.2,
-                              color: ShadTheme.of(context).colorScheme.foreground)),
+                              color: shadColorScheme.foreground)),
                       Text(controller.updatedAt.isNotEmpty ? controller.updatedAt.substring(2, 19) : '',
                           style: TextStyle(
                               fontWeight: FontWeight.w500,
                               fontSize: 11,
                               letterSpacing: -0.2,
-                              color: ShadTheme.of(context).colorScheme.foreground)),
+                              color: shadColorScheme.foreground)),
                     ],
                   )
                 ],
@@ -1249,6 +1257,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
     // Logger.instance.d(controller.emailMap);
     // Logger.instance.d(controller.usernameMap);
     return GetBuilder<DashBoardController>(builder: (controller) {
+      var shadColorScheme = ShadTheme.of(context).colorScheme;
       return CustomCard(
         height: controller.cardHeight,
         borderRadius: const BorderRadius.only(
@@ -1275,7 +1284,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                       fontWeight: FontWeight.w500,
                       fontSize: 11,
                       letterSpacing: -0.2,
-                      color: ShadTheme.of(context).colorScheme.foreground,
+                      color: shadColorScheme.foreground,
                     ),
                   ),
                   Padding(
@@ -1313,7 +1322,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 11,
-                          color: ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
+                          color: shadColorScheme.foreground.withOpacity(0.8),
                         ),
                       ),
                     ),
@@ -1360,7 +1369,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                       fontWeight: FontWeight.w500,
                       fontSize: 11,
                       letterSpacing: -0.2,
-                      color: ShadTheme.of(context).colorScheme.foreground,
+                      color: shadColorScheme.foreground,
                     ),
                   ),
                   Padding(
@@ -1398,7 +1407,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 11,
-                          color: ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
+                          color: shadColorScheme.foreground.withOpacity(0.8),
                         ),
                       ),
                     ),
@@ -1414,6 +1423,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
 
   Widget _buildSiteInfo() {
     // Logger.instance.d(controller.statusList.length);
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     if (controller.statusList.isEmpty) {
       return CustomCard(
         height: controller.cardHeight,
@@ -1423,7 +1433,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
             Text('站点数据',
                 style: TextStyle(
                   fontSize: 12,
-                  color: ShadTheme.of(context).colorScheme.foreground,
+                  color: shadColorScheme.foreground,
                 )),
             const SizedBox(height: 5),
             Expanded(child: Center(child: Text('暂无站点信息'))),
@@ -1444,7 +1454,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
             Text('站点数据',
                 style: TextStyle(
                   fontSize: 12,
-                  color: ShadTheme.of(context).colorScheme.foreground,
+                  color: shadColorScheme.foreground,
                 )),
             const SizedBox(height: 5),
             Expanded(
@@ -1471,7 +1481,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                         FileSizeConvert.parseToFileSize(status.uploaded),
                                         style: TextStyle(
                                           fontSize: 10,
-                                          color: ShadTheme.of(context).colorScheme.foreground,
+                                          color: shadColorScheme.foreground,
                                         ),
                                         textAlign: TextAlign.right,
                                       ),
@@ -1485,8 +1495,8 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                         // width: 100,
                                         child: ShadProgress(
                                           value: 1 - status.uploaded / maxUploaded,
-                                          color: ShadTheme.of(context).colorScheme.background,
-                                          backgroundColor: ShadTheme.of(context).colorScheme.primary,
+                                          color: shadColorScheme.background,
+                                          backgroundColor: shadColorScheme.primary,
                                         ),
                                       ),
                                     ),
@@ -1500,7 +1510,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                     text: controller.privateMode ? "${data.name.substring(0, 1)}**" : data.name,
                                     style: TextStyle(
                                       fontSize: 10,
-                                      color: ShadTheme.of(context).colorScheme.foreground,
+                                      color: shadColorScheme.foreground,
                                     ),
                                     ellipsis: '...',
                                     maxLines: 1,
@@ -1515,7 +1525,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                           // width: 100,
                                           child: ShadProgress(
                                               value: (status.downloaded ?? 0) / maxDownloaded,
-                                              color: ShadTheme.of(context).colorScheme.destructive)),
+                                              color: shadColorScheme.destructive)),
                                     ),
                                     const SizedBox(
                                       width: 2,
@@ -1526,7 +1536,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                           FileSizeConvert.parseToFileSize(status.downloaded ?? 0),
                                           style: TextStyle(
                                             fontSize: 10,
-                                            color: ShadTheme.of(context).colorScheme.foreground,
+                                            color: shadColorScheme.foreground,
                                           ),
                                         )),
                                   ],
@@ -1547,6 +1557,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
 
   Widget _buildSmartLabelPieChart() {
     return GetBuilder<DashBoardController>(builder: (controller) {
+      var shadColorScheme = ShadTheme.of(context).colorScheme;
       return CustomCard(
         height: controller.cardHeight,
         padding: const EdgeInsets.only(left: 10),
@@ -1556,7 +1567,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
               text: '上传数据',
               textStyle: TextStyle(
                 fontSize: 11,
-                color: ShadTheme.of(context).colorScheme.foreground,
+                color: shadColorScheme.foreground,
               )),
           centerX: '47%',
           centerY: '45%',
@@ -1572,7 +1583,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
               isResponsive: true,
               textStyle: TextStyle(
                 fontSize: 8,
-                color: ShadTheme.of(context).colorScheme.foreground,
+                color: shadColorScheme.foreground,
               )),
           series: _getSmartLabelPieSeries(),
           tooltipBehavior: TooltipBehavior(
@@ -1582,13 +1593,13 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
             activationMode: ActivationMode.singleTap,
             builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
               return Container(
-                color: ShadTheme.of(context).colorScheme.background,
+                color: shadColorScheme.background,
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   '${data.name}: ${FileSizeConvert.parseToFileSize(data.value.uploaded ?? 0)}',
                   style: TextStyle(
                     fontSize: 11,
-                    color: ShadTheme.of(context).colorScheme.foreground,
+                    color: shadColorScheme.foreground,
                   ),
                 ),
               );
@@ -1602,6 +1613,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
 
   Widget _buildPublishedPieChart() {
     return GetBuilder<DashBoardController>(builder: (controller) {
+      var shadColorScheme = ShadTheme.of(context).colorScheme;
       return CustomCard(
         height: controller.cardHeight,
         padding: const EdgeInsets.only(left: 10),
@@ -1611,7 +1623,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
               text: '发种数据',
               textStyle: TextStyle(
                 fontSize: 11,
-                color: ShadTheme.of(context).colorScheme.foreground,
+                color: shadColorScheme.foreground,
               )),
           centerX: '47%',
           centerY: '45%',
@@ -1627,7 +1639,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
               isResponsive: true,
               textStyle: TextStyle(
                 fontSize: 8,
-                color: ShadTheme.of(context).colorScheme.foreground,
+                color: shadColorScheme.foreground,
               )),
           series: <PieSeries<MetaDataItem, String>>[
             PieSeries<MetaDataItem, String>(
@@ -1654,7 +1666,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                 labelPosition: ChartDataLabelPosition.outside,
                 textStyle: TextStyle(
                   fontSize: 8,
-                  color: ShadTheme.of(context).colorScheme.foreground,
+                  color: shadColorScheme.foreground,
                 ),
                 showZeroValue: false,
                 connectorLineSettings: const ConnectorLineSettings(
@@ -1672,13 +1684,13 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
             activationMode: ActivationMode.singleTap,
             builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
               return Container(
-                color: ShadTheme.of(context).colorScheme.background,
+                color: shadColorScheme.background,
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   '${data.name}: ${formatNumber(data.value.published, fixed: 0)}',
                   style: TextStyle(
                     fontSize: 11,
-                    color: ShadTheme.of(context).colorScheme.foreground,
+                    color: shadColorScheme.foreground,
                   ),
                 ),
               );
@@ -1692,6 +1704,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
 
   Widget _buildSeedVolumePieChart() {
     return GetBuilder<DashBoardController>(builder: (controller) {
+      var shadColorScheme = ShadTheme.of(context).colorScheme;
       return CustomCard(
         height: controller.cardHeight,
         padding: const EdgeInsets.only(left: 10),
@@ -1701,7 +1714,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
               text: '做种总量：${FileSizeConvert.parseToFileSize(controller.totalSeedVol)}',
               textStyle: TextStyle(
                 fontSize: 11,
-                color: ShadTheme.of(context).colorScheme.foreground,
+                color: shadColorScheme.foreground,
               )),
           centerX: '47%',
           centerY: '45%',
@@ -1717,7 +1730,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
               isResponsive: true,
               textStyle: TextStyle(
                 fontSize: 8,
-                color: ShadTheme.of(context).colorScheme.foreground,
+                color: shadColorScheme.foreground,
               )),
           series: _getSeedVolumePieSeries(),
           tooltipBehavior: TooltipBehavior(
@@ -1727,13 +1740,13 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
             activationMode: ActivationMode.singleTap,
             builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
               return Container(
-                color: ShadTheme.of(context).colorScheme.background,
+                color: shadColorScheme.background,
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   '${data.name}: ${FileSizeConvert.parseToFileSize(data.value ?? 0)}',
                   style: TextStyle(
                     fontSize: 11,
-                    color: ShadTheme.of(context).colorScheme.foreground,
+                    color: shadColorScheme.foreground,
                   ),
                 ),
               );
@@ -1818,6 +1831,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
   Widget _buildStackedBar() {
     try {
       return GetBuilder<DashBoardController>(builder: (controller) {
+        var shadColorScheme = ShadTheme.of(context).colorScheme;
         return CustomCard(
           height: controller.cardHeight,
           child: Column(
@@ -1826,8 +1840,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                 child: SfCartesianChart(
                     palette: Get.isDarkMode ? controller.darkColors : controller.lightColors,
                     title: ChartTitle(
-                        text: '每日上传增量',
-                        textStyle: TextStyle(fontSize: 11, color: ShadTheme.of(context).colorScheme.foreground)),
+                        text: '每日上传增量', textStyle: TextStyle(fontSize: 11, color: shadColorScheme.foreground)),
                     isTransposed: true,
                     margin: const EdgeInsets.all(15),
                     legend: Legend(
@@ -1838,7 +1851,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                         itemPadding: 5,
                         textStyle: TextStyle(
                           fontSize: 8,
-                          color: ShadTheme.of(context).colorScheme.foreground,
+                          color: shadColorScheme.foreground,
                         )),
                     enableSideBySideSeriesPlacement: false,
                     plotAreaBorderWidth: 0,
@@ -1856,32 +1869,67 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                     tooltipBehavior: TooltipBehavior(
                       enable: true,
                       canShowMarker: true,
-                      duration: 0,
+                      // duration: 0,
+                      shouldAlwaysShow: true,
                       activationMode: ActivationMode.singleTap,
                       tooltipPosition: TooltipPosition.auto,
                       builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
-                        return Container(
-                          color: ShadTheme.of(context).colorScheme.background,
+                        var dataList = controller.stackChartDataList
+                            .map(
+                              (item) => MetaDataItem(
+                                name: item.name,
+                                value: item.value
+                                    .firstWhere(
+                                      (d) => d.createdAt.toString().contains(point.x),
+                                      orElse: () => TrafficDelta(
+                                          createdAt: DateTime.now(), uploaded: 0, downloaded: null, published: null),
+                                    )
+                                    .uploaded,
+                              ),
+                            )
+                            .where((item) => item.value > 0)
+                            .toList();
+                        return CustomCard(
                           padding: const EdgeInsets.all(8),
-                          child: SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                Text(
-                                  point.x,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: ShadTheme.of(context).colorScheme.foreground,
-                                  ),
+                          width: 200,
+                          child: Column(
+                            children: [
+                              Text(
+                                point.x,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: shadColorScheme.foreground,
                                 ),
-                                Text(
-                                  '${series.name}: ${FileSizeConvert.parseToFileSize(point.y)}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: ShadTheme.of(context).colorScheme.secondary,
-                                  ),
+                              ),
+                              Expanded(
+                                child: ListView(
+                                  shrinkWrap: true,
+                                  children: [
+                                    ...dataList.map(
+                                      (item) => Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            item.name,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: shadColorScheme.foreground,
+                                            ),
+                                          ),
+                                          Text(
+                                            FileSizeConvert.parseToFileSize(item.value),
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: shadColorScheme.foreground,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         );
                       },
@@ -1893,7 +1941,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                           details.text,
                           TextStyle(
                             fontSize: 10,
-                            color: ShadTheme.of(context).colorScheme.foreground,
+                            color: shadColorScheme.foreground,
                           ),
                         );
                       },
@@ -1905,7 +1953,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                           FileSizeConvert.parseToFileSize(details.value.toInt()),
                           TextStyle(
                             fontSize: 10,
-                            color: ShadTheme.of(context).colorScheme.foreground,
+                            color: shadColorScheme.foreground,
                           ),
                         );
                       },
@@ -1979,7 +2027,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                       },
                                       child: Icon(
                                         Icons.remove,
-                                        color: ShadTheme.of(context).colorScheme.foreground,
+                                        color: shadColorScheme.foreground,
                                       ),
                                     ),
                               Expanded(
@@ -1987,7 +2035,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                     min: 1,
                                     max: 14,
                                     divisions: 14,
-                                    activeColor: ShadTheme.of(context).colorScheme.foreground,
+                                    activeColor: shadColorScheme.foreground,
                                     label: controller.days.toString(),
                                     value: controller.days.toDouble(),
                                     onChanged: (value) async {
@@ -2014,7 +2062,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                       },
                                       child: Icon(
                                         Icons.add,
-                                        color: ShadTheme.of(context).colorScheme.foreground,
+                                        color: shadColorScheme.foreground,
                                       ),
                                     ),
                             ],
@@ -2039,6 +2087,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
   Widget _buildMonthStackedBar() {
     try {
       return GetBuilder<DashBoardController>(builder: (controller) {
+        var shadColorScheme = ShadTheme.of(context).colorScheme;
         return CustomCard(
           height: controller.cardHeight,
           child: Column(
@@ -2047,8 +2096,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                 child: SfCartesianChart(
                     palette: Get.isDarkMode ? controller.darkColors : controller.lightColors,
                     title: ChartTitle(
-                        text: '月度上传增量',
-                        textStyle: TextStyle(fontSize: 11, color: ShadTheme.of(context).colorScheme.foreground)),
+                        text: '月度上传增量', textStyle: TextStyle(fontSize: 11, color: shadColorScheme.foreground)),
                     isTransposed: true,
                     margin: const EdgeInsets.all(15),
                     legend: Legend(
@@ -2059,7 +2107,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                         itemPadding: 5,
                         textStyle: TextStyle(
                           fontSize: 8,
-                          color: ShadTheme.of(context).colorScheme.foreground,
+                          color: shadColorScheme.foreground,
                         )),
                     enableSideBySideSeriesPlacement: false,
                     plotAreaBorderWidth: 0,
@@ -2077,33 +2125,67 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                     tooltipBehavior: TooltipBehavior(
                       enable: true,
                       canShowMarker: true,
-                      duration: 0,
+                      // duration: 0,
+                      shouldAlwaysShow: true,
                       activationMode: ActivationMode.singleTap,
                       tooltipPosition: TooltipPosition.auto,
                       builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
-                        // Logger.instance.d(data);
-                        return Container(
-                          color: ShadTheme.of(context).colorScheme.background,
+                        var dataList = controller.uploadMonthIncrementDataList
+                            .map(
+                              (item) => MetaDataItem(
+                                name: item.name,
+                                value: item.value
+                                    .firstWhere(
+                                      (d) => d.createdAt.toString().contains(point.x),
+                                      orElse: () => TrafficDelta(
+                                          createdAt: DateTime.now(), uploaded: 0, downloaded: null, published: null),
+                                    )
+                                    .uploaded,
+                              ),
+                            )
+                            .where((item) => item.value > 0)
+                            .toList();
+                        return CustomCard(
                           padding: const EdgeInsets.all(8),
-                          child: SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                Text(
-                                  point.x,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: ShadTheme.of(context).colorScheme.foreground,
-                                  ),
+                          width: 200,
+                          child: Column(
+                            children: [
+                              Text(
+                                point.x,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: shadColorScheme.foreground,
                                 ),
-                                Text(
-                                  '${series.name}: ${FileSizeConvert.parseToFileSize(point.y)}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: ShadTheme.of(context).colorScheme.secondary,
-                                  ),
+                              ),
+                              Expanded(
+                                child: ListView(
+                                  shrinkWrap: true,
+                                  children: [
+                                    ...dataList.map(
+                                      (item) => Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            item.name,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: shadColorScheme.foreground,
+                                            ),
+                                          ),
+                                          Text(
+                                            FileSizeConvert.parseToFileSize(item.value),
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: shadColorScheme.foreground,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         );
                       },
@@ -2115,7 +2197,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                           details.text,
                           TextStyle(
                             fontSize: 10,
-                            color: ShadTheme.of(context).colorScheme.foreground,
+                            color: shadColorScheme.foreground,
                           ),
                         );
                       },
@@ -2127,7 +2209,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                           FileSizeConvert.parseToFileSize(details.value.toInt()),
                           TextStyle(
                             fontSize: 10,
-                            color: ShadTheme.of(context).colorScheme.foreground,
+                            color: shadColorScheme.foreground,
                           ),
                         );
                       },
@@ -2194,7 +2276,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                   divisions: 12,
                                   // label: controller.days.toString(),
                                   value: 12,
-                                  activeColor: ShadTheme.of(context).colorScheme.foreground,
+                                  activeColor: shadColorScheme.foreground,
                                   onChanged: (value) async {
                                     // controller.days = value.toInt();
                                     // await controller.initChartData();
@@ -2233,6 +2315,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
   Widget _buildMonthDownloadedBar() {
     try {
       return GetBuilder<DashBoardController>(builder: (controller) {
+        var shadColorScheme = ShadTheme.of(context).colorScheme;
         return CustomCard(
           height: controller.cardHeight,
           child: Column(
@@ -2241,8 +2324,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                 child: SfCartesianChart(
                     palette: Get.isDarkMode ? controller.darkColors : controller.lightColors,
                     title: ChartTitle(
-                        text: '月度下载增量',
-                        textStyle: TextStyle(fontSize: 11, color: ShadTheme.of(context).colorScheme.foreground)),
+                        text: '月度下载增量', textStyle: TextStyle(fontSize: 11, color: shadColorScheme.foreground)),
                     isTransposed: true,
                     margin: const EdgeInsets.all(15),
                     legend: Legend(
@@ -2253,7 +2335,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                         itemPadding: 5,
                         textStyle: TextStyle(
                           fontSize: 8,
-                          color: ShadTheme.of(context).colorScheme.foreground,
+                          color: shadColorScheme.foreground,
                         )),
                     enableSideBySideSeriesPlacement: false,
                     plotAreaBorderWidth: 0,
@@ -2271,33 +2353,67 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                     tooltipBehavior: TooltipBehavior(
                       enable: true,
                       canShowMarker: true,
-                      duration: 0,
+                      // duration: 0,
+                      shouldAlwaysShow: true,
                       activationMode: ActivationMode.singleTap,
                       tooltipPosition: TooltipPosition.auto,
                       builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
-                        // Logger.instance.d(data);
-                        return Container(
-                          color: ShadTheme.of(context).colorScheme.background,
+                        var dataList = controller.uploadMonthIncrementDataList
+                            .map(
+                              (item) => MetaDataItem(
+                                name: item.name,
+                                value: item.value
+                                    .firstWhere(
+                                      (d) => d.createdAt.toString().contains(point.x),
+                                      orElse: () => TrafficDelta(
+                                          createdAt: DateTime.now(), uploaded: 0, downloaded: null, published: null),
+                                    )
+                                    .uploaded,
+                              ),
+                            )
+                            .where((item) => item.value > 0)
+                            .toList();
+                        return CustomCard(
                           padding: const EdgeInsets.all(8),
-                          child: SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                Text(
-                                  point.x,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: ShadTheme.of(context).colorScheme.foreground,
-                                  ),
+                          width: 200,
+                          child: Column(
+                            children: [
+                              Text(
+                                point.x,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: shadColorScheme.foreground,
                                 ),
-                                Text(
-                                  '${series.name}: ${FileSizeConvert.parseToFileSize(point.y)}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: ShadTheme.of(context).colorScheme.secondary,
-                                  ),
+                              ),
+                              Expanded(
+                                child: ListView(
+                                  shrinkWrap: true,
+                                  children: [
+                                    ...dataList.map(
+                                      (item) => Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            item.name,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: shadColorScheme.foreground,
+                                            ),
+                                          ),
+                                          Text(
+                                            FileSizeConvert.parseToFileSize(item.value),
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: shadColorScheme.foreground,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         );
                       },
@@ -2309,7 +2425,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                           details.text,
                           TextStyle(
                             fontSize: 10,
-                            color: ShadTheme.of(context).colorScheme.foreground,
+                            color: shadColorScheme.foreground,
                           ),
                         );
                       },
@@ -2321,7 +2437,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                           FileSizeConvert.parseToFileSize(details.value.toInt()),
                           TextStyle(
                             fontSize: 10,
-                            color: ShadTheme.of(context).colorScheme.foreground,
+                            color: shadColorScheme.foreground,
                           ),
                         );
                       },
@@ -2388,7 +2504,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                   divisions: 12,
                                   // label: controller.days.toString(),
                                   value: 12,
-                                  activeColor: ShadTheme.of(context).colorScheme.foreground,
+                                  activeColor: shadColorScheme.foreground,
                                   onChanged: (value) async {
                                     // controller.days = value.toInt();
                                     // await controller.initChartData();
@@ -2427,6 +2543,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
   Widget _buildMonthPublishedBar() {
     try {
       return GetBuilder<DashBoardController>(builder: (controller) {
+        var shadColorScheme = ShadTheme.of(context).colorScheme;
         return CustomCard(
           height: controller.cardHeight,
           child: Column(
@@ -2435,8 +2552,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                 child: SfCartesianChart(
                     palette: Get.isDarkMode ? controller.darkColors : controller.lightColors,
                     title: ChartTitle(
-                        text: '月度发种增量',
-                        textStyle: TextStyle(fontSize: 11, color: ShadTheme.of(context).colorScheme.foreground)),
+                        text: '月度发种增量', textStyle: TextStyle(fontSize: 11, color: shadColorScheme.foreground)),
                     isTransposed: true,
                     margin: const EdgeInsets.all(15),
                     legend: Legend(
@@ -2447,7 +2563,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                         itemPadding: 5,
                         textStyle: TextStyle(
                           fontSize: 8,
-                          color: ShadTheme.of(context).colorScheme.foreground,
+                          color: shadColorScheme.foreground,
                         )),
                     enableSideBySideSeriesPlacement: false,
                     plotAreaBorderWidth: 0,
@@ -2465,33 +2581,67 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                     tooltipBehavior: TooltipBehavior(
                       enable: true,
                       canShowMarker: true,
-                      duration: 0,
+                      // duration: 0,
+                      shouldAlwaysShow: true,
                       activationMode: ActivationMode.singleTap,
                       tooltipPosition: TooltipPosition.auto,
                       builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
-                        // Logger.instance.d(data);
-                        return Container(
-                          color: ShadTheme.of(context).colorScheme.background,
+                        var dataList = controller.uploadMonthIncrementDataList
+                            .map(
+                              (item) => MetaDataItem(
+                                name: item.name,
+                                value: item.value
+                                    .firstWhere(
+                                      (d) => d.createdAt.toString().contains(point.x),
+                                      orElse: () => TrafficDelta(
+                                          createdAt: DateTime.now(), uploaded: 0, downloaded: null, published: null),
+                                    )
+                                    .uploaded,
+                              ),
+                            )
+                            .where((item) => item.value > 0)
+                            .toList();
+                        return CustomCard(
                           padding: const EdgeInsets.all(8),
-                          child: SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                Text(
-                                  point.x,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: ShadTheme.of(context).colorScheme.foreground,
-                                  ),
+                          width: 200,
+                          child: Column(
+                            children: [
+                              Text(
+                                point.x,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: shadColorScheme.foreground,
                                 ),
-                                Text(
-                                  '${series.name}: ${formatNumber(point.y, fixed: 0)}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: ShadTheme.of(context).colorScheme.secondary,
-                                  ),
+                              ),
+                              Expanded(
+                                child: ListView(
+                                  shrinkWrap: true,
+                                  children: [
+                                    ...dataList.map(
+                                      (item) => Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            item.name,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: shadColorScheme.foreground,
+                                            ),
+                                          ),
+                                          Text(
+                                            FileSizeConvert.parseToFileSize(item.value),
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: shadColorScheme.foreground,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         );
                       },
@@ -2503,7 +2653,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                           details.text,
                           TextStyle(
                             fontSize: 10,
-                            color: ShadTheme.of(context).colorScheme.foreground,
+                            color: shadColorScheme.foreground,
                           ),
                         );
                       },
@@ -2515,7 +2665,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                           formatNumber(details.value.toInt(), fixed: 0),
                           TextStyle(
                             fontSize: 10,
-                            color: ShadTheme.of(context).colorScheme.foreground,
+                            color: shadColorScheme.foreground,
                           ),
                         );
                       },
@@ -2582,7 +2732,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                   divisions: 12,
                                   // label: controller.days.toString(),
                                   value: 12,
-                                  activeColor: ShadTheme.of(context).colorScheme.foreground,
+                                  activeColor: shadColorScheme.foreground,
                                   onChanged: (value) async {
                                     // controller.days = value.toInt();
                                     // await controller.initChartData();
@@ -2643,13 +2793,14 @@ class CustomCheckboxListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     return CheckboxListTile(
       title: Text(
         title,
-        style: TextStyle(fontSize: 12),
+        style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
       ),
       value: value,
-      // activeColor: ShadTheme.of(context).colorScheme.foreground,
+      activeColor: shadColorScheme.primary,
       onChanged: (bool? newValue) {
         if (newValue == null) return;
         onUpdate(newValue);
