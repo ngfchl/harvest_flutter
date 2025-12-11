@@ -4,8 +4,11 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 
 class SwitchTile extends StatelessWidget {
   final String title;
+  final String? subtitle;
   final bool value;
   final double size;
+  final double fontSize;
+  final double subtitleFontSize;
   final double? scale;
   final Widget? leading;
   final Widget? label;
@@ -15,10 +18,13 @@ class SwitchTile extends StatelessWidget {
   const SwitchTile({
     super.key,
     required this.title,
+    this.subtitle,
     required this.value,
     required this.onChanged,
     this.size = 32,
-    this.scale = 0.5,
+    this.fontSize = 14,
+    this.subtitleFontSize = 8,
+    this.scale = 0.75,
     this.leading,
     this.label,
     this.contentPadding,
@@ -30,10 +36,19 @@ class SwitchTile extends StatelessWidget {
       title: Text(
         title,
         style: TextStyle(
-          fontSize: 14,
+          fontSize: fontSize,
           color: ShadTheme.of(context).colorScheme.foreground,
         ),
       ),
+      subtitle: subtitle != null
+          ? Text(
+              subtitle!,
+              style: TextStyle(
+                fontSize: subtitleFontSize,
+                color: ShadTheme.of(context).colorScheme.foreground,
+              ),
+            )
+          : null,
       leading: leading,
       contentPadding: contentPadding,
       trailing: Transform.scale(
