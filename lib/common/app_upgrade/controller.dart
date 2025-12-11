@@ -64,11 +64,14 @@ class AppUpgradeController extends GetxController {
     if (res.succeed) {
       updateInfo = res.data;
       hasNewVersion = (updateInfo?.version ?? '0.0.0').compareTo(currentVersion) > 0;
+      Logger.instance.d('当前版本：$currentVersion, 最新版本：${updateInfo?.version}');
       if (!notShowNewVersion && hasNewVersion) {
         popoverController.show();
       }
     } else {
-      Get.snackbar('更新日志', '获取更新日志失败！${res.msg}', colorText: Colors.red);
+      var message = '获取更新日志失败！${res.msg}';
+      Get.snackbar('更新日志', message, colorText: Colors.red);
+      Logger.instance.e(message);
     }
     update();
   }
