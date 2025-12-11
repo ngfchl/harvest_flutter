@@ -24,11 +24,17 @@ class VersionManager:
             calc=True,
             push=False,
             tag=False,
+            build=False,
     ):
         print("初始化 VersionManager")
         print(
-            f"初始化任务参数：yaml文件路径: {yaml_file_path}   任务列表:{tasks}  是否计算版本号: {calc} {type(calc)}  当前是否推送：{push}  {type(push)}")
+            f"初始化任务参数：yaml文件路径: {yaml_file_path}-任务列表:{tasks}")
+        print(
+            f"初始化任务参数：是否计算版本号: {calc}  当前是否打标签：{tag}")
+        print(
+            f"初始化任务参数：当前是否推送：{push}  是否计算打包TestFlight: {build}")
         self.tag = tag
+        self.build = build
         self.yaml_file_path = yaml_file_path
         self.output_folder = os.path.expanduser(output_folder)
         # 确保输出目录存在
@@ -335,12 +341,15 @@ icon_locations = {{
                 ["git", "checkout", "master"],
                 ["git", "merge", "dev"],
                 ["git", "push"],
-                ["git", "checkout", "build"],
-                ["git", "merge", "dev"],
-                ["git", "push"],
-                ["git", "checkout", "dev"],
             ]
-            
+            if self.build:
+                cmds = [
+                    *cmds,
+                    ["git", "checkout", "build"],
+                    ["git", "merge", "dev"],
+                    ["git", "push"],
+                ]
+            cmds.append(["git", "checkout", "dev"], )
             for cmd in cmds:
                 print("执行:", cmd)
                 subprocess.run(cmd, check=True)
@@ -350,8 +359,8 @@ icon_locations = {{
             print("🎉 Git 提交与 Tag 推送完成！")
         except Exception as e:
             print(f"Git 推送失败: {e}")
-            print(f"回滚版本号到 {self.current_version}")
-            self.update_version(self.current_version)
+            # print(f"回滚版本号到 {self.current_version}")
+            # self.update_version(self.current_version)
             print(traceback.format_exc())
 
     def git_commit_and_tag(self):
@@ -414,18 +423,25 @@ if __name__ == "__main__":
         "-p",
         action="store_true",
         default=False,
-        help="计算版本号（默认：False）",
+        help="推送代码（默认：False）",
     )
     parser.add_argument(
         "--tag",
         "--tag",
         action="store_true",
         default=False,
-        help="计算版本号（默认：False）",
+        help="打标签（默认：False）",
+    )
+    parser.add_argument(
+        "--build",
+        "-b",
+        action="store_true",
+        default=False,
+        help="编译TestFlight（默认：False）",
     )
     args = parser.parse_args()
     manager = VersionManager(output_folder=args.output_folder, yaml_file_path=args.yaml,
-                             tasks=args.tasks,
+                             tasks=args.tasks, build=args.build,
                              calc=args.calc, push=args.push, tag=args.tag)
     print(f"当前任务列表：{manager.tasks}")
     #     manager = VersionManager('~/Desktop/harvest')
