@@ -148,30 +148,30 @@ class DownloadForm extends StatelessWidget {
                   controller: tagsController,
                   labelText: ' 标签',
                   helperText: '多个标签用英文都好`,`分隔',
+                  suffixIcon: ShadIconButton.ghost(
+                    icon: Icon(
+                      Icons.clear,
+                      size: 18,
+                    ),
+                    onPressed: () {
+                      tagsController.text = '';
+                    },
+                  ),
                 ),
                 Obx(() {
-                  return SwitchListTile(
-                      dense: true,
+                  return SwitchTile(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                      title: Text(
-                        '暂停下载',
-                        style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
-                      ),
+                      title: '暂停下载',
+                      fontSize: 12,
                       value: paused.value,
-                      activeColor: shadColorScheme.primary,
                       onChanged: (bool val) {
                         paused.value = val;
                       });
                 }),
                 Obx(() {
-                  return SwitchListTile(
-                      dense: true,
+                  return SwitchTile(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                      title: Text(
-                        '高级选项',
-                        style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
-                      ),
-                      activeColor: shadColorScheme.primary,
+                      title: '高级选项',
                       value: advancedConfig.value,
                       onChanged: (bool val) {
                         advancedConfig.value = val;
@@ -181,14 +181,9 @@ class DownloadForm extends StatelessWidget {
                   return advancedConfig.value
                       ? Column(
                           children: [
-                            SwitchListTile(
-                                dense: true,
-                                activeColor: shadColorScheme.primary,
+                            SwitchTile(
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                                title: Text(
-                                  '添加到队列顶部',
-                                  style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
-                                ),
+                                title: '添加到队列顶部',
                                 value: addToTopOfQueue.value,
                                 onChanged: (bool val) {
                                   addToTopOfQueue.value = val;
@@ -265,67 +260,42 @@ class DownloadForm extends StatelessWidget {
                               );
                             }),
                             Obx(() {
-                              return SwitchListTile(
-                                  dense: true,
-                                  activeColor: shadColorScheme.primary,
+                              return SwitchTile(
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                                  title: Text(
-                                    '跳过哈希校验',
-                                    style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
-                                  ),
+                                  title: '跳过哈希校验',
                                   value: isSkipChecking.value,
                                   onChanged: (bool val) {
                                     isSkipChecking.value = val;
                                   });
                             }),
                             Obx(() {
-                              return SwitchListTile(
-                                  dense: true,
-                                  activeColor: shadColorScheme.primary,
+                              return SwitchTile(
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                                  title: Text(
-                                    '自动管理',
-                                    style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
-                                  ),
+                                  title: '自动管理',
                                   value: autoTMM.value,
                                   onChanged: (bool val) {
                                     autoTMM.value = val;
                                   });
                             }),
                             Obx(() {
-                              return SwitchListTile(
-                                  dense: true,
-                                  activeColor: shadColorScheme.primary,
+                              return SwitchTile(
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                                  title: Text(
-                                    '强制启动',
-                                    style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
-                                  ),
+                                  title: '强制启动',
                                   value: forced.value,
                                   onChanged: (bool val) {
                                     forced.value = val;
                                   });
                             }),
-                            SwitchListTile(
-                                dense: true,
-                                activeColor: shadColorScheme.primary,
+                            SwitchTile(
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                                title: Text(
-                                  '按顺序下载',
-                                  style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
-                                ),
+                                title: '按顺序下载',
                                 value: isSequentialDownload.value,
                                 onChanged: (bool val) {
                                   isSequentialDownload.value = val;
                                 }),
-                            SwitchListTile(
-                                dense: true,
-                                activeColor: shadColorScheme.primary,
+                            SwitchTile(
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                                title: Text(
-                                  '优先下载首尾数据块',
-                                  style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
-                                ),
+                                title: '优先下载首尾数据块',
                                 value: firstLastPiecePrio.value,
                                 onChanged: (bool val) {
                                   firstLastPiecePrio.value = val;
@@ -544,28 +514,18 @@ class DownloadForm extends StatelessWidget {
               helperText: '多个标签用英文都好`,`分隔',
             ),
             Obx(() {
-              return SwitchListTile(
-                  dense: true,
-                  activeColor: shadColorScheme.primary,
+              return SwitchTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                  title: Text(
-                    '暂停下载',
-                    style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
-                  ),
+                  title: '暂停下载',
                   value: paused.value,
                   onChanged: (bool val) {
                     paused.value = val;
                   });
             }),
             Obx(() {
-              return SwitchListTile(
-                  dense: true,
-                  activeColor: shadColorScheme.primary,
+              return SwitchTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                  title: Text(
-                    '高级选项',
-                    style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
-                  ),
+                  title: '高级选项',
                   value: advancedConfig.value,
                   onChanged: (bool val) {
                     advancedConfig.value = val;
