@@ -7,6 +7,7 @@ import 'package:harvest/api/downloader.dart';
 import 'package:harvest/app/home/pages/models/qbittorrent.dart';
 import 'package:harvest/app/home/pages/models/torrent_info.dart';
 import 'package:harvest/models/common_response.dart';
+import 'package:harvest/utils/storage.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
@@ -46,7 +47,7 @@ class DownloadForm extends StatelessWidget {
     cookieController.text = mysite?.cookie ?? info?.cookie ?? '';
     upLimitController.text = website?.limitSpeed.toString() ?? '';
     urlController.text = info?.magnetUrl ?? '';
-    tagsController.text = info?.tags.join(',') ?? '';
+    tagsController.text = '';
     savePathController.text = categories.isNotEmpty
         ? categories.values.first?.savePath
         : (downloader.category.toLowerCase() == 'qb' ? downloader.prefs.savePath : downloader.prefs.downloadDir);
@@ -78,6 +79,13 @@ class DownloadForm extends StatelessWidget {
     RxBool addToTopOfQueue = false.obs;
     RxBool isSequentialDownload = false.obs;
     RxBool forced = false.obs;
+    RxList<String> tags = SPUtil.getStringList("custom_torrent_tags",
+        defaultValue: ['harvest-app', '电影', '电视剧', '动漫', '综艺', '纪录片', '体育', '音乐', '动画', '游戏']).obs;
+    RxList<String> selectedTags = [
+      ...?info?.tags,
+      'harvest-app',
+    ].obs;
+    tags.sort();
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     return Form(
       child: Padding(
@@ -158,6 +166,77 @@ class DownloadForm extends StatelessWidget {
                     },
                   ),
                 ),
+                Obx(() {
+                  return Wrap(
+                    spacing: 8,
+                    runSpacing: 3,
+                    alignment: WrapAlignment.center,
+                    runAlignment: WrapAlignment.center,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      ActionChip(
+                        label: Text(
+                          '清理',
+                          style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
+                        ),
+                        labelPadding: EdgeInsets.zero,
+                        backgroundColor: shadColorScheme.destructive,
+                        labelStyle: TextStyle(fontSize: 12, color: shadColorScheme.destructiveForeground),
+                        pressElevation: 5,
+                        elevation: 3,
+                        onPressed: () {
+                          Get.defaultDialog(
+                            title: '提示',
+                            titleStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                            content: Text(
+                              '确定要重置自定义标签吗？',
+                              style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
+                            ),
+                            backgroundColor: shadColorScheme.background,
+                            cancel: ShadButton.outline(
+                              size: ShadButtonSize.sm,
+                              onPressed: () {
+                                Get.back();
+                              },
+                              child: Text('取消'),
+                            ),
+                            confirm: ShadButton.destructive(
+                              size: ShadButtonSize.sm,
+                              onPressed: () {
+                                tags.clear();
+                                SPUtil.remove("custom_torrent_tags");
+                                Get.back();
+                              },
+                              child: Text('重置'),
+                            ),
+                          );
+                        },
+                      ),
+                      ...tags.map((tag) => FilterChip(
+                            label: Text(
+                              tag,
+                              style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
+                            ),
+                            selected: selectedTags.contains(tag),
+                            labelPadding: EdgeInsets.zero,
+                            backgroundColor: shadColorScheme.primary.withOpacity(0.8),
+                            labelStyle: TextStyle(fontSize: 12, color: shadColorScheme.primaryForeground),
+                            selectedColor: Colors.green,
+                            selectedShadowColor: Colors.blue,
+                            pressElevation: 5,
+                            elevation: 3,
+                            onSelected: (value) {
+                              if (value) {
+                                selectedTags.add(tag);
+                                selectedTags.value = selectedTags.toSet().toList();
+                              } else {
+                                selectedTags.remove(tag);
+                              }
+                            },
+                          )),
+                    ],
+                  );
+                }),
                 Obx(() {
                   return SwitchTile(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
@@ -377,20 +456,19 @@ class DownloadForm extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ShadButton.destructive(
+                ShadButton.outline(
                   size: ShadButtonSize.sm,
                   onPressed: () => cancelForm(context),
                   leading: const Icon(Icons.cancel_outlined, size: 18),
-                  child: Text(
-                    '取消',
-                    style: TextStyle(color: shadColorScheme.destructiveForeground),
-                  ),
+                  child: Text('取消'),
                 ),
                 Obx(() {
-                  return ShadButton(
+                  return ShadButton.destructive(
                     size: ShadButtonSize.sm,
                     onPressed: () async {
                       isLoading.value = true;
+                      tags.addAll(tagsController.text.split(','));
+                      SPUtil.setStringList('custom_torrent_tags', tags.toSet().toList());
                       double? ratioLimit = double.tryParse(ratioLimitController.text);
                       int? upLimit = int.tryParse(upLimitController.text);
                       int? dlLimit = int.tryParse(dlLimitController.text);
@@ -402,7 +480,7 @@ class DownloadForm extends StatelessWidget {
                         'category': categoryController.text,
                         'is_paused': paused.value,
                         'rename': renameController.text,
-                        'tags': tagsController.text,
+                        'tags': [...tagsController.text.split(','), ...selectedTags],
                         'cookie': cookieController.text,
                         'content_layout': contentLayout.value,
                         'stop_condition': stopCondition.value == 'None' ? null : stopCondition.value,
@@ -429,10 +507,7 @@ class DownloadForm extends StatelessWidget {
                             ),
                           )
                         : const Icon(Icons.download, size: 18),
-                    child: Text(
-                      '下载',
-                      style: TextStyle(color: shadColorScheme.primaryForeground),
-                    ),
+                    child: const Text('下载'),
                   );
                 }),
               ],
@@ -447,6 +522,13 @@ class DownloadForm extends StatelessWidget {
     RxBool advancedConfig = false.obs;
     RxBool paused = false.obs;
     Rx<String> category = categories.keys.first.obs;
+    RxList<String> tags = SPUtil.getStringList("custom_torrent_tags",
+        defaultValue: ['电影', '电视剧', '动漫', '综艺', '纪录片', '体育', '音乐', '动画', '游戏']).obs;
+    RxList<String> selectedTags = [
+      ...?info?.tags,
+      'harvest-app',
+    ].obs;
+    tags.sort();
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     return Form(
         child: Column(
@@ -513,6 +595,77 @@ class DownloadForm extends StatelessWidget {
               labelText: ' 标签',
               helperText: '多个标签用英文都好`,`分隔',
             ),
+            Obx(() {
+              return Wrap(
+                spacing: 8,
+                runSpacing: 3,
+                alignment: WrapAlignment.center,
+                runAlignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  ActionChip(
+                    label: Text(
+                      '清理',
+                      style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
+                    ),
+                    labelPadding: EdgeInsets.zero,
+                    backgroundColor: shadColorScheme.destructive,
+                    labelStyle: TextStyle(fontSize: 12, color: shadColorScheme.destructiveForeground),
+                    pressElevation: 5,
+                    elevation: 3,
+                    onPressed: () {
+                      Get.defaultDialog(
+                        title: '提示',
+                        titleStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                        content: Text(
+                          '确定要重置自定义标签吗？',
+                          style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
+                        ),
+                        backgroundColor: shadColorScheme.background,
+                        cancel: ShadButton.outline(
+                          size: ShadButtonSize.sm,
+                          onPressed: () {
+                            Get.back();
+                          },
+                          child: Text('取消'),
+                        ),
+                        confirm: ShadButton.destructive(
+                          size: ShadButtonSize.sm,
+                          onPressed: () {
+                            tags.clear();
+                            SPUtil.remove("custom_torrent_tags");
+                            Get.back();
+                          },
+                          child: Text('重置'),
+                        ),
+                      );
+                    },
+                  ),
+                  ...tags.map((tag) => FilterChip(
+                        label: Text(
+                          tag,
+                          style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
+                        ),
+                        selected: selectedTags.contains(tag),
+                        labelPadding: EdgeInsets.zero,
+                        backgroundColor: shadColorScheme.primary.withOpacity(0.8),
+                        labelStyle: TextStyle(fontSize: 12, color: shadColorScheme.primaryForeground),
+                        selectedColor: Colors.green,
+                        selectedShadowColor: Colors.blue,
+                        pressElevation: 5,
+                        elevation: 3,
+                        onSelected: (value) {
+                          if (value) {
+                            selectedTags.add(tag);
+                            selectedTags.value = selectedTags.toSet().toList();
+                          } else {
+                            selectedTags.remove(tag);
+                          }
+                        },
+                      )),
+                ],
+              );
+            }),
             Obx(() {
               return SwitchTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
@@ -609,19 +762,19 @@ class DownloadForm extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            ShadButton.destructive(
+            ShadButton.outline(
               size: ShadButtonSize.sm,
               onPressed: () => cancelForm(context),
               leading: const Icon(Icons.cancel_outlined),
-              child: const Text(
-                '取消',
-              ),
+              child: const Text('取消'),
             ),
             Obx(() {
-              return ShadButton(
+              return ShadButton.destructive(
                 size: ShadButtonSize.sm,
                 onPressed: () async {
                   isLoading.value = true;
+                  tags.addAll(tagsController.text.split(','));
+                  SPUtil.setStringList('custom_torrent_tags', tags.toSet().toList());
                   double? ratioLimit = double.tryParse(ratioLimitController.text);
                   int? upLimit = int.tryParse(upLimitController.text);
                   int? dlLimit = int.tryParse(dlLimitController.text);
@@ -630,7 +783,7 @@ class DownloadForm extends StatelessWidget {
                     'tid': info?.tid,
                     'urls': urlController.text,
                     'save_path': savePathController.text,
-                    'tags': tagsController.text.split(','),
+                    'tags': [...tagsController.text.split(','), ...selectedTags],
                     'cookie': cookieController.text,
                     'is_paused': paused.value,
                     'upLimit': (upLimit != null && upLimit > 0) ? upLimit * 1024 : null,
