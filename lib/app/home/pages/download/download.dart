@@ -6327,10 +6327,9 @@ class ShowTorrentWidget extends StatelessWidget {
                           title: '确认',
                           middleText: '您确定要执行这个操作吗？',
                           content: Obx(() {
-                            return SwitchListTile(
-                                title: const Text('是否删除种子文件？'),
+                            return SwitchTile(
+                                title: '是否删除种子文件？',
                                 value: deleteFiles.value,
-                                activeColor: shadColorScheme.primary,
                                 onChanged: (value) {
                                   deleteFiles.value = value;
                                 });
@@ -7237,10 +7236,9 @@ class ShowTorrentWidget extends StatelessWidget {
                     title: '确认',
                     middleText: '您确定要执行这个操作吗？',
                     content: Obx(() {
-                      return SwitchListTile(
-                          title: const Text('是否删除种子文件？'),
+                      return SwitchTile(
+                          title: '是否删除种子文件？',
                           value: deleteFiles.value,
-                          activeColor: shadColorScheme.primary,
                           onChanged: (value) {
                             deleteFiles.value = value;
                           });
@@ -7441,25 +7439,15 @@ class ShowTorrentWidget extends StatelessWidget {
                     content: Obx(() {
                       return Column(
                         children: [
-                          SwitchListTile(
-                              dense: true,
-                              title: const Text(
-                                '删除种子文件？',
-                                style: TextStyle(fontSize: 12),
-                              ),
+                          SwitchTile(
+                              title: '删除种子文件？',
                               value: deleteFiles.value,
-                              activeColor: shadColorScheme.primary,
                               onChanged: (value) {
                                 deleteFiles.value = value;
                               }),
-                          SwitchListTile(
-                              dense: true,
-                              title: const Text(
-                                '无其他站点保种删除数据？',
-                                style: TextStyle(fontSize: 12),
-                              ),
+                          SwitchTile(
+                              title: '无其他站点保种删除数据？',
                               value: doDeleteWithOutOthers.value,
-                              activeColor: shadColorScheme.primary,
                               onChanged: (value) {
                                 doDeleteWithOutOthers.value = value;
                               }),
@@ -7576,17 +7564,9 @@ class ShowTorrentWidget extends StatelessWidget {
                             controller: newPathController,
                             labelText: '新目录',
                           ),
-                          SwitchListTile(
-                              dense: true,
-                              title: const Text(
-                                '同时移动数据？',
-                                style: TextStyle(fontSize: 12),
-                              ),
-                              subtitle: const Text(
-                                '不勾选则从新目录下查找文件数据',
-                                style: TextStyle(fontSize: 8),
-                              ),
-                              activeColor: shadColorScheme.primary,
+                          SwitchTile(
+                              title: '同时移动数据？',
+                              subtitle: '不勾选则从新目录下查找文件数据',
                               value: changeDataDir.value,
                               onChanged: (value) {
                                 changeDataDir.value = value;
@@ -8077,8 +8057,8 @@ class ShowTorrentWidget extends StatelessWidget {
                           title: '确认',
                           middleText: '您确定要执行这个操作吗？',
                           content: Obx(() {
-                            return SwitchListTile(
-                                title: const Text('是否删除种子文件？'),
+                            return SwitchTile(
+                                title: '是否删除种子文件？',
                                 value: deleteFiles.value,
                                 onChanged: (value) {
                                   deleteFiles.value = value;

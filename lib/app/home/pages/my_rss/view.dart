@@ -39,21 +39,22 @@ class _MyRssPageState extends State<MyRssPage> {
           },
         ),
         body: GetBuilder<MyRssController>(builder: (controller) {
-          return EasyRefresh(header: ClassicHeader(
-            dragText: '下拉刷新...',
-            readyText: '松开刷新',
-            processingText: '正在刷新...',
-            processedText: '刷新完成',
-            textStyle: TextStyle(
-              fontSize: 16,
-              color: shadColorScheme.foreground,
-              fontWeight: FontWeight.bold,
+          return EasyRefresh(
+            header: ClassicHeader(
+              dragText: '下拉刷新...',
+              readyText: '松开刷新',
+              processingText: '正在刷新...',
+              processedText: '刷新完成',
+              textStyle: TextStyle(
+                fontSize: 16,
+                color: shadColorScheme.foreground,
+                fontWeight: FontWeight.bold,
+              ),
+              messageStyle: TextStyle(
+                fontSize: 12,
+                color: shadColorScheme.foreground,
+              ),
             ),
-            messageStyle: TextStyle(
-              fontSize: 12,
-              color: shadColorScheme.foreground,
-            ),
-          ),
             onRefresh: () => controller.getMyRssFromServer(),
             child: Column(
               children: [
@@ -269,11 +270,9 @@ class _MyRssPageState extends State<MyRssPage> {
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Obx(() {
-                        return SwitchListTile(
-                            dense: true,
+                        return SwitchTile(
                             contentPadding: EdgeInsets.zero,
-                            activeColor: shadColorScheme.primary,
-                            title: Text('可用', style: TextStyle(fontSize: 14, color: shadColorScheme.foreground)),
+                            title: '可用',
                             value: available.value,
                             onChanged: (bool val) {
                               available.value = val;

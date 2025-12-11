@@ -73,20 +73,10 @@ class SshWidget extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: SwitchListTile(
-              dense: true,
-              title: Text(
-                '记住密码',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: shadColorScheme.foreground,
-                ),
-              ),
+          child: SwitchTile(
+              title: '记住密码',
               contentPadding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8),
               value: controller.remember,
-              selectedTileColor: shadColorScheme.foreground,
-              inactiveTrackColor: Colors.transparent,
-              inactiveThumbColor: shadColorScheme.foreground,
               onChanged: (bool value) {
                 controller.remember = value;
                 controller.update();

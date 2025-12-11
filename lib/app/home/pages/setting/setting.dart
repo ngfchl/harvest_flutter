@@ -212,13 +212,9 @@ class SettingPage extends StatelessWidget {
               padding: const EdgeInsets.all(8.0),
               child: Column(
                 children: [
-                  SwitchListTile(
-                      dense: true,
+                  SwitchTile(
                       contentPadding: EdgeInsets.zero,
-                      title: Text(
-                        '自动添加标签',
-                        style: TextStyle(color: shadColorScheme.foreground),
-                      ),
+                      title: '自动添加标签',
                       value: repeat.value,
                       onChanged: (bool v) async {
                         repeat.value = v;
@@ -548,13 +544,9 @@ class SettingPage extends StatelessWidget {
                   ),
                   CustomTextField(controller: secretController, labelText: '访问令牌'),
                   CustomTextField(controller: proxyController, labelText: '代理地址'),
-                  SwitchListTile(
-                      dense: true,
+                  SwitchTile(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                      title: Text(
-                        'TMDB开关',
-                        style: TextStyle(color: shadColorScheme.foreground),
-                      ),
+                      title: 'TMDB开关',
                       value: isActive.value,
                       onChanged: (value) {
                         isActive.value = value;
@@ -663,156 +655,100 @@ class SettingPage extends StatelessWidget {
                   Expanded(
                     child: ListView(
                       children: [
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              '阿里云盘',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: '阿里云盘',
                             value: aliyundriveNotice.value!,
                             onChanged: (value) {
                               aliyundriveNotice.value = value;
                             }),
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              '站点数据',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: '站点数据',
                             value: siteData.value!,
                             onChanged: (value) {
                               siteData.value = value;
                             }),
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              '成功站点消息',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: '成功站点消息',
                             value: siteDataSuccess.value!,
                             onChanged: (value) {
                               siteDataSuccess.value = value;
                             }),
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              '今日数据',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: '今日数据',
                             value: todayData.value!,
                             onChanged: (value) {
                               todayData.value = value;
                             }),
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              '拆包',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: '拆包',
                             value: packageTorrent.value!,
                             onChanged: (value) {
                               packageTorrent.value = value;
                             }),
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              '删种',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: '删种',
                             value: deleteTorrent.value!,
                             onChanged: (value) {
                               deleteTorrent.value = value;
                             }),
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              'RSS',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: 'RSS',
                             value: rssTorrent.value!,
                             onChanged: (value) {
                               rssTorrent.value = value;
                             }),
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              '种子推送',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: '种子推送',
                             value: pushTorrent.value!,
                             onChanged: (value) {
                               pushTorrent.value = value;
                             }),
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              'Docker 升级',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: 'Docker 升级',
                             value: programUpgrade.value!,
                             onChanged: (value) {
                               programUpgrade.value = value;
                             }),
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              'PTPP 导入',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: 'PTPP 导入',
                             value: ptppImport.value!,
                             onChanged: (value) {
                               ptppImport.value = value;
                             }),
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              '公告详情',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: '公告详情',
                             value: announcement.value!,
                             onChanged: (value) {
                               announcement.value = value;
                             }),
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              '短消息详情',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: '短消息详情',
                             value: message.value!,
                             onChanged: (value) {
                               message.value = value;
                             }),
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              '签到成功消息',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: '签到成功消息',
                             value: signInSuccess.value!,
                             onChanged: (value) {
                               signInSuccess.value = value;
                             }),
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              'CookieCloud 同步',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: 'CookieCloud 同步',
                             value: cookieSync.value!,
                             onChanged: (value) {
                               cookieSync.value = value;
@@ -940,134 +876,86 @@ class SettingPage extends StatelessWidget {
                   Expanded(
                     child: ListView(
                       children: [
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              '等级',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: '等级',
                             value: level.value!,
                             onChanged: (value) {
                               level.value = value;
                             }),
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              '魔力',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: '魔力',
                             value: bonus.value!,
                             onChanged: (value) {
                               bonus.value = value;
                             }),
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              '时魔',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: '时魔',
                             value: perBonus.value!,
                             onChanged: (value) {
                               perBonus.value = value;
                             }),
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              '积分',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: '积分',
                             value: score.value!,
                             onChanged: (value) {
                               score.value = value;
                             }),
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              '分享率',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: '分享率',
                             value: ratio.value!,
                             onChanged: (value) {
                               ratio.value = value;
                             }),
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              '做种体积',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: '做种体积',
                             value: seedingVol.value!,
                             onChanged: (value) {
                               seedingVol.value = value;
                             }),
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              '上传量',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: '上传量',
                             value: uploaded.value!,
                             onChanged: (value) {
                               uploaded.value = value;
                             }),
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              '下载量',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: '下载量',
                             value: downloaded.value!,
                             onChanged: (value) {
                               downloaded.value = value;
                             }),
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              '做种数量',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: '做种数量',
                             value: seeding.value!,
                             onChanged: (value) {
                               seeding.value = value;
                             }),
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              '吸血数量',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: '吸血数量',
                             value: leeching.value!,
                             onChanged: (value) {
                               leeching.value = value;
                             }),
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              '邀请',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: '邀请',
                             value: invite.value!,
                             onChanged: (value) {
                               invite.value = value;
                             }),
-                        SwitchListTile(
-                            dense: true,
+                        SwitchTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            title: Text(
-                              'HR',
-                              style: TextStyle(color: shadColorScheme.foreground),
-                            ),
+                            title: 'HR',
                             value: hr.value!,
                             onChanged: (value) {
                               hr.value = value;
@@ -1553,13 +1441,9 @@ class SettingPage extends StatelessWidget {
               child: Column(
                 children: [
                   CustomTextField(autofocus: true, controller: tokenController, labelText: '令牌'),
-                  SwitchListTile(
-                      dense: true,
+                  SwitchTile(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                      title: Text(
-                        '辅种开关',
-                        style: TextStyle(color: shadColorScheme.foreground),
-                      ),
+                      title: '辅种开关',
                       value: repeat.value,
                       onChanged: (value) {
                         repeat.value = value;
@@ -1937,13 +1821,9 @@ class SettingPage extends StatelessWidget {
               child: Column(
                 children: [
                   CustomTextField(maxLines: 3, autofocus: true, controller: tokenController, labelText: '保存令牌'),
-                  SwitchListTile(
-                      dense: true,
+                  SwitchTile(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                      title: Text(
-                        '领取福利',
-                        style: TextStyle(color: shadColorScheme.foreground),
-                      ),
+                      title: '领取福利',
                       value: welfare.value,
                       onChanged: (value) {
                         welfare.value = value;

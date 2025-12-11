@@ -272,15 +272,9 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                           .toList(),
                     ),
                     Obx(() {
-                      return SwitchListTile(
-                          dense: true,
+                      return SwitchTile(
                           contentPadding: const EdgeInsets.all(16.0),
-                          title: Text(
-                            '标签可用',
-                            style: TextStyle(
-                              color: shadColorScheme.foreground,
-                            ),
-                          ),
+                          title: '标签可用',
                           value: available.value,
                           onChanged: (bool val) {
                             available.value = val;

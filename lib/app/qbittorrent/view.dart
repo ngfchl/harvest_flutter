@@ -724,8 +724,8 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                               title: '确认',
                               middleText: '您确定要执行这个操作吗？',
                               content: Obx(() {
-                                return SwitchListTile(
-                                    title: const Text('是否删除种子文件？'),
+                                return SwitchTile(
+                                    title: '是否删除种子文件？',
                                     value: deleteFiles.value,
                                     onChanged: (value) {
                                       deleteFiles.value = value;
@@ -1177,8 +1177,8 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                     title: '确认',
                     middleText: '您确定要执行这个操作吗？',
                     content: Obx(() {
-                      return SwitchListTile(
-                          title: const Text('是否删除种子文件？'),
+                      return SwitchTile(
+                          title: '是否删除种子文件？',
                           value: deleteFiles.value,
                           onChanged: (value) {
                             deleteFiles.value = value;
@@ -1274,25 +1274,15 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                     content: Obx(() {
                       return Column(
                         children: [
-                          SwitchListTile(
-                              dense: true,
-                              title: const Text(
-                                '删除种子文件？',
-                                style: TextStyle(fontSize: 12),
-                              ),
+                          SwitchTile(
+                              title: '删除种子文件？',
                               value: deleteFiles.value,
-                              activeColor: shadColorScheme.primary,
                               onChanged: (value) {
                                 deleteFiles.value = value;
                               }),
-                          SwitchListTile(
-                              dense: true,
-                              title: const Text(
-                                '无其他站点保种删除数据？',
-                                style: TextStyle(fontSize: 12),
-                              ),
+                          SwitchTile(
+                              title: '无其他站点保种删除数据？',
                               value: doDeleteWithOutOthers.value,
-                              activeColor: shadColorScheme.primary,
                               onChanged: (value) {
                                 doDeleteWithOutOthers.value = value;
                               }),

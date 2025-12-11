@@ -421,17 +421,15 @@ class _SubscribePageState extends State<SubscribePage> {
                             ],
                           ),
                         ),
-                        SwitchListTile(
-                            dense: true,
-                            title: Text('可用', style: TextStyle(fontSize: 14, color: shadColorScheme.foreground)),
+                        SwitchTile(
+                            title: '可用',
                             value: controller.available.value,
                             onChanged: (bool val) {
                               controller.available.value = val;
                               controller.update();
                             }),
-                        SwitchListTile(
-                            dense: true,
-                            title: Text('直接下载', style: TextStyle(fontSize: 14, color: shadColorScheme.foreground)),
+                        SwitchTile(
+                            title: '直接下载',
                             value: controller.start.value,
                             onChanged: (bool val) {
                               controller.start.value = val;

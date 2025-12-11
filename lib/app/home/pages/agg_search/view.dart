@@ -773,18 +773,14 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                         }),
                     if (controller.hrResultList.isNotEmpty)
                       CustomCard(
-                        child: SwitchListTile(
-                          title: Text(
-                            '排除 HR',
-                            style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
-                          ),
+                        child: SwitchTile(
+                          title: '排除 HR',
                           onChanged: (val) {
                             controller.hrKey = val;
                             controller.filterResults();
                             controller.update();
                           },
                           value: controller.hrKey,
-                          activeColor: Colors.green,
                         ),
                       ),
                   ],
@@ -1515,18 +1511,14 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                       }),
                 if (controller.hrResultList.isNotEmpty)
                   CustomCard(
-                    child: SwitchListTile(
-                      title: Text(
-                        '排除 HR',
-                        style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
-                      ),
+                    child: SwitchTile(
+                      title: '排除 HR',
                       onChanged: (val) {
                         controller.hrKey = val;
                         controller.filterResults();
                         controller.update();
                       },
                       value: controller.hrKey,
-                      activeColor: Colors.green,
                     ),
                   ),
               ],

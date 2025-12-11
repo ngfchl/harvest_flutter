@@ -480,20 +480,12 @@ class TaskPage extends StatelessWidget {
                   SizedBox(
                     width: 150,
                     child: Obx(() {
-                      return SwitchListTile(
-                        dense: true,
-                        title: Text(
-                          '高级',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: shadColorScheme.foreground.withOpacity(0.8),
-                          ),
-                        ),
+                      return SwitchTile(
+                        title: '高级',
                         onChanged: (val) {
                           advance.value = val;
                         },
                         value: advance.value,
-                        activeColor: shadColorScheme.primary,
                       );
                     }),
                   ),
@@ -531,20 +523,13 @@ class TaskPage extends StatelessWidget {
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8),
-                      child: SwitchListTile(
+                      child: SwitchTile(
                         contentPadding: EdgeInsets.zero,
-                        title: Text(
-                          '开启任务',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: shadColorScheme.foreground.withOpacity(0.8),
-                          ),
-                        ),
+                        title: '开启任务',
                         onChanged: (val) {
                           enabled.value = val;
                         },
                         value: enabled.value!,
-                        activeColor: shadColorScheme.primary,
                       ),
                     ),
                     if (advance.value) ...[
