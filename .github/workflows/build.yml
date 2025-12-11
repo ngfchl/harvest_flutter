@@ -209,9 +209,19 @@ jobs:
           ARCH="x86_64"
           SYSTEM="macos"
           FILE_NAME="harvest_${VERSION}_${ARCH}-${SYSTEM}"
-          BUILD_PATH="build/macos/Build/Products/Release/"
-          APP_PATH="${BUILD_PATH}/harvest.app"
-          hdiutil create -volname $FILE_NAME -srcfolder $APP_PATH -ov -format UDZO ${FILE_NAME}.dmg
+          brew install create-dmg
+          create-dmg \
+            --volname $FILE_NAME \
+            --background assets/images/background.png \
+            --no-internet-enable \
+            --window-size 640 300 \
+            --icon-size 128 \
+            --icon "harvest.app" 140 120 \
+            --app-drop-link 500 120 \
+            --hide-extension "harvest.app" \
+            --format UDZO \
+            ${FILE_NAME}.dmg \
+             build/macos/Build/Products/Release/harvest.app
           echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
           echo "app_version=$VERSION" >> $GITHUB_OUTPUT
           ls -l $FILE_NAME.dmg
@@ -258,9 +268,19 @@ jobs:
           ARCH="arm64"
           SYSTEM="macos"
           FILE_NAME="harvest_${VERSION}_${ARCH}-${SYSTEM}"
-          BUILD_PATH="build/macos/Build/Products/Release/"
-          APP_PATH="${BUILD_PATH}/harvest.app"
-          hdiutil create -volname $FILE_NAME -srcfolder $APP_PATH -ov -format UDZO ${FILE_NAME}.dmg
+          brew install create-dmg
+          create-dmg \
+            --volname $FILE_NAME \
+            --background assets/images/background.png \
+            --no-internet-enable \
+            --window-size 640 300 \
+            --icon-size 128 \
+            --icon "harvest.app" 140 120 \
+            --app-drop-link 500 120 \
+            --hide-extension "harvest.app" \
+            --format UDZO \
+            ${FILE_NAME}.dmg \
+             build/macos/Build/Products/Release/harvest.app 
           echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
           echo "app_version=$VERSION" >> $GITHUB_OUTPUT
           ls -l $FILE_NAME.dmg
