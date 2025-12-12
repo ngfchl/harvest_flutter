@@ -87,6 +87,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                       return ShadTabs(
                           onChanged: (String value) => controller.tabsController.select(value),
                           controller: controller.tabsController,
+                          // scrollable: true,
                           tabBarConstraints: const BoxConstraints(maxHeight: 50),
                           contentConstraints: BoxConstraints(maxHeight: contentHeight),
                           decoration: ShadDecoration(
@@ -359,9 +360,8 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                           ]);
                     }),
                   ),
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    // padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                  CustomCard(
+                    padding: EdgeInsets.zero,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -424,122 +424,121 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                         const SizedBox(
                           width: 5,
                         ),
-                        GetBuilder<AggSearchController>(builder: (controller) {
-                          return CustomPopup(
-                            showArrow: false,
-                            backgroundColor: shadColorScheme.background,
-                            barrierColor: Colors.transparent,
-                            content: SizedBox(
-                              width: 100,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  // if (controller.tmdbClient != null)
-                                  PopupMenuItem<String>(
-                                    child: Text(
-                                      'T M D B',
-                                      style: TextStyle(
-                                        color: shadColorScheme.foreground,
-                                      ),
-                                    ),
-                                    onTap: () => _doTmdbSearch(),
-                                  ),
-                                  PopupMenuItem<String>(
-                                    child: Text(
-                                      '来自豆瓣',
-                                      style: TextStyle(
-                                        color: shadColorScheme.foreground,
-                                      ),
-                                    ),
-                                    onTap: () async {
-                                      await controller.doDouBanSearch();
-                                    },
-                                  ),
-                                  PopupMenuItem<String>(
-                                    child: Text(
-                                      '清理tmdb',
-                                      style: TextStyle(
-                                        color: shadColorScheme.foreground,
-                                      ),
-                                    ),
-                                    onTap: () async {
-                                      controller.results.clear();
-                                      controller.update();
-                                    },
-                                  ),
-                                  PopupMenuItem<String>(
-                                    child: Text(
-                                      '清理豆瓣',
-                                      style: TextStyle(
-                                        color: shadColorScheme.foreground,
-                                      ),
-                                    ),
-                                    onTap: () async {
-                                      controller.showDouBanResults.clear();
-                                      controller.update();
-                                    },
-                                  ),
-                                  PopupMenuItem<String>(
-                                    child: Text(
-                                      '搜索资源',
-                                      style: TextStyle(
-                                        color: shadColorScheme.foreground,
-                                      ),
-                                    ),
-                                    onTap: () async {
-                                      // 在这里执行搜索操作
-                                      if (controller.isLoading) {
-                                        await controller.cancelSearch();
-                                      } else {
-                                        controller.doWebsocketSearch();
-                                      }
-                                    },
-                                  ),
-                                  PopupMenuItem<String>(
-                                    child: Text(
-                                      '站点[◉${controller.maxCount}]',
-                                      style: TextStyle(
-                                        color: shadColorScheme.foreground,
-                                      ),
-                                    ),
-                                    onTap: () async {
-                                      _openSiteSheet();
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                            child: Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(4),
-                                color: Colors.transparent,
-                              ),
-                              child: controller.isLoading
-                                  ? InkWell(
-                                      onTap: () => controller.cancelSearch(),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8),
-                                        child: CircularProgressIndicator(
-                                          color: shadColorScheme.foreground,
-                                        ),
-                                      ),
-                                    )
-                                  : Icon(
-                                      Icons.search,
-                                      size: 22,
+                        CustomPopup(
+                          showArrow: false,
+                          backgroundColor: shadColorScheme.background,
+                          barrierColor: Colors.transparent,
+                          content: SizedBox(
+                            width: 100,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // if (controller.tmdbClient != null)
+                                PopupMenuItem<String>(
+                                  child: Text(
+                                    'T M D B',
+                                    style: TextStyle(
                                       color: shadColorScheme.foreground,
                                     ),
+                                  ),
+                                  onTap: () => _doTmdbSearch(),
+                                ),
+                                PopupMenuItem<String>(
+                                  child: Text(
+                                    '来自豆瓣',
+                                    style: TextStyle(
+                                      color: shadColorScheme.foreground,
+                                    ),
+                                  ),
+                                  onTap: () async {
+                                    await controller.doDouBanSearch();
+                                  },
+                                ),
+                                PopupMenuItem<String>(
+                                  child: Text(
+                                    '清理tmdb',
+                                    style: TextStyle(
+                                      color: shadColorScheme.foreground,
+                                    ),
+                                  ),
+                                  onTap: () async {
+                                    controller.results.clear();
+                                    controller.update();
+                                  },
+                                ),
+                                PopupMenuItem<String>(
+                                  child: Text(
+                                    '清理豆瓣',
+                                    style: TextStyle(
+                                      color: shadColorScheme.foreground,
+                                    ),
+                                  ),
+                                  onTap: () async {
+                                    controller.showDouBanResults.clear();
+                                    controller.update();
+                                  },
+                                ),
+                                PopupMenuItem<String>(
+                                  child: Text(
+                                    '搜索资源',
+                                    style: TextStyle(
+                                      color: shadColorScheme.foreground,
+                                    ),
+                                  ),
+                                  onTap: () async {
+                                    // 在这里执行搜索操作
+                                    if (controller.isLoading) {
+                                      await controller.cancelSearch();
+                                    } else {
+                                      controller.doWebsocketSearch();
+                                    }
+                                  },
+                                ),
+                                PopupMenuItem<String>(
+                                  child: Text(
+                                    '站点[◉${controller.maxCount}]',
+                                    style: TextStyle(
+                                      color: shadColorScheme.foreground,
+                                    ),
+                                  ),
+                                  onTap: () async {
+                                    _openSiteSheet();
+                                  },
+                                ),
+                              ],
                             ),
-                          );
-                        }),
+                          ),
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(4),
+                              color: Colors.transparent,
+                            ),
+                            child: GetBuilder<AggSearchController>(
+                              builder: (controller) {
+                                return controller.isLoading
+                                    ? InkWell(
+                                        onTap: () => controller.cancelSearch(),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8),
+                                          child: CircularProgressIndicator(
+                                            color: shadColorScheme.foreground,
+                                          ),
+                                        ),
+                                      )
+                                    : Icon(
+                                        Icons.search,
+                                        size: 22,
+                                        color: shadColorScheme.foreground,
+                                      );
+                              },
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                  if (!kIsWeb && Platform.isIOS) const SizedBox(height: 10),
-                  // if (controller.tabController.index == 1)
-                  //   const SizedBox(height: 50),
                 ],
               ),
             ),
