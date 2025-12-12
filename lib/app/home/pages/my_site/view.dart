@@ -126,71 +126,67 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                   onTap: () {
                                     FocusScope.of(context).requestFocus(blankNode);
                                   },
-                                  child: SizedBox(
-                                    height: 32,
-                                    child: TextField(
-                                      focusNode: blankNode,
-                                      scrollPhysics: const NeverScrollableScrollPhysics(),
-                                      // 禁止滚动
-                                      maxLines: 1,
-
-                                      inputFormatters: [
-                                        LengthLimitingTextInputFormatter(20),
-                                      ],
-                                      controller: controller.searchController,
-                                      style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
-                                      textAlignVertical: TextAlignVertical.center,
-                                      decoration: InputDecoration(
-                                        // labelText: '搜索',
-                                        isDense: true,
-                                        fillColor: Colors.transparent,
-
-                                        hoverColor: Colors.transparent,
-                                        focusColor: Colors.transparent,
-                                        hintText: '输入关键词...',
-                                        labelStyle: const TextStyle(fontSize: 12),
-                                        hintStyle: const TextStyle(fontSize: 12),
-                                        contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
-                                        prefixIcon: Icon(
-                                          Icons.search,
-                                          size: 14,
-                                          color: shadColorScheme.foreground,
-                                        ),
-                                        // suffix: ,
-                                        suffixIcon: Padding(
-                                          padding: const EdgeInsets.only(right: 8.0),
-                                          child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              Text('计数：${controller.showStatusList.length}',
-                                                  style: const TextStyle(fontSize: 12, color: Colors.orange)),
-                                            ],
-                                          ),
-                                        ),
-                                        border: OutlineInputBorder(
-                                          borderSide: BorderSide.none,
-                                          // 不绘制边框
-                                          borderRadius: BorderRadius.circular(0.0),
-                                          // 确保角落没有圆角
-                                          gapPadding: 0.0, // 移除边框与hintText之间的间距
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: const BorderSide(width: 1.0, color: Colors.black),
-                                          // 仅在聚焦时绘制底部边框
-                                          borderRadius: BorderRadius.circular(0.0),
+                                  child: TextField(
+                                    focusNode: blankNode,
+                                    scrollPhysics: const NeverScrollableScrollPhysics(),
+                                    // 禁止滚动
+                                    maxLines: 1,
+                                    inputFormatters: [
+                                      LengthLimitingTextInputFormatter(20),
+                                    ],
+                                    controller: controller.searchController,
+                                    style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
+                                    textAlignVertical: TextAlignVertical.center,
+                                    decoration: InputDecoration(
+                                      // labelText: '搜索',
+                                      isDense: true,
+                                      fillColor: Colors.transparent,
+                                      constraints: BoxConstraints(maxHeight: 32),
+                                      hoverColor: Colors.transparent,
+                                      focusColor: Colors.transparent,
+                                      hintText: '输入关键词...',
+                                      labelStyle: const TextStyle(fontSize: 12),
+                                      hintStyle: const TextStyle(fontSize: 12),
+                                      contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
+                                      prefixIcon: Icon(
+                                        Icons.search,
+                                        size: 14,
+                                        color: shadColorScheme.foreground,
+                                      ),
+                                      // suffix: ,
+                                      suffixIcon: Padding(
+                                        padding: const EdgeInsets.only(right: 8.0),
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Text('计数：${controller.showStatusList.length}',
+                                                style: const TextStyle(fontSize: 12, color: Colors.orange)),
+                                          ],
                                         ),
                                       ),
-                                      onChanged: (value) async {
-                                        controller.searching = true;
-                                        controller.update();
-                                        Logger.instance.d('搜索框内容变化：$value');
-                                        controller.searchKey = value;
-                                        await Future.delayed(Duration(milliseconds: 300));
-                                        controller.filterByKey();
-                                        controller.searching = false;
-                                        controller.update();
-                                      },
+                                      border: OutlineInputBorder(
+                                        borderSide: BorderSide.none,
+                                        // 不绘制边框
+                                        borderRadius: BorderRadius.circular(5.0),
+                                        // 确保角落没有圆角
+                                        gapPadding: 0.0, // 移除边框与hintText之间的间距
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(width: 1.0, color: shadColorScheme.foreground),
+                                        // 仅在聚焦时绘制底部边框
+                                        borderRadius: BorderRadius.circular(5.0),
+                                      ),
                                     ),
+                                    onChanged: (value) async {
+                                      controller.searching = true;
+                                      controller.update();
+                                      Logger.instance.d('搜索框内容变化：$value');
+                                      controller.searchKey = value;
+                                      await Future.delayed(Duration(milliseconds: 300));
+                                      controller.filterByKey();
+                                      controller.searching = false;
+                                      controller.update();
+                                    },
                                   ),
                                 ),
                               );
@@ -664,7 +660,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
         key: Key("${mySite.id}-${mySite.site}"),
         child: ListTile(
           dense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
           leading: const Image(
             image: AssetImage('assets/images/avatar.png'),
             width: 32,
@@ -836,7 +832,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         : '未签到',
                 child: ListTile(
                   dense: true,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
                   leading: InkWell(
                     onTap: () => _openSitePage(mySite, website, true),
                     child: siteLogo(iconUrl, website, mySite),
@@ -1138,7 +1134,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
               ),
               if (status != null)
                 Padding(
-                  padding: const EdgeInsets.only(left: 12.0, right: 12, bottom: 12),
+                  padding: const EdgeInsets.only(left: 8.0, right: 8, bottom: 12),
                   child: Column(
                     children: [
                       Row(

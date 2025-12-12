@@ -159,6 +159,7 @@ class HomeView extends GetView<HomeController> {
   Widget _buildMenuBar(BuildContext context) {
     var colorScheme = ShadTheme.of(context).colorScheme;
     return GetBuilder<HomeController>(builder: (controller) {
+      var shadColorScheme = ShadTheme.of(context).colorScheme;
       return IntrinsicHeight(
         child: ConstrainedBox(
           constraints: BoxConstraints(
@@ -241,10 +242,9 @@ class HomeView extends GetView<HomeController> {
                       useIndicator: true,
                       extended: !controller.isSmallHorizontalScreen,
                       selectedIndex: controller.initPage,
-                      selectedLabelTextStyle: TextStyle(color: ShadTheme.of(context).colorScheme.foreground),
-                      selectedIconTheme:
-                          Theme.of(context).iconTheme.copyWith(color: ShadTheme.of(context).colorScheme.foreground),
-                      indicatorColor: ShadTheme.of(context).colorScheme.primary,
+                      selectedLabelTextStyle: TextStyle(color: shadColorScheme.foreground),
+                      selectedIconTheme: Theme.of(context).iconTheme.copyWith(color: shadColorScheme.background),
+                      indicatorColor: shadColorScheme.primary,
                       unselectedLabelTextStyle: TextStyle(color: colorScheme.foreground.withOpacity(0.7)),
                       unselectedIconTheme:
                           Theme.of(context).iconTheme.copyWith(color: colorScheme.foreground.withOpacity(0.7)),

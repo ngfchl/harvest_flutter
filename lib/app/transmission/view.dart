@@ -163,7 +163,7 @@ class TrPage extends StatelessWidget {
                                         focusedBorder: OutlineInputBorder(
                                           borderSide: BorderSide.none,
                                           // 仅在聚焦时绘制底部边框
-                                          borderRadius: BorderRadius.circular(0.0),
+                                          borderRadius: BorderRadius.circular(5.0),
                                         ),
                                       ),
                                       onChanged: (value) {
