@@ -117,7 +117,7 @@ class ThemeIconButton extends StatelessWidget {
                                 ),
                               ),
                               Obx(
-                                () => ShadButton(
+                                () => ShadButton.secondary(
                                   size: ShadButtonSize.sm,
                                   onPressed: () => controller.followSystem.value ? null : controller.toggleDarkMode(),
                                   child: Text(
@@ -320,7 +320,7 @@ class ThemeIconButton extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        ShadButton.destructive(
+                        ShadButton.outline(
                           size: ShadButtonSize.sm,
                           onPressed: () => popoverController.hide(),
                           child: Text('关闭'),
@@ -338,7 +338,7 @@ class ThemeIconButton extends StatelessWidget {
                               }
                             },
                           ),
-                        ShadButton(
+                        ShadButton.destructive(
                           size: ShadButtonSize.sm,
                           onPressed: () {
                             if (urlController.text.isNotEmpty) {

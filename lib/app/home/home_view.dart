@@ -66,7 +66,7 @@ class HomeView extends GetView<HomeController> {
             // onConfirm: () {
             //   exit(0);
             // },
-            cancel: ShadButton.destructive(
+            cancel: ShadButton.outline(
                 size: ShadButtonSize.sm,
                 onPressed: () {
                   Navigator.of(context).pop(false);
@@ -74,7 +74,7 @@ class HomeView extends GetView<HomeController> {
                 child: const Text(
                   '取消',
                 )),
-            confirm: ShadButton(
+            confirm: ShadButton.destructive(
                 size: ShadButtonSize.sm,
                 onPressed: () {
                   exit(0);
@@ -397,14 +397,14 @@ class HomeView extends GetView<HomeController> {
                                       footer: Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                                         children: [
-                                          ShadButton.destructive(
+                                          ShadButton.outline(
                                             size: ShadButtonSize.sm,
                                             onPressed: () {
                                               Get.back(result: false);
                                             },
                                             child: const Text('取消'),
                                           ),
-                                          ShadButton(
+                                          ShadButton.destructive(
                                             size: ShadButtonSize.sm,
                                             onPressed: () async {
                                               Get.back(result: true);
@@ -481,14 +481,14 @@ class HomeView extends GetView<HomeController> {
                                                       title: "确认吗？",
                                                       middleText: "本操作会精简站点数据，只保留最近15天的历史数据，确认精简数据吗？",
                                                       actions: [
-                                                        ShadButton.destructive(
+                                                        ShadButton.outline(
                                                           size: ShadButtonSize.sm,
                                                           onPressed: () async {
                                                             Get.back(result: false);
                                                           },
                                                           child: const Text('取消'),
                                                         ),
-                                                        ShadButton(
+                                                        ShadButton.destructive(
                                                           size: ShadButtonSize.sm,
                                                           onPressed: () async {
                                                             Get.back(result: true);
@@ -510,14 +510,14 @@ class HomeView extends GetView<HomeController> {
                                                       title: "确认吗？",
                                                       middleText: "确认清除站点历史数据吗？",
                                                       actions: [
-                                                        ShadButton.destructive(
+                                                        ShadButton.outline(
                                                           size: ShadButtonSize.sm,
                                                           onPressed: () async {
                                                             Get.back(result: false);
                                                           },
                                                           child: const Text('取消'),
                                                         ),
-                                                        ShadButton(
+                                                        ShadButton.destructive(
                                                           size: ShadButtonSize.sm,
                                                           onPressed: () async {
                                                             Get.back(result: true);
@@ -539,14 +539,14 @@ class HomeView extends GetView<HomeController> {
                                                       title: "确认吗？",
                                                       middleText: "确认清除站点签到数据吗？",
                                                       actions: [
-                                                        ShadButton.destructive(
+                                                        ShadButton.outline(
                                                           size: ShadButtonSize.sm,
                                                           onPressed: () {
                                                             Get.back(result: false);
                                                           },
                                                           child: const Text('取消'),
                                                         ),
-                                                        ShadButton(
+                                                        ShadButton.destructive(
                                                           size: ShadButtonSize.sm,
                                                           onPressed: () async {
                                                             Get.back(result: true);

@@ -118,14 +118,14 @@ class _SubscribePageState extends State<SubscribePage> {
                       titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                       middleText: '确定要删除吗？',
                       actions: [
-                        ShadButton.destructive(
+                        ShadButton.outline(
                           size: ShadButtonSize.sm,
                           onPressed: () {
                             Get.back(result: false);
                           },
                           child: const Text('取消'),
                         ),
-                        ShadButton(
+                        ShadButton.destructive(
                           size: ShadButtonSize.sm,
                           onPressed: () async {
                             Get.back(result: true);
@@ -536,7 +536,7 @@ class _SubscribePageState extends State<SubscribePage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      ShadButton.destructive(
+                      ShadButton.outline(
                         size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back();
@@ -549,7 +549,7 @@ class _SubscribePageState extends State<SubscribePage> {
                         ),
                         child: Text('取消', style: TextStyle(color: shadColorScheme.destructiveForeground)),
                       ),
-                      ShadButton(
+                      ShadButton.destructive(
                         size: ShadButtonSize.sm,
                         onPressed: () async {
                           await controller.saveSub(sub, context);

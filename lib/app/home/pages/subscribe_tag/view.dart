@@ -139,13 +139,13 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                   titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                   middleText: '确定要删除标签吗？',
                   actions: [
-                    ShadButton(
+                    ShadButton.outline(
                       onPressed: () {
                         Get.back(result: false);
                       },
                       child: const Text('取消'),
                     ),
-                    ShadButton(
+                    ShadButton.destructive(
                       onPressed: () async {
                         Get.back(result: true);
                         CommonResponse res = await controller.removeSubTag(tag);
@@ -286,7 +286,7 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ShadButton.destructive(
+                  ShadButton.outline(
                     onPressed: () {
                       // 清空表单数据
                       nameController.clear();
@@ -301,7 +301,7 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                     ),
                   ),
                   Obx(() {
-                    return ShadButton(
+                    return ShadButton.destructive(
                       onPressed: () async {
                         isLoading.value = true;
                         SubTag newTag;

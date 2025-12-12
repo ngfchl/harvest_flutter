@@ -92,13 +92,13 @@ class UserWidget extends StatelessWidget {
                                             fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
                                         middleText: '确定要删除用户吗？',
                                         actions: [
-                                          ShadButton(
+                                          ShadButton.outline(
                                             onPressed: () {
                                               Get.back(result: false);
                                             },
                                             child: const Text('取消'),
                                           ),
-                                          ShadButton(
+                                          ShadButton.destructive(
                                             onPressed: () async {
                                               Get.back(result: true);
                                               controller.userList.remove(user);
@@ -277,7 +277,7 @@ class UserWidget extends StatelessWidget {
             OverflowBar(
               alignment: MainAxisAlignment.spaceAround,
               children: [
-                ShadButton.destructive(
+                ShadButton.outline(
                   size: ShadButtonSize.sm,
                   onPressed: () {
                     Get.back();
@@ -289,7 +289,7 @@ class UserWidget extends StatelessWidget {
                   ),
                   child: Text('取消', style: TextStyle(color: shadColorScheme.destructiveForeground)),
                 ),
-                ShadButton(
+                ShadButton.destructive(
                   size: ShadButtonSize.sm,
                   onPressed: () async {
                     if (usernameController.text.isEmpty) {

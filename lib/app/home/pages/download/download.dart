@@ -639,14 +639,14 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                   titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
                   middleText: '确定要删除任务吗？',
                   actions: [
-                    ShadButton(
+                    ShadButton.outline(
                       size: ShadButtonSize.sm,
                       onPressed: () {
                         Get.back(result: false);
                       },
                       child: const Text('取消'),
                     ),
-                    ShadButton(
+                    ShadButton.destructive(
                       size: ShadButtonSize.sm,
                       onPressed: () async {
                         Get.back(result: true);
@@ -1329,7 +1329,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
               OverflowBar(
                 alignment: MainAxisAlignment.spaceAround,
                 children: [
-                  ShadButton.destructive(
+                  ShadButton.outline(
                     size: ShadButtonSize.sm,
                     onPressed: () {
                       Navigator.of(context).pop();
@@ -1338,7 +1338,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                       '取消',
                     ),
                   ),
-                  ShadButton(
+                  ShadButton.destructive(
                     size: ShadButtonSize.sm,
                     child: const Text(
                       '保存',
@@ -2364,63 +2364,59 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  ShadButton.destructive(
+                  ShadButton.outline(
                     size: ShadButtonSize.sm,
                     onPressed: () {
                       Get.back(result: false);
                     },
                     child: const Text('取消'),
                   ),
-                  Stack(
-                    children: [
-                      ShadButton(
-                        size: ShadButtonSize.sm,
-                        onPressed: () async {
-                          List<String> torrentHashes = controller.trackers[keyController.text] ?? [];
-                          logger_helper.Logger.instance.d(torrentHashes);
-                          if (torrentHashes.isEmpty) {
-                            Get.snackbar('Tracker替换ing', '本下载器没有 ${keyController.text} 站点的种子！',
-                                colorText: shadColorScheme.destructive);
-                            return;
-                          }
-                          Get.defaultDialog(
-                            title: '确认',
-                            radius: 5,
-                            titleStyle:
-                                const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
-                            middleText: '站点 ${keyController.text} 共检测到${torrentHashes.length}条种子，确定要替换 Tracker 地址吗？',
-                            actions: [
-                              ShadButton.destructive(
-                                size: ShadButtonSize.sm,
-                                onPressed: () {
-                                  Get.back(result: false);
-                                },
-                                child: const Text('取消'),
-                              ),
-                              ShadButton(
-                                size: ShadButtonSize.sm,
-                                onPressed: () async {
-                                  Get.back(result: true);
-                                  CommonResponse res = await controller.replaceTrackers(
-                                    downloader: downloader,
-                                    torrentHashes: torrentHashes,
-                                    newTracker: valueController.text,
-                                  );
-                                  if (res.succeed) {
-                                    Get.back();
-                                  }
-                                  Get.snackbar('Tracker通知', res.msg,
-                                      colorText: res.succeed ? shadColorScheme.primary : shadColorScheme.destructive);
-                                  controller.update();
-                                },
-                                child: const Text('确认'),
-                              ),
-                            ],
-                          );
-                        },
-                        child: const Text('确认'),
-                      ),
-                    ],
+                  ShadButton.destructive(
+                    size: ShadButtonSize.sm,
+                    onPressed: () async {
+                      List<String> torrentHashes = controller.trackers[keyController.text] ?? [];
+                      logger_helper.Logger.instance.d(torrentHashes);
+                      if (torrentHashes.isEmpty) {
+                        Get.snackbar('Tracker替换ing', '本下载器没有 ${keyController.text} 站点的种子！',
+                            colorText: shadColorScheme.destructive);
+                        return;
+                      }
+                      Get.defaultDialog(
+                        title: '确认',
+                        radius: 5,
+                        titleStyle:
+                            const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
+                        middleText: '站点 ${keyController.text} 共检测到${torrentHashes.length}条种子，确定要替换 Tracker 地址吗？',
+                        actions: [
+                          ShadButton.outline(
+                            size: ShadButtonSize.sm,
+                            onPressed: () {
+                              Get.back(result: false);
+                            },
+                            child: const Text('取消'),
+                          ),
+                          ShadButton.destructive(
+                            size: ShadButtonSize.sm,
+                            onPressed: () async {
+                              Get.back(result: true);
+                              CommonResponse res = await controller.replaceTrackers(
+                                downloader: downloader,
+                                torrentHashes: torrentHashes,
+                                newTracker: valueController.text,
+                              );
+                              if (res.succeed) {
+                                Get.back();
+                              }
+                              Get.snackbar('Tracker通知', res.msg,
+                                  colorText: res.succeed ? shadColorScheme.primary : shadColorScheme.destructive);
+                              controller.update();
+                            },
+                            child: const Text('确认'),
+                          ),
+                        ],
+                      );
+                    },
+                    child: const Text('确认'),
                   ),
                 ],
               )
@@ -6197,14 +6193,14 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
         titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
         middleText: '共检测到${toRemoveTorrentList.length}条可删除红种，确定要删除种子吗？',
         actions: [
-          ShadButton(
+          ShadButton.outline(
             size: ShadButtonSize.sm,
             onPressed: () {
               Get.back(result: false);
             },
             child: const Text('取消'),
           ),
-          ShadButton(
+          ShadButton.destructive(
             size: ShadButtonSize.sm,
             onPressed: () async {
               Get.back(result: true);
@@ -6253,14 +6249,14 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
         titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
         middleText: '共检测到${toRemoveTorrentList.length}条可删除红种，确定要删除种子吗？',
         actions: [
-          ShadButton.destructive(
+          ShadButton.outline(
             size: ShadButtonSize.sm,
             onPressed: () {
               Get.back(result: false);
             },
             child: const Text('取消'),
           ),
-          ShadButton(
+          ShadButton.destructive(
             size: ShadButtonSize.sm,
             onPressed: () async {
               Get.back(result: true);
@@ -6335,14 +6331,14 @@ class ShowTorrentWidget extends StatelessWidget {
                                 });
                           }),
                           actions: [
-                            ShadButton.destructive(
+                            ShadButton.outline(
                               size: ShadButtonSize.sm,
                               onPressed: () {
                                 Get.back(result: false);
                               },
                               child: const Text('取消'),
                             ),
-                            ShadButton(
+                            ShadButton.destructive(
                               size: ShadButtonSize.sm,
                               onPressed: () async {
                                 Get.back(result: true);
@@ -6633,14 +6629,14 @@ class ShowTorrentWidget extends StatelessWidget {
                         title: '',
                         middleText: '重新校验种子？',
                         actions: [
-                          ShadButton.destructive(
+                          ShadButton.outline(
                             size: ShadButtonSize.sm,
                             onPressed: () {
                               Get.back(result: false);
                             },
                             child: const Text('取消'),
                           ),
-                          ShadButton(
+                          ShadButton.destructive(
                             size: ShadButtonSize.sm,
                             onPressed: () async {
                               // 重新校验种子
@@ -6944,14 +6940,14 @@ class ShowTorrentWidget extends StatelessWidget {
                                             );
                                           }),
                                           actions: [
-                                            ShadButton.destructive(
+                                            ShadButton.outline(
                                               size: ShadButtonSize.sm,
                                               onPressed: () {
                                                 Get.back(result: false);
                                               },
                                               child: const Text('取消'),
                                             ),
-                                            ShadButton(
+                                            ShadButton.destructive(
                                               size: ShadButtonSize.sm,
                                               onPressed: () async {
                                                 Get.back(result: true);
@@ -7244,14 +7240,14 @@ class ShowTorrentWidget extends StatelessWidget {
                           });
                     }),
                     actions: [
-                      ShadButton(
+                      ShadButton.outline(
                         size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back(result: false);
                         },
                         child: const Text('取消'),
                       ),
-                      ShadButton(
+                      ShadButton.destructive(
                         size: ShadButtonSize.sm,
                         onPressed: () async {
                           Get.back(result: true);
@@ -7285,14 +7281,14 @@ class ShowTorrentWidget extends StatelessWidget {
                     title: '确认',
                     middleText: '您确定要执行这个操作吗？',
                     actions: [
-                      ShadButton(
+                      ShadButton.outline(
                         size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back(result: false);
                         },
                         child: const Text('取消'),
                       ),
-                      ShadButton(
+                      ShadButton.destructive(
                         size: ShadButtonSize.sm,
                         onPressed: () async {
                           Get.back(result: true);
@@ -7326,14 +7322,14 @@ class ShowTorrentWidget extends StatelessWidget {
                     titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
                     middleText: '确定要重新校验种子吗？',
                     actions: [
-                      ShadButton(
+                      ShadButton.outline(
                         size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back(result: false);
                         },
                         child: const Text('取消'),
                       ),
-                      ShadButton(
+                      ShadButton.destructive(
                         size: ShadButtonSize.sm,
                         onPressed: () async {
                           Get.back(result: true);
@@ -7360,14 +7356,14 @@ class ShowTorrentWidget extends StatelessWidget {
                     title: '确认',
                     middleText: '您确定要执行这个操作吗？',
                     actions: [
-                      ShadButton(
+                      ShadButton.outline(
                         size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back(result: false);
                         },
                         child: const Text('取消'),
                       ),
-                      ShadButton(
+                      ShadButton.destructive(
                         size: ShadButtonSize.sm,
                         onPressed: () async {
                           Get.back(result: true);
@@ -7455,7 +7451,7 @@ class ShowTorrentWidget extends StatelessWidget {
                       );
                     }),
                     actions: [
-                      ShadButton(
+                      ShadButton.outline(
                         size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back(result: false);
@@ -7502,7 +7498,7 @@ class ShowTorrentWidget extends StatelessWidget {
                   radius: 5,
                   middleText: '确定要重新校验种子吗？',
                   actions: [
-                    ShadButton(
+                    ShadButton.outline(
                       size: ShadButtonSize.sm,
                       onPressed: () {
                         Get.back(result: false);
@@ -7575,14 +7571,14 @@ class ShowTorrentWidget extends StatelessWidget {
                       );
                     }),
                     actions: [
-                      ShadButton.destructive(
+                      ShadButton.outline(
                         size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back();
                         },
                         child: const Text('取消'),
                       ),
-                      ShadButton(
+                      ShadButton.destructive(
                         size: ShadButtonSize.sm,
                         onPressed: () async {
                           await controller.controlTrTorrents(
@@ -7781,14 +7777,14 @@ class ShowTorrentWidget extends StatelessWidget {
                       ],
                     ),
                     actions: [
-                      ShadButton.destructive(
+                      ShadButton.outline(
                         size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back();
                         },
                         child: const Text('取消'),
                       ),
-                      ShadButton(
+                      ShadButton.destructive(
                         size: ShadButtonSize.sm,
                         onPressed: () async {
                           await controller.controlTrTorrents(
@@ -8065,14 +8061,14 @@ class ShowTorrentWidget extends StatelessWidget {
                                 });
                           }),
                           actions: [
-                            ShadButton(
+                            ShadButton.outline(
                               size: ShadButtonSize.sm,
                               onPressed: () {
                                 Get.back(result: false);
                               },
                               child: const Text('取消'),
                             ),
-                            ShadButton(
+                            ShadButton.destructive(
                               size: ShadButtonSize.sm,
                               onPressed: () async {
                                 Get.back(result: true);
@@ -8201,14 +8197,14 @@ class ShowTorrentWidget extends StatelessWidget {
                                       title: '',
                                       middleText: '重新校验种子？',
                                       actions: [
-                                        ShadButton(
+                                        ShadButton.outline(
                                           size: ShadButtonSize.sm,
                                           onPressed: () {
                                             Get.back(result: false);
                                           },
                                           child: const Text('取消'),
                                         ),
-                                        ShadButton(
+                                        ShadButton.destructive(
                                           size: ShadButtonSize.sm,
                                           onPressed: () async {
                                             Get.back(result: true);

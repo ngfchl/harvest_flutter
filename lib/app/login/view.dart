@@ -208,11 +208,11 @@ class _LoginPageState extends State<LoginPage> {
                             child: Text('确认清除服务器列表？'),
                           ),
                           actions: [
-                            ShadButton.destructive(
+                            ShadButton.outline(
                               child: const Text('取消'),
                               onPressed: () => Navigator.of(context).pop(false),
                             ),
-                            ShadButton(
+                            ShadButton.destructive(
                               child: const Text('清除'),
                               onPressed: () async {
                                 Navigator.of(context).pop(true);
@@ -304,7 +304,7 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                                   child: const Text('连接中，点击取消'),
                                 )
-                              : ShadButton(
+                              : ShadButton.destructive(
                                   onPressed: !controller.hasSelectedServer
                                       ? null
                                       : () async {
@@ -522,7 +522,7 @@ class _LoginPageState extends State<LoginPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       // 新增取消按钮
-                      ShadButton.destructive(
+                      ShadButton.outline(
                         leading: Icon(Icons.cancel_outlined, size: 18, color: shadColorScheme.destructiveForeground),
                         child: Text(
                           '取消',
@@ -545,7 +545,7 @@ class _LoginPageState extends State<LoginPage> {
                           Navigator.pop(context);
                         },
                       ),
-                      ShadButton(
+                      ShadButton.destructive(
                         onPressed: () async {
                           // 防止重复点击
                           if (controller.isLoading) return;

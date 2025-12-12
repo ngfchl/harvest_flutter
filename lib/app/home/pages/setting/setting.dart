@@ -219,7 +219,7 @@ class SettingPage extends StatelessWidget {
                       onChanged: (bool v) async {
                         repeat.value = v;
                       }),
-                  ShadButton(
+                  ShadButton.destructive(
                       size: ShadButtonSize.sm,
                       child: Text('保存'),
                       onPressed: () async {
@@ -337,14 +337,14 @@ class SettingPage extends StatelessWidget {
                                 const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
                             middleText: '确定要删除配置信息吗？',
                             actions: [
-                              ShadButton(
+                              ShadButton.outline(
                                 size: ShadButtonSize.sm,
                                 onPressed: () {
                                   Get.back(result: false);
                                 },
                                 child: const Text('取消'),
                               ),
-                              ShadButton(
+                              ShadButton.destructive(
                                 size: ShadButtonSize.sm,
                                 onPressed: () async {
                                   Get.back(result: true);
@@ -453,7 +453,7 @@ class SettingPage extends StatelessWidget {
                   ),
                   Row(
                     children: [
-                      ShadButton(
+                      ShadButton.destructive(
                           size: ShadButtonSize.sm,
                           child: Text('保存'),
                           onPressed: () async {
@@ -553,7 +553,7 @@ class SettingPage extends StatelessWidget {
                       }),
                   Row(
                     children: [
-                      ShadButton(
+                      ShadButton.destructive(
                           size: ShadButtonSize.sm,
                           child: Text('保存'),
                           onPressed: () async {
@@ -756,7 +756,7 @@ class SettingPage extends StatelessWidget {
                       ],
                     ),
                   ),
-                  ShadButton(
+                  ShadButton.destructive(
                       size: ShadButtonSize.sm,
                       child: Text('保存'),
                       onPressed: () async {
@@ -966,7 +966,7 @@ class SettingPage extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: ShadButton(
+                        child: ShadButton.destructive(
                             size: ShadButtonSize.sm,
                             child: Text('保存'),
                             onPressed: () async {
@@ -1088,7 +1088,7 @@ class SettingPage extends StatelessWidget {
                             await Clipboard.setData(ClipboardData(text: tokenController.text));
                           },
                           child: Text('复制Token')),
-                      ShadButton(
+                      ShadButton.destructive(
                           size: ShadButtonSize.sm,
                           child: Text('保存'),
                           onPressed: () async {
@@ -1182,7 +1182,7 @@ class SettingPage extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: ShadButton(
+                        child: ShadButton.destructive(
                             size: ShadButtonSize.sm,
                             child: Text('保存'),
                             onPressed: () async {
@@ -1281,7 +1281,7 @@ class SettingPage extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: ShadButton(
+                        child: ShadButton.destructive(
                             size: ShadButtonSize.sm,
                             child: Text('保存'),
                             onPressed: () async {
@@ -1368,7 +1368,7 @@ class SettingPage extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: ShadButton(
+                          child: ShadButton.destructive(
                               size: ShadButtonSize.sm,
                               child: Text('发送'),
                               onPressed: () async {
@@ -1453,7 +1453,7 @@ class SettingPage extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: ShadButton(
+                        child: ShadButton.destructive(
                             size: ShadButtonSize.sm,
                             child: Text('保存'),
                             onPressed: () async {
@@ -1546,7 +1546,7 @@ class SettingPage extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: ShadButton(
+                        child: ShadButton.destructive(
                             size: ShadButtonSize.sm,
                             child: Text('保存'),
                             onPressed: () async {
@@ -1642,7 +1642,7 @@ class SettingPage extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: ShadButton(
+                        child: ShadButton.destructive(
                             size: ShadButtonSize.sm,
                             child: Text('保存'),
                             onPressed: () async {
@@ -1736,7 +1736,7 @@ class SettingPage extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: ShadButton(
+                        child: ShadButton.destructive(
                             size: ShadButtonSize.sm,
                             child: Text('保存'),
                             onPressed: () async {
@@ -1831,7 +1831,7 @@ class SettingPage extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: ShadButton(
+                        child: ShadButton.destructive(
                             size: ShadButtonSize.sm,
                             child: Text('保存'),
                             onPressed: () async {
@@ -1924,7 +1924,7 @@ class SettingPage extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: ShadButton(
+                        child: ShadButton.destructive(
                             size: ShadButtonSize.sm,
                             child: Text('保存'),
                             onPressed: () async {
@@ -2017,7 +2017,7 @@ class SettingPage extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: ShadButton(
+                        child: ShadButton.destructive(
                             size: ShadButtonSize.sm,
                             child: Text('保存'),
                             onPressed: () async {
@@ -2108,7 +2108,7 @@ class SettingPage extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: ShadButton(
+                        child: ShadButton.destructive(
                             size: ShadButtonSize.sm,
                             child: Text('保存'),
                             onPressed: () async {
@@ -2199,7 +2199,7 @@ class SettingPage extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: ShadButton(
+                          child: ShadButton.destructive(
                             size: ShadButtonSize.sm,
                             child: Text('保存'),
                             onPressed: () => _saveWebHook(context, urlController.text),
@@ -2290,7 +2290,7 @@ class SettingPage extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: ShadButton(
+                        child: ShadButton.destructive(
                             size: ShadButtonSize.sm,
                             child: Text('保存'),
                             onPressed: () async {
@@ -2381,7 +2381,7 @@ class SettingPage extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: ShadButton(
+                        child: ShadButton.destructive(
                             size: ShadButtonSize.sm,
                             child: Text('保存'),
                             onPressed: () async {
@@ -2474,7 +2474,7 @@ class SettingPage extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: ShadButton(
+                        child: ShadButton.destructive(
                             size: ShadButtonSize.sm,
                             child: Text('保存'),
                             onPressed: () async {
@@ -2568,7 +2568,7 @@ class SettingPage extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: ShadButton(
+                        child: ShadButton.destructive(
                             size: ShadButtonSize.sm,
                             child: Text('保存'),
                             onPressed: () async {

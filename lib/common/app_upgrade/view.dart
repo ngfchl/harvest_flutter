@@ -128,7 +128,7 @@ class AppUpgradePage extends StatelessWidget {
                                 ),
                                 child: Text('关闭'),
                               ),
-                              ShadButton(
+                              ShadButton.secondary(
                                 size: ShadButtonSize.sm,
                                 leading: Icon(
                                   Icons.downloading_outlined,

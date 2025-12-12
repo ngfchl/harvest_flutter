@@ -215,13 +215,13 @@ class FileManagePage extends StatelessWidget {
                           backgroundColor: shadColorScheme.background,
                           content: CustomTextField(controller: nameController, labelText: "重命名为"),
                           actions: [
-                            ShadButton.destructive(
+                            ShadButton.outline(
                               onPressed: () {
                                 Get.back(result: false);
                               },
                               child: const Text('取消'),
                             ),
-                            ShadButton(
+                            ShadButton.destructive(
                               onPressed: () async {
                                 Get.back(result: true);
                                 CommonResponse res = await controller.edisSource(item.path, nameController.text);
@@ -260,7 +260,7 @@ class FileManagePage extends StatelessWidget {
                               const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
                           middleText: '确定要删除文件吗？',
                           actions: [
-                            ShadButton.destructive(
+                            ShadButton.outline(
                               onPressed: () {
                                 Get.back(result: false);
                               },
@@ -269,7 +269,7 @@ class FileManagePage extends StatelessWidget {
                                 style: TextStyle(color: shadColorScheme.destructiveForeground),
                               ),
                             ),
-                            ShadButton(
+                            ShadButton.destructive(
                               onPressed: () async {
                                 Get.back(result: true);
                                 CommonResponse res = await controller.removeSource(item.path);
@@ -396,7 +396,7 @@ class FileManagePage extends StatelessWidget {
                                                 title: "写入刮削信息中...",
                                                 titleStyle: TextStyle(fontSize: 16, color: shadColorScheme.foreground),
                                                 content: Text("是否确认写入刮削信息？"),
-                                                confirm: ShadButton(
+                                                confirm: ShadButton.destructive(
                                                   size: ShadButtonSize.sm,
                                                   child: Text("确定"),
                                                   onPressed: () async {
@@ -420,7 +420,7 @@ class FileManagePage extends StatelessWidget {
                                                     }
                                                   },
                                                 ),
-                                                cancel: ShadButton.destructive(
+                                                cancel: ShadButton.outline(
                                                   size: ShadButtonSize.sm,
                                                   child: Text("取消"),
                                                   onPressed: () {

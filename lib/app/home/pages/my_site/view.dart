@@ -1892,7 +1892,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
             OverflowBar(
               alignment: MainAxisAlignment.spaceAround,
               children: [
-                ShadButton.ghost(
+                ShadButton.outline(
                   size: ShadButtonSize.sm,
                   onPressed: () {
                     Get.back();
@@ -1907,7 +1907,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                   ),
                 ),
                 if (mySite != null)
-                  ShadButton.outline(
+                  ShadButton.destructive(
                     size: ShadButtonSize.sm,
                     onPressed: () async {
                       Get.defaultDialog(
@@ -1919,7 +1919,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                             TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: shadColorScheme.foreground),
                         middleText: '确定要删除吗？',
                         actions: [
-                          ShadButton(
+                          ShadButton.outline(
                             size: ShadButtonSize.sm,
                             onPressed: () {
                               Get.back(result: false);

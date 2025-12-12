@@ -299,7 +299,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                                     fontSize: 13,
                                                     color: shadColorScheme.foreground,
                                                   ),
-                                                  cancel: ShadButton.destructive(
+                                                  cancel: ShadButton.outline(
                                                     size: ShadButtonSize.sm,
                                                     onPressed: () {
                                                       Get.back();
@@ -310,7 +310,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                                           color: shadColorScheme.destructiveForeground,
                                                         )),
                                                   ),
-                                                  confirm: ShadButton(
+                                                  confirm: ShadButton.destructive(
                                                     size: ShadButtonSize.sm,
                                                     onPressed: () {
                                                       controller.searchHistory.clear();

@@ -45,14 +45,14 @@ class TrPage extends StatelessWidget {
             middleTextStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
             titleStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
             radius: 10,
-            cancel: ShadButton.destructive(
+            cancel: ShadButton.outline(
               size: ShadButtonSize.sm,
               onPressed: () async {
                 Navigator.of(context).pop(true);
               },
               child: const Text('取消'),
             ),
-            confirm: ShadButton(
+            confirm: ShadButton.destructive(
               size: ShadButtonSize.sm,
               onPressed: () async {
                 Navigator.of(context).pop(false);
@@ -850,7 +850,7 @@ class TrPage extends StatelessWidget {
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                                       children: [
-                                        ShadButton(
+                                        ShadButton.outline(
                                           onPressed: () {
                                             Get.back(result: false);
                                           },
@@ -953,7 +953,7 @@ class TrPage extends StatelessWidget {
                     titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
                     middleText: '确定要重新校验种子吗？',
                     actions: [
-                      ShadButton(
+                      ShadButton.outline(
                         onPressed: () {
                           Get.back(result: false);
                         },
@@ -985,7 +985,7 @@ class TrPage extends StatelessWidget {
                     title: '确认',
                     middleText: '您确定要执行这个操作吗？',
                     actions: [
-                      ShadButton(
+                      ShadButton.outline(
                         onPressed: () {
                           Get.back(result: false);
                         },
@@ -1020,13 +1020,13 @@ class TrPage extends StatelessWidget {
                     title: '确认',
                     middleText: '您确定要执行这个操作吗？',
                     actions: [
-                      ShadButton(
+                      ShadButton.outline(
                         onPressed: () {
                           Get.back(result: false);
                         },
                         child: const Text('取消'),
                       ),
-                      ShadButton(
+                      ShadButton.destructive(
                         onPressed: () async {
                           Get.back(result: true);
                           await controller.controlTorrents(
@@ -1133,7 +1133,7 @@ class TrPage extends StatelessWidget {
                       );
                     }),
                     actions: [
-                      ShadButton(
+                      ShadButton.outline(
                         size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back(result: false);
@@ -1177,7 +1177,7 @@ class TrPage extends StatelessWidget {
                   radius: 5,
                   middleText: '确定要重新校验种子吗？',
                   actions: [
-                    ShadButton(
+                    ShadButton.outline(
                       size: ShadButtonSize.sm,
                       onPressed: () {
                         Get.back(result: false);
@@ -1249,7 +1249,7 @@ class TrPage extends StatelessWidget {
                       );
                     }),
                     actions: [
-                      ShadButton(
+                      ShadButton.outline(
                         size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back();
@@ -1484,7 +1484,7 @@ class TrPage extends StatelessWidget {
                       ],
                     ),
                     actions: [
-                      ShadButton(
+                      ShadButton.outline(
                         size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back();
@@ -2388,7 +2388,7 @@ class TrPage extends StatelessWidget {
         ],
       ),
       actions: [
-        ShadButton(
+        ShadButton.outline(
           onPressed: () {
             Get.back(result: false);
           },

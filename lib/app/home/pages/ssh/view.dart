@@ -84,7 +84,7 @@ class SshWidget extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: ShadButton(
+          child: ShadButton.destructive(
             size: ShadButtonSize.sm,
             backgroundColor: shadColorScheme.primary,
             onPressed: () async {
@@ -125,7 +125,7 @@ class SshWidget extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  ShadButton(
+                  ShadButton.destructive(
                       onPressed: () async {
                         await controller.execute(commandController.text);
                       },
@@ -136,7 +136,7 @@ class SshWidget extends StatelessWidget {
                           color: ShadTheme.of(context).colorScheme.foreground,
                         ),
                       )),
-                  ShadButton(
+                  ShadButton.outline(
                     onPressed: () {
                       controller.clear();
                     },
@@ -160,7 +160,7 @@ class SshWidget extends StatelessWidget {
                       ),
                     ),
                   ),
-                  ShadButton(
+                  ShadButton.ghost(
                     onPressed: () {
                       controller.disconnect();
                     },
@@ -394,7 +394,7 @@ class SshWidget extends StatelessWidget {
                                 width: 5,
                               ),
                               if (container.hasNew)
-                                ShadButton(
+                                ShadButton.destructive(
                                     onPressed: () => controller.getNewImage(container.image.toString()),
                                     child: const Text(
                                       '下载镜像',

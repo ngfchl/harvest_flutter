@@ -110,14 +110,14 @@ class _MyRssPageState extends State<MyRssPage> {
                 titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                 middleText: '确定要删除标签吗？',
                 actions: [
-                  ShadButton.destructive(
+                  ShadButton.outline(
                     size: ShadButtonSize.sm,
                     onPressed: () {
                       Get.back(result: false);
                     },
                     child: const Text('取消'),
                   ),
-                  ShadButton(
+                  ShadButton.destructive(
                     size: ShadButtonSize.sm,
                     onPressed: () async {
                       Get.back(result: true);
@@ -285,7 +285,7 @@ class _MyRssPageState extends State<MyRssPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ShadButton.destructive(
+                  ShadButton.outline(
                     size: ShadButtonSize.sm,
                     onPressed: () {
                       // 清空表单数据
@@ -304,7 +304,7 @@ class _MyRssPageState extends State<MyRssPage> {
                     child: Text('取消', style: TextStyle(color: shadColorScheme.destructiveForeground)),
                   ),
                   Obx(() {
-                    return ShadButton(
+                    return ShadButton.destructive(
                       size: ShadButtonSize.sm,
                       onPressed: () async {
                         isLoading.value = true;

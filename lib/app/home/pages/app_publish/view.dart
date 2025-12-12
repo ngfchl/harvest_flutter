@@ -147,7 +147,7 @@ class AppPublishPage extends StatelessWidget {
                                       ],
                                     ),
                                     actions: [
-                                      ShadButton(
+                                      ShadButton.outline(
                                         size: ShadButtonSize.sm,
                                         child: Text('取消'),
                                         onPressed: () {
@@ -242,7 +242,7 @@ class AppPublishPage extends StatelessWidget {
                                               Row(
                                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                                 children: [
-                                                  ShadButton(
+                                                  ShadButton.outline(
                                                     size: ShadButtonSize.sm,
                                                     child: Text('取消'),
                                                     onPressed: () {
@@ -419,7 +419,7 @@ class AppPublishPage extends StatelessWidget {
                                                           ],
                                                         ),
                                                         actions: [
-                                                          ShadButton(
+                                                          ShadButton.outline(
                                                             size: ShadButtonSize.sm,
                                                             child: Text('取消'),
                                                             onPressed: () {
@@ -489,7 +489,7 @@ class AppPublishPage extends StatelessWidget {
                                                         radius: 5,
                                                         content: Text('确定吗？'),
                                                         actions: [
-                                                          ShadButton(
+                                                          ShadButton.outline(
                                                             size: ShadButtonSize.sm,
                                                             child: Text('取消'),
                                                             onPressed: () {
@@ -676,7 +676,7 @@ class AppPublishPage extends StatelessWidget {
       content: Text('确定要删除此用户吗？'),
       radius: 5,
       actions: [
-        ShadButton(
+        ShadButton.outline(
           size: ShadButtonSize.sm,
           child: Text('取消'),
           onPressed: () {
@@ -769,7 +769,7 @@ class AppPublishPage extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              ShadButton(
+              ShadButton.outline(
                 size: ShadButtonSize.sm,
                 child: Text('取消'),
                 onPressed: () {

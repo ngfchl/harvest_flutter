@@ -45,7 +45,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
             middleTextStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
             titleStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
             radius: 10,
-            cancel: ShadButton(
+            cancel: ShadButton.outline(
               size: ShadButtonSize.sm,
               onPressed: () async {
                 Navigator.of(context).pop(true);
@@ -154,7 +154,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                           gapPadding: 0.0, // 移除边框与hintText之间的间距
                                         ),
                                         focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide.none,
+                                          borderSide: BorderSide(width: 1.0, color: shadColorScheme.foreground),
                                           // 仅在聚焦时绘制底部边框
                                           borderRadius: BorderRadius.circular(5.0),
                                         ),
@@ -732,14 +732,14 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                     });
                               }),
                               actions: [
-                                ShadButton.destructive(
+                                ShadButton.outline(
                                   size: ShadButtonSize.sm,
                                   onPressed: () {
                                     Get.back(result: false);
                                   },
                                   child: const Text('取消'),
                                 ),
-                                ShadButton(
+                                ShadButton.destructive(
                                   size: ShadButtonSize.sm,
                                   onPressed: () async {
                                     Get.back(result: true);
@@ -1054,38 +1054,34 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                                       children: [
-                                        ShadButton.destructive(
+                                        ShadButton.outline(
                                           size: ShadButtonSize.sm,
                                           onPressed: () {
                                             Get.back(result: false);
                                           },
                                           child: const Text('取消'),
                                         ),
-                                        Stack(
-                                          children: [
-                                            ShadButton(
-                                              size: ShadButtonSize.sm,
-                                              onPressed: () async {
-                                                controller.trackerLoading = true;
-                                                controller.update();
-                                                CommonResponse res = await controller.replaceTrackers(
-                                                    site: keyController.text, newTracker: valueController.text);
-                                                controller.trackerLoading = false;
-                                                controller.update();
-                                                if (res.succeed) {
-                                                  Get.back(result: true);
-                                                }
-                                                Get.snackbar('Tracker替换ing', res.msg,
-                                                    colorText: res.succeed
-                                                        ? shadColorScheme.foreground
-                                                        : shadColorScheme.destructive);
-                                              },
-                                              leading: controller.trackerLoading
-                                                  ? const Center(child: CircularProgressIndicator())
-                                                  : null,
-                                              child: const Text('确认'),
-                                            ),
-                                          ],
+                                        ShadButton.destructive(
+                                          size: ShadButtonSize.sm,
+                                          onPressed: () async {
+                                            controller.trackerLoading = true;
+                                            controller.update();
+                                            CommonResponse res = await controller.replaceTrackers(
+                                                site: keyController.text, newTracker: valueController.text);
+                                            controller.trackerLoading = false;
+                                            controller.update();
+                                            if (res.succeed) {
+                                              Get.back(result: true);
+                                            }
+                                            Get.snackbar('Tracker替换ing', res.msg,
+                                                colorText: res.succeed
+                                                    ? shadColorScheme.foreground
+                                                    : shadColorScheme.destructive);
+                                          },
+                                          leading: controller.trackerLoading
+                                              ? const Center(child: CircularProgressIndicator())
+                                              : null,
+                                          child: const Text('确认'),
                                         ),
                                       ],
                                     )
@@ -1185,14 +1181,14 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                           });
                     }),
                     actions: [
-                      ShadButton.destructive(
+                      ShadButton.outline(
                         size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back(result: false);
                         },
                         child: const Text('取消'),
                       ),
-                      ShadButton(
+                      ShadButton.destructive(
                         size: ShadButtonSize.sm,
                         onPressed: () async {
                           Get.back(result: true);
@@ -1290,7 +1286,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                       );
                     }),
                     actions: [
-                      ShadButton(
+                      ShadButton.outline(
                         size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back(result: false);
@@ -1351,14 +1347,14 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                       ],
                     ),
                     actions: [
-                      ShadButton.destructive(
+                      ShadButton.outline(
                         size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back();
                         },
                         child: const Text('取消'),
                       ),
-                      ShadButton(
+                      ShadButton.destructive(
                         size: ShadButtonSize.sm,
                         onPressed: () async {
                           await controller.controlTorrents(
@@ -1554,14 +1550,14 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                       ],
                     ),
                     actions: [
-                      ShadButton.destructive(
+                      ShadButton.outline(
                         size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back();
                         },
                         child: const Text('取消'),
                       ),
-                      ShadButton(
+                      ShadButton.destructive(
                         size: ShadButtonSize.sm,
                         onPressed: () async {
                           await controller.controlTorrents(
@@ -1652,14 +1648,14 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                       ],
                     ),
                     actions: [
-                      ShadButton.destructive(
+                      ShadButton.outline(
                         size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back();
                         },
                         child: const Text('取消'),
                       ),
-                      ShadButton(
+                      ShadButton.destructive(
                         size: ShadButtonSize.sm,
                         onPressed: () async {
                           if (shareLimit.value! < 0) {
@@ -1708,14 +1704,14 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                   title: '校验种子',
                   middleText: '重新校验种子？',
                   actions: [
-                    ShadButton.destructive(
+                    ShadButton.outline(
                       size: ShadButtonSize.sm,
                       onPressed: () {
                         Get.back(result: false);
                       },
                       child: const Text('取消'),
                     ),
-                    ShadButton(
+                    ShadButton.destructive(
                       size: ShadButtonSize.sm,
                       onPressed: () async {
                         // 重新校验种子
@@ -2095,7 +2091,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                 );
                               }),
                               actions: [
-                                ShadButton(
+                                ShadButton.outline(
                                   size: ShadButtonSize.sm,
                                   onPressed: () {
                                     Get.back(result: false);

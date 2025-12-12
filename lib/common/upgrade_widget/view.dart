@@ -68,7 +68,7 @@ class UpgradeWidgetPage extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              ShadButton.destructive(
+                              ShadButton.outline(
                                 size: ShadButtonSize.sm,
                                 onPressed: () {
                                   Get.back();
@@ -78,13 +78,13 @@ class UpgradeWidgetPage extends StatelessWidget {
                                   style: TextStyle(color: shadColorScheme.destructiveForeground),
                                 ),
                               ),
-                              ShadButton(
+                              ShadButton.secondary(
                                 size: ShadButtonSize.sm,
                                 onPressed: () => homeController.initUpdateLogState(),
                                 child: const Text('检查更新'),
                               ),
                               if (homeController.updateLogState?.update == true)
-                                ShadButton(
+                                ShadButton.destructive(
                                   size: ShadButtonSize.sm,
                                   onPressed: () async {
                                     final res = await homeController.doDockerUpdate();
@@ -135,7 +135,7 @@ class UpgradeWidgetPage extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              ShadButton.destructive(
+                              ShadButton.outline(
                                 size: ShadButtonSize.sm,
                                 onPressed: () {
                                   Get.back();
@@ -145,13 +145,13 @@ class UpgradeWidgetPage extends StatelessWidget {
                                   style: TextStyle(color: shadColorScheme.destructiveForeground),
                                 ),
                               ),
-                              ShadButton(
+                              ShadButton.secondary(
                                 size: ShadButtonSize.sm,
                                 onPressed: () => homeController.initUpdateSitesState(),
                                 child: const Text('检查更新'),
                               ),
                               if (homeController.updateSitesState?.update == true)
-                                ShadButton(
+                                ShadButton.destructive(
                                   size: ShadButtonSize.sm,
                                   onPressed: () async {
                                     final res = await homeController.doSitesUpdate();
@@ -173,7 +173,7 @@ class UpgradeWidgetPage extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            ShadButton(
+                            ShadButton.destructive(
                               size: ShadButtonSize.sm,
                               onPressed: () async {
                                 final res = await homeController.doDockerUpdate();
@@ -182,7 +182,7 @@ class UpgradeWidgetPage extends StatelessWidget {
                               },
                               child: const Text('更新主服务'),
                             ),
-                            ShadButton(
+                            ShadButton.destructive(
                               size: ShadButtonSize.sm,
                               onPressed: () async {
                                 final res = await homeController.doWebUIUpdate();
@@ -191,7 +191,7 @@ class UpgradeWidgetPage extends StatelessWidget {
                               },
                               child: const Text('更新WebUI'),
                             ),
-                            ShadButton(
+                            ShadButton.destructive(
                               size: ShadButtonSize.sm,
                               onPressed: () async {
                                 final res = await homeController.doSitesUpdate();
