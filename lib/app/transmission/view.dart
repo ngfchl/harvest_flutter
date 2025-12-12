@@ -212,7 +212,7 @@ class TrPage extends StatelessWidget {
                                     itemCount: controller.showTorrents.length,
                                     itemBuilder: (BuildContext context, int index) {
                                       TrTorrent torrentInfo = controller.showTorrents[index];
-                                      return _buildTrTorrentCard(torrentInfo, context);
+                                      return RepaintBoundary(child: _buildTrTorrentCard(torrentInfo, context));
                                     }),
                           ),
                         ],

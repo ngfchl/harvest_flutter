@@ -206,7 +206,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                           itemCount: controller.showTorrents.length,
                                           itemBuilder: (BuildContext context, int index) {
                                             TorrentInfo torrentInfo = controller.showTorrents[index];
-                                            return _buildQbTorrentCard(torrentInfo, context);
+                                            return RepaintBoundary(child: _buildQbTorrentCard(torrentInfo, context));
                                           }),
                                       if (controller.showDetailsLoading)
                                         const Center(child: CircularProgressIndicator())

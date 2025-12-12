@@ -225,10 +225,10 @@ class TorrentView extends GetView<TorrentController> {
                             itemBuilder: (BuildContext context, int index) {
                               if (controller.downloader.category.toLowerCase() == 'qb') {
                                 TorrentInfo torrentInfo = controller.showTorrents[index];
-                                return _buildQbTorrentCard(torrentInfo, context);
+                                return RepaintBoundary(child: _buildQbTorrentCard(torrentInfo, context));
                               } else {
                                 TrTorrent torrentInfo = controller.showTorrents[index];
-                                return _buildTrTorrentCard(torrentInfo, context);
+                                return RepaintBoundary(child: _buildTrTorrentCard(torrentInfo, context));
                               }
                             });
                       }),

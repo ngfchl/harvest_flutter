@@ -1902,31 +1902,31 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                 ),
                               ),
                               Expanded(
-                                child: ListView(
+                                child: ListView.builder(
                                   shrinkWrap: true,
-                                  children: [
-                                    ...dataList.map(
-                                      (item) => Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            item.name,
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: shadColorScheme.foreground,
-                                            ),
+                                  itemCount: dataList.length,
+                                  itemBuilder: (context, index) {
+                                    var item = dataList[index];
+                                    return Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          item.name,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: shadColorScheme.foreground,
                                           ),
-                                          Text(
-                                            FileSizeConvert.parseToFileSize(item.value),
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: shadColorScheme.foreground,
-                                            ),
+                                        ),
+                                        Text(
+                                          FileSizeConvert.parseToFileSize(item.value),
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: shadColorScheme.foreground,
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
+                                        ),
+                                      ],
+                                    );
+                                  },
                                 ),
                               ),
                             ],
@@ -2158,31 +2158,31 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                 ),
                               ),
                               Expanded(
-                                child: ListView(
+                                child: ListView.builder(
                                   shrinkWrap: true,
-                                  children: [
-                                    ...dataList.map(
-                                      (item) => Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            item.name,
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: shadColorScheme.foreground,
-                                            ),
+                                  itemCount: dataList.length,
+                                  itemBuilder: (context, index) {
+                                    MetaDataItem item = dataList[index];
+                                    return Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          item.name,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: shadColorScheme.foreground,
                                           ),
-                                          Text(
-                                            FileSizeConvert.parseToFileSize(item.value),
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: shadColorScheme.foreground,
-                                            ),
+                                        ),
+                                        Text(
+                                          FileSizeConvert.parseToFileSize(item.value),
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: shadColorScheme.foreground,
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
+                                        ),
+                                      ],
+                                    );
+                                  },
                                 ),
                               ),
                             ],
@@ -2386,31 +2386,31 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                 ),
                               ),
                               Expanded(
-                                child: ListView(
+                                child: ListView.builder(
                                   shrinkWrap: true,
-                                  children: [
-                                    ...dataList.map(
-                                      (item) => Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            item.name,
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: shadColorScheme.foreground,
-                                            ),
+                                  itemCount: dataList.length,
+                                  itemBuilder: (context, index) {
+                                    MetaDataItem item = dataList[index];
+                                    return Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          item.name,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: shadColorScheme.foreground,
                                           ),
-                                          Text(
-                                            FileSizeConvert.parseToFileSize(item.value),
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: shadColorScheme.foreground,
-                                            ),
+                                        ),
+                                        Text(
+                                          FileSizeConvert.parseToFileSize(item.value),
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: shadColorScheme.foreground,
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
+                                        ),
+                                      ],
+                                    );
+                                  },
                                 ),
                               ),
                             ],
@@ -2614,31 +2614,31 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                 ),
                               ),
                               Expanded(
-                                child: ListView(
+                                child: ListView.builder(
+                                  itemCount: dataList.length,
                                   shrinkWrap: true,
-                                  children: [
-                                    ...dataList.map(
-                                      (item) => Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            item.name,
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: shadColorScheme.foreground,
-                                            ),
+                                  itemBuilder: (context, index) {
+                                    var item = dataList[index];
+                                    return Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          item.name,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: shadColorScheme.foreground,
                                           ),
-                                          Text(
-                                            FileSizeConvert.parseToFileSize(item.value),
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: shadColorScheme.foreground,
-                                            ),
+                                        ),
+                                        Text(
+                                          FileSizeConvert.parseToFileSize(item.value),
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: shadColorScheme.foreground,
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
+                                        ),
+                                      ],
+                                    );
+                                  },
                                 ),
                               ),
                             ],

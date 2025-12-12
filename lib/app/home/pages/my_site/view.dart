@@ -475,41 +475,45 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                           ? ListView(
                               children: const [Center(child: Text('没有符合条件的数据！'))],
                             )
-                          : GetBuilder<MySiteController>(builder: (controller) {
-                              return ReorderableListView.builder(
-                                onReorder: (int oldIndex, int newIndex) async {
-                                  final item = controller.showStatusList.removeAt(oldIndex);
-                                  Logger.instance.d('本站排序 ID：${item.sortId}');
-                                  if (oldIndex < newIndex) {
-                                    newIndex -= 1; // 移动时修正索引，因为item已被移除
-                                  }
+                          : GetBuilder<MySiteController>(
+                              builder: (controller) {
+                                return ReorderableListView.builder(
+                                  onReorder: (int oldIndex, int newIndex) async {
+                                    final item = controller.showStatusList.removeAt(oldIndex);
+                                    Logger.instance.d('本站排序 ID：${item.sortId}');
+                                    if (oldIndex < newIndex) {
+                                      newIndex -= 1; // 移动时修正索引，因为item已被移除
+                                    }
 
-                                  final nextItem = controller.showStatusList[newIndex];
-                                  MySite newItem;
-                                  if (controller.sortReversed) {
-                                    newItem = item.copyWith(sortId: nextItem.sortId - 1 > 0 ? nextItem.sortId - 1 : 0);
-                                  } else {
-                                    newItem = item.copyWith(sortId: nextItem.sortId + 1);
-                                  }
-                                  controller.showStatusList.insert(newIndex, item);
-                                  controller.update();
-                                  CommonResponse response = await controller.saveMySiteToServer(newItem);
-                                  if (response.succeed) {
-                                    await controller.getSiteStatusFromServer();
-                                  }
-                                },
-                                itemCount: controller.showStatusList.length,
-                                itemBuilder: (BuildContext context, int index) {
-                                  MySite mySite = controller.showStatusList[index];
-                                  return GetBuilder<MySiteController>(
+                                    final nextItem = controller.showStatusList[newIndex];
+                                    MySite newItem;
+                                    if (controller.sortReversed) {
+                                      newItem =
+                                          item.copyWith(sortId: nextItem.sortId - 1 > 0 ? nextItem.sortId - 1 : 0);
+                                    } else {
+                                      newItem = item.copyWith(sortId: nextItem.sortId + 1);
+                                    }
+                                    controller.showStatusList.insert(newIndex, item);
+                                    controller.update();
+                                    CommonResponse response = await controller.saveMySiteToServer(newItem);
+                                    if (response.succeed) {
+                                      await controller.getSiteStatusFromServer();
+                                    }
+                                  },
+                                  itemCount: controller.showStatusList.length,
+                                  itemBuilder: (BuildContext context, int index) {
+                                    MySite mySite = controller.showStatusList[index];
+                                    return GetBuilder<MySiteController>(
                                       id: "SingleSite-${mySite.id}",
                                       key: ValueKey("SingleSite-${mySite.id}"),
                                       builder: (controller) {
-                                        return showSiteDataInfo(mySite);
-                                      });
-                                },
-                              );
-                            }),
+                                        return RepaintBoundary(child: showSiteDataInfo(mySite));
+                                      },
+                                    );
+                                  },
+                                );
+                              },
+                            ),
                 ),
               ),
 
