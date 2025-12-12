@@ -12,8 +12,8 @@ import 'package:harvest/app/home/pages/models/torrent_info.dart';
 import 'package:harvest/common/meta_item.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:harvest/utils/logger_helper.dart' as logger_helper;
-import 'package:intl/intl.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:web_socket_channel/status.dart' as status;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -67,11 +67,6 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
   String dataSource = 'TMDB';
   Floating? floating;
   Map<String, MySite> mySiteMap = <String, MySite>{};
-  final List<Tab> tabs = [
-    const Tab(text: '影视查询'),
-    const Tab(text: '资源搜索'),
-    const Tab(text: '搜索历史'),
-  ];
   List<MetaDataItem> sortKeyList = [
     {'name': '发布时间', 'value': 'published'},
     {'name': '大小', 'value': 'size'},
@@ -100,7 +95,8 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
   bool hrKey = false;
   Option? option;
   List<MediaItem> results = [];
-  late TabController tabController;
+  ShadTabsController<String> tabsController = ShadTabsController<String>(value: 'warehouse');
+  String selectedWarehouse = '';
   late VideoDetail selectVideoDetail;
   String baseUrl = SPUtil.getLocalStorage('server');
 
@@ -111,12 +107,11 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
       {'name': '免费', 'value': saleStatusList},
       {'name': '分类', 'value': succeedCategories},
     ]);
-    tabController = TabController(length: tabs.length, vsync: this);
     await initData();
     super.onInit();
   }
 
-  updateSearchHistory(String element) async {
+  Future<void> updateSearchHistory(String element) async {
     element = element.trim();
     if (element.isEmpty) {
       return;
@@ -129,13 +124,13 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
     ]);
   }
 
-  searchTMDB() async {
+  Future<CommonResponse> searchTMDB() async {
     if (searchKeyController.text.isEmpty) {
       return CommonResponse.error(msg: "搜索关键字不能为空！");
     }
     isLoading = true;
-    changeTab(0);
-    tabs[0] = Tab(text: '影视查询[TMDB]');
+    changeTab('warehouse');
+    selectedWarehouse = 'TMDB';
     updateSearchHistory(searchKeyController.text);
     update();
     logger_helper.Logger.instance.d(searchKeyController.text);
@@ -346,8 +341,8 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
     }
     DouBanSearchHelper helper = DouBanSearchHelper();
     isLoading = true;
-    changeTab(0);
-    tabs[0] = Tab(text: '影视查询[豆瓣]');
+    changeTab('warehouse');
+    selectedWarehouse = '豆瓣';
     update();
     var response = await helper.doSearch(
       q: searchKeyController.text,
@@ -379,8 +374,8 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
     await doWebsocketSearch();
   }
 
-  void changeTab(int index) {
-    tabController.animateTo(index);
+  void changeTab(String tab) {
+    tabsController.select(tab);
     update();
   }
 
@@ -389,7 +384,7 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
     isLoading = true;
     // 清空搜索记录
     initSearchResult();
-    changeTab(1);
+    changeTab('agg_search');
     // 初始化站点数据
     if (mySiteMap.isEmpty) {
       logger_helper.Logger.instance.d('重新加载站点列表');
@@ -473,7 +468,7 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
     isLoading = true;
     // 清空搜索记录
     initSearchResult();
-    changeTab(1);
+    changeTab('agg_search');
     // 初始化站点数据
     if (mySiteMap.isEmpty) {
       logger_helper.Logger.instance.w('重新加载站点列表');
