@@ -497,9 +497,9 @@ class DownloadForm extends StatelessWidget {
                         'add_to_top_of_queue': addToTopOfQueue.value,
                         'forced': forced.value,
                         'upload_limit': (upLimit != null && upLimit > 0)
-                            ? upLimit * 1024 * 1024 * 0.92
+                            ? (upLimit * 1024 * 1024 * 0.92).toInt()
                             : website != null
-                                ? website!.limitSpeed * 1024 * 1024 * 0.92
+                                ? (website!.limitSpeed * 1024 * 1024 * 0.92).toInt()
                                 : null,
                         'download_limit': (dlLimit != null && dlLimit > 0) ? dlLimit * 1024 * 1024 : null,
                         'ratio_limit': ratioLimit,
@@ -803,9 +803,9 @@ class DownloadForm extends StatelessWidget {
                     'cookie': cookieController.text,
                     'is_paused': paused.value,
                     'upload_limit': (upLimit != null && upLimit > 0)
-                        ? upLimit * 1024 * 0.92
+                        ? (upLimit * 1024 * 0.92).toInt()
                         : website != null
-                            ? website!.limitSpeed * 1024 * 0.92
+                            ? (website!.limitSpeed * 1024 * 0.92).toInt()
                             : null,
                     'download_limit': (dlLimit != null && dlLimit > 0) ? dlLimit * 1024 : null,
                     'ratio_limit': ratioLimit,
