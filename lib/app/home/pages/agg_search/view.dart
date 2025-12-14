@@ -2024,24 +2024,19 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
   }
 
   Future<void> _doTmdbSearch() async {
-    if (controller.tabsController.selected == 'warehouse') {
-      if (controller.searchKeyController.text.isEmpty) {
-        Get.snackbar("提示", "搜索关键字不能为空！");
-        return;
-      }
-      var shadColorScheme = ShadTheme.of(context).colorScheme;
-      CommonResponse response = await controller.searchTMDB();
-      if (response.succeed != true) {
-        Get.snackbar(
-          '警告',
-          '${response.msg}，从豆瓣获取信息...',
-          colorText: shadColorScheme.destructive,
-        );
-        await controller.doDouBanSearch();
-      }
-    } else {
-      await controller.doWebsocketSearch();
-      // await controller.doSearch();
+    if (controller.searchKeyController.text.isEmpty) {
+      Get.snackbar("提示", "搜索关键字不能为空！");
+      return;
+    }
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
+    CommonResponse response = await controller.searchTMDB();
+    if (response.succeed != true) {
+      Get.snackbar(
+        '警告',
+        '${response.msg}，从豆瓣获取信息...',
+        colorText: shadColorScheme.destructive,
+      );
+      await controller.doDouBanSearch();
     }
   }
 }
