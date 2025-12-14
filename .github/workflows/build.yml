@@ -392,6 +392,7 @@ jobs:
           REFACTOR=""
           PERF=""
           TEST=""
+          UPDATE=""
           OTHER=""
 
           while IFS='|' read -r HASH MSG; do
@@ -409,7 +410,11 @@ jobs:
             if [ -n "$PR_TITLE" ]; then
               DISPLAY_MSG="$PR_TITLE (#$PR_NUM)"
             fi
-
+          
+            # 清洗危险字符（防止 GitHub Actions / Shell / API 出问题）
+            DISPLAY_MSG="${DISPLAY_MSG//\"/}"
+            DISPLAY_MSG="$(printf '%s' "$DISPLAY_MSG")"
+          
             SHORT_HASH=$(echo "$HASH" | cut -c1-7)
 
             if [[ "$MSG" =~ ^feat ]]; then
@@ -424,6 +429,8 @@ jobs:
                 PERF+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
             elif [[ "$MSG" =~ ^test ]]; then
                 TEST+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
+            elif [[ "$MSG" =~ ^update ]]; then
+                UPDATE+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
             else
                 OTHER+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
             fi
@@ -449,6 +456,9 @@ jobs:
           fi
           if [ -n "$TEST" ]; then
             FINAL_LOG+="\n### 🧪 测试相关\n${TEST}\n"
+          fi
+          if [ -n "$UPDATE" ]; then
+            FINAL_LOG+="\n### 🔄 更新\n${UPDATE}\n"
           fi
           if [ -n "$OTHER" ]; then
             FINAL_LOG+="\n### 📌 其他变更\n${OTHER}\n"
