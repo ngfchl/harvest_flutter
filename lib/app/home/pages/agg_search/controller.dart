@@ -171,6 +171,8 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
   }
 
   getTMDBDetail(info) {
+    isLoading = true;
+    update();
     if (info.mediaType == 'movie') {
       return getTMDBMovieDetail(info.id);
     } else {

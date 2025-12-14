@@ -338,7 +338,7 @@ class Network {
   factory Network.fromJson(Map<String, dynamic> json) {
     return Network(
       id: json['id'],
-      logoPath: json['logo_path'],
+      logoPath: json['logo_path'] ?? '',
       name: json['name'],
       originCountry: json['origin_country'],
     );
