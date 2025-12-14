@@ -81,6 +81,9 @@ class DownloadForm extends StatelessWidget {
     RxBool forced = false.obs;
     RxList<String> tags = SPUtil.getStringList("custom_torrent_tags",
         defaultValue: ['harvest-app', '电影', '电视剧', '动漫', '综艺', '纪录片', '体育', '音乐', '动画', '游戏']).obs;
+    if (tags.isEmpty) {
+      tags.addAll(['电影', '电视剧', '动漫', '综艺', '纪录片', '体育', '音乐', '动画', '游戏']);
+    }
     RxList<String> selectedTags = [
       ...?info?.tags,
       'harvest-app',
@@ -534,6 +537,9 @@ class DownloadForm extends StatelessWidget {
     Rx<String> category = categories.keys.first.obs;
     RxList<String> tags = SPUtil.getStringList("custom_torrent_tags",
         defaultValue: ['电影', '电视剧', '动漫', '综艺', '纪录片', '体育', '音乐', '动画', '游戏']).obs;
+    if (tags.isEmpty) {
+      tags.addAll(['电影', '电视剧', '动漫', '综艺', '纪录片', '体育', '音乐', '动画', '游戏']);
+    }
     RxList<String> selectedTags = [
       ...?info?.tags,
       'harvest-app',
