@@ -167,7 +167,8 @@ class _WebViewPageState extends State<WebViewPage> {
                         Icons.download_outlined,
                         size: 24,
                       ),
-                      onPressed: () => openDownloaderListSheet(context, controller.info!),
+                      onPressed: () =>
+                          openDownloaderListSheet(context, controller.info!, controller.website, controller.mySite),
                     ),
                   if (controller.mySite != null && controller.progress >= 100)
                     ShadIconButton.ghost(
@@ -336,7 +337,7 @@ class _WebViewPageState extends State<WebViewPage> {
                     );
                     Logger.instance.d('种子信息：${info.toJson()}');
 
-                    await openDownloaderListSheet(context, info);
+                    await openDownloaderListSheet(context, info, controller.website, controller.mySite);
                   },
                   onLoadStop: (inAppWebViewController, webUri) async {
                     Logger.instance.d(webUri!.toString);

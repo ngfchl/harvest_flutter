@@ -920,7 +920,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
             mySite.nickname.isNotEmpty ? mySite.nickname : mySite.site,
             'harvest-app',
           ]);
-          await openDownloaderListSheet(context, info);
+          await openDownloaderListSheet(context, info, website, mySite);
         } catch (e) {
           logger_helper.Logger.instance.e(e);
         } finally {
