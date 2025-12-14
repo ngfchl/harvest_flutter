@@ -843,7 +843,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                     children: [
                       mySite.latestActive != null
                           ? Tooltip(
-                              message: '最后访问时间：${calculateTimeElapsed(mySite.latestActive.toString())}',
+                              message:
+                                  '最后访问时间：${calculateTimeElapsed(mySite.latestActive.toString())}  上传限速：${website.limitSpeed}MB/s',
                               child: Text(
                                 mySite.nickname,
                                 style: TextStyle(
