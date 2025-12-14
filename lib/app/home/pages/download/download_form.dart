@@ -467,11 +467,17 @@ class DownloadForm extends StatelessWidget {
                     size: ShadButtonSize.sm,
                     onPressed: () async {
                       isLoading.value = true;
-                      tags.addAll(tagsController.text.split(','));
+                      if (tagsController.text.isNotEmpty) {
+                        tags.addAll(tagsController.text.split(','));
+                      }
                       SPUtil.setStringList('custom_torrent_tags', tags.toSet().toList());
                       double? ratioLimit = double.tryParse(ratioLimitController.text);
                       int? upLimit = int.tryParse(upLimitController.text);
                       int? dlLimit = int.tryParse(dlLimitController.text);
+                      List<String> finalTags = <String>{
+                        if (tagsController.text.isNotEmpty) ...tagsController.text.split(','),
+                        ...selectedTags
+                      }.where((element) => element.isNotEmpty).toList();
                       await submitForm({
                         'site_id': info?.siteId,
                         'tid': info?.tid,
@@ -480,7 +486,7 @@ class DownloadForm extends StatelessWidget {
                         'category': categoryController.text,
                         'is_paused': paused.value,
                         'rename': renameController.text,
-                        'tags': [...tagsController.text.split(','), ...selectedTags],
+                        'tags': finalTags,
                         'cookie': cookieController.text,
                         'content_layout': contentLayout.value,
                         'stop_condition': stopCondition.value == 'None' ? null : stopCondition.value,
@@ -490,9 +496,13 @@ class DownloadForm extends StatelessWidget {
                         'use_auto_torrent_management': autoTMM.value,
                         'add_to_top_of_queue': addToTopOfQueue.value,
                         'forced': forced.value,
-                        'upLimit': (upLimit != null && upLimit > 0) ? upLimit * 1024 : null,
-                        'dlLimit': (dlLimit != null && dlLimit > 0) ? dlLimit * 1024 : null,
-                        'ratioLimit': ratioLimit,
+                        'upload_limit': (upLimit != null && upLimit > 0)
+                            ? upLimit * 1024 * 1024
+                            : website != null
+                                ? website!.limitSpeed * 1024 * 1024
+                                : null,
+                        'download_limit': (dlLimit != null && dlLimit > 0) ? dlLimit * 1024 * 1024 : null,
+                        'ratio_limit': ratioLimit,
                       }, context);
                       isLoading.value = false;
                     },
@@ -773,27 +783,46 @@ class DownloadForm extends StatelessWidget {
                 size: ShadButtonSize.sm,
                 onPressed: () async {
                   isLoading.value = true;
-                  tags.addAll(tagsController.text.split(','));
+                  if (tagsController.text.isNotEmpty) {
+                    tags.addAll(tagsController.text.split(','));
+                  }
                   SPUtil.setStringList('custom_torrent_tags', tags.toSet().toList());
                   double? ratioLimit = double.tryParse(ratioLimitController.text);
                   int? upLimit = int.tryParse(upLimitController.text);
                   int? dlLimit = int.tryParse(dlLimitController.text);
+                  List<String> finalTags = <String>{
+                    if (tagsController.text.isNotEmpty) ...tagsController.text.split(','),
+                    ...selectedTags
+                  }.where((element) => element.isNotEmpty).toList();
                   await submitForm({
                     'site_id': info?.siteId,
                     'tid': info?.tid,
                     'urls': urlController.text,
                     'save_path': savePathController.text,
-                    'tags': [...tagsController.text.split(','), ...selectedTags],
+                    'tags': finalTags,
                     'cookie': cookieController.text,
                     'is_paused': paused.value,
-                    'upLimit': (upLimit != null && upLimit > 0) ? upLimit * 1024 : null,
-                    'dlLimit': (dlLimit != null && dlLimit > 0) ? dlLimit * 1024 : null,
-                    'ratioLimit': ratioLimit,
+                    'upload_limit': (upLimit != null && upLimit > 0)
+                        ? upLimit * 1024
+                        : website != null
+                            ? website!.limitSpeed * 1024
+                            : null,
+                    'download_limit': (dlLimit != null && dlLimit > 0) ? dlLimit * 1024 : null,
+                    'ratio_limit': ratioLimit,
                   }, context);
                   isLoading.value = false;
                 },
-                leading:
-                    isLoading.value ? Center(child: const CircularProgressIndicator()) : const Icon(Icons.download),
+                leading: isLoading.value
+                    ? SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: shadColorScheme.primaryForeground,
+                          ),
+                        ),
+                      )
+                    : const Icon(Icons.download),
                 child: const Text('下载'),
               );
             }),
@@ -840,7 +869,8 @@ class DownloadForm extends StatelessWidget {
   }
 }
 
-Future<void> openDownloaderListSheet(BuildContext context, SearchTorrentInfo info) async {
+Future<void> openDownloaderListSheet(
+    BuildContext context, SearchTorrentInfo info, WebSite? website, MySite? mySite) async {
   DownloadController downloadController = Get.find();
   if (downloadController.dataList.isEmpty) {
     await downloadController.getDownloaderListFromServer();
@@ -936,6 +966,8 @@ Future<void> openDownloaderListSheet(BuildContext context, SearchTorrentInfo inf
                                   categories: categorise,
                                   downloader: downloader,
                                   info: info,
+                                  website: website,
+                                  mysite: mySite,
                                 ),
                               );
                             },
