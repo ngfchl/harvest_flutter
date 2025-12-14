@@ -47,3 +47,4 @@ android/key.properties
 # Ignore Gradle project-specific cache directory
 .gradle
 
+/devtools_options.yaml
