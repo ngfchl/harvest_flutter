@@ -254,7 +254,27 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                         value: 'warehouse',
                         content: Column(
                           children: [
-                            if (controller.results.isNotEmpty)
+                            if (controller.results.isNotEmpty) ...[
+                              if (controller.showDouBanResults.isNotEmpty)
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('来自TMDB', style: TextStyle(fontSize: 13, color: shadColorScheme.foreground)),
+                                    ShadButton.link(
+                                      onPressed: () {
+                                        controller.results.clear();
+                                        controller.update();
+                                      },
+                                      size: ShadButtonSize.sm,
+                                      decoration: ShadDecoration(
+                                        labelPadding: EdgeInsets.zero,
+                                        descriptionPadding: EdgeInsets.zero,
+                                        errorPadding: EdgeInsets.zero,
+                                      ),
+                                      child: Text('清理'),
+                                    ),
+                                  ],
+                                ),
                               Expanded(
                                 child: ListView.builder(
                                     itemCount: controller.results.length,
@@ -264,8 +284,29 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                           onDetail: (media) => _showTMDBDetail(media),
                                           onSearch: (media) => controller.doTMDBSearch(media),
                                         )),
-                              ),
-                            if (controller.showDouBanResults.isNotEmpty)
+                              )
+                            ],
+                            if (controller.showDouBanResults.isNotEmpty) ...[
+                              if (controller.results.isNotEmpty)
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('来自豆瓣', style: TextStyle(fontSize: 13, color: shadColorScheme.foreground)),
+                                    ShadButton.link(
+                                      onPressed: () {
+                                        controller.showDouBanResults.clear();
+                                        controller.update();
+                                      },
+                                      size: ShadButtonSize.sm,
+                                      decoration: ShadDecoration(
+                                        labelPadding: EdgeInsets.zero,
+                                        descriptionPadding: EdgeInsets.zero,
+                                        errorPadding: EdgeInsets.zero,
+                                      ),
+                                      child: Text('清理'),
+                                    )
+                                  ],
+                                ),
                               Expanded(
                                 child: ListView.builder(
                                   itemCount: controller.showDouBanResults.length,
@@ -274,7 +315,8 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                     return showDouBanSearchInfo(info);
                                   },
                                 ),
-                              ),
+                              )
+                            ],
                           ],
                         ),
                         child: Text(

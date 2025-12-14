@@ -128,6 +128,7 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
     if (searchKeyController.text.isEmpty) {
       return CommonResponse.error(msg: "搜索关键字不能为空！");
     }
+    results.clear();
     isLoading = true;
     changeTab('warehouse');
     selectedWarehouse = 'TMDB';
@@ -341,6 +342,8 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
       logger_helper.Logger.instance.d("搜索关键字不能为空");
       return;
     }
+    showDouBanResults.clear();
+    update();
     DouBanSearchHelper helper = DouBanSearchHelper();
     isLoading = true;
     changeTab('warehouse');
