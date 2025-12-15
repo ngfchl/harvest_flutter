@@ -722,6 +722,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     bool signed = mySite.getSignMaxKey() == today || mySite.signIn == false;
     RxBool siteRefreshing = false.obs;
     return Stack(
+      alignment: Alignment.center,
       children: [
         CustomCard(
           key: Key("${mySite.id}-${mySite.site}"),
@@ -813,7 +814,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                   flex: 1,
                   borderRadius: BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
                   onPressed: (context) async {
-                    await _showEditBottomSheet(mySite: mySite, showLoading: showLoading);
+                    showLoading.value = true;
+                    await _showEditBottomSheet(mySite: mySite);
                   },
                   backgroundColor: Color(0xFFD32F2F),
                   foregroundColor: Colors.white,
@@ -1494,6 +1496,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
         height: MediaQuery.of(context).size.height * 0.8,
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
         child: Column(
+          spacing: 5,
           children: [
             ListTile(
               title: Text(
@@ -1536,118 +1539,119 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                       );
               }),
             ),
+            LayoutBuilder(builder: (context, constraints) {
+              // constraints.maxWidth 就是控件自身宽度
+              double popupWidth = constraints.maxWidth;
+              return Obx(() {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(minWidth: double.infinity),
+                    child: ShadSelect<WebSite>.withSearch(
+                      searchPlaceholder: Text(
+                        '搜索站点',
+                        style: TextStyle(color: shadColorScheme.foreground),
+                      ),
+                      placeholder: Text(
+                        '请选择站点',
+                        style: TextStyle(color: shadColorScheme.foreground),
+                      ),
+                      decoration: ShadDecoration(
+                        border: ShadBorder(
+                          merge: false,
+                          bottom: ShadBorderSide(color: shadColorScheme.foreground.withOpacity(0.2), width: 1),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                        ),
+                      ),
+                      initialValue: selectedSite.value,
+                      itemCount: filteredList.length,
+                      minWidth: 200,
+                      // 弹窗最小宽度
+                      maxWidth: popupWidth,
+                      // 弹窗最大宽度
+                      maxHeight: 400,
+                      // 弹窗最大高度
+                      optionsBuilder: (BuildContext context, int index) {
+                        var item = filteredList[index];
+                        return ShadOption(
+                          value: item,
+                          padding: EdgeInsets.zero,
+                          child: ListTile(
+                            leading: SizedBox(
+                              height: 28,
+                              width: 28,
+                              child: CircleAvatar(
+                                backgroundColor: shadColorScheme.selection,
+                                child: Text(
+                                  item.name.substring(0, 1),
+                                  style: TextStyle(
+                                    color: shadColorScheme.foreground,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // selected: isSelected,
+                            title: Text(
+                              item.name,
+                              style: TextStyle(
+                                color: shadColorScheme.foreground,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      selectedOptionBuilder: (BuildContext context, WebSite website) {
+                        return Text(
+                          website.name,
+                          style: TextStyle(
+                            color: shadColorScheme.foreground,
+                          ),
+                        );
+                      },
+                      onSearchChanged: (keyword) {
+                        Logger.instance.d(keyword);
+                        filteredList.value = webSiteList
+                            .where((item) =>
+                                item.name.toLowerCase().contains(keyword.toLowerCase()) ||
+                                item.nickname.toLowerCase().contains(keyword.toLowerCase()) ||
+                                item.url.any((e) => e.toLowerCase().contains(keyword.toLowerCase())))
+                            .toList();
+                        Logger.instance.d(filteredList.length);
+                      },
+                      onChanged: (item) {
+                        if (item == null) return;
+                        siteController.text = item.name;
+                        selectedSite.value = item;
+                        urlList?.value = selectedSite.value!.url;
+                        mirrorController.text = urlList![0];
+                        nicknameController.text = selectedSite.value!.name;
+                        signIn.value = selectedSite.value!.signIn;
+                        getInfo.value = selectedSite.value!.getInfo;
+                        repeatTorrents.value = selectedSite.value!.repeatTorrents;
+                        searchTorrents.value = selectedSite.value!.searchTorrents;
+                        available.value = selectedSite.value!.alive;
+                        tags.value = selectedSite.value!.tags
+                            .split(',')
+                            .map((item) => item.trim())
+                            .where((el) => el.isNotEmpty)
+                            .toList();
+                        chipFieldKey.currentState?.reset();
+                      },
+                    ),
+                  ),
+                );
+              });
+            }),
             if (selectedSite.value != null)
               Expanded(
                 child: SingleChildScrollView(
                   padding: EdgeInsets.symmetric(vertical: 12),
                   child: Obx(() {
                     return Column(
+                      spacing: 5,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        LayoutBuilder(builder: (context, constraints) {
-                          // constraints.maxWidth 就是控件自身宽度
-                          double popupWidth = constraints.maxWidth;
-                          return Obx(() {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
-                              child: ConstrainedBox(
-                                constraints: const BoxConstraints(minWidth: double.infinity),
-                                child: ShadSelect<WebSite>.withSearch(
-                                  searchPlaceholder: Text(
-                                    '搜索站点',
-                                    style: TextStyle(color: shadColorScheme.foreground),
-                                  ),
-                                  placeholder: Text(
-                                    '请选择站点',
-                                    style: TextStyle(color: shadColorScheme.foreground),
-                                  ),
-                                  decoration: ShadDecoration(
-                                    border: ShadBorder(
-                                      merge: false,
-                                      bottom:
-                                          ShadBorderSide(color: shadColorScheme.foreground.withOpacity(0.2), width: 1),
-                                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                                    ),
-                                  ),
-                                  initialValue: selectedSite.value,
-                                  itemCount: filteredList.length,
-                                  minWidth: 200,
-                                  // 弹窗最小宽度
-                                  maxWidth: popupWidth,
-                                  // 弹窗最大宽度
-                                  maxHeight: 400,
-                                  // 弹窗最大高度
-                                  optionsBuilder: (BuildContext context, int index) {
-                                    var item = filteredList[index];
-                                    return ShadOption(
-                                      value: item,
-                                      padding: EdgeInsets.zero,
-                                      child: ListTile(
-                                        leading: SizedBox(
-                                          height: 28,
-                                          width: 28,
-                                          child: CircleAvatar(
-                                            backgroundColor: shadColorScheme.selection,
-                                            child: Text(
-                                              item.name.substring(0, 1),
-                                              style: TextStyle(
-                                                color: shadColorScheme.foreground,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        // selected: isSelected,
-                                        title: Text(
-                                          item.name,
-                                          style: TextStyle(
-                                            color: shadColorScheme.foreground,
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  selectedOptionBuilder: (BuildContext context, WebSite website) {
-                                    return Text(
-                                      website.name,
-                                      style: TextStyle(
-                                        color: shadColorScheme.foreground,
-                                      ),
-                                    );
-                                  },
-                                  onSearchChanged: (keyword) {
-                                    Logger.instance.d(keyword);
-                                    filteredList.value = webSiteList
-                                        .where((item) =>
-                                            item.name.toLowerCase().contains(keyword.toLowerCase()) ||
-                                            item.nickname.toLowerCase().contains(keyword.toLowerCase()) ||
-                                            item.url.any((e) => e.toLowerCase().contains(keyword.toLowerCase())))
-                                        .toList();
-                                    Logger.instance.d(filteredList.length);
-                                  },
-                                  onChanged: (item) {
-                                    if (item == null) return;
-                                    siteController.text = item.name;
-                                    selectedSite.value = item;
-                                    urlList?.value = selectedSite.value!.url;
-                                    mirrorController.text = urlList![0];
-                                    nicknameController.text = selectedSite.value!.name;
-                                    signIn.value = selectedSite.value!.signIn;
-                                    getInfo.value = selectedSite.value!.getInfo;
-                                    repeatTorrents.value = selectedSite.value!.repeatTorrents;
-                                    searchTorrents.value = selectedSite.value!.searchTorrents;
-                                    available.value = selectedSite.value!.alive;
-                                    tags.value = selectedSite.value!.tags
-                                        .split(',')
-                                        .map((item) => item.trim())
-                                        .where((el) => el.isNotEmpty)
-                                        .toList();
-                                    chipFieldKey.currentState?.reset();
-                                  },
-                                ),
-                              ),
-                            );
-                          });
-                        }),
-
                         if (urlList!.isNotEmpty)
                           Obx(() {
                             return Row(
@@ -1700,7 +1704,6 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                               ],
                             );
                           }),
-
                         Obx(() => manualInput.value
                             ? CustomTextField(
                                 controller: mirrorController,
@@ -1798,9 +1801,10 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                 key: chipFieldKey,
                                 items: controller.tagList.map((tag) => MultiSelectItem<String?>(tag, tag)).toList(),
                                 textStyle: TextStyle(fontSize: 11, color: shadColorScheme.foreground),
-                                selectedTextStyle: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
+                                selectedTextStyle: TextStyle(fontSize: 8, color: shadColorScheme.foreground),
                                 chipColor: shadColorScheme.background,
-
+                                selectedChipColor: shadColorScheme.primary,
+                                scroll: false,
                                 initialValue: [...tags],
                                 title: Text(
                                   " 站点标签",
@@ -1810,12 +1814,11 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                 ),
                                 headerColor: Colors.transparent,
                                 decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.transparent, width: 0),
+                                  border: BoxBorder.all(color: Colors.transparent, width: 0),
                                 ),
-                                // 关键设置：自定义 chipDisplay 实现自动换行
-                                scroll: false,
-                                // 禁用滚动
-                                selectedChipColor: Colors.blue.withOpacity(0.5),
+                                chipShape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
                                 onTap: (List<String?> values) {
                                   Logger.instance.d(values);
                                   // tags.value = values;
@@ -1828,72 +1831,109 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                           );
                         }),
                         const SizedBox(height: 15),
-                        Wrap(spacing: 12, runSpacing: 8, children: [
-                          selectedSite.value!.alive
-                              ? ChoiceChip(
-                                  label: const Text('可用'),
-                                  selected: selectedSite.value!.alive ? available.value : false,
-                                  onSelected: (value) {
-                                    selectedSite.value!.alive ? available.value = value : available.value = false;
-                                  },
-                                )
-                              : ChoiceChip(
-                                  label: const Text('可用'),
-                                  selected: false,
-                                  onSelected: (value) {
-                                    Logger.instance.d("站点可用性：${selectedSite.value!.alive}");
-                                    available.value = selectedSite.value!.alive;
-                                  },
-                                ),
-                          ChoiceChip(
-                            label: const Text('Dash'),
-                            selected: showInDash.value,
-                            onSelected: (value) {
-                              showInDash.value = value;
-                            },
-                          ),
-                          ChoiceChip(
-                            label: const Text('数据'),
-                            selected: getInfo.value,
-                            onSelected: (value) {
-                              getInfo.value = value;
-                            },
-                          ),
-                          if (selectedSite.value!.searchTorrents)
-                            ChoiceChip(
-                              label: const Text('搜索'),
-                              selected: searchTorrents.value,
-                              onSelected: (value) {
-                                searchTorrents.value = value;
-                              },
-                            ),
-                          if (selectedSite.value!.signIn)
-                            ChoiceChip(
-                              label: const Text('签到'),
-                              selected: signIn.value,
-                              onSelected: (value) {
-                                signIn.value = value;
-                              },
-                            ),
-                          if (selectedSite.value!.repeatTorrents)
-                            ChoiceChip(
-                              label: const Text('辅种'),
-                              selected: repeatTorrents.value,
-                              onSelected: (value) {
-                                repeatTorrents.value = value;
-                              },
-                            ),
-                        ]),
                       ],
                     );
                   }),
                 ),
               ),
             const SizedBox(height: 5),
+            Obx(() {
+              return Wrap(spacing: 12, runSpacing: 8, children: [
+                selectedSite.value!.alive
+                    ? ChoiceChip(
+                        backgroundColor: shadColorScheme.background,
+                        selectedColor: shadColorScheme.primary,
+                        checkmarkColor: shadColorScheme.foreground,
+                        selectedShadowColor: shadColorScheme.primary,
+                        elevation: 2,
+                        label: Text('可用', style: TextStyle(color: shadColorScheme.foreground)),
+                        selected: selectedSite.value!.alive ? available.value : false,
+                        onSelected: (value) {
+                          selectedSite.value!.alive ? available.value = value : available.value = false;
+                        },
+                      )
+                    : ChoiceChip(
+                        backgroundColor: shadColorScheme.background,
+                        selectedColor: shadColorScheme.primary,
+                        checkmarkColor: shadColorScheme.foreground,
+                        selectedShadowColor: shadColorScheme.primary,
+                        elevation: 2,
+                        label: Text('可用', style: TextStyle(color: shadColorScheme.foreground)),
+                        selected: false,
+                        onSelected: (value) {
+                          Logger.instance.d("站点可用性：${selectedSite.value!.alive}");
+                          available.value = selectedSite.value!.alive;
+                        },
+                      ),
+                ChoiceChip(
+                  backgroundColor: shadColorScheme.background,
+                  selectedColor: shadColorScheme.primary,
+                  checkmarkColor: shadColorScheme.foreground,
+                  selectedShadowColor: shadColorScheme.primary,
+                  elevation: 2,
+                  label: Text('Dash', style: TextStyle(color: shadColorScheme.foreground)),
+                  selected: showInDash.value,
+                  onSelected: (value) {
+                    showInDash.value = value;
+                  },
+                ),
+                ChoiceChip(
+                  backgroundColor: shadColorScheme.background,
+                  selectedColor: shadColorScheme.primary,
+                  checkmarkColor: shadColorScheme.foreground,
+                  selectedShadowColor: shadColorScheme.primary,
+                  elevation: 2,
+                  label: Text('数据', style: TextStyle(color: shadColorScheme.foreground)),
+                  selected: getInfo.value,
+                  onSelected: (value) {
+                    getInfo.value = value;
+                  },
+                ),
+                if (selectedSite.value!.searchTorrents)
+                  ChoiceChip(
+                    backgroundColor: shadColorScheme.background,
+                    selectedColor: shadColorScheme.primary,
+                    checkmarkColor: shadColorScheme.foreground,
+                    selectedShadowColor: shadColorScheme.primary,
+                    elevation: 2,
+                    label: Text('搜索', style: TextStyle(color: shadColorScheme.foreground)),
+                    selected: searchTorrents.value,
+                    onSelected: (value) {
+                      searchTorrents.value = value;
+                    },
+                  ),
+                if (selectedSite.value!.signIn)
+                  ChoiceChip(
+                    backgroundColor: shadColorScheme.background,
+                    selectedColor: shadColorScheme.primary,
+                    checkmarkColor: shadColorScheme.foreground,
+                    selectedShadowColor: shadColorScheme.primary,
+                    elevation: 2,
+                    label: Text('签到', style: TextStyle(color: shadColorScheme.foreground)),
+                    selected: signIn.value,
+                    onSelected: (value) {
+                      signIn.value = value;
+                    },
+                  ),
+                if (selectedSite.value!.repeatTorrents)
+                  ChoiceChip(
+                    backgroundColor: shadColorScheme.background,
+                    selectedColor: shadColorScheme.primary,
+                    checkmarkColor: shadColorScheme.foreground,
+                    selectedShadowColor: shadColorScheme.primary,
+                    elevation: 2,
+                    label: Text('辅种', style: TextStyle(color: shadColorScheme.foreground)),
+                    selected: repeatTorrents.value,
+                    onSelected: (value) {
+                      repeatTorrents.value = value;
+                    },
+                  ),
+              ]);
+            }),
             OverflowBar(
               alignment: MainAxisAlignment.spaceAround,
               children: [
-                ShadButton.outline(
+                ShadButton.ghost(
                   size: ShadButtonSize.sm,
                   onPressed: () {
                     Get.back();
@@ -1902,13 +1942,10 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                     Icons.cancel,
                     size: 16,
                   ),
-                  child: Text(
-                    '取消',
-                    style: TextStyle(),
-                  ),
+                  child: Text('取消'),
                 ),
                 if (mySite != null)
-                  ShadButton.destructive(
+                  ShadButton.secondary(
                     size: ShadButtonSize.sm,
                     onPressed: () async {
                       Get.defaultDialog(
@@ -1976,7 +2013,6 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                             : Icon(Icons.save, size: 16);
                       },
                     ),
-                    foregroundColor: shadColorScheme.foreground,
                     child: Text('保存'),
                     onPressed: () async {
                       doSaveLoading.value = true;
