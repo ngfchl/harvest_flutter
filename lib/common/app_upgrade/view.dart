@@ -87,7 +87,7 @@ class AppUpgradePage extends StatelessWidget {
                                 return const SizedBox.shrink();
                               }),
                         ],
-                      ), // TODO: 修改为百分比显示
+                      ),
                       Expanded(
                         child: SingleChildScrollView(
                           child: Column(
@@ -252,13 +252,16 @@ class AppUpgradePage extends StatelessWidget {
           appUpgradeController.newVersion = '${prefix}_x86_64-macos.dmg';
         }
         downloadUrl ??= downloadLinks[appUpgradeController.newVersion];
-        String? savedPath = await FilePicker.platform.saveFile(
-          dialogTitle: '保存安装包',
-          fileName: appUpgradeController.newVersion,
-          type: FileType.custom,
-          allowedExtensions: ['apk', 'ipa', 'dmg', 'zip'],
-        );
-        await _downloadInstallationPackage(savedPath!, downloadUrl!);
+        // String? savedPath = await FilePicker.platform.saveFile(
+        //   dialogTitle: '保存安装包',
+        //   fileName: appUpgradeController.newVersion,
+        //   type: FileType.custom,
+        //   allowedExtensions: ['apk', 'ipa', 'dmg', 'zip'],
+        // );
+        String savedPath = "${appDocDir.path}/${appUpgradeController.newVersion}";
+        await _downloadInstallationPackage(savedPath, downloadUrl!);
+        await Process.run('xattr', ['-d', 'com.apple.quarantine', savedPath]);
+        Logger.instance.i('✅ Removed quarantine from $savedPath');
         await Process.run('open', [savedPath]);
       } catch (e, stackTrace) {
         Logger.instance.e('打开安装包失败: $e', stackTrace: stackTrace);
