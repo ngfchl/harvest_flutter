@@ -25,7 +25,7 @@ class WebSite {
   String pageDetail;
   String pageDownload;
   String pageUser;
-  String pageSearch;
+  List<String> pageSearch;
   String pageMessage;
   String pageHr;
   String pageLeeching;
@@ -220,7 +220,11 @@ class WebSite {
         pageDetail: json['page_detail'] ?? '',
         pageDownload: json['page_download'] ?? '',
         pageUser: json['page_user'] ?? '',
-        pageSearch: json['page_search'] ?? '',
+        pageSearch: json['page_search'] != null
+            ? json['page_search'] is String
+                ? [json['page_search']]
+                : List<String>.from(json['page_search'] as List<dynamic>)
+            : [],
         pageMessage: json['page_message'] ?? '',
         pageHr: json['page_hr'] ?? '',
         pageLeeching: json['page_leeching'] ?? '',
