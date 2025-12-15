@@ -121,7 +121,13 @@ class AppUpgradePage extends StatelessWidget {
                             children: [
                               ShadButton.outline(
                                 size: ShadButtonSize.sm,
-                                onPressed: () => appUpgradeController.popoverController.hide(),
+                                onPressed: () {
+                                  if (appUpgradeController.hasNewVersion) {
+                                    appUpgradeController.notShowNewVersion = true;
+                                    SPUtil.setBool('notShowNewVersion', true);
+                                  }
+                                  appUpgradeController.popoverController.hide();
+                                },
                                 leading: Icon(
                                   Icons.close_outlined,
                                   size: 16,
@@ -140,7 +146,11 @@ class AppUpgradePage extends StatelessWidget {
                               ShadButton.destructive(
                                 size: ShadButtonSize.sm,
                                 key: buttonKey,
-                                onPressed: () => getDownloadUrlForCurrentPlatform(context, buttonKey),
+                                onPressed: () {
+                                  appUpgradeController.notShowNewVersion = false;
+                                  SPUtil.setBool('notShowNewVersion', false);
+                                  getDownloadUrlForCurrentPlatform(context, buttonKey);
+                                },
                                 leading: Icon(
                                   Icons.install_desktop_outlined,
                                   size: 16,
