@@ -68,7 +68,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     'CrazyUser': Color(0xFF00BFFF),
     'EliteUser': Color(0xFF008B8B),
     'PowerUser': Color(0xFFDAA520),
-    'User': Color(0xFF000000),
+    // 'User': Color(0xFF000000),
     'Peasant': Color(0xFF708090),
   };
 
@@ -468,8 +468,25 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                           color: shadColorScheme.primary,
                         ))
                       : controller.showStatusList.isEmpty
-                          ? ListView(
-                              children: const [Center(child: Text('没有符合条件的数据！'))],
+                          ? LayoutBuilder(
+                              builder: (BuildContext context, BoxConstraints constraints) {
+                                double height = constraints.maxHeight;
+                                return ListView(
+                                  physics: const AlwaysScrollableScrollPhysics(), // 或根据需求保留默认
+                                  children: [
+                                    SizedBox(
+                                      height: height,
+                                      child: Center(
+                                        child: Text(
+                                          '没有符合条件的数据！',
+                                          style: TextStyle(color: shadColorScheme.foreground),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                );
+                              },
                             )
                           : GetBuilder<MySiteController>(
                               builder: (controller) {
@@ -837,16 +854,86 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                   contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
                   leading: InkWell(
                     onTap: () => _openSitePage(mySite, website, true),
+                    onLongPress: () => _openSitePage(mySite, website, false),
                     child: siteLogo(iconUrl, website, mySite),
                   ),
-                  onLongPress: () => _openSitePage(mySite, website, false),
+                  onTap: () {
+                    Get.defaultDialog(
+                      title: '站点信息 - ${mySite.nickname}',
+                      radius: 8,
+                      titleStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                      backgroundColor: shadColorScheme.background,
+                      content: Column(
+                        spacing: 5,
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '站点地址：',
+                            style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
+                          ),
+                          ...website.url.map((item) => ShadButton.link(
+                                size: ShadButtonSize.sm,
+                                onPressed: () => launchUrl(Uri.parse(item), mode: LaunchMode.externalApplication),
+                                child: Text(
+                                  item,
+                                  style: TextStyle(fontSize: 13, color: shadColorScheme.primary),
+                                ),
+                              )),
+                          Text(
+                            '搜索地址：',
+                            style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
+                          ),
+                          ...website.pageSearch.map((item) => ShadButton.link(
+                                size: ShadButtonSize.sm,
+                                child: Text(
+                                  item,
+                                  style: TextStyle(fontSize: 13, color: shadColorScheme.primary),
+                                ),
+                              )),
+                          Text(
+                            '上传限速：${website.limitSpeed}MB/s',
+                            style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
+                          ),
+                          Text(
+                            '最后访问时间：${calculateTimeElapsed(mySite.latestActive.toString())}',
+                            style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
+                          ),
+                        ],
+                      ),
+                      actions: [
+                        ShadButton.ghost(
+                          size: ShadButtonSize.sm,
+                          child: Text('关闭'),
+                          onPressed: () => Get.back(),
+                        ),
+                        ShadButton.secondary(
+                          size: ShadButtonSize.sm,
+                          child: Text(
+                            '打开',
+                            style: TextStyle(color: shadColorScheme.primary),
+                          ),
+                          onPressed: () {
+                            Get.back();
+                            _openSitePage(mySite, website, true);
+                          },
+                        ),
+                        ShadButton.outline(
+                          size: ShadButtonSize.sm,
+                          child: Text('浏览器'),
+                          onPressed: () => _openSitePage(mySite, website, false),
+                        ),
+                      ],
+                    );
+                  },
                   title: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       mySite.latestActive != null
                           ? Tooltip(
                               message:
-                                  '最后访问时间：${calculateTimeElapsed(mySite.latestActive.toString())}  上传限速：${website.limitSpeed}MB/s',
+                                  '最后访问时间：${calculateTimeElapsed(mySite.latestActive.toString())}  上传限速：${website.limitSpeed}MB/s \n 搜索地址：${website.pageSearch}',
                               child: Text(
                                 mySite.nickname,
                                 style: TextStyle(
