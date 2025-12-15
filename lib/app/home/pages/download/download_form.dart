@@ -196,7 +196,7 @@ class DownloadForm extends StatelessWidget {
                               style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
                             ),
                             backgroundColor: shadColorScheme.background,
-                            cancel: ShadButton.outline(
+                            cancel: ShadButton.ghost(
                               size: ShadButtonSize.sm,
                               onPressed: () {
                                 Get.back();
@@ -459,10 +459,10 @@ class DownloadForm extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ShadButton.outline(
+                ShadButton.ghost(
                   size: ShadButtonSize.sm,
                   onPressed: () => cancelForm(context),
-                  leading: const Icon(Icons.cancel_outlined, size: 18),
+                  leading: const Icon(Icons.cancel_outlined, size: 16),
                   child: Text('取消'),
                 ),
                 Obx(() {
@@ -519,7 +519,7 @@ class DownloadForm extends StatelessWidget {
                               ),
                             ),
                           )
-                        : const Icon(Icons.download, size: 18),
+                        : const Icon(Icons.download, size: 16),
                     child: const Text('下载'),
                   );
                 }),
@@ -638,7 +638,7 @@ class DownloadForm extends StatelessWidget {
                           style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
                         ),
                         backgroundColor: shadColorScheme.background,
-                        cancel: ShadButton.outline(
+                        cancel: ShadButton.ghost(
                           size: ShadButtonSize.sm,
                           onPressed: () {
                             Get.back();
@@ -778,10 +778,10 @@ class DownloadForm extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            ShadButton.outline(
+            ShadButton.ghost(
               size: ShadButtonSize.sm,
               onPressed: () => cancelForm(context),
-              leading: const Icon(Icons.cancel_outlined),
+              leading: const Icon(Icons.cancel_outlined, size: 16),
               child: const Text('取消'),
             ),
             Obx(() {
@@ -828,7 +828,7 @@ class DownloadForm extends StatelessWidget {
                           ),
                         ),
                       )
-                    : const Icon(Icons.download),
+                    : const Icon(Icons.download, size: 16),
                 child: const Text('下载'),
               );
             }),
