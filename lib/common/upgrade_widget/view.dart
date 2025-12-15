@@ -68,15 +68,12 @@ class UpgradeWidgetPage extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              ShadButton.outline(
+                              ShadButton.ghost(
                                 size: ShadButtonSize.sm,
                                 onPressed: () {
                                   Get.back();
                                 },
-                                child: Text(
-                                  '取消',
-                                  style: TextStyle(color: shadColorScheme.destructiveForeground),
-                                ),
+                                child: Text('取消'),
                               ),
                               ShadButton.secondary(
                                 size: ShadButtonSize.sm,
@@ -135,15 +132,12 @@ class UpgradeWidgetPage extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              ShadButton.outline(
+                              ShadButton.ghost(
                                 size: ShadButtonSize.sm,
                                 onPressed: () {
                                   Get.back();
                                 },
-                                child: Text(
-                                  '取消',
-                                  style: TextStyle(color: shadColorScheme.destructiveForeground),
-                                ),
+                                child: Text('取消'),
                               ),
                               ShadButton.secondary(
                                 size: ShadButtonSize.sm,
