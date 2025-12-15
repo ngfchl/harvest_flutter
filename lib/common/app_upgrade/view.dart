@@ -119,7 +119,7 @@ class AppUpgradePage extends StatelessWidget {
                             spacing: 8,
                             runSpacing: 8,
                             children: [
-                              ShadButton.outline(
+                              ShadButton.ghost(
                                 size: ShadButtonSize.sm,
                                 onPressed: () {
                                   if (appUpgradeController.hasNewVersion) {
