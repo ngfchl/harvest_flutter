@@ -27,22 +27,11 @@ class AppPublishController extends GetxController {
     super.onInit();
   }
 
-  @override
-  void onReady() {
-    // TODO: implement onReady
-    super.onReady();
-  }
-
-  @override
-  void onClose() {
-    // TODO: implement onClose
-    super.onClose();
-  }
-
   void filterUser() {
     showUsers = users
         .where((element) =>
             element.email.toLowerCase().contains(searchKey.toLowerCase()) ||
+            element.timeExpire?.toLowerCase().contains(searchKey.toLowerCase()) == true ||
             (element.username?.toLowerCase().contains(searchKey.toLowerCase()) == true))
         .toList();
     showUsers.sort((a, b) {
@@ -63,17 +52,14 @@ class AppPublishController extends GetxController {
     Logger.instance.i('AdminUser列表获取成功！');
   }
 
-  Future<CommonResponse> sendAdminUserToken(int id) async {
-    return await fetchData(Api.ADMIN_SEND_TOKEN, queryParameters: {'user_id': id});
-  }
+  Future<CommonResponse> sendAdminUserToken(int id) async =>
+      await fetchData(Api.ADMIN_SEND_TOKEN, queryParameters: {'user_id': id});
 
-  Future<CommonResponse> resetAdminUserToken(int id, Map<String, dynamic> data) async {
-    return await addData(Api.ADMIN_RESET_TOKEN, data, queryParameters: {'user_id': id});
-  }
+  Future<CommonResponse> resetAdminUserToken(int id, Map<String, dynamic> data) async =>
+      await addData(Api.ADMIN_RESET_TOKEN, data, queryParameters: {'user_id': id});
 
-  Future<CommonResponse> resetAdminUserInvite(int count) async {
-    return await fetchData(Api.ADMIN_RESET_INVITE, queryParameters: {'count': count});
-  }
+  Future<CommonResponse> resetAdminUserInvite(int count) async =>
+      await fetchData(Api.ADMIN_RESET_INVITE, queryParameters: {'count': count});
 
   Future<AdminUser?> getAdminUser(int id) async {
     var response = await fetchData('${Api.ADMIN_USER}/$id', queryParameters: {'id': id});
@@ -95,11 +81,9 @@ class AppPublishController extends GetxController {
     return await editData(Api.ADMIN_USER, map);
   }
 
-  Future<CommonResponse> createAdminUser(String email) async {
-    return await addData(Api.ADMIN_USER, null, queryParameters: {'invite_email': email, 'notify': false});
-  }
+  Future<CommonResponse> createAdminUser(String email) async =>
+      await addData(Api.ADMIN_USER, null, queryParameters: {'invite_email': email, 'notify': false});
 
-  deleteAdminUser(int id) async {
-    return await removeData('${Api.ADMIN_USER}/$id', queryParameters: {'id': id});
-  }
+  Future<CommonResponse> deleteAdminUser(int id) async =>
+      await removeData('${Api.ADMIN_USER}/$id', queryParameters: {'id': id});
 }
