@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_floating/floating/assist/floating_slide_type.dart';
 import 'package:flutter_floating/floating/floating.dart';
 import 'package:flutter_floating/floating/manager/floating_manager.dart';
@@ -145,33 +144,39 @@ class WebSocketLoggingWidget extends StatelessWidget {
             ),
           ],
         ),
-        body: GetBuilder<WebSocketLoggingController>(builder: (controller) {
-          return ListView.builder(
-              itemCount: controller.showLogList.length,
-              controller: controller.scrollController,
-              itemBuilder: (context, index) {
-                String res = controller.showLogList[index];
-                return CustomCard(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                    width: MediaQuery.of(context).size.width,
-                    child: SelectableText(
-                      onSelectionChanged: (TextSelection select, SelectionChangedCause? cause) {
-                        Clipboard.setData(ClipboardData(
-                            text: res.toString().trim().substring(
-                                  select.start,
-                                  select.end,
-                                ))).then((_) {});
-                      },
-                      res.toString().trim(),
-                      maxLines: controller.wrapText ? null : 1,
-                      style: TextStyle(
-                        fontSize: 12,
-                        letterSpacing: 1.5,
-                        color: shadColorScheme.foreground,
-                        overflow: TextOverflow.visible,
-                      ),
-                    ));
-              });
+        body: LayoutBuilder(builder: (context, constraints) {
+          // 使用 LayoutBuilder 提供的 constraints 获取宽度
+          final width = constraints.maxWidth - 2;
+          return GetBuilder<WebSocketLoggingController>(builder: (controller) {
+            return ListView.builder(
+                itemCount: controller.showLogList.length,
+                controller: controller.scrollController,
+                itemBuilder: (context, index) {
+                  String res = controller.showLogList[index];
+
+                  return CustomCard(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                      margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+                      width: width,
+                      child: SelectableText(
+                        // onSelectionChanged: (TextSelection select, SelectionChangedCause? cause) {
+                        //   Clipboard.setData(ClipboardData(
+                        //       text: res.toString().trim().substring(
+                        //             select.start,
+                        //             select.end,
+                        //           ))).then((_) {});
+                        // },
+                        res.toString().trim(),
+                        maxLines: controller.wrapText ? null : 1,
+                        style: TextStyle(
+                          fontSize: 12,
+                          letterSpacing: 1.5,
+                          color: shadColorScheme.foreground,
+                          overflow: TextOverflow.visible,
+                        ),
+                      ));
+                });
+          });
         }),
       );
     });
