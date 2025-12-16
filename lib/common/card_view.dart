@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
+import '../app/home/pages/models/color_storage.dart';
 import '../utils/storage.dart';
 
 class CustomCard extends StatelessWidget {
@@ -35,6 +36,8 @@ class CustomCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
+    SiteColorConfig siteColorConfig = SiteColorConfig.load(shadColorScheme);
     return Container(
       margin: margin,
       child: ShadCard(
@@ -42,7 +45,7 @@ class CustomCard extends StatelessWidget {
         width: width,
         padding: padding,
         radius: borderRadius,
-        backgroundColor: color ?? ShadTheme.of(context).colorScheme.background.withOpacity(opacity),
+        backgroundColor: color ?? siteColorConfig.siteCardColor.value.withOpacity(opacity),
         child: child,
       ),
     );
