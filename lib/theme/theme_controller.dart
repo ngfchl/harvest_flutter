@@ -13,7 +13,7 @@ class ThemeController extends GetxController {
   var followSystem = true.obs;
 
   /// 当前颜色方案名称
-  var colorSchemeName = "slate".obs;
+  var colorSchemeName = "orange".obs;
 
   final Map<String, String> shadThemeColorNames = {
     'blue': '蓝色',
@@ -23,7 +23,7 @@ class ThemeController extends GetxController {
     'orange': '橙色',
     'red': '红色',
     'rose': '玫瑰',
-    'slate': '板岩',
+    // 'slate': '板岩',
     // 'stone': '石头',
     'violet': '紫罗兰',
     'yellow': '黄色',
