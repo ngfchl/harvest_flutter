@@ -122,8 +122,7 @@ class SPUtil {
   }
 
   /// 根据key获取字符串类型数组
-  static List<String> getStringList(String key,
-      {List<String> defaultValue = const []}) {
+  static List<String> getStringList(String key, {List<String> defaultValue = const []}) {
     return _preferences.getStringList(key) ?? defaultValue;
   }
 
@@ -133,16 +132,15 @@ class SPUtil {
   }
 
   /// 根据key获取Map类型
-  static Map getMap(String key) {
+  static Map<String, dynamic> getMap(String key) {
     String jsonStr = _preferences.getString(key) ?? "";
-    return jsonStr.isEmpty ? {} : json.decode(jsonStr);
+    return jsonStr.isEmpty ? {} : Map<String, dynamic>.from(json.decode(jsonStr));
   }
 
   ///@title 存入带过期时间的数据，缓存过期时间的实现
   ///@description
   ///@updateTime 2024-11-30 19:32
-  static Future<void> setCache(
-      String key, Map<String, dynamic> data, int expireDuration) async {
+  static Future<void> setCache(String key, Map<String, dynamic> data, int expireDuration) async {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final cacheData = {
       'data': data,
@@ -163,8 +161,7 @@ class SPUtil {
     final expireAt = cacheData['expireAt'];
 
     // Check if the data is expired
-    if (DateTime.now().millisecondsSinceEpoch.compareTo(expireAt ?? 0) > 0 ||
-        !cacheData.containsKey('data')) {
+    if (DateTime.now().millisecondsSinceEpoch.compareTo(expireAt ?? 0) > 0 || !cacheData.containsKey('data')) {
       // Remove expired data
       await _preferences.remove(key);
       return {};
