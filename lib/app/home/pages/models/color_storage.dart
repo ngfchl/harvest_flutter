@@ -64,7 +64,7 @@ class SiteColorConfig {
 
   static SiteColorConfig load(ShadColorScheme scheme) {
     final map = SPUtil.getMap(spKey);
-    print("加载配置,当前卡片颜色：${map[SiteColorKeys.siteCardColor]}");
+    // print("加载配置,当前卡片颜色：${map[SiteColorKeys.siteCardColor]}");
     if (map.isEmpty) {
       return SiteColorConfig.defaults(scheme);
     }
@@ -85,11 +85,11 @@ class SiteColorConfig {
 
     // 2️⃣ 转成 Map
     final map = current.toJson();
-    print('更新前的配置：${map[key]}');
-    print('准备更新的内容：${key} ==== ${color.value}');
+    // print('更新前的配置：${map[key]}');
+    // print('准备更新的内容：${key} ==== ${color.value}');
     // 3️⃣ 只更新指定 key
     map[key] = color.value;
-    print('更新后的配置：$map');
+    // print('更新后的配置：$map');
     // 4️⃣ 整体写回 SP
     await SPUtil.setMap(spKey, map);
   }
@@ -159,9 +159,9 @@ class SiteColorConfig {
     ShadColorScheme scheme,
   ) {
     Color _c(String key, Color def) => json.containsKey(key) ? Color(json[key]) : def;
-
+    double opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
     return SiteColorConfig(
-      toSignColor: _c(SiteColorKeys.toSignColor, const Color(0xFFF44336)).obs,
+      toSignColor: _c(SiteColorKeys.toSignColor, const Color(0xFFF44336)).withOpacity(opacity).obs,
       signedColor: _c(SiteColorKeys.signedColor, const Color(0xFF388E3C)).obs,
       siteCardColor: _c(SiteColorKeys.siteCardColor, scheme.foreground).obs,
       siteNameColor: _c(SiteColorKeys.siteNameColor, scheme.foreground).obs,
