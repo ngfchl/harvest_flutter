@@ -8,6 +8,7 @@ import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:harvest/app/home/pages/file_manage/controller.dart';
 import 'package:harvest/app/home/pages/file_manage/view.dart';
+import 'package:harvest/app/home/pages/models/color_storage.dart';
 import 'package:harvest/app/home/pages/web_socket_logging/view.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/form_widgets.dart';
@@ -41,9 +42,9 @@ class HomeView extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
-    String cacheServer = 'https://images.weserv.nl/?url=';
     double opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
     var shadColorScheme = ShadTheme.of(context).colorScheme;
+    SiteColorConfig siteColorConfig = SiteColorConfig.load(shadColorScheme);
     return GetBuilder<HomeController>(builder: (controller) {
       return PopScope(
         canPop: false,
@@ -97,7 +98,7 @@ class HomeView extends GetView<HomeController> {
                   controller.useBackground ? Colors.transparent : shadColorScheme.background.withOpacity(opacity * 1.2),
               extendBody: true,
               appBar: AppBar(
-                backgroundColor: shadColorScheme.background.withOpacity(opacity),
+                backgroundColor: siteColorConfig.siteCardColor.value.withOpacity(opacity),
                 iconTheme: IconThemeData(color: shadColorScheme.foreground),
                 toolbarHeight: 40,
                 elevation: 0,

@@ -26,7 +26,7 @@ class MediaItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const String urlPrefix = 'https://media.themoviedb.org/t/p/w94_and_h141_bestv2';
+    const String urlPrefix = 'https://media.themoviedb.org/t/p/w300_and_h450_bestv2';
     final String posterPath = '$urlPrefix${media.posterPath}';
     final bool isMovie = media.mediaType == 'movie';
 
@@ -69,16 +69,24 @@ class MediaItemCard extends StatelessWidget {
               onTap: () {
                 Get.defaultDialog(
                   title: '海报预览',
+                  radius: 8,
+                  backgroundColor: shadColorScheme.background,
                   content: InkWell(
                     onTap: () => Navigator.of(context).pop(),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(5),
-                      child: CachedNetworkImage(
-                        imageUrl: posterPath,
-                        placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                        errorWidget: (context, url, error) =>
-                            const Image(image: AssetImage('assets/images/avatar.png')),
-                        fit: BoxFit.fitWidth,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.8,
+                        maxHeight: MediaQuery.of(context).size.height * 0.8,
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(5),
+                        child: CachedNetworkImage(
+                          imageUrl: posterPath.replaceFirst('w300_and_h450', 'w600_and_h900'),
+                          placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                          errorWidget: (context, url, error) =>
+                              const Image(image: AssetImage('assets/images/avatar.png')),
+                          fit: BoxFit.contain,
+                        ),
                       ),
                     ),
                   ),
@@ -130,7 +138,7 @@ class MediaItemCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          media.releaseDate,
+                          "${media.releaseDate} 【${media.originalLanguage}】",
                           style: TextStyle(
                             fontSize: 13,
                             color: shadColorScheme.foreground,
