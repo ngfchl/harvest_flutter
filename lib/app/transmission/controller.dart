@@ -158,7 +158,7 @@ class TrController extends GetxController {
   V1 getTrInstance(Downloader downloader) {
     Transmission transmission = Transmission('${downloader.protocol}://${downloader.host}:${downloader.port}',
         AuthKeys(downloader.username, downloader.password),
-        logConfig: const ConfigLogger.showAll());
+        logConfig: const ConfigLogger.recommended());
     return transmission.v1;
   }
 
