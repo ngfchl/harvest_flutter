@@ -1,5 +1,6 @@
-import 'dart:ui';
+import 'dart:convert';
 
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
@@ -75,7 +76,7 @@ class SiteColorConfig {
     );
   }
 
-  static Future<void> save({
+  static Future<void> update({
     required ShadColorScheme scheme,
     required String key,
     required Color color,
@@ -94,11 +95,98 @@ class SiteColorConfig {
     await SPUtil.setMap(spKey, map);
   }
 
+  static Future<void> save({
+    required ShadColorScheme scheme,
+    required Map<String, dynamic> theme,
+  }) async {
+    // 1️⃣ 先 load 当前配置（保证完整）
+    final current = SiteColorConfig.load(scheme);
+
+    // 2️⃣ 转成 Map
+    final map = current.toJson();
+    // print('更新前的配置：${map[key]}');
+    // print('准备更新的内容：${key} ==== ${color.value}');
+    // 3️⃣
+    /// 只允许已知 key（防止脏数据）
+    for (final entry in theme.entries) {
+      if (map.containsKey(entry.key)) {
+        map[entry.key] = entry.value;
+      }
+    }
+    // print('更新后的配置：$map');
+    // 4️⃣ 整体写回 SP
+    await SPUtil.setMap(spKey, map);
+  }
+
+  /// 从剪贴板导入配色方案
+  static Future<bool> importFromClipboard({
+    required ShadColorScheme scheme,
+  }) async {
+    try {
+      // 1️⃣ 读取剪贴板
+      final data = await Clipboard.getData(Clipboard.kTextPlain);
+      final text = data?.text;
+
+      if (text == null || text.trim().isEmpty) {
+        return false;
+      }
+
+      // 2️⃣ JSON 解析
+      final decoded = jsonDecode(text);
+
+      // 3️⃣ 类型校验
+      if (decoded is! Map<String, dynamic>) {
+        return false;
+      }
+
+      // 4️⃣ 写入（复用 save）
+      await save(
+        scheme: scheme,
+        theme: decoded,
+      );
+
+      return true;
+    } catch (e) {
+      // JSON 格式错误 / 其他异常
+      return false;
+    }
+  }
+
+  /// 导出当前配色到剪贴板（JSON）
+  static Future<String> exportToClipboard({
+    required ShadColorScheme scheme,
+  }) async {
+    // 1️⃣ load 当前完整配置
+    final current = SiteColorConfig.load(scheme);
+
+    // 2️⃣ 转 Map
+    final map = current.toJson();
+
+    // 3️⃣ JSON 编码（可读格式，方便用户）
+    final json = const JsonEncoder.withIndent('  ').convert(map);
+
+    // 4️⃣ 写入剪贴板
+    await Clipboard.setData(ClipboardData(text: json));
+
+    return json;
+  }
+
+  /// 重置为默认主题（基于 ShadColorScheme）
+  static Future<void> resetToDefault({
+    required ShadColorScheme scheme,
+  }) async {
+    // 1️⃣ 直接使用默认配置
+    final defaults = SiteColorConfig.defaults(scheme);
+
+    // 2️⃣ 写入 SP（完全覆盖）
+    await SPUtil.setMap(spKey, defaults.toJson());
+  }
+
   factory SiteColorConfig.defaults(ShadColorScheme scheme) {
     return SiteColorConfig(
       toSignColor: const Color(0xFFF44336).obs,
       signedColor: const Color(0xFF388E3C).obs,
-      siteCardColor: scheme.foreground.obs,
+      siteCardColor: scheme.background.obs,
       siteNameColor: scheme.foreground.obs,
       mailColor: scheme.foreground.obs,
       noticeColor: scheme.foreground.obs,

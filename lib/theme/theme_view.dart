@@ -275,43 +275,45 @@ class ThemeIconButton extends StatelessWidget {
                           }),
                           _siteCardForm(context, bg.opacity.value),
                           if (PlatformTool.isDesktopOS())
-                            Wrap(
-                              alignment: WrapAlignment.spaceBetween,
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              runAlignment: WrapAlignment.center,
-                              spacing: 5,
-                              runSpacing: 5,
-                              children: [
-                                ...[
-                                  // {"width": 1024.0, "height": 768.0},
-                                  {"width": 1366.0, "height": 768.0},
-                                  // {"width": 1366.0, "height": 800.0},
-                                  {"width": 1440.0, "height": 900.0},
-                                  // {"width": 1600.0, "height": 900.0},
-                                  {"width": 1920.0, "height": 1080.0},
-                                  {"width": 2560.0, "height": 1536.0},
-                                ].map((item) => ShadButton.outline(
-                                    size: ShadButtonSize.sm,
-                                    child: Text('${item["width"]?.toInt()}x${item["height"]?.toInt()}',
-                                        style: TextStyle(fontSize: 12)),
-                                    onPressed: () {
-                                      double width = item["width"]!;
-                                      double height = item["height"]!;
-                                      WindowOptions windowOptions = WindowOptions(
-                                        // size: Size(1200, 900),
-                                        size: Size(width, height + 28),
-                                        center: true,
-                                        backgroundColor: Colors.transparent,
-                                        skipTaskbar: false,
-                                        titleBarStyle: TitleBarStyle.normal,
-                                        windowButtonVisibility: true,
-                                      );
-                                      windowManager.waitUntilReadyToShow(windowOptions, () async {
-                                        await windowManager.show();
-                                        await windowManager.focus();
-                                      });
-                                    }))
-                              ],
+                            Center(
+                              child: Wrap(
+                                alignment: WrapAlignment.spaceBetween,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                runAlignment: WrapAlignment.center,
+                                spacing: 5,
+                                runSpacing: 5,
+                                children: [
+                                  ...[
+                                    // {"width": 1024.0, "height": 768.0},
+                                    {"width": 1366.0, "height": 768.0},
+                                    // {"width": 1366.0, "height": 800.0},
+                                    {"width": 1440.0, "height": 900.0},
+                                    // {"width": 1600.0, "height": 900.0},
+                                    {"width": 1920.0, "height": 1080.0},
+                                    {"width": 2560.0, "height": 1536.0},
+                                  ].map((item) => ShadButton.outline(
+                                      size: ShadButtonSize.sm,
+                                      child: Text('${item["width"]?.toInt()}x${item["height"]?.toInt()}',
+                                          style: TextStyle(fontSize: 12)),
+                                      onPressed: () {
+                                        double width = item["width"]!;
+                                        double height = item["height"]!;
+                                        WindowOptions windowOptions = WindowOptions(
+                                          // size: Size(1200, 900),
+                                          size: Size(width, height + 28),
+                                          center: true,
+                                          backgroundColor: Colors.transparent,
+                                          skipTaskbar: false,
+                                          titleBarStyle: TitleBarStyle.normal,
+                                          windowButtonVisibility: true,
+                                        );
+                                        windowManager.waitUntilReadyToShow(windowOptions, () async {
+                                          await windowManager.show();
+                                          await windowManager.focus();
+                                        });
+                                      }))
+                                ],
+                              ),
                             )
                         ],
                       ),
@@ -320,14 +322,20 @@ class ThemeIconButton extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        ShadButton.outline(
+                        ShadButton.ghost(
                           size: ShadButtonSize.sm,
                           onPressed: () => popoverController.hide(),
+                          leading: Icon(
+                            Icons.cancel_outlined,
+                            size: 16,
+                          ),
                           child: Text('关闭'),
                         ),
                         if (bg.useBackground.value)
                           ShadButton.secondary(
                             size: ShadButtonSize.sm,
+                            leading: Icon(Icons.delete_outlined, size: 16),
+                            foregroundColor: shadColorScheme.primary,
                             child: Text('预览'),
                             onPressed: () {
                               if (urlController.text.isNotEmpty) {
@@ -338,8 +346,9 @@ class ThemeIconButton extends StatelessWidget {
                               }
                             },
                           ),
-                        ShadButton.destructive(
+                        ShadButton.outline(
                           size: ShadButtonSize.sm,
+                          leading: Icon(Icons.save_outlined, size: 16),
                           onPressed: () {
                             if (urlController.text.isNotEmpty) {
                               if (bg.useLocalBackground.value && bg.backgroundImage.value.startsWith('http')) {
@@ -398,7 +407,7 @@ class ThemeIconButton extends StatelessWidget {
         onColorChanged: (color) async {
           Logger.instance.d('选择的颜色: ${color.value}');
           rxColor.value = color;
-          await SiteColorConfig.save(scheme: shadColorScheme, key: key, color: color);
+          await SiteColorConfig.update(scheme: shadColorScheme, key: key, color: color);
         },
       ),
     );
@@ -408,536 +417,561 @@ class ThemeIconButton extends StatelessWidget {
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     RxBool signed = true.obs;
     SiteColorConfig siteColorConfig = SiteColorConfig.load(shadColorScheme);
-    // Rx<Color> toSignColor = Color(0xFFF44336).obs;
-    // Rx<Color> signedColor = Color(0xFF388E3C).obs;
-    // Rx<Color> siteCardColor = shadColorScheme.foreground.obs;
-    // Rx<Color> siteNameColor = shadColorScheme.foreground.obs;
-    // Rx<Color> mailColor = shadColorScheme.foreground.obs;
-    // Rx<Color> noticeColor = shadColorScheme.foreground.obs;
-    // Rx<Color> regTimeColor = shadColorScheme.foreground.obs;
-    // Rx<Color> keepAccountColor = shadColorScheme.destructive.obs;
-    // Rx<Color> graduationColor = shadColorScheme.destructive.obs;
-    // Rx<Color> inviteColor = shadColorScheme.foreground.obs;
-    // Rx<Color> loadingColor = shadColorScheme.foreground.obs;
-    // Rx<Color> uploadIconColor = shadColorScheme.primary.obs;
-    // Rx<Color> uploadNumColor = shadColorScheme.foreground.obs;
-    // Rx<Color> downloadIconColor = shadColorScheme.destructive.obs;
-    // Rx<Color> downloadNumColor = shadColorScheme.foreground.obs;
-    // Rx<Color> ratioIconColor = shadColorScheme.primary.obs;
-    // Rx<Color> ratioNumColor = shadColorScheme.foreground.obs;
-    // Rx<Color> seedIconColor = shadColorScheme.foreground.obs;
-    // Rx<Color> seedNumColor = shadColorScheme.foreground.obs;
-    // Rx<Color> perBonusIconColor = shadColorScheme.foreground.obs;
-    // Rx<Color> perBonusNumColor = shadColorScheme.foreground.obs;
-    // Rx<Color> bonusIconColor = shadColorScheme.foreground.obs;
-    // Rx<Color> bonusNumColor = shadColorScheme.foreground.obs;
-    // Rx<Color> updatedAtColor = shadColorScheme.foreground.obs;
-    // Rx<Color> hrColor = shadColorScheme.destructive.obs;
     return Obx(() {
-      return GestureDetector(
-        onTap: () => _openColorPicker(shadColorScheme, siteColorConfig.siteCardColor, SiteColorKeys.siteCardColor),
-        child: CustomCard(
-          color: siteColorConfig.siteCardColor.value.withOpacity(opacity),
-          child: Column(children: [
-            CornerBadge(
-              color: signed.value == true ? siteColorConfig.signedColor.value : siteColorConfig.toSignColor.value,
-              label: signed.value == true ? '已签到' : '未签到',
-              child: ListTile(
-                dense: true,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-                leading: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Image.asset('assets/images/avatar.png'),
-                ),
-                onTap: () => signed.value = !signed.value,
-                title: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    GestureDetector(
+      return Column(
+        children: [
+          GestureDetector(
+            onTap: () => _openColorPicker(shadColorScheme, siteColorConfig.siteCardColor, SiteColorKeys.siteCardColor),
+            child: CustomCard(
+              color: siteColorConfig.siteCardColor.value.withOpacity(opacity),
+              child: Column(children: [
+                CornerBadge(
+                  color: signed.value == true ? siteColorConfig.signedColor.value : siteColorConfig.toSignColor.value,
+                  label: signed.value == true ? '已签到' : '未签到',
+                  child: ListTile(
+                    dense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                    leading: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.asset('assets/images/avatar.png'),
+                    ),
+                    onTap: () => signed.value = !signed.value,
+                    title: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        GestureDetector(
+                          onTap: () => _openColorPicker(
+                              shadColorScheme, siteColorConfig.siteNameColor, SiteColorKeys.siteNameColor),
+                          child: Text(
+                            '站点名称',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: siteColorConfig.siteNameColor.value,
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () =>
+                              _openColorPicker(shadColorScheme, siteColorConfig.mailColor, SiteColorKeys.mailColor),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.mail,
+                                size: 12,
+                                color: siteColorConfig.mailColor.value,
+                              ),
+                              Text(
+                                '2',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: siteColorConfig.mailColor.value,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () =>
+                              _openColorPicker(shadColorScheme, siteColorConfig.noticeColor, SiteColorKeys.noticeColor),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.notifications,
+                                size: 12,
+                                color: siteColorConfig.noticeColor.value,
+                              ),
+                              Text(
+                                '1',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: siteColorConfig.noticeColor.value,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        CustomPopup(
+                          showArrow: false,
+                          barrierColor: Colors.transparent,
+                          backgroundColor: shadColorScheme.background,
+                          content: SingleChildScrollView(
+                            child: SizedBox(
+                                width: 200,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    ...[
+                                      PopupMenuItem<String>(
+                                        height: 13,
+                                        child: Text("下一等级：EliteUser",
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Color(0xFF008B8B),
+                                            )),
+                                      ),
+                                      // if (status.uploaded < nextLevelToUploadedByte)
+                                      PopupMenuItem<String>(
+                                        height: 13,
+                                        child: Text('上传量：100GB/750GB',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: shadColorScheme.destructive,
+                                            )),
+                                      ),
+                                      // if (status.downloaded < nextLevelToDownloadedByte)
+                                      PopupMenuItem<String>(
+                                        height: 13,
+                                        child: Text('下载量：100GB/150GB',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: shadColorScheme.destructive,
+                                            )),
+                                      ),
+
+                                      PopupMenuItem<String>(
+                                        height: 13,
+                                        child: Text('需发种数量：0/40',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: shadColorScheme.destructive,
+                                            )),
+                                      ),
+
+                                      PopupMenuItem<String>(
+                                        height: 13,
+                                        child: Text('做种积分：4W/8W',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: shadColorScheme.destructive,
+                                            )),
+                                      ),
+
+                                      PopupMenuItem<String>(
+                                        height: 13,
+                                        child: Text('魔力值：15W/20W',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: shadColorScheme.destructive,
+                                            )),
+                                      ),
+
+                                      PopupMenuItem<String>(
+                                        height: 13,
+                                        child:
+                                            Text('升级日期：${DateFormat('yyyy-MM-dd').format(DateTime.now())}/2036-01-01',
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  color: shadColorScheme.destructive,
+                                                )),
+                                      ),
+
+                                      PopupMenuItem<String>(
+                                        height: 13,
+                                        child: Text('保留账号：true',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: shadColorScheme.destructive,
+                                            )),
+                                      ),
+
+                                      PopupMenuItem<String>(
+                                        height: 13,
+                                        child: Text('毕业：false',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: shadColorScheme.destructive,
+                                            )),
+                                      ),
+                                      PopupMenuItem<String>(
+                                        height: 13,
+                                        child: Text('即将获得：即将获得的权益',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: shadColorScheme.destructive,
+                                            )),
+                                      ),
+                                    ],
+                                    Text('已经获得的权益',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: shadColorScheme.foreground,
+                                        )),
+                                  ],
+                                )),
+                          ),
+                          child: Text(
+                            'PowerUser',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFFDAA520),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    subtitle: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        GestureDetector(
+                          onTap: () => _openColorPicker(
+                              shadColorScheme, siteColorConfig.regTimeColor, SiteColorKeys.regTimeColor),
+                          child: Text(
+                            '⌚️${calcWeeksDays('2025-02-01')}',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: siteColorConfig.regTimeColor.value,
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => _openColorPicker(
+                              shadColorScheme, siteColorConfig.keepAccountColor, SiteColorKeys.keepAccountColor),
+                          child: Text(
+                            '🔥保号',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: siteColorConfig.keepAccountColor.value,
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => _openColorPicker(
+                              shadColorScheme, siteColorConfig.graduationColor, SiteColorKeys.graduationColor),
+                          child: Text(
+                            '🎓毕业',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: siteColorConfig.graduationColor.value,
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () =>
+                              _openColorPicker(shadColorScheme, siteColorConfig.inviteColor, SiteColorKeys.inviteColor),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.person_add_alt_outlined,
+                                size: 12,
+                                color: siteColorConfig.inviteColor.value,
+                              ),
+                              Text(
+                                '8',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: siteColorConfig.inviteColor.value,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    trailing: GestureDetector(
                       onTap: () =>
-                          _openColorPicker(shadColorScheme, siteColorConfig.siteNameColor, SiteColorKeys.siteNameColor),
-                      child: Text(
-                        '站点名称',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: siteColorConfig.siteNameColor.value,
+                          _openColorPicker(shadColorScheme, siteColorConfig.loadingColor, SiteColorKeys.loadingColor),
+                      child: SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: siteColorConfig.loadingColor.value,
+                            strokeWidth: 2,
+                          ),
                         ),
                       ),
                     ),
-                    GestureDetector(
-                      onTap: () =>
-                          _openColorPicker(shadColorScheme, siteColorConfig.mailColor, SiteColorKeys.mailColor),
-                      child: Row(
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0, right: 8, bottom: 12),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Icon(
-                            Icons.mail,
-                            size: 12,
-                            color: siteColorConfig.mailColor.value,
-                          ),
-                          Text(
-                            '2',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: siteColorConfig.mailColor.value,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () =>
-                          _openColorPicker(shadColorScheme, siteColorConfig.noticeColor, SiteColorKeys.noticeColor),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.notifications,
-                            size: 12,
-                            color: siteColorConfig.noticeColor.value,
-                          ),
-                          Text(
-                            '1',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: siteColorConfig.noticeColor.value,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    CustomPopup(
-                      showArrow: false,
-                      barrierColor: Colors.transparent,
-                      backgroundColor: shadColorScheme.background,
-                      content: SingleChildScrollView(
-                        child: SizedBox(
-                            width: 200,
+                          SizedBox(
+                            width: 120,
                             child: Column(
-                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                ...[
-                                  PopupMenuItem<String>(
-                                    height: 13,
-                                    child: Text("下一等级：EliteUser",
+                                Row(
+                                  textBaseline: TextBaseline.ideographic,
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () => _openColorPicker(shadColorScheme, siteColorConfig.uploadIconColor,
+                                          SiteColorKeys.uploadIconColor),
+                                      child: Icon(
+                                        Icons.upload_outlined,
+                                        color: siteColorConfig.uploadIconColor.value,
+                                        size: 14,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 2),
+                                    GestureDetector(
+                                      onTap: () => _openColorPicker(shadColorScheme, siteColorConfig.uploadNumColor,
+                                          SiteColorKeys.uploadNumColor),
+                                      child: Text(
+                                        '1.97 TB(120)',
                                         style: TextStyle(
                                           fontSize: 12,
-                                          color: Color(0xFF008B8B),
-                                        )),
-                                  ),
-                                  // if (status.uploaded < nextLevelToUploadedByte)
-                                  PopupMenuItem<String>(
-                                    height: 13,
-                                    child: Text('上传量：100GB/750GB',
+                                          color: siteColorConfig.uploadNumColor.value,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 2),
+                                Row(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () => _openColorPicker(shadColorScheme, siteColorConfig.downloadIconColor,
+                                          SiteColorKeys.downloadIconColor),
+                                      child: Icon(
+                                        Icons.download_outlined,
+                                        color: siteColorConfig.downloadIconColor.value,
+                                        size: 14,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 2),
+                                    GestureDetector(
+                                      onTap: () => _openColorPicker(shadColorScheme, siteColorConfig.downloadNumColor,
+                                          SiteColorKeys.downloadNumColor),
+                                      child: Text(
+                                        '305.65 GB (0)',
                                         style: TextStyle(
-                                          fontSize: 10,
-                                          color: shadColorScheme.destructive,
-                                        )),
-                                  ),
-                                  // if (status.downloaded < nextLevelToDownloadedByte)
-                                  PopupMenuItem<String>(
-                                    height: 13,
-                                    child: Text('下载量：100GB/150GB',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          color: shadColorScheme.destructive,
-                                        )),
-                                  ),
-
-                                  PopupMenuItem<String>(
-                                    height: 13,
-                                    child: Text('需发种数量：0/40',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          color: shadColorScheme.destructive,
-                                        )),
-                                  ),
-
-                                  PopupMenuItem<String>(
-                                    height: 13,
-                                    child: Text('做种积分：4W/8W',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          color: shadColorScheme.destructive,
-                                        )),
-                                  ),
-
-                                  PopupMenuItem<String>(
-                                    height: 13,
-                                    child: Text('魔力值：15W/20W',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          color: shadColorScheme.destructive,
-                                        )),
-                                  ),
-
-                                  PopupMenuItem<String>(
-                                    height: 13,
-                                    child: Text('升级日期：${DateFormat('yyyy-MM-dd').format(DateTime.now())}/2036-01-01',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          color: shadColorScheme.destructive,
-                                        )),
-                                  ),
-
-                                  PopupMenuItem<String>(
-                                    height: 13,
-                                    child: Text('保留账号：true',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          color: shadColorScheme.destructive,
-                                        )),
-                                  ),
-
-                                  PopupMenuItem<String>(
-                                    height: 13,
-                                    child: Text('毕业：false',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          color: shadColorScheme.destructive,
-                                        )),
-                                  ),
-                                  PopupMenuItem<String>(
-                                    height: 13,
-                                    child: Text('即将获得：即将获得的权益',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          color: shadColorScheme.destructive,
-                                        )),
-                                  ),
-                                ],
-                                Text('已经获得的权益',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: shadColorScheme.foreground,
-                                    )),
+                                          fontSize: 12,
+                                          color: siteColorConfig.downloadNumColor.value,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ],
-                            )),
-                      ),
-                      child: Text(
-                        'PowerUser',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Color(0xFFDAA520),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                subtitle: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    GestureDetector(
-                      onTap: () =>
-                          _openColorPicker(shadColorScheme, siteColorConfig.regTimeColor, SiteColorKeys.regTimeColor),
-                      child: Text(
-                        '⌚️${calcWeeksDays('2025-02-01')}',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: siteColorConfig.regTimeColor.value,
-                        ),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () => _openColorPicker(
-                          shadColorScheme, siteColorConfig.keepAccountColor, SiteColorKeys.keepAccountColor),
-                      child: Text(
-                        '🔥保号',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: siteColorConfig.keepAccountColor.value,
-                        ),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () => _openColorPicker(
-                          shadColorScheme, siteColorConfig.graduationColor, SiteColorKeys.graduationColor),
-                      child: Text(
-                        '🎓毕业',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: siteColorConfig.graduationColor.value,
-                        ),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () =>
-                          _openColorPicker(shadColorScheme, siteColorConfig.inviteColor, SiteColorKeys.inviteColor),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.person_add_alt_outlined,
-                            size: 12,
-                            color: siteColorConfig.inviteColor.value,
+                            ),
                           ),
-                          Text(
-                            '8',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: siteColorConfig.inviteColor.value,
+                          SizedBox(
+                            width: 90,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () => _openColorPicker(shadColorScheme, siteColorConfig.ratioIconColor,
+                                          SiteColorKeys.ratioIconColor),
+                                      child: Icon(
+                                        Icons.ios_share,
+                                        color: siteColorConfig.ratioIconColor.value,
+                                        size: 14,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 2),
+                                    GestureDetector(
+                                      onTap: () => _openColorPicker(
+                                          shadColorScheme, siteColorConfig.ratioNumColor, SiteColorKeys.ratioNumColor),
+                                      child: Text(
+                                        '3 (6.61)',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: siteColorConfig.ratioNumColor.value,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 2),
+                                Row(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () => _openColorPicker(
+                                          shadColorScheme, siteColorConfig.seedIconColor, SiteColorKeys.seedIconColor),
+                                      child: Icon(
+                                        Icons.cloud_upload_outlined,
+                                        size: 14,
+                                        color: siteColorConfig.seedIconColor.value,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 2),
+                                    GestureDetector(
+                                      onTap: () => _openColorPicker(
+                                          shadColorScheme, siteColorConfig.seedNumColor, SiteColorKeys.seedNumColor),
+                                      child: Text(
+                                        '2.38 TB',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: siteColorConfig.seedNumColor.value,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            width: 120,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  textBaseline: TextBaseline.ideographic,
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () => _openColorPicker(shadColorScheme, siteColorConfig.perBonusIconColor,
+                                          SiteColorKeys.perBonusIconColor),
+                                      child: Icon(
+                                        Icons.timer_outlined,
+                                        size: 14,
+                                        color: siteColorConfig.perBonusIconColor.value,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 2),
+                                    GestureDetector(
+                                      onTap: () => _openColorPicker(shadColorScheme, siteColorConfig.perBonusNumColor,
+                                          SiteColorKeys.perBonusNumColor),
+                                      child: Text(
+                                        '149.50',
+                                        // '(${  status.siteSpFull != null && status.siteSpFull! > 0 ? ((status.statusBonusHour! / status.siteSpFull!) * 100).toStringAsFixed(2) : '0'}%)',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: siteColorConfig.perBonusNumColor.value,
+                                        ),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () => _openColorPicker(shadColorScheme, siteColorConfig.perBonusNumColor,
+                                          SiteColorKeys.perBonusNumColor),
+                                      child: Text(
+                                        // formatNumber(status.bonusHour),
+                                        '(73%)',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: siteColorConfig.perBonusNumColor.value,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 2),
+                                Row(
+                                  textBaseline: TextBaseline.ideographic,
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () => _openColorPicker(
+                                          shadColorScheme, siteColorConfig.bonusIconColor, SiteColorKeys.bonusNumColor),
+                                      child: Icon(
+                                        Icons.score,
+                                        size: 14,
+                                        color: siteColorConfig.bonusIconColor.value,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 2),
+                                    GestureDetector(
+                                      onTap: () => _openColorPicker(
+                                          shadColorScheme, siteColorConfig.bonusNumColor, SiteColorKeys.bonusNumColor),
+                                      child: Text(
+                                        '322W(267W)',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: siteColorConfig.bonusNumColor.value,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-                trailing: GestureDetector(
-                  onTap: () =>
-                      _openColorPicker(shadColorScheme, siteColorConfig.loadingColor, SiteColorKeys.loadingColor),
-                  child: SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        color: siteColorConfig.loadingColor.value,
-                        strokeWidth: 2,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0, right: 8, bottom: 12),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SizedBox(
-                        width: 120,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              textBaseline: TextBaseline.ideographic,
-                              children: [
-                                GestureDetector(
-                                  onTap: () => _openColorPicker(
-                                      shadColorScheme, siteColorConfig.uploadIconColor, SiteColorKeys.uploadIconColor),
-                                  child: Icon(
-                                    Icons.upload_outlined,
-                                    color: siteColorConfig.uploadIconColor.value,
-                                    size: 14,
-                                  ),
-                                ),
-                                const SizedBox(width: 2),
-                                GestureDetector(
-                                  onTap: () => _openColorPicker(
-                                      shadColorScheme, siteColorConfig.uploadNumColor, SiteColorKeys.uploadNumColor),
-                                  child: Text(
-                                    '1.97 TB(120)',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: siteColorConfig.uploadNumColor.value,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                            Row(
-                              children: [
-                                GestureDetector(
-                                  onTap: () => _openColorPicker(shadColorScheme, siteColorConfig.downloadIconColor,
-                                      SiteColorKeys.downloadIconColor),
-                                  child: Icon(
-                                    Icons.download_outlined,
-                                    color: siteColorConfig.downloadIconColor.value,
-                                    size: 14,
-                                  ),
-                                ),
-                                const SizedBox(width: 2),
-                                GestureDetector(
-                                  onTap: () => _openColorPicker(shadColorScheme, siteColorConfig.downloadNumColor,
-                                      SiteColorKeys.downloadNumColor),
-                                  child: Text(
-                                    '305.65 GB (0)',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: siteColorConfig.downloadNumColor.value,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        width: 90,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                GestureDetector(
-                                  onTap: () => _openColorPicker(
-                                      shadColorScheme, siteColorConfig.ratioIconColor, SiteColorKeys.ratioIconColor),
-                                  child: Icon(
-                                    Icons.ios_share,
-                                    color: siteColorConfig.ratioIconColor.value,
-                                    size: 14,
-                                  ),
-                                ),
-                                const SizedBox(width: 2),
-                                GestureDetector(
-                                  onTap: () => _openColorPicker(
-                                      shadColorScheme, siteColorConfig.ratioNumColor, SiteColorKeys.ratioNumColor),
-                                  child: Text(
-                                    '3 (6.61)',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: siteColorConfig.ratioNumColor.value,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                            Row(
-                              children: [
-                                GestureDetector(
-                                  onTap: () => _openColorPicker(
-                                      shadColorScheme, siteColorConfig.seedIconColor, SiteColorKeys.seedIconColor),
-                                  child: Icon(
-                                    Icons.cloud_upload_outlined,
-                                    size: 14,
-                                    color: siteColorConfig.seedIconColor.value,
-                                  ),
-                                ),
-                                const SizedBox(width: 2),
-                                GestureDetector(
-                                  onTap: () => _openColorPicker(
-                                      shadColorScheme, siteColorConfig.seedNumColor, SiteColorKeys.seedNumColor),
-                                  child: Text(
-                                    '2.38 TB',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: siteColorConfig.seedNumColor.value,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        width: 120,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              textBaseline: TextBaseline.ideographic,
-                              children: [
-                                GestureDetector(
-                                  onTap: () => _openColorPicker(shadColorScheme, siteColorConfig.perBonusIconColor,
-                                      SiteColorKeys.perBonusIconColor),
-                                  child: Icon(
-                                    Icons.timer_outlined,
-                                    size: 14,
-                                    color: siteColorConfig.perBonusIconColor.value,
-                                  ),
-                                ),
-                                const SizedBox(width: 2),
-                                GestureDetector(
-                                  onTap: () => _openColorPicker(shadColorScheme, siteColorConfig.perBonusNumColor,
-                                      SiteColorKeys.perBonusNumColor),
-                                  child: Text(
-                                    '149.50',
-                                    // '(${  status.siteSpFull != null && status.siteSpFull! > 0 ? ((status.statusBonusHour! / status.siteSpFull!) * 100).toStringAsFixed(2) : '0'}%)',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: siteColorConfig.perBonusNumColor.value,
-                                    ),
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () => _openColorPicker(shadColorScheme, siteColorConfig.perBonusNumColor,
-                                      SiteColorKeys.perBonusNumColor),
-                                  child: Text(
-                                    // formatNumber(status.bonusHour),
-                                    '(73%)',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: siteColorConfig.perBonusNumColor.value,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                            Row(
-                              textBaseline: TextBaseline.ideographic,
-                              children: [
-                                GestureDetector(
-                                  onTap: () => _openColorPicker(
-                                      shadColorScheme, siteColorConfig.bonusIconColor, SiteColorKeys.bonusNumColor),
-                                  child: Icon(
-                                    Icons.score,
-                                    size: 14,
-                                    color: siteColorConfig.bonusIconColor.value,
-                                  ),
-                                ),
-                                const SizedBox(width: 2),
-                                GestureDetector(
-                                  onTap: () => _openColorPicker(
-                                      shadColorScheme, siteColorConfig.bonusNumColor, SiteColorKeys.bonusNumColor),
-                                  child: Text(
-                                    '322W(267W)',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: siteColorConfig.bonusNumColor.value,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      GestureDetector(
-                        onTap: () => _openColorPicker(
-                            shadColorScheme, siteColorConfig.updatedAtColor, SiteColorKeys.updatedAtColor),
-                        child: Text(
-                          '最近更新：1小时前',
-                          textAlign: TextAlign.right,
-                          style: TextStyle(
-                            fontSize: 10.5,
-                            color: siteColorConfig.updatedAtColor.value,
-                          ),
-                        ),
-                      ),
+                      const SizedBox(height: 2),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           GestureDetector(
-                            onTap: () =>
-                                _openColorPicker(shadColorScheme, siteColorConfig.hrColor, SiteColorKeys.hrColor),
+                            onTap: () => _openColorPicker(
+                                shadColorScheme, siteColorConfig.updatedAtColor, SiteColorKeys.updatedAtColor),
                             child: Text(
-                              'HR: 0/0/20',
+                              '最近更新：1小时前',
                               textAlign: TextAlign.right,
                               style: TextStyle(
-                                color: siteColorConfig.hrColor.value,
-                                fontSize: 10,
+                                fontSize: 10.5,
+                                color: siteColorConfig.updatedAtColor.value,
                               ),
                             ),
                           ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              GestureDetector(
+                                onTap: () =>
+                                    _openColorPicker(shadColorScheme, siteColorConfig.hrColor, SiteColorKeys.hrColor),
+                                child: Text(
+                                  'HR: 0/0/20',
+                                  textAlign: TextAlign.right,
+                                  style: TextStyle(
+                                    color: siteColorConfig.hrColor.value,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ]),
             ),
-          ]),
-        ),
+          ),
+          CustomCard(
+            child: OverflowBar(
+              alignment: MainAxisAlignment.spaceAround,
+              children: [
+                ShadButton.ghost(
+                  size: ShadButtonSize.sm,
+                  onPressed: () {
+                    SiteColorConfig.resetToDefault(scheme: shadColorScheme);
+                    Get.forceAppUpdate();
+                  },
+                  child: Text('重置'),
+                ),
+                ShadButton.secondary(
+                  size: ShadButtonSize.sm,
+                  onPressed: () async {
+                    final ok = await SiteColorConfig.importFromClipboard(scheme: shadColorScheme);
+
+                    if (ok) {
+                      Get.snackbar('成功', '主题已导入');
+                    } else {
+                      Get.snackbar('失败', '剪贴板内容不是有效的主题 JSON');
+                    }
+                    Get.forceAppUpdate();
+                  },
+                  foregroundColor: shadColorScheme.primary,
+                  child: Text('导入'),
+                ),
+                ShadButton.outline(
+                  size: ShadButtonSize.sm,
+                  child: Text('分享'),
+                  onPressed: () async {
+                    final json = await SiteColorConfig.exportToClipboard(
+                      scheme: shadColorScheme,
+                    );
+
+                    Get.snackbar(
+                      '已导出',
+                      '主题配置已复制到剪贴板',
+                      snackPosition: SnackPosition.BOTTOM,
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
       );
     });
   }
