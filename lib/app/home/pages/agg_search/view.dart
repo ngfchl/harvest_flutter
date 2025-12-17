@@ -239,349 +239,358 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
             ),
             Expanded(
               child: LayoutBuilder(builder: (context, constraints) {
-                final contentHeight = constraints.maxHeight - 50; // 减去 tabBar 高度
-                return ShadTabs(
-                    onChanged: (String value) => controller.tabsController.select(value),
-                    controller: controller.tabsController,
-                    scrollable: true,
-                    tabBarConstraints: const BoxConstraints(maxHeight: 50),
-                    contentConstraints: BoxConstraints(maxHeight: contentHeight),
-                    decoration: ShadDecoration(
-                      color: Colors.transparent,
-                    ),
-                    tabs: [
-                      ShadTab(
-                        value: 'warehouse',
-                        content: Column(
-                          children: [
-                            if (controller.results.isNotEmpty) ...[
-                              if (controller.showDouBanResults.isNotEmpty)
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text('来自TMDB', style: TextStyle(fontSize: 13, color: shadColorScheme.foreground)),
-                                    ShadButton.link(
-                                      onPressed: () {
-                                        controller.results.clear();
-                                        controller.update();
-                                      },
-                                      size: ShadButtonSize.sm,
-                                      decoration: ShadDecoration(
-                                        labelPadding: EdgeInsets.zero,
-                                        descriptionPadding: EdgeInsets.zero,
-                                        errorPadding: EdgeInsets.zero,
-                                      ),
-                                      child: Text('清理'),
-                                    ),
-                                  ],
-                                ),
-                              Expanded(
-                                child: ListView.builder(
-                                    itemCount: controller.results.length,
-                                    itemBuilder: (context, int index) => MediaItemCard(
-                                          media: controller.results[index],
-                                          onTap: () => _showTMDBDetail(controller.results[index]),
-                                          onDetail: (media) => _showTMDBDetail(media),
-                                          onSearch: (media) => controller.doTMDBSearch(media),
-                                        )),
-                              )
-                            ],
-                            if (controller.showDouBanResults.isNotEmpty) ...[
-                              if (controller.results.isNotEmpty)
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text('来自豆瓣', style: TextStyle(fontSize: 13, color: shadColorScheme.foreground)),
-                                    ShadButton.link(
-                                      onPressed: () {
-                                        controller.showDouBanResults.clear();
-                                        controller.update();
-                                      },
-                                      size: ShadButtonSize.sm,
-                                      decoration: ShadDecoration(
-                                        labelPadding: EdgeInsets.zero,
-                                        descriptionPadding: EdgeInsets.zero,
-                                        errorPadding: EdgeInsets.zero,
-                                      ),
-                                      child: Text('清理'),
-                                    )
-                                  ],
-                                ),
-                              Expanded(
-                                child: ListView.builder(
-                                  itemCount: controller.showDouBanResults.length,
-                                  itemBuilder: (BuildContext context, int index) {
-                                    DouBanSearchResult info = controller.showDouBanResults[index];
-                                    return showDouBanSearchInfo(info);
-                                  },
-                                ),
-                              )
-                            ],
-                          ],
+                final contentHeight = constraints.maxHeight - 64; // 减去 tabBar 高度
+                return CustomCard(
+                  width: constraints.maxWidth,
+                  margin: EdgeInsets.symmetric(vertical: 3),
+                  child: Center(
+                    child: ShadTabs(
+                        onChanged: (String value) => controller.tabsController.select(value),
+                        controller: controller.tabsController,
+                        scrollable: true,
+                        tabBarConstraints: const BoxConstraints(maxHeight: 50),
+                        contentConstraints: BoxConstraints(maxHeight: contentHeight),
+                        decoration: ShadDecoration(
+                          color: Colors.transparent,
                         ),
-                        child: Text(
-                          '影视查询${controller.selectedWarehouse.isEmpty ? '' : '「${controller.selectedWarehouse}」'}',
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                      ),
-                      ShadTab(
-                        value: 'agg_search',
-                        content: Column(
-                          children: [
-                            if (controller.searchMsg.isNotEmpty)
-                              RepaintBoundary(
-                                child: CustomCard(
-                                  padding: EdgeInsets.symmetric(horizontal: 8),
-                                  child: Obx(() {
-                                    return Column(
+                        tabs: [
+                          ShadTab(
+                            value: 'warehouse',
+                            content: Column(
+                              children: [
+                                if (controller.results.isNotEmpty) ...[
+                                  if (controller.showDouBanResults.isNotEmpty)
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        ListTile(
-                                          dense: true,
-                                          title: Center(
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              crossAxisAlignment: CrossAxisAlignment.center,
-                                              spacing: 8,
-                                              children: [
-                                                if (controller.isLoading) ...[
-                                                  SizedBox(
-                                                      height: 10,
-                                                      width: 10,
-                                                      child: Center(
-                                                          child: CircularProgressIndicator(
-                                                        color: shadColorScheme.foreground,
-                                                        strokeWidth: 2,
-                                                      ))),
-                                                  Text(
-                                                    '搜索中',
-                                                    style: TextStyle(fontSize: 12, color: shadColorScheme.foreground),
-                                                  )
-                                                ],
-                                                Text(
-                                                    '失败$failedCount个站点，$succeedCount个站点共${controller.searchResults.length}个种子，筛选结果：${controller.showResults.length}个',
-                                                    style: TextStyle(fontSize: 12, color: shadColorScheme.foreground)),
-                                              ],
-                                            ),
-                                          ),
-                                          contentPadding: EdgeInsets.zero,
-                                          trailing: ExpandIcon(
-                                            isExpanded: showErrors.value,
-                                            onPressed: (value) {
-                                              showErrors.value = !showErrors.value;
-                                            },
-                                            color: shadColorScheme.foreground,
-                                          ),
-                                        ),
-                                        if (showErrors.value)
-                                          Container(
-                                            height: 100,
-                                            padding: const EdgeInsets.all(8),
-                                            child: ListView.builder(
-                                              itemCount: controller.searchMsg.length,
-                                              itemBuilder: (BuildContext context, int index) {
-                                                String info = controller.searchMsg[index]['msg'];
-                                                return Text(info,
-                                                    style: TextStyle(
-                                                      fontSize: 12,
-                                                      color: shadColorScheme.foreground,
-                                                    ));
-                                              },
-                                            ),
-                                          )
-                                      ],
-                                    );
-                                  }),
-                                ),
-                              ),
-                            if (controller.showResults.isNotEmpty)
-                              Expanded(
-                                child: ListView.builder(
-                                  itemCount: controller.showResults.length,
-                                  itemBuilder: (BuildContext context, int index) {
-                                    SearchTorrentInfo info = controller.showResults[index];
-                                    return RepaintBoundary(child: showTorrentInfo(info));
-                                  },
-                                ),
-                              ),
-                          ],
-                        ),
-                        child: Text('资源搜索', style: const TextStyle(fontSize: 13)),
-                      ),
-                      ShadTab(
-                        value: '历史',
-                        content: GetBuilder<AggSearchController>(
-                            id: Key('agg_search_history'),
-                            builder: (controller) {
-                              return SingleChildScrollView(
-                                child: Wrap(
-                                  runSpacing: 8,
-                                  spacing: 8,
-                                  alignment: WrapAlignment.start,
-                                  runAlignment: WrapAlignment.start,
-                                  crossAxisAlignment: WrapCrossAlignment.start,
-                                  children: [
-                                    ...controller.searchHistory.map(
-                                      (el) {
-                                        final popoverController = ShadPopoverController();
-                                        return ShadPopover(
-                                          controller: popoverController,
-                                          popover: (BuildContext context) => SizedBox(
-                                            height: 110,
-                                            child: Column(
-                                              children: [
-                                                ShadButton.ghost(
-                                                  size: ShadButtonSize.sm,
-                                                  onPressed: () {
-                                                    controller.searchKeyController.text = el.split('||').last;
-                                                    controller.searchTMDB();
-                                                  },
-                                                  child: Text('TMDB',
-                                                      style: TextStyle(
-                                                        fontSize: 13,
-                                                        color: shadColorScheme.foreground,
-                                                      )),
-                                                ),
-                                                ShadButton.ghost(
-                                                  size: ShadButtonSize.sm,
-                                                  onPressed: () {
-                                                    controller.searchKeyController.text = el.split('||').last;
-                                                    controller.doDouBanSearch();
-                                                  },
-                                                  child: Text('豆瓣',
-                                                      style: TextStyle(
-                                                        fontSize: 13,
-                                                        color: shadColorScheme.foreground,
-                                                      )),
-                                                ),
-                                                ShadButton.ghost(
-                                                  size: ShadButtonSize.sm,
-                                                  onPressed: () {
-                                                    controller.searchKeyController.text = el;
-                                                    controller.doWebsocketSearch();
-                                                  },
-                                                  child: Text('资源搜索',
-                                                      style: TextStyle(
-                                                        fontSize: 13,
-                                                        color: shadColorScheme.foreground,
-                                                      )),
-                                                )
-                                              ],
-                                            ),
-                                          ),
-                                          child: FilterChip(
-                                            backgroundColor: shadColorScheme.background,
-                                            selectedColor: shadColorScheme.background,
-                                            checkmarkColor: shadColorScheme.foreground,
-                                            selectedShadowColor: shadColorScheme.primary,
+                                        Text('来自TMDB',
+                                            style: TextStyle(fontSize: 13, color: shadColorScheme.foreground)),
+                                        ShadButton.link(
+                                          onPressed: () {
+                                            controller.results.clear();
+                                            controller.update();
+                                          },
+                                          size: ShadButtonSize.sm,
+                                          decoration: ShadDecoration(
                                             labelPadding: EdgeInsets.zero,
-                                            elevation: 2,
+                                            descriptionPadding: EdgeInsets.zero,
+                                            errorPadding: EdgeInsets.zero,
+                                          ),
+                                          child: Text('清理'),
+                                        ),
+                                      ],
+                                    ),
+                                  Expanded(
+                                    child: ListView.builder(
+                                        itemCount: controller.results.length,
+                                        itemBuilder: (context, int index) => MediaItemCard(
+                                              media: controller.results[index],
+                                              onTap: () => _showTMDBDetail(controller.results[index]),
+                                              onDetail: (media) => _showTMDBDetail(media),
+                                              onSearch: (media) => controller.doTMDBSearch(media),
+                                            )),
+                                  )
+                                ],
+                                if (controller.showDouBanResults.isNotEmpty) ...[
+                                  if (controller.results.isNotEmpty)
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('来自豆瓣', style: TextStyle(fontSize: 13, color: shadColorScheme.foreground)),
+                                        ShadButton.link(
+                                          onPressed: () {
+                                            controller.showDouBanResults.clear();
+                                            controller.update();
+                                          },
+                                          size: ShadButtonSize.sm,
+                                          decoration: ShadDecoration(
+                                            labelPadding: EdgeInsets.zero,
+                                            descriptionPadding: EdgeInsets.zero,
+                                            errorPadding: EdgeInsets.zero,
+                                          ),
+                                          child: Text('清理'),
+                                        )
+                                      ],
+                                    ),
+                                  Expanded(
+                                    child: ListView.builder(
+                                      itemCount: controller.showDouBanResults.length,
+                                      itemBuilder: (BuildContext context, int index) {
+                                        DouBanSearchResult info = controller.showDouBanResults[index];
+                                        return showDouBanSearchInfo(info);
+                                      },
+                                    ),
+                                  )
+                                ],
+                              ],
+                            ),
+                            child: Text(
+                              '影视查询${controller.selectedWarehouse.isEmpty ? '' : '「${controller.selectedWarehouse}」'}',
+                              style: const TextStyle(fontSize: 13),
+                            ),
+                          ),
+                          ShadTab(
+                            value: 'agg_search',
+                            content: Column(
+                              children: [
+                                if (controller.searchMsg.isNotEmpty)
+                                  RepaintBoundary(
+                                    child: CustomCard(
+                                      padding: EdgeInsets.symmetric(horizontal: 8),
+                                      child: Obx(() {
+                                        return Column(
+                                          children: [
+                                            ListTile(
+                                              dense: true,
+                                              title: Center(
+                                                child: Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                                  spacing: 8,
+                                                  children: [
+                                                    if (controller.isLoading) ...[
+                                                      SizedBox(
+                                                          height: 10,
+                                                          width: 10,
+                                                          child: Center(
+                                                              child: CircularProgressIndicator(
+                                                            color: shadColorScheme.foreground,
+                                                            strokeWidth: 2,
+                                                          ))),
+                                                      Text(
+                                                        '搜索中',
+                                                        style:
+                                                            TextStyle(fontSize: 12, color: shadColorScheme.foreground),
+                                                      )
+                                                    ],
+                                                    Text(
+                                                        '失败$failedCount个站点，$succeedCount个站点共${controller.searchResults.length}个种子，筛选结果：${controller.showResults.length}个',
+                                                        style:
+                                                            TextStyle(fontSize: 12, color: shadColorScheme.foreground)),
+                                                  ],
+                                                ),
+                                              ),
+                                              contentPadding: EdgeInsets.zero,
+                                              trailing: ExpandIcon(
+                                                isExpanded: showErrors.value,
+                                                onPressed: (value) {
+                                                  showErrors.value = !showErrors.value;
+                                                },
+                                                color: shadColorScheme.foreground,
+                                              ),
+                                            ),
+                                            if (showErrors.value)
+                                              Container(
+                                                height: 100,
+                                                padding: const EdgeInsets.all(8),
+                                                child: ListView.builder(
+                                                  itemCount: controller.searchMsg.length,
+                                                  itemBuilder: (BuildContext context, int index) {
+                                                    String info = controller.searchMsg[index]['msg'];
+                                                    return Text(info,
+                                                        style: TextStyle(
+                                                          fontSize: 12,
+                                                          color: shadColorScheme.foreground,
+                                                        ));
+                                                  },
+                                                ),
+                                              )
+                                          ],
+                                        );
+                                      }),
+                                    ),
+                                  ),
+                                if (controller.showResults.isNotEmpty)
+                                  Expanded(
+                                    child: ListView.builder(
+                                      itemCount: controller.showResults.length,
+                                      itemBuilder: (BuildContext context, int index) {
+                                        SearchTorrentInfo info = controller.showResults[index];
+                                        return RepaintBoundary(child: showTorrentInfo(info));
+                                      },
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            child: Text('资源搜索', style: const TextStyle(fontSize: 13)),
+                          ),
+                          ShadTab(
+                            value: '历史',
+                            content: GetBuilder<AggSearchController>(
+                                id: Key('agg_search_history'),
+                                builder: (controller) {
+                                  return SingleChildScrollView(
+                                    child: Wrap(
+                                      runSpacing: 8,
+                                      spacing: 8,
+                                      alignment: WrapAlignment.start,
+                                      runAlignment: WrapAlignment.start,
+                                      crossAxisAlignment: WrapCrossAlignment.start,
+                                      children: [
+                                        ...controller.searchHistory.map(
+                                          (el) {
+                                            final popoverController = ShadPopoverController();
+                                            return ShadPopover(
+                                              controller: popoverController,
+                                              popover: (BuildContext context) => SizedBox(
+                                                height: 110,
+                                                child: Column(
+                                                  children: [
+                                                    ShadButton.ghost(
+                                                      size: ShadButtonSize.sm,
+                                                      onPressed: () {
+                                                        controller.searchKeyController.text = el.split('||').last;
+                                                        controller.searchTMDB();
+                                                      },
+                                                      child: Text('TMDB',
+                                                          style: TextStyle(
+                                                            fontSize: 13,
+                                                            color: shadColorScheme.foreground,
+                                                          )),
+                                                    ),
+                                                    ShadButton.ghost(
+                                                      size: ShadButtonSize.sm,
+                                                      onPressed: () {
+                                                        controller.searchKeyController.text = el.split('||').last;
+                                                        controller.doDouBanSearch();
+                                                      },
+                                                      child: Text('豆瓣',
+                                                          style: TextStyle(
+                                                            fontSize: 13,
+                                                            color: shadColorScheme.foreground,
+                                                          )),
+                                                    ),
+                                                    ShadButton.ghost(
+                                                      size: ShadButtonSize.sm,
+                                                      onPressed: () {
+                                                        controller.searchKeyController.text = el;
+                                                        controller.doWebsocketSearch();
+                                                      },
+                                                      child: Text('资源搜索',
+                                                          style: TextStyle(
+                                                            fontSize: 13,
+                                                            color: shadColorScheme.foreground,
+                                                          )),
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                              child: FilterChip(
+                                                backgroundColor: shadColorScheme.background,
+                                                selectedColor: shadColorScheme.background,
+                                                checkmarkColor: shadColorScheme.foreground,
+                                                selectedShadowColor: shadColorScheme.primary,
+                                                labelPadding: EdgeInsets.zero,
+                                                elevation: 2,
+                                                deleteIcon: Icon(
+                                                  Icons.clear,
+                                                  color: shadColorScheme.destructive,
+                                                ),
+                                                deleteButtonTooltipMessage: '确定要删除记录吗？',
+                                                label: Text(el,
+                                                    style: TextStyle(
+                                                      fontSize: 13,
+                                                      color: shadColorScheme.foreground,
+                                                    )),
+                                                onSelected: (bool value) {
+                                                  popoverController.toggle();
+                                                },
+                                                onDeleted: () {
+                                                  controller.searchHistory.remove(el);
+                                                  SPUtil.setStringList('search_history', controller.searchHistory);
+                                                  controller.update();
+                                                },
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                        if (controller.searchHistory.isNotEmpty)
+                                          FilterChip(
+                                            backgroundColor: shadColorScheme.destructive,
                                             deleteIcon: Icon(
                                               Icons.clear,
-                                              color: shadColorScheme.destructive,
+                                              color: shadColorScheme.destructiveForeground,
                                             ),
-                                            deleteButtonTooltipMessage: '确定要删除记录吗？',
-                                            label: Text(el,
+                                            deleteButtonTooltipMessage: '确定要删除全部搜索记录吗？',
+                                            label: Text('一键清理',
                                                 style: TextStyle(
                                                   fontSize: 13,
-                                                  color: shadColorScheme.foreground,
+                                                  color: shadColorScheme.destructiveForeground,
                                                 )),
                                             onSelected: (bool value) {
-                                              popoverController.toggle();
+                                              Get.defaultDialog(
+                                                title: '提示',
+                                                backgroundColor: shadColorScheme.background.withOpacity(opacity),
+                                                titleStyle: TextStyle(
+                                                  fontSize: 16,
+                                                  color: shadColorScheme.foreground,
+                                                ),
+                                                middleText: '确定要删除全部搜索记录吗？',
+                                                middleTextStyle: TextStyle(
+                                                  fontSize: 13,
+                                                  color: shadColorScheme.foreground,
+                                                ),
+                                                cancel: ShadButton.outline(
+                                                  size: ShadButtonSize.sm,
+                                                  onPressed: () {
+                                                    Get.back();
+                                                  },
+                                                  child: Text('取消',
+                                                      style: TextStyle(
+                                                        fontSize: 13,
+                                                        color: shadColorScheme.destructiveForeground,
+                                                      )),
+                                                ),
+                                                confirm: ShadButton.destructive(
+                                                  size: ShadButtonSize.sm,
+                                                  onPressed: () {
+                                                    controller.searchHistory.clear();
+                                                    SPUtil.setStringList('search_history', controller.searchHistory);
+                                                    controller.update();
+                                                  },
+                                                  child: Text('确定',
+                                                      style: TextStyle(
+                                                        fontSize: 13,
+                                                        color: shadColorScheme.primaryForeground,
+                                                      )),
+                                                ),
+                                              );
                                             },
-                                            onDeleted: () {
-                                              controller.searchHistory.remove(el);
-                                              SPUtil.setStringList('search_history', controller.searchHistory);
-                                              controller.update();
-                                            },
+                                            // onDeleted: () {
+                                            //   Get.defaultDialog(
+                                            //     title: '提示',
+                                            //     middleText: '确定要删除全部搜索记录吗？',
+                                            //     cancel: TextButton(
+                                            //       onPressed: () {
+                                            //         Get.back();
+                                            //       },
+                                            //       child: Text('取消'),
+                                            //     ),
+                                            //     confirm: TextButton(
+                                            //       onPressed: () {
+                                            //         controller.searchHistory
+                                            //             .clear();
+                                            //         SPUtil.setStringList(
+                                            //             'search_history',
+                                            //             controller
+                                            //                 .searchHistory);
+                                            //         controller.update();
+                                            //       },
+                                            //       child: Text('确定'),
+                                            //     ),
+                                            //   );
+                                            // },
                                           ),
-                                        );
-                                      },
+                                      ],
                                     ),
-                                    if (controller.searchHistory.isNotEmpty)
-                                      FilterChip(
-                                        backgroundColor: shadColorScheme.destructive,
-                                        deleteIcon: Icon(
-                                          Icons.clear,
-                                          color: shadColorScheme.destructiveForeground,
-                                        ),
-                                        deleteButtonTooltipMessage: '确定要删除全部搜索记录吗？',
-                                        label: Text('一键清理',
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              color: shadColorScheme.destructiveForeground,
-                                            )),
-                                        onSelected: (bool value) {
-                                          Get.defaultDialog(
-                                            title: '提示',
-                                            backgroundColor: shadColorScheme.background.withOpacity(opacity),
-                                            titleStyle: TextStyle(
-                                              fontSize: 16,
-                                              color: shadColorScheme.foreground,
-                                            ),
-                                            middleText: '确定要删除全部搜索记录吗？',
-                                            middleTextStyle: TextStyle(
-                                              fontSize: 13,
-                                              color: shadColorScheme.foreground,
-                                            ),
-                                            cancel: ShadButton.outline(
-                                              size: ShadButtonSize.sm,
-                                              onPressed: () {
-                                                Get.back();
-                                              },
-                                              child: Text('取消',
-                                                  style: TextStyle(
-                                                    fontSize: 13,
-                                                    color: shadColorScheme.destructiveForeground,
-                                                  )),
-                                            ),
-                                            confirm: ShadButton.destructive(
-                                              size: ShadButtonSize.sm,
-                                              onPressed: () {
-                                                controller.searchHistory.clear();
-                                                SPUtil.setStringList('search_history', controller.searchHistory);
-                                                controller.update();
-                                              },
-                                              child: Text('确定',
-                                                  style: TextStyle(
-                                                    fontSize: 13,
-                                                    color: shadColorScheme.primaryForeground,
-                                                  )),
-                                            ),
-                                          );
-                                        },
-                                        // onDeleted: () {
-                                        //   Get.defaultDialog(
-                                        //     title: '提示',
-                                        //     middleText: '确定要删除全部搜索记录吗？',
-                                        //     cancel: TextButton(
-                                        //       onPressed: () {
-                                        //         Get.back();
-                                        //       },
-                                        //       child: Text('取消'),
-                                        //     ),
-                                        //     confirm: TextButton(
-                                        //       onPressed: () {
-                                        //         controller.searchHistory
-                                        //             .clear();
-                                        //         SPUtil.setStringList(
-                                        //             'search_history',
-                                        //             controller
-                                        //                 .searchHistory);
-                                        //         controller.update();
-                                        //       },
-                                        //       child: Text('确定'),
-                                        //     ),
-                                        //   );
-                                        // },
-                                      ),
-                                  ],
-                                ),
-                              );
-                            }),
-                        child: Text('聚合搜索', style: const TextStyle(fontSize: 13)),
-                      )
-                    ]);
+                                  );
+                                }),
+                            child: Text('聚合搜索', style: const TextStyle(fontSize: 13)),
+                          )
+                        ]),
+                  ),
+                );
               }),
             ),
           ];
@@ -1380,10 +1389,8 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
         ),
         backgroundColor: shadColorScheme.background,
         elevation: 1,
-        isScrollControlled: true,
         enableDrag: true, GetBuilder<AggSearchController>(builder: (controller) {
-      return CustomCard(
-        // height: MediaQuery.of(context).size.height * 0.7,
+      return Padding(
         padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
         child: Column(
           children: [
@@ -1396,15 +1403,23 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                         onTap: () {
                           Get.defaultDialog(
                               title: '海报预览',
+                              radius: 8,
+                              backgroundColor: shadColorScheme.background,
                               content: InkWell(
                                 onTap: () => Navigator.of(context).pop(),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(5),
-                                  child: CachedNetworkImage(
-                                    imageUrl: '$cacheServer${mediaInfo.target.coverUrl}',
-                                    errorWidget: (context, url, error) =>
-                                        const Image(image: AssetImage('assets/images/background.png')),
-                                    fit: BoxFit.fitWidth,
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    maxWidth: MediaQuery.of(context).size.width * 0.8,
+                                    maxHeight: MediaQuery.of(context).size.height * 0.8,
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(5),
+                                    child: CachedNetworkImage(
+                                      imageUrl: '$cacheServer${mediaInfo.target.coverUrl}',
+                                      errorWidget: (context, url, error) =>
+                                          const Image(image: AssetImage('assets/images/background.png')),
+                                      fit: BoxFit.contain,
+                                    ),
                                   ),
                                 ),
                               ));
@@ -1738,17 +1753,23 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                         title: '海报预览',
                         content: InkWell(
                           onTap: () => Navigator.of(context).pop(),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(5),
-                            child: CachedNetworkImage(
-                              imageUrl: "$cacheServer${info.target.coverUrl}",
-                              placeholder: (context, url) => Center(
-                                  child: CircularProgressIndicator(
-                                color: shadColorScheme.primary,
-                              )),
-                              errorWidget: (context, url, error) =>
-                                  const Image(image: AssetImage('assets/images/background.png')),
-                              fit: BoxFit.fitWidth,
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxWidth: MediaQuery.of(context).size.width * 0.8,
+                              maxHeight: MediaQuery.of(context).size.height * 0.8,
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(5),
+                              child: CachedNetworkImage(
+                                imageUrl: "$cacheServer${info.target.coverUrl}",
+                                placeholder: (context, url) => Center(
+                                    child: CircularProgressIndicator(
+                                  color: shadColorScheme.primary,
+                                )),
+                                errorWidget: (context, url, error) =>
+                                    const Image(image: AssetImage('assets/images/background.png')),
+                                fit: BoxFit.fitWidth,
+                              ),
                             ),
                           ),
                         ));
@@ -1840,13 +1861,19 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
   }
 
   void _showTMDBDetail(info) async {
-    var mediaInfo = await controller.getTMDBDetail(info);
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
+    var res = await controller.getTMDBDetail(info);
+    if (!res.succeed) {
+      Get.snackbar('出错啦', res.msg, colorText: shadColorScheme.destructive);
+      return;
+    }
+    var mediaInfo = res.data;
     String urlPrefix = 'https://media.themoviedb.org/t/p/w300_and_h450_bestv2';
     String posterPath = '$urlPrefix${mediaInfo.posterPath}';
     logger_helper.Logger.instance.d(mediaInfo);
     // double width = MediaQuery.of(context).size.width;
     // double height = MediaQuery.of(context).size.height * 0.5;
-    var shadColorScheme = ShadTheme.of(context).colorScheme;
+
     Get.bottomSheet(
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
@@ -1855,40 +1882,44 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
         ),
       ),
       backgroundColor: shadColorScheme.background,
-      isScrollControlled: true,
       enableDrag: true,
       GetBuilder<AggSearchController>(builder: (controller) {
-        return CustomCard(
-            // height: height,
-            // width: width,
-            child: Column(
-          children: [
-            Expanded(
-              child: ListView(
-                children: [
-                  Row(
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          Get.defaultDialog(
-                              title: '海报预览',
-                              content: InkWell(
-                                onTap: () => Navigator.of(context).pop(),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(5),
-                                  child: CachedNetworkImage(
-                                    imageUrl: posterPath,
-                                    errorWidget: (context, url, error) =>
-                                        const Image(image: AssetImage('assets/images/background.png')),
-                                    fit: BoxFit.fitWidth,
+        return Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  children: [
+                    Row(
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            Get.defaultDialog(
+                                title: '海报预览',
+                                radius: 8,
+                                backgroundColor: shadColorScheme.background,
+                                content: InkWell(
+                                  onTap: () => Navigator.of(context).pop(),
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      maxWidth: MediaQuery.of(context).size.width * 0.8,
+                                      maxHeight: MediaQuery.of(context).size.height * 0.8,
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(5),
+                                      child: CachedNetworkImage(
+                                        imageUrl: posterPath.replaceFirst('w300_and_h450', 'w600_and_h900'),
+                                        errorWidget: (context, url, error) =>
+                                            const Image(image: AssetImage('assets/images/background.png')),
+                                        fit: BoxFit.contain,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ));
-                        },
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8.0),
+                                ));
+                          },
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(5),
+                            borderRadius: BorderRadius.circular(8.0),
                             child: CachedNetworkImage(
                               imageUrl: posterPath,
                               placeholder: (context, url) => Center(
@@ -1902,123 +1933,123 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                             ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                          child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${mediaInfo.title}${mediaInfo.releaseDate}',
-                              style: TextStyle(
-                                  color: shadColorScheme.foreground, fontSize: 20, fontWeight: FontWeight.w700),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            // Text(
-                            //   '${mediaInfo.director.map((e) => e.name).join('/')}/${mediaInfo.genres}/${mediaInfo.releaseDate}/${mediaInfo.duration}',
-                            //   overflow: TextOverflow.ellipsis,
-                            //   maxLines: 2,
-                            // ),
-                            // Text(
-                            //   mediaInfo.writer.map((e) => e.name).join(' / '),
-                            //   overflow: TextOverflow.ellipsis,
-                            // ),
-                            // Text(
-                            //   mediaInfo.actors.map((e) => e.name).join(' / '),
-                            //   overflow: TextOverflow.ellipsis,
-                            // ),
-                            if (mediaInfo.genres.isNotEmpty)
-                              SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: Wrap(
-                                  spacing: 4,
-                                  children: [
-                                    ...mediaInfo.genres.map<CustomTextTag>((Genre item) => CustomTextTag(
-                                          labelText: item.name,
-                                        )),
-                                  ],
-                                ),
+                        Expanded(
+                            child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            spacing: 8,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${mediaInfo.title}${mediaInfo.releaseDate}',
+                                style: TextStyle(
+                                    color: shadColorScheme.foreground, fontSize: 20, fontWeight: FontWeight.w700),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                               ),
-
-                            // Text(mediaInfo.region.toString()),
-                            // Text(mediaInfo.language.toString()),
-                            // Text(mediaInfo.season.toString()),
-                            // Text(mediaInfo.episode.toString()),
-                            mediaInfo.voteCount > 0
-                                ? Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              // Text(
+                              //   '${mediaInfo.director.map((e) => e.name).join('/')}/${mediaInfo.genres}/${mediaInfo.releaseDate}/${mediaInfo.duration}',
+                              //   overflow: TextOverflow.ellipsis,
+                              //   maxLines: 2,
+                              // ),
+                              // Text(
+                              //   mediaInfo.writer.map((e) => e.name).join(' / '),
+                              //   overflow: TextOverflow.ellipsis,
+                              // ),
+                              if (mediaInfo.productionCountries.isNotEmpty)
+                                Text(
+                                  mediaInfo.productionCountries.map((e) => e.name).join(' / '),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              if (mediaInfo.genres.isNotEmpty)
+                                SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Wrap(
+                                    spacing: 4,
                                     children: [
-                                      RatingBar.readOnly(
-                                        initialRating: mediaInfo.voteAverage / 2,
-                                        filledIcon: Icons.star,
-                                        emptyIcon: Icons.star_border,
-                                        emptyColor: Colors.redAccent,
-                                        filledColor: shadColorScheme.foreground,
-                                        halfFilledColor: Colors.amberAccent,
-                                        halfFilledIcon: Icons.star_half,
-                                        maxRating: 5,
-                                        size: 14,
-                                      ),
-                                      Text(
-                                        '${mediaInfo.voteCount} 人评价',
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.blue,
-                                        ),
-                                      ),
+                                      ...mediaInfo.genres.map<CustomTextTag>((Genre item) => CustomTextTag(
+                                            labelText: item.name,
+                                          )),
                                     ],
-                                  )
-                                : const Text(
-                                    '暂无评分',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.blue,
-                                    ),
                                   ),
-                            if (mediaInfo.imdbId != null) Text('iMdb: ${mediaInfo.imdbId}'),
-                          ],
-                        ),
-                      ))
-                    ],
+                                ),
+
+                              // Text(mediaInfo.region.toString()),
+                              // Text(mediaInfo.language.toString()),
+                              // Text(mediaInfo.season.toString()),
+                              // Text(mediaInfo.episode.toString()),
+                              mediaInfo.voteCount > 0
+                                  ? Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        RatingBar.readOnly(
+                                          initialRating: mediaInfo.voteAverage / 2,
+                                          filledIcon: Icons.star,
+                                          emptyIcon: Icons.star_border,
+                                          emptyColor: Colors.redAccent,
+                                          filledColor: shadColorScheme.foreground,
+                                          halfFilledColor: Colors.amberAccent,
+                                          halfFilledIcon: Icons.star_half,
+                                          maxRating: 5,
+                                          size: 14,
+                                        ),
+                                        Text(
+                                          '${mediaInfo.voteCount} 人评价',
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.blue,
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : const Text(
+                                      '暂无评分',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.blue,
+                                      ),
+                                    ),
+                              if (mediaInfo.imdbId != null) Text('iMdb: ${mediaInfo.imdbId}'),
+                            ],
+                          ),
+                        ))
+                      ],
+                    ),
+                    Text(mediaInfo.overview),
+                  ],
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  ShadButton(
+                    size: ShadButtonSize.sm,
+                    onPressed: () async {
+                      Get.back();
+                      controller.doTMDBSearch(mediaInfo);
+                    },
+                    leading: Icon(
+                      Icons.search,
+                      size: 16,
+                    ),
+                    child: const Text('搜索'),
                   ),
-                  const SizedBox(height: 8),
-                  Text(mediaInfo.overview),
-                  const SizedBox(height: 8),
+                  // ShadButton(
+                  //   size: ShadButtonSize.sm,
+                  //   onPressed: () async {
+                  //     await _openMediaInfoDetail(mediaInfo);
+                  //   },
+                  //   leading: Icon(
+                  //     Icons.info_outline,
+                  //     size: 16,
+                  //   ),
+                  //   child: const Text('详情'),
+                  // ),
                 ],
               ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                ShadButton(
-                  size: ShadButtonSize.sm,
-                  onPressed: () async {
-                    Get.back();
-                    controller.doTMDBSearch(mediaInfo);
-                  },
-                  leading: Icon(
-                    Icons.search,
-                    size: 16,
-                  ),
-                  child: const Text('搜索'),
-                ),
-                // ShadButton(
-                //   size: ShadButtonSize.sm,
-                //   onPressed: () async {
-                //     await _openMediaInfoDetail(mediaInfo);
-                //   },
-                //   leading: Icon(
-                //     Icons.info_outline,
-                //     size: 16,
-                //   ),
-                //   child: const Text('详情'),
-                // ),
-              ],
-            ),
-          ],
-        ));
+            ],
+          ),
+        );
       }),
     );
   }

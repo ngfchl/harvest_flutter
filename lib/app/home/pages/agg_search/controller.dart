@@ -162,16 +162,22 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
   getTMDBMovieDetail(int id) async {
     var res = await tmdb.getTMDBMovieInfoApi(id);
     logger_helper.Logger.instance.d(res);
-    return MovieDetail.fromJson(res.data as Map<String, dynamic>);
+    if (!res.succeed) {
+      return res;
+    }
+    return CommonResponse.success(data: MovieDetail.fromJson(res.data as Map<String, dynamic>));
   }
 
   getTMDBTVDetail(int id) async {
     var res = await tmdb.getTMDBTvInfoApi(id);
     logger_helper.Logger.instance.d(res);
-    return TvShowDetail.fromJson(res.data as Map<String, dynamic>);
+    if (!res.succeed) {
+      return res;
+    }
+    return CommonResponse.success(data: TvShowDetail.fromJson(res.data as Map<String, dynamic>));
   }
 
-  getTMDBDetail(info) {
+  dynamic getTMDBDetail(info) {
     isLoading = true;
     update();
     if (info.mediaType == 'movie') {
@@ -186,6 +192,12 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
     String? imdbId;
     if (info.runtimeType == MediaItem) {
       var detail = await getTMDBDetail(info);
+      if (!detail.succeed) {
+        isLoading = false;
+        logger_helper.Logger.instance.e(detail.msg);
+        update();
+        return detail;
+      }
       searchKey = detail.title;
       imdbId = detail.imdbId;
     } else {
