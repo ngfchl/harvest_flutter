@@ -150,7 +150,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                       hintStyle: const TextStyle(fontSize: 12),
                                       contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
                                       prefixIcon: Icon(
-                                        Icons.search,
+                                        Icons.search_outlined,
                                         size: 14,
                                         color: shadColorScheme.foreground,
                                       ),
@@ -256,7 +256,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(
-                                      Icons.filter_tilt_shift,
+                                      Icons.filter_tilt_shift_outlined,
                                       size: 13,
                                       color: shadColorScheme.foreground,
                                     ),
@@ -340,12 +340,12 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                   children: [
                                     controller.sortReversed
                                         ? Icon(
-                                            Icons.sim_card_download_sharp,
+                                            Icons.sim_card_download_outlined,
                                             size: 13,
                                             color: shadColorScheme.foreground,
                                           )
                                         : Icon(
-                                            Icons.upload_file_sharp,
+                                            Icons.upload_file_outlined,
                                             size: 13,
                                             color: shadColorScheme.foreground,
                                           ),
@@ -421,7 +421,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(
-                                      Icons.tag,
+                                      Icons.tag_outlined,
                                       size: 13,
                                       color: shadColorScheme.foreground,
                                     ),
@@ -702,11 +702,9 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
               ),
             ),
             trailing: ShadIconButton.ghost(
-                onPressed: () async {
-                  await _showEditBottomSheet(mySite: mySite);
-                },
+                onPressed: () => removeMySite(mySite, shadColorScheme),
                 icon: Icon(
-                  Icons.edit,
+                  Icons.clear_outlined,
                   color: shadColorScheme.destructive,
                 )),
           ),
@@ -844,7 +842,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                     },
                     backgroundColor: Color(0xFFD32F2F),
                     foregroundColor: Colors.white,
-                    icon: Icons.edit,
+                    icon: Icons.edit_outlined,
                     label: '编辑',
                   ),
                 ],
@@ -961,7 +959,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                           Row(
                             children: [
                               Icon(
-                                Icons.mail,
+                                Icons.mail_outlined,
                                 size: 12,
                                 color: siteColorConfig.mailColor.value,
                               ),
@@ -978,7 +976,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                           Row(
                             children: [
                               Icon(
-                                Icons.notifications,
+                                Icons.notifications_outlined,
                                 size: 12,
                                 color: siteColorConfig.noticeColor.value,
                               ),
@@ -1292,7 +1290,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                   Row(
                                     children: [
                                       Icon(
-                                        Icons.ios_share,
+                                        Icons.ios_share_outlined,
                                         color: status.ratio > 1
                                             ? siteColorConfig.ratioIconColor.value
                                             : shadColorScheme.destructive,
@@ -1798,7 +1796,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                     controller.update();
                                   },
                                   icon: Icon(
-                                    manualInput.value ? Icons.back_hand_outlined : Icons.front_hand,
+                                    manualInput.value ? Icons.back_hand_outlined : Icons.front_hand_sharp,
                                     color: shadColorScheme.foreground,
                                     size: 16,
                                   ),
@@ -1888,7 +1886,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                 controller.update();
                               },
                               icon: Icon(
-                                Icons.plus_one_sharp,
+                                Icons.plus_one_outlined,
                                 size: 20,
                               ),
                             )
@@ -2041,7 +2039,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                     Get.back();
                   },
                   leading: Icon(
-                    Icons.cancel,
+                    Icons.cancel_outlined,
                     size: 16,
                   ),
                   child: Text('取消'),
@@ -2049,54 +2047,9 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                 if (mySite != null)
                   ShadButton.secondary(
                     size: ShadButtonSize.sm,
-                    onPressed: () async {
-                      Get.defaultDialog(
-                        title: '删除站点：${mySite?.nickname}',
-                        radius: 5,
-                        backgroundColor: shadColorScheme.background,
-                        middleTextStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
-                        titleStyle:
-                            TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: shadColorScheme.foreground),
-                        middleText: '确定要删除吗？',
-                        actions: [
-                          ShadButton.outline(
-                            size: ShadButtonSize.sm,
-                            onPressed: () {
-                              Get.back(result: false);
-                            },
-                            child: const Text('取消'),
-                          ),
-                          ShadButton.destructive(
-                            size: ShadButtonSize.sm,
-                            onPressed: () async {
-                              Get.back(result: true);
-                              var res = await controller.removeSiteFromServer(mySite!);
-                              if (res.succeed) {
-                                Get.back(result: true);
-                                Get.snackbar(
-                                  '删除站点',
-                                  res.msg.toString(),
-                                  colorText: shadColorScheme.foreground,
-                                );
-                                controller.showStatusList.removeWhere((item) => mySite?.id == item.id);
-                                controller.update();
-                                await controller.getSiteStatusFromServer();
-                              } else {
-                                Logger.instance.e(res.msg);
-                                Get.snackbar(
-                                  '删除站点',
-                                  res.msg.toString(),
-                                  colorText: shadColorScheme.destructive,
-                                );
-                              }
-                            },
-                            child: const Text('确认'),
-                          ),
-                        ],
-                      );
-                    },
+                    onPressed: () => removeMySite(mySite, shadColorScheme),
                     foregroundColor: shadColorScheme.destructive,
-                    leading: Icon(Icons.delete, size: 16),
+                    leading: Icon(Icons.delete_outlined, size: 16),
                     child: Text('删除'),
                   ),
                 if (selectedSite.value != null)
@@ -2112,7 +2065,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                     child: CircularProgressIndicator(
                                   color: shadColorScheme.foreground,
                                 )))
-                            : Icon(Icons.save, size: 16);
+                            : Icon(Icons.save_outlined, size: 16);
                       },
                     ),
                     child: Text('保存'),
@@ -2210,6 +2163,52 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
           ],
         ),
       ),
+    );
+  }
+
+  void removeMySite(MySite? mySite, ShadColorScheme shadColorScheme) {
+    Get.defaultDialog(
+      title: '删除站点：${mySite?.nickname}',
+      radius: 5,
+      backgroundColor: shadColorScheme.background,
+      middleTextStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+      titleStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: shadColorScheme.foreground),
+      middleText: '确定要删除吗？',
+      actions: [
+        ShadButton.outline(
+          size: ShadButtonSize.sm,
+          onPressed: () {
+            Get.back(result: false);
+          },
+          child: const Text('取消'),
+        ),
+        ShadButton.destructive(
+          size: ShadButtonSize.sm,
+          onPressed: () async {
+            Get.back(result: true);
+            var res = await controller.removeSiteFromServer(mySite!);
+            if (res.succeed) {
+              Get.back(result: true);
+              Get.snackbar(
+                '删除站点',
+                res.msg.toString(),
+                colorText: shadColorScheme.foreground,
+              );
+              controller.showStatusList.removeWhere((item) => mySite?.id == item.id);
+              controller.update();
+              await controller.getSiteStatusFromServer();
+            } else {
+              Logger.instance.e(res.msg);
+              Get.snackbar(
+                '删除站点',
+                res.msg.toString(),
+                colorText: shadColorScheme.destructive,
+              );
+            }
+          },
+          child: const Text('确认'),
+        ),
+      ],
     );
   }
 
