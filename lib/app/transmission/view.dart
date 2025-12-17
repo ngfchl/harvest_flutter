@@ -20,6 +20,7 @@ import '../../utils/storage.dart';
 import '../../utils/string_utils.dart';
 import '../home/pages/download/download_form.dart';
 import '../home/pages/download/tr_tree_file_view.dart';
+import '../home/pages/models/color_storage.dart';
 import '../home/pages/models/transmission_base_torrent.dart';
 import 'controller.dart';
 
@@ -30,6 +31,8 @@ class TrPage extends StatelessWidget {
   Widget build(BuildContext context) {
     TextEditingController searchKeyController = TextEditingController();
     var shadColorScheme = ShadTheme.of(context).colorScheme;
+    double opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
+    SiteColorConfig siteColorConfig = SiteColorConfig.load(shadColorScheme);
     return GetBuilder<TrController>(builder: (controller) {
       return PopScope(
         canPop: false,
@@ -67,7 +70,7 @@ class TrPage extends StatelessWidget {
         child: BackgroundContainer(
           child: Scaffold(
             appBar: AppBar(
-              backgroundColor: Colors.transparent,
+              backgroundColor: siteColorConfig.siteCardColor.value.withOpacity(opacity),
               title: Row(
                 children: [
                   Expanded(
@@ -126,7 +129,8 @@ class TrPage extends StatelessWidget {
                     Expanded(
                       child: Column(
                         children: [
-                          Padding(
+                          CustomCard(
+                            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                             child: GetBuilder<TrController>(builder: (controller) {
                               return Row(
@@ -142,7 +146,8 @@ class TrPage extends StatelessWidget {
                                         hintText: '请输入搜索关键字',
                                         hintStyle:
                                             TextStyle(fontSize: 14, color: shadColorScheme.foreground.withAlpha(122)),
-                                        contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+                                        contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 5),
+                                        constraints: const BoxConstraints(maxHeight: 30),
                                         suffixIcon: Column(
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: [

@@ -13,7 +13,9 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:xpath_selector_html_parser/xpath_selector_html_parser.dart';
 
+import '../../utils/storage.dart';
 import '../home/pages/download/download_form.dart';
+import '../home/pages/models/color_storage.dart';
 import '../home/pages/models/torrent_info.dart';
 import 'controller.dart';
 
@@ -33,7 +35,8 @@ class _WebViewPageState extends State<WebViewPage> {
     final GlobalKey webViewKey = GlobalKey();
     final cookieManager = CookieManager.instance();
     var shadColorScheme = ShadTheme.of(context).colorScheme;
-
+    double opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
+    SiteColorConfig siteColorConfig = SiteColorConfig.load(shadColorScheme);
     String domain = Uri.parse(controller.url).host;
     List<String> cookieList = controller.mySite != null
         ? controller.mySite!.cookie!.split(';').map((item) {
@@ -85,6 +88,7 @@ class _WebViewPageState extends State<WebViewPage> {
         backgroundColor: Colors.transparent,
         extendBody: true,
         appBar: AppBar(
+          backgroundColor: siteColorConfig.siteCardColor.value.withOpacity(opacity),
           title: Text(
             controller.pageTitle.value,
             style: const TextStyle(fontSize: 14),
