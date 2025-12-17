@@ -645,11 +645,10 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
             topRight: Radius.circular(2),
           ),
         ),
-        isScrollControlled: true,
+        backgroundColor: ShadTheme.of(context).colorScheme.background,
         enableDrag: true, GetBuilder<DouBanController>(builder: (controller) {
-      return CustomCard(
-        height: MediaQuery.of(context).size.height * 0.7,
-        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+      return Padding(
+        padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
             Expanded(
@@ -663,11 +662,17 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                               title: '海报预览',
                               content: InkWell(
                                 onTap: () => Navigator.of(context).pop(),
-                                child: CachedNetworkImage(
-                                  imageUrl: '$cacheServer${mediaInfo.poster}',
-                                  errorWidget: (context, url, error) =>
-                                      const Image(image: AssetImage('assets/images/avatar.png')),
-                                  fit: BoxFit.fitWidth,
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    maxWidth: MediaQuery.of(context).size.width * 0.8,
+                                    maxHeight: MediaQuery.of(context).size.height * 0.8,
+                                  ),
+                                  child: CachedNetworkImage(
+                                    imageUrl: '$cacheServer${mediaInfo.poster}',
+                                    errorWidget: (context, url, error) =>
+                                        const Image(image: AssetImage('assets/images/avatar.png')),
+                                    fit: BoxFit.fitWidth,
+                                  ),
                                 ),
                               ));
                         },
@@ -758,42 +763,43 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                       ))
                     ],
                   ),
-                  SizedBox(
-                    height: 178,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Wrap(
-                        alignment: WrapAlignment.spaceAround,
-                        children: [
-                          ...videoDetail.pictures!.map((imgUrl) => CustomCard(
-                                child: InkWell(
-                                  onTap: () {
-                                    Get.defaultDialog(
-                                        content: InkWell(
-                                      onTap: () => Navigator.of(context).pop(),
+                  if (videoDetail.pictures != null && videoDetail.pictures!.isNotEmpty)
+                    SizedBox(
+                      height: 178,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Wrap(
+                          alignment: WrapAlignment.spaceAround,
+                          children: [
+                            ...videoDetail.pictures!.map((imgUrl) => CustomCard(
+                                  child: InkWell(
+                                    onTap: () {
+                                      Get.defaultDialog(
+                                          content: InkWell(
+                                        onTap: () => Navigator.of(context).pop(),
+                                        child: CachedNetworkImage(
+                                          imageUrl: '$cacheServer$imgUrl',
+                                          errorWidget: (context, url, error) =>
+                                              const Image(image: AssetImage('assets/images/avatar.png')),
+                                          fit: BoxFit.fitWidth,
+                                        ),
+                                      ));
+                                    },
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(8.0),
                                       child: CachedNetworkImage(
                                         imageUrl: '$cacheServer$imgUrl',
-                                        errorWidget: (context, url, error) =>
-                                            const Image(image: AssetImage('assets/images/avatar.png')),
+                                        placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                                        height: 160,
                                         fit: BoxFit.fitWidth,
                                       ),
-                                    ));
-                                  },
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                    child: CachedNetworkImage(
-                                      imageUrl: '$cacheServer$imgUrl',
-                                      placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                                      height: 160,
-                                      fit: BoxFit.fitWidth,
                                     ),
                                   ),
-                                ),
-                              ))
-                        ],
+                                ))
+                          ],
+                        ),
                       ),
                     ),
-                  ),
                   SizedBox(
                     height: 160,
                     child: SingleChildScrollView(
@@ -811,11 +817,17 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                                               title: '海报预览',
                                               content: InkWell(
                                                 onTap: () => Navigator.of(context).pop(),
-                                                child: CachedNetworkImage(
-                                                  imageUrl: '$cacheServer${worker.imgUrl}',
-                                                  errorWidget: (context, url, error) =>
-                                                      const Image(image: AssetImage('assets/images/avatar.png')),
-                                                  fit: BoxFit.fitWidth,
+                                                child: ConstrainedBox(
+                                                  constraints: BoxConstraints(
+                                                    maxWidth: MediaQuery.of(context).size.width * 0.8,
+                                                    maxHeight: MediaQuery.of(context).size.height * 0.8,
+                                                  ),
+                                                  child: CachedNetworkImage(
+                                                    imageUrl: '$cacheServer${worker.imgUrl}',
+                                                    errorWidget: (context, url, error) =>
+                                                        const Image(image: AssetImage('assets/images/avatar.png')),
+                                                    fit: BoxFit.fitWidth,
+                                                  ),
                                                 ),
                                               ));
                                         },
@@ -886,7 +898,7 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                   onPressed: () => controller.goSearchPage(videoDetail),
                   leading: Icon(
                     Icons.search,
-                    color: ShadTheme.of(context).colorScheme.foreground,
+                    size: 18,
                   ),
                   child: const Text('搜索'),
                 ),
@@ -896,7 +908,7 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                   },
                   leading: Icon(
                     Icons.info_outline,
-                    color: ShadTheme.of(context).colorScheme.foreground,
+                    size: 18,
                   ),
                   child: const Text('详情'),
                 ),
