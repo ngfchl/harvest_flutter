@@ -638,17 +638,18 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
     }
     Logger.instance.e(detail.data);
     VideoDetail videoDetail = VideoDetail.fromJson(detail.data);
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.bottomSheet(
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(2),
-            topRight: Radius.circular(2),
+            topLeft: Radius.circular(8),
+            topRight: Radius.circular(8),
           ),
         ),
-        backgroundColor: ShadTheme.of(context).colorScheme.background,
+        backgroundColor: shadColorScheme.background,
         enableDrag: true, GetBuilder<DouBanController>(builder: (controller) {
       return Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             Expanded(
@@ -697,7 +698,7 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                             Text(
                               '${videoDetail.title}${videoDetail.year}',
                               style: TextStyle(
-                                  color: ShadTheme.of(context).colorScheme.foreground,
+                                  color: shadColorScheme.foreground,
                                   fontSize: 20,
                                   fontWeight: FontWeight.w700),
                               maxLines: 2,
@@ -707,6 +708,10 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                               '${videoDetail.director.map((e) => e.name).join('/')}/${videoDetail.genres}/${videoDetail.releaseDate}/${videoDetail.duration}',
                               overflow: TextOverflow.ellipsis,
                               maxLines: 2,
+                              style: TextStyle(
+                                color: shadColorScheme.foreground,
+                                fontSize: 12,
+                              ),
                             ),
                             // Text(
                             //   videoDetail.writer.map((e) => e.name).join(' / '),
@@ -721,8 +726,18 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                                 videoDetail.alias!.join(' / '),
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 2,
+                                style: TextStyle(
+                                  color: shadColorScheme.foreground,
+                                  fontSize: 12,
+                                ),
                               ),
-                            Text(videoDetail.region.toString()),
+                            Text(
+                              videoDetail.region.toString(),
+                              style: TextStyle(
+                                color: shadColorScheme.foreground,
+                                fontSize: 12,
+                              ),
+                            ),
                             // Text(videoDetail.language.toString()),
                             // Text(videoDetail.season.toString()),
                             // Text(videoDetail.episode.toString()),
@@ -735,7 +750,7 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                                         filledIcon: Icons.star,
                                         emptyIcon: Icons.star_border,
                                         emptyColor: Colors.redAccent,
-                                        filledColor: ShadTheme.of(context).colorScheme.foreground,
+                                        filledColor: shadColorScheme.foreground,
                                         halfFilledColor: Colors.amberAccent,
                                         halfFilledIcon: Icons.star_half,
                                         maxRating: 5,
@@ -757,7 +772,13 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                                       color: Colors.blue,
                                     ),
                                   ),
-                            Text('iMdb: ${videoDetail.imdb}'),
+                            Text(
+                              'iMdb: ${videoDetail.imdb}',
+                              style: TextStyle(
+                                color: shadColorScheme.foreground,
+                                fontSize: 12,
+                              ),
+                            ),
                           ],
                         ),
                       ))
@@ -847,15 +868,17 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                                     Text(
                                       worker.name,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontSize: 12,
+                                      style: TextStyle(
+                                        color: shadColorScheme.foreground,
+                                        fontSize: 13,
                                       ),
                                     ),
                                     Text(
                                       worker.role!,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontSize: 12,
+                                      style: TextStyle(
+                                        color: shadColorScheme.foreground,
+                                        fontSize: 13,
                                       ),
                                     ),
                                   ],
@@ -871,22 +894,28 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                     children: [
                       Text(
                         videoDetail.hadSeen,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.green,
+                        style: TextStyle(
+                          color: shadColorScheme.destructive,
+                          fontSize: 13,
                         ),
                       ),
                       Text(
                         videoDetail.wantLook,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.blue,
+                        style: TextStyle(
+                          color: shadColorScheme.primary,
+                          fontSize: 13,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  ...videoDetail.summary.map((e) => Text(e)),
+                  ...videoDetail.summary.map((e) => Text(
+                        e,
+                        style: TextStyle(
+                          color: shadColorScheme.foreground,
+                          fontSize: 13,
+                        ),
+                      )),
                   const SizedBox(height: 8),
                 ],
               ),
@@ -894,23 +923,25 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                ShadButton(
-                  onPressed: () => controller.goSearchPage(videoDetail),
-                  leading: Icon(
-                    Icons.search,
-                    size: 18,
-                  ),
-                  child: const Text('搜索'),
-                ),
-                ShadButton(
+                ShadButton.ghost(
+                  size: ShadButtonSize.sm,
                   onPressed: () async {
                     await _openMediaInfoDetail(mediaInfo);
                   },
                   leading: Icon(
                     Icons.info_outline,
-                    size: 18,
+                    size: 16,
                   ),
                   child: const Text('详情'),
+                ),
+                ShadButton.outline(
+                  size: ShadButtonSize.sm,
+                  onPressed: () => controller.goSearchPage(videoDetail),
+                  leading: Icon(
+                    Icons.search,
+                    size: 16,
+                  ),
+                  child: const Text('搜索'),
                 ),
               ],
             ),
