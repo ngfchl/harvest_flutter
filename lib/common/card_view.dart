@@ -8,6 +8,11 @@ import '../utils/storage.dart';
 
 class CustomCard extends StatelessWidget {
   final Widget child;
+  final Widget? title;
+  final Widget? footer;
+  final Widget? description;
+  final Widget? leading;
+  final Widget? trailing;
   final EdgeInsets? padding;
   final EdgeInsets? margin;
   final Color? color;
@@ -15,11 +20,17 @@ class CustomCard extends StatelessWidget {
   final double? height;
   final double? maxHeight;
   final double? width;
+  final List<BoxShadow>? shadows;
 
   const CustomCard({
     super.key,
     required this.child,
     this.color,
+    this.title,
+    this.footer,
+    this.leading,
+    this.trailing,
+    this.description,
     this.maxHeight,
     this.borderRadius = const BorderRadius.only(
       topLeft: Radius.circular(8.0),
@@ -31,6 +42,29 @@ class CustomCard extends StatelessWidget {
     this.width,
     this.padding = const EdgeInsets.all(4.0),
     this.margin = const EdgeInsets.all(4.0),
+    this.shadows = const [
+      BoxShadow(
+        color: Color(0x00000000),
+        blurRadius: 6,
+        spreadRadius: 5,
+        offset: const Offset(0, 2),
+        blurStyle: BlurStyle.inner,
+      ),
+      BoxShadow(
+        color: Color(0x00000000),
+        blurRadius: 6,
+        spreadRadius: 5,
+        offset: Offset(0, 2),
+        blurStyle: BlurStyle.inner,
+      ),
+      BoxShadow(
+        color: Color(0x00000000),
+        blurRadius: 6,
+        spreadRadius: 5,
+        offset: Offset(0, 2),
+        blurStyle: BlurStyle.inner,
+      ),
+    ],
   });
 
   @override
@@ -46,6 +80,13 @@ class CustomCard extends StatelessWidget {
         padding: padding,
         radius: borderRadius,
         backgroundColor: color ?? siteColorConfig.siteCardColor.value.withOpacity(opacity),
+        title: title,
+        footer: footer,
+        leading: leading,
+        trailing: trailing,
+        description: description,
+        border: Border.all(style: BorderStyle.solid, color: Colors.white.withOpacity(0.1)),
+        shadows: shadows,
         child: child,
       ),
     );
@@ -156,6 +197,7 @@ class CustomTextTag extends StatelessWidget {
   final Icon? icon;
   final MainAxisAlignment mainAxisAlignment;
   final CrossAxisAlignment crossAxisAlignment;
+  final MainAxisSize mainAxisSize;
 
   const CustomTextTag({
     super.key,
@@ -167,6 +209,7 @@ class CustomTextTag extends StatelessWidget {
     this.fontSize = 10,
     this.mainAxisAlignment = MainAxisAlignment.center,
     this.crossAxisAlignment = CrossAxisAlignment.center,
+    this.mainAxisSize = MainAxisSize.min,
   });
 
   @override
@@ -180,7 +223,7 @@ class CustomTextTag extends StatelessWidget {
       child: Row(
         mainAxisAlignment: mainAxisAlignment,
         crossAxisAlignment: crossAxisAlignment,
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: mainAxisSize,
         children: [
           icon ?? const SizedBox.shrink(),
           if (icon != null) const SizedBox(width: 2),
