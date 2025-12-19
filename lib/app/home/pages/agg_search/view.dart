@@ -391,7 +391,6 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                     child: ShadTabs(
                         onChanged: (String value) => controller.tabsController.select(value),
                         controller: controller.tabsController,
-                        scrollable: true,
                         tabBarConstraints: const BoxConstraints(maxHeight: 50),
                         contentConstraints: BoxConstraints(maxHeight: contentHeight),
                         decoration: ShadDecoration(
@@ -731,7 +730,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                     ),
                                   );
                                 }),
-                            child: Text('聚合搜索', style: const TextStyle(fontSize: 13)),
+                            child: Text('搜索记录', style: const TextStyle(fontSize: 13)),
                           )
                         ]),
                   ),

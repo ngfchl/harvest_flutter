@@ -177,13 +177,13 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
     return CommonResponse.success(data: TvShowDetail.fromJson(res.data as Map<String, dynamic>));
   }
 
-  dynamic getTMDBDetail(info) {
+  Future<CommonResponse> getTMDBDetail(info) async {
     isLoading = true;
     update();
     if (info.mediaType == 'movie') {
-      return getTMDBMovieDetail(info.id);
+      return await getTMDBMovieDetail(info.id);
     } else {
-      return getTMDBTVDetail(info.id);
+      return await getTMDBTVDetail(info.id);
     }
   }
 
@@ -198,8 +198,8 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
         update();
         return detail;
       }
-      searchKey = detail.title;
-      imdbId = detail.imdbId;
+      searchKey = detail.data.title;
+      imdbId = detail.data.imdbId;
     } else {
       searchKey = info.title;
       imdbId = info.imdbId;
