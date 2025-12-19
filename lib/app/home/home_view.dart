@@ -8,12 +8,12 @@ import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:harvest/app/home/pages/file_manage/controller.dart';
 import 'package:harvest/app/home/pages/file_manage/view.dart';
-import 'package:harvest/app/home/pages/models/color_storage.dart';
 import 'package:harvest/app/home/pages/web_socket_logging/view.dart';
 import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/form_widgets.dart';
 import 'package:harvest/common/utils.dart';
 import 'package:harvest/theme/background_container.dart';
+import 'package:harvest/theme/color_storage.dart';
 import 'package:harvest/utils/logger_helper.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 

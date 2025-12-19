@@ -1,14 +1,15 @@
-import 'dart:convert';
-
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:harvest/models/common_response.dart';
+import 'package:harvest/utils/logger_helper.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
-import '../../../../utils/storage.dart';
+import '../utils/storage.dart';
 
 class SiteColorConfig {
   static const String spKey = 'site_color_config';
 
+  // 颜色方案
   final Rx<Color> toSignColor;
   final Rx<Color> signedColor;
   final Rx<Color> siteCardColor;
@@ -95,80 +96,37 @@ class SiteColorConfig {
     await SPUtil.setMap(spKey, map);
   }
 
-  static Future<void> save({
+  static Future<CommonResponse> save({
     required ShadColorScheme scheme,
     required Map<String, dynamic> theme,
   }) async {
-    // 1️⃣ 先 load 当前配置（保证完整）
-    final current = SiteColorConfig.load(scheme);
-
-    // 2️⃣ 转成 Map
-    final map = current.toJson();
-    // print('更新前的配置：${map[key]}');
-    // print('准备更新的内容：${key} ==== ${color.value}');
-    // 3️⃣
-    /// 只允许已知 key（防止脏数据）
-    for (final entry in theme.entries) {
-      if (map.containsKey(entry.key)) {
-        map[entry.key] = entry.value;
-      }
-    }
-    // print('更新后的配置：$map');
-    // 4️⃣ 整体写回 SP
-    await SPUtil.setMap(spKey, map);
-  }
-
-  /// 从剪贴板导入配色方案
-  static Future<bool> importFromClipboard({
-    required ShadColorScheme scheme,
-  }) async {
     try {
-      // 1️⃣ 读取剪贴板
-      final data = await Clipboard.getData(Clipboard.kTextPlain);
-      final text = data?.text;
+      // 1️⃣ 先 load 当前配置（保证完整）
+      final current = SiteColorConfig.load(scheme);
 
-      if (text == null || text.trim().isEmpty) {
-        return false;
+      // 2️⃣ 转成 Map
+      final map = current.toJson();
+      // print('更新前的配置：${map[key]}');
+      // print('准备更新的内容：${key} ==== ${color.value}');
+      // 3️⃣
+      /// 只允许已知 key（防止脏数据）
+      for (final entry in theme.entries) {
+        if (map.containsKey(entry.key)) {
+          map[entry.key] = entry.value;
+        }
       }
-
-      // 2️⃣ JSON 解析
-      final decoded = jsonDecode(text);
-
-      // 3️⃣ 类型校验
-      if (decoded is! Map<String, dynamic>) {
-        return false;
-      }
-
-      // 4️⃣ 写入（复用 save）
-      await save(
-        scheme: scheme,
-        theme: decoded,
-      );
-
-      return true;
-    } catch (e) {
-      // JSON 格式错误 / 其他异常
-      return false;
+      // print('更新后的配置：$map');
+      // 4️⃣ 整体写回 SP
+      await SPUtil.setMap(spKey, map);
+      String msg = '主题已导入';
+      Logger.instance.i(msg);
+      return CommonResponse.success(msg: msg);
+    } catch (e, trace) {
+      String error = '保存失败：${e.toString()}';
+      Logger.instance.e(error);
+      Logger.instance.e(trace);
+      return CommonResponse.error(msg: error);
     }
-  }
-
-  /// 导出当前配色到剪贴板（JSON）
-  static Future<String> exportToClipboard({
-    required ShadColorScheme scheme,
-  }) async {
-    // 1️⃣ load 当前完整配置
-    final current = SiteColorConfig.load(scheme);
-
-    // 2️⃣ 转 Map
-    final map = current.toJson();
-
-    // 3️⃣ JSON 编码（可读格式，方便用户）
-    final json = const JsonEncoder.withIndent('  ').convert(map);
-
-    // 4️⃣ 写入剪贴板
-    await Clipboard.setData(ClipboardData(text: json));
-
-    return json;
   }
 
   /// 重置为默认主题（基于 ShadColorScheme）
@@ -249,7 +207,7 @@ class SiteColorConfig {
     Color _c(String key, Color def) => json.containsKey(key) ? Color(json[key]) : def;
     double opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
     return SiteColorConfig(
-      toSignColor: _c(SiteColorKeys.toSignColor, const Color(0xFFF44336)).withOpacity(opacity).obs,
+      toSignColor: _c(SiteColorKeys.toSignColor, const Color(0xFFF44336)).obs,
       signedColor: _c(SiteColorKeys.signedColor, const Color(0xFF388E3C)).obs,
       siteCardColor: _c(SiteColorKeys.siteCardColor, scheme.foreground).obs,
       siteNameColor: _c(SiteColorKeys.siteNameColor, scheme.foreground).obs,

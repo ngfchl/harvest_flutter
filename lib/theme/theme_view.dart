@@ -6,20 +6,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
+import 'package:harvest/common/form_widgets.dart';
 import 'package:harvest/theme/theme_controller.dart';
-import 'package:harvest/theme/theme_service.dart';
 import 'package:harvest/utils/platform.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../app/home/controller/home_controller.dart';
-import '../app/home/pages/models/color_storage.dart';
 import '../common/card_view.dart';
 import '../common/corner_badge.dart';
 import '../common/image_helper.dart';
 import '../utils/calc_weeks.dart';
 import '../utils/logger_helper.dart';
 import '../utils/storage.dart';
+import 'background_container.dart';
+import 'color_storage.dart';
 
 class ThemeIconButton extends StatelessWidget {
   final Icon icon; // Accepts an Icon widget as a parameter
@@ -29,11 +30,11 @@ class ThemeIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final popoverController = ShadPopoverController();
-    final bg = Get.find<BackgroundService>();
-    TextEditingController urlController = TextEditingController(text: bg.backgroundImage.value);
+    final controller = Get.find<ThemeController>();
+    TextEditingController urlController = TextEditingController(text: controller.backgroundImage.value);
 
     if (kIsWeb) {
-      bg.useLocalBackground.value = false;
+      controller.useLocalBackground.value = false;
     }
     final showPreview = false.obs;
     var shadColorScheme = ShadTheme.of(context).colorScheme;
@@ -44,12 +45,12 @@ class ThemeIconButton extends StatelessWidget {
           controller: popoverController,
           closeOnTapOutside: false,
           decoration: ShadDecoration(
-            color: shadColorScheme.background.withOpacity(bg.opacity.value),
+            color: controller.colorConfig.value.siteCardColor.value.withOpacity(controller.opacity.value),
           ),
           popover: (context) => ConstrainedBox(
             constraints: BoxConstraints(maxHeight: 630, maxWidth: 450, minHeight: 300),
-            child: Material(
-              color: Colors.transparent,
+            child: BackgroundContainer(
+              // color: Colors.transparent,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
                 child: Column(
@@ -133,18 +134,18 @@ class ThemeIconButton extends StatelessWidget {
                               children: [
                                 ShadSwitch(
                                   label: Text('背景图片'),
-                                  value: bg.useBackground.value,
+                                  value: controller.useBackground.value,
                                   onChanged: (value) {
-                                    bg.useBackground.value = value;
+                                    controller.useBackground.value = value;
                                     SPUtil.setBool('useBackground', value);
                                   },
                                 ),
-                                if (bg.useBackground.value)
+                                if (controller.useBackground.value)
                                   ShadSwitch(
                                     label: Text('使用缓存'),
-                                    value: bg.useImageCache.value,
+                                    value: controller.useImageCache.value,
                                     onChanged: (value) {
-                                      bg.useImageCache.value = value;
+                                      controller.useImageCache.value = value;
                                       SPUtil.setBool('useImageCache', value);
                                     },
                                   ),
@@ -152,29 +153,29 @@ class ThemeIconButton extends StatelessWidget {
                             );
                           }),
                           Obx(() {
-                            return bg.useBackground.value && !kIsWeb
+                            return controller.useBackground.value && !kIsWeb
                                 ? Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       ShadSwitch(
-                                        label: Text(bg.useLocalBackground.value ? '本地图片' : '网络图片'),
+                                        label: Text(controller.useLocalBackground.value ? '本地图片' : '网络图片'),
                                         sublabel: Text(
                                           '默认网络图片',
                                           style: TextStyle(fontSize: 10),
                                         ),
-                                        value: kIsWeb ? false : bg.useLocalBackground.value,
+                                        value: kIsWeb ? false : controller.useLocalBackground.value,
                                         onChanged: (value) {
-                                          bg.useLocalBackground.value = value;
+                                          controller.useLocalBackground.value = value;
                                           SPUtil.setBool('useLocalBackground', value);
                                         },
                                       ),
-                                      if (!bg.useLocalBackground.value)
+                                      if (!controller.useLocalBackground.value)
                                         Obx(() {
                                           return ShadSwitch(
                                             label: Text('图片加速'),
-                                            value: bg.useImageProxy.value,
+                                            value: controller.useImageProxy.value,
                                             onChanged: (value) {
-                                              bg.useImageProxy.value = value;
+                                              controller.useImageProxy.value = value;
                                               SPUtil.setBool('useImageProxy', value);
                                             },
                                           );
@@ -183,10 +184,10 @@ class ThemeIconButton extends StatelessWidget {
                                   )
                                 : SizedBox.shrink();
                           }),
-
+                          _siteCardForm(context, controller.opacity.value),
                           Obx(() {
                             return Column(spacing: 10, children: [
-                              bg.useBackground.value && bg.useLocalBackground.value
+                              controller.useBackground.value && controller.useLocalBackground.value
                                   ? ImagePickerRow(
                                       onImagePicked: (String? path) {
                                         if (path != null) {
@@ -200,14 +201,14 @@ class ThemeIconButton extends StatelessWidget {
                                       keyboardType: TextInputType.url,
                                     ),
                               Obx(() {
-                                if (showPreview.value && bg.backgroundImage.value.isNotEmpty) {
+                                if (showPreview.value && controller.backgroundImage.value.isNotEmpty) {
                                   Logger.instance.d(
-                                      'backgroundImage: ${bg.backgroundImage.value} , useLocalBackground: ${bg.useLocalBackground.value}');
-                                  return bg.useLocalBackground.value
-                                      ? bg.backgroundImage.value.startsWith('http')
+                                      'backgroundImage: ${controller.backgroundImage.value} , useLocalBackground: ${controller.useLocalBackground.value}');
+                                  return controller.useLocalBackground.value
+                                      ? controller.backgroundImage.value.startsWith('http')
                                           ? SizedBox.shrink()
                                           : Image.file(
-                                              File(bg.backgroundImage.value),
+                                              File(controller.backgroundImage.value),
                                               width: double.infinity,
                                               fit: BoxFit.fitWidth,
                                             )
@@ -215,7 +216,7 @@ class ThemeIconButton extends StatelessWidget {
                                           () {
                                             return CachedNetworkImage(
                                               imageUrl:
-                                                  '${bg.useImageProxy.value ? 'https://images.weserv.nl/?url=' : ''}${bg.backgroundImage.value}',
+                                                  '${controller.useImageProxy.value ? 'https://images.weserv.nl/?url=' : ''}${controller.backgroundImage.value}',
                                               placeholder: (context, url) => Center(
                                                   child: CircularProgressIndicator(
                                                 color: shadColorScheme.primary,
@@ -243,11 +244,11 @@ class ThemeIconButton extends StatelessWidget {
                                       min: 0.1,
                                       max: 1,
                                       // divisions: 10,
-                                      label: bg.opacity.value.toString(),
-                                      initialValue: bg.opacity.value,
+                                      label: controller.opacity.value.toString(),
+                                      initialValue: controller.opacity.value,
                                       onChanged: (value) async {
-                                        bg.opacity.value = value;
-                                        bg.save();
+                                        controller.opacity.value = value;
+                                        controller.saveSettings();
                                       }),
                                 ),
                               ],
@@ -261,19 +262,105 @@ class ThemeIconButton extends StatelessWidget {
                                   child: ShadSlider(
                                     min: 0,
                                     max: 20,
-                                    divisions: 20,
-                                    label: bg.blur.value.toStringAsFixed(1),
-                                    initialValue: bg.blur.value,
+                                    // divisions: 20,
+                                    label: controller.blur.value.toStringAsFixed(1),
+                                    initialValue: controller.blur.value,
                                     onChanged: (v) {
-                                      bg.blur.value = v;
-                                      bg.save();
+                                      controller.blur.value = v;
+                                      controller.saveSettings();
                                     },
                                   ),
                                 ),
                               ],
                             );
                           }),
-                          _siteCardForm(context, bg.opacity.value),
+
+                          CustomCard(
+                            child: OverflowBar(
+                              alignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                ShadButton.ghost(
+                                  size: ShadButtonSize.sm,
+                                  onPressed: () {
+                                    SiteColorConfig.resetToDefault(scheme: shadColorScheme);
+                                    Get.forceAppUpdate();
+                                  },
+                                  child: Text('重置'),
+                                ),
+                                ShadButton.secondary(
+                                  size: ShadButtonSize.sm,
+                                  onPressed: () async {
+                                    Get.defaultDialog(
+                                      title: '导入主题',
+                                      titleStyle: TextStyle(
+                                          color: shadColorScheme.foreground, fontSize: 14, fontWeight: FontWeight.bold),
+                                      backgroundColor: shadColorScheme.background,
+                                      radius: 8,
+                                      content: Column(
+                                        children: [
+                                          Text(
+                                            '请复制主题JSON数据，然后点击确定按钮。',
+                                            style: TextStyle(color: shadColorScheme.foreground, fontSize: 13),
+                                          ),
+                                          GetBuilder<ThemeController>(
+                                              id: 'controller.replaceBackgroundImage',
+                                              builder: (controller) {
+                                                return SwitchTile(
+                                                    title: '替换背景图片',
+                                                    fontSize: 12,
+                                                    value: controller.replaceBackgroundImage,
+                                                    onChanged: (value) {
+                                                      controller.replaceBackgroundImage = value;
+                                                      controller.update(['controller.replaceBackgroundImage']);
+                                                    });
+                                              }),
+                                        ],
+                                      ),
+                                      actions: [
+                                        ShadButton.ghost(
+                                          size: ShadButtonSize.sm,
+                                          onPressed: () async {
+                                            Navigator.of(context).pop(true);
+                                          },
+                                          child: const Text('取消'),
+                                        ),
+                                        ShadButton.destructive(
+                                          size: ShadButtonSize.sm,
+                                          onPressed: () async {
+                                            // 1️⃣ 读取剪贴板
+                                            final ok = await controller.importFromClipboard();
+
+                                            if (ok.succeed) {
+                                              Get.snackbar('成功', '主题已导入');
+                                            } else {
+                                              Get.snackbar('失败', ok.msg, colorText: shadColorScheme.destructive);
+                                            }
+                                            Get.forceAppUpdate();
+                                          },
+                                          child: const Text('确定'),
+                                        )
+                                      ],
+                                    );
+                                  },
+                                  foregroundColor: shadColorScheme.primary,
+                                  child: Text('导入'),
+                                ),
+                                ShadButton.outline(
+                                  size: ShadButtonSize.sm,
+                                  child: Text('分享'),
+                                  onPressed: () async {
+                                    final ok = await controller.exportToClipboard();
+                                    Logger.instance.i('当前主题配置信息: $ok');
+                                    Get.snackbar(
+                                      '已导出',
+                                      '主题配置已复制到剪贴板',
+                                      snackPosition: SnackPosition.BOTTOM,
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
                           if (PlatformTool.isDesktopOS())
                             Center(
                               child: Wrap(
@@ -314,7 +401,7 @@ class ThemeIconButton extends StatelessWidget {
                                       }))
                                 ],
                               ),
-                            )
+                            ),
                         ],
                       ),
                     )),
@@ -331,7 +418,7 @@ class ThemeIconButton extends StatelessWidget {
                           ),
                           child: Text('关闭'),
                         ),
-                        if (bg.useBackground.value)
+                        if (controller.useBackground.value)
                           ShadButton.secondary(
                             size: ShadButtonSize.sm,
                             leading: Icon(Icons.delete_outlined, size: 16),
@@ -339,7 +426,7 @@ class ThemeIconButton extends StatelessWidget {
                             child: Text('预览'),
                             onPressed: () {
                               if (urlController.text.isNotEmpty) {
-                                bg.backgroundImage.value = urlController.text;
+                                controller.backgroundImage.value = urlController.text;
                                 showPreview.value = !showPreview.value;
                               } else {
                                 showPreview.value = false;
@@ -351,7 +438,8 @@ class ThemeIconButton extends StatelessWidget {
                           leading: Icon(Icons.save_outlined, size: 16),
                           onPressed: () {
                             if (urlController.text.isNotEmpty) {
-                              if (bg.useLocalBackground.value && bg.backgroundImage.value.startsWith('http')) {
+                              if (controller.useLocalBackground.value &&
+                                  controller.backgroundImage.value.startsWith('http')) {
                                 Get.snackbar(
                                   '出错啦',
                                   "请选择正确的背景图片！",
@@ -359,9 +447,9 @@ class ThemeIconButton extends StatelessWidget {
                                 );
                                 return;
                               }
-                              bg.backgroundImage.value = urlController.text;
+                              controller.backgroundImage.value = urlController.text;
                               Logger.instance.d('backgroundImage: ${urlController.text}');
-                              SPUtil.setString('backgroundImage', urlController.text);
+                              controller.saveSettings();
                               HomeController homeController = Get.find();
                               homeController.onInit();
                               Get.forceAppUpdate();
@@ -924,51 +1012,6 @@ class ThemeIconButton extends StatelessWidget {
                   ),
                 ),
               ]),
-            ),
-          ),
-          CustomCard(
-            child: OverflowBar(
-              alignment: MainAxisAlignment.spaceAround,
-              children: [
-                ShadButton.ghost(
-                  size: ShadButtonSize.sm,
-                  onPressed: () {
-                    SiteColorConfig.resetToDefault(scheme: shadColorScheme);
-                    Get.forceAppUpdate();
-                  },
-                  child: Text('重置'),
-                ),
-                ShadButton.secondary(
-                  size: ShadButtonSize.sm,
-                  onPressed: () async {
-                    final ok = await SiteColorConfig.importFromClipboard(scheme: shadColorScheme);
-
-                    if (ok) {
-                      Get.snackbar('成功', '主题已导入');
-                    } else {
-                      Get.snackbar('失败', '剪贴板内容不是有效的主题 JSON');
-                    }
-                    Get.forceAppUpdate();
-                  },
-                  foregroundColor: shadColorScheme.primary,
-                  child: Text('导入'),
-                ),
-                ShadButton.outline(
-                  size: ShadButtonSize.sm,
-                  child: Text('分享'),
-                  onPressed: () async {
-                    final json = await SiteColorConfig.exportToClipboard(
-                      scheme: shadColorScheme,
-                    );
-
-                    Get.snackbar(
-                      '已导出',
-                      '主题配置已复制到剪贴板',
-                      snackPosition: SnackPosition.BOTTOM,
-                    );
-                  },
-                ),
-              ],
             ),
           ),
         ],

@@ -4,9 +4,9 @@ import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:harvest/theme/theme_service.dart';
+import 'package:harvest/theme/theme_controller.dart';
 
-class BackgroundContainer extends GetView<BackgroundService> {
+class BackgroundContainer extends GetView<ThemeController> {
   final Widget child;
 
   const BackgroundContainer({super.key, required this.child});

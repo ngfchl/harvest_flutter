@@ -20,7 +20,7 @@ import '../../utils/storage.dart';
 import '../../utils/string_utils.dart';
 import '../home/pages/download/download_form.dart';
 import '../home/pages/download/tr_tree_file_view.dart';
-import '../home/pages/models/color_storage.dart';
+import '../../theme/color_storage.dart';
 import '../home/pages/models/transmission_base_torrent.dart';
 import 'controller.dart';
 
@@ -70,7 +70,7 @@ class TrPage extends StatelessWidget {
         child: BackgroundContainer(
           child: Scaffold(
             appBar: AppBar(
-              backgroundColor: siteColorConfig.siteCardColor.value.withOpacity(opacity),
+              backgroundColor: siteColorConfig.siteCardColor.value,
               title: Row(
                 children: [
                   Expanded(

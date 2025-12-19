@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
-import '../app/home/pages/models/color_storage.dart';
+import '../theme/color_storage.dart';
 import '../utils/storage.dart';
 
 class CustomCard extends StatelessWidget {

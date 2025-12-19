@@ -21,7 +21,7 @@ import '../../utils/logger_helper.dart' as logger_helper;
 import '../../utils/storage.dart';
 import '../home/pages/download/download_form.dart';
 import '../home/pages/download/qb_file_tree_view.dart';
-import '../home/pages/models/color_storage.dart';
+import '../../theme/color_storage.dart';
 import 'controller.dart';
 
 class QBittorrentPage extends GetView<QBittorrentController> {
@@ -70,7 +70,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
         child: BackgroundContainer(
           child: Scaffold(
             appBar: AppBar(
-              backgroundColor: siteColorConfig.siteCardColor.value.withOpacity(opacity),
+              backgroundColor: siteColorConfig.siteCardColor.value,
               foregroundColor: shadColorScheme.foreground,
               title: Row(
                 children: [
