@@ -176,19 +176,24 @@ class ThemeController extends GetxController {
   }
 
   /// 导出当前配色到剪贴板（JSON）
-  Future<String> exportToClipboard() async {
+  Future<String> exportToClipboard(bool flag) async {
     // 1️⃣ load 当前完整配置
     final scheme = ShadColorScheme.fromName(colorSchemeName.value);
     final currentColorTheme = SiteColorConfig.load(scheme);
-    final currentTheme = exportConfig();
-    // 2️⃣ 转 Map
-    final map = {
-      ...currentTheme,
-      "color_config": currentColorTheme.toJson(),
-    };
+    Map<String, dynamic> theme = {};
+    if (flag) {
+      final currentTheme = exportConfig();
+      // 2️⃣ 转 Map
+      theme = {
+        ...currentTheme,
+        "color_config": currentColorTheme.toJson(),
+      };
+    } else {
+      theme = currentColorTheme.toJson();
+    }
 
     // 3️⃣ JSON 编码（可读格式，方便用户）
-    final json = const JsonEncoder.withIndent('  ').convert(map);
+    final json = const JsonEncoder.withIndent('  ').convert(theme);
 
     // 4️⃣ 写入剪贴板
     await Clipboard.setData(ClipboardData(text: json));

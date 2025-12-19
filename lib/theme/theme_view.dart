@@ -283,13 +283,15 @@ class ThemeIconButton extends StatelessWidget {
                                   size: ShadButtonSize.sm,
                                   onPressed: () {
                                     SiteColorConfig.resetToDefault(scheme: shadColorScheme);
+                                    controller.applyDefaultConfig();
                                     Get.forceAppUpdate();
                                   },
                                   child: Text('重置'),
                                 ),
-                                ShadButton.secondary(
+                                ShadButton.ghost(
                                   size: ShadButtonSize.sm,
                                   onPressed: () async {
+                                    popoverController.hide();
                                     Get.defaultDialog(
                                       title: '导入主题',
                                       titleStyle: TextStyle(
@@ -299,7 +301,7 @@ class ThemeIconButton extends StatelessWidget {
                                       content: Column(
                                         children: [
                                           Text(
-                                            '请复制主题JSON数据，然后点击确定按钮。',
+                                            '请复制主题JSON数据，然后点击导入按钮。',
                                             style: TextStyle(color: shadColorScheme.foreground, fontSize: 13),
                                           ),
                                           GetBuilder<ThemeController>(
@@ -320,7 +322,7 @@ class ThemeIconButton extends StatelessWidget {
                                         ShadButton.ghost(
                                           size: ShadButtonSize.sm,
                                           onPressed: () async {
-                                            Navigator.of(context).pop(true);
+                                            Get.back();
                                           },
                                           child: const Text('取消'),
                                         ),
@@ -329,16 +331,15 @@ class ThemeIconButton extends StatelessWidget {
                                           onPressed: () async {
                                             // 1️⃣ 读取剪贴板
                                             final ok = await controller.importFromClipboard();
-
+                                            Get.back();
                                             if (ok.succeed) {
                                               Get.snackbar('成功', '主题已导入');
-                                              Get.back();
                                               Get.forceAppUpdate();
                                             } else {
                                               Get.snackbar('失败', ok.msg, colorText: shadColorScheme.destructive);
                                             }
                                           },
-                                          child: const Text('确定'),
+                                          child: const Text('导入'),
                                         )
                                       ],
                                     );
@@ -346,16 +347,53 @@ class ThemeIconButton extends StatelessWidget {
                                   foregroundColor: shadColorScheme.primary,
                                   child: Text('导入'),
                                 ),
-                                ShadButton.outline(
+                                ShadButton.ghost(
                                   size: ShadButtonSize.sm,
                                   child: Text('分享'),
                                   onPressed: () async {
-                                    final ok = await controller.exportToClipboard();
-                                    Logger.instance.i('当前主题配置信息: $ok');
-                                    Get.snackbar(
-                                      '已导出',
-                                      '主题配置已复制到剪贴板',
-                                      snackPosition: SnackPosition.BOTTOM,
+                                    Get.defaultDialog(
+                                      title: '分享主题',
+                                      titleStyle: TextStyle(
+                                          color: shadColorScheme.foreground, fontSize: 14, fontWeight: FontWeight.bold),
+                                      backgroundColor: shadColorScheme.background,
+                                      radius: 8,
+                                      content: Text(
+                                        '可选择仅分享配色方案，或者直接分享整个主题',
+                                        style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
+                                      ),
+                                      actions: [
+                                        ShadButton.ghost(
+                                          size: ShadButtonSize.sm,
+                                          onPressed: () async {
+                                            Get.back();
+                                          },
+                                          child: const Text('取消'),
+                                        ),
+                                        ShadButton.outline(
+                                          size: ShadButtonSize.sm,
+                                          onPressed: () async {
+                                            String data = await controller.exportToClipboard(false);
+                                            Get.back();
+                                            Logger.instance.i('当前主题配置信息: $data');
+                                            Get.snackbar(
+                                              '已导出',
+                                              '主题配置已复制到剪贴板',
+                                              snackPosition: SnackPosition.BOTTOM,
+                                            );
+                                          },
+                                          child: const Text('配色方案'),
+                                        ),
+                                        ShadButton.destructive(
+                                          size: ShadButtonSize.sm,
+                                          onPressed: () async {
+                                            String data = await controller.exportToClipboard(true);
+                                            Get.back();
+                                            Logger.instance.i('当前主题配置信息: $data');
+                                            Get.snackbar('已导出', '主题配置已复制到剪贴板');
+                                          },
+                                          child: const Text('主题配色'),
+                                        )
+                                      ],
                                     );
                                   },
                                 ),
