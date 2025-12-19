@@ -66,7 +66,8 @@ class SwitchTile extends StatelessWidget {
 class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
   final FocusNode? focusNode; // ✅ 新增
-  final String labelText;
+  final String? labelText;
+  final String? hintText;
   final String? prefixText;
   final Widget? prefixIcon;
   final String? suffixText;
@@ -82,19 +83,22 @@ class CustomTextField extends StatelessWidget {
   final bool readOnly;
   final bool obscureText;
   final ScrollPhysics? scrollPhysics;
+  final BoxConstraints? constraints;
   final Function(String)? onChanged;
   final Function()? onTap;
+  final ValueChanged<String>? onFieldSubmitted;
   final FormFieldValidator<String>? validator;
 
   const CustomTextField({
     super.key,
     required this.controller,
-    required this.labelText,
+    this.labelText,
     this.focusNode, // ✅ 新增
     this.inputFormatters = const [],
     this.maxLines = 1,
     this.keyboardType,
     this.helperText,
+    this.hintText,
     this.prefixText,
     this.prefixIcon,
     this.suffixText,
@@ -103,8 +107,10 @@ class CustomTextField extends StatelessWidget {
     this.prefix,
     this.onChanged,
     this.onTap,
+    this.onFieldSubmitted,
     this.validator,
     this.maxLength,
+    this.constraints,
     this.scrollPhysics = const NeverScrollableScrollPhysics(),
     this.autofocus = false,
     this.readOnly = false,
@@ -124,6 +130,7 @@ class CustomTextField extends StatelessWidget {
         onChanged: onChanged,
         maxLength: maxLength,
         onTap: onTap,
+        onFieldSubmitted: onFieldSubmitted,
         validator: validator,
         maxLines: maxLines,
         readOnly: readOnly,
@@ -141,6 +148,7 @@ class CustomTextField extends StatelessWidget {
           focusedBorder: UnderlineInputBorder(
             borderSide: BorderSide(color: scheme.foreground.withOpacity(0.5)),
           ),
+          constraints: constraints,
           focusColor: Colors.transparent,
           hoverColor: Colors.transparent,
           fillColor: Colors.transparent,
@@ -149,6 +157,7 @@ class CustomTextField extends StatelessWidget {
           prefixIcon: prefixIcon,
           suffixText: suffixText,
           suffixIcon: suffixIcon,
+          hintText: hintText,
           suffix: suffix,
           prefix: prefix,
           helperStyle: TextStyle(fontSize: 12, color: scheme.foreground),
