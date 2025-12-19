@@ -27,17 +27,21 @@ class ScreenshotSaver {
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       final pngBytes = byteData!.buffer.asUint8List();
 
-      if (Platform.isAndroid || Platform.isIOS) {
-        // 手机就保存到相册
-        await _saveToGallery(pngBytes);
-      } else {
-        // 电脑就复制到粘贴板
-        await Pasteboard.writeImage(pngBytes);
-      }
-      await _shareImageBytes(pngBytes);
+      await saveAndShare(pngBytes);
     } catch (e, stack) {
       debugPrint("截图保存失败: $e\n$stack");
     }
+  }
+
+  static Future<void> saveAndShare(Uint8List pngBytes) async {
+    if (Platform.isAndroid || Platform.isIOS) {
+      // 手机就保存到相册
+      await _saveToGallery(pngBytes);
+    } else {
+      // 电脑就复制到粘贴板
+      await Pasteboard.writeImage(pngBytes);
+    }
+    await _shareImageBytes(pngBytes);
   }
 
   /// 手机保存到相册
