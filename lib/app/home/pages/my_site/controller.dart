@@ -18,6 +18,7 @@ class MySiteController extends GetxController {
   List<MySite> mySiteList = <MySite>[];
   List<MySite> showStatusList = <MySite>[];
   bool loading = false;
+  bool siteCardView = false;
   bool initFlag = false;
   bool loadingFromServer = false;
   bool openByInnerExplorer = true;
@@ -41,8 +42,10 @@ class MySiteController extends GetxController {
     {'name': '做种体积', 'value': 'statusSeedVolume'},
     {'name': '站点魔力', 'value': 'statusMyBonus'},
     {'name': '站点积分', 'value': 'statusMyScore'},
-    {'name': '下载量', 'value': 'statusDownloaded'},
     {'name': '上传量', 'value': 'statusUploaded'},
+    {'name': '下载量', 'value': 'statusDownloaded'},
+    {'name': '上传增量', 'value': 'statusUploadedDelta'},
+    {'name': '下载增量', 'value': 'statusDownloadedDelta'},
     {'name': '发种量', 'value': 'statusPublished'},
     {'name': '时魔', 'value': 'statusBonusHour'},
     {'name': '邀请', 'value': 'statusInvitation'},
@@ -59,6 +62,8 @@ class MySiteController extends GetxController {
     {'name': '有新邮件', 'value': 'mail'},
     {'name': '有新公告', 'value': 'notice'},
     {'name': '无今日数据', 'value': 'status'},
+    {'name': '上传增量', 'value': 'statusUploadedDelta'},
+    {'name': '下载增量', 'value': 'statusDownloadedDelta'},
     {'name': '无代理', 'value': 'proxy'},
     {'name': '无 UID', 'value': 'userId'},
     {'name': '无用户名称', 'value': 'username'},
@@ -79,6 +84,7 @@ class MySiteController extends GetxController {
   void onInit() async {
     searchKey = '';
     filterKey = 'available';
+    siteCardView = SPUtil.getBool('mySite-siteCardView', defaultValue: false);
     sortKey = SPUtil.getString('mySite-sortKey', defaultValue: 'mySiteSortId');
     sortReversed = SPUtil.getBool('mySite-sortReversed', defaultValue: false);
     openByInnerExplorer = SPUtil.getBool('openByInnerExplorer', defaultValue: true);
@@ -266,6 +272,12 @@ class MySiteController extends GetxController {
       case 'mySiteSortId':
         otherStatusList.sort((a, b) => a.sortId.compareTo(b.sortId));
         break;
+      case 'statusUploadedDelta':
+        otherStatusList.sort((a, b) => a.dailyDelta.uploaded.compareTo(b.dailyDelta.uploaded));
+        break;
+      case 'statusDownloadedDelta':
+        otherStatusList.sort((a, b) => a.dailyDelta.downloaded.compareTo(b.dailyDelta.downloaded));
+        break;
       case 'siteName':
         otherStatusList.sort((a, b) => a.site.compareTo(b.site));
         break;
@@ -335,7 +347,7 @@ class MySiteController extends GetxController {
     update();
   }
 
-  filterSiteStatusBySearchKey(List<MySite> toSearchList) {
+  List<MySite> filterSiteStatusBySearchKey(List<MySite> toSearchList) {
     if (searchKey.isNotEmpty) {
       return toSearchList.where((site) {
         var lowerCaseSearchKey = searchKey.toLowerCase();
@@ -365,6 +377,8 @@ class MySiteController extends GetxController {
     Map<String, bool Function(MySite)> conditionMap = {
       'available': (item) => item.available,
       'unavailable': (item) => !item.available,
+      'statusUploadedDelta': (item) => item.dailyDelta.uploaded > 0,
+      'statusDownloadedDelta': (item) => item.dailyDelta.downloaded > 0,
       'passkey': (item) => item.passkey == null || item.passkey!.isEmpty,
       'authKey': (item) => item.authKey == null || item.authKey!.isEmpty,
       'cookie': (item) => item.cookie == null || item.cookie!.isEmpty,

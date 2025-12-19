@@ -491,6 +491,22 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                             )
                           : GetBuilder<MySiteController>(
                               builder: (controller) {
+                                if (controller.siteCardView) {
+                                  return ListView.builder(
+                                    itemCount: controller.showStatusList.length,
+                                    itemBuilder: (BuildContext context, int index) {
+                                      MySite mySite = controller.showStatusList[index];
+                                      return GetBuilder<MySiteController>(
+                                        id: "SingleSite-${mySite.id}",
+                                        key: ValueKey("SingleSite-${mySite.id}"),
+                                        builder: (controller) {
+                                          return RepaintBoundary(child: showSiteDataCard(mySite));
+                                        },
+                                      );
+                                    },
+                                  );
+                                }
+
                                 return ReorderableListView.builder(
                                   onReorder: (int oldIndex, int newIndex) async {
                                     final item = controller.showStatusList.removeAt(oldIndex);
@@ -561,14 +577,15 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                 backgroundColor: shadColorScheme.background,
                 isScrollControlled: true,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                RepaintBoundary(
-                  key: captureKey,
+                SizedBox(
+                  height: MediaQuery.of(context).size.height - 100,
                   child: Scaffold(
                     appBar: AppBar(
+                      backgroundColor: shadColorScheme.background,
                       title: Text('可邀请站点[${canInviteSiteList.length}]',
-                          style:
-                              TextStyle(fontSize: 16, color: shadColorScheme.foreground, fontWeight: FontWeight.bold)),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       toolbarHeight: 40,
+                      foregroundColor: shadColorScheme.foreground,
                       actions: [
                         ShadIconButton.ghost(
                           icon: Icon(Icons.camera_alt_outlined, size: 24, color: shadColorScheme.foreground),
@@ -576,18 +593,24 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         ),
                       ],
                     ),
-                    body: SingleChildScrollView(
-                      child: Column(children: [
-                        ...canInviteSiteList.map((item) {
-                          var webSite = controller.webSiteList[item.site];
-                          return ListTile(
-                            dense: true,
-                            leading: siteLogo('${controller.baseUrl}local/icons/${webSite?.name}.png', webSite!, item),
-                            title: Text(item.nickname),
-                            trailing: Text(item.latestStatusInfo?.invitation.toString() ?? ''),
-                          );
-                        }),
-                      ]),
+                    body: RepaintBoundary(
+                      key: captureKey,
+                      child: CustomCard(
+                        child: SingleChildScrollView(
+                          child: Column(children: [
+                            ...canInviteSiteList.map((item) {
+                              var webSite = controller.webSiteList[item.site];
+                              return ListTile(
+                                dense: true,
+                                leading:
+                                    siteLogo('${controller.baseUrl}local/icons/${webSite?.name}.png', webSite!, item),
+                                title: Text(item.nickname),
+                                trailing: Text(item.latestStatusInfo?.invitation.toString() ?? ''),
+                              );
+                            }),
+                          ]),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -596,6 +619,19 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
           },
           icon: Icon(
             Icons.man_2_outlined,
+            size: 24,
+            color: shadColorScheme.primary,
+          ),
+        ),
+        ShadIconButton.ghost(
+          height: 40,
+          onPressed: () async {
+            controller.siteCardView = !controller.siteCardView;
+            SPUtil.setBool('mySite-siteCardView', controller.siteCardView);
+            controller.update();
+          },
+          icon: Icon(
+            Icons.change_circle_outlined,
             size: 24,
             color: shadColorScheme.primary,
           ),
@@ -665,6 +701,887 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
       Logger.instance.d('使用内置浏览器打开');
       Get.toNamed(Routes.WEBVIEW, arguments: {'url': url, 'info': null, 'mySite': mySite, 'website': website});
     }
+  }
+
+  Widget showSiteDataCard(MySite mySite) {
+    StatusInfo? status;
+    WebSite? website = controller.webSiteList[mySite.site];
+    RxBool showLoading = false.obs;
+    // Logger.instance.d('${mySite.nickname} - ${website?.name}');
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
+    SiteColorConfig siteColorConfig = SiteColorConfig.load(shadColorScheme);
+    if (website == null) {
+      return Obx(() {
+        return CustomCard(
+          key: Key("${mySite.id}-${mySite.site}"),
+          color: siteColorConfig.siteCardColor.value.withOpacity(opacity),
+          child: ListTile(
+            // dense: true,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+            leading: const Image(
+              image: AssetImage('assets/images/avatar.png'),
+              width: 32,
+              height: 32,
+            ),
+            title: Text(
+              mySite.nickname,
+              style: TextStyle(
+                fontSize: 13,
+                color: shadColorScheme.foreground,
+              ),
+            ),
+            subtitle: Text(
+              '没有找到这个站点的配置文件，请清理站点配置缓存后重新加载数据！',
+              style: TextStyle(
+                color: shadColorScheme.destructive,
+                fontSize: 10,
+              ),
+            ),
+            trailing: ShadIconButton.ghost(
+                onPressed: () => removeMySite(mySite, shadColorScheme),
+                icon: Icon(
+                  Icons.clear_outlined,
+                  color: shadColorScheme.destructive,
+                )),
+          ),
+        );
+      });
+    }
+    if (mySite.statusInfo.isNotEmpty) {
+      status = mySite.latestStatusInfo;
+    }
+    if (status == null) {
+      Logger.instance.d('${mySite.nickname} - ${mySite.statusInfo}');
+    }
+    LevelInfo? level = website.level?[status?.myLevel];
+    List<LevelInfo> rights = [];
+    LevelInfo? nextLevel;
+    if (level?.levelId == 0) {
+      rights = [...?website.level?.values];
+    } else if (level == null) {
+    } else {
+      rights = [...?website.level?.values.where((item) => item.levelId > 0 && item.levelId <= level.levelId)];
+      rights.sort((a, b) => b.levelId.compareTo(a.levelId));
+      nextLevel = website.level?.values.firstWhereOrNull((item) => item.levelId == level.levelId + 1);
+    }
+
+    int nextLevelToDownloadedByte = FileSizeConvert.parseToByte(nextLevel?.downloaded ?? "0");
+    int nextLevelToUploadedByte = FileSizeConvert.parseToByte(nextLevel?.uploaded ?? "0");
+    int calcToUploaded = (max(nextLevelToDownloadedByte, status?.downloaded ?? 0) * (nextLevel?.ratio ?? 0)).toInt();
+    nextLevelToUploadedByte = max(nextLevelToUploadedByte, calcToUploaded);
+    // Logger.instance.d(
+    //     '${FileSizeConvert.parseToFileSize(status?.uploaded)}(${status?.uploaded})/${FileSizeConvert.parseToFileSize(nextLevelToUploadedByte)}($nextLevelToUploadedByte)');
+    String iconUrl = '${controller.baseUrl}/local/icons/${website.name}.png';
+    // Logger.instance.d('${mySite.dailyDelta.toJson()} - $iconUrl');
+    var toUpgradeTime = DateTime.parse(mySite.timeJoin).add(Duration(days: (nextLevel?.days ?? 0) * 7));
+    String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    bool signed = mySite.getSignMaxKey() == today || mySite.signIn == false;
+    RxBool siteRefreshing = false.obs;
+    return Stack(children: [
+      Obx(() {
+        return CustomCard(
+            child: Column(
+          spacing: 5,
+          children: [
+            CustomCard(
+              key: Key("${mySite.id}-${mySite.site}"),
+              color: siteColorConfig.siteNameColor.value.withOpacity(opacity),
+              padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+              child: ListTile(
+                // dense: true,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+                leading: InkWell(
+                  onTap: () => _openSitePage(mySite, website, true),
+                  onLongPress: () => _openSitePage(mySite, website, false),
+                  child: siteLogo(iconUrl, website, mySite),
+                ),
+                onTap: () {
+                  Get.defaultDialog(
+                    title: '站点信息 - ${mySite.nickname}',
+                    radius: 8,
+                    titleStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                    backgroundColor: shadColorScheme.background,
+                    content: Column(
+                      spacing: 5,
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '站点地址：',
+                          style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
+                        ),
+                        ...website.url.map((item) => ShadButton.link(
+                              size: ShadButtonSize.sm,
+                              onPressed: () => launchUrl(Uri.parse(item), mode: LaunchMode.externalApplication),
+                              child: Text(
+                                item,
+                                style: TextStyle(fontSize: 13, color: shadColorScheme.primary),
+                              ),
+                            )),
+                        Text(
+                          '搜索地址：',
+                          style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
+                        ),
+                        ...website.pageSearch.map((item) => ShadButton.link(
+                              size: ShadButtonSize.sm,
+                              child: Text(
+                                item,
+                                style: TextStyle(fontSize: 13, color: shadColorScheme.primary),
+                              ),
+                            )),
+                        Text(
+                          '上传限速：${website.limitSpeed}MB/s',
+                          style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
+                        ),
+                        Text(
+                          '最后访问时间：${calculateTimeElapsed(mySite.latestActive.toString())}',
+                          style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      ShadButton.ghost(
+                        size: ShadButtonSize.sm,
+                        child: Text('关闭'),
+                        onPressed: () => Get.back(),
+                      ),
+                      ShadButton.secondary(
+                        size: ShadButtonSize.sm,
+                        child: Text(
+                          '打开',
+                          style: TextStyle(color: shadColorScheme.primary),
+                        ),
+                        onPressed: () {
+                          Get.back();
+                          _openSitePage(mySite, website, true);
+                        },
+                      ),
+                      ShadButton.outline(
+                        size: ShadButtonSize.sm,
+                        child: Text('浏览器'),
+                        onPressed: () => _openSitePage(mySite, website, false),
+                      ),
+                    ],
+                  );
+                },
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    mySite.latestActive != null
+                        ? Tooltip(
+                            message:
+                                '最后访问时间：${calculateTimeElapsed(mySite.latestActive.toString())}  上传限速：${website.limitSpeed}MB/s \n 搜索地址：${website.pageSearch}',
+                            child: Text(
+                              mySite.nickname,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: siteColorConfig.siteNameColor.value,
+                              ),
+                            ),
+                          )
+                        : Text(
+                            mySite.nickname,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: siteColorConfig.siteNameColor.value,
+                            ),
+                          ),
+                    if (mySite.mail! > 0)
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.mail_outlined,
+                            size: 12,
+                            color: siteColorConfig.mailColor.value,
+                          ),
+                          Text(
+                            '${mySite.mail}',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: siteColorConfig.mailColor.value,
+                            ),
+                          ),
+                        ],
+                      ),
+                    if (mySite.notice! > 0)
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.notifications_outlined,
+                            size: 12,
+                            color: siteColorConfig.noticeColor.value,
+                          ),
+                          Text(
+                            '${mySite.notice}',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: siteColorConfig.noticeColor.value,
+                            ),
+                          ),
+                        ],
+                      ),
+                    if (status != null && level == null)
+                      Text(
+                        website.level?[status.myLevel]?.level ?? status.myLevel,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: mySiteLevelColorMap[status.myLevel] ?? shadColorScheme.foreground,
+                        ),
+                      ),
+                    if (status != null && level != null)
+                      CustomPopup(
+                        showArrow: false,
+                        barrierColor: Colors.transparent,
+                        backgroundColor: shadColorScheme.background,
+                        content: SingleChildScrollView(
+                          child: SizedBox(
+                              width: 200,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (nextLevel != null) ...[
+                                    PopupMenuItem<String>(
+                                      height: 13,
+                                      child: Text("下一等级：${nextLevel.level}",
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: mySiteLevelColorMap[nextLevel.level] ?? shadColorScheme.foreground,
+                                          )),
+                                    ),
+                                    // if (status.uploaded < nextLevelToUploadedByte)
+                                    PopupMenuItem<String>(
+                                      height: 13,
+                                      child: Text(
+                                          '上传量：${FileSizeConvert.parseToFileSize(status.uploaded)}/${FileSizeConvert.parseToFileSize(nextLevelToUploadedByte)}',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: status.uploaded < max(nextLevelToUploadedByte, calcToUploaded)
+                                                ? shadColorScheme.destructive
+                                                : shadColorScheme.foreground,
+                                          )),
+                                    ),
+                                    // if (status.downloaded < nextLevelToDownloadedByte)
+                                    PopupMenuItem<String>(
+                                      height: 13,
+                                      child: Text(
+                                          '下载量：${FileSizeConvert.parseToFileSize(status.downloaded)}/${FileSizeConvert.parseToFileSize(nextLevelToDownloadedByte)}',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: status.downloaded < nextLevelToDownloadedByte
+                                                ? shadColorScheme.destructive
+                                                : shadColorScheme.foreground,
+                                          )),
+                                    ),
+                                    // if (status.uploaded / status.downloaded <
+                                    //     nextLevel.ratio)
+                                    //   PopupMenuItem<String>(
+                                    //     height: 13,
+                                    //     child: Text(
+                                    //         '分享率：${(status.uploaded / status.downloaded).toStringAsFixed(2)}/${nextLevel.ratio}',
+                                    //         style: TextStyle(
+                                    //           fontSize: 10,
+                                    //           color:
+                                    //               ShadTheme.of(context).colorScheme.destructive,
+                                    //         )),
+                                    //   ),
+                                    if (nextLevel.torrents > 0)
+                                      PopupMenuItem<String>(
+                                        height: 13,
+                                        child: Text('需发种数量：${status.published}/${nextLevel.torrents}',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: status.published < nextLevel.torrents
+                                                  ? shadColorScheme.destructive
+                                                  : shadColorScheme.foreground,
+                                            )),
+                                      ),
+                                    if (nextLevel.score > 0)
+                                      PopupMenuItem<String>(
+                                        height: 13,
+                                        child: Text(
+                                            '做种积分：${formatNumber(status.myScore)}/${formatNumber(nextLevel.score)}',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: status.myScore < nextLevel.score
+                                                  ? shadColorScheme.destructive
+                                                  : shadColorScheme.foreground,
+                                            )),
+                                      ),
+                                    if (nextLevel.bonus > 0)
+                                      PopupMenuItem<String>(
+                                        height: 13,
+                                        child:
+                                            Text('魔力值：${formatNumber(status.myBonus)}/${formatNumber(nextLevel.bonus)}',
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  color: status.myBonus < nextLevel.bonus
+                                                      ? shadColorScheme.destructive
+                                                      : shadColorScheme.foreground,
+                                                )),
+                                      ),
+                                    if (nextLevel.days > 0)
+                                      PopupMenuItem<String>(
+                                        height: 13,
+                                        child: Text(
+                                            '升级日期：${DateFormat('yyyy-MM-dd').format(DateTime.now())}/${DateFormat('yyyy-MM-dd').format(toUpgradeTime)}',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: DateTime.now().isBefore(toUpgradeTime)
+                                                  ? shadColorScheme.destructive
+                                                  : shadColorScheme.foreground,
+                                            )),
+                                      ),
+                                    if (level.keepAccount != true && nextLevel.keepAccount)
+                                      PopupMenuItem<String>(
+                                        height: 13,
+                                        child: Text('保留账号：${nextLevel.keepAccount}',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: shadColorScheme.destructive,
+                                            )),
+                                      ),
+                                    if (level.graduation != true && nextLevel.graduation)
+                                      PopupMenuItem<String>(
+                                        height: 13,
+                                        child: Text('毕业：${nextLevel.graduation}',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: shadColorScheme.destructive,
+                                            )),
+                                      ),
+                                    PopupMenuItem<String>(
+                                      height: 13,
+                                      child: Text('即将获得：${nextLevel.rights}',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: shadColorScheme.destructive,
+                                          )),
+                                    ),
+                                  ],
+                                  ...rights
+                                      .where((el) =>
+                                          el.rights.trim() != '无' &&
+                                          !el.rights.trim().startsWith('同') &&
+                                          !el.rights.trim().contains('同上'))
+                                      .map((LevelInfo item) => PopupMenuItem<String>(
+                                            height: 13,
+                                            child: Text(item.rights,
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  color: item.graduation ? Colors.orange : shadColorScheme.foreground,
+                                                )),
+                                          ))
+                                ],
+                              )),
+                        ),
+                        child: Text(
+                          website.level?[status.myLevel]?.level ?? status.myLevel,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: mySiteLevelColorMap[status.myLevel] ?? shadColorScheme.foreground,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                subtitle: Column(
+                  children: [
+                    status == null
+                        ? Text(
+                            '新站点，还没有数据哦',
+                            style: TextStyle(
+                              color: shadColorScheme.foreground,
+                              fontSize: 10,
+                            ),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              DateTime.parse(mySite.timeJoin) != DateTime(2024, 2, 1)
+                                  ? Text(
+                                      '⌚️${calcWeeksDays(mySite.timeJoin)}',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: siteColorConfig.regTimeColor.value,
+                                      ),
+                                    )
+                                  : Text(
+                                      '⌚️获取失败！',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: siteColorConfig.regTimeColor.value,
+                                      ),
+                                    ),
+                              if (level?.keepAccount == true)
+                                Text(
+                                  '🔥保号',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: siteColorConfig.keepAccountColor.value,
+                                  ),
+                                ),
+                              if (level?.graduation == true)
+                                Text(
+                                  '🎓毕业',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: siteColorConfig.graduationColor.value,
+                                  ),
+                                ),
+                              if (status.invitation > 0)
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.person_add_alt_outlined,
+                                      size: 12,
+                                      color: siteColorConfig.inviteColor.value,
+                                    ),
+                                    Text(
+                                      '${status.invitation}',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: siteColorConfig.inviteColor.value,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
+                    if (status?.myHr != '' && status?.myHr != "0")
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(
+                            'HR: ${status!.myHr.replaceAll('区', '').replaceAll('专', '').replaceAll('H&R', '').trim()}',
+                            textAlign: TextAlign.right,
+                            style: TextStyle(
+                              color: siteColorConfig.hrColor.value,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+                trailing: Obx(() {
+                  return siteRefreshing.value
+                      ? SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: Center(
+                              child: CircularProgressIndicator(
+                            color: siteColorConfig.loadingColor.value,
+                            strokeWidth: 2,
+                          )))
+                      : Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ConstrainedBox(
+                              constraints: BoxConstraints(maxHeight: 30),
+                              child: ShadButton.outline(
+                                size: ShadButtonSize.sm,
+                                padding: EdgeInsets.symmetric(horizontal: 4),
+                                onPressed: (website.signIn == true && mySite.signIn)
+                                    ? () async {
+                                        showLoading.value = true;
+                                        if (!signed) {
+                                          await signSite(siteRefreshing, mySite, shadColorScheme);
+                                          showLoading.value = false;
+                                        }
+                                        if (mySite.getSignMaxKey() == today) {
+                                          _showSignHistory(mySite, showLoading);
+                                        }
+                                      }
+                                    : null,
+                                child: Text(
+                                  mySite.signIn == false
+                                      ? '无签到'
+                                      : mySite.getSignMaxKey() == today
+                                          ? '已签到'
+                                          : '未签到',
+                                ),
+                              ),
+                            ),
+                            ConstrainedBox(
+                              constraints: BoxConstraints(maxHeight: 18),
+                              child: ShadButton.ghost(
+                                size: ShadButtonSize.sm,
+                                padding: EdgeInsets.symmetric(horizontal: 4),
+                                onPressed: () async {
+                                  showLoading.value = true;
+                                  await refreshSiteData(siteRefreshing, mySite, shadColorScheme);
+                                  showLoading.value = false;
+                                },
+                                child: Text(
+                                  calculateTimeElapsed(status!.updatedAt.toString()),
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: siteColorConfig.updatedAtColor.value,
+                                  ),
+                                ),
+                              ),
+                            )
+                          ],
+                        );
+                }),
+              ),
+            ),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              Expanded(
+                child: CustomCard(
+                  color: siteColorConfig.uploadIconColor.value.withOpacity(opacity),
+                  margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CustomTextTag(
+                        backgroundColor: Colors.transparent,
+                        labelText: '上传',
+                        labelColor: siteColorConfig.uploadNumColor.value,
+                        fontSize: 13,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.max,
+                        icon: Icon(
+                          Icons.cloud_upload_outlined,
+                          color: siteColorConfig.uploadIconColor.value,
+                          size: 16,
+                        ),
+                      ),
+                      Text(
+                        '今日：${FileSizeConvert.parseToFileSize(mySite.dailyDelta.uploaded)}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: siteColorConfig.uploadNumColor.value,
+                        ),
+                      ),
+                      Text(
+                        '总计：${FileSizeConvert.parseToFileSize(status?.uploaded)}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: siteColorConfig.uploadNumColor.value,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                child: CustomCard(
+                  color: siteColorConfig.downloadIconColor.value.withOpacity(opacity),
+                  margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CustomTextTag(
+                        backgroundColor: Colors.transparent,
+                        labelText: '下载',
+                        fontSize: 13,
+                        labelColor: siteColorConfig.downloadNumColor.value,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.max,
+                        icon: Icon(
+                          Icons.cloud_upload_outlined,
+                          color: siteColorConfig.downloadIconColor.value,
+                          size: 16,
+                        ),
+                      ),
+                      Text(
+                        '今日：${FileSizeConvert.parseToFileSize(mySite.dailyDelta.downloaded)}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: siteColorConfig.downloadNumColor.value,
+                        ),
+                      ),
+                      Text(
+                        '总计：${FileSizeConvert.parseToFileSize(status?.downloaded)}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: siteColorConfig.downloadNumColor.value,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ]),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              Expanded(
+                child: CustomCard(
+                  color: siteColorConfig.seedIconColor.value.withOpacity(opacity),
+                  margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                  child: Column(
+                    children: [
+                      CustomTextTag(
+                        backgroundColor: Colors.transparent,
+                        labelText: '做种量',
+                        labelColor: siteColorConfig.seedNumColor.value,
+                        fontSize: 12,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.max,
+                        icon: Icon(
+                          Icons.cloud_upload_outlined,
+                          color: siteColorConfig.seedIconColor.value,
+                          size: 16,
+                        ),
+                      ),
+                      Text(
+                        FileSizeConvert.parseToFileSize(status?.seedVolume),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: siteColorConfig.seedNumColor.value,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                child: CustomCard(
+                  color: siteColorConfig.uploadIconColor.value.withOpacity(opacity),
+                  margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                  child: Column(
+                    children: [
+                      CustomTextTag(
+                        backgroundColor: Colors.transparent,
+                        labelText: '做种数',
+                        labelColor: siteColorConfig.uploadNumColor.value,
+                        fontSize: 12,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.max,
+                        icon: Icon(
+                          Icons.arrow_upward_outlined,
+                          color: siteColorConfig.uploadIconColor.value,
+                          size: 16,
+                        ),
+                      ),
+                      Text(
+                        status!.seed.toString(),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: siteColorConfig.uploadNumColor.value,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                child: CustomCard(
+                  color: siteColorConfig.bonusIconColor.value.withOpacity(opacity),
+                  margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                  child: Column(
+                    children: [
+                      CustomTextTag(
+                        backgroundColor: Colors.transparent,
+                        labelText: '魔力值',
+                        labelColor: siteColorConfig.bonusNumColor.value,
+                        fontSize: 12,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.max,
+                        icon: Icon(
+                          Icons.score_outlined,
+                          color: siteColorConfig.bonusIconColor.value,
+                          size: 14,
+                        ),
+                      ),
+                      Text(
+                        formatNumber(status.myBonus, fixed: 0),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: siteColorConfig.bonusNumColor.value,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                child: CustomCard(
+                  color: siteColorConfig.ratioIconColor.value.withOpacity(opacity),
+                  margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                  child: Column(
+                    children: [
+                      CustomTextTag(
+                        backgroundColor: Colors.transparent,
+                        labelText: '积分',
+                        labelColor: siteColorConfig.bonusNumColor.value,
+                        fontSize: 12,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.max,
+                        icon: Icon(
+                          Icons.score_outlined,
+                          color: siteColorConfig.bonusIconColor.value,
+                          size: 14,
+                        ),
+                      ),
+                      Text(
+                        formatNumber(status.myScore, fixed: 0),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: siteColorConfig.bonusNumColor.value,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ]),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              Expanded(
+                child: CustomCard(
+                  color: siteColorConfig.uploadIconColor.value.withOpacity(opacity),
+                  margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                  child: Column(
+                    children: [
+                      CustomTextTag(
+                        backgroundColor: Colors.transparent,
+                        labelText: '发种数',
+                        labelColor: siteColorConfig.uploadNumColor.value,
+                        fontSize: 12,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.max,
+                        icon: Icon(
+                          Icons.cloud_upload_outlined,
+                          color: siteColorConfig.uploadIconColor.value,
+                          size: 14,
+                        ),
+                      ),
+                      Text(
+                        formatNumber(status.published, fixed: 0),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: siteColorConfig.uploadNumColor.value,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                child: CustomCard(
+                  color: siteColorConfig.seedIconColor.value.withOpacity(opacity),
+                  margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                  child: Column(
+                    children: [
+                      CustomTextTag(
+                        backgroundColor: Colors.transparent,
+                        labelText: '下载中',
+                        labelColor: siteColorConfig.downloadNumColor.value,
+                        fontSize: 12,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.max,
+                        icon: Icon(
+                          Icons.arrow_downward_outlined,
+                          color: siteColorConfig.downloadIconColor.value,
+                          size: 14,
+                        ),
+                      ),
+                      Text(
+                        '${status.leech}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: siteColorConfig.downloadNumColor.value,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                child: CustomCard(
+                  color: siteColorConfig.ratioIconColor.value.withOpacity(opacity),
+                  margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                  child: Column(
+                    children: [
+                      CustomTextTag(
+                        backgroundColor: Colors.transparent,
+                        labelText: '分享率',
+                        labelColor: siteColorConfig.ratioNumColor.value,
+                        fontSize: 12,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.max,
+                        icon: Icon(
+                          Icons.screen_share_outlined,
+                          color: siteColorConfig.ratioIconColor.value,
+                          size: 14,
+                        ),
+                      ),
+                      Text(
+                        formatNumber(status.ratio),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: siteColorConfig.ratioNumColor.value,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                child: CustomCard(
+                  color: siteColorConfig.bonusIconColor.value.withOpacity(opacity),
+                  margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                  child: Column(
+                    children: [
+                      CustomTextTag(
+                        backgroundColor: Colors.transparent,
+                        labelText: '时魔',
+                        labelColor: siteColorConfig.bonusNumColor.value,
+                        fontSize: 12,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.max,
+                        icon: Icon(
+                          Icons.timer_outlined,
+                          color: siteColorConfig.bonusIconColor.value,
+                          size: 14,
+                        ),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            formatNumber(status.bonusHour, fixed: 0),
+                            // '(${  status.siteSpFull != null && status.siteSpFull! > 0 ? ((status.statusBonusHour! / status.siteSpFull!) * 100).toStringAsFixed(2) : '0'}%)',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: siteColorConfig.perBonusNumColor.value,
+                            ),
+                          ),
+                          if (website.spFull > 0 && status.bonusHour > 0)
+                            Text(
+                              // formatNumber(status.bonusHour),
+                              '(${((status.bonusHour / website.spFull) * 100).toStringAsFixed((status.bonusHour / website.spFull) * 100 > 1 ? 0 : 2)}%)',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: siteColorConfig.perBonusNumColor.value,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ]),
+          ],
+        ));
+      }),
+      Obx(() {
+        if (showLoading.value) {
+          return Positioned.fill(
+            child: Center(
+                child: CircularProgressIndicator(
+              strokeWidth: 4,
+              color: siteColorConfig.loadingColor.value,
+            )),
+          );
+        }
+        return const SizedBox.shrink();
+      }),
+    ]);
   }
 
   Widget showSiteDataInfo(MySite mySite) {
@@ -810,7 +1727,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                           const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
                       onPressed: (context) async {
                         showLoading.value = true;
-                        _showSignHistory(mySite);
+                        _showSignHistory(mySite, showLoading);
                         showLoading.value = false;
                       },
                       backgroundColor: Color(0xFF5D4037),
@@ -1274,7 +2191,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                         '${FileSizeConvert.parseToFileSize(status.downloaded)} (${status.leech})',
                                         style: TextStyle(
                                           fontSize: 12,
-                                          color: siteColorConfig.downloadIconColor.value,
+                                          color: siteColorConfig.downloadNumColor.value,
                                         ),
                                       ),
                                     ],
@@ -1423,11 +2340,13 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
         }),
         Obx(() {
           if (showLoading.value) {
-            return Center(
-                child: CircularProgressIndicator(
-              strokeWidth: 4,
-              color: shadColorScheme.foreground,
-            ));
+            return Positioned.fill(
+              child: Center(
+                  child: CircularProgressIndicator(
+                strokeWidth: 4,
+                color: siteColorConfig.loadingColor.value,
+              )),
+            );
           }
           return const SizedBox.shrink();
         }),
@@ -2212,8 +3131,9 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     );
   }
 
-  void _showSignHistory(MySite mySite) async {
+  void _showSignHistory(MySite mySite, RxBool showLoading) async {
     CommonResponse res = await getMySiteByIdApi(mySite.id);
+    showLoading.value = false;
     if (!res.succeed) {
       Logger.instance.e('获取站点信息失败');
       Get.snackbar('获取站点信息失败', res.msg, colorText: ShadTheme.of(context).colorScheme.destructive);
