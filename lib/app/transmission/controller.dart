@@ -194,10 +194,11 @@ class TrController extends GetxController {
 
   void filterTorrentsByError() {
     logger_helper.Logger.instance.i(selectedCategory);
-    if (selectedError.isNotEmpty && selectedError != '全部') {
-      showTorrents = showTorrents.where((torrent) {
-        return torrent.errorString.contains(selectedError);
-      }).toList();
+    if (selectedError.isNotEmpty && selectedError != '错误') {
+      showTorrents = showTorrents.where((torrent) => torrent.errorString.contains(selectedError)).toList();
+    }
+    if (selectedError == '错误') {
+      showTorrents = showTorrents.where((torrent) => torrent.errorString.isNotEmpty).toList();
     }
   }
 
@@ -211,6 +212,14 @@ class TrController extends GetxController {
               torrent.errorString.toLowerCase().contains(searchKey.toLowerCase()) ||
               torrent.hashString.toLowerCase().contains(searchKey.toLowerCase()))
           .toList();
+    }
+  }
+
+  void filterTorrentsByLabel() {
+    // LoggerHelper.Logger.instance.d('搜索关键字：${searchKey.value}');
+
+    if (selectedLabel?.isNotEmpty == true) {
+      showTorrents = showTorrents.where((torrent) => torrent.labels.contains(selectedLabel)).toList();
     }
   }
 
@@ -238,6 +247,7 @@ class TrController extends GetxController {
     filterTorrentsByState();
     // LoggerHelper.Logger.instance.d(showTorrents.length);
     filterTorrentsBySearchKey();
+    filterTorrentsByLabel();
     // LoggerHelper.Logger.instance.d(showTorrents.length);
     filterTorrentsByTracker();
     filterTorrentsByError();

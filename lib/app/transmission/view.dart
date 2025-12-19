@@ -15,12 +15,12 @@ import '../../../../utils/logger_helper.dart' as logger_helper;
 import '../../common/form_widgets.dart';
 import '../../models/common_response.dart';
 import '../../theme/background_container.dart';
+import '../../theme/color_storage.dart';
 import '../../utils/date_time_utils.dart';
 import '../../utils/storage.dart';
 import '../../utils/string_utils.dart';
 import '../home/pages/download/download_form.dart';
 import '../home/pages/download/tr_tree_file_view.dart';
-import '../../theme/color_storage.dart';
 import '../home/pages/models/transmission_base_torrent.dart';
 import 'controller.dart';
 
@@ -48,7 +48,7 @@ class TrPage extends StatelessWidget {
             middleTextStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
             titleStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
             radius: 10,
-            cancel: ShadButton.outline(
+            cancel: ShadButton.ghost(
               size: ShadButtonSize.sm,
               onPressed: () async {
                 Navigator.of(context).pop(true);
@@ -270,6 +270,7 @@ class TrPage extends StatelessWidget {
                           color: shadColorScheme.foreground,
                         ),
                   labelText: controller.sortReversed ? '「正序」' : '「倒序」',
+                  labelColor: shadColorScheme.foreground,
                   backgroundColor: Colors.transparent,
                 ),
               ),
@@ -607,14 +608,28 @@ class TrPage extends StatelessWidget {
                           ListTile(
                             dense: true,
                             title: Text(
-                              '全部【${controller.showTorrents.where((torrent) => torrent.error == 2).length}】',
+                              '全部【${controller.torrents.length}】',
                             ),
                             titleTextStyle: TextStyle(color: shadColorScheme.foreground),
-                            selected: controller.selectedError == '全部',
+                            selected: controller.selectedError == '',
                             selectedColor: shadColorScheme.destructive,
                             onTap: () {
                               Get.back();
-                              controller.selectedError = '全部';
+                              controller.selectedError = '';
+                              controller.filterTorrents();
+                            },
+                          ),
+                          ListTile(
+                            dense: true,
+                            title: Text(
+                              '错误【${controller.torrents.where((torrent) => torrent.errorString.isNotEmpty).length}】',
+                            ),
+                            titleTextStyle: TextStyle(color: shadColorScheme.foreground),
+                            selected: controller.selectedError == '错误',
+                            selectedColor: shadColorScheme.destructive,
+                            onTap: () {
+                              Get.back();
+                              controller.selectedError = '错误';
                               controller.filterTorrents();
                             },
                           ),
@@ -645,7 +660,9 @@ class TrPage extends StatelessWidget {
                     ),
                   ),
                   child: Tooltip(
-                    message: '错误筛选【${controller.selectedError}】',
+                    message: controller.selectedError == ''
+                        ? '全部种子【${controller.torrents.length}】'
+                        : '错误筛选【${controller.selectedError}】',
                     child: CustomTextTag(
                       fontSize: 12,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -653,12 +670,12 @@ class TrPage extends StatelessWidget {
                         Icons.warning_amber_outlined,
                         size: 13,
                         color:
-                            controller.selectedError == '全部' ? shadColorScheme.foreground : shadColorScheme.destructive,
+                            controller.selectedError == '' ? shadColorScheme.foreground : shadColorScheme.destructive,
                       ),
                       backgroundColor: Colors.transparent,
                       labelColor:
-                          controller.selectedError == '全部' ? shadColorScheme.foreground : shadColorScheme.destructive,
-                      labelText: '错误',
+                          controller.selectedError == '' ? shadColorScheme.foreground : shadColorScheme.destructive,
+                      labelText: controller.selectedError == '' ? '全部' : '错误',
                     ),
                   ),
                 );
@@ -855,7 +872,7 @@ class TrPage extends StatelessWidget {
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                                       children: [
-                                        ShadButton.outline(
+                                        ShadButton.ghost(
                                           onPressed: () {
                                             Get.back(result: false);
                                           },
@@ -958,7 +975,7 @@ class TrPage extends StatelessWidget {
                     titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
                     middleText: '确定要重新校验种子吗？',
                     actions: [
-                      ShadButton.outline(
+                      ShadButton.ghost(
                         onPressed: () {
                           Get.back(result: false);
                         },
@@ -990,7 +1007,7 @@ class TrPage extends StatelessWidget {
                     title: '确认',
                     middleText: '您确定要执行这个操作吗？',
                     actions: [
-                      ShadButton.outline(
+                      ShadButton.ghost(
                         onPressed: () {
                           Get.back(result: false);
                         },
@@ -1025,7 +1042,7 @@ class TrPage extends StatelessWidget {
                     title: '确认',
                     middleText: '您确定要执行这个操作吗？',
                     actions: [
-                      ShadButton.outline(
+                      ShadButton.ghost(
                         onPressed: () {
                           Get.back(result: false);
                         },
@@ -1138,7 +1155,7 @@ class TrPage extends StatelessWidget {
                       );
                     }),
                     actions: [
-                      ShadButton.outline(
+                      ShadButton.ghost(
                         size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back(result: false);
@@ -1182,7 +1199,7 @@ class TrPage extends StatelessWidget {
                   radius: 5,
                   middleText: '确定要重新校验种子吗？',
                   actions: [
-                    ShadButton.outline(
+                    ShadButton.ghost(
                       size: ShadButtonSize.sm,
                       onPressed: () {
                         Get.back(result: false);
@@ -1254,7 +1271,7 @@ class TrPage extends StatelessWidget {
                       );
                     }),
                     actions: [
-                      ShadButton.outline(
+                      ShadButton.ghost(
                         size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back();
@@ -1489,7 +1506,7 @@ class TrPage extends StatelessWidget {
                       ],
                     ),
                     actions: [
-                      ShadButton.outline(
+                      ShadButton.ghost(
                         size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back();
@@ -2393,7 +2410,7 @@ class TrPage extends StatelessWidget {
         ],
       ),
       actions: [
-        ShadButton.outline(
+        ShadButton.ghost(
           onPressed: () {
             Get.back(result: false);
           },

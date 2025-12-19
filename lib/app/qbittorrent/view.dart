@@ -48,7 +48,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
             middleTextStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
             titleStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
             radius: 10,
-            cancel: ShadButton.outline(
+            cancel: ShadButton.ghost(
               size: ShadButtonSize.sm,
               onPressed: () async {
                 Navigator.of(context).pop(true);
@@ -780,7 +780,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                     });
                               }),
                               actions: [
-                                ShadButton.outline(
+                                ShadButton.ghost(
                                   size: ShadButtonSize.sm,
                                   onPressed: () {
                                     Get.back(result: false);
@@ -928,7 +928,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                   ),
                                 ]),
                                 actions: [
-                                  ShadButton.outline(
+                                  ShadButton.ghost(
                                     size: ShadButtonSize.sm,
                                     leading: const Icon(Icons.cancel_outlined),
                                     onPressed: () {
@@ -983,7 +983,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                   )
                                 ]),
                                 actions: [
-                                  ShadButton.outline(
+                                  ShadButton.ghost(
                                     size: ShadButtonSize.sm,
                                     leading: const Icon(Icons.cancel_outlined),
                                     onPressed: () {
@@ -1102,7 +1102,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                                       children: [
-                                        ShadButton.outline(
+                                        ShadButton.ghost(
                                           size: ShadButtonSize.sm,
                                           onPressed: () {
                                             Get.back(result: false);
@@ -1229,7 +1229,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                           });
                     }),
                     actions: [
-                      ShadButton.outline(
+                      ShadButton.ghost(
                         size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back(result: false);
@@ -1334,7 +1334,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                       );
                     }),
                     actions: [
-                      ShadButton.outline(
+                      ShadButton.ghost(
                         size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back(result: false);
@@ -1395,7 +1395,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                       ],
                     ),
                     actions: [
-                      ShadButton.outline(
+                      ShadButton.ghost(
                         size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back();
@@ -1598,7 +1598,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                       ],
                     ),
                     actions: [
-                      ShadButton.outline(
+                      ShadButton.ghost(
                         size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back();
@@ -1696,7 +1696,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                       ],
                     ),
                     actions: [
-                      ShadButton.outline(
+                      ShadButton.ghost(
                         size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back();
@@ -1752,7 +1752,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                   title: '校验种子',
                   middleText: '重新校验种子？',
                   actions: [
-                    ShadButton.outline(
+                    ShadButton.ghost(
                       size: ShadButtonSize.sm,
                       onPressed: () {
                         Get.back(result: false);
@@ -2139,7 +2139,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                 );
                               }),
                               actions: [
-                                ShadButton.outline(
+                                ShadButton.ghost(
                                   size: ShadButtonSize.sm,
                                   onPressed: () {
                                     Get.back(result: false);
