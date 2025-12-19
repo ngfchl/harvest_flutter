@@ -16,12 +16,12 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../common/meta_item.dart';
 import '../../theme/background_container.dart';
+import '../../theme/color_storage.dart';
 import '../../utils/date_time_utils.dart';
 import '../../utils/logger_helper.dart' as logger_helper;
 import '../../utils/storage.dart';
 import '../home/pages/download/download_form.dart';
 import '../home/pages/download/qb_file_tree_view.dart';
-import '../../theme/color_storage.dart';
 import 'controller.dart';
 
 class QBittorrentPage extends GetView<QBittorrentController> {
@@ -485,6 +485,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                 ),
                                 onTap: () async {
                                   controller.selectedTag = item;
+                                  controller.filterTorrents();
                                   controller.subTorrentList();
                                 },
                               )),
@@ -526,7 +527,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                             ),
                             onTap: () async {
                               controller.selectedTracker = '全部';
-                              controller.showTorrents.clear();
+                              controller.filterTorrents();
                               controller.subTorrentList();
                             },
                           ),
@@ -541,6 +542,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                             ),
                             onTap: () async {
                               controller.selectedTracker = '红种';
+                              controller.filterTorrents();
                               controller.subTorrentList();
                             },
                           ),
@@ -555,6 +557,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                 ),
                                 onTap: () async {
                                   controller.selectedTracker = item;
+                                  controller.filterTorrents();
                                   controller.subTorrentList();
                                 },
                               )),
@@ -585,26 +588,66 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          ListTile(
+                            dense: true,
+                            title: Text(
+                              "全部[${controller.allTorrents.length}]",
+                            ),
+                            style: ListTileStyle.list,
+                            titleTextStyle: TextStyle(
+                              color: shadColorScheme.foreground,
+                              fontSize: 12,
+                            ),
+                            selected: controller.selectedCategory == null,
+                            selectedColor: shadColorScheme.destructive,
+                            selectedTileColor: Colors.amber,
+                            onTap: () {
+                              Get.back();
+                              controller.selectedCategory = null;
+                              controller.filterTorrents();
+                              controller.subTorrentList();
+                            },
+                          ),
+                          ListTile(
+                            dense: true,
+                            title: Text(
+                              "未分类[${controller.allTorrents.where((torrent) => torrent.category == '').toList().length}]",
+                            ),
+                            style: ListTileStyle.list,
+                            titleTextStyle: TextStyle(
+                              color: shadColorScheme.foreground,
+                              fontSize: 12,
+                            ),
+                            selected: controller.selectedCategory == '',
+                            selectedColor: shadColorScheme.destructive,
+                            selectedTileColor: Colors.amber,
+                            onTap: () {
+                              Get.back();
+                              controller.selectedCategory = '';
+                              controller.filterTorrents();
+                              controller.subTorrentList();
+                            },
+                          ),
                           ...controller.categoryMap.values.map((item) => ListTile(
                                 dense: true,
                                 title: Text(
-                                  "${item?.name ?? '未分类'}[${item?.name == '全部' ? controller.allTorrents.length : controller.allTorrents.where((torrent) => torrent.category == (item?.name != '未分类' ? item?.name : '')).toList().length}]",
+                                  "${item?.name}[${controller.allTorrents.where((torrent) => torrent.category == item?.name).toList().length}]",
                                 ),
                                 style: ListTileStyle.list,
                                 titleTextStyle: TextStyle(
                                   color: shadColorScheme.foreground,
                                   fontSize: 12,
                                 ),
-                                selected:
-                                    controller.selectedCategory == (item?.savePath != null ? (item?.name ?? '') : null),
+                                selected: controller.selectedCategory == item?.name,
                                 selectedColor: shadColorScheme.destructive,
                                 selectedTileColor: Colors.amber,
                                 onTap: () {
                                   Get.back();
-                                  controller.selectedCategory = item?.savePath != null ? (item?.name ?? '') : null;
-                                  if (controller.selectedCategory == '全部') {
-                                    controller.showTorrents.clear();
-                                  }
+                                  controller.selectedCategory = item?.name;
+                                  // if (controller.selectedCategory == '全部') {
+                                  //   controller.showTorrents.clear();
+                                  // }
+                                  controller.filterTorrents();
                                   controller.subTorrentList();
                                 },
                               )),

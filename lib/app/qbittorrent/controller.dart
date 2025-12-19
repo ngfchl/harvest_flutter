@@ -157,10 +157,10 @@ class QBittorrentController extends GetxController {
     Logger.instance.d('初始化排序字段: $sortKey');
 
     /// 获取分类信息
-    categoryMap = {
-      '全部': const Category(name: '全部', savePath: ''),
-      '未分类': const Category(name: '', savePath: ''),
-    };
+    // categoryMap = {
+    //   '全部': const Category(name: '全部', savePath: null),
+    //   '未分类': const Category(name: '', savePath: ''),
+    // };
     categoryMap.addAll(await client.torrents.getCategories());
 
     /// 生成 tracker：website
@@ -191,19 +191,20 @@ class QBittorrentController extends GetxController {
     });
   }
 
-  void subTorrentList() {
+  void subTorrentList({bool withHashes = false}) {
     if (torrentListSubscription != null) {
       torrentListSubscription?.cancel();
     }
     TorrentListOptions options = TorrentListOptions(
       filter: torrentFilter,
-      category: selectedCategory,
+      category: selectedCategory == '全部' ? null : selectedCategory,
       sort: sortKey,
       // reverse: sortReversed,
       tag: selectedTag,
-      hashes: showTorrents.map((e) => e.infohashV1!).toList(),
+      hashes: withHashes ? showTorrents.map((e) => e.infohashV1!).toList() : null,
     );
 
+    Logger.instance.d('subTorrentList: ${options.toJson()}');
     torrentListSubscription = client.torrents
         .subscribeTorrentsList(options: options, interval: Duration(seconds: subInterval))
         .listen((event) async {
@@ -236,19 +237,27 @@ class QBittorrentController extends GetxController {
     if (torrentState != null) {
       showTorrents = showTorrents.where((torrent) => torrent.state == torrentState).toList();
     }
-    // Logger.instance.d('当前 种子数: ${showTorrents.length}');
-    if (selectedCategory != null) {
+    Logger.instance.d('1. torrentState 【$torrentState】 筛选后 种子数: ${showTorrents.length}');
+    if (selectedCategory != null && selectedCategory != '全部') {
       showTorrents = showTorrents.where((torrent) => torrent.category == selectedCategory).toList();
     }
-    // Logger.instance.d('当前 种子数: ${showTorrents.length}');
-    if (selectedTracker == '红种') {
+    Logger.instance.d('2. selectedCategory 【$selectedCategory】 筛选后 种子数: ${showTorrents.length}');
+
+    if (selectedTag != null && selectedTag != '全部') {
+      showTorrents = showTorrents.where((torrent) => torrent.tags?.contains(selectedTag) == true).toList();
+    }
+    Logger.instance.d('3. selectedTag 【$selectedTag】 筛选后 种子数: ${showTorrents.length}');
+
+    if (selectedTracker == '全部') {
+      showTorrents = showTorrents;
+    } else if (selectedTracker == '红种') {
       showTorrents = showTorrents.where((torrent) => torrent.tracker!.isEmpty).toList();
-    } else if (selectedTracker != '全部') {
+    } else {
       showTorrents = showTorrents
           .where((torrent) => trackers[selectedTracker] != null && trackers[selectedTracker]!.contains(torrent.hash))
           .toList();
     }
-    // Logger.instance.d('当前 种子数: ${showTorrents.length}');
+    Logger.instance.d('4. selectedTracker 【$selectedTracker】 筛选后 种子数: ${showTorrents.length}');
     if (searchKey.isNotEmpty) {
       showTorrents = showTorrents
           .where((TorrentInfo torrent) =>
@@ -257,10 +266,12 @@ class QBittorrentController extends GetxController {
               torrent.hash!.toLowerCase().contains(searchKey.toLowerCase()))
           .toList();
     }
+
+    Logger.instance.d('5. searchKey 【$searchKey】 筛选后 种子数: ${showTorrents.length}');
     if (sortReversed) {
       showTorrents = showTorrents.reversed.toList();
     }
-    Logger.instance.d('筛选后的种子数: ${showTorrents.length}');
+    Logger.instance.d('6. 筛选后的种子数: ${showTorrents.length}');
     update();
   }
 
@@ -449,7 +460,7 @@ class QBittorrentController extends GetxController {
     update();
   }
 
-  // 辅助方法，用于将字符串转换为 TorrentSort 枚举值
+// 辅助方法，用于将字符串转换为 TorrentSort 枚举值
   TorrentSort? stringToTorrentSort(String? value) {
     final map = {
       'added_on': TorrentSort.addedOn,
