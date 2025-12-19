@@ -986,7 +986,7 @@ class ThemeIconButton extends StatelessWidget {
                                   children: [
                                     GestureDetector(
                                       onTap: () => _openColorPicker(
-                                          shadColorScheme, siteColorConfig.bonusIconColor, SiteColorKeys.bonusNumColor),
+                                          shadColorScheme, siteColorConfig.bonusIconColor, SiteColorKeys.bonusIconColor),
                                       child: Icon(
                                         Icons.score,
                                         size: 14,
