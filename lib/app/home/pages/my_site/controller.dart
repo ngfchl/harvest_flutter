@@ -96,6 +96,11 @@ class MySiteController extends GetxController {
     super.onInit();
   }
 
+  void changeViewMode(bool value) {
+    siteCardView = value;
+    update();
+  }
+
   initData() async {
     if (!initFlag) {
       return;

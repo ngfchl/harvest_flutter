@@ -23,16 +23,25 @@ class SiteColorConfig {
   final Rx<Color> loadingColor;
   final Rx<Color> uploadIconColor;
   final Rx<Color> uploadNumColor;
+  final Rx<Color> uploadedColor;
   final Rx<Color> downloadIconColor;
   final Rx<Color> downloadNumColor;
+  final Rx<Color> downloadedColor;
+  final Rx<Color> downloadedIconColor;
   final Rx<Color> ratioIconColor;
   final Rx<Color> ratioNumColor;
+  final Rx<Color> publishedNumColor;
+  final Rx<Color> publishedIconColor;
   final Rx<Color> seedIconColor;
   final Rx<Color> seedNumColor;
+  final Rx<Color> seedVolumeIconColor;
+  final Rx<Color> seedVolumeNumColor;
   final Rx<Color> perBonusIconColor;
   final Rx<Color> perBonusNumColor;
   final Rx<Color> bonusIconColor;
   final Rx<Color> bonusNumColor;
+  final Rx<Color> scoreNumColor;
+  final Rx<Color> scoreIconColor;
   final Rx<Color> updatedAtColor;
   final Rx<Color> hrColor;
 
@@ -51,17 +60,26 @@ class SiteColorConfig {
     required this.uploadIconColor,
     required this.uploadNumColor,
     required this.downloadIconColor,
+    required this.downloadedIconColor,
     required this.downloadNumColor,
     required this.ratioIconColor,
     required this.ratioNumColor,
     required this.seedIconColor,
     required this.seedNumColor,
+    required this.seedVolumeIconColor,
+    required this.seedVolumeNumColor,
     required this.perBonusIconColor,
     required this.perBonusNumColor,
     required this.bonusIconColor,
     required this.bonusNumColor,
     required this.updatedAtColor,
     required this.hrColor,
+    required this.uploadedColor,
+    required this.downloadedColor,
+    required this.publishedNumColor,
+    required this.publishedIconColor,
+    required this.scoreNumColor,
+    required this.scoreIconColor,
   });
 
   static SiteColorConfig load(ShadColorScheme scheme) {
@@ -90,7 +108,8 @@ class SiteColorConfig {
     // print('更新前的配置：${map[key]}');
     // print('准备更新的内容：${key} ==== ${color.value}');
     // 3️⃣ 只更新指定 key
-    map[key] = color.value;
+    map[key] = color.toARGB32();
+    print('$key ==== ${color.toARGB32()}');
     // print('更新后的配置：$map');
     // 4️⃣ 整体写回 SP
     await SPUtil.setMap(spKey, map);
@@ -161,42 +180,55 @@ class SiteColorConfig {
       ratioNumColor: scheme.foreground.obs,
       seedIconColor: scheme.foreground.obs,
       seedNumColor: scheme.foreground.obs,
+      seedVolumeIconColor: scheme.foreground.obs,
+      seedVolumeNumColor: scheme.foreground.obs,
       perBonusIconColor: scheme.foreground.obs,
       perBonusNumColor: scheme.foreground.obs,
       bonusIconColor: scheme.foreground.obs,
       bonusNumColor: scheme.foreground.obs,
       updatedAtColor: scheme.foreground.obs,
       hrColor: scheme.destructive.obs,
+      uploadedColor: scheme.foreground.obs,
+      downloadedColor: scheme.foreground.obs,
+      publishedNumColor: scheme.foreground.obs,
+      scoreNumColor: scheme.foreground.obs,
+      scoreIconColor: scheme.foreground.obs,
+      publishedIconColor: scheme.foreground.obs,
+      downloadedIconColor: scheme.foreground.obs,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      SiteColorKeys.toSignColor: toSignColor.value.value,
-      SiteColorKeys.signedColor: signedColor.value.value,
-      SiteColorKeys.siteCardColor: siteCardColor.value.value,
-      SiteColorKeys.siteNameColor: siteNameColor.value.value,
-      SiteColorKeys.mailColor: mailColor.value.value,
-      SiteColorKeys.noticeColor: noticeColor.value.value,
-      SiteColorKeys.regTimeColor: regTimeColor.value.value,
-      SiteColorKeys.keepAccountColor: keepAccountColor.value.value,
-      SiteColorKeys.graduationColor: graduationColor.value.value,
-      SiteColorKeys.inviteColor: inviteColor.value.value,
-      SiteColorKeys.loadingColor: loadingColor.value.value,
-      SiteColorKeys.uploadIconColor: uploadIconColor.value.value,
-      SiteColorKeys.uploadNumColor: uploadNumColor.value.value,
-      SiteColorKeys.downloadIconColor: downloadIconColor.value.value,
-      SiteColorKeys.downloadNumColor: downloadNumColor.value.value,
-      SiteColorKeys.ratioIconColor: ratioIconColor.value.value,
-      SiteColorKeys.ratioNumColor: ratioNumColor.value.value,
-      SiteColorKeys.seedIconColor: seedIconColor.value.value,
-      SiteColorKeys.seedNumColor: seedNumColor.value.value,
-      SiteColorKeys.perBonusIconColor: perBonusIconColor.value.value,
-      SiteColorKeys.perBonusNumColor: perBonusNumColor.value.value,
-      SiteColorKeys.bonusIconColor: bonusIconColor.value.value,
-      SiteColorKeys.bonusNumColor: bonusNumColor.value.value,
-      SiteColorKeys.updatedAtColor: updatedAtColor.value.value,
-      SiteColorKeys.hrColor: hrColor.value.value,
+      SiteColorKeys.toSignColor: toSignColor.value.toARGB32(),
+      SiteColorKeys.signedColor: signedColor.value.toARGB32(),
+      SiteColorKeys.siteCardColor: siteCardColor.value.toARGB32(),
+      SiteColorKeys.siteNameColor: siteNameColor.value.toARGB32(),
+      SiteColorKeys.mailColor: mailColor.value.toARGB32(),
+      SiteColorKeys.noticeColor: noticeColor.value.toARGB32(),
+      SiteColorKeys.regTimeColor: regTimeColor.value.toARGB32(),
+      SiteColorKeys.keepAccountColor: keepAccountColor.value.toARGB32(),
+      SiteColorKeys.graduationColor: graduationColor.value.toARGB32(),
+      SiteColorKeys.inviteColor: inviteColor.value.toARGB32(),
+      SiteColorKeys.loadingColor: loadingColor.value.toARGB32(),
+      SiteColorKeys.uploadIconColor: uploadIconColor.value.toARGB32(),
+      SiteColorKeys.uploadNumColor: uploadNumColor.value.toARGB32(),
+      SiteColorKeys.downloadIconColor: downloadIconColor.value.toARGB32(),
+      SiteColorKeys.downloadNumColor: downloadNumColor.value.toARGB32(),
+      SiteColorKeys.ratioIconColor: ratioIconColor.value.toARGB32(),
+      SiteColorKeys.ratioNumColor: ratioNumColor.value.toARGB32(),
+      SiteColorKeys.seedIconColor: seedIconColor.value.toARGB32(),
+      SiteColorKeys.seedNumColor: seedNumColor.value.toARGB32(),
+      SiteColorKeys.perBonusIconColor: perBonusIconColor.value.toARGB32(),
+      SiteColorKeys.perBonusNumColor: perBonusNumColor.value.toARGB32(),
+      SiteColorKeys.bonusIconColor: bonusIconColor.value.toARGB32(),
+      SiteColorKeys.bonusNumColor: bonusNumColor.value.toARGB32(),
+      SiteColorKeys.updatedAtColor: updatedAtColor.value.toARGB32(),
+      SiteColorKeys.hrColor: hrColor.value.toARGB32(),
+      SiteColorKeys.uploadedColor: uploadedColor.value.toARGB32(),
+      SiteColorKeys.downloadedColor: downloadedColor.value.toARGB32(),
+      SiteColorKeys.publishedNumColor: publishedNumColor.value.toARGB32(),
+      SiteColorKeys.scoreNumColor: scoreNumColor.value.toARGB32(),
     };
   }
 
@@ -204,34 +236,42 @@ class SiteColorConfig {
     Map<String, dynamic> json,
     ShadColorScheme scheme,
   ) {
-    Color _c(String key, Color def) => json.containsKey(key) ? Color(json[key]) : def;
-    double opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
+    Color c(String key, Color def) => json.containsKey(key) ? Color(json[key]) : def;
     return SiteColorConfig(
-      toSignColor: _c(SiteColorKeys.toSignColor, const Color(0xFFF44336)).obs,
-      signedColor: _c(SiteColorKeys.signedColor, const Color(0xFF388E3C)).obs,
-      siteCardColor: _c(SiteColorKeys.siteCardColor, scheme.foreground).obs,
-      siteNameColor: _c(SiteColorKeys.siteNameColor, scheme.foreground).obs,
-      mailColor: _c(SiteColorKeys.mailColor, scheme.foreground).obs,
-      noticeColor: _c(SiteColorKeys.noticeColor, scheme.foreground).obs,
-      regTimeColor: _c(SiteColorKeys.regTimeColor, scheme.foreground).obs,
-      keepAccountColor: _c(SiteColorKeys.keepAccountColor, scheme.destructive).obs,
-      graduationColor: _c(SiteColorKeys.graduationColor, scheme.destructive).obs,
-      inviteColor: _c(SiteColorKeys.inviteColor, scheme.foreground).obs,
-      loadingColor: _c(SiteColorKeys.loadingColor, scheme.foreground).obs,
-      uploadIconColor: _c(SiteColorKeys.uploadIconColor, scheme.primary).obs,
-      uploadNumColor: _c(SiteColorKeys.uploadNumColor, scheme.foreground).obs,
-      downloadIconColor: _c(SiteColorKeys.downloadIconColor, scheme.destructive).obs,
-      downloadNumColor: _c(SiteColorKeys.downloadNumColor, scheme.foreground).obs,
-      ratioIconColor: _c(SiteColorKeys.ratioIconColor, scheme.primary).obs,
-      ratioNumColor: _c(SiteColorKeys.ratioNumColor, scheme.foreground).obs,
-      seedIconColor: _c(SiteColorKeys.seedIconColor, scheme.foreground).obs,
-      seedNumColor: _c(SiteColorKeys.seedNumColor, scheme.foreground).obs,
-      perBonusIconColor: _c(SiteColorKeys.perBonusIconColor, scheme.foreground).obs,
-      perBonusNumColor: _c(SiteColorKeys.perBonusNumColor, scheme.foreground).obs,
-      bonusIconColor: _c(SiteColorKeys.bonusIconColor, scheme.foreground).obs,
-      bonusNumColor: _c(SiteColorKeys.bonusNumColor, scheme.foreground).obs,
-      updatedAtColor: _c(SiteColorKeys.updatedAtColor, scheme.foreground).obs,
-      hrColor: _c(SiteColorKeys.hrColor, scheme.destructive).obs,
+      toSignColor: c(SiteColorKeys.toSignColor, const Color(0xFFF44336)).obs,
+      signedColor: c(SiteColorKeys.signedColor, const Color(0xFF388E3C)).obs,
+      siteCardColor: c(SiteColorKeys.siteCardColor, scheme.foreground).obs,
+      siteNameColor: c(SiteColorKeys.siteNameColor, scheme.foreground).obs,
+      mailColor: c(SiteColorKeys.mailColor, scheme.foreground).obs,
+      noticeColor: c(SiteColorKeys.noticeColor, scheme.foreground).obs,
+      regTimeColor: c(SiteColorKeys.regTimeColor, scheme.foreground).obs,
+      keepAccountColor: c(SiteColorKeys.keepAccountColor, scheme.destructive).obs,
+      graduationColor: c(SiteColorKeys.graduationColor, scheme.destructive).obs,
+      inviteColor: c(SiteColorKeys.inviteColor, scheme.foreground).obs,
+      loadingColor: c(SiteColorKeys.loadingColor, scheme.foreground).obs,
+      uploadIconColor: c(SiteColorKeys.uploadIconColor, scheme.primary).obs,
+      uploadNumColor: c(SiteColorKeys.uploadNumColor, scheme.foreground).obs,
+      downloadIconColor: c(SiteColorKeys.downloadIconColor, scheme.destructive).obs,
+      downloadNumColor: c(SiteColorKeys.downloadNumColor, scheme.foreground).obs,
+      ratioIconColor: c(SiteColorKeys.ratioIconColor, scheme.primary).obs,
+      ratioNumColor: c(SiteColorKeys.ratioNumColor, scheme.foreground).obs,
+      seedIconColor: c(SiteColorKeys.seedIconColor, scheme.foreground).obs,
+      seedNumColor: c(SiteColorKeys.seedNumColor, scheme.foreground).obs,
+      seedVolumeIconColor: c(SiteColorKeys.seedVolumeIconColor, scheme.foreground).obs,
+      seedVolumeNumColor: c(SiteColorKeys.seedVolumeNumColor, scheme.foreground).obs,
+      perBonusIconColor: c(SiteColorKeys.perBonusIconColor, scheme.foreground).obs,
+      perBonusNumColor: c(SiteColorKeys.perBonusNumColor, scheme.foreground).obs,
+      bonusIconColor: c(SiteColorKeys.bonusIconColor, scheme.foreground).obs,
+      bonusNumColor: c(SiteColorKeys.bonusNumColor, scheme.foreground).obs,
+      updatedAtColor: c(SiteColorKeys.updatedAtColor, scheme.foreground).obs,
+      hrColor: c(SiteColorKeys.hrColor, scheme.destructive).obs,
+      uploadedColor: c(SiteColorKeys.uploadedColor, scheme.foreground).obs,
+      downloadedColor: c(SiteColorKeys.downloadedColor, scheme.foreground).obs,
+      publishedNumColor: c(SiteColorKeys.publishedNumColor, scheme.foreground).obs,
+      publishedIconColor: c(SiteColorKeys.publishedIconColor, scheme.foreground).obs,
+      scoreNumColor: c(SiteColorKeys.scoreNumColor, scheme.foreground).obs,
+      scoreIconColor: c(SiteColorKeys.scoreIconColor, scheme.foreground).obs,
+      downloadedIconColor: c(SiteColorKeys.downloadedIconColor, scheme.foreground).obs,
     );
   }
 
@@ -261,6 +301,15 @@ class SiteColorConfig {
     Rx<Color>? bonusNumColor,
     Rx<Color>? updatedAtColor,
     Rx<Color>? hrColor,
+    Rx<Color>? uploadedColor,
+    Rx<Color>? downloadedColor,
+    Rx<Color>? downloadedIconColor,
+    Rx<Color>? publishNumColor,
+    Rx<Color>? scoreNumColor,
+    Rx<Color>? scoreIconColor,
+    Rx<Color>? seedVolIconColor,
+    Rx<Color>? seedVolNumColor,
+    Rx<Color>? publishIconColor,
   }) {
     return SiteColorConfig(
       toSignColor: toSignColor ?? this.toSignColor,
@@ -282,12 +331,21 @@ class SiteColorConfig {
       ratioNumColor: ratioNumColor ?? this.ratioNumColor,
       seedIconColor: seedIconColor ?? this.seedIconColor,
       seedNumColor: seedNumColor ?? this.seedNumColor,
+      seedVolumeNumColor: seedVolNumColor ?? this.seedVolumeNumColor,
+      seedVolumeIconColor: seedVolIconColor ?? this.seedVolumeIconColor,
       perBonusIconColor: perBonusIconColor ?? this.perBonusIconColor,
       perBonusNumColor: perBonusNumColor ?? this.perBonusNumColor,
       bonusIconColor: bonusIconColor ?? this.bonusIconColor,
       bonusNumColor: bonusNumColor ?? this.bonusNumColor,
       updatedAtColor: updatedAtColor ?? this.updatedAtColor,
       hrColor: hrColor ?? this.hrColor,
+      uploadedColor: uploadedColor ?? this.uploadedColor,
+      downloadedColor: downloadedColor ?? this.downloadedColor,
+      publishedNumColor: publishNumColor ?? this.publishedNumColor,
+      publishedIconColor: publishIconColor ?? this.publishedIconColor,
+      scoreNumColor: scoreNumColor ?? this.scoreNumColor,
+      scoreIconColor: scoreIconColor ?? this.scoreIconColor,
+      downloadedIconColor: downloadedIconColor ?? this.downloadedIconColor,
     );
   }
 }
@@ -318,4 +376,13 @@ class SiteColorKeys {
   static const bonusNumColor = 'bonusNumColor';
   static const updatedAtColor = 'updatedAtColor';
   static const hrColor = 'hrColor';
+  static const uploadedColor = 'uploadedColor';
+  static const downloadedColor = 'downloadedColor';
+  static const publishedNumColor = 'publishedNumColor';
+  static const publishedIconColor = 'publishedIconColor';
+  static const scoreNumColor = 'scoreNumColor';
+  static const scoreIconColor = 'scoreIconColor';
+  static const seedVolumeNumColor = 'seedVolumeNumColor';
+  static const seedVolumeIconColor = 'seedVolumeIconColor';
+  static const downloadedIconColor = 'downloadedIconColor';
 }

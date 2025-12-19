@@ -1091,7 +1091,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         ? Text(
                             '新站点，还没有数据哦',
                             style: TextStyle(
-                              color: shadColorScheme.foreground,
+                              color: shadColorScheme.destructive,
                               fontSize: 10,
                             ),
                           )
@@ -1239,7 +1239,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                       CustomTextTag(
                         backgroundColor: Colors.transparent,
                         labelText: '上传',
-                        labelColor: siteColorConfig.uploadNumColor.value,
+                        labelColor: siteColorConfig.uploadedColor.value,
                         fontSize: 13,
                         mainAxisAlignment: MainAxisAlignment.start,
                         mainAxisSize: MainAxisSize.max,
@@ -1253,14 +1253,14 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         '今日：${FileSizeConvert.parseToFileSize(mySite.dailyDelta.uploaded)}',
                         style: TextStyle(
                           fontSize: 14,
-                          color: siteColorConfig.uploadNumColor.value,
+                          color: siteColorConfig.uploadedColor.value,
                         ),
                       ),
                       Text(
                         '总计：${FileSizeConvert.parseToFileSize(status?.uploaded)}',
                         style: TextStyle(
                           fontSize: 14,
-                          color: siteColorConfig.uploadNumColor.value,
+                          color: siteColorConfig.uploadedColor.value,
                         ),
                       ),
                     ],
@@ -1269,7 +1269,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
               ),
               Expanded(
                 child: CustomCard(
-                  color: siteColorConfig.downloadIconColor.value.withOpacity(opacity),
+                  color: siteColorConfig.downloadedIconColor.value.withOpacity(opacity),
                   margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1279,12 +1279,12 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         backgroundColor: Colors.transparent,
                         labelText: '下载',
                         fontSize: 13,
-                        labelColor: siteColorConfig.downloadNumColor.value,
+                        labelColor: siteColorConfig.downloadedColor.value,
                         mainAxisAlignment: MainAxisAlignment.start,
                         mainAxisSize: MainAxisSize.max,
                         icon: Icon(
                           Icons.cloud_upload_outlined,
-                          color: siteColorConfig.downloadIconColor.value,
+                          color: siteColorConfig.downloadedIconColor.value,
                           size: 16,
                         ),
                       ),
@@ -1292,14 +1292,14 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         '今日：${FileSizeConvert.parseToFileSize(mySite.dailyDelta.downloaded)}',
                         style: TextStyle(
                           fontSize: 14,
-                          color: siteColorConfig.downloadNumColor.value,
+                          color: siteColorConfig.downloadedColor.value,
                         ),
                       ),
                       Text(
                         '总计：${FileSizeConvert.parseToFileSize(status?.downloaded)}',
                         style: TextStyle(
                           fontSize: 14,
-                          color: siteColorConfig.downloadNumColor.value,
+                          color: siteColorConfig.downloadedColor.value,
                         ),
                       ),
                     ],
@@ -1310,20 +1310,20 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               Expanded(
                 child: CustomCard(
-                  color: siteColorConfig.seedIconColor.value.withOpacity(opacity),
+                  color: siteColorConfig.seedVolumeIconColor.value.withOpacity(opacity),
                   margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
                   child: Column(
                     children: [
                       CustomTextTag(
                         backgroundColor: Colors.transparent,
                         labelText: '做种量',
-                        labelColor: siteColorConfig.seedNumColor.value,
+                        labelColor: siteColorConfig.seedVolumeNumColor.value,
                         fontSize: 12,
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.max,
                         icon: Icon(
                           Icons.cloud_upload_outlined,
-                          color: siteColorConfig.seedIconColor.value,
+                          color: siteColorConfig.seedVolumeIconColor.value,
                           size: 16,
                         ),
                       ),
@@ -1331,7 +1331,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         FileSizeConvert.parseToFileSize(status?.seedVolume),
                         style: TextStyle(
                           fontSize: 14,
-                          color: siteColorConfig.seedNumColor.value,
+                          color: siteColorConfig.seedVolumeNumColor.value,
                         ),
                       ),
                     ],
@@ -1340,20 +1340,20 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
               ),
               Expanded(
                 child: CustomCard(
-                  color: siteColorConfig.uploadIconColor.value.withOpacity(opacity),
+                  color: siteColorConfig.seedIconColor.value.withOpacity(opacity),
                   margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
                   child: Column(
                     children: [
                       CustomTextTag(
                         backgroundColor: Colors.transparent,
                         labelText: '做种数',
-                        labelColor: siteColorConfig.uploadNumColor.value,
+                        labelColor: siteColorConfig.seedNumColor.value,
                         fontSize: 12,
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.max,
                         icon: Icon(
                           Icons.arrow_upward_outlined,
-                          color: siteColorConfig.uploadIconColor.value,
+                          color: siteColorConfig.seedIconColor.value,
                           size: 16,
                         ),
                       ),
@@ -1361,7 +1361,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         status!.seed.toString(),
                         style: TextStyle(
                           fontSize: 14,
-                          color: siteColorConfig.uploadNumColor.value,
+                          color: siteColorConfig.seedNumColor.value,
                         ),
                       ),
                     ],
@@ -1400,20 +1400,20 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
               ),
               Expanded(
                 child: CustomCard(
-                  color: siteColorConfig.ratioIconColor.value.withOpacity(opacity),
+                  color: siteColorConfig.scoreIconColor.value.withOpacity(opacity),
                   margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
                   child: Column(
                     children: [
                       CustomTextTag(
                         backgroundColor: Colors.transparent,
                         labelText: '积分',
-                        labelColor: siteColorConfig.bonusNumColor.value,
+                        labelColor: siteColorConfig.scoreNumColor.value,
                         fontSize: 12,
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.max,
                         icon: Icon(
                           Icons.score_outlined,
-                          color: siteColorConfig.bonusIconColor.value,
+                          color: siteColorConfig.scoreIconColor.value,
                           size: 14,
                         ),
                       ),
@@ -1421,7 +1421,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         formatNumber(status.myScore, fixed: 0),
                         style: TextStyle(
                           fontSize: 14,
-                          color: siteColorConfig.bonusNumColor.value,
+                          color: siteColorConfig.scoreNumColor.value,
                         ),
                       ),
                     ],
@@ -1432,20 +1432,20 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               Expanded(
                 child: CustomCard(
-                  color: siteColorConfig.uploadIconColor.value.withOpacity(opacity),
+                  color: siteColorConfig.publishedIconColor.value.withOpacity(opacity),
                   margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
                   child: Column(
                     children: [
                       CustomTextTag(
                         backgroundColor: Colors.transparent,
                         labelText: '发种数',
-                        labelColor: siteColorConfig.uploadNumColor.value,
+                        labelColor: siteColorConfig.publishedNumColor.value,
                         fontSize: 12,
-                        mainAxisAlignment: MainAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.max,
                         icon: Icon(
-                          Icons.cloud_upload_outlined,
-                          color: siteColorConfig.uploadIconColor.value,
+                          Icons.upload_outlined,
+                          color: siteColorConfig.publishedIconColor.value,
                           size: 14,
                         ),
                       ),
@@ -1453,7 +1453,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         formatNumber(status.published, fixed: 0),
                         style: TextStyle(
                           fontSize: 14,
-                          color: siteColorConfig.uploadNumColor.value,
+                          color: siteColorConfig.publishedNumColor.value,
                         ),
                       ),
                     ],
@@ -1462,7 +1462,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
               ),
               Expanded(
                 child: CustomCard(
-                  color: siteColorConfig.seedIconColor.value.withOpacity(opacity),
+                  color: siteColorConfig.downloadIconColor.value.withOpacity(opacity),
                   margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
                   child: Column(
                     children: [
@@ -1522,20 +1522,20 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
               ),
               Expanded(
                 child: CustomCard(
-                  color: siteColorConfig.bonusIconColor.value.withOpacity(opacity),
+                  color: siteColorConfig.perBonusIconColor.value.withOpacity(opacity),
                   margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
                   child: Column(
                     children: [
                       CustomTextTag(
                         backgroundColor: Colors.transparent,
                         labelText: '时魔',
-                        labelColor: siteColorConfig.bonusNumColor.value,
+                        labelColor: siteColorConfig.perBonusNumColor.value,
                         fontSize: 12,
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.max,
                         icon: Icon(
                           Icons.timer_outlined,
-                          color: siteColorConfig.bonusIconColor.value,
+                          color: siteColorConfig.perBonusIconColor.value,
                           size: 14,
                         ),
                       ),
@@ -2170,7 +2170,14 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                       ),
                                       const SizedBox(width: 2),
                                       Text(
-                                        '${FileSizeConvert.parseToFileSize(status.uploaded)} (${status.seed})',
+                                        FileSizeConvert.parseToFileSize(status.uploaded),
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: siteColorConfig.uploadedColor.value,
+                                        ),
+                                      ),
+                                      Text(
+                                        '(${status.seed})',
                                         style: TextStyle(
                                           fontSize: 12,
                                           color: siteColorConfig.uploadNumColor.value,
@@ -2188,7 +2195,14 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                       ),
                                       const SizedBox(width: 2),
                                       Text(
-                                        '${FileSizeConvert.parseToFileSize(status.downloaded)} (${status.leech})',
+                                        FileSizeConvert.parseToFileSize(status.downloaded),
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: siteColorConfig.downloadedColor.value,
+                                        ),
+                                      ),
+                                      Text(
+                                        '(${status.leech})',
                                         style: TextStyle(
                                           fontSize: 12,
                                           color: siteColorConfig.downloadNumColor.value,
@@ -2215,7 +2229,14 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                       ),
                                       const SizedBox(width: 2),
                                       Text(
-                                        '${status.published}(${formatNumber(status.ratio, fixed: status.ratio >= 1000 ? 0 : 2)})',
+                                        '${status.published}',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: siteColorConfig.publishedNumColor.value,
+                                        ),
+                                      ),
+                                      Text(
+                                        '(${formatNumber(status.ratio, fixed: status.ratio >= 1000 ? 0 : 2)})',
                                         style: TextStyle(
                                           fontSize: 12,
                                           color: status.ratio > 1
@@ -2290,10 +2311,17 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                       ),
                                       const SizedBox(width: 2),
                                       Text(
-                                        '${formatNumber(status.myBonus, fixed: 0)}(${formatNumber(status.myScore, fixed: 0)})',
+                                        formatNumber(status.myBonus, fixed: 0),
                                         style: TextStyle(
                                           fontSize: 12,
                                           color: siteColorConfig.bonusNumColor.value,
+                                        ),
+                                      ),
+                                      Text(
+                                        '(${formatNumber(status.myScore, fixed: 0)})',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: siteColorConfig.scoreNumColor.value,
                                         ),
                                       ),
                                     ],

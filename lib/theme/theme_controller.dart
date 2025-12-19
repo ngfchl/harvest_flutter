@@ -19,6 +19,7 @@ class ThemeController extends GetxController {
   var followSystem = true.obs;
   var colorSchemeName = "orange".obs;
   var replaceBackgroundImage = false;
+  var siteCardView = false;
 
   // 背景相关
   var useBackground = false.obs;
@@ -217,7 +218,7 @@ class ThemeController extends GetxController {
     isDark.value = SPUtil.getBool("isDark", defaultValue: false);
     followSystem.value = SPUtil.getBool("followSystem", defaultValue: true);
     colorSchemeName.value = SPUtil.getString("colorSchemeName", defaultValue: "orange");
-
+    siteCardView = SPUtil.getBool('mySite-siteCardView', defaultValue: false);
     useBackground.value = SPUtil.getBool('useBackground', defaultValue: false);
     useImageProxy.value = SPUtil.getBool('useImageProxy', defaultValue: false);
     useLocalBackground.value = SPUtil.getBool('useLocalBackground', defaultValue: false);
