@@ -68,57 +68,152 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
-                    child: TextField(
-                      style: TextStyle(color: shadColorScheme.foreground),
-                      controller: controller.searchKeyController,
-                      decoration: InputDecoration(
-                        isDense: true,
-                        hintText: '请输入搜索关键字',
-                        hintStyle: TextStyle(
-                          fontSize: 14,
-                          color: shadColorScheme.foreground,
-                        ),
-                        constraints: BoxConstraints(maxHeight: 32),
-                        contentPadding: const EdgeInsets.only(bottom: 3, left: 5),
-                        suffixIcon: GetBuilder<AggSearchController>(
-                            id: "controller.searchKeyController.text",
-                            builder: (controller) {
-                              if (controller.searchKeyController.text.isNotEmpty) {
-                                return ShadIconButton.ghost(
-                                  icon: Icon(
-                                    Icons.clear_outlined,
-                                    color: shadColorScheme.destructive,
-                                    size: 22,
+                    child: Autocomplete<String>(
+                      initialValue: TextEditingValue(text: ''),
+                      optionsBuilder: (TextEditingValue textEditingValue) {
+                        Logger.instance.d(textEditingValue.text);
+                        controller.searchKeyController.text = textEditingValue.text;
+                        List<String> filterList = [];
+                        if (textEditingValue.text.isEmpty) {
+                          filterList = controller.searchHistory;
+                        } else {
+                          filterList = controller.searchHistory.where((String option) {
+                            return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
+                          }).toList();
+                        }
+                        Logger.instance.d(filterList);
+                        return filterList;
+                      },
+                      optionsViewBuilder: (context, onSelected, options) {
+                        return Align(
+                          alignment: Alignment.topLeft,
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Material(
+                              elevation: 8,
+                              borderRadius: BorderRadius.circular(8),
+                              color: shadColorScheme.card,
+                              shadowColor: shadColorScheme.foreground.withOpacity(0.15),
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(maxHeight: 200, minWidth: 200),
+                                child: ListView.separated(
+                                  padding: EdgeInsets.zero,
+                                  shrinkWrap: true,
+                                  itemCount: options.length,
+                                  separatorBuilder: (_, __) => Divider(
+                                    height: 1,
+                                    color: shadColorScheme.foreground.withOpacity(0.05),
                                   ),
-                                  onPressed: () {
-                                    controller.searchKeyController.clear();
+                                  itemBuilder: (context, index) {
+                                    final option = options.elementAt(index);
+                                    return InkWell(
+                                      borderRadius: BorderRadius.circular(12),
+                                      onTap: () => onSelected(option),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                        child: Text(
+                                          option,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: shadColorScheme.foreground,
+                                          ),
+                                        ),
+                                      ),
+                                    );
                                   },
-                                );
-                              }
-                              return const SizedBox.shrink();
-                            }),
-                        fillColor: Colors.transparent,
-                        focusColor: Colors.transparent,
-                        hoverColor: Colors.transparent,
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide.none,
-                          // 不绘制边框
-                          borderRadius: BorderRadius.circular(0.0),
-                          // 确保角落没有圆角
-                          gapPadding: 0.0, // 移除边框与hintText之间的间距
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 1.0,
-                            color: shadColorScheme.foreground,
+                                ),
+                              ),
+                            ),
                           ),
-                          // 仅在聚焦时绘制底部边框
-                          borderRadius: BorderRadius.circular(5.0),
-                        ),
-                      ),
-                      onSubmitted: (value) => _doTmdbSearch(),
-                      onChanged: (value) {
-                        controller.update(["controller.searchKeyController.text"]);
+                        );
+                      },
+                      onSelected: (String selection) async {
+                        controller.searchKeyController.text = selection;
+                        // if (selection.startsWith('tt')) {
+                        //   await controller.doWebsocketSearch();
+                        // } else {
+                        //   await _doTmdbSearch();
+                        // }
+                        Get.defaultDialog(
+                          title: '操作',
+                          titleStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                          backgroundColor: shadColorScheme.background,
+                          radius: 10,
+                          content: Wrap(
+                            spacing: 8,
+                            runSpacing: 4,
+                            children: [
+                              ShadButton.outline(
+                                size: ShadButtonSize.sm,
+                                onPressed: () {
+                                  controller.searchKeyController.text = selection.split('||').last;
+                                  controller.searchTMDB();
+                                },
+                                child: Text('TMDB',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: shadColorScheme.foreground,
+                                    )),
+                              ),
+                              ShadButton.outline(
+                                size: ShadButtonSize.sm,
+                                onPressed: () {
+                                  controller.searchKeyController.text = selection.split('||').last;
+                                  controller.doDouBanSearch();
+                                },
+                                child: Text('豆瓣',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: shadColorScheme.foreground,
+                                    )),
+                              ),
+                              ShadButton.outline(
+                                size: ShadButtonSize.sm,
+                                onPressed: () {
+                                  controller.searchKeyController.text = selection;
+                                  controller.doWebsocketSearch();
+                                },
+                                child: Text('资源搜索',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: shadColorScheme.foreground,
+                                    )),
+                              )
+                            ],
+                          ),
+                        );
+                      },
+                      fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
+                        return CustomTextField(
+                          controller: textEditingController,
+                          hintText: '请输入搜索关键字',
+                          // ✅ 一定要传！
+                          focusNode: focusNode,
+                          constraints: BoxConstraints(maxHeight: 32),
+                          suffixIcon: GetBuilder<AggSearchController>(
+                              id: "controller.searchKeyController.text",
+                              builder: (controller) {
+                                if (controller.searchKeyController.text.isNotEmpty) {
+                                  return ShadIconButton.ghost(
+                                    icon: Icon(
+                                      Icons.clear_outlined,
+                                      color: shadColorScheme.destructive,
+                                      size: 22,
+                                    ),
+                                    onPressed: () {
+                                      textEditingController.clear();
+                                      controller.searchKeyController.clear();
+                                      controller.update();
+                                    },
+                                  );
+                                }
+                                return const SizedBox.shrink();
+                              }),
+                          onFieldSubmitted: (value) => _doTmdbSearch(),
+                          onChanged: (value) {
+                            controller.update(["controller.searchKeyController.text"]);
+                          },
+                        );
                       },
                     ),
                   ),
@@ -152,6 +247,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                               await controller.doDouBanSearch();
                             },
                           ),
+
                           PopupMenuItem<String>(
                             child: Text(
                               '清理tmdb',
@@ -174,6 +270,54 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                             onTap: () async {
                               controller.showDouBanResults.clear();
                               controller.update();
+                            },
+                          ),
+                          PopupMenuItem<String>(
+                            child: Text(
+                              '清理历史',
+                              style: TextStyle(
+                                color: shadColorScheme.foreground,
+                              ),
+                            ),
+                            onTap: () async {
+                              Get.defaultDialog(
+                                title: '提示',
+                                backgroundColor: shadColorScheme.background,
+                                titleStyle: TextStyle(
+                                  fontSize: 16,
+                                  color: shadColorScheme.foreground,
+                                ),
+                                middleText: '确定要删除全部搜索记录吗？',
+                                middleTextStyle: TextStyle(
+                                  fontSize: 13,
+                                  color: shadColorScheme.foreground,
+                                ),
+                                cancel: ShadButton.outline(
+                                  size: ShadButtonSize.sm,
+                                  onPressed: () {
+                                    Get.back();
+                                  },
+                                  child: Text('取消',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: shadColorScheme.destructiveForeground,
+                                      )),
+                                ),
+                                confirm: ShadButton.destructive(
+                                  size: ShadButtonSize.sm,
+                                  onPressed: () {
+                                    controller.searchHistory.clear();
+                                    SPUtil.setStringList('search_history', controller.searchHistory);
+                                    controller.update();
+                                    Get.back();
+                                  },
+                                  child: Text('确定',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: shadColorScheme.primaryForeground,
+                                      )),
+                                ),
+                              );
                             },
                           ),
                           PopupMenuItem<String>(
@@ -521,7 +665,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                             onSelected: (bool value) {
                                               Get.defaultDialog(
                                                 title: '提示',
-                                                backgroundColor: shadColorScheme.background.withOpacity(opacity),
+                                                backgroundColor: shadColorScheme.background,
                                                 titleStyle: TextStyle(
                                                   fontSize: 16,
                                                   color: shadColorScheme.foreground,
@@ -548,6 +692,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                                     controller.searchHistory.clear();
                                                     SPUtil.setStringList('search_history', controller.searchHistory);
                                                     controller.update();
+                                                    Get.back();
                                                   },
                                                   child: Text('确定',
                                                       style: TextStyle(
