@@ -332,10 +332,11 @@ class ThemeIconButton extends StatelessWidget {
 
                                             if (ok.succeed) {
                                               Get.snackbar('成功', '主题已导入');
+                                              Get.back();
+                                              Get.forceAppUpdate();
                                             } else {
                                               Get.snackbar('失败', ok.msg, colorText: shadColorScheme.destructive);
                                             }
-                                            Get.forceAppUpdate();
                                           },
                                           child: const Text('确定'),
                                         )

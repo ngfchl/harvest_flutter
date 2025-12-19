@@ -250,7 +250,9 @@ class ThemeController extends GetxController {
       useLocalBackground.value = configMap['useLocalBackground'];
     }
     if (!useLocalBackground.value) {
-      if (configMap.containsKey('backgroundImage') && configMap['backgroundImage'].isNotEmpty) {
+      if (replaceBackgroundImage &&
+          configMap.containsKey('backgroundImage') &&
+          configMap['backgroundImage'].isNotEmpty) {
         backgroundImage.value = configMap['backgroundImage'];
       }
     }
