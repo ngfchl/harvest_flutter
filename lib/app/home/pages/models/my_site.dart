@@ -1,3 +1,5 @@
+import 'dart:math';
+
 class SignInInfo {
   String updatedAt;
   String info;
@@ -6,9 +8,7 @@ class SignInInfo {
 
   factory SignInInfo.fromJson(Map<String, dynamic> json) {
     return SignInInfo(
-      updatedAt: json['updated_at'] != null
-          ? json['updated_at'] as String
-          : json['time'] as String,
+      updatedAt: json['updated_at'] != null ? json['updated_at'] as String : json['time'] as String,
       info: json['info'] as String,
     );
   }
@@ -68,18 +68,13 @@ class StatusInfo {
       uploaded: json['uploaded'] as int,
       myBonus: double.parse(json['my_bonus'].toString()),
       myScore: double.parse(json['my_score'].toString()),
-      bonusHour: json['bonus_hour'] != null
-          ? double.parse(json['bonus_hour'].toString())
-          : 0.0,
+      bonusHour: json['bonus_hour'] != null ? double.parse(json['bonus_hour'].toString()) : 0.0,
       seed: json['seed'] as int,
       leech: json['leech'] as int,
       invitation: json['invitation'] ?? 0,
-      published: json['published'].runtimeType == int
-          ? json['published']
-          : int.tryParse(json['published']?.toString() ?? '0'),
-      seedDays: json['seed_days'] != null
-          ? double.parse(json['seed_days'].toString()).toInt()
-          : 0,
+      published:
+          json['published'].runtimeType == int ? json['published'] : int.tryParse(json['published']?.toString() ?? '0'),
+      seedDays: json['seed_days'] != null ? double.parse(json['seed_days'].toString()).toInt() : 0,
       myHr: json['my_hr'] ?? '',
       myLevel: json['my_level'] as String,
       seedVolume: json['seed_volume'] ?? 0,
@@ -117,6 +112,20 @@ class TrafficDelta {
   @override
   String toString() {
     return 'TrafficDelta(createdAt: $createdAt, uploaded: $uploaded downloaded: $downloaded)';
+  }
+}
+
+class DailyDelta {
+  final int downloaded;
+  final int uploaded;
+
+  const DailyDelta({this.downloaded = 0, this.uploaded = 0});
+
+  Map<String, int> toJson() {
+    return {
+      'downloaded': downloaded,
+      'uploaded': uploaded,
+    };
   }
 }
 
@@ -199,12 +208,10 @@ class MySite {
   }
 
   factory MySite.fromJson(Map<String, dynamic> json) {
-    Map<String, SignInInfo> signInInfo =
-        (json['sign_info'] as Map<String, dynamic>? ?? {}).map((key, value) =>
-            MapEntry(key, SignInInfo.fromJson(value as Map<String, dynamic>)));
+    Map<String, SignInInfo> signInInfo = (json['sign_info'] as Map<String, dynamic>? ?? {})
+        .map((key, value) => MapEntry(key, SignInInfo.fromJson(value as Map<String, dynamic>)));
 
-    Map<String, StatusInfo> statusInfo =
-        (json['status'] as Map<String, dynamic>? ?? {}).map((key, value) {
+    Map<String, StatusInfo> statusInfo = (json['status'] as Map<String, dynamic>? ?? {}).map((key, value) {
       if (value['updated_at'] == null || value['updated_at'].isEmpty) {
         value['updated_at'] = DateTime.parse(key).toString();
       }
@@ -218,9 +225,7 @@ class MySite {
       id: json['id'] as int,
       site: json['site'] as String,
       nickname: json['nickname'] as String,
-      tags: json['tags'] != null
-          ? List<String>.from(json['tags'] as List<dynamic>)
-          : [],
+      tags: json['tags'] != null ? List<String>.from(json['tags'] as List<dynamic>) : [],
       sortId: json['sort_id'] as int,
       userId: json['user_id'] as String?,
       username: json['username'] as String?,
@@ -248,9 +253,7 @@ class MySite {
       mail: json['mail'] as int?,
       notice: json['notice'] as int?,
       updatedAt: DateTime.parse(json['updated_at'] as String),
-      latestActive: json['latest_active'] != null
-          ? DateTime.parse(json['latest_active'] as String).toLocal()
-          : null,
+      latestActive: json['latest_active'] != null ? DateTime.parse(json['latest_active'] as String).toLocal() : null,
       signInInfo: signInInfo,
       statusInfo: statusInfo,
     );
@@ -290,11 +293,42 @@ class MySite {
     };
   }
 
-  StatusInfo? getLatestStatusInfo() {
-    if (statusInfo.isEmpty) {
-      return null;
+  // 获取按日期降序排列的 key 列表（最新在前）
+  List<String> _sortedKeys() {
+    final keys = statusInfo.keys.toList();
+    keys.sort((a, b) => b.compareTo(a)); // 降序
+    return keys;
+  }
+
+  // 获取上一天的数据
+  StatusInfo? get _previous {
+    final keys = _sortedKeys();
+    return keys.length < 2 ? null : statusInfo[keys[1]];
+  }
+
+  // 计算日增量
+  DailyDelta get dailyDelta {
+    final keys = _sortedKeys();
+    if (keys.length < 2) {
+      return const DailyDelta();
     }
-    return statusInfo[getStatusMaxKey()];
+
+    final latest = statusInfo[keys[0]]!;
+    final previous = statusInfo[keys[1]]!;
+
+    final downloaded = max(latest.downloaded - previous.downloaded, 0);
+    final uploaded = max(latest.uploaded - previous.uploaded, 0);
+
+    return DailyDelta(
+      downloaded: downloaded.toInt(),
+      uploaded: uploaded.toInt(),
+    );
+  }
+
+  // 获取最新一天的数据
+  StatusInfo? getLatestStatusInfo() {
+    final keys = _sortedKeys();
+    return keys.isEmpty ? null : statusInfo[keys[0]];
   }
 
   StatusInfo? getEarliestStatusInfo() {
