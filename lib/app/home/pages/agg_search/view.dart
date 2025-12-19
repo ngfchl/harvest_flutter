@@ -2022,15 +2022,15 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
     Get.bottomSheet(
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(2),
-          topRight: Radius.circular(2),
+          topLeft: Radius.circular(8),
+          topRight: Radius.circular(8),
         ),
       ),
       backgroundColor: shadColorScheme.background,
       enableDrag: true,
       GetBuilder<AggSearchController>(builder: (controller) {
         return Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
               Expanded(
@@ -2102,10 +2102,9 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                               //   overflow: TextOverflow.ellipsis,
                               // ),
                               if (mediaInfo.productionCountries.isNotEmpty)
-                                Text(
-                                  mediaInfo.productionCountries.map((e) => e.name).join(' / '),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                                Text(mediaInfo.productionCountries.map((e) => e.name).join(' / '),
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
                               if (mediaInfo.genres.isNotEmpty)
                                 SingleChildScrollView(
                                   scrollDirection: Axis.horizontal,
@@ -2147,27 +2146,44 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                         ),
                                       ],
                                     )
-                                  : const Text(
-                                      '暂无评分',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.blue,
-                                      ),
-                                    ),
-                              if (mediaInfo.imdbId != null) Text('iMdb: ${mediaInfo.imdbId}'),
+                                  : Text('暂无评分', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
+                              if (mediaInfo.imdbId != null)
+                                Text('iMdb: ${mediaInfo.imdbId}',
+                                    style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
                             ],
                           ),
                         ))
                       ],
                     ),
-                    Text(mediaInfo.overview),
+                    Text(mediaInfo.overview, style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
                   ],
                 ),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  ShadButton(
+                  ShadButton.ghost(
+                    size: ShadButtonSize.sm,
+                    onPressed: () async {
+                      String url = 'https://www.themoviedb.org/movie/${mediaInfo.id}';
+                      var shadColorScheme = ShadTheme.of(context).colorScheme;
+                      if (kIsWeb) {
+                        Logger.instance.i('Explorer');
+                        if (!await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication)) {
+                          Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？', colorText: shadColorScheme.foreground);
+                        }
+                      } else {
+                        Logger.instance.i('WebView');
+                        Get.toNamed(Routes.WEBVIEW, arguments: {'url': url});
+                      }
+                    },
+                    leading: Icon(
+                      Icons.info_outline,
+                      size: 16,
+                    ),
+                    child: const Text('详情'),
+                  ),
+                  ShadButton.outline(
                     size: ShadButtonSize.sm,
                     onPressed: () async {
                       Get.back();
@@ -2179,17 +2195,6 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                     ),
                     child: const Text('搜索'),
                   ),
-                  // ShadButton(
-                  //   size: ShadButtonSize.sm,
-                  //   onPressed: () async {
-                  //     await _openMediaInfoDetail(mediaInfo);
-                  //   },
-                  //   leading: Icon(
-                  //     Icons.info_outline,
-                  //     size: 16,
-                  //   ),
-                  //   child: const Text('详情'),
-                  // ),
                 ],
               ),
             ],
