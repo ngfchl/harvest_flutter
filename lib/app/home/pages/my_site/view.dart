@@ -787,444 +787,662 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
               key: Key("${mySite.id}-${mySite.site}"),
               color: siteColorConfig.siteNameColor.value.withOpacity(opacity),
               padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-              child: ListTile(
-                // dense: true,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
-                leading: InkWell(
-                  onTap: () => _openSitePage(mySite, website, true),
-                  onLongPress: () => _openSitePage(mySite, website, false),
-                  child: siteLogo(iconUrl, website, mySite),
+              child: ShadContextMenuRegion(
+                decoration: ShadDecoration(
+                  labelStyle: TextStyle(),
+                  descriptionStyle: TextStyle(),
                 ),
-                onTap: () {
-                  Get.defaultDialog(
-                    title: '站点信息 - ${mySite.nickname}',
-                    radius: 8,
-                    titleStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
-                    backgroundColor: shadColorScheme.background,
-                    content: Column(
-                      spacing: 5,
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          '站点地址：',
-                          style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
-                        ),
-                        ...website.url.map((item) => ShadButton.link(
-                              size: ShadButtonSize.sm,
-                              onPressed: () => launchUrl(Uri.parse(item), mode: LaunchMode.externalApplication),
-                              child: Text(
-                                item,
-                                style: TextStyle(fontSize: 13, color: shadColorScheme.primary),
-                              ),
-                            )),
-                        Text(
-                          '搜索地址：',
-                          style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
-                        ),
-                        ...website.pageSearch.map((item) => ShadButton.link(
-                              size: ShadButtonSize.sm,
-                              child: Text(
-                                item,
-                                style: TextStyle(fontSize: 13, color: shadColorScheme.primary),
-                              ),
-                            )),
-                        Text(
-                          '上传限速：${website.limitSpeed}MB/s',
-                          style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
-                        ),
-                        Text(
-                          '最后访问时间：${calculateTimeElapsed(mySite.latestActive.toString())}',
-                          style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
-                        ),
-                      ],
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 100),
+                items: [
+                  ShadContextMenuItem(
+                    leading: Icon(
+                      size: 14,
+                      Icons.edit_outlined,
+                      color: shadColorScheme.foreground,
                     ),
-                    actions: [
-                      ShadButton.ghost(
-                        size: ShadButtonSize.sm,
-                        child: Text('关闭'),
-                        onPressed: () => Get.back(),
+                    child: Text(style: TextStyle(fontSize: 12), '编辑'),
+                    onPressed: () async {
+                      showLoading.value = true;
+                      await _showEditBottomSheet(mySite: mySite);
+                    },
+                  ),
+                  const Divider(height: 5),
+                  if (website.signIn == true && mySite.signIn && !signed)
+                    ShadContextMenuItem(
+                      leading: Icon(
+                        size: 14,
+                        Icons.edit_calendar_outlined,
+                        color: shadColorScheme.foreground,
                       ),
-                      ShadButton.secondary(
-                        size: ShadButtonSize.sm,
-                        child: Text(
-                          '打开',
-                          style: TextStyle(color: shadColorScheme.primary),
-                        ),
-                        onPressed: () {
-                          Get.back();
-                          _openSitePage(mySite, website, true);
+                      child: Text(style: TextStyle(fontSize: 12), '签到'),
+                      onPressed: () async {
+                        showLoading.value = true;
+                        await signSite(siteRefreshing, mySite, shadColorScheme);
+                        showLoading.value = false;
+                      },
+                    ),
+                  ShadContextMenuItem(
+                    leading: Icon(
+                      size: 14,
+                      Icons.refresh_outlined,
+                      color: shadColorScheme.foreground,
+                    ),
+                    child: Text(style: TextStyle(fontSize: 12), '更新'),
+                    onPressed: () async {
+                      showLoading.value = true;
+                      await refreshSiteData(siteRefreshing, mySite, shadColorScheme);
+                      showLoading.value = false;
+                    },
+                  ),
+                  if (website.repeatTorrents == true && mySite.repeatTorrents)
+                    ShadContextMenuItem(
+                      leading: Icon(
+                        size: 14,
+                        Icons.copy_outlined,
+                        color: shadColorScheme.foreground,
+                      ),
+                      child: Text(style: TextStyle(fontSize: 12), '辅种'),
+                      onPressed: () async {
+                        showLoading.value = true;
+                        await repeatSite(mySite, shadColorScheme);
+                        showLoading.value = false;
+                      },
+                    ),
+                  const Divider(height: 5),
+                  if (website.signIn == true && mySite.signIn && !signed)
+                    ShadContextMenuItem(
+                      leading: Icon(
+                        size: 14,
+                        Icons.manage_history_outlined,
+                        color: shadColorScheme.foreground,
+                      ),
+                      child: Text(style: TextStyle(fontSize: 12), '签到数据'),
+                      onPressed: () async {
+                        showLoading.value = true;
+                        _showSignHistory(mySite, showLoading);
+                        showLoading.value = false;
+                      },
+                    ),
+                  ShadContextMenuItem(
+                    leading: Icon(
+                      size: 14,
+                      Icons.history_outlined,
+                      color: shadColorScheme.foreground,
+                    ),
+                    child: Text(style: TextStyle(fontSize: 12), '历史数据'),
+                    onPressed: () async {
+                      showLoading.value = true;
+                      _showStatusHistory(mySite);
+                      showLoading.value = false;
+                    },
+                  ),
+                  const Divider(height: 5),
+                  ShadContextMenuItem(
+                    leading: Icon(
+                      size: 14,
+                      Icons.join_inner_outlined,
+                      color: shadColorScheme.foreground,
+                    ),
+                    child: Text(style: TextStyle(fontSize: 12), '内置浏览器'),
+                    onPressed: () async {
+                      _openSitePage(mySite, website, true);
+                    },
+                  ),
+                  ShadContextMenuItem(
+                    leading: Icon(
+                      size: 14,
+                      Icons.language_outlined,
+                      color: shadColorScheme.foreground,
+                    ),
+                    child: Text(style: TextStyle(fontSize: 12), '外置浏览器'),
+                    onPressed: () async {
+                      _openSitePage(mySite, website, false);
+                    },
+                  ),
+                ],
+                child: Slidable(
+                  key: ValueKey('${mySite.id}_${mySite.nickname}'),
+                  startActionPane: ActionPane(
+                    motion: const DrawerMotion(),
+                    extentRatio: GetPlatform.isMobile ? 1 : 0.4,
+                    children: [
+                      SlidableAction(
+                        icon: Icons.refresh_outlined,
+                        label: '更新',
+                        backgroundColor: Color(0xFF00796B),
+                        foregroundColor: Colors.white,
+                        borderRadius: !mySite.repeatTorrents && !mySite.signIn
+                            ? const BorderRadius.all(Radius.circular(8))
+                            : const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
+                        onPressed: (context) async {
+                          showLoading.value = true;
+                          await refreshSiteData(siteRefreshing, mySite, shadColorScheme);
+                          showLoading.value = false;
                         },
                       ),
-                      ShadButton.outline(
-                        size: ShadButtonSize.sm,
-                        child: Text('浏览器'),
-                        onPressed: () => _openSitePage(mySite, website, false),
+                      if (website.signIn == true && mySite.signIn && !signed)
+                        SlidableAction(
+                          icon: Icons.edit_calendar_outlined,
+                          label: '签到',
+                          backgroundColor: Color(0xFF1565C0),
+                          borderRadius: mySite.repeatTorrents
+                              ? BorderRadius.zero
+                              : BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
+                          foregroundColor: Colors.white,
+                          onPressed: (context) async {
+                            showLoading.value = true;
+                            await signSite(siteRefreshing, mySite, shadColorScheme);
+                            showLoading.value = false;
+                          },
+                        ),
+                      if (website.repeatTorrents == true && mySite.repeatTorrents)
+                        SlidableAction(
+                          flex: 1,
+                          backgroundColor: Color(0xFF00838F),
+                          foregroundColor: Colors.white,
+                          borderRadius:
+                              BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
+                          onPressed: (context) async {
+                            showLoading.value = true;
+                            await repeatSite(mySite, shadColorScheme);
+                            showLoading.value = false;
+                          },
+                          icon: Icons.copy_outlined,
+                          label: '辅种',
+                        ),
+                    ],
+                  ),
+                  endActionPane: ActionPane(
+                    motion: const DrawerMotion(),
+                    extentRatio: GetPlatform.isMobile ? 1 : 0.4,
+                    children: [
+                      if (website.signIn == true && mySite.signIn)
+                        SlidableAction(
+                          flex: 1,
+                          borderRadius:
+                              const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
+                          onPressed: (context) async {
+                            showLoading.value = true;
+                            _showSignHistory(mySite, showLoading);
+                            showLoading.value = false;
+                          },
+                          backgroundColor: Color(0xFF5D4037),
+                          foregroundColor: Colors.white,
+                          icon: Icons.manage_history_outlined,
+                          label: '签到数据',
+                        ),
+                      SlidableAction(
+                        flex: 1,
+                        borderRadius: mySite.signIn
+                            ? BorderRadius.zero
+                            : const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
+                        onPressed: (context) async {
+                          showLoading.value = true;
+                          _showStatusHistory(mySite);
+                          showLoading.value = false;
+                        },
+                        backgroundColor: Color(0xFFF57C00),
+                        foregroundColor: Colors.white,
+                        icon: Icons.history_outlined,
+                        label: '历史数据',
+                      ),
+                      SlidableAction(
+                        flex: 1,
+                        borderRadius: BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
+                        onPressed: (context) async {
+                          showLoading.value = true;
+                          await _showEditBottomSheet(mySite: mySite);
+                        },
+                        backgroundColor: Color(0xFFD32F2F),
+                        foregroundColor: Colors.white,
+                        icon: Icons.edit_outlined,
+                        label: '编辑',
                       ),
                     ],
-                  );
-                },
-                title: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    mySite.latestActive != null
-                        ? Tooltip(
-                            message:
-                                '最后访问时间：${calculateTimeElapsed(mySite.latestActive.toString())}  上传限速：${website.limitSpeed}MB/s \n 搜索地址：${website.pageSearch}',
-                            child: Text(
-                              mySite.nickname,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: siteColorConfig.siteNameColor.value,
-                              ),
-                            ),
-                          )
-                        : Text(
-                            mySite.nickname,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: siteColorConfig.siteNameColor.value,
-                            ),
-                          ),
-                    if (mySite.mail! > 0)
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.mail_outlined,
-                            size: 12,
-                            color: siteColorConfig.mailColor.value,
-                          ),
-                          Text(
-                            '${mySite.mail}',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: siteColorConfig.mailColor.value,
-                            ),
-                          ),
-                        ],
-                      ),
-                    if (mySite.notice! > 0)
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.notifications_outlined,
-                            size: 12,
-                            color: siteColorConfig.noticeColor.value,
-                          ),
-                          Text(
-                            '${mySite.notice}',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: siteColorConfig.noticeColor.value,
-                            ),
-                          ),
-                        ],
-                      ),
-                    if (status != null && level == null)
-                      Text(
-                        website.level?[status.myLevel]?.level ?? status.myLevel,
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: mySiteLevelColorMap[status.myLevel] ?? shadColorScheme.foreground,
-                        ),
-                      ),
-                    if (status != null && level != null)
-                      CustomPopup(
-                        showArrow: false,
-                        barrierColor: Colors.transparent,
+                  ),
+                  child: ListTile(
+                    // dense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+                    leading: InkWell(
+                      onTap: () => _openSitePage(mySite, website, true),
+                      onLongPress: () => _openSitePage(mySite, website, false),
+                      child: siteLogo(iconUrl, website, mySite),
+                    ),
+                    onTap: () {
+                      Get.defaultDialog(
+                        title: '站点信息 - ${mySite.nickname}',
+                        radius: 8,
+                        titleStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
                         backgroundColor: shadColorScheme.background,
-                        content: SingleChildScrollView(
-                          child: SizedBox(
-                              width: 200,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (nextLevel != null) ...[
-                                    PopupMenuItem<String>(
-                                      height: 13,
-                                      child: Text("下一等级：${nextLevel.level}",
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: mySiteLevelColorMap[nextLevel.level] ?? shadColorScheme.foreground,
-                                          )),
-                                    ),
-                                    // if (status.uploaded < nextLevelToUploadedByte)
-                                    PopupMenuItem<String>(
-                                      height: 13,
-                                      child: Text(
-                                          '上传量：${FileSizeConvert.parseToFileSize(status.uploaded)}/${FileSizeConvert.parseToFileSize(nextLevelToUploadedByte)}',
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            color: status.uploaded < max(nextLevelToUploadedByte, calcToUploaded)
-                                                ? shadColorScheme.destructive
-                                                : shadColorScheme.foreground,
-                                          )),
-                                    ),
-                                    // if (status.downloaded < nextLevelToDownloadedByte)
-                                    PopupMenuItem<String>(
-                                      height: 13,
-                                      child: Text(
-                                          '下载量：${FileSizeConvert.parseToFileSize(status.downloaded)}/${FileSizeConvert.parseToFileSize(nextLevelToDownloadedByte)}',
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            color: status.downloaded < nextLevelToDownloadedByte
-                                                ? shadColorScheme.destructive
-                                                : shadColorScheme.foreground,
-                                          )),
-                                    ),
-                                    // if (status.uploaded / status.downloaded <
-                                    //     nextLevel.ratio)
-                                    //   PopupMenuItem<String>(
-                                    //     height: 13,
-                                    //     child: Text(
-                                    //         '分享率：${(status.uploaded / status.downloaded).toStringAsFixed(2)}/${nextLevel.ratio}',
-                                    //         style: TextStyle(
-                                    //           fontSize: 10,
-                                    //           color:
-                                    //               ShadTheme.of(context).colorScheme.destructive,
-                                    //         )),
-                                    //   ),
-                                    if (nextLevel.torrents > 0)
-                                      PopupMenuItem<String>(
-                                        height: 13,
-                                        child: Text('需发种数量：${status.published}/${nextLevel.torrents}',
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              color: status.published < nextLevel.torrents
-                                                  ? shadColorScheme.destructive
-                                                  : shadColorScheme.foreground,
-                                            )),
-                                      ),
-                                    if (nextLevel.score > 0)
-                                      PopupMenuItem<String>(
-                                        height: 13,
-                                        child: Text(
-                                            '做种积分：${formatNumber(status.myScore)}/${formatNumber(nextLevel.score)}',
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              color: status.myScore < nextLevel.score
-                                                  ? shadColorScheme.destructive
-                                                  : shadColorScheme.foreground,
-                                            )),
-                                      ),
-                                    if (nextLevel.bonus > 0)
-                                      PopupMenuItem<String>(
-                                        height: 13,
-                                        child:
-                                            Text('魔力值：${formatNumber(status.myBonus)}/${formatNumber(nextLevel.bonus)}',
+                        content: Column(
+                          spacing: 5,
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '站点地址：',
+                              style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
+                            ),
+                            ...website.url.map((item) => ShadButton.link(
+                                  size: ShadButtonSize.sm,
+                                  onPressed: () => launchUrl(Uri.parse(item), mode: LaunchMode.externalApplication),
+                                  child: Text(
+                                    item,
+                                    style: TextStyle(fontSize: 13, color: shadColorScheme.primary),
+                                  ),
+                                )),
+                            Text(
+                              '搜索地址：',
+                              style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
+                            ),
+                            ...website.pageSearch.map((item) => ShadButton.link(
+                                  size: ShadButtonSize.sm,
+                                  child: Text(
+                                    item,
+                                    style: TextStyle(fontSize: 13, color: shadColorScheme.primary),
+                                  ),
+                                )),
+                            Text(
+                              '上传限速：${website.limitSpeed}MB/s',
+                              style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
+                            ),
+                            Text(
+                              '最后访问时间：${calculateTimeElapsed(mySite.latestActive.toString())}',
+                              style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
+                            ),
+                          ],
+                        ),
+                        actions: [
+                          ShadButton.ghost(
+                            size: ShadButtonSize.sm,
+                            child: Text('关闭'),
+                            onPressed: () => Get.back(),
+                          ),
+                          ShadButton.secondary(
+                            size: ShadButtonSize.sm,
+                            child: Text(
+                              '打开',
+                              style: TextStyle(color: shadColorScheme.primary),
+                            ),
+                            onPressed: () {
+                              Get.back();
+                              _openSitePage(mySite, website, true);
+                            },
+                          ),
+                          ShadButton.outline(
+                            size: ShadButtonSize.sm,
+                            child: Text('浏览器'),
+                            onPressed: () => _openSitePage(mySite, website, false),
+                          ),
+                        ],
+                      );
+                    },
+                    title: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        mySite.latestActive != null
+                            ? Tooltip(
+                                message:
+                                    '最后访问时间：${calculateTimeElapsed(mySite.latestActive.toString())}  上传限速：${website.limitSpeed}MB/s \n 搜索地址：${website.pageSearch}',
+                                child: Text(
+                                  mySite.nickname,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: siteColorConfig.siteNameColor.value,
+                                  ),
+                                ),
+                              )
+                            : Text(
+                                mySite.nickname,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: siteColorConfig.siteNameColor.value,
+                                ),
+                              ),
+                        if (mySite.mail! > 0)
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.mail_outlined,
+                                size: 12,
+                                color: siteColorConfig.mailColor.value,
+                              ),
+                              Text(
+                                '${mySite.mail}',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: siteColorConfig.mailColor.value,
+                                ),
+                              ),
+                            ],
+                          ),
+                        if (mySite.notice! > 0)
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.notifications_outlined,
+                                size: 12,
+                                color: siteColorConfig.noticeColor.value,
+                              ),
+                              Text(
+                                '${mySite.notice}',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: siteColorConfig.noticeColor.value,
+                                ),
+                              ),
+                            ],
+                          ),
+                        if (status != null && level == null)
+                          Text(
+                            website.level?[status.myLevel]?.level ?? status.myLevel,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: mySiteLevelColorMap[status.myLevel] ?? shadColorScheme.foreground,
+                            ),
+                          ),
+                        if (status != null && level != null)
+                          CustomPopup(
+                            showArrow: false,
+                            barrierColor: Colors.transparent,
+                            backgroundColor: shadColorScheme.background,
+                            content: SingleChildScrollView(
+                              child: SizedBox(
+                                  width: 200,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (nextLevel != null) ...[
+                                        PopupMenuItem<String>(
+                                          height: 13,
+                                          child: Text("下一等级：${nextLevel.level}",
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color:
+                                                    mySiteLevelColorMap[nextLevel.level] ?? shadColorScheme.foreground,
+                                              )),
+                                        ),
+                                        // if (status.uploaded < nextLevelToUploadedByte)
+                                        PopupMenuItem<String>(
+                                          height: 13,
+                                          child: Text(
+                                              '上传量：${FileSizeConvert.parseToFileSize(status.uploaded)}/${FileSizeConvert.parseToFileSize(nextLevelToUploadedByte)}',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                color: status.uploaded < max(nextLevelToUploadedByte, calcToUploaded)
+                                                    ? shadColorScheme.destructive
+                                                    : shadColorScheme.foreground,
+                                              )),
+                                        ),
+                                        // if (status.downloaded < nextLevelToDownloadedByte)
+                                        PopupMenuItem<String>(
+                                          height: 13,
+                                          child: Text(
+                                              '下载量：${FileSizeConvert.parseToFileSize(status.downloaded)}/${FileSizeConvert.parseToFileSize(nextLevelToDownloadedByte)}',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                color: status.downloaded < nextLevelToDownloadedByte
+                                                    ? shadColorScheme.destructive
+                                                    : shadColorScheme.foreground,
+                                              )),
+                                        ),
+                                        // if (status.uploaded / status.downloaded <
+                                        //     nextLevel.ratio)
+                                        //   PopupMenuItem<String>(
+                                        //     height: 13,
+                                        //     child: Text(
+                                        //         '分享率：${(status.uploaded / status.downloaded).toStringAsFixed(2)}/${nextLevel.ratio}',
+                                        //         style: TextStyle(
+                                        //           fontSize: 10,
+                                        //           color:
+                                        //               ShadTheme.of(context).colorScheme.destructive,
+                                        //         )),
+                                        //   ),
+                                        if (nextLevel.torrents > 0)
+                                          PopupMenuItem<String>(
+                                            height: 13,
+                                            child: Text('需发种数量：${status.published}/${nextLevel.torrents}',
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  color: status.published < nextLevel.torrents
+                                                      ? shadColorScheme.destructive
+                                                      : shadColorScheme.foreground,
+                                                )),
+                                          ),
+                                        if (nextLevel.score > 0)
+                                          PopupMenuItem<String>(
+                                            height: 13,
+                                            child: Text(
+                                                '做种积分：${formatNumber(status.myScore)}/${formatNumber(nextLevel.score)}',
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  color: status.myScore < nextLevel.score
+                                                      ? shadColorScheme.destructive
+                                                      : shadColorScheme.foreground,
+                                                )),
+                                          ),
+                                        if (nextLevel.bonus > 0)
+                                          PopupMenuItem<String>(
+                                            height: 13,
+                                            child: Text(
+                                                '魔力值：${formatNumber(status.myBonus)}/${formatNumber(nextLevel.bonus)}',
                                                 style: TextStyle(
                                                   fontSize: 10,
                                                   color: status.myBonus < nextLevel.bonus
                                                       ? shadColorScheme.destructive
                                                       : shadColorScheme.foreground,
                                                 )),
-                                      ),
-                                    if (nextLevel.days > 0)
-                                      PopupMenuItem<String>(
-                                        height: 13,
-                                        child: Text(
-                                            '升级日期：${DateFormat('yyyy-MM-dd').format(DateTime.now())}/${DateFormat('yyyy-MM-dd').format(toUpgradeTime)}',
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              color: DateTime.now().isBefore(toUpgradeTime)
-                                                  ? shadColorScheme.destructive
-                                                  : shadColorScheme.foreground,
-                                            )),
-                                      ),
-                                    if (level.keepAccount != true && nextLevel.keepAccount)
-                                      PopupMenuItem<String>(
-                                        height: 13,
-                                        child: Text('保留账号：${nextLevel.keepAccount}',
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              color: shadColorScheme.destructive,
-                                            )),
-                                      ),
-                                    if (level.graduation != true && nextLevel.graduation)
-                                      PopupMenuItem<String>(
-                                        height: 13,
-                                        child: Text('毕业：${nextLevel.graduation}',
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              color: shadColorScheme.destructive,
-                                            )),
-                                      ),
-                                    PopupMenuItem<String>(
-                                      height: 13,
-                                      child: Text('即将获得：${nextLevel.rights}',
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            color: shadColorScheme.destructive,
-                                          )),
-                                    ),
-                                  ],
-                                  ...rights
-                                      .where((el) =>
-                                          el.rights.trim() != '无' &&
-                                          !el.rights.trim().startsWith('同') &&
-                                          !el.rights.trim().contains('同上'))
-                                      .map((LevelInfo item) => PopupMenuItem<String>(
+                                          ),
+                                        if (nextLevel.days > 0)
+                                          PopupMenuItem<String>(
                                             height: 13,
-                                            child: Text(item.rights,
+                                            child: Text(
+                                                '升级日期：${DateFormat('yyyy-MM-dd').format(DateTime.now())}/${DateFormat('yyyy-MM-dd').format(toUpgradeTime)}',
                                                 style: TextStyle(
                                                   fontSize: 10,
-                                                  color: item.graduation ? Colors.orange : shadColorScheme.foreground,
+                                                  color: DateTime.now().isBefore(toUpgradeTime)
+                                                      ? shadColorScheme.destructive
+                                                      : shadColorScheme.foreground,
                                                 )),
-                                          ))
-                                ],
-                              )),
-                        ),
-                        child: Text(
-                          website.level?[status.myLevel]?.level ?? status.myLevel,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: mySiteLevelColorMap[status.myLevel] ?? shadColorScheme.foreground,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-                subtitle: Column(
-                  children: [
-                    status == null
-                        ? Text(
-                            '新站点，还没有数据哦',
-                            style: TextStyle(
-                              color: shadColorScheme.destructive,
-                              fontSize: 10,
+                                          ),
+                                        if (level.keepAccount != true && nextLevel.keepAccount)
+                                          PopupMenuItem<String>(
+                                            height: 13,
+                                            child: Text('保留账号：${nextLevel.keepAccount}',
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  color: shadColorScheme.destructive,
+                                                )),
+                                          ),
+                                        if (level.graduation != true && nextLevel.graduation)
+                                          PopupMenuItem<String>(
+                                            height: 13,
+                                            child: Text('毕业：${nextLevel.graduation}',
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  color: shadColorScheme.destructive,
+                                                )),
+                                          ),
+                                        PopupMenuItem<String>(
+                                          height: 13,
+                                          child: Text('即将获得：${nextLevel.rights}',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                color: shadColorScheme.destructive,
+                                              )),
+                                        ),
+                                      ],
+                                      ...rights
+                                          .where((el) =>
+                                              el.rights.trim() != '无' &&
+                                              !el.rights.trim().startsWith('同') &&
+                                              !el.rights.trim().contains('同上'))
+                                          .map((LevelInfo item) => PopupMenuItem<String>(
+                                                height: 13,
+                                                child: Text(item.rights,
+                                                    style: TextStyle(
+                                                      fontSize: 10,
+                                                      color:
+                                                          item.graduation ? Colors.orange : shadColorScheme.foreground,
+                                                    )),
+                                              ))
+                                    ],
+                                  )),
                             ),
-                          )
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              DateTime.parse(mySite.timeJoin) != DateTime(2024, 2, 1)
-                                  ? Text(
-                                      '⌚️${calcWeeksDays(mySite.timeJoin)}',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: siteColorConfig.regTimeColor.value,
-                                      ),
-                                    )
-                                  : Text(
-                                      '⌚️获取失败！',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: siteColorConfig.regTimeColor.value,
-                                      ),
-                                    ),
-                              if (level?.keepAccount == true)
-                                Text(
-                                  '🔥保号',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: siteColorConfig.keepAccountColor.value,
-                                  ),
+                            child: Text(
+                              website.level?[status.myLevel]?.level ?? status.myLevel,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: mySiteLevelColorMap[status.myLevel] ?? shadColorScheme.foreground,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    subtitle: Column(
+                      children: [
+                        status == null
+                            ? Text(
+                                '新站点，还没有数据哦',
+                                style: TextStyle(
+                                  color: shadColorScheme.destructive,
+                                  fontSize: 10,
                                 ),
-                              if (level?.graduation == true)
-                                Text(
-                                  '🎓毕业',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: siteColorConfig.graduationColor.value,
-                                  ),
-                                ),
-                              if (status.invitation > 0)
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.person_add_alt_outlined,
-                                      size: 12,
-                                      color: siteColorConfig.inviteColor.value,
-                                    ),
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  DateTime.parse(mySite.timeJoin) != DateTime(2024, 2, 1)
+                                      ? Text(
+                                          '⌚️${calcWeeksDays(mySite.timeJoin)}',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: siteColorConfig.regTimeColor.value,
+                                          ),
+                                        )
+                                      : Text(
+                                          '⌚️获取失败！',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: siteColorConfig.regTimeColor.value,
+                                          ),
+                                        ),
+                                  if (level?.keepAccount == true)
                                     Text(
-                                      '${status.invitation}',
+                                      '🔥保号',
                                       style: TextStyle(
                                         fontSize: 10,
-                                        color: siteColorConfig.inviteColor.value,
+                                        color: siteColorConfig.keepAccountColor.value,
                                       ),
                                     ),
-                                  ],
+                                  if (level?.graduation == true)
+                                    Text(
+                                      '🎓毕业',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: siteColorConfig.graduationColor.value,
+                                      ),
+                                    ),
+                                  if (status.invitation > 0)
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.person_add_alt_outlined,
+                                          size: 12,
+                                          color: siteColorConfig.inviteColor.value,
+                                        ),
+                                        Text(
+                                          '${status.invitation}',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: siteColorConfig.inviteColor.value,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                ],
+                              ),
+                        if (status?.myHr != '' && status?.myHr != "0")
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Text(
+                                'HR: ${status!.myHr.replaceAll('区', '').replaceAll('专', '').replaceAll('H&R', '').trim()}',
+                                textAlign: TextAlign.right,
+                                style: TextStyle(
+                                  color: siteColorConfig.hrColor.value,
+                                  fontSize: 10,
                                 ),
+                              ),
                             ],
                           ),
-                    if (status?.myHr != '' && status?.myHr != "0")
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Text(
-                            'HR: ${status!.myHr.replaceAll('区', '').replaceAll('专', '').replaceAll('H&R', '').trim()}',
-                            textAlign: TextAlign.right,
-                            style: TextStyle(
-                              color: siteColorConfig.hrColor.value,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
-                trailing: Obx(() {
-                  return siteRefreshing.value
-                      ? SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: Center(
-                              child: CircularProgressIndicator(
-                            color: siteColorConfig.loadingColor.value,
-                            strokeWidth: 2,
-                          )))
-                      : Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ConstrainedBox(
-                              constraints: BoxConstraints(maxHeight: 30),
-                              child: ShadButton.outline(
-                                size: ShadButtonSize.sm,
-                                padding: EdgeInsets.symmetric(horizontal: 4),
-                                onPressed: (website.signIn == true && mySite.signIn)
-                                    ? () async {
-                                        showLoading.value = true;
-                                        if (!signed) {
-                                          await signSite(siteRefreshing, mySite, shadColorScheme);
-                                          showLoading.value = false;
-                                        }
-                                        if (mySite.getSignMaxKey() == today) {
-                                          _showSignHistory(mySite, showLoading);
-                                        }
-                                      }
-                                    : null,
-                                child: Text(
-                                  mySite.signIn == false
-                                      ? '无签到'
-                                      : mySite.getSignMaxKey() == today
-                                          ? '已签到'
-                                          : '未签到',
-                                ),
-                              ),
-                            ),
-                            ConstrainedBox(
-                              constraints: BoxConstraints(maxHeight: 18),
-                              child: ShadButton.ghost(
-                                size: ShadButtonSize.sm,
-                                padding: EdgeInsets.symmetric(horizontal: 4),
-                                onPressed: () async {
-                                  showLoading.value = true;
-                                  await refreshSiteData(siteRefreshing, mySite, shadColorScheme);
-                                  showLoading.value = false;
-                                },
-                                child: Text(
-                                  calculateTimeElapsed(status!.updatedAt.toString()),
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: siteColorConfig.updatedAtColor.value,
+                      ],
+                    ),
+                    trailing: Obx(() {
+                      return siteRefreshing.value
+                          ? SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: Center(
+                                  child: CircularProgressIndicator(
+                                color: siteColorConfig.loadingColor.value,
+                                strokeWidth: 2,
+                              )))
+                          : Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ConstrainedBox(
+                                  constraints: BoxConstraints(maxHeight: 30),
+                                  child: ShadButton.outline(
+                                    size: ShadButtonSize.sm,
+                                    padding: EdgeInsets.symmetric(horizontal: 4),
+                                    onPressed: (website.signIn == true && mySite.signIn)
+                                        ? () async {
+                                            showLoading.value = true;
+                                            if (!signed) {
+                                              await signSite(siteRefreshing, mySite, shadColorScheme);
+                                              showLoading.value = false;
+                                            }
+                                            if (mySite.getSignMaxKey() == today) {
+                                              _showSignHistory(mySite, showLoading);
+                                            }
+                                          }
+                                        : null,
+                                    child: Text(
+                                      mySite.signIn == false
+                                          ? '无签到'
+                                          : mySite.getSignMaxKey() == today
+                                              ? '已签到'
+                                              : '未签到',
+                                    ),
                                   ),
                                 ),
-                              ),
-                            )
-                          ],
-                        );
-                }),
+                                ConstrainedBox(
+                                  constraints: BoxConstraints(maxHeight: 18),
+                                  child: ShadButton.ghost(
+                                    size: ShadButtonSize.sm,
+                                    padding: EdgeInsets.symmetric(horizontal: 4),
+                                    onPressed: () async {
+                                      showLoading.value = true;
+                                      await refreshSiteData(siteRefreshing, mySite, shadColorScheme);
+                                      showLoading.value = false;
+                                    },
+                                    child: Text(
+                                      calculateTimeElapsed(status!.updatedAt.toString()),
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: siteColorConfig.updatedAtColor.value,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              ],
+                            );
+                    }),
+                  ),
+                ),
               ),
             ),
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
@@ -1733,7 +1951,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                       backgroundColor: Color(0xFF5D4037),
                       foregroundColor: Colors.white,
                       icon: Icons.manage_history_outlined,
-                      label: '签到历史',
+                      label: '签到数据',
                     ),
                   SlidableAction(
                     flex: 1,
