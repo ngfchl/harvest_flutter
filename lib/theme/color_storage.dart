@@ -24,6 +24,7 @@ class SiteColorConfig {
   final Rx<Color> uploadIconColor;
   final Rx<Color> uploadNumColor;
   final Rx<Color> uploadedColor;
+  final Rx<Color> uploadedIconColor;
   final Rx<Color> downloadIconColor;
   final Rx<Color> downloadNumColor;
   final Rx<Color> downloadedColor;
@@ -58,6 +59,7 @@ class SiteColorConfig {
     required this.inviteColor,
     required this.loadingColor,
     required this.uploadIconColor,
+    required this.uploadedIconColor,
     required this.uploadNumColor,
     required this.downloadIconColor,
     required this.downloadedIconColor,
@@ -106,10 +108,10 @@ class SiteColorConfig {
     // 2️⃣ 转成 Map
     final map = current.toJson();
     // print('更新前的配置：${map[key]}');
-    // print('准备更新的内容：${key} ==== ${color.value}');
+    print('准备更新的内容：${key} ==== ${color.value}');
     // 3️⃣ 只更新指定 key
     map[key] = color.toARGB32();
-    print('$key ==== ${color.toARGB32()}');
+    print('准备更新的内容：$key ==== ${color.toARGB32()}');
     // print('更新后的配置：$map');
     // 4️⃣ 整体写回 SP
     await SPUtil.setMap(spKey, map);
@@ -173,6 +175,7 @@ class SiteColorConfig {
       inviteColor: scheme.foreground.obs,
       loadingColor: scheme.foreground.obs,
       uploadIconColor: scheme.primary.obs,
+      uploadedIconColor: scheme.primary.obs,
       uploadNumColor: scheme.foreground.obs,
       downloadIconColor: scheme.destructive.obs,
       downloadNumColor: scheme.foreground.obs,
@@ -226,9 +229,15 @@ class SiteColorConfig {
       SiteColorKeys.updatedAtColor: updatedAtColor.value.toARGB32(),
       SiteColorKeys.hrColor: hrColor.value.toARGB32(),
       SiteColorKeys.uploadedColor: uploadedColor.value.toARGB32(),
+      SiteColorKeys.uploadedIconColor: uploadedIconColor.value.toARGB32(),
       SiteColorKeys.downloadedColor: downloadedColor.value.toARGB32(),
+      SiteColorKeys.downloadedIconColor: downloadedIconColor.value.toARGB32(),
       SiteColorKeys.publishedNumColor: publishedNumColor.value.toARGB32(),
       SiteColorKeys.scoreNumColor: scoreNumColor.value.toARGB32(),
+      SiteColorKeys.seedVolumeIconColor: seedVolumeIconColor.value.toARGB32(),
+      SiteColorKeys.seedVolumeNumColor: seedVolumeNumColor.value.toARGB32(),
+      SiteColorKeys.scoreIconColor: scoreIconColor.value.toARGB32(),
+      SiteColorKeys.publishedIconColor: publishedIconColor.value.toARGB32(),
     };
   }
 
@@ -252,6 +261,7 @@ class SiteColorConfig {
       uploadIconColor: c(SiteColorKeys.uploadIconColor, scheme.primary).obs,
       uploadNumColor: c(SiteColorKeys.uploadNumColor, scheme.foreground).obs,
       downloadIconColor: c(SiteColorKeys.downloadIconColor, scheme.destructive).obs,
+      uploadedIconColor: c(SiteColorKeys.uploadedIconColor, scheme.foreground).obs,
       downloadNumColor: c(SiteColorKeys.downloadNumColor, scheme.foreground).obs,
       ratioIconColor: c(SiteColorKeys.ratioIconColor, scheme.primary).obs,
       ratioNumColor: c(SiteColorKeys.ratioNumColor, scheme.foreground).obs,
@@ -304,12 +314,13 @@ class SiteColorConfig {
     Rx<Color>? uploadedColor,
     Rx<Color>? downloadedColor,
     Rx<Color>? downloadedIconColor,
-    Rx<Color>? publishNumColor,
+    Rx<Color>? publishedNumColor,
     Rx<Color>? scoreNumColor,
     Rx<Color>? scoreIconColor,
-    Rx<Color>? seedVolIconColor,
-    Rx<Color>? seedVolNumColor,
-    Rx<Color>? publishIconColor,
+    Rx<Color>? seedVolumeIconColor,
+    Rx<Color>? seedVolumeNumColor,
+    Rx<Color>? publishedIconColor,
+    Rx<Color>? uploadedIconColor,
   }) {
     return SiteColorConfig(
       toSignColor: toSignColor ?? this.toSignColor,
@@ -331,8 +342,8 @@ class SiteColorConfig {
       ratioNumColor: ratioNumColor ?? this.ratioNumColor,
       seedIconColor: seedIconColor ?? this.seedIconColor,
       seedNumColor: seedNumColor ?? this.seedNumColor,
-      seedVolumeNumColor: seedVolNumColor ?? this.seedVolumeNumColor,
-      seedVolumeIconColor: seedVolIconColor ?? this.seedVolumeIconColor,
+      seedVolumeNumColor: seedVolumeNumColor ?? this.seedVolumeNumColor,
+      seedVolumeIconColor: seedVolumeIconColor ?? this.seedVolumeIconColor,
       perBonusIconColor: perBonusIconColor ?? this.perBonusIconColor,
       perBonusNumColor: perBonusNumColor ?? this.perBonusNumColor,
       bonusIconColor: bonusIconColor ?? this.bonusIconColor,
@@ -341,11 +352,12 @@ class SiteColorConfig {
       hrColor: hrColor ?? this.hrColor,
       uploadedColor: uploadedColor ?? this.uploadedColor,
       downloadedColor: downloadedColor ?? this.downloadedColor,
-      publishedNumColor: publishNumColor ?? this.publishedNumColor,
-      publishedIconColor: publishIconColor ?? this.publishedIconColor,
+      publishedNumColor: publishedNumColor ?? this.publishedNumColor,
+      publishedIconColor: publishedIconColor ?? this.publishedIconColor,
       scoreNumColor: scoreNumColor ?? this.scoreNumColor,
       scoreIconColor: scoreIconColor ?? this.scoreIconColor,
       downloadedIconColor: downloadedIconColor ?? this.downloadedIconColor,
+      uploadedIconColor: uploadedIconColor ?? this.uploadedIconColor,
     );
   }
 }
@@ -385,4 +397,5 @@ class SiteColorKeys {
   static const seedVolumeNumColor = 'seedVolumeNumColor';
   static const seedVolumeIconColor = 'seedVolumeIconColor';
   static const downloadedIconColor = 'downloadedIconColor';
+  static const uploadedIconColor = 'uploadedIconColor';
 }

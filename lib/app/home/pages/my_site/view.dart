@@ -1230,7 +1230,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               Expanded(
                 child: CustomCard(
-                  color: siteColorConfig.uploadIconColor.value.withOpacity(opacity),
+                  color: siteColorConfig.uploadedIconColor.value.withOpacity(opacity),
                   margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1245,7 +1245,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         mainAxisSize: MainAxisSize.max,
                         icon: Icon(
                           Icons.cloud_upload_outlined,
-                          color: siteColorConfig.uploadIconColor.value,
+                          color: siteColorConfig.uploadedIconColor.value,
                           size: 16,
                         ),
                       ),
