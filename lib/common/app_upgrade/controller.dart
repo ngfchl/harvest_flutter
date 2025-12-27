@@ -6,6 +6,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../models/common_response.dart';
+import '../../utils/fetch_faster_github_proxy.dart';
 import '../../utils/logger_helper.dart';
 import '../upgrade_widget/model.dart';
 
@@ -18,6 +19,7 @@ class AppUpgradeController extends GetxController {
   String currentTab = 'latestVersion';
   String newVersion = '';
   String currentVersion = '';
+  String? gitProxy;
   final Dio dio = Dio();
 
   List<AppUpdateInfo> appVersions = [];
@@ -38,7 +40,14 @@ class AppUpgradeController extends GetxController {
 
     super.onInit();
   }
-
+  
+  Future<void> fetchGitProxy() async {
+    CommonResponse res = await fetchFasterGithubProxy();
+    if (res.succeed) {
+      gitProxy = res.data?.url;
+    }
+  }
+  
   Future<void> getAppVersionList() async {
     var response = await dio.get('https://repeat.ptools.fun/api/app/version/list');
     if (response.statusCode == 200) {

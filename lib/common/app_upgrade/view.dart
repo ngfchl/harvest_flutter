@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart' hide FormData, MultipartFile;
 import 'package:harvest/common/form_widgets.dart';
 import 'package:harvest/utils/storage.dart';
@@ -30,6 +31,7 @@ class AppUpgradePage extends StatelessWidget {
     final buttonKey = GlobalKey();
 
     return GetBuilder<AppUpgradeController>(builder: (appUpgradeController) {
+      CancelToken cancelToken = CancelToken();
       return ShadPopover(
         controller: appUpgradeController.popoverController,
         closeOnTapOutside: false,
@@ -80,8 +82,11 @@ class AppUpgradePage extends StatelessWidget {
                               id: 'progressValue',
                               builder: (controller) {
                                 if (controller.progressValue != 0 && controller.progressValue < 1) {
-                                  return Text(
-                                      '正在下载: ${appUpgradeController.newVersion} ${(controller.progressValue * 100).toStringAsFixed(0)}%',
+                                  if (controller.progressValue <= 0.01) {
+                                    return Text('测速中，请稍等...',
+                                        style: TextStyle(fontSize: 12, color: shadColorScheme.foreground));
+                                  }
+                                  return Text('下载进度:  ${(controller.progressValue * 100).toStringAsFixed(2)}%',
                                       style: TextStyle(fontSize: 12, color: shadColorScheme.foreground));
                                 }
                                 return const SizedBox.shrink();
@@ -102,7 +107,10 @@ class AppUpgradePage extends StatelessWidget {
                                         return ShadButton.link(
                                             key: buttonKey,
                                             padding: EdgeInsets.zero,
-                                            onPressed: () => doInstallationPackage(context, e, buttonKey),
+                                            onPressed: () async {
+                                              cancelToken = CancelToken();
+                                              await doInstallationPackage(context, e, buttonKey, cancelToken);
+                                            },
                                             child: Text(e.key, style: TextStyle(fontSize: 12)));
                                       }))
                             ],
@@ -143,20 +151,50 @@ class AppUpgradePage extends StatelessWidget {
                                 onPressed: () => appUpgradeController.getAppLatestVersionInfo(),
                                 child: Text('检查'),
                               ),
-                              ShadButton.destructive(
-                                size: ShadButtonSize.sm,
-                                key: buttonKey,
-                                onPressed: () {
-                                  appUpgradeController.notShowNewVersion = false;
-                                  SPUtil.setBool('notShowNewVersion', false);
-                                  getDownloadUrlForCurrentPlatform(context, buttonKey);
-                                },
-                                leading: Icon(
-                                  Icons.install_desktop_outlined,
-                                  size: 16,
-                                ),
-                                child: Text(appUpgradeController.hasNewVersion ? '更新' : '重装'),
-                              ),
+                              GetBuilder<AppUpgradeController>(
+                                  id: 'progressValue',
+                                  builder: (controller) {
+                                    return appUpgradeController.progressValue <= 0
+                                        ? ShadButton.destructive(
+                                            size: ShadButtonSize.sm,
+                                            key: buttonKey,
+                                            onPressed: () {
+                                              appUpgradeController.notShowNewVersion = false;
+                                              SPUtil.setBool('notShowNewVersion', false);
+                                              cancelToken = CancelToken();
+                                              getDownloadUrlForCurrentPlatform(context, buttonKey, cancelToken);
+                                            },
+                                            leading: Icon(
+                                              Icons.install_desktop_outlined,
+                                              size: 16,
+                                            ),
+                                            child: Text(appUpgradeController.hasNewVersion ? '更新' : '重装'),
+                                          )
+                                        : ShadButton.destructive(
+                                            size: ShadButtonSize.sm,
+                                            key: buttonKey,
+                                            onPressed: () async {
+                                              Logger.instance.i('取消下载中...');
+                                              cancelToken.cancel();
+                                              Logger.instance.i(
+                                                  '取消下载：${cancelToken.isCancelled}  进度值：${appUpgradeController.progressValue}');
+                                              if (cancelToken.isCancelled) {
+                                                appUpgradeController.progressValue = 0;
+                                                appUpgradeController.update(['progressValue']);
+                                              }
+                                              Logger.instance.i(
+                                                  '取消下载：${cancelToken.isCancelled}  进度值：${appUpgradeController.progressValue}');
+                                            },
+                                            leading: SizedBox(
+                                                width: 16,
+                                                height: 16,
+                                                child: CircularProgressIndicator(
+                                                  value: appUpgradeController.progressValue,
+                                                  color: shadColorScheme.foreground,
+                                                )),
+                                            child: Text('取消'),
+                                          );
+                                  }),
                               if (Platform.isIOS)
                                 ShadButton.link(
                                   size: ShadButtonSize.sm,
@@ -188,6 +226,7 @@ class AppUpgradePage extends StatelessWidget {
                       ? shadColorScheme.destructive
                       : shadColorScheme.foreground),
               onPressed: () async {
+                appUpgradeController = Get.put(AppUpgradeController());
                 if (appUpgradeController.updateInfo == null) {
                   await appUpgradeController.getAppLatestVersionInfo();
                 }
@@ -201,7 +240,8 @@ class AppUpgradePage extends StatelessWidget {
     });
   }
 
-  Future<void> doInstallationPackage(BuildContext context, MapEntry e, GlobalKey buttonKey) async {
+  Future<void> doInstallationPackage(
+      BuildContext context, MapEntry e, GlobalKey buttonKey, CancelToken cancelToken) async {
     if (GetPlatform.isDesktop) {
       String? savePath = await FilePicker.platform.saveFile(
         dialogTitle: '保存安装包',
@@ -211,15 +251,15 @@ class AppUpgradePage extends StatelessWidget {
         allowedExtensions: ['apk', 'ipa', 'dmg', 'zip'],
       );
       if (savePath != null) {
-        await _downloadInstallationPackage(savePath, e.value);
+        await _downloadInstallationPackage(savePath, e.key, cancelToken);
       }
     } else {
-      await downloadAndSaveWithFilePicker(e.value, e.key, buttonKey);
+      await downloadAndSaveWithFilePicker(e.key, e.key, buttonKey, cancelToken);
     }
   }
 
   /// 根据当前设备平台，从 downloadLinks 中返回最匹配的下载 URL
-  Future getDownloadUrlForCurrentPlatform(BuildContext context, GlobalKey buttonKey) async {
+  Future getDownloadUrlForCurrentPlatform(BuildContext context, GlobalKey buttonKey, CancelToken cancelToken) async {
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     final String prefix = 'harvest_${appUpgradeController.updateInfo?.version}';
     Map<String, String> downloadLinks = appUpgradeController.updateInfo?.downloadLinks ?? {};
@@ -238,19 +278,17 @@ class AppUpgradePage extends StatelessWidget {
       }
       appDocDir = await getExternalStorageDirectory();
       String savePath = "${appDocDir?.path}/${appUpgradeController.newVersion}";
-      downloadUrl ??= downloadLinks[appUpgradeController.newVersion];
-      await _downloadInstallationPackage(savePath, downloadUrl!);
+      await _downloadInstallationPackage(savePath, appUpgradeController.newVersion, cancelToken);
       await InstallPlugin.install(savePath);
     } else if (Platform.isIOS) {
       appUpgradeController.newVersion = '${prefix}_arm64-ios.ipa';
 
       downloadUrl = downloadLinks[appUpgradeController.newVersion];
-      await downloadAndSaveWithFilePicker(downloadUrl!, appUpgradeController.newVersion, buttonKey);
+      await downloadAndSaveWithFilePicker(downloadUrl!, appUpgradeController.newVersion, buttonKey, cancelToken);
     } else if (Platform.isWindows) {
       appUpgradeController.newVersion = '${prefix}_x86_64-windows.zip';
-      downloadUrl = downloadLinks[appUpgradeController.newVersion];
       String savePath = "${appDocDir.path}/${appUpgradeController.newVersion}";
-      await _downloadInstallationPackage(savePath, downloadUrl!);
+      await _downloadInstallationPackage(savePath, appUpgradeController.newVersion, cancelToken);
       await Process.run('explorer.exe', [savePath.replaceAll('/', '\\')]);
     } else if (Platform.isMacOS) {
       try {
@@ -261,7 +299,6 @@ class AppUpgradePage extends StatelessWidget {
         } else {
           appUpgradeController.newVersion = '${prefix}_x86_64-macos.dmg';
         }
-        downloadUrl ??= downloadLinks[appUpgradeController.newVersion];
         // String? savedPath = await FilePicker.platform.saveFile(
         //   dialogTitle: '保存安装包',
         //   fileName: appUpgradeController.newVersion,
@@ -269,39 +306,93 @@ class AppUpgradePage extends StatelessWidget {
         //   allowedExtensions: ['apk', 'ipa', 'dmg', 'zip'],
         // );
         String savedPath = "${appDocDir.path}/${appUpgradeController.newVersion}";
-        await _downloadInstallationPackage(savedPath, downloadUrl!);
-        await Process.run('xattr', ['-d', 'com.apple.quarantine', savedPath]);
-        Logger.instance.i('✅ Removed quarantine from $savedPath');
-        await Process.run('open', [savedPath]);
+        await _downloadInstallationPackage(savedPath, appUpgradeController.newVersion, cancelToken);
+        var res = await Process.run('xattr', ['-d', 'com.apple.quarantine', savedPath]);
+        Logger.instance.i('✅ Removed quarantine from $savedPath  === ${res.stdout} === ${res.stderr}');
+
+        if (res.exitCode == 0) {
+          Future.delayed(Duration(seconds: 1), () async {
+            await Process.run('open', [savedPath]);
+          });
+          return;
+        }
+        String command = 'xattr -d com.apple.quarantine $savedPath && open $savedPath';
+        Get.defaultDialog(
+          title: '更新提示',
+          backgroundColor: shadColorScheme.background,
+          radius: 8,
+          titleStyle: TextStyle(color: shadColorScheme.foreground, fontSize: 16),
+          content: Text('去除苹果系统安全限制失败，\n请点击复制命令并在终端中执行',
+              style: TextStyle(
+                color: shadColorScheme.foreground,
+                fontSize: 14,
+              )),
+          actions: [
+            ShadButton.ghost(
+              onPressed: () => Get.back(),
+              child: Text('关闭'),
+            ),
+            ShadButton.destructive(
+              size: ShadButtonSize.sm,
+              onPressed: () async {
+                Clipboard.setData(ClipboardData(text: command));
+                Get.snackbar('更新通知', '命令已复制到剪贴板', colorText: shadColorScheme.foreground);
+                var r = await Process.run('open', ['/System/Applications/Utilities/Terminal.app']);
+                Logger.instance.i('✅ Opened Terminal === ${r.exitCode} === ${r.stderr}');
+                Logger.instance.i('✅ kDebugMode $kDebugMode ');
+                if (!kDebugMode) {
+                  exit(0);
+                }
+              },
+              child: Text('复制'),
+            ),
+          ],
+        );
       } catch (e, stackTrace) {
-        Logger.instance.e('打开安装包失败: $e', stackTrace: stackTrace);
-        Get.snackbar('更新通知', '当前设备不支持更新', colorText: shadColorScheme.destructiveForeground);
+        if (cancelToken.isCancelled) return;
+        String message = '打开安装包失败 ❌ $e';
+        Logger.instance.e(message, stackTrace: stackTrace);
+        Get.snackbar('更新通知', message, colorText: shadColorScheme.destructiveForeground);
       }
     } else {
       Get.snackbar('更新通知', '不支持的系统平台', colorText: shadColorScheme.destructiveForeground);
     }
   }
 
-  Future<void> _downloadInstallationPackage(String savePath, String fileUrl) async {
-    appUpgradeController.progressValue = 0.00001;
+  Future<void> _downloadInstallationPackage(String savePath, String fileUrl, CancelToken cancelToken) async {
+    appUpgradeController.progressValue = 0.01;
     appUpgradeController.update(['progressValue']);
-    await Dio().download(fileUrl, savePath, onReceiveProgress: (count, total) {
+    await appUpgradeController.fetchGitProxy();
+    String downloadUrl =
+        '${appUpgradeController.gitProxy ?? ''}https://github.com/ngfchl/harvest_flutter/releases/download/${appUpgradeController.updateInfo?.version}/$fileUrl';
+    Logger.instance.i('下载 URL: $downloadUrl');
+
+    var dio = Dio();
+    await dio.download(downloadUrl, savePath, cancelToken: cancelToken, onReceiveProgress: (count, total) {
       final value = count / total;
-      if (appUpgradeController.progressValue != value) {
-        if (appUpgradeController.progressValue < 1.0) {
-          appUpgradeController.progressValue = count / total;
-        } else {
-          appUpgradeController.progressValue = 0.0;
-        }
-        appUpgradeController.update(['progressValue']);
-        Logger.instance.i("${(appUpgradeController.progressValue * 100).toStringAsFixed(0)}%");
+      if (value.toInt() > appUpgradeController.progressValue.toInt()) {
+        Logger.instance.i("当前下载进度：${(appUpgradeController.progressValue * 100).toStringAsFixed(0)}%");
       }
+      if (cancelToken.isCancelled) {
+        dio.close(force: true);
+      }
+      if (appUpgradeController.progressValue < 1.0) {
+        appUpgradeController.progressValue = value;
+      } else {
+        appUpgradeController.progressValue = 0.0;
+      }
+      appUpgradeController.update(['progressValue']);
     });
+    appUpgradeController.progressValue = 0.0;
+    appUpgradeController.update(['progressValue']);
   }
 
-  Future<void> downloadAndSaveWithFilePicker(String fileUrl, String suggestedName, GlobalKey buttonKey) async {
+  Future<void> downloadAndSaveWithFilePicker(
+      String fileUrl, String suggestedName, GlobalKey buttonKey, CancelToken cancelToken) async {
     if (kIsWeb) return;
-
+    String downloadUrl =
+        '${appUpgradeController.gitProxy ?? ''}https://github.com/ngfchl/harvest_flutter/releases/download/${appUpgradeController.updateInfo?.version}/$fileUrl';
+    Logger.instance.i('下载 URL: $downloadUrl');
     // 显示“正在准备下载...”提示（因为要先加载到内存）
     appUpgradeController.progressValue = -1; // 可用 -1 表示“缓冲中”
     appUpgradeController.update(['progressValue']);
@@ -311,6 +402,7 @@ class AppUpgradePage extends StatelessWidget {
       final response = await Dio().get<List<int>>(
         fileUrl,
         options: Options(responseType: ResponseType.bytes),
+        cancelToken: cancelToken,
         onReceiveProgress: (count, total) {
           // 可选：显示预加载进度（但 saveFile 本身无进度）
           final value = count / total;
@@ -376,6 +468,7 @@ class AppUpgradePage extends StatelessWidget {
     } catch (e, stack) {
       appUpgradeController.progressValue = 0.0;
       appUpgradeController.update(['progressValue']);
+
       Logger.instance.e('保存失败: $e', error: e, stackTrace: stack);
     }
   }
