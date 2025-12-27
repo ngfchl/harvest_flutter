@@ -692,15 +692,23 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
       url = url.replaceFirst("api", "next");
     }
     if (kIsWeb || !openByInnerExplorer) {
-      Logger.instance.d('使用外部浏览器打开');
-      Uri uri = Uri.parse(url);
-      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-        Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？', colorText: shadColorScheme.foreground);
-      }
+      await _goOuterExplorer(url, shadColorScheme);
     } else {
-      Logger.instance.d('使用内置浏览器打开');
-      Get.toNamed(Routes.WEBVIEW, arguments: {'url': url, 'info': null, 'mySite': mySite, 'website': website});
+      _goInnerExplorer(url, mySite, website);
     }
+  }
+
+  Future<void> _goOuterExplorer(String url, ShadColorScheme shadColorScheme) async {
+    Logger.instance.d('使用外部浏览器打开');
+    Uri uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？', colorText: shadColorScheme.foreground);
+    }
+  }
+
+  void _goInnerExplorer(String url, MySite mySite, WebSite website) {
+    Logger.instance.d('使用内置浏览器打开');
+    Get.toNamed(Routes.WEBVIEW, arguments: {'url': url, 'info': null, 'mySite': mySite, 'website': website});
   }
 
   Widget showSiteDataCard(MySite mySite) {
@@ -850,6 +858,120 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                       },
                     ),
                   const Divider(height: 5),
+                  ShadContextMenuItem(
+                    leading: Icon(
+                      size: 14,
+                      Icons.copy_rounded,
+                      color: shadColorScheme.foreground,
+                    ),
+                    trailing: Icon(
+                      size: 14,
+                      Icons.keyboard_arrow_right_outlined,
+                      color: shadColorScheme.foreground,
+                    ),
+                    items: [
+                      ShadContextMenuItem(
+                        leading: Icon(
+                          size: 14,
+                          Icons.copy_rounded,
+                          color: shadColorScheme.foreground,
+                        ),
+                        child: Text(style: TextStyle(fontSize: 12), '当前域名'),
+                        onPressed: () {
+                          Clipboard.setData(ClipboardData(text: mySite.mirror!));
+                          Get.snackbar('复制当前域名', '当前域名复制成功！', colorText: shadColorScheme.foreground);
+                        },
+                      ),
+                      ShadContextMenuItem(
+                        leading: Icon(
+                          size: 14,
+                          Icons.copy_rounded,
+                          color: shadColorScheme.foreground,
+                        ),
+                        child: Text(style: TextStyle(fontSize: 12), '用户ID'),
+                        onPressed: () {
+                          if (mySite.userId == null || mySite.userId!.isEmpty) {
+                            Get.snackbar('复制用户ID', '用户ID为空！', colorText: shadColorScheme.foreground);
+                            return;
+                          }
+                          Clipboard.setData(ClipboardData(text: mySite.userId!));
+                          Get.snackbar('复制用户ID', '用户ID复制成功！', colorText: shadColorScheme.foreground);
+                        },
+                      ),
+                      ShadContextMenuItem(
+                        leading: Icon(
+                          size: 14,
+                          Icons.copy_rounded,
+                          color: shadColorScheme.foreground,
+                        ),
+                        child: Text(style: TextStyle(fontSize: 12), '站点Cookie'),
+                        onPressed: () {
+                          if (mySite.cookie == null || mySite.cookie!.isEmpty) {
+                            Get.snackbar('复制站点Cookie', '站点Cookie为空！', colorText: shadColorScheme.foreground);
+                            return;
+                          }
+                          Clipboard.setData(ClipboardData(text: mySite.userId!));
+                          Get.snackbar('复制站点Cookie', '站点Cookie复制成功！', colorText: shadColorScheme.foreground);
+                        },
+                      ),
+                      ShadContextMenuItem(
+                        leading: Icon(
+                          size: 14,
+                          Icons.copy_rounded,
+                          color: shadColorScheme.foreground,
+                        ),
+                        child: Text(style: TextStyle(fontSize: 12), '个人主页地址'),
+                        onPressed: () {
+                          String data = '${mySite.mirror}${website.pageUser.replaceFirst('{}', mySite.userId!)}';
+                          Clipboard.setData(ClipboardData(text: data));
+                          Get.snackbar('复制个人主页地址', '个人主页地址复制成功！', colorText: shadColorScheme.foreground);
+                        },
+                      ),
+
+                      // ShadContextMenuItem(
+                      //   leading: Icon(
+                      //     size: 14,
+                      //     Icons.copy_rounded,
+                      //     color: shadColorScheme.foreground,
+                      //   ),
+                      //   child: Text(style: TextStyle(fontSize: 12), '磁力链接'),
+                      //   onPressed: () {
+                      //     Clipboard.setData(ClipboardData(text: torrentInfo.magnetUri!));
+                      //     Get.snackbar('复制种子磁力链接', '种子磁力链接复制成功！', colorText: shadColorScheme.foreground);
+                      //   },
+                      // ),
+                      // ShadContextMenuItem(
+                      //   child: Text(style: TextStyle(fontSize: 12),'Torrent ID'),
+                      //   onPressed: () {},
+                      // ),
+                      // ShadContextMenuItem(
+                      //   leading: Icon(
+                      //     size: 14,
+                      //     Icons.copy_rounded,
+                      //     color: shadColorScheme.foreground,
+                      //   ),
+                      //   child: Text(style: TextStyle(fontSize: 12), 'Tracker 地址'),
+                      //   onPressed: () {
+                      //     Clipboard.setData(ClipboardData(text: torrentInfo.tracker!));
+                      //     Get.snackbar('复制种子Tracker', '种子Tracker复制成功！', colorText: shadColorScheme.foreground);
+                      //   },
+                      // ),
+                      // ShadContextMenuItem(
+                      //   leading: Icon(
+                      //     size: 14,
+                      //     Icons.copy_rounded,
+                      //     color: shadColorScheme.foreground,
+                      //   ),
+                      //   child: Text(style: TextStyle(fontSize: 12),'注释'),
+                      //   onPressed: () {
+                      //     Clipboard.setData(ClipboardData(text: torrentInfo.comment!));
+                      //     Get.snackbar('复制种子注释', '种子注释复制成功！', colorText: shadColorScheme.foreground);
+                      //   },
+                      // ),
+                    ],
+                    child: Text(style: TextStyle(fontSize: 12), '复制'),
+                  ),
+                  const Divider(height: 5),
                   if (website.signIn == true && mySite.signIn && !signed)
                     ShadContextMenuItem(
                       leading: Icon(
@@ -878,27 +1000,203 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                     },
                   ),
                   const Divider(height: 5),
-                  ShadContextMenuItem(
-                    leading: Icon(
-                      size: 14,
-                      Icons.join_inner_outlined,
-                      color: shadColorScheme.foreground,
+                  if (!kIsWeb)
+                    ShadContextMenuItem(
+                      leading: Icon(
+                        size: 14,
+                        Icons.join_inner_outlined,
+                        color: shadColorScheme.foreground,
+                      ),
+                      trailing: Icon(
+                        size: 14,
+                        Icons.keyboard_arrow_right_outlined,
+                        color: shadColorScheme.foreground,
+                      ),
+                      items: [
+                        ShadContextMenuItem(
+                          leading: Icon(
+                            size: 14,
+                            Icons.join_inner_outlined,
+                            color: shadColorScheme.foreground,
+                          ),
+                          child: Text(style: TextStyle(fontSize: 12), '默认页面'),
+                          onPressed: () async {
+                            _openSitePage(mySite, website, true);
+                          },
+                        ),
+                        ShadContextMenuItem(
+                          leading: Icon(
+                            size: 14,
+                            Icons.join_inner_outlined,
+                            color: shadColorScheme.foreground,
+                          ),
+                          child: Text(style: TextStyle(fontSize: 12), '主页'),
+                          onPressed: () async {
+                            String url = mySite.mirror!;
+                            _goInnerExplorer(url, mySite, website);
+                          },
+                        ),
+                        ShadContextMenuItem(
+                          leading: Icon(
+                            size: 14,
+                            Icons.join_inner_outlined,
+                            color: shadColorScheme.foreground,
+                          ),
+                          child: Text(style: TextStyle(fontSize: 12), '个人主页'),
+                          onPressed: () async {
+                            String url = '${mySite.mirror}${website.pageUser.replaceFirst('{}', mySite.userId!)}';
+                            _goInnerExplorer(url, mySite, website);
+                          },
+                        ),
+                        ShadContextMenuItem(
+                          leading: Icon(
+                            size: 14,
+                            Icons.join_inner_outlined,
+                            color: shadColorScheme.foreground,
+                          ),
+                          child: Text(style: TextStyle(fontSize: 12), '控制面板'),
+                          onPressed: () async {
+                            String url =
+                                '${mySite.mirror}${website.pageControlPanel.replaceFirst('{}', mySite.userId!)}';
+                            _goInnerExplorer(url, mySite, website);
+                          },
+                        ),
+                        ShadContextMenuItem(
+                          leading: Icon(
+                            size: 14,
+                            Icons.join_inner_outlined,
+                            color: shadColorScheme.foreground,
+                          ),
+                          child: Text(style: TextStyle(fontSize: 12), '魔力页面'),
+                          onPressed: () async {
+                            String url = '${mySite.mirror}${website.pageMyBonus.replaceFirst('{}', mySite.userId!)}';
+                            _goInnerExplorer(url, mySite, website);
+                          },
+                        ),
+                        ShadContextMenuItem(
+                          leading: Icon(
+                            size: 14,
+                            Icons.join_inner_outlined,
+                            color: shadColorScheme.foreground,
+                          ),
+                          child: Text(style: TextStyle(fontSize: 12), '种子列表'),
+                          onPressed: () async {
+                            String url = '${mySite.mirror}${website.pageTorrents.replaceFirst('{}', mySite.userId!)}';
+                            _goInnerExplorer(url, mySite, website);
+                          },
+                        ),
+                        ShadContextMenuItem(
+                          leading: Icon(
+                            size: 14,
+                            Icons.join_inner_outlined,
+                            color: shadColorScheme.foreground,
+                          ),
+                          child: Text(style: TextStyle(fontSize: 12), '消息页面'),
+                          onPressed: () async {
+                            String url = '${mySite.mirror}${website.pageMessage.replaceFirst('{}', mySite.userId!)}';
+                            _goInnerExplorer(url, mySite, website);
+                          },
+                        ),
+                      ],
+                      child: Text(style: TextStyle(fontSize: 12), '内置浏览器'),
                     ),
-                    child: Text(style: TextStyle(fontSize: 12), '内置浏览器'),
-                    onPressed: () async {
-                      _openSitePage(mySite, website, true);
-                    },
-                  ),
                   ShadContextMenuItem(
                     leading: Icon(
                       size: 14,
                       Icons.language_outlined,
                       color: shadColorScheme.foreground,
                     ),
+                    trailing: Icon(
+                      size: 14,
+                      Icons.keyboard_arrow_right_outlined,
+                      color: shadColorScheme.foreground,
+                    ),
+                    items: [
+                      ShadContextMenuItem(
+                        leading: Icon(
+                          size: 14,
+                          Icons.join_inner_outlined,
+                          color: shadColorScheme.foreground,
+                        ),
+                        child: Text(style: TextStyle(fontSize: 12), '默认页面'),
+                        onPressed: () async {
+                          _openSitePage(mySite, website, false);
+                        },
+                      ),
+                      ShadContextMenuItem(
+                        leading: Icon(
+                          size: 14,
+                          Icons.join_inner_outlined,
+                          color: shadColorScheme.foreground,
+                        ),
+                        child: Text(style: TextStyle(fontSize: 12), '主页'),
+                        onPressed: () async {
+                          String url = mySite.mirror!;
+                          _goOuterExplorer(url, shadColorScheme);
+                        },
+                      ),
+                      ShadContextMenuItem(
+                        leading: Icon(
+                          size: 14,
+                          Icons.join_inner_outlined,
+                          color: shadColorScheme.foreground,
+                        ),
+                        child: Text(style: TextStyle(fontSize: 12), '个人主页'),
+                        onPressed: () async {
+                          String url = '${mySite.mirror}${website.pageUser.replaceFirst('{}', mySite.userId!)}';
+                          _goOuterExplorer(url, shadColorScheme);
+                        },
+                      ),
+                      ShadContextMenuItem(
+                        leading: Icon(
+                          size: 14,
+                          Icons.join_inner_outlined,
+                          color: shadColorScheme.foreground,
+                        ),
+                        child: Text(style: TextStyle(fontSize: 12), '控制面板'),
+                        onPressed: () async {
+                          String url = '${mySite.mirror}${website.pageControlPanel.replaceFirst('{}', mySite.userId!)}';
+                          _goOuterExplorer(url, shadColorScheme);
+                        },
+                      ),
+                      ShadContextMenuItem(
+                        leading: Icon(
+                          size: 14,
+                          Icons.join_inner_outlined,
+                          color: shadColorScheme.foreground,
+                        ),
+                        child: Text(style: TextStyle(fontSize: 12), '魔力页面'),
+                        onPressed: () async {
+                          String url = '${mySite.mirror}${website.pageMyBonus.replaceFirst('{}', mySite.userId!)}';
+                          _goOuterExplorer(url, shadColorScheme);
+                        },
+                      ),
+                      ShadContextMenuItem(
+                        leading: Icon(
+                          size: 14,
+                          Icons.join_inner_outlined,
+                          color: shadColorScheme.foreground,
+                        ),
+                        child: Text(style: TextStyle(fontSize: 12), '种子列表'),
+                        onPressed: () async {
+                          String url = '${mySite.mirror}${website.pageTorrents.replaceFirst('{}', mySite.userId!)}';
+                          _goOuterExplorer(url, shadColorScheme);
+                        },
+                      ),
+                      ShadContextMenuItem(
+                        leading: Icon(
+                          size: 14,
+                          Icons.join_inner_outlined,
+                          color: shadColorScheme.foreground,
+                        ),
+                        child: Text(style: TextStyle(fontSize: 12), '消息页面'),
+                        onPressed: () async {
+                          String url = '${mySite.mirror}${website.pageMessage.replaceFirst('{}', mySite.userId!)}';
+                          _goOuterExplorer(url, shadColorScheme);
+                        },
+                      ),
+                    ],
                     child: Text(style: TextStyle(fontSize: 12), '外置浏览器'),
-                    onPressed: () async {
-                      _openSitePage(mySite, website, false);
-                    },
                   ),
                 ],
                 child: Slidable(
@@ -1540,7 +1838,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.max,
                         icon: Icon(
-                          Icons.cloud_upload_outlined,
+                          Icons.storage_outlined,
                           color: siteColorConfig.seedVolumeIconColor.value,
                           size: 16,
                         ),
@@ -1600,7 +1898,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.max,
                         icon: Icon(
-                          Icons.score_outlined,
+                          Icons.auto_fix_high,
                           color: siteColorConfig.bonusIconColor.value,
                           size: 14,
                         ),
@@ -1630,7 +1928,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.max,
                         icon: Icon(
-                          Icons.score_outlined,
+                          Icons.star_outline,
                           color: siteColorConfig.scoreIconColor.value,
                           size: 14,
                         ),
@@ -1662,7 +1960,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.max,
                         icon: Icon(
-                          Icons.upload_outlined,
+                          Icons.file_upload_outlined,
                           color: siteColorConfig.publishedIconColor.value,
                           size: 14,
                         ),
@@ -1722,7 +2020,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.max,
                         icon: Icon(
-                          Icons.screen_share_outlined,
+                          Icons.percent_outlined,
                           color: siteColorConfig.ratioIconColor.value,
                           size: 14,
                         ),
@@ -1752,7 +2050,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.max,
                         icon: Icon(
-                          Icons.timer_outlined,
+                          Icons.hourglass_bottom_outlined,
                           color: siteColorConfig.perBonusIconColor.value,
                           size: 14,
                         ),
