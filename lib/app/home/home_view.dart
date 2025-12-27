@@ -44,7 +44,7 @@ class HomeView extends GetView<HomeController> {
   Widget build(BuildContext context) {
     double opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
     var shadColorScheme = ShadTheme.of(context).colorScheme;
-    SiteColorConfig siteColorConfig = SiteColorConfig.load(shadColorScheme);
+    // SiteColorConfig siteColorConfig = SiteColorConfig.load(shadColorScheme);
     return GetBuilder<HomeController>(builder: (controller) {
       return PopScope(
         canPop: false,
@@ -95,10 +95,10 @@ class HomeView extends GetView<HomeController> {
             child: Scaffold(
               key: _globalKey,
               backgroundColor:
-                  controller.useBackground ? Colors.transparent : shadColorScheme.background.withOpacity(opacity * 1.2),
+                  controller.useBackground ? Colors.transparent : shadColorScheme.background.withOpacity(opacity),
               extendBody: true,
               appBar: AppBar(
-                backgroundColor: siteColorConfig.siteCardColor.value.withOpacity(opacity),
+                backgroundColor: shadColorScheme.background.withOpacity(opacity),
                 iconTheme: IconThemeData(color: shadColorScheme.foreground),
                 toolbarHeight: 40,
                 elevation: 0,
@@ -119,7 +119,7 @@ class HomeView extends GetView<HomeController> {
                             )
                           : CustomCard(
                               width: 200,
-                              // height: double.infinity,
+                              color: shadColorScheme.background.withOpacity(opacity),
                               child: _buildMenuBar(context),
                             ),
                     Expanded(
@@ -144,7 +144,7 @@ class HomeView extends GetView<HomeController> {
                       child: Drawer(
                         semanticLabel: 'Harvest',
                         elevation: 10,
-                        backgroundColor: shadColorScheme.background,
+                        backgroundColor: shadColorScheme.background.withOpacity(opacity),
                         child: _buildMenuBar(context),
                       ),
                     )

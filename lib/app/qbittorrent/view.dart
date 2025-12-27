@@ -70,7 +70,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
         child: BackgroundContainer(
           child: Scaffold(
             appBar: AppBar(
-              backgroundColor: siteColorConfig.siteCardColor.value,
+              backgroundColor: shadColorScheme.background.withOpacity(opacity),
               foregroundColor: shadColorScheme.foreground,
               title: Row(
                 children: [
