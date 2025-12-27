@@ -44,13 +44,10 @@ class ThemeIconButton extends StatelessWidget {
         return ShadPopover(
           controller: popoverController,
           closeOnTapOutside: false,
-          decoration: ShadDecoration(
-            color: controller.colorConfig.value.siteCardColor.value.withOpacity(controller.opacity.value),
-          ),
+          padding: EdgeInsets.zero,
           popover: (context) => ConstrainedBox(
             constraints: BoxConstraints(maxHeight: 630, maxWidth: 450, minHeight: 300),
             child: BackgroundContainer(
-              // color: Colors.transparent,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
                 child: Column(
@@ -243,8 +240,8 @@ class ThemeIconButton extends StatelessWidget {
                                 ),
                                 Expanded(
                                   child: ShadSlider(
-                                      min: 0.1,
-                                      max: 1,
+                                      min: 0.0,
+                                      max: 1.0,
                                       // divisions: 10,
                                       label: controller.opacity.value.toString(),
                                       initialValue: controller.opacity.value,
