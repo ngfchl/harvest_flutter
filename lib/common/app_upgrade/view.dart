@@ -248,7 +248,7 @@ class AppUpgradePage extends StatelessWidget {
         fileName: e.key, // 例如 "harvest_2025.1103.01+181_arm64.apk"
         // 可选：限制类型（但 saveFile 不强制校验扩展名）
         type: FileType.custom,
-        allowedExtensions: ['apk', 'ipa', 'dmg', 'zip'],
+        allowedExtensions: ['apk', 'ipa', 'dmg', 'zip', 'tar.gz', 'tar', 'gz'],
       );
       if (savePath != null) {
         await _downloadInstallationPackage(savePath, e.key, cancelToken);
@@ -303,7 +303,7 @@ class AppUpgradePage extends StatelessWidget {
         //   dialogTitle: '保存安装包',
         //   fileName: appUpgradeController.newVersion,
         //   type: FileType.custom,
-        //   allowedExtensions: ['apk', 'ipa', 'dmg', 'zip'],
+        //   allowedExtensions: ['apk', 'ipa', 'dmg', 'zip', 'tar.gz', 'tar', 'gz'],
         // );
         String savedPath = "${appDocDir.path}/${appUpgradeController.newVersion}";
         await _downloadInstallationPackage(savedPath, appUpgradeController.newVersion, cancelToken);
@@ -420,7 +420,7 @@ class AppUpgradePage extends StatelessWidget {
           dialogTitle: '保存安装包',
           fileName: suggestedName,
           type: FileType.custom,
-          allowedExtensions: ['apk', 'ipa', 'dmg', 'zip'],
+          allowedExtensions: ['apk', 'ipa', 'dmg', 'zip', 'tar.gz', 'tar', 'gz'],
           bytes: bytes, // ⚠️ 关键：必须传！
         );
 
