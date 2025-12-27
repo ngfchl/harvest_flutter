@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harvest/theme/theme_controller.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 class BackgroundContainer extends GetView<ThemeController> {
   final Widget child;
@@ -13,6 +14,7 @@ class BackgroundContainer extends GetView<ThemeController> {
 
   @override
   Widget build(BuildContext context) {
+    final shadColorScheme = ShadTheme.of(context).colorScheme;
     return Obx(() {
       if (!controller.useBackground.value) return child;
 
@@ -69,7 +71,7 @@ class BackgroundContainer extends GetView<ThemeController> {
           // /// 半透明遮罩
           Positioned.fill(
             child: Container(
-              color: Colors.black.withOpacity(opacity),
+              color: shadColorScheme.background.withOpacity(opacity),
             ),
           ),
 
