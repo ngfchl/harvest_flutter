@@ -88,12 +88,19 @@ class CustomTextField extends StatelessWidget {
   final Function()? onTap;
   final ValueChanged<String>? onFieldSubmitted;
   final FormFieldValidator<String>? validator;
+  final TextStyle? textStyle;
+  final TextStyle? labelStyle;
+  final TextStyle? helperStyle;
+  final TextStyle? prefixStyle;
+  final TextStyle? suffixStyle;
+  final TextStyle? hintStyle;
+  final EdgeInsetsGeometry? contentPadding;
 
   const CustomTextField({
     super.key,
     required this.controller,
     this.labelText,
-    this.focusNode, // ✅ 新增
+    this.focusNode,
     this.inputFormatters = const [],
     this.maxLines = 1,
     this.keyboardType,
@@ -111,6 +118,13 @@ class CustomTextField extends StatelessWidget {
     this.validator,
     this.maxLength,
     this.constraints,
+    this.textStyle,
+    this.labelStyle,
+    this.helperStyle,
+    this.prefixStyle,
+    this.suffixStyle,
+    this.hintStyle,
+    this.contentPadding,
     this.scrollPhysics = const NeverScrollableScrollPhysics(),
     this.autofocus = false,
     this.readOnly = false,
@@ -137,11 +151,11 @@ class CustomTextField extends StatelessWidget {
         obscureText: obscureText,
         inputFormatters: inputFormatters,
         scrollPhysics: scrollPhysics,
-        style: TextStyle(fontSize: 13, color: scheme.foreground),
+        style: textStyle ?? TextStyle(fontSize: 15, color: scheme.foreground),
         decoration: InputDecoration(
           labelText: labelText,
-          labelStyle: TextStyle(fontSize: 12, color: scheme.foreground),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+          labelStyle: labelStyle ?? TextStyle(fontSize: 12, color: scheme.foreground),
+          contentPadding: contentPadding??const EdgeInsets.symmetric(vertical: 8),
           enabledBorder: UnderlineInputBorder(
             borderSide: BorderSide(color: scheme.foreground.withOpacity(0.2)),
           ),
@@ -160,9 +174,10 @@ class CustomTextField extends StatelessWidget {
           hintText: hintText,
           suffix: suffix,
           prefix: prefix,
-          helperStyle: TextStyle(fontSize: 12, color: scheme.foreground),
-          prefixStyle: TextStyle(fontSize: 12, color: scheme.foreground),
-          suffixStyle: TextStyle(fontSize: 12, color: scheme.foreground),
+          helperStyle: helperStyle ?? TextStyle(fontSize: 12, color: scheme.foreground),
+          prefixStyle: prefixStyle ?? TextStyle(fontSize: 12, color: scheme.foreground),
+          suffixStyle: suffixStyle ?? TextStyle(fontSize: 12, color: scheme.foreground),
+          hintStyle: hintStyle ?? TextStyle(fontSize: 12, color: scheme.foreground),
         ),
       ),
     );
