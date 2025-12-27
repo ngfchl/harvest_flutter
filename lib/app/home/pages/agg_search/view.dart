@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:custom_rating_bar/custom_rating_bar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -576,48 +577,60 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                             final popoverController = ShadPopoverController();
                                             return ShadPopover(
                                               controller: popoverController,
-                                              popover: (BuildContext context) => SizedBox(
-                                                height: 110,
-                                                child: Column(
-                                                  children: [
-                                                    ShadButton.ghost(
-                                                      size: ShadButtonSize.sm,
-                                                      onPressed: () {
-                                                        controller.searchKeyController.text = el.split('||').last;
-                                                        controller.searchTMDB();
-                                                      },
-                                                      child: Text('TMDB',
-                                                          style: TextStyle(
-                                                            fontSize: 13,
-                                                            color: shadColorScheme.foreground,
-                                                          )),
-                                                    ),
-                                                    ShadButton.ghost(
-                                                      size: ShadButtonSize.sm,
-                                                      onPressed: () {
-                                                        controller.searchKeyController.text = el.split('||').last;
-                                                        controller.doDouBanSearch();
-                                                      },
-                                                      child: Text('豆瓣',
-                                                          style: TextStyle(
-                                                            fontSize: 13,
-                                                            color: shadColorScheme.foreground,
-                                                          )),
-                                                    ),
-                                                    ShadButton.ghost(
-                                                      size: ShadButtonSize.sm,
-                                                      onPressed: () {
-                                                        controller.searchKeyController.text = el;
-                                                        controller.doWebsocketSearch();
-                                                      },
-                                                      child: Text('资源搜索',
-                                                          style: TextStyle(
-                                                            fontSize: 13,
-                                                            color: shadColorScheme.foreground,
-                                                          )),
-                                                    )
-                                                  ],
-                                                ),
+                                              popover: (BuildContext context) => Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  ShadButton.ghost(
+                                                    size: ShadButtonSize.sm,
+                                                    onPressed: () {
+                                                      Clipboard.setData(ClipboardData(text: el));
+                                                      ShadToaster.of(context).show(
+                                                        ShadToast(description: Text('已复制: $el')),
+                                                      );
+                                                    },
+                                                    child: Text('复制',
+                                                        style: TextStyle(
+                                                          fontSize: 13,
+                                                          color: shadColorScheme.foreground,
+                                                        )),
+                                                  ),
+                                                  ShadButton.ghost(
+                                                    size: ShadButtonSize.sm,
+                                                    onPressed: () {
+                                                      controller.searchKeyController.text = el.split('||').last;
+                                                      controller.searchTMDB();
+                                                    },
+                                                    child: Text('TMDB',
+                                                        style: TextStyle(
+                                                          fontSize: 13,
+                                                          color: shadColorScheme.foreground,
+                                                        )),
+                                                  ),
+                                                  ShadButton.ghost(
+                                                    size: ShadButtonSize.sm,
+                                                    onPressed: () {
+                                                      controller.searchKeyController.text = el.split('||').last;
+                                                      controller.doDouBanSearch();
+                                                    },
+                                                    child: Text('豆瓣',
+                                                        style: TextStyle(
+                                                          fontSize: 13,
+                                                          color: shadColorScheme.foreground,
+                                                        )),
+                                                  ),
+                                                  ShadButton.ghost(
+                                                    size: ShadButtonSize.sm,
+                                                    onPressed: () {
+                                                      controller.searchKeyController.text = el;
+                                                      controller.doWebsocketSearch();
+                                                    },
+                                                    child: Text('资源搜索',
+                                                        style: TextStyle(
+                                                          fontSize: 13,
+                                                          color: shadColorScheme.foreground,
+                                                        )),
+                                                  )
+                                                ],
                                               ),
                                               child: FilterChip(
                                                 backgroundColor: shadColorScheme.background,
@@ -629,6 +642,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                                 deleteIcon: Icon(
                                                   Icons.clear,
                                                   color: shadColorScheme.destructive,
+                                                  size: 13,
                                                 ),
                                                 deleteButtonTooltipMessage: '确定要删除记录吗？',
                                                 label: Text(el,
