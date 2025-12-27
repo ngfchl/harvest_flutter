@@ -815,6 +815,84 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                       await _showEditBottomSheet(mySite: mySite);
                     },
                   ),
+                  ShadContextMenuItem(
+                    leading: Icon(
+                      size: 14,
+                      Icons.info_outlined,
+                      color: shadColorScheme.foreground,
+                    ),
+                    child: Text(style: TextStyle(fontSize: 12), '详情'),
+                    onPressed: () async {
+                      Get.defaultDialog(
+                        title: '站点信息 - ${mySite.nickname}',
+                        radius: 8,
+                        titleStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+                        backgroundColor: shadColorScheme.background,
+                        content: Column(
+                          spacing: 5,
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '站点地址：',
+                              style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
+                            ),
+                            ...website.url.map((item) => ShadButton.link(
+                                  size: ShadButtonSize.sm,
+                                  onPressed: () => launchUrl(Uri.parse(item), mode: LaunchMode.externalApplication),
+                                  child: Text(
+                                    item,
+                                    style: TextStyle(fontSize: 13, color: shadColorScheme.primary),
+                                  ),
+                                )),
+                            Text(
+                              '搜索地址：',
+                              style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
+                            ),
+                            ...website.pageSearch.map((item) => ShadButton.link(
+                                  size: ShadButtonSize.sm,
+                                  child: Text(
+                                    item,
+                                    style: TextStyle(fontSize: 13, color: shadColorScheme.primary),
+                                  ),
+                                )),
+                            Text(
+                              '上传限速：${website.limitSpeed}MB/s',
+                              style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
+                            ),
+                            Text(
+                              '最后访问时间：${calculateTimeElapsed(mySite.latestActive.toString())}',
+                              style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
+                            ),
+                          ],
+                        ),
+                        actions: [
+                          ShadButton.ghost(
+                            size: ShadButtonSize.sm,
+                            child: Text('关闭'),
+                            onPressed: () => Get.back(),
+                          ),
+                          ShadButton.secondary(
+                            size: ShadButtonSize.sm,
+                            child: Text(
+                              '打开',
+                              style: TextStyle(color: shadColorScheme.primary),
+                            ),
+                            onPressed: () {
+                              Get.back();
+                              _openSitePage(mySite, website, true);
+                            },
+                          ),
+                          ShadButton.outline(
+                            size: ShadButtonSize.sm,
+                            child: Text('浏览器'),
+                            onPressed: () => _openSitePage(mySite, website, false),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
                   const Divider(height: 5),
                   if (website.signIn == true && mySite.signIn && !signed)
                     ShadContextMenuItem(
@@ -1307,76 +1385,6 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                       onLongPress: () => _openSitePage(mySite, website, false),
                       child: siteLogo(iconUrl, website, mySite),
                     ),
-                    onTap: () {
-                      Get.defaultDialog(
-                        title: '站点信息 - ${mySite.nickname}',
-                        radius: 8,
-                        titleStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
-                        backgroundColor: shadColorScheme.background,
-                        content: Column(
-                          spacing: 5,
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              '站点地址：',
-                              style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
-                            ),
-                            ...website.url.map((item) => ShadButton.link(
-                                  size: ShadButtonSize.sm,
-                                  onPressed: () => launchUrl(Uri.parse(item), mode: LaunchMode.externalApplication),
-                                  child: Text(
-                                    item,
-                                    style: TextStyle(fontSize: 13, color: shadColorScheme.primary),
-                                  ),
-                                )),
-                            Text(
-                              '搜索地址：',
-                              style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
-                            ),
-                            ...website.pageSearch.map((item) => ShadButton.link(
-                                  size: ShadButtonSize.sm,
-                                  child: Text(
-                                    item,
-                                    style: TextStyle(fontSize: 13, color: shadColorScheme.primary),
-                                  ),
-                                )),
-                            Text(
-                              '上传限速：${website.limitSpeed}MB/s',
-                              style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
-                            ),
-                            Text(
-                              '最后访问时间：${calculateTimeElapsed(mySite.latestActive.toString())}',
-                              style: TextStyle(fontSize: 13, color: shadColorScheme.foreground),
-                            ),
-                          ],
-                        ),
-                        actions: [
-                          ShadButton.ghost(
-                            size: ShadButtonSize.sm,
-                            child: Text('关闭'),
-                            onPressed: () => Get.back(),
-                          ),
-                          ShadButton.secondary(
-                            size: ShadButtonSize.sm,
-                            child: Text(
-                              '打开',
-                              style: TextStyle(color: shadColorScheme.primary),
-                            ),
-                            onPressed: () {
-                              Get.back();
-                              _openSitePage(mySite, website, true);
-                            },
-                          ),
-                          ShadButton.outline(
-                            size: ShadButtonSize.sm,
-                            child: Text('浏览器'),
-                            onPressed: () => _openSitePage(mySite, website, false),
-                          ),
-                        ],
-                      );
-                    },
                     title: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -1692,7 +1700,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 ConstrainedBox(
-                                  constraints: BoxConstraints(maxHeight: 30),
+                                  constraints: BoxConstraints(maxHeight: 24),
                                   child: ShadButton.outline(
                                     size: ShadButtonSize.sm,
                                     padding: EdgeInsets.symmetric(horizontal: 4),
@@ -1714,11 +1722,14 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                           : mySite.getSignMaxKey() == today
                                               ? '已签到'
                                               : '未签到',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                      ),
                                     ),
                                   ),
                                 ),
                                 ConstrainedBox(
-                                  constraints: BoxConstraints(maxHeight: 18),
+                                  constraints: BoxConstraints(maxHeight: 24),
                                   child: ShadButton.ghost(
                                     size: ShadButtonSize.sm,
                                     padding: EdgeInsets.symmetric(horizontal: 4),
