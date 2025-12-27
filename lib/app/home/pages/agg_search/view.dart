@@ -71,6 +71,9 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                   Expanded(
                     child: Autocomplete<String>(
                       initialValue: TextEditingValue(text: ''),
+                      optionsViewOpenDirection: PlatformTool.isSmallScreenPortrait()
+                          ? OptionsViewOpenDirection.up
+                          : OptionsViewOpenDirection.down,
                       optionsBuilder: (TextEditingValue textEditingValue) {
                         Logger.instance.d(textEditingValue.text);
                         controller.searchKeyController.text = textEditingValue.text;
@@ -188,9 +191,10 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                         return CustomTextField(
                           controller: textEditingController,
                           hintText: '请输入搜索关键字',
+                          hintStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground,),
                           // ✅ 一定要传！
                           focusNode: focusNode,
-                          constraints: BoxConstraints(maxHeight: 32),
+                          constraints: BoxConstraints(maxHeight: 40),
                           suffixIcon: GetBuilder<AggSearchController>(
                               id: "controller.searchKeyController.text",
                               builder: (controller) {
