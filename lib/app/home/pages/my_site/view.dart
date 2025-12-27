@@ -1810,7 +1810,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         mainAxisAlignment: MainAxisAlignment.start,
                         mainAxisSize: MainAxisSize.max,
                         icon: Icon(
-                          Icons.cloud_upload_outlined,
+                          Icons.cloud_download_outlined,
                           color: siteColorConfig.downloadedIconColor.value,
                           size: 16,
                         ),
@@ -1909,7 +1909,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.max,
                         icon: Icon(
-                          Icons.auto_fix_high,
+                          Icons.monetization_on_outlined,
                           color: siteColorConfig.bonusIconColor.value,
                           size: 14,
                         ),
@@ -1939,7 +1939,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.max,
                         icon: Icon(
-                          Icons.star_outline,
+                          Icons.diamond_outlined,
                           color: siteColorConfig.scoreIconColor.value,
                           size: 14,
                         ),

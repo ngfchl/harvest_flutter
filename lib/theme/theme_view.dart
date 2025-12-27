@@ -40,494 +40,492 @@ class ThemeIconButton extends StatelessWidget {
     var shadColorScheme = ShadTheme.of(context).colorScheme;
 
     return GetBuilder<ThemeController>(builder: (controller) {
-      return Obx(() {
-        return ShadPopover(
-          controller: popoverController,
-          closeOnTapOutside: false,
-          padding: EdgeInsets.zero,
-          popover: (context) => ConstrainedBox(
-            constraints: BoxConstraints(maxHeight: 630, maxWidth: 450, minHeight: 300),
-            child: BackgroundContainer(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: 15,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      '主题设置',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: shadColorScheme.foreground),
-                    ),
-                    Expanded(
-                        child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        spacing: 15,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          /// 颜色块选择 + Tooltip 中文名
-                          Obx(() => Center(
-                                child: Wrap(
-                                  spacing: 10,
-                                  runSpacing: 8,
-                                  alignment: WrapAlignment.spaceBetween,
-                                  children: controller.shadThemeColorNames.keys.map((name) {
-                                    final isSelected = controller.colorSchemeName.value == name;
-                                    final scheme = ShadColorScheme.fromName(name);
-                                    final cnName = controller.shadThemeColorNames[name] ?? name;
+      return ShadPopover(
+        controller: popoverController,
+        closeOnTapOutside: false,
+        padding: EdgeInsets.zero,
+        popover: (context) => ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: 630, maxWidth: 450, minHeight: 300),
+          child: BackgroundContainer(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                spacing: 15,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    '主题设置',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: shadColorScheme.foreground),
+                  ),
+                  Expanded(
+                      child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      spacing: 15,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        /// 颜色块选择 + Tooltip 中文名
+                        Obx(() => Center(
+                              child: Wrap(
+                                spacing: 10,
+                                runSpacing: 8,
+                                alignment: WrapAlignment.spaceBetween,
+                                children: controller.shadThemeColorNames.keys.map((name) {
+                                  final isSelected = controller.colorSchemeName.value == name;
+                                  final scheme = ShadColorScheme.fromName(name);
+                                  final cnName = controller.shadThemeColorNames[name] ?? name;
 
-                                    return Tooltip(
-                                      message: cnName,
-                                      child: GestureDetector(
-                                        onTap: () => controller.changeColorScheme(name),
-                                        child: Container(
-                                          width: 24,
-                                          height: 24,
-                                          decoration: BoxDecoration(
-                                            color: scheme.primary,
-                                            borderRadius: BorderRadius.circular(50),
-                                            border: Border.all(
-                                              color: isSelected ? scheme.foreground : const Color(0x00000000),
-                                              width: 2,
-                                            ),
+                                  return Tooltip(
+                                    message: cnName,
+                                    child: GestureDetector(
+                                      onTap: () => controller.changeColorScheme(name),
+                                      child: Container(
+                                        width: 24,
+                                        height: 24,
+                                        decoration: BoxDecoration(
+                                          color: scheme.primary,
+                                          borderRadius: BorderRadius.circular(50),
+                                          border: Border.all(
+                                            color: isSelected ? scheme.foreground : const Color(0x00000000),
+                                            width: 2,
                                           ),
                                         ),
                                       ),
-                                    );
-                                  }).toList(),
-                                ),
-                              )),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            )),
 
-                          /// 手动切换亮暗（仅在不跟随系统时显示）
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Obx(
-                                () => ShadSwitch(
-                                  value: controller.followSystem.value,
-                                  onChanged: (bool v) async {
-                                    await controller.toggleFollowSystem(v);
-                                    await SPUtil.setBool('followSystem', v);
-                                  },
-                                  label: Text('跟随系统'),
+                        /// 手动切换亮暗（仅在不跟随系统时显示）
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Obx(
+                              () => ShadSwitch(
+                                value: controller.followSystem.value,
+                                onChanged: (bool v) async {
+                                  await controller.toggleFollowSystem(v);
+                                  await SPUtil.setBool('followSystem', v);
+                                },
+                                label: Text('跟随系统'),
+                              ),
+                            ),
+                            Obx(
+                              () => ShadButton.secondary(
+                                size: ShadButtonSize.sm,
+                                onPressed: () => controller.followSystem.value ? null : controller.toggleDarkMode(),
+                                child: Text(
+                                  controller.isDark.value ? "暗黑模式" : "明亮模式",
                                 ),
                               ),
-                              Obx(
-                                () => ShadButton.secondary(
-                                  size: ShadButtonSize.sm,
-                                  onPressed: () => controller.followSystem.value ? null : controller.toggleDarkMode(),
-                                  child: Text(
-                                    controller.isDark.value ? "暗黑模式" : "明亮模式",
+                            ),
+                          ],
+                        ),
+
+                        Obx(() {
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              ShadSwitch(
+                                label: Text('背景图片'),
+                                value: controller.useBackground.value,
+                                onChanged: (value) {
+                                  controller.useBackground.value = value;
+                                  SPUtil.setBool('useBackground', value);
+                                },
+                              ),
+                              if (controller.useBackground.value)
+                                ShadSwitch(
+                                  label: Text('使用缓存'),
+                                  value: controller.useImageCache.value,
+                                  onChanged: (value) {
+                                    controller.useImageCache.value = value;
+                                    SPUtil.setBool('useImageCache', value);
+                                  },
+                                ),
+                            ],
+                          );
+                        }),
+                        Obx(() {
+                          return controller.useBackground.value && !kIsWeb
+                              ? Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    ShadSwitch(
+                                      label: Text(controller.useLocalBackground.value ? '本地图片' : '网络图片'),
+                                      sublabel: Text(
+                                        '默认网络图片',
+                                        style: TextStyle(fontSize: 10),
+                                      ),
+                                      value: kIsWeb ? false : controller.useLocalBackground.value,
+                                      onChanged: (value) {
+                                        controller.useLocalBackground.value = value;
+                                        SPUtil.setBool('useLocalBackground', value);
+                                      },
+                                    ),
+                                    if (!controller.useLocalBackground.value)
+                                      Obx(() {
+                                        return ShadSwitch(
+                                          label: Text('图片加速'),
+                                          value: controller.useImageProxy.value,
+                                          onChanged: (value) {
+                                            controller.useImageProxy.value = value;
+                                            SPUtil.setBool('useImageProxy', value);
+                                          },
+                                        );
+                                      }),
+                                  ],
+                                )
+                              : SizedBox.shrink();
+                        }),
+                        controller.siteCardView
+                            ? _siteCardView(context, controller.opacity.value)
+                            : _siteCardForm(context, controller.opacity.value),
+                        Obx(() {
+                          return Column(spacing: 10, children: [
+                            controller.useBackground.value && controller.useLocalBackground.value
+                                ? ImagePickerRow(
+                                    onImagePicked: (String? path) {
+                                      if (path != null) {
+                                        urlController.text = path;
+                                      }
+                                    },
+                                  )
+                                : ShadInput(
+                                    controller: urlController,
+                                    placeholder: Text('背景图片地址'),
+                                    keyboardType: TextInputType.url,
                                   ),
+                            Obx(() {
+                              if (showPreview.value && controller.backgroundImage.value.isNotEmpty) {
+                                Logger.instance.d(
+                                    'backgroundImage: ${controller.backgroundImage.value} , useLocalBackground: ${controller.useLocalBackground.value}');
+                                return controller.useLocalBackground.value
+                                    ? controller.backgroundImage.value.startsWith('http')
+                                        ? SizedBox.shrink()
+                                        : Image.file(
+                                            File(controller.backgroundImage.value),
+                                            width: double.infinity,
+                                            fit: BoxFit.fitWidth,
+                                          )
+                                    : Obx(
+                                        () {
+                                          return CachedNetworkImage(
+                                            imageUrl:
+                                                '${controller.useImageProxy.value ? 'https://images.weserv.nl/?url=' : ''}${controller.backgroundImage.value}',
+                                            placeholder: (context, url) => Center(
+                                                child: CircularProgressIndicator(
+                                              color: shadColorScheme.primary,
+                                            )),
+                                            errorWidget: (context, url, error) =>
+                                                Image.asset('assets/images/background.png'),
+                                            fit: BoxFit.fitWidth,
+                                          );
+                                        },
+                                      );
+                              }
+                              return SizedBox.shrink();
+                            }),
+                          ]);
+                        }),
+                        Obx(() {
+                          return Row(
+                            children: [
+                              Text(
+                                '卡片透明度',
+                                style: TextStyle(color: shadColorScheme.foreground),
+                              ),
+                              Expanded(
+                                child: ShadSlider(
+                                    min: 0.0,
+                                    max: 1.0,
+                                    // divisions: 10,
+                                    label: controller.opacity.value.toString(),
+                                    initialValue: controller.opacity.value,
+                                    onChanged: (value) async {
+                                      controller.opacity.value = value;
+                                      controller.saveSettings();
+                                    }),
+                              ),
+                            ],
+                          );
+                        }),
+                        Obx(() {
+                          return Row(
+                            children: [
+                              Text("背景模糊:", style: TextStyle(color: shadColorScheme.foreground)),
+                              Expanded(
+                                child: ShadSlider(
+                                  min: 0,
+                                  max: 20,
+                                  // divisions: 20,
+                                  label: controller.blur.value.toStringAsFixed(1),
+                                  initialValue: controller.blur.value,
+                                  onChanged: (v) {
+                                    controller.blur.value = v;
+                                    controller.saveSettings();
+                                  },
                                 ),
                               ),
                             ],
-                          ),
+                          );
+                        }),
 
-                          Obx(() {
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                ShadSwitch(
-                                  label: Text('背景图片'),
-                                  value: controller.useBackground.value,
-                                  onChanged: (value) {
-                                    controller.useBackground.value = value;
-                                    SPUtil.setBool('useBackground', value);
-                                  },
-                                ),
-                                if (controller.useBackground.value)
-                                  ShadSwitch(
-                                    label: Text('使用缓存'),
-                                    value: controller.useImageCache.value,
-                                    onChanged: (value) {
-                                      controller.useImageCache.value = value;
-                                      SPUtil.setBool('useImageCache', value);
-                                    },
-                                  ),
-                              ],
-                            );
-                          }),
-                          Obx(() {
-                            return controller.useBackground.value && !kIsWeb
-                                ? Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      ShadSwitch(
-                                        label: Text(controller.useLocalBackground.value ? '本地图片' : '网络图片'),
-                                        sublabel: Text(
-                                          '默认网络图片',
-                                          style: TextStyle(fontSize: 10),
-                                        ),
-                                        value: kIsWeb ? false : controller.useLocalBackground.value,
-                                        onChanged: (value) {
-                                          controller.useLocalBackground.value = value;
-                                          SPUtil.setBool('useLocalBackground', value);
-                                        },
-                                      ),
-                                      if (!controller.useLocalBackground.value)
-                                        Obx(() {
-                                          return ShadSwitch(
-                                            label: Text('图片加速'),
-                                            value: controller.useImageProxy.value,
-                                            onChanged: (value) {
-                                              controller.useImageProxy.value = value;
-                                              SPUtil.setBool('useImageProxy', value);
-                                            },
-                                          );
-                                        }),
-                                    ],
-                                  )
-                                : SizedBox.shrink();
-                          }),
-                          controller.siteCardView
-                              ? _siteCardView(context, controller.opacity.value)
-                              : _siteCardForm(context, controller.opacity.value),
-                          Obx(() {
-                            return Column(spacing: 10, children: [
-                              controller.useBackground.value && controller.useLocalBackground.value
-                                  ? ImagePickerRow(
-                                      onImagePicked: (String? path) {
-                                        if (path != null) {
-                                          urlController.text = path;
-                                        }
-                                      },
-                                    )
-                                  : ShadInput(
-                                      controller: urlController,
-                                      placeholder: Text('背景图片地址'),
-                                      keyboardType: TextInputType.url,
-                                    ),
-                              Obx(() {
-                                if (showPreview.value && controller.backgroundImage.value.isNotEmpty) {
-                                  Logger.instance.d(
-                                      'backgroundImage: ${controller.backgroundImage.value} , useLocalBackground: ${controller.useLocalBackground.value}');
-                                  return controller.useLocalBackground.value
-                                      ? controller.backgroundImage.value.startsWith('http')
-                                          ? SizedBox.shrink()
-                                          : Image.file(
-                                              File(controller.backgroundImage.value),
-                                              width: double.infinity,
-                                              fit: BoxFit.fitWidth,
-                                            )
-                                      : Obx(
-                                          () {
-                                            return CachedNetworkImage(
-                                              imageUrl:
-                                                  '${controller.useImageProxy.value ? 'https://images.weserv.nl/?url=' : ''}${controller.backgroundImage.value}',
-                                              placeholder: (context, url) => Center(
-                                                  child: CircularProgressIndicator(
-                                                color: shadColorScheme.primary,
-                                              )),
-                                              errorWidget: (context, url, error) =>
-                                                  Image.asset('assets/images/background.png'),
-                                              fit: BoxFit.fitWidth,
-                                            );
-                                          },
-                                        );
-                                }
-                                return SizedBox.shrink();
-                              }),
-                            ]);
-                          }),
-                          Obx(() {
-                            return Row(
-                              children: [
-                                Text(
-                                  '卡片透明度',
-                                  style: TextStyle(color: shadColorScheme.foreground),
-                                ),
-                                Expanded(
-                                  child: ShadSlider(
-                                      min: 0.0,
-                                      max: 1.0,
-                                      // divisions: 10,
-                                      label: controller.opacity.value.toString(),
-                                      initialValue: controller.opacity.value,
-                                      onChanged: (value) async {
-                                        controller.opacity.value = value;
-                                        controller.saveSettings();
-                                      }),
-                                ),
-                              ],
-                            );
-                          }),
-                          Obx(() {
-                            return Row(
-                              children: [
-                                Text("背景模糊:", style: TextStyle(color: shadColorScheme.foreground)),
-                                Expanded(
-                                  child: ShadSlider(
-                                    min: 0,
-                                    max: 20,
-                                    // divisions: 20,
-                                    label: controller.blur.value.toStringAsFixed(1),
-                                    initialValue: controller.blur.value,
-                                    onChanged: (v) {
-                                      controller.blur.value = v;
-                                      controller.saveSettings();
-                                    },
-                                  ),
-                                ),
-                              ],
-                            );
-                          }),
-
-                          CustomCard(
-                            child: OverflowBar(
-                              alignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                ShadButton.ghost(
-                                  size: ShadButtonSize.sm,
-                                  onPressed: () {
-                                    controller.siteCardView = !controller.siteCardView;
-                                    SPUtil.setBool('mySite-siteCardView', controller.siteCardView);
-                                    Get.find<MySiteController>().changeViewMode(controller.siteCardView);
-                                    Get.forceAppUpdate();
-                                  },
-                                  child: Text('切换'),
-                                ),
-                                ShadButton.ghost(
-                                  size: ShadButtonSize.sm,
-                                  onPressed: () {
-                                    SiteColorConfig.resetToDefault(scheme: shadColorScheme);
-                                    controller.applyDefaultConfig();
-                                    Get.forceAppUpdate();
-                                  },
-                                  child: Text('重置'),
-                                ),
-                                ShadButton.ghost(
-                                  size: ShadButtonSize.sm,
-                                  onPressed: () async {
-                                    popoverController.hide();
-                                    Get.defaultDialog(
-                                      title: '导入主题',
-                                      titleStyle: TextStyle(
-                                          color: shadColorScheme.foreground, fontSize: 14, fontWeight: FontWeight.bold),
-                                      backgroundColor: shadColorScheme.background,
-                                      radius: 8,
-                                      content: Column(
-                                        children: [
-                                          Text(
-                                            '请复制主题JSON数据，然后点击导入按钮。',
-                                            style: TextStyle(color: shadColorScheme.foreground, fontSize: 13),
-                                          ),
-                                          GetBuilder<ThemeController>(
-                                              id: 'controller.replaceBackgroundImage',
-                                              builder: (controller) {
-                                                return SwitchTile(
-                                                    title: '替换背景图片',
-                                                    fontSize: 12,
-                                                    value: controller.replaceBackgroundImage,
-                                                    onChanged: (value) {
-                                                      controller.replaceBackgroundImage = value;
-                                                      controller.update(['controller.replaceBackgroundImage']);
-                                                    });
-                                              }),
-                                        ],
-                                      ),
-                                      actions: [
-                                        ShadButton.ghost(
-                                          size: ShadButtonSize.sm,
-                                          onPressed: () async {
-                                            Get.back();
-                                          },
-                                          child: const Text('取消'),
-                                        ),
-                                        ShadButton.destructive(
-                                          size: ShadButtonSize.sm,
-                                          onPressed: () async {
-                                            // 1️⃣ 读取剪贴板
-                                            final ok = await controller.importFromClipboard();
-                                            Get.back();
-                                            if (ok.succeed) {
-                                              Get.snackbar('成功', '主题已导入');
-                                              Get.forceAppUpdate();
-                                            } else {
-                                              Get.snackbar('失败', ok.msg, colorText: shadColorScheme.destructive);
-                                            }
-                                          },
-                                          child: const Text('导入'),
-                                        )
-                                      ],
-                                    );
-                                  },
-                                  foregroundColor: shadColorScheme.primary,
-                                  child: Text('导入'),
-                                ),
-                                ShadButton.ghost(
-                                  size: ShadButtonSize.sm,
-                                  child: Text('分享'),
-                                  onPressed: () async {
-                                    Get.defaultDialog(
-                                      title: '分享主题',
-                                      titleStyle: TextStyle(
-                                          color: shadColorScheme.foreground, fontSize: 14, fontWeight: FontWeight.bold),
-                                      backgroundColor: shadColorScheme.background,
-                                      radius: 8,
-                                      content: Text(
-                                        '可选择仅分享配色方案，或者直接分享整个主题',
-                                        style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
-                                      ),
-                                      actions: [
-                                        ShadButton.ghost(
-                                          size: ShadButtonSize.sm,
-                                          onPressed: () async {
-                                            Get.back();
-                                          },
-                                          child: const Text('取消'),
-                                        ),
-                                        ShadButton.outline(
-                                          size: ShadButtonSize.sm,
-                                          onPressed: () async {
-                                            String data = await controller.exportToClipboard(false);
-                                            Get.back();
-                                            Logger.instance.i('当前主题配置信息: $data');
-                                            Get.snackbar(
-                                              '已导出',
-                                              '主题配置已复制到剪贴板',
-                                              snackPosition: SnackPosition.BOTTOM,
-                                            );
-                                          },
-                                          child: const Text('配色方案'),
-                                        ),
-                                        ShadButton.destructive(
-                                          size: ShadButtonSize.sm,
-                                          onPressed: () async {
-                                            String data = await controller.exportToClipboard(true);
-                                            Get.back();
-                                            Logger.instance.i('当前主题配置信息: $data');
-                                            Get.snackbar('已导出', '主题配置已复制到剪贴板');
-                                          },
-                                          child: const Text('主题配色'),
-                                        )
-                                      ],
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                          if (PlatformTool.isDesktopOS())
-                            Center(
-                              child: Wrap(
-                                alignment: WrapAlignment.spaceBetween,
-                                crossAxisAlignment: WrapCrossAlignment.center,
-                                runAlignment: WrapAlignment.center,
-                                spacing: 5,
-                                runSpacing: 5,
-                                children: [
-                                  ...[
-                                    // {"width": 1024.0, "height": 768.0},
-                                    {"width": 1366.0, "height": 768.0},
-                                    // {"width": 1366.0, "height": 800.0},
-                                    {"width": 1440.0, "height": 900.0},
-                                    // {"width": 1600.0, "height": 900.0},
-                                    {"width": 1920.0, "height": 1080.0},
-                                    {"width": 2560.0, "height": 1536.0},
-                                  ].map((item) => ShadButton.outline(
-                                      size: ShadButtonSize.sm,
-                                      child: Text('${item["width"]?.toInt()}x${item["height"]?.toInt()}',
-                                          style: TextStyle(fontSize: 12)),
-                                      onPressed: () {
-                                        double width = item["width"]!;
-                                        double height = item["height"]!;
-                                        WindowOptions windowOptions = WindowOptions(
-                                          // size: Size(1200, 900),
-                                          size: Size(width, height + 28),
-                                          center: true,
-                                          backgroundColor: Colors.transparent,
-                                          skipTaskbar: false,
-                                          titleBarStyle: TitleBarStyle.normal,
-                                          windowButtonVisibility: true,
-                                        );
-                                        windowManager.waitUntilReadyToShow(windowOptions, () async {
-                                          await windowManager.show();
-                                          await windowManager.focus();
-                                        });
-                                      }))
-                                ],
+                        CustomCard(
+                          child: OverflowBar(
+                            alignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              ShadButton.ghost(
+                                size: ShadButtonSize.sm,
+                                onPressed: () {
+                                  controller.siteCardView = !controller.siteCardView;
+                                  SPUtil.setBool('mySite-siteCardView', controller.siteCardView);
+                                  Get.find<MySiteController>().changeViewMode(controller.siteCardView);
+                                  Get.forceAppUpdate();
+                                },
+                                child: Text('切换'),
                               ),
+                              ShadButton.ghost(
+                                size: ShadButtonSize.sm,
+                                onPressed: () {
+                                  SiteColorConfig.resetToDefault(scheme: shadColorScheme);
+                                  controller.applyDefaultConfig();
+                                  Get.forceAppUpdate();
+                                },
+                                child: Text('重置'),
+                              ),
+                              ShadButton.ghost(
+                                size: ShadButtonSize.sm,
+                                onPressed: () async {
+                                  popoverController.hide();
+                                  Get.defaultDialog(
+                                    title: '导入主题',
+                                    titleStyle: TextStyle(
+                                        color: shadColorScheme.foreground, fontSize: 14, fontWeight: FontWeight.bold),
+                                    backgroundColor: shadColorScheme.background,
+                                    radius: 8,
+                                    content: Column(
+                                      children: [
+                                        Text(
+                                          '请复制主题JSON数据，然后点击导入按钮。',
+                                          style: TextStyle(color: shadColorScheme.foreground, fontSize: 13),
+                                        ),
+                                        GetBuilder<ThemeController>(
+                                            id: 'controller.replaceBackgroundImage',
+                                            builder: (controller) {
+                                              return SwitchTile(
+                                                  title: '替换背景图片',
+                                                  fontSize: 12,
+                                                  value: controller.replaceBackgroundImage,
+                                                  onChanged: (value) {
+                                                    controller.replaceBackgroundImage = value;
+                                                    controller.update(['controller.replaceBackgroundImage']);
+                                                  });
+                                            }),
+                                      ],
+                                    ),
+                                    actions: [
+                                      ShadButton.ghost(
+                                        size: ShadButtonSize.sm,
+                                        onPressed: () async {
+                                          Get.back();
+                                        },
+                                        child: const Text('取消'),
+                                      ),
+                                      ShadButton.destructive(
+                                        size: ShadButtonSize.sm,
+                                        onPressed: () async {
+                                          // 1️⃣ 读取剪贴板
+                                          final ok = await controller.importFromClipboard();
+                                          Get.back();
+                                          if (ok.succeed) {
+                                            Get.snackbar('成功', '主题已导入');
+                                            Get.forceAppUpdate();
+                                          } else {
+                                            Get.snackbar('失败', ok.msg, colorText: shadColorScheme.destructive);
+                                          }
+                                        },
+                                        child: const Text('导入'),
+                                      )
+                                    ],
+                                  );
+                                },
+                                foregroundColor: shadColorScheme.primary,
+                                child: Text('导入'),
+                              ),
+                              ShadButton.ghost(
+                                size: ShadButtonSize.sm,
+                                child: Text('分享'),
+                                onPressed: () async {
+                                  Get.defaultDialog(
+                                    title: '分享主题',
+                                    titleStyle: TextStyle(
+                                        color: shadColorScheme.foreground, fontSize: 14, fontWeight: FontWeight.bold),
+                                    backgroundColor: shadColorScheme.background,
+                                    radius: 8,
+                                    content: Text(
+                                      '可选择仅分享配色方案，或者直接分享整个主题',
+                                      style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
+                                    ),
+                                    actions: [
+                                      ShadButton.ghost(
+                                        size: ShadButtonSize.sm,
+                                        onPressed: () async {
+                                          Get.back();
+                                        },
+                                        child: const Text('取消'),
+                                      ),
+                                      ShadButton.outline(
+                                        size: ShadButtonSize.sm,
+                                        onPressed: () async {
+                                          String data = await controller.exportToClipboard(false);
+                                          Get.back();
+                                          Logger.instance.i('当前主题配置信息: $data');
+                                          Get.snackbar(
+                                            '已导出',
+                                            '主题配置已复制到剪贴板',
+                                            snackPosition: SnackPosition.BOTTOM,
+                                          );
+                                        },
+                                        child: const Text('配色方案'),
+                                      ),
+                                      ShadButton.destructive(
+                                        size: ShadButtonSize.sm,
+                                        onPressed: () async {
+                                          String data = await controller.exportToClipboard(true);
+                                          Get.back();
+                                          Logger.instance.i('当前主题配置信息: $data');
+                                          Get.snackbar('已导出', '主题配置已复制到剪贴板');
+                                        },
+                                        child: const Text('主题配色'),
+                                      )
+                                    ],
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (PlatformTool.isDesktopOS())
+                          Center(
+                            child: Wrap(
+                              alignment: WrapAlignment.spaceBetween,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              runAlignment: WrapAlignment.center,
+                              spacing: 5,
+                              runSpacing: 5,
+                              children: [
+                                ...[
+                                  // {"width": 1024.0, "height": 768.0},
+                                  {"width": 1366.0, "height": 768.0},
+                                  // {"width": 1366.0, "height": 800.0},
+                                  {"width": 1440.0, "height": 900.0},
+                                  // {"width": 1600.0, "height": 900.0},
+                                  {"width": 1920.0, "height": 1080.0},
+                                  {"width": 2560.0, "height": 1536.0},
+                                ].map((item) => ShadButton.outline(
+                                    size: ShadButtonSize.sm,
+                                    child: Text('${item["width"]?.toInt()}x${item["height"]?.toInt()}',
+                                        style: TextStyle(fontSize: 12)),
+                                    onPressed: () {
+                                      double width = item["width"]!;
+                                      double height = item["height"]!;
+                                      WindowOptions windowOptions = WindowOptions(
+                                        // size: Size(1200, 900),
+                                        size: Size(width, height + 28),
+                                        center: true,
+                                        backgroundColor: Colors.transparent,
+                                        skipTaskbar: false,
+                                        titleBarStyle: TitleBarStyle.normal,
+                                        windowButtonVisibility: true,
+                                      );
+                                      windowManager.waitUntilReadyToShow(windowOptions, () async {
+                                        await windowManager.show();
+                                        await windowManager.focus();
+                                      });
+                                    }))
+                              ],
                             ),
-                        ],
-                      ),
-                    )),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        ShadButton.ghost(
-                          size: ShadButtonSize.sm,
-                          onPressed: () => popoverController.hide(),
-                          leading: Icon(
-                            Icons.cancel_outlined,
-                            size: 16,
                           ),
-                          child: Text('关闭'),
-                        ),
-                        if (controller.useBackground.value)
-                          ShadButton.secondary(
-                            size: ShadButtonSize.sm,
-                            leading: Icon(Icons.delete_outlined, size: 16),
-                            foregroundColor: shadColorScheme.primary,
-                            child: Text('预览'),
-                            onPressed: () {
-                              if (urlController.text.isNotEmpty) {
-                                controller.backgroundImage.value = urlController.text;
-                                showPreview.value = !showPreview.value;
-                              } else {
-                                showPreview.value = false;
-                              }
-                            },
-                          ),
-                        ShadButton.outline(
-                          size: ShadButtonSize.sm,
-                          leading: Icon(Icons.save_outlined, size: 16),
-                          onPressed: () {
-                            if (urlController.text.isNotEmpty) {
-                              if (controller.useLocalBackground.value &&
-                                  controller.backgroundImage.value.startsWith('http')) {
-                                Get.snackbar(
-                                  '出错啦',
-                                  "请选择正确的背景图片！",
-                                  colorText: shadColorScheme.destructive,
-                                );
-                                return;
-                              }
-                              controller.backgroundImage.value = urlController.text;
-                              Logger.instance.d('backgroundImage: ${urlController.text}');
-                              controller.saveSettings();
-                              Get.forceAppUpdate();
-                              Get.back();
-                            } else {
-                              Get.snackbar(
-                                '出错啦',
-                                "请选择或输入正确的图片地址！",
-                                colorText: shadColorScheme.destructive,
-                              );
-                            }
-                          },
-                          child: Text('保存'),
-                        ),
                       ],
                     ),
-                  ],
-                ),
+                  )),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      ShadButton.ghost(
+                        size: ShadButtonSize.sm,
+                        onPressed: () => popoverController.hide(),
+                        leading: Icon(
+                          Icons.cancel_outlined,
+                          size: 16,
+                        ),
+                        child: Text('关闭'),
+                      ),
+                      if (controller.useBackground.value)
+                        ShadButton.secondary(
+                          size: ShadButtonSize.sm,
+                          leading: Icon(Icons.delete_outlined, size: 16),
+                          foregroundColor: shadColorScheme.primary,
+                          child: Text('预览'),
+                          onPressed: () {
+                            if (urlController.text.isNotEmpty) {
+                              controller.backgroundImage.value = urlController.text;
+                              showPreview.value = !showPreview.value;
+                            } else {
+                              showPreview.value = false;
+                            }
+                          },
+                        ),
+                      ShadButton.outline(
+                        size: ShadButtonSize.sm,
+                        leading: Icon(Icons.save_outlined, size: 16),
+                        onPressed: () {
+                          if (urlController.text.isNotEmpty) {
+                            if (controller.useLocalBackground.value &&
+                                controller.backgroundImage.value.startsWith('http')) {
+                              Get.snackbar(
+                                '出错啦',
+                                "请选择正确的背景图片！",
+                                colorText: shadColorScheme.destructive,
+                              );
+                              return;
+                            }
+                            controller.backgroundImage.value = urlController.text;
+                            Logger.instance.d('backgroundImage: ${urlController.text}');
+                            controller.saveSettings();
+                            Get.forceAppUpdate();
+                            Get.back();
+                          } else {
+                            Get.snackbar(
+                              '出错啦',
+                              "请选择或输入正确的图片地址！",
+                              colorText: shadColorScheme.destructive,
+                            );
+                          }
+                        },
+                        child: Text('保存'),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
-          child: ShadIconButton.ghost(
-            icon: icon, // Use the passed icon
-            onPressed: () {
-              if (!popoverController.isOpen) {
-                controller.onInit();
-              }
-              popoverController.toggle();
-            },
-          ),
-        );
-      });
+        ),
+        child: ShadIconButton.ghost(
+          icon: icon, // Use the passed icon
+          onPressed: () {
+            if (!popoverController.isOpen) {
+              controller.onInit();
+            }
+            popoverController.toggle();
+          },
+        ),
+      );
     });
   }
 
@@ -961,7 +959,7 @@ class ThemeIconButton extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.start,
                               mainAxisSize: MainAxisSize.max,
                               icon: Icon(
-                                Icons.cloud_upload_outlined,
+                                Icons.cloud_download_outlined,
                                 color: siteColorConfig.downloadedIconColor.value,
                                 size: 16,
                               ),
@@ -1018,7 +1016,7 @@ class ThemeIconButton extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               mainAxisSize: MainAxisSize.max,
                               icon: Icon(
-                                Icons.cloud_upload_outlined,
+                                Icons.storage_outlined,
                                 color: siteColorConfig.seedVolumeIconColor.value,
                                 size: 16,
                               ),
@@ -1102,7 +1100,7 @@ class ThemeIconButton extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               mainAxisSize: MainAxisSize.max,
                               icon: Icon(
-                                Icons.score_outlined,
+                                Icons.monetization_on_outlined,
                                 color: siteColorConfig.bonusIconColor.value,
                                 size: 14,
                               ),
@@ -1144,7 +1142,7 @@ class ThemeIconButton extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               mainAxisSize: MainAxisSize.max,
                               icon: Icon(
-                                Icons.score_outlined,
+                                Icons.diamond_outlined,
                                 color: siteColorConfig.scoreIconColor.value,
                                 size: 14,
                               ),
@@ -1188,7 +1186,7 @@ class ThemeIconButton extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               mainAxisSize: MainAxisSize.max,
                               icon: Icon(
-                                Icons.upload_outlined,
+                                Icons.file_upload_outlined,
                                 color: siteColorConfig.publishedIconColor.value,
                                 size: 14,
                               ),
@@ -1272,7 +1270,7 @@ class ThemeIconButton extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               mainAxisSize: MainAxisSize.max,
                               icon: Icon(
-                                Icons.screen_share_outlined,
+                                Icons.percent_outlined,
                                 color: siteColorConfig.ratioIconColor.value,
                                 size: 14,
                               ),
@@ -1314,7 +1312,7 @@ class ThemeIconButton extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               mainAxisSize: MainAxisSize.max,
                               icon: Icon(
-                                Icons.timer_outlined,
+                                Icons.hourglass_bottom_outlined,
                                 color: siteColorConfig.perBonusIconColor.value,
                                 size: 14,
                               ),
