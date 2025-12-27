@@ -584,6 +584,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                                                     size: ShadButtonSize.sm,
                                                     onPressed: () {
                                                       Clipboard.setData(ClipboardData(text: el));
+                                                      Get.back();
                                                       ShadToaster.of(context).show(
                                                         ShadToast(description: Text('已复制: $el')),
                                                       );
