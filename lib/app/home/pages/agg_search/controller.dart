@@ -453,10 +453,10 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
           saleStatusList = saleStatusList.toSet().toList();
           saleStatusList.sort();
           // 写入有数据的站点
+          searchMsg.insert(0, {"success": true, "msg": response.msg});
           if (torrentInfoList.isNotEmpty) {
             succeedSiteList.add(torrentInfoList[0].siteId);
             succeedSiteList.sort();
-            searchMsg.insert(0, {"success": true, "msg": response.msg});
             filterResults();
           }
           update();
