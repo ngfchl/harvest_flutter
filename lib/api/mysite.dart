@@ -36,18 +36,23 @@ Future<CommonResponse> clearMyCacheApi(String key) async {
 ///
 Future<CommonResponse> getWebSiteList() async {
   final response = await fetchDataList(Api.WEBSITE_LIST, (p0) => p0);
-  if (response.code == 0) {
-    SPUtil.setCache('$baseUrl - webSiteList', {'webSiteList': response.data}, 3600 * 24);
-    Map<String, WebSite> dataList =
-        response.data!.map((item) => WebSite.fromJson(item)).toList().asMap().entries.fold({}, (result, entry) {
-      result[entry.value.name] = entry.value;
-      return result;
-    });
-    String msg = '工具共支持${dataList.length}个站点';
-    Logger.instance.i(msg);
-    return CommonResponse.success(data: dataList, msg: msg);
-  }
-  return response;
+  if (!response.succeed) return response;
+
+  SPUtil.setCache('$baseUrl - webSiteList', {'webSiteList': response.data}, 3600 * 24);
+  Map<String, WebSite> dataList = response.data!.fold<Map<String, WebSite>>({}, (result, item) {
+    try {
+      // 尝试将 item 转换为 WebSite
+      WebSite website = WebSite.fromJson(item);
+      result[website.name] = website; // 将有效的 WebSite 添加到 Map
+    } catch (e) {
+      // 捕获解析错误并跳过
+      Logger.instance.e('解析 WebSite 时出错: $e');
+    }
+    return result;
+  });
+  String msg = '工具共支持${dataList.length}个站点';
+  Logger.instance.i(msg);
+  return CommonResponse.success(data: dataList, msg: msg);
 }
 
 /// 签到当前站点
