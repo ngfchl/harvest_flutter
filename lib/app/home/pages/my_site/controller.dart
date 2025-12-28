@@ -101,7 +101,7 @@ class MySiteController extends GetxController {
     update();
   }
 
-  initData() async {
+  Future<void> initData() async {
     if (!initFlag) {
       return;
     }
@@ -128,7 +128,7 @@ class MySiteController extends GetxController {
     });
   }
 
-  updateTagList() {
+  void updateTagList() {
     tagList = tagList
         .toSet()
         .where((item) => item.isNotEmpty)
@@ -143,7 +143,7 @@ class MySiteController extends GetxController {
   ///@description TODO
   ///@updateTime 2024-10-28
    */
-  loadCacheInfo() async {
+  Future<void> loadCacheInfo() async {
     try {
       // 记录开始时间
       Logger.instance.d('开始从缓存加载站点数据');
@@ -153,10 +153,17 @@ class MySiteController extends GetxController {
 
       if (webSiteListMap.isNotEmpty) {
         Logger.instance.d('共获取到站点配置缓存：${webSiteListMap['webSiteList'].length} 条');
-        List<WebSite> webSiteObjectList =
-            webSiteListMap['webSiteList'].map((item) => WebSite.fromJson(item)).toList().cast<WebSite>();
-        webSiteList = webSiteObjectList.asMap().entries.fold({}, (result, entry) {
-          result[entry.value.name] = entry.value;
+        List<dynamic> webSiteListData = webSiteListMap['webSiteList'] as List<dynamic>;
+
+        webSiteList = webSiteListData.fold<Map<String, WebSite>>({}, (result, item) {
+          try {
+            // 尝试将 item 转换为 WebSite
+            WebSite website = WebSite.fromJson(item);
+            result[website.name] = website; // 将有效的 WebSite 添加到 Map
+          } catch (e) {
+            // 捕获解析错误并跳过
+            Logger.instance.e('解析 WebSite 时出错: $e');
+          }
           return result;
         });
         Logger.instance.d('获取站点配置缓存耗时: ${DateTime.now().difference(startTime).inMilliseconds} 毫秒');
