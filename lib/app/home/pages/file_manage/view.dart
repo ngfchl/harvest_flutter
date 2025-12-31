@@ -8,6 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_ellipsis_text/flutter_ellipsis_text.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
@@ -40,7 +41,7 @@ class FileManagePage extends StatelessWidget {
     return GetBuilder<FileManageController>(
         id: 'file_manage',
         builder: (controller) {
-          List<String> pathList = controller.currentPath.split('/');
+          List<String> pathList = controller.currentPath.replaceFirst('/.hardlink', '').split('/');
 
           var shadColorScheme = ShadTheme.of(context).colorScheme;
           return Scaffold(
@@ -613,7 +614,10 @@ class FileManagePage extends StatelessWidget {
                       controller.isLoading = true;
                       controller.update(['file_manage']);
                       controller.currentPath = item.path;
-                      await controller.initSourceData();
+                      CommonResponse response = await controller.initSourceData();
+                      if (!response.succeed) {
+                        ShadToaster.of(context).show(ShadToast(description: Text(response.msg)));
+                      }
                     } else {
                       Logger.instance.d('文件后缀名：${item.ext}，文件类型：${item.mimeType}');
                       CommonResponse res = await controller.getFileSourceUrl(item.path);
@@ -1045,6 +1049,21 @@ class FileManagePage extends StatelessWidget {
   }
 
   void showImage(String url, shadColorScheme) {
+    var uri = Uri.parse(url);
+    var expire = int.tryParse(uri.queryParameters['expire'] ?? '0');
+    var duration = expire != null ? expire * 1000 - DateTime.now().millisecondsSinceEpoch : 60 * 60 * 1000;
+    Logger.instance.w('图片参数: $expire ${DateTime.now().millisecondsSinceEpoch}');
+    String key = uri.path.replaceAll('/', '.');
+    CacheManager instance = CacheManager(
+      Config(
+        key,
+        stalePeriod: Duration(milliseconds: duration),
+        maxNrOfCacheObjects: 20,
+        repo: JsonCacheInfoRepository(databaseName: key),
+        fileSystem: IOFileSystem(key),
+        fileService: HttpFileService(),
+      ),
+    );
     Get.dialog(
       KeyboardListener(
         focusNode: FocusNode()..requestFocus(),
@@ -1071,8 +1090,7 @@ class FileManagePage extends StatelessWidget {
                       minScale: PhotoViewComputedScale.contained,
                       initialScale: PhotoViewComputedScale.contained,
                       // 默认显示整个图片
-                      imageProvider:
-                          CachedNetworkImageProvider(url, cacheKey: Uri.parse(url).pathSegments.last.split('/').last),
+                      imageProvider: CachedNetworkImageProvider(url, cacheKey: key, cacheManager: instance),
                     ),
                   ),
                 ),

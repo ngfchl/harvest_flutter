@@ -19,15 +19,22 @@ class FileManageController extends GetxController {
     await initSourceData();
   }
 
-  Future<void> initSourceData({bool noCache = false}) async {
+  Future<CommonResponse> initSourceData({bool noCache = false}) async {
+    final stopwatch = Stopwatch()..start(); // 开始计时
     CommonResponse res = await getSourceListApi(path: currentPath, noCache: noCache);
     if (res.succeed) {
       currentPath = res.data["current_path"];
       items = (res.data["items"] as List).map((e) => SourceItemView.fromJson(e as Map<String, dynamic>)).toList();
+    } else {
+      items = [];
+      Logger.instance.e('获取文件列表失败: ${res.msg}');
     }
     isLoading = false;
     Logger.instance.d('当前路径: $currentPath，当前路径下文件数量: ${items.length}');
     update(['file_manage']);
+    stopwatch.stop(); // 停止计算处理耗时
+    Logger.instance.d('initSourceData 页面刷新耗时: ${stopwatch.elapsedMilliseconds} ms');
+    return res;
   }
 
   Future<CommonResponse> getFileSourceUrl(String path) async {
