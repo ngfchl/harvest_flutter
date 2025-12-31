@@ -81,6 +81,10 @@ class DioUtil {
         Logger.instance.d('dio.status: $status');
         return status != null && ![401, 403].contains(status); // 所有状态码都当作正常返回
       },
+      // 开启连接池
+      extra: {
+        'connection_pool': true,
+      },
     ));
 
     // 请求拦截器动态加 Authorization
