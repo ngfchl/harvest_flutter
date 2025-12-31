@@ -5,10 +5,10 @@ packages:
     dependency: "direct main"
     description:
       name: android_intent_plus
-      sha256: "2329378af63f49b985cb2e110ac784d08374f1e2b1984be77ba9325b1c8cce11"
+      sha256: "14a9f94c5825a528e8c38ee89a33dbeba947efbbf76f066c174f4f3ae4f48feb"
       url: "https://pub.dev"
     source: hosted
-    version: "5.3.1"
+    version: "6.0.0"
   ansicolor:
     dependency: transitive
     description:
@@ -317,10 +317,10 @@ packages:
     dependency: "direct main"
     description:
       name: file_picker
-      sha256: "09b474c0c8117484b80cbebc043801ff91e05cfbd2874d512825c899e1754694"
+      sha256: d974b6ba2606371ac71dd94254beefb6fa81185bde0b59bdc1df09885da85fde
       url: "https://pub.dev"
     source: hosted
-    version: "9.2.3"
+    version: "10.3.8"
   file_selector_linux:
     dependency: transitive
     description:
@@ -402,10 +402,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_floating
-      sha256: "18adb4ad3215f06c043dc08c4c5ebdec6913a25bcb14f8f27a700686a6588ea0"
+      sha256: "9887a378b4f48ed7a29f67562e8da2205d3c39f62baf9d75e376c0a190ab32ce"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.2"
+    version: "2.0.1"
   flutter_inappwebview:
     dependency: "direct main"
     description:
@@ -487,10 +487,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_markdown_plus
-      sha256: "7f349c075157816da399216a4127096108fd08e1ac931e34e72899281db4113c"
+      sha256: "039177906850278e8fb1cd364115ee0a46281135932fa8ecea8455522166d2de"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.5"
+    version: "1.0.7"
   flutter_native_splash:
     dependency: "direct main"
     description:
@@ -593,10 +593,10 @@ packages:
     dependency: transitive
     description:
       name: image
-      sha256: "51555e36056541237b15b57afc31a0f53d4f9aefd9bd00873a6dc0090e54e332"
+      sha256: "492bd52f6c4fbb6ee41f781ff27765ce5f627910e1e0cbecfa3d9add5562604c"
       url: "https://pub.dev"
     source: hosted
-    version: "4.6.0"
+    version: "4.7.2"
   image_gallery_saver_plus:
     dependency: "direct main"
     description:
@@ -753,10 +753,10 @@ packages:
     dependency: transitive
     description:
       name: lucide_icons_flutter
-      sha256: aaadab3b503d2cc4eb971661511c6053bfe7d52742ba46f551d508494822a0fa
+      sha256: "67bc7cc05c3c03eee3405f88a0ca127efca03561db00e2e93cc0a46019c19a7b"
       url: "https://pub.dev"
     source: hosted
-    version: "3.1.8"
+    version: "3.1.9"
   markdown:
     dependency: transitive
     description:
@@ -833,10 +833,10 @@ packages:
     dependency: "direct main"
     description:
       name: media_kit_video
-      sha256: "813858c3fe84eb46679eb698695f60665e2bfbef757766fac4d2e683f926e15a"
+      sha256: afaa509e7b7e0bf247557a3a740cde903a52c34ace9810f94500e127bd7b043d
       url: "https://pub.dev"
     source: hosted
-    version: "1.3.1"
+    version: "2.0.1"
   meta:
     dependency: transitive
     description:
@@ -873,10 +873,10 @@ packages:
     dependency: "direct main"
     description:
       name: package_info_plus
-      sha256: "16eee997588c60225bda0488b6dcfac69280a6b7a3cf02c741895dd370a02968"
+      sha256: f69da0d3189a4b4ceaeb1a3defb0f329b3b352517f52bed4290f83d4f06bc08d
       url: "https://pub.dev"
     source: hosted
-    version: "8.3.1"
+    version: "9.0.0"
   package_info_plus_platform_interface:
     dependency: transitive
     description:
@@ -1109,22 +1109,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.1"
-  screen_brightness_android:
-    dependency: transitive
-    description:
-      name: screen_brightness_android
-      sha256: d34f5321abd03bc3474f4c381f53d189117eba0b039eac1916aa92cca5fd0a96
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.3"
-  screen_brightness_platform_interface:
-    dependency: transitive
-    description:
-      name: screen_brightness_platform_interface
-      sha256: "737bd47b57746bc4291cab1b8a5843ee881af499514881b0247ec77447ee769c"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.0"
   screen_retriever:
     dependency: transitive
     description:
@@ -1177,10 +1161,10 @@ packages:
     dependency: "direct main"
     description:
       name: share_plus
-      sha256: d7dc0630a923883c6328ca31b89aa682bacbf2f8304162d29f7c6aaff03a27a1
+      sha256: "14c8860d4de93d3a7e53af51bff479598c4e999605290756bbbe45cf65b37840"
       url: "https://pub.dev"
     source: hosted
-    version: "11.1.0"
+    version: "12.0.1"
   share_plus_platform_interface:
     dependency: transitive
     description:
@@ -1335,6 +1319,70 @@ packages:
     description:
       name: syncfusion_flutter_core
       sha256: "2d878bce96c4fd1092205a4f72b328f7f05d86b27c3bd55db7fd440e6017352a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "31.1.19"
+  syncfusion_flutter_pdf:
+    dependency: transitive
+    description:
+      name: syncfusion_flutter_pdf
+      sha256: "95b5e01cc2305f03490b009a28c2e8753feecdb4202c87fcba27a74fbc93222c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "31.1.19"
+  syncfusion_flutter_pdfviewer:
+    dependency: "direct main"
+    description:
+      name: syncfusion_flutter_pdfviewer
+      sha256: "31ae13c02b8db657ee914dd8912ccb8eefeb86a0957d5a7315d46efe4729472f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "31.1.19"
+  syncfusion_flutter_signaturepad:
+    dependency: transitive
+    description:
+      name: syncfusion_flutter_signaturepad
+      sha256: b4f229d542b29f9c3927862194d9f0b15b02f27b13a899e7dd54b04de8b50d24
+      url: "https://pub.dev"
+    source: hosted
+    version: "31.1.19"
+  syncfusion_pdfviewer_linux:
+    dependency: transitive
+    description:
+      name: syncfusion_pdfviewer_linux
+      sha256: ef66789a0018e4fa84f17277a5e1ed3ac817aa197d19073a6b6a409256c5c131
+      url: "https://pub.dev"
+    source: hosted
+    version: "31.1.19"
+  syncfusion_pdfviewer_macos:
+    dependency: transitive
+    description:
+      name: syncfusion_pdfviewer_macos
+      sha256: "23ba6294111f72b24ddeb36f685e4c7dd02a855a3c514b628926c9b58e45a40a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "31.1.19"
+  syncfusion_pdfviewer_platform_interface:
+    dependency: transitive
+    description:
+      name: syncfusion_pdfviewer_platform_interface
+      sha256: d4061b838a6847cf07ab946346865dc32608691f9fa8d11b3870ac947f236222
+      url: "https://pub.dev"
+    source: hosted
+    version: "31.1.19"
+  syncfusion_pdfviewer_web:
+    dependency: transitive
+    description:
+      name: syncfusion_pdfviewer_web
+      sha256: "9acc5d3a7a056d81e2ea333fb9f42b6838263c80f54400a69aab73a845290fc2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "31.1.19"
+  syncfusion_pdfviewer_windows:
+    dependency: transitive
+    description:
+      name: syncfusion_pdfviewer_windows
+      sha256: "4989d32dbcda945615f3ba5730f814a468d34c0fdaab9edf4805a0f03c3ae62d"
       url: "https://pub.dev"
     source: hosted
     version: "31.1.19"
@@ -1546,22 +1594,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "15.0.0"
-  volume_controller:
-    dependency: transitive
-    description:
-      name: volume_controller
-      sha256: "5c1a13d2ea99d2f6753e7c660d0d3fab541f36da3999cafeb17b66fe49759ad7"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.4.1"
   wakelock_plus:
     dependency: transitive
     description:
       name: wakelock_plus
-      sha256: "61713aa82b7f85c21c9f4cd0a148abd75f38a74ec645fcb1e446f882c82fd09b"
+      sha256: "9296d40c9adbedaba95d1e704f4e0b434be446e2792948d0e4aa977048104228"
       url: "https://pub.dev"
     source: hosted
-    version: "1.3.3"
+    version: "1.4.0"
   wakelock_plus_platform_interface:
     dependency: transitive
     description:
