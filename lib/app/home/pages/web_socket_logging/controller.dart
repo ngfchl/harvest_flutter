@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_floating/floating/floating.dart';
 import 'package:flutter_floating/floating/listener/event_listener.dart';
+import 'package:flutter_floating/flutter_floating.dart';
 import 'package:get/get.dart';
 import 'package:web_socket_channel/status.dart' as status;
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -36,7 +36,7 @@ class WebSocketLoggingController extends GetxController {
   GlobalKey inTimeAPILogFloatingKey =
       GlobalKey(debugLabel: "inTimeAPILogFloatingWindows");
 
-  late Floating floating;
+  late FloatingOverlay floating;
   var oneListener = FloatingEventListener();
 
   @override

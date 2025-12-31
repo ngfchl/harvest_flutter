@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_floating/floating/floating.dart';
 import 'package:get/get.dart';
 import 'package:harvest/api/tmdb.dart' as tmdb;
 import 'package:harvest/app/home/pages/dou_ban/douban_api.dart';
@@ -65,7 +64,6 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
   bool downloaderListLoading = false;
   bool isDownloaderLoading = false;
   String dataSource = 'TMDB';
-  Floating? floating;
   Map<String, MySite> mySiteMap = <String, MySite>{};
   List<MetaDataItem> sortKeyList = [
     {'name': '发布时间', 'value': 'published'},

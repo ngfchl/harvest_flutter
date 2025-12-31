@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_floating/floating/assist/floating_slide_type.dart';
-import 'package:flutter_floating/floating/floating.dart';
 import 'package:flutter_floating/floating/manager/floating_manager.dart';
+import 'package:flutter_floating/flutter_floating.dart';
 import 'package:get/get.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
@@ -29,12 +28,11 @@ class WebSocketLoggingWidget extends StatelessWidget {
         }
         controller.floating = floatingManager.createFloating(
             controller.inTimeAPILogFloatingKey,
-            Floating(
+            FloatingOverlay(
               GetBuilder<WebSocketLoggingController>(builder: (controller) {
                 return SizedBox(height: height, width: width, child: _showLoggingDialog(context));
               }),
-              slideType: FloatingSlideType.onLeftAndTop,
-              isShowLog: false,
+              slideType: FloatingEdgeType.onLeftAndTop,
               top: 0,
             ));
         controller.floating.open(context);

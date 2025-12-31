@@ -1,8 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_floating/floating/assist/floating_slide_type.dart';
-import 'package:flutter_floating/floating/floating.dart';
 import 'package:flutter_floating/floating/manager/floating_manager.dart';
+import 'package:flutter_floating/flutter_floating.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
@@ -46,9 +45,9 @@ class LoggingView extends StatelessWidget {
       height = MediaQuery.of(context).size.height * 0.5;
     }
     var shadColorScheme = ShadTheme.of(context).colorScheme;
-    Floating floating = floatingManager.createFloating(
+    FloatingOverlay floating = floatingManager.createFloating(
         "inTimeAPPLogFloatingWindows",
-        Floating(
+        FloatingOverlay(
           SizedBox(
               height: height,
               width: width,
@@ -114,7 +113,7 @@ class LoggingView extends StatelessWidget {
                               icon: Icon(Icons.exit_to_app_outlined,
                                   size: 20, color: ShadTheme.of(context).colorScheme.destructive),
                               onPressed: () {
-                                Floating floating = floatingManager.getFloating("inTimeAPPLogFloatingWindows");
+                                FloatingOverlay floating = floatingManager.getFloating("inTimeAPPLogFloatingWindows");
                                 floating.close();
                                 Get.delete<LoggingController>();
                                 Get.back();
@@ -327,8 +326,7 @@ class LoggingView extends StatelessWidget {
                       );
                     },
                   ))),
-          slideType: FloatingSlideType.onLeftAndTop,
-          isShowLog: false,
+          slideType: FloatingEdgeType.onLeftAndTop,
           top: 0,
         ));
     floating.open(context);
