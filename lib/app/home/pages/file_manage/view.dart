@@ -107,13 +107,17 @@ class FileManagePage extends StatelessWidget {
                               padding: EdgeInsets.symmetric(horizontal: 1),
                               child: ConstrainedBox(
                                 constraints: BoxConstraints(maxWidth: 120),
-                                child: EllipsisText(
-                                  text: "/${pathList[i]}",
-                                  ellipsis: '...',
-                                  maxLines: 1,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: shadColorScheme.foreground,
+                                child: Tooltip(
+                                  message: pathList[i],
+                                  child: EllipsisText(
+                                    text: "/${pathList[i]}",
+                                    ellipsis: '...',
+                                    maxLines: 1,
+                                    isShowMore: false,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: shadColorScheme.foreground,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -555,12 +559,12 @@ class FileManagePage extends StatelessWidget {
                                 Logger.instance.d(res.toString());
                                 if (res.succeed) {
                                   Clipboard.setData(ClipboardData(text: res.data));
-                                  if (item.mimeType.startsWith('image')) {
-                                    showImage(res.data, context);
-                                  } else if (item.mimeType.startsWith('video')) {
-                                    showPlayer(res.data, context);
-                                  } else if (item.mimeType.startsWith('audio')) {
-                                    showPlayer(res.data, context);
+                                  if (item.mimeType?.startsWith('image') == true) {
+                                    showImage(res.data, shadColorScheme);
+                                  } else if (item.mimeType?.startsWith('video') == true) {
+                                    showPlayer(res.data, shadColorScheme);
+                                  } else if (item.mimeType?.startsWith('audio') == true) {
+                                    showPlayer(res.data, shadColorScheme);
                                   } else {
                                     Get.defaultDialog(
                                       title: '文件操作',
@@ -616,9 +620,10 @@ class FileManagePage extends StatelessWidget {
                       Logger.instance.d(res.toString());
                       if (res.succeed) {
                         Clipboard.setData(ClipboardData(text: res.data));
-                        if (item.mimeType.startsWith('image')) {
-                          showImage(res.data, context);
-                        } else if (item.mimeType.startsWith('video') || item.mimeType.startsWith('audio')) {
+                        if (item.mimeType?.startsWith('image') == true) {
+                          showImage(res.data, shadColorScheme);
+                        } else if (item.mimeType?.startsWith('video') == true ||
+                            item.mimeType?.startsWith('audio') == true) {
                           Get.dialog(CustomCard(
                               child: VideoPlayerPage(
                             initialUrl: res.data,
@@ -669,119 +674,82 @@ class FileManagePage extends StatelessWidget {
         });
   }
 
-  Widget buildItemWidget(SourceItemView item, ShadColorScheme shadColorScheme) {
-    // 如果 item 本身是图片
-    if (!item.isDir && item.mimeType.startsWith('image')) {
-      return GetBuilder<FileManageController>(builder: (controller) {
-        return FutureBuilder<String>(
-          future: controller.getFileSourceUrl(item.path).then((res) => res.data ?? ''),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              // 加载中显示占位
-              return SizedBox(
-                width: 32,
-                height: 32,
-                child: Center(
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: shadColorScheme.foreground,
-                  ),
+  Widget buildImageItem(String path, ShadColorScheme shadColorScheme, bool isFolder) {
+    return FutureBuilder<String?>(
+      future: controller.getFileSourceUrl(path).then((res) => res.data),
+      builder: (context, snapshot) {
+        if (snapshot.hasData && snapshot.data != null) {
+          return ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: 45,
+              maxHeight: 80,
+            ),
+            child: CachedNetworkImage(
+              imageUrl: snapshot.data!,
+              fit: BoxFit.fitHeight,
+              height: 80,
+              width: 45,
+              cacheKey: path,
+              progressIndicatorBuilder: (context, url, progress) => SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  value: progress.progress,
+                  strokeWidth: 2,
+                  color: shadColorScheme.foreground,
                 ),
-              );
-            } else if (snapshot.hasError || snapshot.data!.isEmpty) {
-              // 获取失败显示文件图标
-              return Icon(Icons.insert_drive_file, color: shadColorScheme.foreground, size: 32);
-            } else {
-              // 成功获取 URL 显示图片
-              return CachedNetworkImage(
-                imageUrl: snapshot.data!,
-                fit: BoxFit.fitHeight,
-                width: 80,
-                progressIndicatorBuilder: (context, url, progress) => SizedBox(
-                  width: 32,
-                  height: 32,
-                  child: CircularProgressIndicator(
-                    value: progress.progress,
-                    strokeWidth: 2,
-                    color: shadColorScheme.foreground,
-                  ),
-                ),
-                cacheKey: snapshot.data!.split('?').first,
-                errorWidget: (context, url, error) => Icon(
-                  Icons.insert_drive_file,
+              ),
+              errorWidget: (context, url, error) => isFolder
+                  ? Icon(
+                      Icons.folder,
+                      color: Colors.deepOrangeAccent,
+                      size: 32,
+                    )
+                  : Icon(
+                      Icons.folder,
+                      color: shadColorScheme.foreground,
+                      size: 32,
+                    ),
+            ),
+          );
+        } else {
+          // 加载中或出错时显示图标isFolder
+          return isFolder
+              ? Icon(
+                  Icons.folder,
+                  color: Colors.deepOrangeAccent,
+                  size: 32,
+                )
+              : Icon(
+                  Icons.folder,
                   color: shadColorScheme.foreground,
                   size: 32,
-                ),
-              );
-            }
-          },
-        );
-      });
+                );
+        }
+      },
+    );
+  }
+
+  Widget buildItemWidget(SourceItemView item, ShadColorScheme shadColorScheme) {
+    // 如果 item 本身是图片
+    if (!item.isDir && item.mimeType?.startsWith('image') == true) {
+      return buildImageItem(item.path, shadColorScheme, false);
     }
     if (item.isDir) {
       // 先找 cover 开头的图片
       final coverImage = item.children?.firstWhereOrNull(
-        (e) => e.name.toLowerCase().startsWith('cover') == true && e.mimeType.startsWith('image') == true,
+        (e) => e.name.toLowerCase().startsWith('cover') == true && e.mimeType?.startsWith('image') == true,
       );
 
       // 如果没有 cover，再找第一个 image 类型文件
       final firstImage = coverImage ??
           item.children?.firstWhereOrNull(
-            (e) => e.mimeType.startsWith('image') == true,
+            (e) => e.mimeType?.startsWith('image') == true,
           );
-
       if (firstImage != null) {
         Logger.instance.d('图片资源：${firstImage.path}');
-        var imaUrl = '';
-
-        Logger.instance.d('图片链接：$imaUrl');
         // 返回图片资源
-        return GetBuilder<FileManageController>(builder: (controller) {
-          return FutureBuilder(
-            future: controller.getFileSourceUrl(firstImage.path).then((res) => imaUrl = res.data),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                // 加载中显示占位
-                return SizedBox(
-                  width: 32,
-                  height: 32,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: shadColorScheme.foreground,
-                  ),
-                );
-              } else if (snapshot.hasError || snapshot.data!.isEmpty) {
-                // 获取失败显示文件夹
-                return Icon(
-                  Icons.folder,
-                  color: shadColorScheme.foreground,
-                  size: 32,
-                );
-              } else {
-                // 成功获取 URL，显示图片
-                return CachedNetworkImage(
-                  imageUrl: snapshot.data!,
-                  fit: BoxFit.cover,
-                  progressIndicatorBuilder: (context, url, progress) => SizedBox(
-                    width: 32,
-                    height: 32,
-                    child: CircularProgressIndicator(
-                      value: progress.progress,
-                      strokeWidth: 2,
-                      color: shadColorScheme.foreground,
-                    ),
-                  ),
-                  cacheKey: snapshot.data.split('?').first,
-                  errorWidget: (context, url, error) => Icon(
-                    Icons.folder,
-                    color: shadColorScheme.foreground,
-                    size: 32,
-                  ),
-                );
-              }
-            },
-          );
-        });
+        return buildImageItem(firstImage.path, shadColorScheme, true);
       } else {
         // 没有图片显示文件夹图标
         return Icon(
@@ -916,9 +884,8 @@ class FileManagePage extends StatelessWidget {
     }
   }
 
-  void showPlayer(String url, BuildContext context) async {
+  void showPlayer(String url, ShadColorScheme shadColorScheme) async {
     final schemes = buildSchemes(url);
-    var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.defaultDialog(
       title: '打开方式',
       titleStyle: TextStyle(color: shadColorScheme.foreground),
@@ -1077,8 +1044,7 @@ class FileManagePage extends StatelessWidget {
     }
   }
 
-  void showImage(String url, context) {
-    var shadColorScheme = ShadTheme.of(context).colorScheme;
+  void showImage(String url, shadColorScheme) {
     Get.dialog(
       KeyboardListener(
         focusNode: FocusNode()..requestFocus(),
