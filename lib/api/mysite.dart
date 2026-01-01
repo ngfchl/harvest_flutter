@@ -44,9 +44,10 @@ Future<CommonResponse> getWebSiteList() async {
       // 尝试将 item 转换为 WebSite
       WebSite website = WebSite.fromJson(item);
       result[website.name] = website; // 将有效的 WebSite 添加到 Map
-    } catch (e) {
+    } catch (e, trace) {
       // 捕获解析错误并跳过
-      Logger.instance.e('解析 WebSite 时出错: $e');
+      Logger.instance.e('解析 WebSite 时出错: ${item['name']}  ==> $e');
+      Logger.instance.d(trace);
     }
     return result;
   });
