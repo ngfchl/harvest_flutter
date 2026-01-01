@@ -23,7 +23,6 @@ dependencies:
   flutter_ellipsis_text: ^1.0.1
   syncfusion_flutter_core: ^31.1.17
   syncfusion_flutter_charts: ^31.1.17
-  syncfusion_flutter_pdfviewer: ^31.1.17
   flutter_slidable: ^4.0.0
   permission_handler: ^12.0.1
   flutter_inappwebview: ^6.0.0
