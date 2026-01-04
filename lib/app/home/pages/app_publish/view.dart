@@ -267,308 +267,135 @@ class AppPublishPage extends StatelessWidget {
                                 child: ListView(children: [
                                   ...controller.showUsers.map(
                                     (user) => CustomCard(
-                                      child: Slidable(
-                                        key: ValueKey('${user.id}_${user.email}'),
-                                        startActionPane: ActionPane(
-                                          motion: const ScrollMotion(),
-                                          extentRatio: PlatformTool.isSmallScreenPortrait() ? 1 / 3 : 1 / 4,
-                                          children: [
-                                            SlidableAction(
-                                              borderRadius: const BorderRadius.only(
-                                                  topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
-                                              onPressed: (context) async {
-                                                TextEditingController payController =
-                                                    TextEditingController(text: '168');
-                                                TextEditingController expireController =
-                                                    TextEditingController(text: '36600');
-                                                RxBool tryUser = false.obs;
-                                                Get.defaultDialog(
-                                                  title: '重置授权',
-                                                  radius: 5,
-                                                  titleStyle: TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w500,
-                                                    color: shadColorScheme.foreground,
-                                                  ),
-                                                  backgroundColor: shadColorScheme.background,
-                                                  content: Column(
-                                                    children: [
-                                                      CustomTextField(
-                                                        controller: payController,
-                                                        labelText: '付款金额',
-                                                        prefixIcon: Icon(
-                                                          Icons.money_outlined,
-                                                          color: shadColorScheme.foreground,
-                                                          size: 20,
-                                                        ),
-                                                        suffix: ShadIconButton.ghost(
-                                                          icon: Icon(
-                                                            Icons.autorenew_outlined,
-                                                            color: shadColorScheme.foreground,
-                                                            size: 20,
-                                                          ),
-                                                          onPressed: () {
-                                                            if (payController.text != '168') {
-                                                              payController.text = '168';
-                                                            } else {
-                                                              payController.text = '0';
-                                                            }
-                                                          },
-                                                        ),
-                                                      ),
-                                                      CustomTextField(
-                                                        controller: expireController,
-                                                        labelText: '授权时长',
-                                                        prefixIcon: Icon(
-                                                          Icons.more_time_outlined,
-                                                          color: shadColorScheme.foreground,
-                                                          size: 20,
-                                                        ),
-                                                        suffix: ShadIconButton.ghost(
-                                                          icon: Icon(
-                                                            Icons.autorenew_outlined,
-                                                            color: shadColorScheme.foreground,
-                                                            size: 20,
-                                                          ),
-                                                          onPressed: () {
-                                                            if (expireController.text == '36600') {
-                                                              expireController.text = '366';
-                                                            } else {
-                                                              expireController.text = '36600';
-                                                            }
-                                                          },
-                                                        ),
-                                                      ),
-                                                      Obx(() {
-                                                        return SwitchTile(
-                                                          title: '试用用户',
-                                                          leading: Icon(
-                                                            Icons.man_2_outlined,
-                                                            size: 20,
-                                                            color: shadColorScheme.foreground,
-                                                          ),
-                                                          value: tryUser.value,
-                                                          onChanged: (bool value) {
-                                                            tryUser.value = value;
-                                                          },
-                                                        );
-                                                      }),
-                                                      ShadRadioGroup<int>(
-                                                        axis: Axis.horizontal,
-                                                        // initialValue: 168,
-                                                        spacing: 8,
-                                                        runSpacing: 8,
-                                                        onChanged: (int? value) {
-                                                          payController.text = value.toString();
-                                                        },
-                                                        items: [
-                                                          ShadRadio(
-                                                            label: Text('8折'),
-                                                            value: (168 * 0.8).toInt(),
-                                                          ),
-                                                          ShadRadio(
-                                                            label: Text('85折'),
-                                                            value: (168 * 0.85).toInt(),
-                                                          ),
-                                                          ShadRadio(
-                                                            label: Text('9折'),
-                                                            value: (168 * 0.9).toInt(),
-                                                          ),
-                                                          ShadRadio(
-                                                            label: Text('95折'),
-                                                            value: (168 * 0.95).toInt(),
-                                                          ),
-                                                          // ShadRadio(
-                                                          //   label: Text('全价'),
-                                                          //   value: 168,
-                                                          // ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  actions: [
-                                                    ShadButton.outline(
-                                                      size: ShadButtonSize.sm,
-                                                      child: Text('取消'),
-                                                      onPressed: () {
-                                                        Get.back();
-                                                      },
-                                                    ),
-                                                    GetBuilder<AppPublishController>(builder: (controller) {
-                                                      return ShadButton.destructive(
-                                                        size: ShadButtonSize.sm,
-                                                        leading: !controller.loading
-                                                            ? null
-                                                            : SizedBox(
-                                                                width: 16,
-                                                                height: 16,
-                                                                child: Center(
-                                                                    child: CircularProgressIndicator(
-                                                                  color: shadColorScheme.destructiveForeground,
-                                                                )),
-                                                              ),
-                                                        onPressed: () async {
-                                                          if (controller.loading == true) {
-                                                            return;
-                                                          }
-                                                          try {
-                                                            controller.loading = true;
-                                                            controller.update();
-                                                            var result = await controller.resetAdminUserToken(
-                                                                user.id!, {
-                                                              "pay": int.parse(payController.text),
-                                                              "expire": int.parse(expireController.text),
-                                                              "try_user": tryUser.value
-                                                            });
-                                                            if (result.succeed) {
-                                                              controller.getAdminUserList();
-                                                              Get.back();
-                                                            } else {
-                                                              Get.snackbar('错误', result.msg,
-                                                                  colorText: shadColorScheme.destructive);
-                                                            }
-                                                          } catch (e, trace) {
-                                                            Logger.instance.e(e);
-                                                            Logger.instance.e(trace);
-                                                            Get.snackbar('错误', e.toString(),
-                                                                colorText: shadColorScheme.destructive);
-                                                          } finally {
-                                                            controller.loading = false;
-                                                            controller.update();
-                                                          }
-                                                        },
-                                                        child: Text('授权'),
-                                                      );
-                                                    }),
-                                                  ],
-                                                );
-                                              },
-                                              flex: 1,
-                                              backgroundColor: Colors.green,
-                                              icon: Icons.lock_outline,
-                                              label: '授权',
-                                            ),
-                                            SlidableAction(
-                                              borderRadius: const BorderRadius.only(
-                                                  topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
-                                              onPressed: (context) async {
-                                                Get.defaultDialog(
-                                                  title: '发送邮件',
-                                                  radius: 5,
-                                                  content: Text('确定吗？'),
-                                                  actions: [
-                                                    ShadButton.outline(
-                                                      size: ShadButtonSize.sm,
-                                                      child: Text('取消'),
-                                                      onPressed: () {
-                                                        Get.back();
-                                                      },
-                                                    ),
-                                                    GetBuilder<AppPublishController>(builder: (controller) {
-                                                      return ShadButton.destructive(
-                                                        size: ShadButtonSize.sm,
-                                                        leading: !controller.loading
-                                                            ? null
-                                                            : SizedBox(
-                                                                width: 16,
-                                                                height: 16,
-                                                                child: Center(
-                                                                    child: CircularProgressIndicator(
-                                                                  color: shadColorScheme.destructiveForeground,
-                                                                )),
-                                                              ),
-                                                        onPressed: () async {
-                                                          if (controller.loading == true) {
-                                                            return;
-                                                          }
-                                                          controller.loading = true;
-                                                          controller.update();
-                                                          var result = await controller.sendAdminUserToken(user.id!);
-                                                          if (result.succeed) {
-                                                            Get.back();
-                                                          } else {
-                                                            Get.snackbar('错误', result.msg,
-                                                                colorText: shadColorScheme.destructive);
-                                                          }
-                                                          controller.loading = false;
-                                                          controller.update();
-                                                        },
-                                                        child: Text('发送'),
-                                                      );
-                                                    }),
-                                                  ],
-                                                );
-                                              },
-                                              flex: 1,
-                                              backgroundColor: Colors.teal,
-                                              icon: Icons.email_outlined,
-                                              label: '邮件',
-                                            ),
-                                          ],
+                                      key: Key("${user.id}-${user.email}"),
+                                      child: ShadContextMenuRegion(
+                                        decoration: ShadDecoration(
+                                          labelStyle: TextStyle(),
+                                          descriptionStyle: TextStyle(),
                                         ),
-                                        endActionPane: ActionPane(
-                                          motion: const ScrollMotion(),
-                                          extentRatio: PlatformTool.isSmallScreenPortrait() ? 1 / 3 : 1 / 4,
-                                          children: [
-                                            SlidableAction(
-                                              borderRadius: const BorderRadius.only(
-                                                  topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
-                                              onPressed: (context) async {
-                                                if (controller.loading == true) {
-                                                  return;
-                                                }
-                                                controller.loading = true;
-                                                controller.update();
-                                                var res = await controller.getAdminUser(user.id!);
-                                                Logger.instance.i(res?.toJson() ?? 'null');
-                                                controller.loading = false;
-                                                controller.update();
-                                                await showAdminUserEdit(user, shadColorScheme);
-                                              },
-                                              flex: 1,
-                                              backgroundColor: shadColorScheme.primary,
-                                              icon: Icons.edit_outlined,
-                                              label: '编辑',
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(minWidth: 100),
+                                        items: [
+                                          ShadContextMenuItem(
+                                            leading: Icon(
+                                              size: 14,
+                                              Icons.lock_outline,
+                                              color: shadColorScheme.foreground,
                                             ),
-                                            SlidableAction(
-                                              borderRadius: const BorderRadius.only(
-                                                  topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
-                                              onPressed: (context) => removeAdminUser(user, shadColorScheme),
-                                              flex: 1,
-                                              backgroundColor: shadColorScheme.destructive,
-                                              icon: Icons.delete_outline,
-                                              label: '删除',
+                                            child: Text(style: TextStyle(fontSize: 12), '重置授权'),
+                                            onPressed: () => resetAuth(shadColorScheme, user),
+                                          ),
+                                          ShadContextMenuItem(
+                                            leading: Icon(
+                                              size: 14,
+                                              Icons.email_outlined,
+                                              color: shadColorScheme.foreground,
                                             ),
-                                          ],
-                                        ),
-                                        child: ListTile(
-                                          dense: true,
-                                          title: Tooltip(
-                                            message:
-                                                "创建时间：${user.createdAt.toString()}${user.updatedAt?.startsWith('000') == true ? '' : '，更新时间：${user.updatedAt.toString()}'} ${user.invitedById != null ? "【邀请人：${user.invitedById}】" : ''}",
-                                            child: Text(
-                                              "${user.email}${user.updatedAt?.startsWith('000') == true ? '' : ' 更新于：${calculateTimeElapsed(user.updatedAt.toString())}'}",
+                                            child: Text(style: TextStyle(fontSize: 12), '发送邮件'),
+                                            onPressed: () => sendMail(shadColorScheme, user),
+                                          ),
+                                          ShadContextMenuItem(
+                                            leading: Icon(
+                                              size: 14,
+                                              Icons.edit_outlined,
+                                              color: shadColorScheme.foreground,
+                                            ),
+                                            child: Text(style: TextStyle(fontSize: 12), '编辑信息'),
+                                            onPressed: () => editUser(shadColorScheme, user),
+                                          ),
+                                          ShadContextMenuItem(
+                                            leading: Icon(
+                                              size: 14,
+                                              Icons.delete_outline,
+                                              color: shadColorScheme.foreground,
+                                            ),
+                                            child: Text(style: TextStyle(fontSize: 12), '删除用户'),
+                                            onPressed: () => removeAdminUser(user, shadColorScheme),
+                                          ),
+                                        ],
+                                        child: Slidable(
+                                          key: ValueKey('${user.id}_${user.email}'),
+                                          startActionPane: ActionPane(
+                                            motion: const ScrollMotion(),
+                                            extentRatio: PlatformTool.isSmallScreenPortrait() ? 1 / 2 : 1 / 5,
+                                            children: [
+                                              SlidableAction(
+                                                borderRadius: const BorderRadius.only(
+                                                    topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
+                                                onPressed: (context) => resetAuth(shadColorScheme, user),
+                                                flex: 1,
+                                                backgroundColor: Colors.green,
+                                                foregroundColor: Colors.white,
+                                                icon: Icons.lock_outline,
+                                                label: '授权',
+                                              ),
+                                              SlidableAction(
+                                                borderRadius: const BorderRadius.only(
+                                                    topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
+                                                onPressed: (context) => sendMail(shadColorScheme, user),
+                                                flex: 1,
+                                                backgroundColor: Colors.teal,
+                                                foregroundColor: Colors.white,
+                                                icon: Icons.email_outlined,
+                                                label: '邮件',
+                                              ),
+                                            ],
+                                          ),
+                                          endActionPane: ActionPane(
+                                            motion: const ScrollMotion(),
+                                            extentRatio: PlatformTool.isSmallScreenPortrait() ? 1 / 3 : 1 / 4,
+                                            children: [
+                                              SlidableAction(
+                                                borderRadius: const BorderRadius.only(
+                                                    topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
+                                                onPressed: (context) => editUser(shadColorScheme, user),
+                                                flex: 1,
+                                                backgroundColor: Colors.orange,
+                                                foregroundColor: Colors.white,
+                                                icon: Icons.edit_outlined,
+                                                label: '编辑',
+                                              ),
+                                              SlidableAction(
+                                                borderRadius: const BorderRadius.only(
+                                                    topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
+                                                onPressed: (context) => removeAdminUser(user, shadColorScheme),
+                                                flex: 1,
+                                                backgroundColor: Colors.red,
+                                                foregroundColor: Colors.white,
+                                                icon: Icons.delete_outline,
+                                                label: '删除',
+                                              ),
+                                            ],
+                                          ),
+                                          child: ListTile(
+                                            dense: true,
+                                            title: Tooltip(
+                                              message:
+                                                  "创建时间：${user.createdAt.toString()}${user.updatedAt?.startsWith('000') == true ? '' : '，更新时间：${user.updatedAt.toString()}'} ${user.invitedById != null ? "【邀请人：${user.invitedById}】" : ''}",
+                                              child: Text(
+                                                "${user.email}${user.updatedAt?.startsWith('000') == true ? '' : ' 更新于：${calculateTimeElapsed(user.updatedAt.toString())}'}",
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: shadColorScheme.foreground,
+                                                ),
+                                              ),
+                                            ),
+                                            subtitle: Text(
+                                              '${user.username}【邀请数：${user.invite}】',
                                               style: TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w500,
+                                                fontSize: 12,
                                                 color: shadColorScheme.foreground,
                                               ),
                                             ),
-                                          ),
-                                          subtitle: Text(
-                                            '${user.username}【邀请数：${user.invite}】',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: shadColorScheme.foreground,
-                                            ),
-                                          ),
-                                          trailing: Text(
-                                            user.timeExpire.toString(),
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: user.timeExpire?.contains('授权码已过期') == true
-                                                  ? shadColorScheme.destructive
-                                                  : shadColorScheme.foreground,
+                                            trailing: Text(
+                                              user.timeExpire.toString(),
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: user.timeExpire?.contains('授权码已过期') == true
+                                                    ? shadColorScheme.destructive
+                                                    : shadColorScheme.foreground,
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -624,13 +451,247 @@ class AppPublishPage extends StatelessWidget {
     });
   }
 
+  void editUser(ShadColorScheme shadColorScheme, AdminUser user) async {
+    if (controller.loading == true) {
+      return;
+    }
+    controller.loading = true;
+    controller.update();
+    var res = await controller.getAdminUser(user.id!);
+    Logger.instance.i(res?.toJson() ?? 'null');
+    controller.loading = false;
+    controller.update();
+    await showAdminUserEdit(user, shadColorScheme);
+  }
+
+  void sendMail(ShadColorScheme shadColorScheme, AdminUser user) {
+    Get.defaultDialog(
+      title: '发送邮件',
+      radius: 5,
+      backgroundColor: shadColorScheme.background,
+      titleStyle: TextStyle(color: shadColorScheme.foreground, fontSize: 16),
+      content: Text(
+        '确定吗？',
+        style: TextStyle(color: shadColorScheme.foreground, fontSize: 14),
+      ),
+      actions: [
+        ShadButton.ghost(
+          size: ShadButtonSize.sm,
+          child: Text('取消'),
+          onPressed: () {
+            Get.back();
+          },
+        ),
+        GetBuilder<AppPublishController>(builder: (controller) {
+          return ShadButton.destructive(
+            size: ShadButtonSize.sm,
+            leading: !controller.loading
+                ? null
+                : SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: Center(
+                        child: CircularProgressIndicator(
+                      color: shadColorScheme.destructiveForeground,
+                    )),
+                  ),
+            onPressed: () async {
+              if (controller.loading == true) {
+                return;
+              }
+              controller.loading = true;
+              controller.update();
+              var result = await controller.sendAdminUserToken(user.id!);
+              if (result.succeed) {
+                Get.back();
+              } else {
+                Get.snackbar('错误', result.msg, colorText: shadColorScheme.destructive);
+              }
+              controller.loading = false;
+              controller.update();
+            },
+            child: Text('发送'),
+          );
+        }),
+      ],
+    );
+  }
+
+  void resetAuth(ShadColorScheme shadColorScheme, AdminUser user) {
+    TextEditingController payController = TextEditingController(text: '168');
+    TextEditingController expireController = TextEditingController(text: '36600');
+    RxBool tryUser = false.obs;
+    Get.defaultDialog(
+      title: '重置授权',
+      radius: 5,
+      titleStyle: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w500,
+        color: shadColorScheme.foreground,
+      ),
+      backgroundColor: shadColorScheme.background,
+      content: Column(
+        children: [
+          CustomTextField(
+            controller: payController,
+            labelText: '付款金额',
+            prefixIcon: Icon(
+              Icons.money_outlined,
+              color: shadColorScheme.foreground,
+              size: 20,
+            ),
+            suffix: ShadIconButton.ghost(
+              icon: Icon(
+                Icons.autorenew_outlined,
+                color: shadColorScheme.foreground,
+                size: 20,
+              ),
+              onPressed: () {
+                if (payController.text != '168') {
+                  payController.text = '168';
+                } else {
+                  payController.text = '0';
+                }
+              },
+            ),
+          ),
+          CustomTextField(
+            controller: expireController,
+            labelText: '授权时长',
+            prefixIcon: Icon(
+              Icons.more_time_outlined,
+              color: shadColorScheme.foreground,
+              size: 20,
+            ),
+            suffix: ShadIconButton.ghost(
+              icon: Icon(
+                Icons.autorenew_outlined,
+                color: shadColorScheme.foreground,
+                size: 20,
+              ),
+              onPressed: () {
+                if (expireController.text == '36600') {
+                  expireController.text = '366';
+                } else {
+                  expireController.text = '36600';
+                }
+              },
+            ),
+          ),
+          Obx(() {
+            return SwitchTile(
+              title: '试用用户',
+              leading: Icon(
+                Icons.man_2_outlined,
+                size: 20,
+                color: shadColorScheme.foreground,
+              ),
+              value: tryUser.value,
+              onChanged: (bool value) {
+                tryUser.value = value;
+              },
+            );
+          }),
+          ShadRadioGroup<int>(
+            axis: Axis.horizontal,
+            // initialValue: 168,
+            spacing: 8,
+            runSpacing: 8,
+            onChanged: (int? value) {
+              payController.text = value.toString();
+            },
+            items: [
+              ShadRadio(
+                label: Text('8折'),
+                value: (168 * 0.8).toInt(),
+              ),
+              ShadRadio(
+                label: Text('85折'),
+                value: (168 * 0.85).toInt(),
+              ),
+              ShadRadio(
+                label: Text('9折'),
+                value: (168 * 0.9).toInt(),
+              ),
+              ShadRadio(
+                label: Text('95折'),
+                value: (168 * 0.95).toInt(),
+              ),
+              // ShadRadio(
+              //   label: Text('全价'),
+              //   value: 168,
+              // ),
+            ],
+          ),
+        ],
+      ),
+      actions: [
+        ShadButton.outline(
+          size: ShadButtonSize.sm,
+          child: Text('取消'),
+          onPressed: () {
+            Get.back();
+          },
+        ),
+        GetBuilder<AppPublishController>(builder: (controller) {
+          return ShadButton.destructive(
+            size: ShadButtonSize.sm,
+            leading: !controller.loading
+                ? null
+                : SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: Center(
+                        child: CircularProgressIndicator(
+                      color: shadColorScheme.destructiveForeground,
+                    )),
+                  ),
+            onPressed: () async {
+              if (controller.loading == true) {
+                return;
+              }
+              try {
+                controller.loading = true;
+                controller.update();
+                var result = await controller.resetAdminUserToken(user.id!, {
+                  "pay": int.parse(payController.text),
+                  "expire": int.parse(expireController.text),
+                  "try_user": tryUser.value
+                });
+                if (result.succeed) {
+                  controller.getAdminUserList();
+                  Get.back();
+                } else {
+                  Get.snackbar('错误', result.msg, colorText: shadColorScheme.destructive);
+                }
+              } catch (e, trace) {
+                Logger.instance.e(e);
+                Logger.instance.e(trace);
+                Get.snackbar('错误', e.toString(), colorText: shadColorScheme.destructive);
+              } finally {
+                controller.loading = false;
+                controller.update();
+              }
+            },
+            child: Text('授权'),
+          );
+        }),
+      ],
+    );
+  }
+
   Future<void> removeAdminUser(AdminUser user, ShadColorScheme shadColorScheme) async {
     Get.defaultDialog(
       title: '删除用户',
-      content: Text('确定要删除此用户吗？'),
+      backgroundColor: shadColorScheme.background,
+      titleStyle: TextStyle(color: shadColorScheme.foreground, fontSize: 16),
+      content: Text(
+        '确定要删除此用户吗？',
+        style: TextStyle(color: shadColorScheme.foreground, fontSize: 14),
+      ),
       radius: 5,
       actions: [
-        ShadButton.outline(
+        ShadButton.ghost(
           size: ShadButtonSize.sm,
           child: Text('取消'),
           onPressed: () {
