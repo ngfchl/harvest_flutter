@@ -6190,7 +6190,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
       Get.defaultDialog(
         title: '确认',
         radius: 5,
-        titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
+        titleStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: shadColorScheme.foreground),
         middleText: '共检测到${toRemoveTorrentList.length}条可删除红种，确定要删除种子吗？',
         actions: [
           ShadButton.outline(
