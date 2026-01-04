@@ -155,7 +155,7 @@ class CustomTextField extends StatelessWidget {
         decoration: InputDecoration(
           labelText: labelText,
           labelStyle: labelStyle ?? TextStyle(fontSize: 12, color: scheme.foreground),
-          contentPadding: contentPadding??const EdgeInsets.symmetric(vertical: 8),
+          contentPadding: contentPadding??const EdgeInsets.symmetric(vertical: 8,horizontal: 12),
           enabledBorder: UnderlineInputBorder(
             borderSide: BorderSide(color: scheme.foreground.withOpacity(0.2)),
           ),
@@ -169,6 +169,7 @@ class CustomTextField extends StatelessWidget {
           helperText: helperText,
           prefixText: prefixText,
           prefixIcon: prefixIcon,
+          helperMaxLines: 3,
           suffixText: suffixText,
           suffixIcon: suffixIcon,
           hintText: hintText,
