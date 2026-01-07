@@ -755,6 +755,10 @@ class TaskPage extends StatelessWidget {
                             },
                             onChanged: (Downloader? item) async {
                               sourceDownloader.value = item;
+                              if (distDownloader.value == null) {
+                                distDownloader.value = downloaders.firstWhereOrNull((d) =>
+                                    d.id != sourceDownloader.value?.id && d.host == sourceDownloader.value?.host);
+                              }
                               String savePath = item?.category.toLowerCase() == 'qb'
                                   ? item?.prefs.savePath ?? ''
                                   : item?.prefs.downloadDir ?? '';
@@ -810,7 +814,7 @@ class TaskPage extends StatelessWidget {
                       maxLines: 3,
                       labelText: '文件夹映射',
                       helperText: '1. 格式：源文件夹->目标文件夹，多个映射请换行。\n2. 只有匹配上箭头前面的源文件夹才会被转移到目标文件夹，留空表示转移全部种子。',
-                      helperStyle: TextStyle(fontSize: 10,color: shadColorScheme.foreground),
+                      helperStyle: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8),
