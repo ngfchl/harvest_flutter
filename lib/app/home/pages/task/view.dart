@@ -916,7 +916,7 @@ class TaskPage extends StatelessWidget {
                       kwargs.assignAll({
                         "source_downloader_id": sourceDownloader.value?.id,
                         "dist_downloader_id": distDownloader.value?.id,
-                        "folder_map": folderMapController.text.split(','),
+                        "folder_map": folderMapController.text.split('\n'),
                         "remove_source_torrents": removeSourceTorrents.value,
                         "skip_checking": skipChecking.value,
                       });
