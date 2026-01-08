@@ -1,14 +1,16 @@
 import 'dart:math';
+import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
+import 'package:dio/dio.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide FormData, MultipartFile;
 import 'package:harvest/app/home/pages/dash_board/controller.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:harvest/utils/date_time_utils.dart';
@@ -17,7 +19,9 @@ import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:file_picker/file_picker.dart';
 
+import '../../../../api/api.dart';
 import '../../../../api/mysite.dart';
 import '../../../../common/card_view.dart';
 import '../../../../common/corner_badge.dart';
@@ -25,6 +29,7 @@ import '../../../../common/form_widgets.dart';
 import '../../../../common/utils.dart';
 import '../../../../theme/color_storage.dart';
 import '../../../../utils/calc_weeks.dart';
+import '../../../../utils/dio_util.dart';
 import '../../../../utils/format_number.dart';
 import '../../../../utils/logger_helper.dart';
 import '../../../../utils/screenshot.dart';
@@ -662,6 +667,13 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
           onPressed: () async {
             Get.back();
             await _showEditBottomSheet();
+          },
+          onLongPress: () {
+            Get.bottomSheet(
+              editAppUpdateForm(context),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+              backgroundColor: shadColorScheme.background,
+            );
           },
           icon: Icon(
             Icons.add_outlined,
@@ -3939,6 +3951,214 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     if (state == AppLifecycleState.resumed) {
       // 当应用程序重新打开时，重新加载数据
       controller.initData();
+    }
+  }
+
+  Widget editAppUpdateForm(BuildContext context) {
+    final shadColorScheme = ShadTheme.of(context).colorScheme;
+    RxList<File> selectedFiles = <File>[].obs;
+    RxBool overwrite = false.obs;
+    return GetBuilder<MySiteController>(
+        id: 'selectedFiles',
+        builder: (controller) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12.0, top: 16),
+            child: Column(
+              spacing: 10,
+              children: [
+                Text('上传配置文件',
+                    style: TextStyle(fontSize: 18, color: shadColorScheme.foreground, fontWeight: FontWeight.bold)),
+                if (controller.uploadMsg.isNotEmpty)
+                  ...controller.uploadMsg.map((msg) => ListTile(
+                        dense: true,
+                        title: Text(
+                          msg,
+                          style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
+                        ),
+                      )),
+                Expanded(
+                  child: Stack(
+                    children: [
+                      ListView(
+                        children: [
+                          Obx(() {
+                            return SwitchTile(
+                                title: '覆盖已有配置文件',
+                                value: overwrite.value,
+                                onChanged: (bool v) {
+                                  overwrite.value = v;
+                                });
+                          }),
+                          ListTile(
+                            title: Text(
+                              '配置文件',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: shadColorScheme.foreground,
+                              ),
+                            ),
+                            trailing: ShadButton.ghost(
+                                size: ShadButtonSize.sm,
+                                leading: Icon(
+                                  Icons.photo_library,
+                                  size: 13,
+                                  color: shadColorScheme.foreground,
+                                ),
+                                child: Text(
+                                  '选择文件',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: shadColorScheme.foreground,
+                                  ),
+                                ),
+                                onPressed: () async {
+                                  const lastPathKey = 'last_file_picker_path';
+                                  final lastPath = SPUtil.getLocalStorage(lastPathKey);
+                                  final result = await FilePicker.platform.pickFiles(
+                                    allowMultiple: false,
+                                    initialDirectory: lastPath ?? Directory.current.path,
+                                    type: FileType.custom,
+                                    allowedExtensions: ['toml'],
+                                    withData: true,
+                                  );
+
+                                  if (result != null) {
+                                    Logger.instance.i('选择的文件: ${result.files}');
+                                    final path = result.paths.first;
+                                    Logger.instance.i('选择的文件路径: $path');
+                                    final lastDirectory = path?.substring(0, path.lastIndexOf('/'));
+                                    Logger.instance.i('选择的文件目录: $lastDirectory');
+                                    SPUtil.setLocalStorage(lastPathKey, lastDirectory);
+                                    selectedFiles.value = result.paths.map((path) => File(path!)).toList();
+                                    Logger.instance.i('选择的文件: $selectedFiles');
+                                    controller.update(['selectedFiles']);
+                                  }
+                                }),
+                          ),
+                          Obx(() {
+                            if (selectedFiles.isNotEmpty) {
+                              return ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: selectedFiles.length,
+                                itemBuilder: (context, index) {
+                                  return ListTile(
+                                      title: Text(
+                                        selectedFiles[index].uri.pathSegments.last,
+                                        style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
+                                      ),
+                                      trailing: ShadIconButton.ghost(
+                                          icon: Icon(Icons.close, size: 12, color: shadColorScheme.destructive),
+                                          onPressed: () {
+                                            selectedFiles.removeAt(index);
+                                            controller.update(['selectedFiles']);
+                                          }));
+                                },
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          }),
+                        ],
+                      ),
+                      if (controller.uploading)
+                        SizedBox(
+                            height: 36,
+                            width: 36,
+                            child: Center(child: CircularProgressIndicator(color: shadColorScheme.foreground))),
+                    ],
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 10,
+                  children: [
+                    ShadButton.ghost(
+                      size: ShadButtonSize.sm,
+                      onPressed: () => Get.back(),
+                      leading: Icon(
+                        Icons.close_outlined,
+                        size: 16,
+                      ),
+                      child: Text('关闭'),
+                    ),
+                    ShadButton(
+                      size: ShadButtonSize.sm,
+                      leading: controller.uploading
+                          ? SizedBox(
+                              height: 16,
+                              width: 16,
+                              child: Center(child: CircularProgressIndicator(color: shadColorScheme.primaryForeground)))
+                          : Icon(
+                              Icons.upload_outlined,
+                              size: 16,
+                              color: shadColorScheme.primaryForeground,
+                            ),
+                      onPressed: () => uploadFiles(context, overwrite.value, selectedFiles),
+                      child: Text('上传'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        });
+  }
+
+// 假设你已有 CommonResponse 类和 DioUtil
+  Future<void> uploadFiles(BuildContext context, bool overwrite, List<File> files, {CancelToken? cancelToken}) async {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
+    controller.uploading = true;
+    controller.update(['versionUpload']);
+
+    try {
+      Logger.instance.i('开始上传配置文件');
+      // 2. 构建 FormData
+      final formData = FormData();
+      formData.fields.add(MapEntry('overwrite', overwrite.toString()));
+      for (final platformFile in files) {
+        final fileBytes = await platformFile.readAsBytes();
+        formData.files.add(
+          MapEntry(
+            'files', // 必须与 Django 的 `files: List[UploadedFile] = File(...)` 字段名一致
+            MultipartFile.fromBytes(
+              fileBytes,
+              filename: platformFile.path.split('/').last,
+            ),
+          ),
+        );
+      }
+      Logger.instance.i('组装好FormData，开始上传：${formData.files}');
+      // 3. 调用你的 addData 方法（或直接用 Dio）
+      final response = await DioUtil().post(
+        Api.Import_Custom_Site_Toml,
+        formData: formData,
+        // queryParameters: {'overwrite': overwrite},
+        cancelToken: cancelToken,
+      );
+      Logger.instance.i('请求头: ${DioUtil().dio.options.headers}');
+      controller.uploading = false;
+      controller.update(['versionUpload']);
+      CommonResponse? commonResponse;
+      if (response.statusCode == 200) {
+        Logger.instance.i('上传成功，返回数据: ${response.data}');
+        commonResponse = CommonResponse.fromJson(response.data, (p0) => p0);
+      } else {
+        String msg = '上传数据失败: ${response.statusCode}';
+        commonResponse = CommonResponse.error(msg: msg);
+      }
+      if (commonResponse.succeed == true) {
+        Logger.instance.i('上传成功，返回数据: ${commonResponse.data}');
+        controller.uploadMsg = List<String>.from(commonResponse.data) ?? [];
+        controller.update(['selectedFiles']);
+        Get.snackbar('配置文件上传请求成功', commonResponse.msg, colorText: shadColorScheme.foreground);
+      } else {
+        Logger.instance.e('配置文件上传失败: ${commonResponse.msg}');
+        Get.snackbar('配置文件上传失败', commonResponse.msg, colorText: shadColorScheme.destructive);
+      }
+    } catch (e, stack) {
+      Logger.instance.e('上传异常: $e', error: e, stackTrace: stack);
+      Get.snackbar('配置文件上传失败', '上传异常: $e', colorText: shadColorScheme.destructive);
     }
   }
 }

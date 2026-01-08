@@ -26,6 +26,8 @@ class MySiteController extends GetxController {
   late String baseUrl;
   bool sortReversed = false;
   bool searching = false;
+  bool uploading = false;
+  List<String> uploadMsg = [];
   Map<String, WebSite> webSiteList = {};
   String selectTag = '全部';
   List<String> tagList = [];

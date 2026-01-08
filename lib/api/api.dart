@@ -17,6 +17,7 @@ class Api {
   static const String WEBSITE_LIST = "mysite/website";
   static const String MYSITE_LIST = "mysite/mysite";
   static const String CLEAR_CACHE = "mysite/cache/clear";
+  static const String Import_Custom_Site_Toml = "mysite/import/toml";
 
   // 站点信息
   static const String MYSITE_STATUS_OPERATE = "mysite/info";
