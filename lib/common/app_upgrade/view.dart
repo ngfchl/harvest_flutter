@@ -54,9 +54,16 @@ class AppUpgradePage extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                              '当前版本：${appUpgradeController.currentVersion} ${(appUpgradeController.hasNewVersion ? ' -- 新版本!' : '')}',
-                              style: TextStyle(fontSize: 12, color: shadColorScheme.foreground)),
+                          SwitchTile(
+                            label: Text('Git代理'),
+                            title: '当前版本：${appUpgradeController.currentVersion} ${(appUpgradeController.hasNewVersion ? ' -- 新版本!' : '')}',
+                            value: appUpgradeController.useProxy,
+                            onChanged: (bool v) {
+                              appUpgradeController.useProxy = v;
+                              appUpgradeController.update();
+                              SPUtil.setBool('useProxy', v);
+                            },
+                          ),
                           appUpgradeController.hasNewVersion
                               ? SwitchTile(
                                   title: '服务器版本：v${appUpgradeController.updateInfo?.version}',

@@ -20,6 +20,8 @@ class AppUpgradeController extends GetxController {
   String newVersion = '';
   String currentVersion = '';
   String? gitProxy;
+  bool useProxy = false;
+
   final Dio dio = Dio();
 
   List<AppUpdateInfo> appVersions = [];
@@ -29,6 +31,7 @@ class AppUpgradeController extends GetxController {
     try {
       Logger.instance.d('开始检测 APP 更新');
       notShowNewVersion = SPUtil.getBool('notShowNewVersion', defaultValue: false);
+      useProxy = SPUtil.getBool('useProxy', defaultValue: false);
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
       currentVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
       // getAppVersionList();
@@ -40,14 +43,17 @@ class AppUpgradeController extends GetxController {
 
     super.onInit();
   }
-  
+
   Future<void> fetchGitProxy() async {
+    if (!useProxy) {
+      return;
+    }
     CommonResponse res = await fetchFasterGithubProxy();
     if (res.succeed) {
       gitProxy = res.data?.url;
     }
   }
-  
+
   Future<void> getAppVersionList() async {
     var response = await dio.get('https://repeat.ptools.fun/api/app/version/list');
     if (response.statusCode == 200) {
