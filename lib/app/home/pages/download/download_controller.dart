@@ -730,9 +730,14 @@ class DownloadController extends GetxController {
   void filterTorrentsByError() {
     logger_helper.Logger.instance.i(selectedCategory);
     if (selectedError.isNotEmpty && selectedError != '全部') {
-      showTorrents = showTorrents.where((torrent) {
-        return torrent.errorString.contains(selectedError);
-      }).toList();
+      if (selectedError == 'NoTrackers') {
+        showTorrents =
+            showTorrents.where((torrent) => torrent.trackerList == null || torrent.trackerList!.isEmpty).toList();
+      } else {
+        showTorrents = showTorrents.where((torrent) {
+          return torrent.errorString.contains(selectedError) || torrent.trackerList?.isEmpty == true;
+        }).toList();
+      }
     }
   }
 
@@ -1342,6 +1347,7 @@ class DownloadController extends GetxController {
     tags.addAll(torrents.expand<String>((item) => item.labels).toSet().toList());
 
     errors.addAll(torrents.map<String>((item) => item.errorString).toSet().where((el) => el.isNotEmpty).toList());
+    errors.add('NoTrackers');
     errors = errors.toSet().toList();
     categoryMap = {
       '全部': const Category(name: '全部', savePath: null),

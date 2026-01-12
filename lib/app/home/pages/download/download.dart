@@ -1820,10 +1820,14 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                           ...controller.errors.map((error) {
                             int count = 0;
                             if (error == '全部') {
-                              count = controller.torrents.where((item) => item.error > 0).length;
+                              count = controller.torrents
+                                  .where((item) => item.error > 0 || item.trackerList?.isEmpty == true)
+                                  .length;
                             } else {
                               count = controller.torrents
-                                  .where((torrent) => torrent.errorString.contains(error))
+                                  .where((torrent) => error == 'NoTrackers'
+                                      ? torrent.trackerList?.isEmpty == true
+                                      : torrent.errorString.contains(error))
                                   .toList()
                                   .length;
                             }
@@ -6227,13 +6231,10 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
       List<String> toRemoveTorrentList = [];
       var groupedTorrents = groupBy(controller.torrents, (t) => t.name);
       for (var group in groupedTorrents.values) {
-        var hasTracker = group.any((t) => t.error != 2);
-        if (!hasTracker) {
-          group.sort((t1, t2) => t2.percentDone.compareTo(t1.percentDone));
-          toRemoveTorrentList.addAll(group.skip(1).map((t) => t.hashString));
-        } else {
-          toRemoveTorrentList.addAll(group.where((element) => element.error == 2).map((t) => t.hashString));
-        }
+        toRemoveTorrentList.addAll(group
+            .skip(1)
+            .where((element) => element.error > 0 || element.trackerList?.isEmpty == true)
+            .map((t) => t.hashString));
       }
 
       logger_helper.Logger.instance.i(toRemoveTorrentList);
