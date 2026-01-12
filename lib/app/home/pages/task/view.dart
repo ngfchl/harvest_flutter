@@ -209,7 +209,7 @@ class TaskPage extends StatelessWidget {
                                               fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
                                           middleText: '确定要删除任务吗？',
                                           actions: [
-                                            ShadButton.outline(
+                                            ShadButton.ghost(
                                               onPressed: () {
                                                 Get.back(result: false);
                                               },
@@ -248,7 +248,7 @@ class TaskPage extends StatelessWidget {
                                               fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
                                           middleText: '确定要删除任务吗？',
                                           actions: [
-                                            ShadButton.outline(
+                                            ShadButton.ghost(
                                               onPressed: () {
                                                 Get.back(result: false);
                                               },
@@ -391,7 +391,7 @@ class TaskPage extends StatelessWidget {
                     content:
                         Text('删除后无法恢复，确定要删除任务吗？', style: TextStyle(fontSize: 14, color: shadColorScheme.foreground)),
                     actions: [
-                      ShadButton.outline(
+                      ShadButton.ghost(
                         onPressed: () {
                           Get.back(result: false);
                         },
@@ -615,7 +615,7 @@ class TaskPage extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ShadButton.outline(
+                  ShadButton.ghost(
                     size: ShadButtonSize.sm,
                     onPressed: () {
                       Get.back();
@@ -623,9 +623,8 @@ class TaskPage extends StatelessWidget {
                     leading: Icon(
                       Icons.cancel,
                       size: 18,
-                      color: shadColorScheme.destructiveForeground,
                     ),
-                    child: Text('取消', style: TextStyle(color: shadColorScheme.destructiveForeground)),
+                    child: Text('取消'),
                   ),
                   ShadButton.destructive(
                     size: ShadButtonSize.sm,
@@ -928,7 +927,7 @@ class TaskPage extends StatelessWidget {
                       Icons.cancel,
                       size: 18,
                     ),
-                    child: Text('取消', style: TextStyle()),
+                    child: Text('取消'),
                   ),
                   ShadButton.destructive(
                     size: ShadButtonSize.sm,
