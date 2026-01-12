@@ -56,7 +56,8 @@ class AppUpgradePage extends StatelessWidget {
                         children: [
                           SwitchTile(
                             label: Text('Git代理'),
-                            title: '当前版本：${appUpgradeController.currentVersion} ${(appUpgradeController.hasNewVersion ? ' -- 新版本!' : '')}',
+                            title:
+                                '当前版本：${appUpgradeController.currentVersion} ${(appUpgradeController.hasNewVersion ? ' -- 新版本!' : '')}',
                             value: appUpgradeController.useProxy,
                             onChanged: (bool v) {
                               appUpgradeController.useProxy = v;
@@ -108,6 +109,17 @@ class AppUpgradePage extends StatelessWidget {
                             children: [
                               ...?appUpgradeController.updateInfo?.changelog.split('\n').map(
                                   (e) => Text(e, style: TextStyle(fontSize: 12, color: shadColorScheme.foreground))),
+                              ShadButton.link(
+                                // key: buttonKey,
+                                padding: EdgeInsets.zero,
+                                onPressed: () async {
+                                  Uri uri = Uri.parse('https://repeat.ptools.fun');
+                                  if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                                    Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？', colorText: shadColorScheme.destructive);
+                                  }
+                                },
+                                child: Text('打开APP下载页面', style: TextStyle(fontSize: 12)),
+                              ),
                               ...?appUpgradeController.updateInfo?.downloadLinks.entries
                                   .map((e) => Builder(builder: (context) {
                                         final buttonKey = GlobalKey();
@@ -115,8 +127,43 @@ class AppUpgradePage extends StatelessWidget {
                                             key: buttonKey,
                                             padding: EdgeInsets.zero,
                                             onPressed: () async {
-                                              cancelToken = CancelToken();
-                                              await doInstallationPackage(context, e, buttonKey, cancelToken);
+                                              Get.defaultDialog(
+                                                title: '安装',
+                                                middleText: '安装/下载 ${e.key}？',
+                                                backgroundColor: shadColorScheme.background,
+                                                radius: 10,
+                                                actions: [
+                                                  ShadButton.ghost(
+                                                    size: ShadButtonSize.sm,
+                                                    onPressed: () {
+                                                      Get.back(result: false);
+                                                    },
+                                                    child: Text('取消'),
+                                                  ),
+                                                  ShadButton.outline(
+                                                    size: ShadButtonSize.sm,
+                                                    onPressed: () async {
+                                                      await appUpgradeController.fetchGitProxy();
+                                                      String downloadUrl =
+                                                          '${appUpgradeController.gitProxy ?? ''}${e.value}';
+                                                      Uri uri = Uri.parse(downloadUrl);
+                                                      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                                                        Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
+                                                            colorText: shadColorScheme.destructive);
+                                                      }
+                                                    },
+                                                    child: Text('浏览器打开'),
+                                                  ),
+                                                  ShadButton(
+                                                    size: ShadButtonSize.sm,
+                                                    onPressed: () async {
+                                                      cancelToken = CancelToken();
+                                                      await doInstallationPackage(context, e, buttonKey, cancelToken);
+                                                    },
+                                                    child: Text('安装'),
+                                                  ),
+                                                ],
+                                              );
                                             },
                                             child: Text(e.key, style: TextStyle(fontSize: 12)));
                                       }))
